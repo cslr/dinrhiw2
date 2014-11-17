@@ -1,0 +1,3 @@
+To checkout source code use command:
+
+svn checkout http://dinrhiw2.googlecode.com/svn/trunk/ dinrhiw2
