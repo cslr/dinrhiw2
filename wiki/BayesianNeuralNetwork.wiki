@@ -1,0 +1,26 @@
+Dinrhiw2 project has a simple implementation of *bayesian neural network* through Monte Carlo sampling.
+
+The *nntool* supports _bayes_ method which defines probabilistic model for neural network weights:
+
+p(weights|data) ~ p(data|w)p(w)
+
+p(data|w) = Exp{ -SUM 0.5(y_i - f(x_i,w))^2 }
+
+p(w) = Exp{ alpha |w|^2 }
+
+And implements hamiltonian monte carlo sampling (HMC) that is used to sample weights from p(w|data) efficiently by using the gradient of the p(data|w) (backpropagation) to guide HMC sampler. HMC sampler uses parameters L=20 and adaptively chooses epsilon to keep accept rate of the sampler close to optimal 70%.
+
+The output of the neural network is then estimated using the samples from p(w|data) by computing the mean output and its variance:
+
+E{y|x} = E{f(x,w)}
+Var{y|x} = Var{f(x,w)}
+
+instead of the more primitive (optimization)
+
+y = f(x,E{w}),
+
+which will run into problems when there is multiple good weight configurations in the data (samples from p(w|data) has multiple local modes (local maximas).
+
+It should then lead to the correct output when there are multiply good local minimas for weights (local modes of the p(w|data) distribution). To support this, neural network configuration files contain multiple different weight configurations that are samples from p(w|data).
+
+TODO: in practice we need to estimate convergence of HMC sampling and should do sophisticated clustering of p(w|data) samples in order to detect largest global mode (global minimum/maximum) that could be used as the best solution instead of expected output E{y|w}. But *the best* solution we want to select now really now depends on the problem and how we want to define "the best" output.
