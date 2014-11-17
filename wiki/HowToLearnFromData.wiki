@@ -1,0 +1,49 @@
+After building and installing dinrhiw library and tools (tools directory) successfully you have too programs: *dstool* and *nntool*.
+
+The _dstool_ is used to preprocess and store data in binary format for nntool. It accepts ASCII datafiles where each row is a single observation and numerical (floating point) data is separated by spaces. When doing machine learning one then needs to create two ASCII files: input data (x) and corresponding output (y) data file when learning relation y = f(x). 
+
+Example of this can be found from the tools directory: _process_data2.pl_ script takes a single input data file and creates input and output ASCII datafiles that can be then imported into binary format understood by nntool using the script _test_data2.sh_.
+
+{{{
+rm -f wdbc-test.ds
+
+# creates training dataset for nntool
+
+./dstool -create wdbc-test.ds
+./dstool -create:30:input wdbc-test.ds
+./dstool -create:1:output wdbc-test.ds
+./dstool -list wdbc-test.ds
+./dstool -import:0 wdbc-test.ds wdbc.in
+./dstool -import:1 wdbc-test.ds wdbc.out
+./dstool -padd:0:meanvar wdbc-test.ds
+./dstool -padd:0:pca wdbc-test.ds
+./dstool -padd:1:meanvar wdbc-test.ds
+
+./dstool -list wdbc-test.ds
+
+# uses nntool trying to learn from dataset
+
+./nntool -v wdbc-test.ds ?-20-? wdbcnn.cfg grad
+
+##################################################
+# testing
+
+./nntool -v wdbc-test.ds ?-20-? wdbcnn.cfg use
+
+##################################################
+# predicting [stores results to dataset]
+
+cp -f wdbc-test.ds wdbc-pred.ds
+./dstool -clear:1 wdbc-pred.ds
+# ./dstool -remove:1 wine-pred.ds
+
+./nntool -v wdbc-pred.ds 30-20-1 wdbcnn.cfg use
+
+./dstool -list wdbc-test.ds
+./dstool -list wdbc-pred.ds
+
+./dstool -print:1 wdbc-pred.ds
+tail wdbc.out
+}}}
+
+Here dstool is first used to import data into binary format (-create, -import), after which data is preprocessed (-padd) to have zero mean and unit variance (PCA) without correlations. After this nntool is used to learn from the data ("grad") using a gradient descent algorithm. The learnt neural network is then tested by clearing the output data (-clear) and by storing ("use") and printing (-print:1) the predicted output of the network. Finally, some real correct outputs (tail wdbc.out) is printed on the screen for comparision.
