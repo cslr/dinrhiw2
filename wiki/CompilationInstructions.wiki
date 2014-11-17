@@ -1,8 +1,8 @@
 The library can be tricky to get working. Here are basic instructions.
 
-1. Get the code from the repository.
-2. use build.sh to build configure script and other things
-3. Configure script fails if you don't have necessarily (few general) support libraries installed. Install development libraries and you are ok. (libz-dev, libgmp-dev, blas and *pkg-config*). I guess you can get these from prepackaged debs or rpms.
+  # Get the code from the repository.
+  # use build.sh to build configure script and other things
+  # Configure script fails if you don't have necessarily (few general) support libraries installed. Install development libraries and you are ok. (libz-dev, libgmp-dev, blas and *pkg-config*). I guess you can get these from prepackaged debs or rpms.
 
 make
 make makelib
