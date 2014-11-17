@@ -1,0 +1,542 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Space of Normal Distributions
+\newline 
+(SND)
+\layout Author
+
+Tomas Ukkonen <tomas.ukkonen@iki.fi>
+\newline 
+Nuways research
+\layout Section
+
+Idea
+\layout Standard
+
+When measuring and modelling data it is typically assumed that data gathered
+ is provided as a vector of measured values.
+ However, in many cases measurements aren't exactly same but are only related
+ to the same underlaying quantity or quantities.
+ For example when measuring sea water quality places for measurements aren't
+ exactly same.
+ In another example one would like to be able to calculate a probability
+ distributions for a different, but related quantities when only examples
+ from some other related quantities are known.
+\layout Standard
+
+Mathematically, the problem is to calculate distribution 
+\begin_inset Formula $p_{x}(x|c)$
+\end_inset 
+
+ and relatedness of distributions with different 
+\begin_inset Formula $c$
+\end_inset 
+
+:s - 
+\begin_inset Formula $p_{p_{x}}(distrubtion|c)$
+\end_inset 
+
+.
+ The 
+\begin_inset Formula $c$
+\end_inset 
+
+ is a location vector from a vector space which tells location of measurement
+ or codes what quantity (from continous, infinite large space) was measured
+ and measurements are given as pairs 
+\begin_inset Formula $(x_{i},c_{i})$
+\end_inset 
+
+.
+\layout Standard
+
+This isn't the first time this problem has been considered.
+ From the web I was able to find some references to research made by few
+ statisticians.
+ Something called 'Markov fields' were studied at the beginning of 1990s.
+ However, I wasn't able to find precise enough information about subject
+ - probably because it was published in journals I don't have access.
+ Approach also didn't seem to support use of baysian inference and seemed
+ to be overly complicated (for my uses anyway).
+\layout Section
+
+Solution
+\layout Standard
+
+Solution below assumes all data is normally distributed so that number of
+ parameters is small enough and calculations are simple.
+ For a more general model, radial basis function based distribution approximatio
+ns by using mixture of gaussians or student-t distributions should be used
+ - if calculations needed to handle mixture models can be made to be tractable
+ and efficient.
+\layout Standard
+
+By making normal distribution assumption for measurements, parameters of
+ distributions are functions 
+\begin_inset Formula $\mu_{x}(c)$
+\end_inset 
+
+,
+\begin_inset Formula $\Sigma_{x}(c)$
+\end_inset 
+
+ and 
+\begin_inset Formula $R_{xy}(c_{1},c_{2})=E[(x(c_{1})-\mu(c_{1}))(x(c_{2})-\mu(c_{2}))^{T}]$
+\end_inset 
+
+.
+ So that 
+\begin_inset Formula $p_{x}(x|c)\sim N(\mu_{x}(c),\Sigma_{x}(c))$
+\end_inset 
+
+ and a probability distributions 
+\begin_inset Formula $p(x(c_{1})|x(c_{2}))$
+\end_inset 
+
+ can be calculated by marginalizing a joint normal distribution
+\layout Standard
+\align center 
+
+\begin_inset Formula $p_{z=(x(c_{1}),x(c_{2}))}(z|c_{1},c_{2})$
+\end_inset 
+
+ 
+\begin_inset Formula $\sim$
+\end_inset 
+
+ 
+\begin_inset Formula $N(\left[\begin{array}{c}
+\mu_{x}(c_{1})\\
+\mu_{x}(c_{2})\end{array}\right],\left[\begin{array}{cc}
+\Sigma_{x}(c_{1}) & R_{xy}(c_{1},c_{2})\\
+R_{xy}(c_{1},c_{2}) & \Sigma_{x}(c_{2})\end{array}\right])$
+\end_inset 
+
+.
+\layout Standard
+
+Marginalization of normal distributions is rather easy to calculate and
+ analytical formulas for margnalized distributions are known.
+ The remaining distribution is always also normally distribution and it's
+ parameters can be calculated from the original parameters.
+ Because the ease of calculations it is also possible to calculate 
+\begin_inset Formula $p(x(c)|\{ x_{i}(c)\})$
+\end_inset 
+
+.
+\layout Standard
+
+This doesn't exactly solve the problem for calculating 
+\begin_inset Formula $p_{p_{x}}(distribution|c)$
+\end_inset 
+
+ but it provides all the needed parameters about primitive normal distributions
+ and the higher level distribution of the primitive distributions.
+ 
+\begin_inset Formula $R_{xy}(c_{1},c_{2})$
+\end_inset 
+
+ provides same information in a implicit form by providing correlational
+ information between normal distributions and because distributions are
+ normal higher order moments or other terms don't provide any extra information
+ about dependencies between distributions (prove this).
+\layout Standard
+
+The functions 
+\begin_inset Formula $\mu_{x}(c)$
+\end_inset 
+
+,
+\begin_inset Formula $\Sigma_{x}(c)$
+\end_inset 
+
+ and 
+\begin_inset Formula $R_{xy}(c_{1},c_{2})$
+\end_inset 
+
+ must be learnt from data are approximated by using neural networks which
+ use bayesian inference to calculate probability distributions for their
+ weights.
+ By using 
+\begin_inset Formula $NN_{\mu}$
+\end_inset 
+
+, 
+\begin_inset Formula $NN_{\Sigma}$
+\end_inset 
+
+ and 
+\begin_inset Formula $NN_{R}$
+\end_inset 
+
+ to mark both neural networks and their weights probability distributions
+ for functions, a whole probability distribution of space structure can
+ be defined.
+ 
+\begin_inset Formula $p(NN_{\mu})$
+\end_inset 
+
+, 
+\begin_inset Formula $p(NN_{\Sigma})$
+\end_inset 
+
+ and 
+\begin_inset Formula $p(NN_{R})$
+\end_inset 
+
+ are prior knowledge about solution which should be carefully constructed
+ to have non-informative initial distributions (flat distributions aren't
+ necessarily good).
+\layout Standard
+\align center 
+The learning process by using bayesian inference is normal bayesian inference
+\layout Standard
+\added_space_top medskip \added_space_bottom medskip \align center 
+
+\begin_inset Formula $p(NN_{\mu},NN_{\Sigma},NN_{R}|data)\sim p(data|NN_{\mu},NN_{\Sigma},NN_{R})*p(NN_{\mu},NN_{\Sigma},NN_{R})$
+\end_inset 
+
+.
+\layout Standard
+
+Which can be also written in a form
+\layout Standard
+\added_space_top medskip \added_space_bottom medskip \align center 
+
+\begin_inset Formula $p(space|data)\sim p(data|space)*p(space)$
+\end_inset 
+
+
+\layout Standard
+
+if parameters of space and the space itself are X.
+ When calculating the probability for data i.i.d.
+ (identically and independently distributed) assumption is NOT used.
+ Instead, the measurements 
+\begin_inset Formula $\{(x_{i},c_{i})\}$
+\end_inset 
+
+ are related through the location coordinates 
+\begin_inset Formula $c$
+\end_inset 
+
+.
+ [THIS IS PROBABILITY THAT ALL MEASUREMENTS ARE SEEN AT SAME TIME, IF THEY
+ HAVE HAPPENED AT DIFFERENTS TIMES (OCCASIONS) THEN ONE SHOULD USE SEPARATED
+ DISTRIBUTIONS]
+\layout Standard
+\added_space_top medskip \added_space_bottom medskip \align center 
+
+\begin_inset Formula $p(data|space)\sim N(\left[\begin{array}{c}
+\mu(c_{1})\\
+..\\
+\mu(c_{N})\end{array}\right],\left[\begin{array}{ccc}
+\Sigma(c_{1}) & R_{xy}(c_{i},c_{j}) & R_{xy}(c_{1},c_{N})\\
+R_{xy}(c_{i},c_{1}) & ... & R_{xy}(c_{i},c_{N})\\
+R_{xy}(c_{N},c_{1}) & R_{xy}(c_{N},c_{j}) & \Sigma(c_{N})\end{array}\right])$
+\end_inset 
+
+
+\layout Standard
+
+This means probability of data is calculated as a one big giant computation.
+ This scales 
+\begin_inset Formula $O(n^{2})$
+\end_inset 
+
+ when the number of data points increase so for large data sets probability
+ of data must be calculated in a smaller chunks.
+ Interestingly, location parameter 
+\begin_inset Formula $c$
+\end_inset 
+
+ can also represent time so that constantly changing, non-stationary variables
+ could be also estimated by this approach (see also my other paper where
+ I discuss use of bayesian inference in non-stationary settings).
+\layout Section
+
+Notes
+\layout Itemize
+
+maybe (some variant of) SOM could be used to calculate low-dimensional 'non-info
+rmative' location parameters from pure data alone
+\layout Itemize
+
+
+\begin_inset Formula $p(data|field)$
+\end_inset 
+
+ is only used to calculate probability and because 
+\begin_inset Formula $|\Sigma_{data}|$
+\end_inset 
+
+ scaling term from normal distribution can be ignored it calculation of
+ probability could be improved by calculating 
+\begin_inset Formula $||data-\mu_{data}||_{\Sigma_{data}}$
+\end_inset 
+
+ without actually forming 
+\begin_inset Formula $\Sigma_{data}$
+\end_inset 
+
+ matrix.
+\layout Itemize
+
+normal distribution assumption could be maybe worked around by using 'mixture
+ of normal distribution fields' instead of trying to use mixture of gaussians
+ within normal distribution field
+\layout Itemize
+
+above requires well working and efficient bayesian neural network implementation
+ which I don't have (yet).
+\layout Itemize
+
+above formulation has a nice property that number of dimensions in different
+ locations 
+\begin_inset Formula $c$
+\end_inset 
+
+ don't have to be same (but then different neural networks must be used
+ for different number of dimensions or number of outputs must be maximum
+ number of dimensions and in lower dimensional cases higher dimensions are
+ ignored).
+\layout Itemize
+
+Constructing good priors for learning is crucial and important task in order
+ to get good results.
+ This must be studied when SND has been implemented.
+\layout Subsection
+
+Applications
+\layout Enumerate
+
+Estimating the correct value anywhere in continous space from few measurements
+\newline 
+This is direct application of SND.
+ Use of neural networks for 
+\begin_inset Formula $R_{xy}$
+\end_inset 
+
+ has a weak structural assumption (quite 'strongly' continuos function)
+ that input values close to each other are likely to be related to each
+ other (this can be seen to be weakness of SND method).
+ Some problems where this assumption may hold are:
+\newline 
+- estimate height/elevation, temperature, earthquake power, sound power,
+ radiation, photography picture from small number of inputs with 
+\emph on 
+rather simple priors
+\emph default 
+ ((non-normal) priors specially crafted for particular tasks would be better)
+\layout Enumerate
+
+
+\series bold 
+Machine Learning
+\series default 
+
+\newline 
+Let 
+\begin_inset Formula $c$
+\end_inset 
+
+ code for input and 
+\begin_inset Formula $x$
+\end_inset 
+
+ is the correct response for 
+\series bold 
+
+\begin_inset Formula $c$
+\end_inset 
+
+
+\series default 
+.
+ It is assumed there's clearly only single right output so one gaussian
+ is enough for modelling output.
+ Then 
+\begin_inset Formula $R_{xy}$
+\end_inset 
+
+ describes relatedness of outputs when inputs are close 
+\begin_inset Formula $(||c_{x}-c_{y}||<small)$
+\end_inset 
+
+.
+ Initial prior could try to assume that inputs close to each other are related.
+ This way system can give some kind of reasonable guess about the correct
+ output.
+ This isn't necessarily the best possible prior.
+ System cannot even know if it can infere the correct output from already
+ seen data and being wrongly overconfident about the correct output can
+ hurt the performance of a whole system.
+ Only when 
+\begin_inset Formula $R_{xy}$
+\end_inset 
+
+ is known well enough system can know if it is possible to interpolate outputs
+ based on similar inputs.
+ Mixture models could be used to handle cases when there are multiple correct
+ outputs.
+\newline 
+
+\newline 
+This model would fix problems commonly found in machine learning systems.
+\newline 
+1) System assume single correct output and minimize MSE or similar error
+ 
+\newline 
+2) System has static, homogenius assumption about how inputs close to each
+ other are related in output space.
+\newline 
+3) (related to 2) System can be seen to do automatic, integrated clustering
+ during a learning process.
+ This implicit clustering works similarly to SOM (TODO: find&write down
+ notes how SND can be used to compute (bayesian, continuous) SOM) .
+ 
+\newline 
+4) System doesn't use bayesian methods to infer information theoretically
+ optimally information from samples to parameters.
+\newline 
+
+\newline 
+This model doesn't fix following problems
+\newline 
+1) Learn what is correct way to handle multiple right inputs dilemma (based
+ on utility).
+ Some possiblities are: mean, maximum likelihood, don't know correct output,
+ samples output according to output distribution.
+\newline 
+2) System assumes that the correct parameters don't change as a function
+ of time.
+\newline 
+3) System should try to minimize its resource usage so that the performance
+ of a system does only suffer little but problems which the system can handle
+ are much bigger than a system which hasn't optimized work with this particular
+ task.
+ These optimizations can include clustering such similar inputs/outputs
+ together which are more or less same for this particular task (form concepts
+ useful for the particular task).
+\newline 
+4) System doesn't optimize learning globally in a sense described next.
+ System cannot exchange information between other learning systems and cannot
+ use prior information they have already learnt from data when learning
+ similar problems to improve its own learning.
+ The task of quickly learning which prior information is correct for this
+ problem and transforming the correct pieces of information from the other
+ systems to this system hasn't been studied at all (AFAIK).
+ I have described a few possible and concrete solution approaches (although
+ not very satisfying ones) for implementing this idea in my notes.
+\newline 
+
+\newline 
+The 4) could be maybe fixed by treating statistics of data and (distribution)
+ parameters of single problem as features of solution information in parameters.
+ The (nonlinear) UCA-
+\emph on 
+like
+\emph default 
+ distribution mapping should be modified to map only related information
+ between input and outputs.
+ The modified UCA-
+\emph on 
+like
+\emph default 
+ distribution mapping should base it's mapping on features of input and
+ output problems 
+\begin_inset Formula $\mathbf{f}_{1}$
+\end_inset 
+
+ and 
+\begin_inset Formula $\mathbf{f}_{2}$
+\end_inset 
+
+.
+\newline 
+Another solution could calculate smartly feature vectors from problems (data
+ and/or parameters) and use the basic SND to implicitely transform related
+ information from previous problems to new ones.
+\layout Enumerate
+
+Trying to predict dangerous pairs of medicines.
+ Code each medicine with a feature vector 
+\begin_inset Formula $v_{1}$
+\end_inset 
+
+.
+ Then input to system is 
+\begin_inset Formula $[v_{1}v_{2}]$
+\end_inset 
+
+ and output is one if medicine pair causes problems and zero if it doesn't.
+ Values between zero and one indicate some problems.
+ Variance 
+\begin_inset Formula $R_{x}$
+\end_inset 
+
+ is simply sample variance of outcomes.
+ Prior 
+\begin_inset Formula $R_{xy}$
+\end_inset 
+
+ can be calculated for example by using normal RBF from the examples.
+ Prior mean could be probability of having problems with two randomly selected
+ medicines and variance can be set to some high value with untested pairs
+ of medicines and to a known value with tested pairs.
+\newline 
+This can also work with when outputs are vectors describing multiple undesired
+ effects caused by a pair of medicines.
+ The correlations must be properly set for a prior
+\begin_inset Formula $R_{x}$
+\end_inset 
+
+ matrix.
+ Outcomes could be: death, blood pressure, heart disorders etc.
+ and should be designed with a doctor who knows informative outcomes which
+ fit well into model's assumptions.
+\newline 
+This can be extended to triples or more combinations by using a appriate
+ coding for medicines where a zero vector can code no medicine.
+ This also increases input size linearly.
+ This isn't problem because number of medicines isn't very big.
+\newline 
+Method should fit well to this problem because it models interdependencies
+ between medicines and automatically and implicitely clusters related medicines
+ to behave similarly.
+\newline 
+TODO: try to get some test data (probably publicly available somewhere)
+\layout Enumerate
+
+Word/Language modelling.
+ Let 
+\begin_inset Formula $c_{i}=i$
+\end_inset 
+
+ index to i:th character in a word.
+\the_end

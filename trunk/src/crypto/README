@@ -1,0 +1,27 @@
+
+Cryptographic implementations:
+
+[DES.h]: DES, triple DES
+[AES.h]: AES-128, AES-192, AES-256
+[PAD.h]: one time PAD
+[SHA.h|: SHA-1, SHA-256, SHA-358, SHA-512
+[RSA.h]: RSA
+[DSA.h]: DSA
+
+
+---------------------------------------------
+
+ Current implementations are enough for own
+use in the near future.
+
+
+
+ Symmetric key based 'signing': can be implemented
+by crypting data with AES and when one gets data
+back decrypting it (and keeping the key secret).
+
+This is useful for the cases where you have (game)
+server which saves data/state on the (player/)users
+machine but don't want to make user to be able to change it.
+
+

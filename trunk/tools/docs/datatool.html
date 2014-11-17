@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>dstool documentation</title>
+  </head>
+
+  <body>
+    <h1>dstool</h1>
+    <h3>A tool for manipulating whiteice::dataset (.ds) files</h3>
+    <hr>
+    
+    <h3>Dataset files</h3>
+    <p>
+      Whiteice::dataset files are binary format files for saving vector valued
+      real data in floatig point precision format (IEEE 16bit floats). Vectors
+      in dataset belong to different clusters with unique
+      identifier names. All vectors in same cluster must have same 
+      number of dimensions. 
+    </p>
+    <p>
+      Dataset files are the primary format of 
+      information storage for whiteice machine learning tools. Recommended
+      filename suffix for whiteice::dataset files is <i>".ds"</i>.
+    </p>
+    <p>
+      In addition of storing data, files may contain meta information about data.
+      This information is usually invisible to user. However, they are important
+      for various learning algorithms and they may affect the way dataset files 
+      are stored to disk. For example, with PCA preprocessing dataset files
+      also save mean and covariance matrix of data while the data itself
+      is stored to disk by storing PCA processed whitened vectors.
+      Machine learning algorithms also use these processed vectors
+      instead of original ones.
+    </p>
+    <p>
+      Therefore, when using low-level command line
+      interfaces, user must also remember to active wanted preprocessing
+      methods by himself/herself and remember to preprocess new data
+      with preprocessing methods which were active when machine learning
+      system were taught.
+    </p>
+    
+    <h3>Dstool</h3>
+    <p>
+      With <b>dstool</b> command line tool you can manipulate dataset
+      files in anyway. You can
+    <ul>
+      <li>create new dataset files</li>
+      <li>create and destroy clusters</li>
+      <li>list generic information about clusters</li>
+      <li>print contents of clusters</li>
+      <li>move data between clusters</li>
+      <li>import data to a cluster from ascii files</li>
+      <li>import data to a cluster from a another dataset file</li>
+      <li>export data from a cluster to a ascii file</li>
+      <li>add and remove preprocessing methods</li>
+    </ul>
+    
+    So what you cannot do?<br/>
+    Well, you cannot delete dataset files (use rm), rename clusters or 
+    display preprocessing methods data. Adding these features would be
+    rather simple and it is likely that they will be added in the future.
+  </p>
+    
+    <h3>Command line syntax</h3>
+    <p>
+      Command line syntax of <b>dstool</b> is<br>
+      <br>
+    <table>
+	<tr><td colspan="2"><code>
+	      <b>dstool</b> &lt;command&gt; &lt;datasetfile&gt; [asciifile | datafile]
+	      <br>
+	    </code></td></tr><tr><td colspan="2"><code>
+	      Where the &lt;command&gt; is one of these
+	      <br><br>
+	    </code></td></tr><tr><td><code>
+	      -list
+	    </code></td><td><code>
+	      lists clusters, number datapoints, preprocessings.(default action)
+	    </code></td></tr><tr><td><code>
+	      -print[:&lt;c1&gt;[:&lt;b&gt;[:&lt;e&gt;]]]
+	    </code></td><td><code>
+	      prints contents of cluster c1 (indexes [&lt;b&gt;,&lt;e&gt;])
+	    </code></td></tr><tr><td><code>
+	      -create
+	    </code></td><td><code>
+	      creates new empty dataset (&lt;dataset> file doesn't exists)
+	    </code></td></tr><tr><td><code>
+	      -create:&lt;dim&gt;[:name]
+	    </code></td><td><code>
+	      creates new empty &lt;dim> dimensional dataset cluster
+	    </code></td></tr><tr><td><code>
+	      -import:&lt;c1&gt;
+	    </code></td><td><code>
+	      imports data from ascii file to cluster c1
+	    </code></td></tr><tr><td><code>
+	      -export:&lt;c1&gt;
+	    </code></td><td><code>
+	      exports data from cluster c1 to ascii file
+	    </code></td></tr><tr><td><code>
+	      -add:&lt;c1&gt;:&lt;c2&gt;
+	    </code></td><td><code>
+	      adds data from another datafile cluster c2 to c1
+	    </code></td></tr><tr><td><code>
+	      -move:&lt;c1&gt;:&lt;c2&gt;
+	    </code></td><td><code>
+	      moves data (internally) from cluster c2 to c1
+	    </code></td></tr><tr><td><code>
+	      -copy:&lt;c1&gt;:&lt;c2&gt;
+	    </code></td><td><code>
+	      copies data (internally) from cluster c2 to c1
+	    </code></td></tr><tr><td><code>
+	      -clear:&lt;c1&gt;
+	    </code></td><td><code>
+	      clears dataset cluster c1 (but doesn't remove cluster)
+	    </code></td></tr><tr><td><code>
+	      -remove:&lt;c1&gt;
+	    </code></td><td><code>
+	      removes dataset cluster c1
+	    </code></td></tr><tr><td><code>
+	      -padd:&lt;c1&gt;:&lt;name&gt;+
+	    </code></td><td><code>
+	      adds preprocessing(s) to cluster
+	    </code></td></tr><tr><td><code>
+	      -premove:&lt;c1&gt;:&lt;name&gt;+
+	    </code></td><td><code>
+	      removes preprocesing(s) from cluster
+	    </code></td></tr>
+    </table>
+  </p>
+    <p>
+      The commands and what they do should be easy to understand. The ASCII file format used 
+      to import and export data is very straightforward.<br>
+      It consists of lines which each have D white space separated decimal point representations 
+      (no exponents) of real numbers. The D is cluster's number of dimensions and each line must
+      have equal number of numbers on it. Here is an example of such ASCII format file:
+    </p>
+    <pre>
+	429.2902 3.13190 942.2424 +424.1 -223.1 -0.0001<br>
+	892.2    1       8.42     21      7     7.7482 <br>
+	  3.14124242414 2 6.75    -2      2     543    
+    </pre>
+    <p>
+      where whitespaces were added to make example more clear as well as to demonstrate
+      that there can be any number of whitespaces between numbers. Number of numbers on each
+      line must be same as it is in the example.
+    </p>
+    
+    
+    <h4>Command line examples</h4>
+    <p>
+      This paragraph contains examples which show how to use use <b>dstool</b> to do various tasks.<br>
+      <br>
+    <table width="100%">
+	<tr>
+	  <td>
+	    1. Create new dataset file with a new cluster.
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    2. List contents of the created dataset file
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    3. Import data from ASCII file
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    4. Add new cluster and move half of the data to it
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    5. Add PCA preprocessing to a cluster
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    6. Move contents of cluster to a new dataset file.
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>
+	    7. Remove cluster from a dataset file
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    
+	  </td>
+	</tr>
+	
+    </table>
+      
+    </p>
+    
+    <br>
+    <br>
+    <br>
+    <hr>
+    <address><a href="mailto:cutesolar@orthanc.nop.iki.fi"></a></address>
+<!-- Created: Tue Sep 13 19:14:46 EEST 2005 -->
+<!-- hhmts start -->
+Last modified: Thu Sep 15 07:14:13 EEST 2005
+<!-- hhmts end -->
+  </body>
+</html>

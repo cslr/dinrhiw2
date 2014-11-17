@@ -1,0 +1,38 @@
+
+HD based neuralnetwork design notes
+
+harddisk based large scale neural network
+
+- use memory mapping mmap(), use floats (32bit)
+- everything is connected to everywhere
+
+- N nodes, N^2 interconnections (N vertex, NxN matrix)
+- model with normal distribution: -> covariance matrix = N^4
+- N = 100 ~  K*500 MB , NN weights: < 1 MB
+- N = 250 ~  K* 16 GB ,  NN weights: < 1 MB
+- N = 500 ~  K*240 GB , NN weights: 1.0 MB
+- N = 710 ~  K*1000 GB , NN weights: 2.0 MB
+- N = 1000 would be ~ K*3700 GB , NN weights: 4 MB
+
+  (learning is N^4, operation is N^2)
+
+- better approach would use mixture of gaussians model for weights
+  but K gaussians model increases memory usage in learning phase
+  by factor K, for K = 4, N = 100 ~ 2 GB (still ok)
+
+- reread boltzman machine, icing models and related material
+
+- NN is recurrent but set prior covariance and mean to assume
+  layered structure 
+  (N=100 is enough for 10-10-70-10 NN)
+  (N=500 is enough for 50-200-200-50 NN)
+  (N=1000 is enough for 100-400-400-100 NN)
+
+- use bayesian inference to infer posterior
+- because inference is slow in large scale use optimization
+  methods to find good initial weights (some overlearning)
+
+- stochastic neurons must be used so that that emergence of
+  layered structure is possible (not all neurons fire when
+  they get some input)
+

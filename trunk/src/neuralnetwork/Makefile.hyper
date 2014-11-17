@@ -1,0 +1,26 @@
+
+CXX= g++
+OBJECTS= hypervolume.o hypemain.o
+
+# hypercircle.o
+# gaussian.o function.o 
+
+
+TARGET= testsuite_hype
+CXXFLAGS= -Wall -g -I.
+LIBS=
+
+
+##################################################
+
+all: $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
+
+clean:
+	$(RM) $(OBJECTS)
+	$(RM) $(TARGET)
+	$(RM) *~
+
+
+##################################################
+

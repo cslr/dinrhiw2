@@ -1,0 +1,14 @@
+
+This file lists dependencies (tools, libraries) which algos library needs.
+
+============================================================================
+
+Basic linking etc. unix tools	?			?
+
+GNU GCC				>= 3.3.? (i386)		http://gcc.gnu.org
+				>= 3.4.0 (amd64)	
+GNU Autoconf & Autoheader
+GNU Make			
+ATLAS Linear Algebra Library	?			http://math-atlas.sourceforge.net
+
+(lib) GMP (integer number library)

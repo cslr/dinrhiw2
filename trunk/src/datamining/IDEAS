@@ -1,0 +1,25 @@
+
+Possible uses
+
+ASSOCIATION RULE FINDER
+  (music: tracker data, equal tempo, NOMONEY
+   64 lines*(1+12) notes/line -> 832 variables (1 note is for empty positions)
+   64 lines*(1+7) notes (detect scale) -> 512 variables
+   32 lines*(1+7) notes (detect scale) -> 256 variables
+   8  lines*13 -> 104 variables
+   -> most of often used melodies/some rules for making good(?) melodies
+   
+   sample data randomly in different starting positions)
+   
+   
+   occurancies of words in context of certain words
+   (words -> other words, in interval I) -> candidates
+   for finding useful n-tuples with skips when n is large
+   (most of the n-tuples when n=big are very rare)
+
+   
+   find simple weak signals from stock markets
+   (datamine prices+other economic data up/down rules and find rules where
+    ((freq = low, confidence = high) = weak signal (especially good if freq is rising)))
+
+   

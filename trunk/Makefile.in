@@ -1,0 +1,113 @@
+# GNU Make makefile for dinrhiw
+# (C) Copyright Tomas Ukkonen 
+##################################################
+
+MAKE = make
+MKDIR = mkdir -p
+AR = ar
+CD = cd
+RM = rm -f
+MV = mv
+CP = cp
+
+CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/dinrhiw
+
+LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o
+LIBNAME = libdinrhiw.a
+
+############################################################
+
+all: check_conf_changes make_objects makelib
+
+make_objects:
+	$(CD) src && $(MAKE) all
+	$(CD) src/math && $(MAKE) all
+	$(CD) src/crypto && $(MAKE) all
+	$(CD) src/neuralnetwork && $(MAKE) all
+
+clean: 
+	$(CD) src && $(MAKE) clean
+	$(CD) src/math && $(MAKE) clean
+	$(CD) src/crypto && $(MAKE) clean
+	$(CD) src/neuralnetwork && $(MAKE) clean
+	$(RM) *~
+
+realclean: clean removelib
+	$(CD) src && $(MAKE) realclean
+	$(CD) src/math && $(MAKE) realclean
+	$(CD) src/crypto && $(MAKE) realclean
+	$(CD) src/neuralnetwork && $(MAKE) realclean
+	$(RM) dinrhiw.pc
+	$(RM) Makefile # .. suicide, can be done?
+	$(RM) src/Makefile src/math/Makefile src/crypto/Makefile
+	$(RM) src/neuralnetwork/Makefile	
+	$(RM) config.log
+	$(RM) config.status
+	$(RM) -rf autom4te.cache
+	$(RM) cputest
+	$(RM) gmp
+	$(RM) zlibtest
+	$(RM) configure
+
+############################################################
+
+makelib:
+	$(RM) *.a
+	$(AR) rc $(LIBNAME) $(LIBOBJECTS)
+	$(MV) $(LIBNAME) lib
+	$(CP) src/*.h lib/
+	$(CP) src/math/*.h lib/
+	$(CP) src/crypto/*.h lib/
+	$(CP) src/neuralnetwork/*.h lib/
+	$(CP) config.h lib/
+	chmod a+x ./copy_cpp_templates.sh
+	./copy_cpp_templates.sh
+	chmod a+r lib/*
+	chmod a+r *
+
+
+removelib:
+	$(CD) lib && $(RM) */.h
+	$(CD) lib && $(RM) */.c
+	$(CD) lib && $(RM) */.cpp
+	$(CD) lib && $(RM) */.a
+	chmod a+r lib/*
+
+############################################################
+
+install:
+	$(MKDIR) @includedir@/dinrhiw
+	$(CP) lib/*.h @includedir@/dinrhiw
+	$(CP) lib/*.cpp @includedir@/dinrhiw
+	$(CP) lib/libdinrhiw.a @libdir@/libdinrhiw.a
+	$(MKDIR) @libdir@/pkgconfig/
+	$(CP) dinrhiw.pc @libdir@/pkgconfig/dinrhiw.pc
+
+uninstall:
+	$(RM) -rf @includedir@/dinrhiw
+	$(RM) @libdir@/libdinrhiw.a
+	$(RM) @libdir@/pkgconfig/dinrhiw.pc
+
+############################################################
+# some support for automatic reconfiguration
+# when autoconf files change
+
+check_conf_changes: ./configure Makefile config.status
+
+./configure: configure.ac # aclocal.m4
+	autoconf
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+############################################################
+

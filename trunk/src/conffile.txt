@@ -1,0 +1,114 @@
+
+whiteice::conffile class documentation
+
+Class implements configuration file class. Variables
+can be read and written and can contain list of variables.
+
+Floating point variables must be finite. Conffile doesn't
+recognize "nan" or "inf" values and fails with variables
+which contains those values. When saving non-finite values
+conffile converts improper values to zero.
+
+================================================================================
+conffile::conffile()
+
+Creates empty configuration file.
+
+
+================================================================================
+conffile::conffile(const std::string& file) throw();
+
+Loads configuration from the given file. If file is not found it empty
+configuration class will be created. If there's error when loading configuration
+file empty configuration class will be created.
+
+================================================================================
+conffile::~conffile() throw();
+
+Destructor of the configuration file class.
+
+
+// loads and/or saves settigns to file
+================================================================================
+bool conffile::load(const std::string& file) throw();
+
+Clears current configuration file data and  tries to load data
+from the file as much as possible. Returns true if there was
+no I/O error when file was read. There may have been parse
+errors.
+
+
+================================================================================
+bool conffile::save(const std::string& file) throw();
+
+Tries to save configuration data to a file. Returns true
+if there was no errors. Returns false if there was I/O errors.
+
+
+
+================================================================================
+bool conffile::exists(const std::string& name) const throw();
+
+Returns true if variable with given name exists.
+
+
+// removes named variable
+================================================================================
+bool conffile::remove(const std::string& name) throw();
+
+Removes variable with given name. If remove returns false
+variable with given name won't be removed.
+
+
+================================================================================
+bool conffile::clear() throw();
+
+Clears all the variables. If clear returns false variables
+are in undefined state.
+
+================================================================================
+bool conffile::get(const std::string& name, std::vector<int>& value) throw();
+
+Tries to get integer list with the given name. Returns true if
+get() was succesful and false if vector reference hasn't been set correctly.
+
+================================================================================
+bool conffile::get(const std::string& name, std::vector<float>& value) throw();
+
+Tries to get float list with the given name. Returns true if get() was
+successful and false if vector reference hasn't been set correctly.
+
+================================================================================
+bool conffile::get(const std::string& name, std::vector<std::string>& value) throw();
+
+Tries to get string list with the given name. Returns true if get() was
+successful and false if vector reference hasn't been correctly set up.
+
+================================================================================
+bool conffile::set(const std::string& name, const std::vector<int>& value) throw();
+
+Tries to set integer list with the given name. Returns true if values from the
+given name has been successfully linked with the given name. Returns false
+otherwise.
+
+Variable names must be constructed from the alphanumeric names + '_' only. Trying to
+create variable names with non-alphanumeric letters (except '_') will fail without any effect.
+
+Resetting integer vector with the same name is possible, but attempting to
+overwrite another type of vector with a same name with set() returns false.
+
+================================================================================
+bool conffile::set(const std::string& name, const std::vector<float>& value) throw();
+
+Tries to set float vector value. See set(string name, vector<int>& value).
+
+================================================================================
+bool conffile::set(const std::string& name, const std::vector<std::string>& value) throw();
+
+Tries to set string vector value. See set(string name, vector<int>& value).
+
+String values cannot have non-printable characters (especially no '\n' character),
+ls if any value of the string vector is non-printable character then set()
+returns false and variable haven't been created.
+
+        
