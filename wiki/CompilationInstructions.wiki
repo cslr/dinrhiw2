@@ -1,6 +1,6 @@
 The library can be tricky to get working. Here are basic instructions.
 
-  # Get the code from the repository.
+  # Get the code from the repository: HowToCheckoutSourceCode
   # use build.sh to build configure script and other things
   # Configure script fails if you don't have necessarily (few general) support libraries installed. Install development libraries and you are ok. (libz-dev, libgmp-dev, blas and *pkg-config*). I guess you can get these from prepackaged debs or rpms.
 
