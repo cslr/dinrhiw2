@@ -37,7 +37,7 @@ tools/nntool
 tools/dstool
 
 
-are the primary classes and tools to look at and use.
+are the primary classes and tools to look at and use. Also read HowToLearnFromData page.
 
 == TODO ==
 
