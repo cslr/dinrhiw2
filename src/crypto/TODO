@@ -1,0 +1,56 @@
+==================================================
+IMPLEMENT (IN ORDER OF IMPORTANCE):
+
+BUGFIX:
+ - use memory locking for the cryptographically sensitive data!
+   so secrets don't get swapped into disk
+
+SAVING VALUES TO A DISK: use l64a() / a64l() functions
+
+PRNG
+ fast & secure random number/bits source
+ (in linux use '/dev/urandom' when available)
+ replace random_bit() etc. random number generation with this code
+
+modes of (encrypting) operation
+ especially new efficient CNTR mode
+ implement + test
+
+ICE (interesting idea, see ideas/ICE.tm)
+ write theory/design document
+   especially I need to find out good way to
+   generate integer/galois-field ICA
+ 
+ implement
+
+DSA
+ test signing with other implementations
+ optimize
+ extend into DSA-256, DSA-384, DSA-512
+
+HMAC
+ implement + test
+
+=================================================
+
+dynamic_bitset
+ test cyclic shifting
+ test '+' operator
+
+DES
+ test with a reference implementation
+ slow, optimize if needed (probably not (not used))
+
+DataConversion + related:
+ test
+
+==================================================
+IF HAVE TIME
+
+- generic galois field code
+- generic integer elliptic curves field code
+- rodulus-1 field code (needs some theoretic work still)
+
+- elliptic curve based public key algorithms (ElGamal) 
+  + signature schemes
+ 

@@ -1,0 +1,30 @@
+
+	Sat Dec 18 17:07:38 EET 2004 Tomas Ukkonen <tomas.ukkonen@iki.fi>
+	LOTS of changes. Moved to whiteice namespace. Lots of new code
+	has been coded between the last log entry (changelog hasn't been used)
+	Code currently has:
+	basic data structures, basic (still non-optimized) cryptographic code
+	(add modes of operation and AES is fully implemented),
+	basic mathematical, linear algebra code, simple curve fitting,
+	some optimization code: global optimization (stochastic search),
+	BFGS (aprox 2nd order Hessian descent) optimizer,
+	particle swarm optimizer (PSO), linear programming (optimization) solver,
+	symmetric eigenvalue solvers, PCA, ICA, 
+	neural networks: backpropagation and PSO (BGFS ahould be added),
+	(bayesian neural networks and causal bayesian networks are
+	 to be implemented in dinrhiw library), SOM.
+
+	TODO (not to be implemented soon): SVM, bayesian neural network
+	GDA clustering (dinrhiw or algos), simple polynomial and 
+	bayesian neural network SND, 
+	
+	
+	
+	Sun Mar 30 21:08:26 EEST 2003	Tomas Ukkonen <tomas.ukkonen@hut.fi>
+	I started to use "cis_algos" namespace. (generically: main directory based namespaces)
+	I'll make changes to whole cis_algos directory gradually.
+	Global namespace will be "whiteice".
+	So whiteice::cis_algos , whiteice::dlib_global , whiteice::cndi , 
+	   whiteice::ai  etc. will be used.
+	
+	

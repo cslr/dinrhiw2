@@ -1,0 +1,76 @@
+WHAT DINRHIW2 IS?
+-----------------
+
+Primary aim of the dinrhiw is to be linear algebra library and machine 
+learning library. For this reason dinrhiw implements PCA and neural
+network codes. Currently, the neural network code only supports hamiltonian
+monte carlo sampling (HMC) and gradient descent.
+
+BUILDING IT
+-----------
+
+To build and install library execute
+
+
+./build.sh
+make install
+
+
+commands at the top level.
+
+
+For the working examples how to use dinrhiw look at the tools directory
+below the root dictory.
+
+Building it (tst after installing the library) creates three programs:
+
+aescipher - shows how to use AES encryption module.
+dstool and nntool - dataset management and neural network weight learning.
+
+So the keyfiles to read for the (neural network) documentation are
+
+tools/nntool.cpp
+src/dataset.h
+src/neuralnetwork/nnetwork.h
+
+Expecially the latter one shows how to use nnetwork<> class properly to 
+learn from the data. Note that it only accepts aprox. [-1,1] valued data
+as a default so proper preprocessing of the data using dataset class can
+be very important in order to keep data within the correct range 
+(+ PCA preprocessing can make the learning from the data exponentially 
+   faster in some cases).
+
+IMPORTANT: There is also (alternative) neural network implementation
+           in neuralnetwork.h and related files that DO NOT work.
+
+	   However, I plan to make it work and write conversion code
+	   to change representation of the network between
+	   neuralnetwork <-> nnetwork classes so that you can
+	   convert low level (but fast) implementation of nnetwork
+	   into higher level representation of the network that
+	   is often more easy to understand.
+
+	   This is maybe needed when you want to write special
+	   bayesian priors for different neural network layers and
+	   convert multilayer restricted boltzman machine (RBM) to
+	   initial neural network weights.
+	   
+
+Additionally, there are 
+
+tools/test_data.sh
+tools/test_data2.sh
+tools/test_data3.sh
+tools/test_data3_bayes.sh    (SLOW but here bayesian method gives
+			      BETTER (bad) result than
+			      gradient descent algorithms)
+
+scripts that shows how the learning and data prediction from example data 
+works in practice using dstool and nntool commands.
+
+ADDITIONAL NOTES
+----------------
+
+The library contains needless implementation of various algorithms
+that DO NOT belong to this library. They will be removed slowly
+before 1.0 release. (cleanup the code)

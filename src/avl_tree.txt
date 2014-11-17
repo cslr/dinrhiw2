@@ -1,0 +1,120 @@
+
+ avltree.h implements variation of avl tree,
+ called "height"-tree here. It keeps of track of number of
+ nodes in all subtrees. It supports O(log n) Nth item search
+ from ordered list.
+ 
+way to test if nodes has equal height fast:
+   
+   C = A + B + 1
+  / \
+ A   B
+
+Height of the *binary* subtree can be calculated from
+the binary representation by finding highest bit which is on.
+
+bin    dec
+0001 = 1  , height = 1
+001x = 2-3, height = 2
+01xx = 4-7, height = 3    etc.
+
+So
+
+ hbit(A) = A's highest on bit
+ hbit(B) = B's highest on bit
+ 
+ A & B      -- has highest COMMON bit R on,
+               all bits above R are off.
+               hbit(A) >= R
+               hbit(B) >= R
+
+ A & neg(B) -- highest common bit called S is on.
+               R is off.
+               hbit(B) is off.
+               hbit(A) is on  IF hbit(A) > hbit(B) >= R 
+	                         (<=> with A > B)
+                       is off if hbit(B) == hbit(A)
+                       otherwise hbit(A) can be on OR off.
+               all bits above or equal max(hbit(A), hbit(B)) are off.
+
+
+from above it follows:
+-----------
+               IF
+                 R = hbit(A) = hbit(B) [hbit(A) = hbit(B)]
+                 then
+                   A & neg(B) < A & B
+                   (because hbit(A) = hbit(B) = off and all above too)
+                AND
+                   neg(A) & B < A & B
+ 
+               OTHERWISE either hbit(A) > hbit(B) or other way around
+               
+               IF hbit(A) > hbit(B) then
+                 hbit(A) in A & neg(B) is on. AND IS NOT IN A & B ->
+                   A & neg(B) > A & B
+                 otherwise hbit(A) < hbit(B) bigness cannot be
+                 known.
+              
+              IF hbit(B) > hbit(A) then
+                   neg(A) & B > A & B
+
+              equality is not possible unless either B or A
+              is zero (or both). ( A & neg(B) or A & B have always
+              different bits on (possible bits on = bits which are on in B or
+              bits which are not on in B).
+
+
+FROM ABOVE  it is proofed: 
+a => b  & neg(a) => neg(b) <==>  b => a
+
+therefore
+
+a <=> b   where a = "hbit(A) == hbit(B)" , b = "A & neg(B) > A & B"
+                (hbit(A) < hbit(B) is not possible) [*]
+
+[*] IS CORRECT:
+if it's initially tested that A >= B and it it doesn't hold then
+A and B are swapped.
+
+
+Final algorithm for testing that subtrees with A and B have equal height.
+
+if(A < B) swap(A,B); // for duration of this test
+
+if(A & neg(B) <= A & B)
+   has_equal_height;
+else
+   height_is_not_equal;
+endif
+
+-------------
+fast way to calculate height difference
+speed: O(delta_height) < O(log n)
+
+height = 0;
+
+if(A < B) swap(A,B)
+// A > B from now on.
+
+while(heights_are_equal(A,B) == false){
+   height++; 
+   B = (B<<1) + 1; // increase smaller subtrees height artificially
+}
+
+return height;
+
+}
+
+
+in avl-tree variation ("height"-tree) difference
+is max 2. => O(2) = O(1). and only bit arithmetic is
+needed. (instead of log(A) logarithm which is slow)
+
+
+
+
+
+
+
+

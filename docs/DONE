@@ -1,0 +1,17 @@
+
+	plot2d, plot3d			OK
+	dynamic&static array		OK
+	queue and stack			70%, not tested
+	binary search tree		70%, not tested
+	primarity_test			70%, not tested
+	hashtable			10%, designed:
+	
+- universal hashing, chose m with help of primarity tests
+  set range / key space or adapt to it
+- keyspace only becomes bigger with time
+- use alpha, when alpha < n/m rehash system with new prime
+	m = 2*m,  next prime that can be found. alpha = 1.5 ?.
+- rehashing takes O(n) time
+- performance is O(1+alpha).
+  m:n haun päästä hyödytään ajallisesti rehashin jälkeen.
+

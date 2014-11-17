@@ -1,0 +1,2297 @@
+<html><head><title>Numerical algorithms II: elementary functions</title></head>
+<body bgcolor="#ffffff" link="#0000ff" vlink="#0000ff">
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">
+<a name="c5">
+
+</a>
+</font><h1>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Numerical algorithms II: elementary functions
+</font></h1>
+<p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> </font></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s1">
+
+</a>
+</font><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Powers
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers">
+
+</a>
+There are two computational tasks:
+to compute the power <b>x^n</b> where <b> n</b> is an integer (but <b> x</b> may be a real or a complex number),
+and compute <b> x^y</b> for arbitrary (real or complex) <b> x</b>, <b> y</b>.
+We assume that <b> x</b>, <b> y</b>, <b> n</b> are "big" numbers with <b> P</b> significant digits.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We also assume that the power is positive, or else we need to perform an additional division to obtain <b> x^(-y)=1/x^y</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b> x!=0</b> is known to a relative precision <b> epsilon</b>, then <b> x^y</b> has the relative precision <b> epsilon*y</b>.
+This means a loss of precision if <b> Abs(y)&gt;1</b> and an improvement of precision otherwise.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Integer powers
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers!by repeated squaring">
+
+</a>
+Integer powers <b> x^n</b> with integer <b> n</b> are computed by a fast algorithm of "repeated squaring".
+This algorithm is well known (see, for example,
+the famous book, <i>The art of computer programming</i> [Knuth 1973]).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+algorithm is based on the following trick: if <b> n</b> is even, say <b> n=2*k</b>, then
+<b> x^n=x^k^2</b>; and if <b> n</b> is odd, <b> n=2*k+1</b>, then <b> x^n=x*x^k^2</b>. Thus we can
+reduce the calculation of <b> x^n</b> to the calculation of <b> x^k</b> with <b> k&lt;=n/2</b>,
+using at most two long multiplications.
+This reduction is one step of the algorithm; at each step <b> n</b> is reduced to at most half.
+This algorithm stops when <b> n</b> becomes 1,
+which happens after <b> m</b> steps where <b> m</b> is the number of bits in <b> n</b>.
+So the total number of long multiplications is at most <b> 2*m=(2*Ln(n))/Ln(2)</b>.
+More precisely, it is equal to <b>m</b> plus the number of nonzero bits in the binary representation of <b> n</b>.
+On the average, we shall have <b> 3/2*Ln(n)/Ln(2)</b> long multiplications.
+The computational cost of the algorithm is therefore <b>O(M(P)*Ln(n))</b>.
+This should be compared with e.g. the cost of the best method for <b>Ln(x)</b> which is <b>O(P*M(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The outlined procedure is most easily implemented using recursive calls.
+The depth of recursion is of order <b>Ln(n)</b> and should be manageable for most real-life applications.
+The Yacas code would look like this:
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>10# power(_x,1)&lt;--x;
+20# power(_x,n_IsEven)&lt;-- power(x,n&gt;&gt;1)^2;
+30# power(_x,n_IsOdd)&lt;--x*power(x,n&gt;&gt;1)^2;
+</pre></td></tr>
+</tbody></table>
+The function <b><tt>power(m,n)</tt></b> calculates the result of <b>m^n</b> for <b> n&gt;0</b>, <b> m&gt;0</b>,
+integer <b> n</b> and integer <b> m</b>.
+The bit shifts and the check for an odd number are very fast operations if the internal representation of big numbers uses base <b> 2</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we wanted to avoid recursion with its overhead,
+we would have to obtain the bits of the number <b> n</b> in reverse order.
+This is possible but is somewhat cumbersome unless we store the bits in an array.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers!by repeated squaring!non-recursive">
+
+</a>
+It is easier to implement the non-recursive version of the squaring algorithm in a slightly different form.
+Suppose we obtain the bits <b> b[i]</b> of the number <b>n</b> in the usual order, so that <b> n=b[0]+2*b[1]+...+b[m]*2^m</b>.
+Then we can express the power <b> x^n</b> as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x^n=x^b[0]*x^2^b[1]*...*x^2^m^b[m].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In other words, we evaluate <b>x^2</b>, <b> x^4</b>, ... by repeated squaring, select those <b> x^2^k</b> for which the <b> k</b>-th bit <b> b[k]</b> of the number <b>n</b> is nonzero, and multiply all selected powers together.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the Yacas script form, the algorithm looks like this:
+
+
+</font></p><p>
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>power(x_IsPositiveInteger,n_IsPositiveInteger)&lt;--
+[
+  Local(result, p);
+  result:=1;
+  p := x;
+  While(n != 0)
+  [ // at step k, p = x^(2^k)
+    if (IsOdd(n))
+      result := result*p;
+    p := p*p;
+    n := n&gt;&gt;1;
+  ];
+  result;
+];
+</pre></td></tr>
+</tbody></table>
+
+
+</p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers!modular">
+
+</a>
+The same algorithm can be used to obtain a power of an integer modulo another integer, <b> Mod(x^n,M)</b>, if we replace the multiplication <b><tt>p*p</tt></b> by a modular multiplication, such as <b><tt>p:=Mod(p*p,M)</tt></b>.
+Since the remainder modulo <b>m</b> would be computed at each step, the results do not grow beyond <b> M</b>.
+This allows to efficiently compute even extremely large modular powers of integers.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="IntPowerNum@\relax &lt;B&gt;&lt;TT&gt;IntPowerNum&lt;/TT&gt;&lt;/B&gt;">
+
+</a>
+Matrix multiplication, or, more generally, multiplication in any given
+ring, can be substituted into the algorithm instead of the normal
+multiplication.
+The function <b><tt>IntPowerNum</tt></b> encapsulates the computation of the <b> n</b>-th power of an expression using the binary squaring algorithm.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers!by repeated squaring!improvements">
+
+</a>
+The squaring algorithm can be improved a little bit if we are willing to use recursion or to obtain the bits of <b> n</b> in the reverse order.
+(This was suggested in the exercise 4.21 in the book
+[von zur Gathen <i>et al.</i> 1999].)
+Let us represent the power <b> n</b> in base <b> 4</b> instead of base <b> 2</b>.
+If <b> q[k]</b> are the digits of <b>n</b> in base <b> 4</b>, then we can express
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x^n=x^q[0]*x^4^q[1]*...*x^4^m^q[m].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We shall compute this expression from right to left: first we compute <b>x^q[m]</b>.
+This is a small power because <b>q[m]</b> is a digit in base <b>4</b>, an integer between <b> 0</b> and <b> 3</b>.
+Then we raise it to the <b> 4</b>th power and multiply by <b> x^q[m-1]</b>.
+We repeat this process until we reach the <b>0</b>th digit of <b> n</b>.
+At each step we would need to multiply at most three times.
+Since each of the <b> q[k]</b> is between <b>0</b> and <b> 3</b>, we would need to precompute <b> x^2</b> and <b> x^3</b> which requires one extra multiplication (<b> x^2</b> would be computed anyway).
+Therefore the total number of long multiplications is in the worst case <b> 3*Ln(n)/Ln(4)+1</b>.
+This is about 25<b><tt>%</tt></b> better than the previous worst-case result, <b> 2*Ln(n)/Ln(2)</b>.
+However, the average-case improvement is only about 8<b><tt>%</tt></b> because the average number of multiplications in the base-<b>4</b> method is <b> 11/4*Ln(n)/Ln(4)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We might then use the base <b>8</b> instead of <b> 4</b> and obtain a further small improvement.
+(Using bases other than powers of <b> 2</b> is less efficient.)
+But the small gain in speed probably does not justify the increased complexity of the algorithm.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Real powers
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="powers!real numbers">
+
+</a>
+The squaring algorithm can be used to obtain integer powers <b> x^n</b> in any ring---as long as <b> n</b> is an integer, <b> x</b> can be anything from a complex number to a matrix. But for a general real number <b> n</b>, there is no such trick and the power <b> x^n</b> has to be computed through the logarithm and the exponential function, <b> x^n=Exp(n*Ln(x))</b>.
+(This also covers the case when <b>x</b> is negative and the result is a complex number.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An exceptional case is when <b> n</b> is a rational number with a very small numerator and denominator, for example, <b> n=2/3</b>.
+In this case it is faster to take the square of the cubic root of <b> x</b>.
+(See the section on the computation of roots below.)
+Then the case of negative <b> x</b> should be handled separately.
+This speedup is not implemented in Yacas.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that the relative precision changes when taking powers.
+If <b> x</b> is known to relative precision <b> epsilon</b>, i.e. <b> x</b> represents a real number that could be <b> x*(1+epsilon)</b>, then <b>x^2&lt;=&gt;x*(1+2*epsilon)</b> has relative precision <b>2*epsilon</b>, while <b> Sqrt(x)</b> has relative precision <b>epsilon/2</b>.
+So if we square a number <b> x</b>, we lose one significant bit of <b> x</b>, and when we take a square root of <b> x</b>, we gain one significant bit.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s2">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Roots
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Computation of roots <b>r=x^(1/n)</b> is efficient when <b>n</b> is a small integer.
+The basic approach is to numerically solve the equation <b> r^n=x</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that the relative precision is improved after taking a root with <b> n&gt;1</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: bisection
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="roots!by bisection algorithm">
+
+</a>
+The square root can be computed by using the bisection method, which
+works well for integers (if only the integer part of the square root is needed).
+The algorithm is described in [Johnson 1987].
+The general approach is to scan
+each bit of the input number and to see if a certain bit should be set in the resulting integer.
+The time is linear in the number of decimals, or logarithmic in
+the input number. The method is very similar in approach to the
+repeated squaring method described above for raising numbers to a
+power.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For integer <b> N</b>, the following steps are performed:
+
+
+</font></p><p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Find the highest bit set, <b> l2</b>, in the number <b> N</b>.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1&lt;&lt;(l2/2)</b> is definitely a bit that is set in the result.
+Start by setting that bit in the result, <b>u=1&lt;&lt;l2</b>.
+It is also the highest bit set in the result.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now, traverse all the lower bits, one by one. For each lower
+bit, starting at <b> lnext=l2-1</b>, set <b> v=1&lt;&lt;lnext</b>. Now, 
+<b>(u+v)^2=u^2+2*u*v+v^2</b>. If <b>(u+v)^2&lt;=N</b>, then the bit set
+in <b> v</b> should also be set in the result, <b> u</b>, otherwise that bit should 
+be cleared.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Set <b> lnext=lnext-1</b>, and repeat until all bits are tested, 
+and <b> lnext=0</b> and return the result found.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The intermediate results, <b> u^2</b>, <b> v^2</b> and <b> 2*u*v</b> can be 
+maintained easily too, due to the nature of the numbers 
+involved (<b> v</b> having only one bit set, and it being known which bit that
+is).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For floating point numbers, first the required number of decimals <b> p</b> after
+the decimal point is determined. Then the input number <b> N</b> is
+multiplied by a power of 10 until it has <b> 2*p</b> decimal. Then the integer square root calculation
+is performed, and the resulting number has <b> p</b> digits of precision.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Below is some <b><tt>Yacas</tt></b> script code to perform the calculation for integers.
+
+
+</font></p><p>
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>//sqrt(1) = 1, sqrt(0) = 0
+10 # BisectSqrt(0) &lt;-- 0;
+10 # BisectSqrt(1) &lt;-- 1;
+
+20 # BisectSqrt(N_IsPositiveInteger) &lt;--
+[
+  Local(l2,u,v,u2,v2,uv2,n);
+
+  // Find highest set bit, l2
+  u  := N;
+  l2 := 0;
+  While (u!=0)
+  [
+    u:=u&gt;&gt;1;
+    l2++;
+  ];
+  l2--;
+
+  // 1&lt;&lt;(l2/2) now would be a good under estimate 
+  // for the square root. 1&lt;&lt;(l2/2) is definitely 
+  // set in the result. Also it is the highest
+  // set bit.
+  l2 := l2&gt;&gt;1;
+
+  // initialize u and u2 (u2==u^2).
+  u  := 1 &lt;&lt; l2;
+  u2 := u &lt;&lt; l2;
+
+  // Now for each lower bit:
+  While( l2 != 0 )
+  [
+	l2--;
+     // Get that bit in v, and v2 == v^2.
+      v  := 1&lt;&lt;l2;
+      v2 := v&lt;&lt;l2;
+
+      // uv2 == 2*u*v, where 2==1&lt;&lt;1, and 
+      // v==1&lt;&lt;l2, thus 2*u*v == 
+      // (1&lt;&lt;1)*u*(1&lt;&lt;l2) == u&lt;&lt;(l2+1)
+      uv2 := u&lt;&lt;(l2 + 1);
+
+      // n = (u+v)^2  = u^2 + 2*u*v + v^2 
+      //   = u2+uv2+v2
+      n := u2 + uv2 + v2;
+
+      // if n (possible new best estimate for 
+      // sqrt(N)^2 is smaller than N, then the 
+      // bit l2 is set in the result, and 
+      // add v to u.
+      if( n &lt;= N )
+      [
+        u  := u+v;  // u &lt;- u+v
+        u2 := n;    // u^2 &lt;- u^2 + 2*u*v + v^2
+      ];
+      l2--;
+    ];
+    u; // return result, accumulated in u.
+];
+</pre></td></tr>
+</tbody></table>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><tt>BisectSqrt(N)</tt></b> computes the integer part of <b> Sqrt(N)</b> for integer <b>N</b>.
+(If we need to obtain more digits, we should first multiply <b> N</b> by a suitable power of <b> 2</b>.)
+The algorithm works for floats as well as for integers.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The bisection algorithm uses only additions and bit shifting operations.
+Suppose the integer <b> N</b> has <b> P</b> decimal digits, then it has <b> n=P*Ln(10)/Ln(2)</b> bits.
+For each bit, the number of additions is about <b>4</b>.
+Since the cost of an addition is linear in the number of bits, the total complexity of the bisection method is roughly <b> 4*n^2=O(P^2)</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: Newton's iteration
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="roots!by Newton's method">
+
+</a>
+An efficient method for computing the square root is found by using Newton's iteration for the equation <b>r^2-x=0</b>.
+The initial value of <b> r</b> can be obtained by bit counting and shifting, as in the bisection method.
+The iteration formula is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> r'=r/2+x/(2*r).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The convergence is quadratic, so we double the number of correct digits at each step.
+Therefore, if the initial guess is accurate to one bit, the number of steps <b>n</b> needed to obtain <b> P</b> decimal digits is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n=Ln(P*Ln(10)/Ln(2))/Ln(2)=O(Ln(P)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We need to perform one long division at each step; a long division costs <b>O(M(P))</b>.
+Therefore the total complexity of this algorithm is <b>O(M(P)*Ln(P))</b>.
+This is better than the <b>O(P^2)</b> algorithm if the cost of multiplication is below <b>O(P^2)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In most
+implementations of arbitrary-precision arithmetic, the time to perform
+a long division is several times that of a long multiplication.
+Therefore it makes sense to use a method that avoids divisions.
+One variant of Newton's method is to solve the equation
+<b>1/r^2=x</b>.
+The solution of this equation <b> r=1/Sqrt(x)</b> is the limit of the iteration 
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>r'=r+r*(1-r^2*x)/2 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">that does not require any divisions (but instead requires three multiplications).
+The final multiplication <b> r*x</b> completes the calculation of the square root.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">As usual
+with Newton's method, all errors are automatically corrected, so the
+working precision can be gradually increased until the last iteration.
+The full precision of <b> P</b> digits is used only at the last iteration; the last-but-one iteration uses <b> P/2</b> digits and so on.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An optimization trick is to combine the multiplication by <b> x</b> with the last iteration.
+Then computations can be organized in a special way to avoid the last full-precision multiplication.
+(This is described in [Karp <i>et al.</i> 1997] where the same trick is also applied to Newton's iteration for division.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The idea is the following: let <b> r</b> be the <b> P</b>-digit approximation to <b> 1/Sqrt(x)</b> at the beginning of the last iteration.
+(In this notation, <b>2*P</b> is the precision of the final result, so <b> x</b> is also known to about <b> 2*P</b> digits.)
+The unmodified procedure would have run as follows:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> r'=r+r*(1-r^2*x)/2,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> s=x*r'.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Then <b> s</b> would have been the final result, <b> Sqrt(x)</b> to <b>2*P</b> digits.
+We would need one multiplication <b> M(P)</b> with <b>2*P</b>-digit result to compute <b> r^2</b>, then one <b> M(2*P)</b> to compute <b>r^2*x</b> (the product of a <b> P</b>-digit <b> r^2</b> and a <b> 2*P</b>-digit <b> x</b>).
+Then we subtract this from <b> 1</b> and lose <b> P</b> digits since <b> r</b> was already a <b> P</b>-digit approximation to <b> 1/Sqrt(x)</b>.
+The value <b>y:=1-r^2*x</b> is of order <b> 10^(-P)</b> and has <b>P</b> significant digits.
+So the third multiplication, <b> r*y</b>, is only <b> M(P)</b>.
+The fourth multiplication <b>s*x</b> is again <b> M(2*P)</b>.
+The total cost is then <b>2*M(P)+2*M(2*P)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now consider Newton's iteration for <b>s&lt;=&gt;Sqrt(x)</b>,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>s'=s+1/s*(1-s^2*x)/2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The only reason we are trying to avoid it is the division by <b> s</b>.
+However, after all but the last iterations for <b> r</b> we already have a <b> P</b>-digit approximation for <b> 1/s</b>, which is <b> r</b>.
+Therefore we can simply define <b> s=r*x</b> and perform the last iteration for <b> s</b>, taking <b> 1/s&lt;=&gt;r</b>.
+This is slightly inexact, but the error is higher-order than the
+precision of the final result, because Newton's method erases any
+accumulated errors.
+So this will give us <b> 2*P</b> digits of <b> s</b> without divisions, and lower the total computational cost.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Consider the cost of the last iteration of this combined method.
+First, we compute <b> s=x*r</b>, but since we only need <b> P</b> correct digits of <b> s</b>, we can use only <b> P</b> digits of <b> x</b>, so this costs us <b> M(P)</b>.
+Then we compute <b>s^2*x</b> which, as before, costs <b> M(P)+M(2*P)</b>, and then we compute <b>r*(1-s^2*x)</b> which costs only <b>M(P)</b>.
+The total cost is therefore <b>3*M(P)+M(2*P)</b>, so we have traded one multiplication with <b>2*P</b> digits for one multiplication with <b> P</b> digits.
+Since the time of the last iteration dominates the total computing time, this is a significant cost savings.
+For example, if the multiplication is quadratic, <b> M(P)=O(P^2)</b>, then this saves about 30<b><tt>%</tt></b> of total execution time; for linear multiplication, the savings is about 16.67<b><tt>%</tt></b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">These optimizations do not change the asymptotic complexity of the method, although they do reduce the constant in front of <b>O()</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: argument reduction and interpolation
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="roots!by argument reduction">
+
+</a>
+Before using the bisection or Newton's method, we might apply some
+argument reduction to speed up the convergence of the iterations and to
+simplify finding the first approximation.
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose we need to find <b>Sqrt(x)</b>.
+Choose an integer <b>n</b> such that <b> 1/4&lt;x':=4^(-n)*x&lt;=1</b>.
+The value of <b> n</b> is easily found from bit counting: if <b> b</b> is the bit count of <b> x</b>, then 
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n=Floor((b+1)/2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We find
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sqrt(x)=2^n*Sqrt(x').</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The precision of <b>x'</b> is the same as that of <b> x</b> since <b> 2^n</b> is an exact number.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To compute <b> Sqrt(x')</b>, we use Newton's method with the initial value <b>x'[0]</b> obtained by interpolation of the function <b>Sqrt(x)</b> on the interval [<b>1/4</b>,<b> 1</b>].
+A suitable interpolation function might be taken as simply <b>(2*x+1)/3</b> or more precisely
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Sqrt(x)&lt;=&gt;1/90*(-28*x^2+95*x+23).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">By using a particular interpolation function, we can guarantee a certain number of precise bits at every iteration.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This may
+save a few iterations, at the small expense of evaluating the
+interpolation function once at the beginning.
+However, in computing with high precision the initial iterations are
+very fast and this argument reduction does not give a significant speed
+gain.
+But the gain may be important at low precisions, and this technique is
+sometimes used in microprocessors.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 4: Halley's iteration
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="IntNthRoot@\relax &lt;B&gt;&lt;TT&gt;IntNthRoot&lt;/TT&gt;&lt;/B&gt;">
+
+</a>
+<a name="roots!by Halley's method">
+
+</a>
+A separate function <b><tt>IntNthRoot</tt></b> is provided to compute the integer part of <b>n^(1/s)</b> for integer <b>n</b> and <b> s</b>.
+For a given <b> s</b>, it evaluates the integer part of <b> n^(1/s)</b> using only integer arithmetic with integers of size <b>n^(1+1/s)</b>. This can be done by Halley's iteration method, solving the equation <b>x^s=n</b>. For this function, the Halley iteration sequence is monotonic.
+The initial guess is <b> x[0]=2^(b(n)/s)</b> where <b>b(n)</b> is the number of bits in <b>n</b>
+obtained by bit counting or using the integer logarithm function. It is
+clear that the initial guess is accurate to within a factor of 2. Since
+the relative error is squared at every iteration, we need as many
+iteration steps as bits in <b> n^(1/s)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Since we only need the integer part of the root, it is enough to use integer division in the Halley iteration. The sequence <b>x[k]</b> will monotonically approximate the number <b>n^(1/s)</b>
+from below if we start from an initial guess that is less than the
+exact value. (We start from below so that we have to deal with smaller
+integers rather than with larger integers.) If <b>n=p^s</b>, then after enough iterations the floating-point value of <b> x[k]</b> would be slightly less than <b>p</b>; our value is the integer part of <b> x[k]</b>. Therefore, at each step we check whether <b>1+x[k]</b> is a solution of <b>x^s=n</b>, in which case we are done; and we also check whether <b>(1+x[k])^s&gt;n</b>, in which case the integer part of the root is <b> x[k]</b>.
+To speed up the Halley iteration in the worst case when <b>s^s&gt;n</b>, it is combined with bisection. The root bracket interval <b> x1&lt;x&lt;x2</b> is maintained and the next iteration <b> x[k+1]</b>
+is assigned to the midpoint of the interval if Halley's formula does
+not give sufficiently rapid convergence. The initial root bracket
+interval can be taken as <b>x[0]</b>, <b>2*x[0]</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b>s</b> is very large (<b> s^s&gt;n</b>), the convergence of both Newton's and Halley's iterations is almost linear until the final few iterations.
+Therefore  it is faster to evaluate the floating-point power for large <b> b</b> using the exponential and the logarithm.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 5: higher-order iterations
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="roots!by higher-order methods">
+
+</a>
+A higher-order generalization of Newton's iteration for inverse square root <b> 1/Sqrt(x)</b> is:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>r'=r+r/2*(1-r^2*x)+3*r/8*(1-r^2*x)^2+... </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The more terms of the series we add, the higher is the convergence rate.
+This is the Taylor series for <b>(1-y)^(-1/2)</b> where <b>y:=1-r^2*x</b>.
+If we take the terms up to <b> y^(n-1)</b>, the precision at the next iteration will be multiplied by <b>n</b>.
+The usual second-order iteration (our "method 2") corresponds to <b> n=2</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The trick of combining the last iteration with the final multiplication by <b> x</b> can be also used with all higher-order schemes.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Consider the cost of one iteration of <b> n</b>-th order.
+Let the initial precision of <b> r</b> be <b> P</b>; then the final precision is <b> k*P</b> and we use up to <b> n*P</b> digits of <b> x</b>.
+First we compute <b> y:=1-r^2*x</b> to <b> P*(n-1)</b> digits, this costs <b>M(P)</b> for <b>r^2</b> and then <b> M(P*n)</b> for <b>r^2*x</b>.
+The value of <b> y</b> is of order <b> 10^(-P)</b> and it has <b>P*(n-1)</b> digits, so we only need to use that many digits to multiply it by <b>r</b>, and <b> r*y</b> now costs us <b> M(P*(n-1))</b>.
+To compute <b>y^k</b> (here <b> 2&lt;=k&lt;=n-1</b>), we need <b> M(P*(n-k))</b> digits of <b>y</b>; since we need all consecutive powers of <b> y</b>, it is best to compute the powers one after another, lowering the precision on the way.
+The cost of computing <b> r*y^k*y</b> after having computed <b> r*y^k</b> is therefore <b> M(P*(n-k-1))</b>.
+The total cost of the iteration comes to
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>2*M(P)+M(2*P)+...+M((n-1)*P)+M(n*P).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">From the general considerations in the previous chapter (see the section on Newton's method)
+it follows that the optimal order is <b>n=2</b> and that higher-order schemes are slower in this case.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The bisection method (1) for square roots is probably the fastest for small integers or low-precision floats.
+Argument reduction and/or interpolation (3) can be used to simplify the iterative algorithm or to make it more robust.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method (2) is best for all other cases: large precision and/or roots other than square roots.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s3">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Logarithm
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The basic computational task is to obtain the logarithm of a real number.
+However, sometimes only the integer part of the logarithm is needed and the logarithm is taken with respect to an integer base.
+For example, we might need to evaluate the integer part of <b>Ln(n)/Ln(2)</b> where <b>n</b> is a large integer, to find how many bits are needed to hold <b> n</b>.
+Computing this "integer logarithm" is a much easier task than computing the logarithm in floating-point.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Logarithms of complex numbers can be reduced to elementary functions of real numbers, for example:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(a+I*b)=1/2*Ln(a^2+b^2)+I*ArcTan(b/a).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For a negative real number <b>x&lt;0</b>, we have
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(x)=Ln(Abs(x))+I*Pi.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This assumes, of course, an appropriate branch cut for the complex logarithm.
+A natural choice is to cut along the negative real semiaxis, <b> Im(z)=0</b>, <b> Re(z)&lt;0</b>.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Integer logarithm
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!on integers">
+
+</a>
+The "integer logarithm", defined as the integer part of <b> Ln(x)/Ln(b)</b>, where <b>x</b> and <b> b</b> are integers, is computed using a special routine <b><tt>IntLog(x,b)</tt></b>
+with purely integer math.
+When both arguments are integers and only the integer part of the
+logarithm is needed, the integer logarithm is much faster than
+evaluating the full floating-point logarithm and truncating the result.
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The basic algorithm consists of (integer-) dividing <b> x</b> by <b> b</b> repeatedly until <b> x</b> becomes <b> 0</b> and counting the necessary number of divisions.
+If <b> x</b> has <b> P</b> digits and <b> b</b> and <b> P</b> are small numbers, then division is linear in <b> P</b> and the total number of divisions is <b> O(P)</b>.
+Therefore this algorithm costs <b>O(P^2)</b> operations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A speed-up for large <b>x</b> is achieved by first comparing <b> x</b> with <b> b</b>, then with <b> b^2</b>, <b> b^4</b>, etc., without performing any divisions.
+We perform <b> n</b> such steps until the factor <b> b^2^n</b> is larger than <b> x</b>.
+At this point, <b> x</b> is divided by the previous power of <b> b</b> and the remaining value is iteratively compared with and divided by successively smaller powers of <b> b</b>.
+The number of squarings needed to compute <b> b^2^n</b> is logarithmic in <b> P</b>. However, the last few of these multiplications are long multiplications with numbers of length <b> P/4</b>, <b> P/2</b>, <b> P</b> digits.
+These multiplications take the time <b> O(M(P))</b>.
+Then we need to perform another long division and a series of progressively shorter divisions.
+The total cost is still <b>O(M(P))</b>.
+For large <b>P</b>, the cost of multiplication <b> M(P)</b> is less than <b>O(P^2)</b> and therefore this method is preferable. 
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There is one special case, the binary (base <b>2</b>)
+logarithm.
+Since the internal representation of floating-point numbers is usually
+in binary, the integer part of the binary logarithm can be usually
+implemented as a constant-time operation.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Real logarithms
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are many methods to compute the logarithm of a real number.
+Here we collect these methods and analyze them.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The logarithm satisfies
+<b> Ln(1/x)= -Ln(x)</b>.
+Therefore we need to consider only <b>x&gt;1</b>, or alternatively, only <b> 0&lt;x&lt;1</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!precision">
+
+</a>
+Note that the relative precision for <b> x</b> translates into <i>absolute</i> precision for <b> Ln(x)</b>.
+This is because <b>Ln(x*(1+epsilon))&lt;=&gt;Ln(x)+epsilon</b> for small <b> epsilon</b>.
+Therefore, the relative precision of the result is at best <b> epsilon/Ln(x)</b>.
+So to obtain <b>P</b> decimal digits of <b> Ln(x)</b>, we need to know <b>P-Ln(Abs(Ln(x)))/Ln(10)</b> digits of <b>x</b>.
+This is better than the relative precision of <b> x</b> if <b> x&gt;e</b> but worse if <b> x&lt;=&gt;1</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by Taylor series">
+
+</a>
+The logarithm function <b> Ln(x)</b> for general (real or complex) <b>x</b> such that <b> Abs(x-1)&lt;1</b> can be computed using the Taylor series,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(1+z)=z-z^2/2+z^3/3-... </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The series converges quite slowly unless <b>Abs(x)</b> is small.
+For real <b>x&lt;1</b>, the series is monotonic,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(1-z)= -z-z^2/2-z^3/3-...,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and the
+round-off error is somewhat smaller in that case (but not very much
+smaller, because the Taylor series method is normally used only for
+very small <b>x</b>).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b> x&gt;1</b>, then we can compute <b>-Ln(1/x)</b> instead of <b>Ln(x)</b>. However, the series converges very slowly if <b>x</b> is close to <b> 0</b> or to <b> 2</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here is an estimate of the necessary number of terms to achieve a (relative) precision of <b> P</b> decimal digits when computing <b> Ln(1+x)</b> for small real <b>x</b>.
+Suppose that <b> x</b> is of order <b> 10^(-N)</b>, where <b>N&gt;=1</b>.
+The error after keeping <b> n</b> terms is not greater than the first discarded term, <b> x^(n+1)/(n+1)</b>.
+The magnitude of the sum is approximately <b>x</b>, so the relative error is <b> x^n/(n+1)</b> and this should be smaller than <b>10^(-P)</b>.
+We obtain a sufficient condition <b>n&gt;P/N</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">All calculations need to be performed with <b> P</b> digits of precision.
+The "rectangular" scheme for evaluating <b> n</b> terms of the Taylor series needs about <b> 2*Sqrt(n)</b> long multiplications.
+Therefore the cost of this calculation is <b>2*Sqrt(P/N)*M(P)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">When <b>P</b> is very large (so that a fast multiplication can be used) and <b> x</b> is a small rational number, then the binary splitting technique can be used to compute the Taylor series.
+In this case the cost is <b> O(M(P)*Ln(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that we need to know <b>P+N</b> digits of <b> 1+x</b> to be able to extract <b> P</b> digits of <b> Ln(1+x)</b>.
+The <b>N</b> extra digits will be lost when we subtract <b> 1</b> from <b> 1+x</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: square roots + Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by square roots">
+
+</a>
+The method of the Taylor series allows to compute <b> Ln(x)</b> efficiently when <b>x-1=10^(-N)</b> is very close to <b>1</b> (i.e. for large <b> N</b>).
+For other values of <b> x</b> the series converges very slowly.
+We can transform the argument to improve the performance of the Taylor series.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">One way is to take several square roots, reducing <b> x</b> to <b> x^2^(-k)</b> until <b>x</b> becomes close to <b> 1</b>.
+Then we can compute <b> Ln(x^2^(-k))</b> using the Taylor series and use the identity <b>Ln(x)=2^k*Ln(x^2^(-k))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The number of times to take the square root can be chosen to minimize the total computational cost.
+Each square root operation takes the time equivalent to a fixed number <b>c</b> of long multiplications.
+(According to the estimate of [Brent 1975], <b> c&lt;=&gt;13/2</b>.)
+Suppose <b> x</b> is initially of order <b> 10^L</b> where <b> L&gt;0</b>.
+Then we can take the square root <b> k[1]</b> times and reduce <b>x</b> to about <b> 1.33</b>.
+Here we can take <b> k[1]&lt;=&gt;Ln(L)/Ln(2)+3</b>.
+After that, we can take the square root <b> k[2]</b> times and reduce <b>x</b> to <b> 1+10^(-N)</b> with <b>N&gt;=1</b>.
+For this we need <b> k[2]&lt;=&gt;1+N*Ln(10)/Ln(2)</b> square roots.
+The cost of all square roots is <b>c*(k[1]+k[2])</b> long multiplications.
+Now we can use the Taylor series and obtain <b>Ln(x^2^(-k[1]-k[2]))</b> in <b>2*Sqrt(P/N)</b> multiplications.
+We can choose <b>N</b> to minimize the total cost for a given <b> L</b>.
+
+
+</font></p><p>
+
+
+</p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: inverse exponential
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by inverse exponential">
+
+</a>
+The method is to solve the equation <b> Exp(x)-a=0</b> to find <b> x=Ln(a)</b>.
+We can use either the quadratically convergent Newton iteration,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x-1+a/Exp(x),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">or the cubically convergent Halley iteration,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x-2*(Exp(x)-a)/(Exp(x)+a).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Each iteration requires one evaluation of <b>Exp(x)</b> and one long division.
+Newton's iteration can be rewritten through <b>Exp(-x)</b>
+but this does not really avoid a long division:
+<b>Exp(-x)</b> for positive <b>x</b> is usually computed as <b> 1/Exp(x)</b> because other methods are much less efficient.
+Therefore the Halley iteration is preferable.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The initial value for <b>x</b> can be found by bit counting on the number <b> a</b>.
+If <b> m</b> is the "bit count" of <b> a</b>, i.e. <b> m</b> is an integer such that <b> 1/2&lt;=a*2^(-m)&lt;1</b>,
+then the first approximation to <b> Ln(a)</b> is <b>m*Ln(2)</b>.
+(Here we can use a very rough approximation to <b>Ln(2)</b>, for example, <b>2/3</b>.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The initial value found in this fashion will be correct to about one bit.
+The number of digits triples at each Halley iteration, so the result will have about <b> 3*k</b> correct bits after <b> k</b> iterations (this disregards round-off error).
+Therefore the required number of iterations for <b> P</b> decimal digits is <b> 1/Ln(3)*Ln(P*Ln(2)/Ln(10))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method is currently faster than other methods (with internal math) and so it is implemented in the routine <b><tt>LnNum</tt></b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method can be generalized to higher orders.
+Let <b>y:=1-a*Exp(-x[0])</b>, where <b>x[0]</b> is a good approximation to <b>Ln(a)</b> so <b>y</b> is small.
+Then
+<b> Ln(a)=x[0]+Ln(1-y)</b> and we can expand in <b>y</b> to obtain
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(a)=x[0]-y-y^2/2-y^3/3-... </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">By truncating this sum after <b>k</b>-th term we obtain a (<b> k-1</b>)-th order method that multiplies the number of correct digits by <b> k+1</b> after each iteration.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The optimal number of terms to take depends on the speed of the implementation of <b> Exp(x)</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 4: AGM
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by AGM sequence">
+
+</a>
+A fast algorithm based on the AGM sequence was given by Salamin (see [Brent 1975]).
+The formula is based on an asymptotic relation,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Ln(x)=Pi*x*(1+4*x^(-2)*(1-1/Ln(x))+O(x^(-4)))/(2*AGM(x,4)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b>x</b> is large enough, the numerator can be replaced by 1.
+"Large enough" for a desired precision of <b> P</b> decimal digits means that <b> 4*x^(-2)&lt;10^(-P)</b>. The AGM algorithm gives <b>P</b> digits only for such large values of <b> x</b>, unlike the Taylor series which is only good for <b> x</b> close to 1.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The required number of AGM iterations is approximately <b> 2*Ln(P)/Ln(2)</b>. For
+smaller values of <b>x</b> (but <b> x&gt;1</b>),
+one can either raise <b> x</b> to a large integer 
+power <b> r</b> and then compute <b> 1/r*Ln(x^r)</b>
+(this is quick only if <b>x</b> is itself an integer or a rational),
+or multiply <b> x</b> by a large integer power of <b> 2</b>
+and compute <b> Ln(2^s*x)-s*Ln(2)</b> (this is better for floating-point <b>x</b>).
+Here the required powers are
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> r=Ln(10^P*4)/(2*Ln(x)),</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>s=P*Ln(10)/(2*Ln(2))+1-Ln(x)/Ln(2).</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 
+The values of these parameters can be found quickly by using the integer logarithm procedure <b><tt>IntLog</tt></b>,
+while constant values such as <b>Ln(10)/Ln(2)</b> can be simply approximated by rational numbers because <b>r</b> and <b> s</b> do not need to be very precise (but they do need to be large enough).
+For the second calculation, <b> Ln(2^s*x)-s*Ln(2)</b>, we must precompute <b>Ln(2)</b> to the same precision of <b>P</b> digits.
+Also, the subtraction of a large number <b> s*Ln(2)</b> leads to a certain loss of precision, namely, about <b>Ln(s)/Ln(10)</b> decimal digits are lost, therefore the operating precision must be increased by this number of digits.
+(The quantity <b>Ln(s)/Ln(10)</b> is computed, of course, by the integer logarithm procedure.)
+
+
+</font><p>
+
+
+</p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!choice of AGM vs. Taylor">
+
+</a>
+If <b>x&lt;1</b>, then (<b>-Ln(1/x)</b>) is computed.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Finally, there is a special case when <b>x</b> is very close to 1, where the Taylor series converges quickly but the AGM algorithm requires to multiply <b> x</b> by a large power of 2 and then subtract two almost equal numbers, leading to a great waste of precision. Suppose <b> 1&lt;x&lt;1+10^(-M)</b>, where <b>M</b> is large (say of order <b> P</b>). The Taylor series for <b> Ln(1+epsilon)</b> needs about <b>N= -P*Ln(10)/Ln(epsilon)</b>=<b>P/M</b> terms.
+If we evaluate the Taylor series using the rectangular scheme, we need
+<b> 2*Sqrt(N)</b> multiplications and <b>Sqrt(N)</b> units of storage. On the other
+hand, the main slow operation for the AGM sequence is the geometric mean <b>Sqrt(a*b)</b>. If <b>Sqrt(a*b)</b> takes an equivalent of <b>c</b> multiplications (Brent's estimate is <b> c=13/2</b> but it may be more in practice), then the AGM sequence requires <b> 2*c*Ln(P)/Ln(2)</b> multiplications. Therefore the Taylor series method is more efficient for
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>M&gt;1/c^2*P*(Ln(2)/Ln(P))^2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In this case it requires at most <b> c*Ln(P)/Ln(2)</b> units of storage and <b>2*c*Ln(P)/Ln(2)</b> multiplications.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For larger <b>x&gt;1+10^(-M)</b>, the AGM method is more efficient. It is necessary to increase the working precision to <b>P+M*Ln(2)/Ln(10)</b> but this does not decrease the asymptotic speed of the algorithm. To compute <b>Ln(x)</b> with <b>P</b> digits of precision for any <b> x</b>, only <b> O(Ln(P))</b> long multiplications are required.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 5: argument reduction + Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by argument reduction">
+
+</a>
+Here is a straightforward method that reduces <b>Ln(x)</b> for large <b>x&gt;2</b> to <b> Ln(1+delta)</b> with a small <b>delta</b>;
+now the logarithm can be quickly computed using the Taylor series.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The simplest version is this: for integer <b> m</b>, we have the identity <b> Ln(x)=m+Ln(x*e^(-m))</b>.
+Assuming that <b>e:=Exp(1)</b> is precomputed, we can find the smallest integer <b>m</b> for which <b> x&lt;=e^m</b> by computing the integer powers of <b> e</b> and comparing with <b> x</b>.
+(If <b> x</b> is large, we do not really have to go through all integer <b> m</b>: instead we can estimate <b> m</b> by bit counting on <b> x</b> and start from <b> e^m</b>.)
+Once we found <b> m</b>, we can use the Taylor series on <b> 1-delta:=x*e^(-m)</b> since we have found the smallest possible <b>m</b>, so <b> 0&lt;=delta&lt;1-1/e</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A refinement of this method requires to
+precompute <b> b=Exp(2^(-k))</b> for some fixed integer <b>k&gt;=1</b>.
+(This can be done efficiently using the squaring trick for the exponentials.)
+First we find the smallest power <b> m</b> of <b> b</b> which is above <b> x</b>.
+To do this, we compute successive powers of <b> b</b> and find the first integer <b> m</b> such that
+<b> x&lt;=b^m=Exp(m*2^(-k))</b>.
+When we find such <b>m</b>, we define <b> 1-delta:=x*b^(-m)</b> and then <b>delta</b> will be small, because <b> 0&lt;delta&lt;1-1/b&lt;=&gt;2^(-k)</b>
+(the latter approximation is good if <b>k</b> is large).
+We compute <b> Ln(1-delta)</b> using the Taylor series and finally find <b>Ln(x)=m*2^k+Ln(1-delta)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For smaller <b>delta</b>, the Taylor series of <b> Ln(1-delta)</b> is more efficient.
+Therefore, we have a trade-off between having to perform more multiplications to find <b>m</b>, and having a faster convergence of the Taylor series.
+
+
+</font></p><p>
+
+
+</p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 6: transformed Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by transformed series">
+
+</a>
+We can use an alternative Taylor series for the logarithm that converges for all <b> x</b>,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(a+z)=Ln(a)+2*Sum(k,0,Infinity,1/(2*k+1)*(z/(2*a+z))^(2*k+1)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This series is obtained from the series for <b>ArcTanh(x)</b> and the identity
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>2*ArcTanh(x)=Ln((1+x)/(1-x)).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This series converges for all <b>z</b> such that <b> Re(a+z)&gt;0</b> if <b> a&gt;0</b>.
+The convergence rate is, however, the same as for the original Taylor series.
+In other words, it converges slowly unless <b> z/(2*a+z)</b> is small.
+The parameter <b>a</b> can be chosen to optimize the convergence; however, <b> Ln(a)</b> should be either precomputed or easily computable for this method to be efficient.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For instance, if <b>x&gt;1</b>, we can choose <b> a=2^k</b> for an integer <b> k&gt;=1</b>, such that <b> 2^(k-1)&lt;=x&lt;2^k=a</b>.
+(In other words, <b> k</b> is the bit count of <b> x</b>.)
+In that case, we represent <b> x=a-z</b> and we find that the expansion parameter <b> z/(2*a-z)&lt;1/3</b>.
+So a certain rate of convergence is guaranteed, and it is enough to take a fixed number of terms, about <b> P*Ln(10)/Ln(3)</b>, to obtain <b>P</b> decimal digits of <b> Ln(x)</b> for any <b>x</b>.
+(We should also precompute <b> Ln(2)</b> for this scheme to work.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b>0&lt;x&lt;1</b>, we can compute <b>-Ln(1/x)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method works robustly but is slower than
+the Taylor series with some kind of argument reduction.
+With the "rectangular" method of summation, the total cost is <b>O(Sqrt(P)*M(P))</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 7: binary reduction
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by binary reduction">
+
+</a>
+This method is based on the binary splitting technique and is described in [Haible <i>et al.</i> 1998] with a reference to [Brent 1976].
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The method shall compute <b>Ln(1+x)</b> for real <b>x</b> such that <b> Abs(x)&lt;1/2</b>.
+For other <b> x</b>, some sort of argument reduction needs to be applied.
+(So this method is a replacement for the Taylor series that is asymptotically faster at very high precision.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The main idea is to use the property
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln(1+z*2^(-k))=z*2^(-k)+O(2^(-2*k)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for integer <b>k&gt;=1</b> and real <b> z</b> such that <b> Abs(z)&lt;=1</b>.
+This property allows to find the first <b> 2*k</b> binary digits of <b> Ln(1+z*2^(-k))</b> by inspection:
+these digits are the first <b>k</b> nonzero digits of <b> z</b>.
+Then we can perform a very quick computation of <b> Exp(-m*2^(-k))</b> for integer <b>k</b>, <b> m</b> (evaluated using the binary splitting of the Taylor series)
+and reduce <b> z</b> by at least the factor <b> 2^k</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">More formally, we can write the method as a loop over <b> k</b>, starting with <b> k=1</b> and stopping when <b> 2^(-k)&lt;10^(-P)</b> is below the required precision.
+At the beginning of the loop we have <b>y=0</b>, <b> z=x</b>, <b> k=1</b> and <b> Abs(z)&lt;1/2</b>.
+The loop invariants are <b>(1+z)*Exp(y)</b> which is always equal to the original number <b>1+x</b>, and the condition <b> Abs(z)&lt;2^(-k)</b>.
+If we construct this loop, then it is clear that at the end of the loop <b>1+z</b> will become <b> 1</b> to required precision and therefore <b> y</b> will be equal to <b> Ln(1+x)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The body of the loop consists of the following steps:
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Separate the first <b>k</b> significant digits of <b> z</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> f=2^(-2*k)*Floor(2^(2*k)*z).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now <b>f</b> is a good approximation for <b> Ln(1+z)</b>.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Compute <b>Exp(-f)</b> using the binary splitting technique (<b>f</b> is a rational number with the denominator <b> 2^(2*k)</b> and numerator at most <b>2^k</b>).
+It is in fact sufficient to compute <b> 1-Exp(-f)</b> which does not need all digits.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Set <b>y=y+f</b> and <b> z=(1+z)*Exp(-f)-1</b>.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The total number of steps in the loop is at most <b> Ln(P*Ln(10)/Ln(2))/Ln(2)</b>.
+Each step requires <b>O(M(P)*Ln(P))</b> operations because the exponential <b>Exp(-f)</b> is taken at a rational arguments <b>f</b> and can be computed using the binary splitting technique.
+(Toward the end of the loop, the number of significant digits of <b> f</b> grows, but the number of digits we need to obtain is decreased.
+At the last iteration, <b> f</b> contains about half of the digits of <b> x</b> but computing <b> Exp(-f)</b> requires only one term of the Taylor series.)
+Therefore the total cost is <b>O(M(P)*Ln(P)^2)</b>.
+
+
+</font></p><p>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Essentially the same method can be used to evaluate a complex logarithm, <b>Ln(a+I*b)</b>.
+It is slower but the asymptotic cost is the same.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 8: continued fraction
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="logarithm!by continued fraction">
+
+</a>
+<a name="continued fraction approximation!of &lt;b&gt;Ln(x)&lt;/b&gt;">
+
+</a>
+There is a continued fraction representation of the logarithm:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Ln(1+x)=x/(1+x/(2+x/(3+(4*x)/(4+(4*x)/(5+(9*x)/(6+...)))))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This fraction converges for all <b>x</b>, although the speed of convergence varies with the magnitude of <b> x</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method does not seem to provide a computational advantage compared with the other methods.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 9: bisection
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A simple bisection algorithm for <b> Ln(x)/Ln(2)</b> (the base 2 logarithm) with real <b>x</b> is described in [Johnson 1987].
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">First, we need to divide <b> x</b> by a certain power of <b> 2</b> to reduce <b> x</b> to  <b> y</b> in the interval <b> 1&lt;=y&lt;2</b>.
+We can use the bit count <b> m=BitCount(x)</b> to find an integer <b>m</b> such that <b> 1/2&lt;=x*2^(-m)&lt;1</b> and take <b> y=x*2^(1-m)</b>.
+Then <b>Ln(x)/Ln(2)=Ln(y)/Ln(2)+m-1</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now we shall find the bits in the binary representation of <b> Ln(y)/Ln(2)</b>, one by one.
+Given a real <b>y</b> such that <b> 1&lt;=y&lt;2</b>, the value <b> Ln(y)/Ln(2)</b> is between 0 and 1.
+Now,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Ln(y)/Ln(2)=2^(-1)*Ln(y^2)/Ln(2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The leading bit of this value is <b>1</b> if <b> y^2&gt;=2</b> and 0 otherwise.
+Therefore we need to compute <b> y'=y^2</b> using a long <b> P</b>-digit multiplication and compare it with <b> 2</b>.
+If <b> y'&gt;=2</b> we set <b> y=y'/2</b>, otherwise we set <b> y=y'</b>; then we obtain <b> 1&lt;=y&lt;2</b> again and repeat the process to extract the next bit of <b> Ln(y)/Ln(2)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The process is finished either when the required number of bits of <b>Ln(y)/Ln(2)</b>
+is found, or when the precision of the argument is exhausted, whichever
+occurs first.
+Note that each iteration requires a long multiplication (squaring) of a
+number, and each squaring loses 1 bit of relative precision, so after <b>k</b> iterations the number of precise bits of <b> y</b> would be <b> P-k</b>.
+Therefore we cannot have more iterations than <b> P</b> (the number of precise bits in the original value of <b> x</b>).
+The total cost is <b> O(P*M(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+squaring at each iteration needs to be performed not with all digits,
+but with the number of precise digits left in the current value of <b>y</b>.
+This does not reduce the asymptotic complexity; it remains <b> O(P*M(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Comparing this method with the Taylor series, we find that the only advantage of this method is simplicity.
+The Taylor series requires about <b>P</b>
+terms, with one long multiplication and one short division per term,
+while the bisection method does not need any short divisions.
+However, the rectangular method of Taylor summation cuts the time down
+to <b> O(Sqrt(P))</b>
+long multiplications, at a cost of some storage and bookkeeping
+overhead.
+Therefore, the bisection method may give an advantage only at very low
+precisions.
+(This is why it is sometimes used in microprocessors.)
+The similar method for the exponential function requires a square root
+at every iteration and is never competitive with the Taylor series.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s4">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Exponential
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are many methods to compute the exponential of a real number.
+Here we collect these methods and analyze them.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The exponential function satisfies
+<b>Exp(-x)=1/Exp(x)</b>.
+Therefore we need to consider only <b>x&gt;0</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt; Exp(x)&lt;/b&gt;!precision">
+
+</a>
+Note that the <i>absolute</i> precision for <b>x</b> translates into <i>relative</i> precision for <b> Exp(x)</b>.
+This is because <b>Exp(x+epsilon)&lt;=&gt;Exp(x)*(1+epsilon)</b> for small <b>epsilon</b>.
+Therefore, to obtain <b> P</b> decimal digits of <b> Exp(x)</b> we need to know <b>x</b> with absolute precision of at least <b> 10^(-P)</b>,
+that is, we need to know <b>P+Ln(Abs(x))/Ln(10)</b> digits of <b>x</b>.
+Thus, the relative precision becomes worse after taking the exponential if <b> x&gt;1</b> but improves if <b> x</b> is very small.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt; Exp(x)&lt;/b&gt;!by Taylor series">
+
+</a>
+The exponential function is computed using its Taylor series,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(x)=1+x+x^2/2! +... </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This series converges for all (complex) <b>x</b>, but if <b> Abs(x)</b> is large, or if <b>x</b> is negative, then the series converges slowly and/or gives a large round-off error.
+So one should use this Taylor series only when <b> x</b> is small.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b> x</b> is sufficiently small, e.g. <b> Abs(x)&lt;10^(-M)</b> and <b>M&gt;Ln(P)/Ln(10)</b>, then it is enough to take about <b>P/M</b> terms in the Taylor series. If <b> x</b> is of order 1, one needs about <b> P*Ln(10)/Ln(P)</b> terms.
+
+
+</font></p><p>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b>x=p/q</b>
+is a small rational number, and if a fast multiplication is available,
+then the binary splitting technique should be used to evaluate the
+Taylor series.
+The computational cost of that is <b> O(M(P*Ln(P))*Ln(P))</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: squaring + Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt;Exp(x)&lt;/b&gt;!squaring speed-up">
+
+</a>
+A speed-up trick used for large <b>x</b> is to divide the argument by some power of 2 and then square the result several times, i.e.
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Exp(x)=Exp(2^(-k)*x)^2^k,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b> k</b> is chosen sufficiently large so that the Taylor series converges quickly at <b> 2^(-k)*x</b> [Smith 1985]. The threshold value for <b> x</b> is in the variable <b><tt>MathExpThreshold</tt></b> in <b><tt>stdfuncs</tt></b>.
+
+
+</font><p>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A modification of the squaring reduction allows to significantly reduce the round-off error [Brent 1978].
+Instead of <b> Exp(x)=Exp(x/2)^2</b>, we use the identity
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Exp(x)-1=(Exp(x/2)-1)*(Exp(x/2)+1) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and reduce <b>Exp(x)-1</b> directly to <b> Exp(x/2)-1</b>.
+If <b> y=Exp(x/2)-1</b>, then <b> Exp(x)-1=2*y+y^2</b>.
+
+
+</font><p>
+
+
+</p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: inverse logarithm
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt; Exp(x)&lt;/b&gt;!by inverse logarithm">
+
+</a>
+An alternative way to compute <b>x=Exp(a)</b> if a fast logarithm routine is available would be to solve the equation <b>Ln(x)=a</b>.
+(This might be better at very large precision where the AGM method for the logarithm is asymptotically the fastest.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method gives the iteration
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x*(a+1-Ln(x)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The iteration converges quadratically to <b>Exp(a)</b> if the initial value of <b>x</b> is <b> 0&lt;x&lt;Exp(a+1)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A cubically convergent formula is obtained if we replace <b>Ln(x)=a</b> by an equivalent equation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Ln(x)-a)/(Ln(x)-a-2)=0.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For this equation, Newton's method gives the iteration
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x*(1+(a+1-Ln(x))^2)/2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This iteration converges for initial values <b> 0&lt;x&lt;Exp(a+2)</b> with a cubic convergence rate and requires only one more multiplication, compared with Newton's method for <b>Ln(x)=a</b>. A good initial guess can be found by raising 2 to the integer part of <b> a/Ln(2)</b> (the value <b>Ln(2)</b> can be approximated from above by a suitable rational number, e.g. <b>7050/10171</b>).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This cubically convergent iteration seems to follow from a good equivalent equation that we guessed.
+But it turns out that it can be generalized to higher orders.
+Let <b> y:=a-Ln(x[0])</b> where <b>x[0]</b> is an approximation to <b>Exp(a)</b>; if it is a good approximation, then <b>y</b> is small.
+Then <b> Exp(a)=x[0]*Exp(y)</b>.
+Expanding in <b>y</b>, we obtain
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Exp(a)=x[0]*(1+y+y^2/2! +y^3/3! +...),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and if we truncate the series after <b>k</b>-th term, the new approximation will have <b> k</b> times the number of correct digits in <b> x[0]</b>.
+It is easy to see that the above cubic iteration is a particular case with <b>k=3</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The optimal number of terms to take depends on the speed of the implementation of <b> Ln(x)</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 4: linear reduction + Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt;Exp(x)&lt;/b&gt;!by linear reduction">
+
+</a>
+In this method we reduce the argument <b>x</b> by subtracting an integer.
+Suppose <b> x&gt;1</b>, then take <b> n=Floor(x)</b> where <b>n</b> is an integer, so that <b> 0&lt;=x-n&lt;1</b>.
+Then we can compute <b> Exp(x)=Exp(n)*Exp(x-n)</b> by using the Taylor series on the small number <b>x-n</b>.
+The integer power <b> e^n</b> is found from a precomputed value of <b> e</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A refinement of this method is to subtract not only the integer part of <b> x</b>, but also the first few binary digits.
+We fix an integer <b> k&gt;=1</b> and precompute <b> b:=Exp(2^(-k))</b>.
+Then we find the integer <b>m</b> such that <b> 0&lt;=x-m*2^(-k)&lt;2^(-k)</b>.
+(The rational number <b>m*2^(-k)</b> contains the integer part of <b>x</b> and the first <b> k</b> bits of <b> x</b> after the binary point.)
+Then we compute <b> Exp(x-m*2^(-k))</b> using the Taylor series and <b>Exp(m*2^(-k))=b^m</b> by the integer powering algorithm from the precomputed value of <b> b</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The parameter <b> k</b> should be chosen to minimize the computational effort.
+
+
+</font></p><p>
+
+
+</p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 5: binary rediction
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt; Exp(x)&lt;/b&gt;!by binary reduction">
+
+</a>
+This method is based on the binary splitting technique and is described in [Haible <i>et al.</i> 1998] with a reference to [Brent 1976].
+The idea is to reduce the computation of <b>Exp(x)</b> to the computation of <b>Exp(r[k])</b> for some rational numbers <b>r[0]</b>, <b>r[1]</b>, <b>r[2]</b>, ...
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Take the binary decomposition of <b>x</b> of the following form,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x=x[0]+Sum(k,0,N,u[k]*2^(-2^k)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>x[0]</b> and <b>u[k]</b> are integers such that <b>Abs(u[k])&lt;2^2^(k-1)</b>.
+Then define <b>r[k]=u[k]*2^(-2^k)</b>.
+Note that all <b>r[k]</b> are rational numbers such that <b>Abs(r[k])&lt;2^(-2^(k-1))</b>.
+The exponentials <b>Exp(r[k])</b> are computed using the binary splitting on the Taylor series.
+Finally,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(x)=Exp(x[0])*Exp(r[0])*Exp(r[1])*....</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The cost of this method is <b>O(M(P*Ln(P))*Ln(P))</b> operations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Essentially the same method can be used to compute the complex exponential, <b>Exp(a+I*b)</b>.
+This is slower but the asymptotic cost is the same.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 6: continued fraction
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponential function &lt;b&gt;Exp(x)&lt;/b&gt;!by continued fraction">
+
+</a>
+<a name="continued fraction approximation!of &lt;b&gt;Exp(x)&lt;/b&gt;">
+
+</a>
+There is a continued fraction representation of the exponential function:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(-x)=1-x/(1+x/(2-x/(3+x/(2-x/(5+x/(2-...)))))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This fraction converges for all <b>x</b>, although the speed of convergence varies with the magnitude of <b> x</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method does not seem to provide a computational advantage compared with the other methods.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s5">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Calculation of <b> Pi</b>
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt;pi&lt;/b&gt;">
+
+</a>
+In Yacas, the constant <b> pi</b> is computed by the library routine <b><tt>Pi()</tt></b> which
+uses the internal routine <b><tt>MathPi</tt></b> to compute the value to current
+precision <b><tt>Precision()</tt></b>. The result is stored in a global variable as a
+list of the form <b><tt>{precision, value}</tt></b> where <b><tt>precision</tt></b> is the number of
+digits of <b> pi</b> that have already been found and <b><tt>value</tt></b> is the
+multiple-precision value. This is done to avoid recalculating <b> pi</b> if a
+precise enough value for it has already been found.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Efficient iterative algorithms for computing <b> pi</b>
+with arbitrary precision have been recently developed by Brent,
+Salamin, Borwein and others. However, limitations of the current
+multiple-precision implementation in Yacas (compiled with the
+"internal" math option) make these advanced algorithms run slower
+because they require many more arbitrary-precision multiplications at
+each iteration.
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt; pi&lt;/b&gt;!by Newton's method">
+
+</a>
+The file <b><tt>examples/pi.ys</tt></b> implements several different algorithms that
+duplicate the functionality of <b><tt>Pi()</tt></b>. See
+[Gourdon <i>et al.</i> 2001] for more details of computations of <b> pi</b> and
+generalizations of Newton-Raphson iteration.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: solve <b> Sin(x)=0</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><tt>PiMethod0()</tt></b>, <b><tt>PiMethod1()</tt></b>, <b><tt>PiMethod2()</tt></b> are all based on a generalized Newton-Raphson method of solving equations.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Since <b> pi</b> is a solution of <b> Sin(x)=0</b>, one may start sufficiently close, e.g. at <b> x0=3.14159265</b> and iterate <b> x'=x-Tan(x)</b>. In fact it is faster to iterate
+<b>x'=x+Sin(x)</b> which solves a different equation for <b>pi</b>. <b><tt>PiMethod0()</tt></b>
+is the straightforward implementation of the latter iteration. A
+significant speed improvement is achieved by doing calculations at each
+iteration only with the precision of the root that we expect to get
+from that iteration. Any imprecision introduced by round-off will be
+automatically corrected at the next iteration.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If at some iteration <b> x=pi+epsilon</b> for small <b> epsilon</b>, then from the Taylor expansion of <b> Sin(x)</b> it follows that the value <b>x'</b> at the next iteration will differ from <b> pi</b> by <b> O(epsilon^3)</b>. Therefore, the number of correct digits triples at each iteration. If we know the number of correct digits of <b>pi</b>
+in the initial approximation, we can decide in advance how many
+iterations to compute and what precision to use at each iteration.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The final speed-up in <b><tt>PiMethod0()</tt></b> is to avoid computing at unnecessarily high precision. This may happen if, for example, we need to evaluate 200 digits of <b> pi</b>
+starting with 20 correct digits. After 2 iterations we would be
+calculating with 180 digits; the next iteration would have given us 540
+digits but we only need 200, so the third iteration would be wasteful.
+This can be avoided by first computing <b> pi</b> to just over 1/3 of
+the required precision, i.e. to 67 digits, and then executing the last
+iteration at full 200 digits. There is still a wasteful step when we
+would go from 60 digits to 67, but much less time would be wasted than
+in the calculation with 200 digits of precision.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method is based on approximating the function <b> f(x)</b>
+by a straight line. One can achieve better approximation and therefore
+faster convergence to the root if one approximates the function with a
+polynomial curve of higher order. The routine <b><tt>PiMethod1()</tt></b> uses the iteration 
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x+Sin(x)+1/6*Sin(x)^3+3/40*Sin(x)^5+5/112*Sin(x)^7 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">which has a faster convergence, giving 9 times as many digits at every iteration. (The series is the Taylor series for <b> ArcSin(y)</b> cut at <b>O(y^9)</b>.) The same speed-up tricks are used as in <b><tt>PiMethod0()</tt></b>. In addition, the last iteration, which must be done at full precision, is performed with the simpler iteration <b>x'=x+Sin(x)</b> to reduce the number of high-precision multiplications.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Both <b><tt>PiMethod0()</tt></b> and <b><tt>PiMethod1()</tt></b> require a computation of <b>Sin(x)</b> at every iteration. An industrial-strength arbitrary precision library such as <b><tt>gmp</tt></b>
+can multiply numbers much faster than it can evaluate a trigonometric
+function. Therefore, it would be good to have a method which does not
+require trigonometrics. <b><tt>PiMethod2()</tt></b> is a simple attempt to remedy the problem. It computes the Taylor series for <b>ArcTan(x)</b>,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=x-x^3/3+x^5/5-x^7/7+...,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for the value of <b>x</b> obtained as the tangent of the initial guess for <b> pi</b>; in other words, if <b> x=pi+epsilon</b> where <b> epsilon</b> is small, then <b> Tan(x)=Tan(epsilon)</b>, therefore <b>epsilon=ArcTan(Tan(x))</b> and <b>pi</b> is found as <b> pi=x-epsilon</b>. If the initial guess is good (i.e. <b> epsilon</b> is very small), then the Taylor series for <b> ArcTan(x)</b> converges very quickly (although linearly, i.e. it gives a fixed number of digits of <b>pi</b> per term). Only a single full-precision evaluation of <b> Tan(x)</b> is necessary at the beginning of the algorithm.
+The complexity of this algorithm is proportional to the number of digits and to the time of a long multiplication.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: Borwein's iteration
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The routines <b><tt>PiBrentSalamin()</tt></b> and <b><tt>PiBorwein()</tt></b>
+are based on much more advanced mathematics.
+(See papers by P. Borwein for review and explanations of the methods.)
+These methods do not require evaluations of trigonometric functions,
+but they do require taking a few square roots at each iteration, and
+all calculations must be done using full precision. Using modern
+algorithms, one can compute a square root roughly in the same time as a
+division; but Yacas's internal math is not yet up to it. Therefore,
+these two routines perform poorly compared to the more simple-minded <b><tt>PiMethod0()</tt></b>.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: AGM sequence (Brent-Salamin)
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt;pi&lt;/b&gt;!by Brent-Salamin method">
+
+</a>
+The algorithm of Brent and Salamin uses the AGM sequence.
+The calculation can be summarized as follows:
+
+
+</font><p>
+
+</p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>[a=1;b=1/Sqrt(2);c=1/2;k=1;] </b></font></center><p></p>
+
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>While(Not enough precision) [
+</pre></td></tr>
+</tbody></table>
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>{a,b}={(a+b)/2,Sqrt(a*b)} </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>c=c-2^k*(a^2-b^2) </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>pi=2*a^2/c </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> k=k+1 </b></font></center><p></p>
+
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>];
+</pre></td></tr>
+</tbody></table>
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">At each iteration, the variable <b> pi</b> will have twice as many correct digits as it had at the previous iteration.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 4: Ramanujan's series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt; pi&lt;/b&gt;!by Ramanujan's series">
+
+</a>
+Another method for fast computation of <b> Pi</b> is based on the following mysterious series,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/Pi=12/(C*Sqrt(C))*Sum(n,0,Infinity,(-1)^n*(6*n)! *(A+n*B)/((3*n)! *(n!)^3*C^(3*n))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>A=13591409</b>, <b> B=545140134</b>, and <b> C=640320</b>.
+This formula was found by the Chudnovsky brothers, but it traces back to Ramanujan's notebooks.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To obtain the value of <b> Pi</b> with <b> P</b> decimal digits, one needs to take 
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n&lt;=&gt;P*Ln(10)/(3*Ln(C/12))&lt;479/6793*P </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">terms of the series.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If this series is evaluated using Horner's scheme (the routine <b><tt>PiChudnovsky</tt></b>), then about <b> Ln(n)/Ln(10)</b> extra digits are needed to compensate for round-off error while adding <b>n</b> terms.
+This method does not require any long multiplications and costs <b> O(P^2)</b> operations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A potentially much faster way to evaluate this series at high precision is by using the binary splitting technique.
+This would give the asymptotic cost <b>O(M(P*Ln(P))*Ln(P))</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s6">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Trigonometric functions
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Trigonometric functions <b>Sin(x)</b>, <b>Cos(x)</b> are computed by subtracting <b>2*Pi</b> from <b> x</b> until it is in the range <b> 0&lt;x&lt;2*Pi</b> and then using the Taylor series.
+(The value of <b> Pi</b> is precomputed.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Tangent is computed by dividing <b> Sin(x)/Cos(x)</b> or from <b>Sin(x)</b> using the identity
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Tan(x)=Sin(x)/Sqrt(1-Sin(x)^2).</b></font></center><p></p>
+
+
+
+<p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: Taylor series
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Taylor series for the basic trigonometric functions are
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sin(x)=x-x^3/3! +x^5/5! -x^7/7! +...,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Cos(x)=1-x^2/2! +x^4/4! -x^6/6! +....</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">These series converge for all <b>x</b> but are optimal for multiple-precision calculations only for small <b> x</b>.
+The convergence rate and possible optimizations are the same as those of the Taylor series for <b> Exp(x)</b>.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: argument reduction
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Basic argument reduction requires a precomputed value for <b>Pi/2</b>.
+The identities <b> Sin(x+Pi/2)=Cos(x)</b>, <b>Cos(x+Pi/2)= -Sin(x)</b> can be used to reduce the argument to the range between <b>0</b> and <b> Pi/2</b>.
+Then the bisection for <b> Cos(x)</b> and the trisection for <b>Sin(x)</b> are used.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For <b>Cos(x)</b>, the bisection identity can be used more efficiently if it is written as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>1-Cos(2*x)=4*(1-Cos(x))-2*(1-Cos(x))^2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b> 1-Cos(x)</b> is very small, then this decomposition allows to use a shorter multiplication and reduces round-off error.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For <b>Sin(x)</b>, the trisection identity is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sin(3*x)=3*Sin(x)-4*Sin(x)^3.</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The optimal number of bisections or trisections should be estimated to reduce the total computational cost.
+The resulting number will depend on the magnitude of the argument <b> x</b>, on the required precision <b> P</b>, and on the speed of the available multiplication <b> M(P)</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: inverse <b>ArcTan(x)</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The function <b>ArcTan(x)</b> can be found from its Taylor series, or from the complex AGM method, or by another method.
+Then the function can be inverted by Newton's iteration to obtain <b>Tan(x)</b> and from it also <b>Sin(x)</b>, <b>Cos(x)</b> using the trigonometric identities.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Alternatively, <b>ArcSin(x)</b> may be found from the Taylor series and inverted to obtain <b>Sin(x)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method seems to be of marginal value since efficient direct methods for <b>Cos(x)</b>, <b>Sin(x)</b> are available.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s7">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Inverse trigonometric functions
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt;ArcTan(x)&lt;/b&gt;">
+
+</a>
+<a name="continued fraction approximation!of &lt;b&gt;ArcTan(x)&lt;/b&gt;">
+
+</a>
+Inverse trigonometric functions are computed by various methods.
+To compute <b>y=ArcSin(x)</b>, Newton's method is used for to invert <b>x=Sin(y)</b>.
+The inverse tangent <b>ArcTan(x)</b> can be computed by its Taylor series,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=x-x^3/3+x^5/5-...,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">or by the continued fraction expansion,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=x/(1+x^2/(3+(2*x)^2/(5+(3*x)^2/(7+...)))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The convergence of this expansion for large <b>Abs(x)</b> is improved by using the identities
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=Pi/2*Sign(x)-ArcTan(1/x),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=2*ArcTan(x/(1+Sqrt(1+x^2))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Thus, any value of <b>x</b> is reduced to <b> Abs(x)&lt;0.42</b>. This is implemented in the standard library scripts.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">By the identity <b> ArcCos(x):=Pi/2-ArcSin(x)</b>, the inverse cosine is reduced to the inverse sine. Newton's method for <b>ArcSin(x)</b> consists of solving the equation <b>Sin(y)=x</b> for <b> y</b>. Implementation is similar to the calculation of <b> pi</b> in <b><tt>PiMethod0()</tt></b>. 
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For <b> x</b> close to 1, Newton's method for <b> ArcSin(x)</b> converges very slowly. An identity 
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcSin(x)=Sign(x)*(Pi/2-ArcSin(Sqrt(1-x^2))) </b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> can be used in this case. Another potentially useful identity is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcSin(x)=2*ArcSin(x/(Sqrt(2)*Sqrt(1+Sqrt(1-x^2)))).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Inverse tangent can also be related to inverse sine by
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=ArcSin(x/Sqrt(1+x^2)),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(1/x)=ArcSin(1/Sqrt(1+x^2)).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Alternatively, the Taylor series can be used for the inverse sine:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcSin(x)=x+1/2*x^3/3+(1*3)/(2*4)*x^5/5+(1*3*5)/(2*4*6)*x^7/7+....</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of &lt;b&gt;Tan(x)&lt;/b&gt;">
+
+</a>
+An everywhere convergent continued fraction can be used for the tangent:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Tan(x)=x/(1-x^2/(3-x^2/(5-x^2/(7-...)))).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Hyperbolic and inverse hyperbolic functions are reduced to exponentials and logarithms:
+<b>Cosh(x)=1/2*(Exp(x)+Exp(-x))</b>, <b>Sinh(x)=1/2*(Exp(x)-Exp(-x))</b>, <b>Tanh(x)=Sinh(x)/Cosh(x)</b>,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcCosh(x)=Ln(x+Sqrt(x^2-1)),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcSinh(x)=Ln(x+Sqrt(x^2+1)),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTanh(x)=1/2*Ln((1+x)/(1-x)).</b></font></center><p></p>
+
+
+
+<p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Continued fraction for <b>ArcTan(x)</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt;ArcTan(x)&lt;/b&gt;!by continued fraction">
+
+</a>
+<a name="continued fraction approximation!of &lt;b&gt;ArcTan(x)&lt;/b&gt;">
+
+</a>
+The idea to use continued fraction expansions for <b><tt>ArcTan</tt></b> comes from the book [Crenshaw 2000].
+In that book the author explains how he got the idea to use continued fraction
+expansions to approximate <b>ArcTan(x)</b>, given that the Taylor series converges
+slowly, and having a hunch that in that case the continued fraction expansion
+then converges rapidly. He then proceeds to show that in the case of
+<b>ArcTan(x)</b>, this advantage is very significant. However, it might not be true for all
+slowly converging series.
+
+
+</font><p>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The convergence of the continued fraction expansion of <b>ArcTan(x)</b> is indeed better than convergence of the Taylor series. Namely, the Taylor series converges only for <b>Abs(x)&lt;1</b> while the continued fraction converges for all <b> x</b>. However, the speed of its convergence is not uniform in <b> x</b>; the larger the value of <b> x</b>,
+the slower the convergence. The necessary number of terms of the
+continued fraction is in any case proportional to the required number
+of digits of precision, but the constant of proportionality depends on <b> x</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt; ArcTan(x)&lt;/b&gt;!by continued fraction!convergence rate">
+
+</a>
+This can be understood by the following argument.
+The difference between two partial continued fractions that differ only by one extra last term can be estimated as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Abs(delta):=Abs(b[0]/(a[1]+b[1]/(...+b[n-1]/a[n]))-b[0]/(a[1]+b[1]/(...+b[n]/a[n+1])))&lt;(b[0]*b[1]*...*b[n])/((a[1]*...*a[n])^2*a[n+1]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(This is a conservative estimate that could be improved with more careful analysis.
+See also the section on numerical continued fractions.)
+For the above continued fraction for <b>ArcTan(x)</b>, this directly gives the following estimate,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Abs(delta)&lt;(x^(2*n+1)*(n!)^2)/((2*n+1)*((2*n-1)!!)^2)&lt;=&gt;Pi*(x/2)^(2*n+1).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This formula only gives a meaningful bound if <b>x&lt;2</b>, but it is clear that the precision generally becomes worse when <b> x</b> grows. If we need <b> P</b> digits of precision, then, for a given <b> x</b>, the number of terms <b> n</b> has to be large enough so that the relative precision is sufficient, i.e. 
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> delta/ArcTan(x)&lt;10^(-P).</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> This gives <b>n&gt;(P*Ln(10))/(Ln(4)-2*Ln(x))</b> and for <b>x=1</b>, <b> n&gt;3/2*P</b>. This estimate is very close for small <b> x</b> and only slightly suboptimal for larger <b> x</b>: numerical experimentation shows that for <b> x&lt;=1</b>, the required number of terms for <b> P</b> decimal digits is only about <b> 4/3*P</b>, and for <b> x&lt;=0.42</b>, <b> n</b> must be about <b> 3/4*P</b>. If <b> x&lt;1</b> is very small then one needs a much smaller number of terms <b> n&gt;P*Ln(10)/(Ln(4)-2*Ln(x))</b>.
+Round-off errors may actually make the result less precise if we use many more terms than needed.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="computation of &lt;b&gt;ArcTan(x)&lt;/b&gt;!by Taylor series">
+
+</a>
+If we compare the rate of convergence of the continued fraction for <b>ArcTan(x)</b>  with the Taylor series
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=Sum(n,0,Infinity,((-1)^n*x^(2*n+1))/(2*n+1)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">we find that the number of terms of the Taylor series needed for <b>P</b> digits is about
+<b> n&gt;(P*Ln(10))/(2*Ln(x))</b>.
+Since the range of <b>x</b> can be reduced to about [0, 0.42] by trigonometric identities, the difference between this and <b> P*Ln(10)/(Ln(4)-2*Ln(x))</b> is never very large.
+At most twice as many terms <b>n</b> are needed in the Taylor series as in the continued fraction.
+However, a Taylor series can be evaluated efficiently using <b> O(Sqrt(n))</b> long multiplications, while a continued fraction with <b>n</b> terms always requires <b> n</b> divisions.
+Therefore, at high enough precision the continued fraction method will be much less efficient than the Taylor series.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s8">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Factorials and binomial coefficients
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="factorial">
+
+</a>
+The factorial is defined by <b>n! :=n*(n-1)*...*1</b> for integer <b> n&gt;=1</b> and the binomial coefficient is defined by
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Bin(n,m):=n! /(m! *(n-m)!).</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="double factorial">
+
+</a>
+The "double factorial" <b>n!! :=n*(n-2)*(n-4)*...</b> is also useful for some calculations.
+For convenience, one defines <b>0! :=1</b>, <b> 0!! :=1</b>, and <b>(-1)!! :=1</b>;
+with these definitions, the recurrence relations
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n! *(n+1)=(n+1)!,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>n!! *(n+2)=(n+2)!! </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">are valid also for <b>n=0</b> and <b> n= -1</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are
+two tasks related to the factorial: the exact integer calculation and
+an approximate calculation to some floating-point precision. Factorial
+of <b> n</b> has approximately <b> n*Ln(n)/Ln(10)</b> decimal digits, so an exact calculation is practical only for relatively small <b>n</b>. In the current implementation, exact factorials for <b> n&gt;65535</b> are not computed but print an error message advising the user to avoid exact computations of large factorials.
+For example, <b><tt>LnGammaNum(n+1)</tt></b> is able to compute <b> Ln(n!)</b> for very large <b>n</b> to any desired floating-point precision.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Exact factorials
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To compute factorials exactly, we use two direct methods. The first method is
+to multiply the numbers <b> 1</b>, <b> 2</b>, ..., <b> n</b> in a loop. This method requires <b> n</b>
+multiplications of short numbers with <b> P</b>-digit numbers, where <b> P=O(n*Ln(n))</b>
+is the number of digits in <b>n!</b>. Therefore its complexity is <b>O(n^2*Ln(n))</b>.
+This factorial routine is implemented in the Yacas core with a small speedup:
+consecutive pairs of integers are first multiplied together using platform math
+and then multiplied by the accumulator product.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="factorial!by bisection method">
+
+</a>
+A second method uses a binary tree arrangement of the numbers <b>1</b>, <b> 2</b>, ..., <b> n</b> similar to the recursive sorting routine ("merge-sort"). If we denote by <b><tt>a *** b</tt></b> the "partial factorial" product <b> a*(a+1)*...(b-1)*b</b>, then the tree-factorial algorithm consists of replacing <b> n!</b> by <b>1***n</b> and recursively evaluating
+<b>(1***m)*((m+1)***n)</b> for some integer <b>m</b> near <b> n/2</b>. The partial factorials of nearby numbers such as <b> m***(m+2)</b> are evaluated explicitly. The binary tree algorithm requires one multiplication of <b>P/2</b> digit integers at the last step, two <b> P/4</b> digit multiplications at the last-but-one step and so on. There are <b> O(Ln(n))</b> total steps of the recursion. If the cost of multiplication is <b>M(P)=P^(1+a)*Ln(P)^b</b>, then one can show that the total cost of the binary tree algorithm is <b> O(M(P))</b> if <b>a&gt;0</b> and <b> O(M(P)*Ln(n))</b> if <b>a=0</b> (which is the best asymptotic multiplication algorithm).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Therefore, the tree method wins over the simple method if the cost of multiplication is lower than quadratic.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The tree method can also be used to compute "double factorials" (<b> n!!</b>). This is faster than to use the identities
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(2*n)!! =2^n*n! </b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> and
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(2*n-1)!! =(2*n)! /(2^n*n!).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Double factorials are used, for instance, in the exact calculation of the Gamma function of half-integer arguments.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="binomial coefficients">
+
+</a>
+Binomial coefficients <b>Bin(n,m)</b> are found by first selecting the smaller of <b>m</b>, <b> n-m</b> and using the identity <b> Bin(n,m)=Bin(n,n-m)</b>. Then a partial factorial is used to compute
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Bin(n,m)=((n-m+1)***n)/m!.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This is always much faster than computing the three factorials in the definition of <b>Bin(n,m)</b>.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Approximate factorials
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Gamma function">
+
+</a>
+A floating-point computation of the factorial may proceed either via Euler's Gamma function, <b>n! =Gamma(n+1)</b>,
+or by a direct method (multiplying the integers and maintaining a
+certain floating-point precision).
+If the required precision is much less than the number of digits in the
+exact factorial, then almost all multiplications will be truncated to
+the precision <b>P</b> and the tree method <b> O(n*M(P))</b> is always slower than the simple method <b>O(n*P)</b>.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This remains to be seen.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s9">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Classical orthogonal polynomials: general case
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials">
+
+</a>
+A family of orthogonal polynomials is a sequence of polynomials <b>q _n(x)</b>, <b>n=0</b>, <b> 1</b>, ... that satisfy the orthogonality condition on some interval [<b> a</b>, <b> b</b>] with respect to some weight function <b> rho(x)</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(x,a,b)q _m(x)*q _n(x)*rho(x))=0 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for <b> m!=n</b>.
+The interval [<b> a</b>, <b> b</b>] can be finite or infinite and the weight function must be real and non-negative on this interval.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In principle, one could choose any (non-negative) weight function <b> rho(x)</b> and any interval [<b>a</b>, <b> b</b>] and construct the corresponding family of orthogonal polynomials <b> q _n(x)</b>.
+For example, take <b>q _0=1</b>, then take <b> q _1=x+c</b> with unknown <b> c</b> and find such <b> c</b> that <b> q _0</b> and <b> q _1</b> satisfy the orthogonality condition;
+this requires solving a linear equation.
+Then we can similarly find two unknown coefficients of <b> q _2</b> and so on.
+(This is called the Gramm-Schmidt orthogonalization procedure.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">But of course not all weight functions <b> rho(x)</b> and not all intervals [<b>a</b>, <b> b</b>]
+are equally interesting.
+There are several "classical" families of orthogonal polynomials that
+have been of use to theoretical and applied science.
+The "classical" polynomials are always solutions of a simple
+second-order differential equation and are always a specific case of
+some hypergeometric function.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The construction of "classical" polynomials can be described by the following scheme.
+The function <b> rho(x)</b> must satisfy the so-called Pearson's equation,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>1/rho(x)*(D(x)rho(x))=alpha(x)/beta(x),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where the functions <b>alpha</b>, <b> beta</b> are of the form
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> alpha(x)=alpha _0+alpha _1*x,</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> beta(x)=beta _0+beta _1*x+beta _2*x^2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Also, the following boundary conditions must be satisfied at both ends <b> a</b>, <b> b</b> of the interval,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> rho(a)*beta(a)=rho(b)*beta(b)=0.</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials!Rodrigues formula">
+
+</a>
+If the function <b> rho(x)</b> and the interval [<b>a</b>, <b> b</b>] are chosen in this way, then the corresponding orthogonal polynomials <b> q _n(x)</b> are solutions of the differential equation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Deriv(x)beta(x)*rho(x)*(Deriv(x)q _n(x)))-n*(alpha _1+(n+1)*beta _2)*q[n]=0.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The polynomials <b> q _n(x)</b> are also given by the Rodrigues formula,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>q _n(x)=A[n]/rho(x)*(D(x,n)rho(x)*beta(x)^n),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>A[n]</b> is a normalization constant.
+It is usual to normalize the polynomials so that
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(x,a,b)q _n(x)^2*rho(x))=1.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The normalization constant <b> A[n]</b> must be chosen accordingly.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials!generating function">
+
+</a>
+Finally, there is a formula for the generating function of the polynomials,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(x,w)=1/rho(x)*rho(t(x,w))/Abs(1-w*(beta _1+2*beta _2*t(x,w))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>t(x,w)</b> is the root of <b>t-x-w*beta(t)=0</b> which is nearest to <b> t=x</b> at small <b> w</b>.
+This function <b> G(x,w)</b> gives the unnormalized polynomials,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(x,w)=Sum(n,0,Infinity,q _n(x)/n! *w^n),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>q _n(x)=1/rho(x)*(D(x,n)rho(x)*beta(x)^n).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The classical families of (normalized) orthogonal polynomials are obtained in this framework with the following definitions:
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials!classical polynomials">
+
+</a>
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Legendre polynomials <b>OrthoP(n,x)</b>:
+<b>a= -1</b>, <b> b=1</b>, <b> rho(x)=1</b>,
+<b> alpha(x)=0</b>,
+<b> beta(x)=1-x^2</b>,
+<b> A[n]=(-1)^n/(2^n*n!)</b>.
+</font></li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Laguerre polynomials <b>(L^m)_n(x)</b>:
+<b>a=0</b>, <b> b= +Infinity</b>, <b> rho(x)=x^m*Exp(-x)</b>, (here <b>m&gt; -1</b> or else the weight function is not integrable on the interval),
+<b> alpha(x)=m-x</b>,
+<b> beta(x)=x</b>,
+<b> A[n]=1</b>.
+</font></li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Hermite polynomials <b> OrthoH(n,x)</b>:
+<b>a= -Infinity</b>, <b> b= +Infinity</b>, <b> rho(x)=Exp(-x^2)</b>,
+<b>alpha(x)= -2*x</b>,
+<b> beta(x)=1</b>,
+<b> A[n]=(-1)^n</b>.
+</font></li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Chebyshev polynomials of the first kind <b> OrthoT(n,x)</b>:
+<b>a= -1</b>, <b> b=1</b>, <b> rho(x)=1/Sqrt(1-x^2)</b>,
+<b>alpha(x)=x</b>,
+<b> beta(x)=1-x^2</b>,
+<b> A[n]=(-1)^n/(2*n)!!</b>.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Rodrigues formula or the generating function are not efficient ways to calculate the polynomials.
+A better way is to use linear recurrence relations connecting <b>q[n+1]</b> with <b>q[n]</b> and <b>q[n-1]</b>.
+(These recurrence relations can also be written out in full generality through <b>alpha(x)</b> and <b>beta(x)</b> but we shall save the space.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are three computational tasks related to orthogonal polynomials:
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Compute all coefficients of a given polynomial <b>q _n(x)</b> exactly.
+The coefficients are rational numbers, but their numerators and denominators usually grow exponentially quickly with <b>n</b>, so that at least some coefficients of the <b> n</b>-th polynomial are <b> n</b>-digit numbers.
+The array of coefficients can be obtained using recurrence relations <b> n</b> times.
+The required number of operations is proportional to <b> n^2</b>
+(because we need <b> n</b> coefficients and we have <b> n</b> recurrence relations for each of them)
+and to the multiplication time of <b> n</b>-digit integers, i.e. <b> O(n^2*M(n))</b>.
+Sometimes an exact formula for the coefficients is available
+(this is the case for the four "classical" families of polynomials above; see the next section).
+Then the computation time dramatically drops down to <b>O(n^2)</b> because no recurrences are needed.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Compute the numerical value of a given polynomial <b>q _n(x)</b> at given <b>x</b>, either exactly (at rational <b> x</b>) or approximately in floating point.
+This requires <b> O(n*M(n))</b> operations for exact computation and <b>O(n*M(P))</b> operations in <b>P</b>-digit floating point.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Compute a series of orthogonal polynomials with given coefficients <b> f[n]</b>, i.e. <b>f(x):=Sum(n,0,N,f[n]*q _n(x))</b>, at a given <b>x</b>.
+This task does not actually require computing the polynomials first,
+if we use the so-called Clenshaw-Smith procedure
+which gives the value of <b> f(x)</b> directly in <b>n</b> iterations.
+(See <a href="http://yacas.sourceforge.net/Algochapter4.html#c4s10">
+below
+</a>
+ for more explanations.)
+The number of operations is again <b> O(n*M(P))</b>.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the next section we shall give some formulae that allow to calculate particular polynomials more efficiently.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s10">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Classical orthogonal polynomials: special cases
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials!by specific formulae">
+
+</a>
+The fastest algorithm available is for Chebyshev (sometimes spelled Tschebyscheff) polynomials <b>OrthoT(n,x)</b>, <b>OrthoU(n,x)</b>.
+The following recurrence relations can be used:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>OrthoT(2*n,x)=2*OrthoT(n,x)^2-1,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoT(2*n+1,x)=2*OrthoT(n+1,x)*OrthoT(n,x)-x,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoU(2*n,x)=2*OrthoT(n,x)*OrthoU(n,x)-1,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoU(2*n+1,x)=2*OrthoT(n+1,x)*OrthoU(n,x).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This allows to
+compute <b>OrthoT(n,x)</b> and <b>OrthoU(n,x)</b> in time logarithmic in <b>n</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There is a way to implement this method without recursion.
+The idea is to build the sequence of numbers <b> n[1]</b>, <b>n[2]</b>, ... that are needed to compute <b>OrthoT(n,x)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For example, to compute <b>OrthoT(19,x)</b> using the second recurrence relation, we need <b>OrthoT(10,x)</b> and <b>OrthoT(9,x)</b>.
+We can write this chain symbolically as <b>19&lt;&gt;c(9,10)</b>.
+For <b>OrthoT(10,x)</b> we need only <b>OrthoT(5,x)</b>.
+This we can write as <b>10&lt;&gt;c(5)</b>.
+Similarly we find: <b>9&lt;&gt;c(4,5)</b>.
+Therefore, we can find both <b>OrthoT(9,x)</b> and <b>OrthoT(10,x)</b> if we know <b>OrthoT(4,x)</b> and <b>OrthoT(5,x)</b>.
+Eventually we find the following chain of pairs:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>19&lt;&gt;c(9,10)&lt;&gt;c(4,5)&lt;&gt;c(2,3)&lt;&gt;c(1,2)&lt;&gt;c(1).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Therefore, we find that <b>OrthoT(19,x)</b> requires to compute <b>OrthoT(k,x)</b> sequentially for all <b>k</b> that appear in this chain (1,2,3,4,5,9,10).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are about <b> 2*Ln(n)/Ln(2)</b> elements in the chain that leads to the number <b>n</b>.
+We can generate this chain in a straightforward way by examining the bits in the binary representation of <b> n</b>.
+Therefore, we find that this method requires no storage and time logarithmic in <b> n</b>.
+A recursive routine would also take logarithmic time but require logarithmic storage space.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that using these recurrence relations we do not obtain any individual coefficients of the Chebyshev polynomials.
+This method does not seem very useful for symbolic calculations (with symbolic <b> x</b>), because the resulting expressions are rather complicated combinations of nested products.
+It is difficult to expand such an expression into powers of <b> x</b>
+or manipulate it in any other way, except compute a numerical value.
+However, these fast recurrences are numerically unstable, so numerical
+values need to be evaluated with extended working precision.
+Currently this method is not used in Yacas, despite its speed.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An alternative method for very large <b> n</b> would be to use the identities
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoT(n,x)=Cos(n*ArcCos(x)),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>OrthoU(n,x)=Sin((n+1)*ArcCos(x))/Sqrt(1-x^2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The computation will require an extended-precision evaluation of <b>ArcCos(x)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Coefficients
+for Legendre, Hermite, Laguerre, Chebyshev polynomials can be obtained
+by explicit formulae. This is faster than using recurrences if we need
+the entire polynomial symbolically, but still slower than the
+recurrences for numerical calculations.
+</font></p><p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Chebyshev polynomials of the first and of the second kind:
+If <b>k=Floor(n/2)</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>OrthoT(n,x)=Sum(i,0,k,(-1)^i*(2*x)^(n-2*i)/(n-i)*Bin(n-i,i)),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>OrthoU(n,x)=Sum(i,0,k,(-1)^i*(2*x)^(n-2*i)*Bin(n-i,i)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here it is assumed that <b>n&gt;0</b> (the case <b> n=0</b> must be done separately). The summation is over integer values of <b> i</b> such that <b> 0&lt;=2*i&lt;=n</b>, regardless of whether <b> n</b> is even or odd.
+</font></li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Hermite polynomials:
+For even <b> n=2*k</b> where <b> k&gt;=0</b>, 
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoH(n,x)=(-2)^k*(n-1)!! *Sum(i,0,k,(x^(2*i)*(-4)^i*k!)/((2*i)! *(k-i)!)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and for odd <b>n=2*k+1</b> where <b> k&gt;=0</b>,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoH(n,x)=2*(-2)^k*n!! *Sum(i,0,k,(x^(2*i+1)*(-4)^i*k!)/((2*i+1)! *(k-i)!)).</b></font></center><p></p>
+
+</li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Legendre polynomials:
+If <b>k=Floor(n/2)</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>OrthoP(n,x)=2^(-n)*Sum(i,0,k,(-1)^i*x^(n-2*i)*Bin(n,i)*Bin(2*n-2*i,n)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The summation is over integer values of <b>i</b> such that <b> 0&lt;=2*i&lt;=n</b>, regardless of whether <b> n</b> is even or odd.
+</font></li></ul>
+
+<p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Laguerre polynomials:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> OrthoL(n,a,x)=Sum(i,0,n,(-x)^i/i! *Bin(n+a,n-i)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here the parameter <b>a</b> might be non-integer.
+So the binomial coefficient must be defined for non-integer <b> a</b> through the Gamma function instead of factorials, which gives
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Bin(n+a,n-i)=((n+a)*...*(i+1+a))/(n-i)!.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The result is a rational function of <b>a</b>.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In all formulae for the coefficients, there is no need to compute factorials every time:
+the next coefficient can be obtained from the previous one by a few short multiplications and divisions.
+Therefore this computation costs <b> O(n^2)</b> short operations.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c5s11">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Series of orthogonal polynomials
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="orthogonal polynomials!Clenshaw-Smith recurrence">
+
+</a>
+If we need to compute a series of orthogonal polynomials with given coefficients <b>f[n]</b>, i.e.
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f(x):=Sum(n,0,N,f[n]*q _n(x)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">at a given <b>x</b>, we do not need to compute the orthogonal polynomials separately.
+The Clenshaw-Smith recurrence procedure allows to compute the value of the sum directly.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose a family of functions <b> q _n(x)</b>,
+<b>n=0</b>, 1, ... satisfies known recurrence relations of the form
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> q[n]=A _n(x)*q[n-1]+B _n(x)*q[n-2],</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>A _n(x)</b>  and <b>B _n(x)</b>  are some known functions and <b>q _0(x)</b> and
+<b>q _1(x)</b> are known.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The procedure goes as follows [Luke 1975].
+First, for convenience, we define <b>q[-1]:=0</b> and the coefficient <b> A _1(x)</b>  so
+that <b>q[1]=A[1]*q[0]</b>.
+This allows us to use the above recurrence relation formally also at <b>n=1</b>. 
+Then, we take the array of coefficients <b> f[n]</b> and define a backward recurrence
+relation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>X[N+1]=X[N+2]=0,</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> X[n]=A[n+1]*X[n+1]+B[n+2]*X[n+2]+f[n],</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>n=N</b>, <b> N-1</b>, ..., 0.
+(Note that here we have used the artificially defined coefficient <b> A[1]</b>.)
+Magically, the value we are looking for is given by 
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f(x)=X[0]*q[0].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This happens because we can express
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[n]=X[n]-A[n+1]*X[n+1]-B[n+2]*X[n+2],</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for <b>n=0</b>, 1, ..., <b> N</b>,
+regroup the terms in the sum 
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> f(x):=Sum(n,0,N,f[n]*q _n(x)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">to collect <b>X[n]</b>, obtain
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f(x)=Sum(n,0,N,X[n]*q[n])-Sum(n,1,N,X[n]*A[n]*q[n-1])-Sum(n,2,N,X[n]*B[n]*q[n-2]),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and finally
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f(x)=X[0]*q[0]+X[1]*(q[1]-A[1]*q[1]) </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>+Sum(n,2,N,X[n]*(q[n]-A[n]*q[n-1]-B[n]*q[n-2]))=X[0]*q[0].</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The book [Luke 1975] warns that the recurrence relation for <b>X[n]</b> is not always numerically stable.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that in the book there seems to be some confusion as 
+to how the coefficient <b>A[1]</b> is defined.
+(It is not defined explicitly there.)
+Our final formula differs from the formula in [Luke 1975] for this reason.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The Clenshaw-Smith procedure is analogous to the Horner scheme of calculating polynomials.
+This procedure can also be generalized for linear recurrence relations having
+more than two terms.
+The functions <b>q _0(x)</b>, <b>q _1(x)</b>, <b>A _n(x)</b>, and <b>B _n(x)</b>
+do not actually have to be polynomials for this to work.
+
+
+</font></p><p>
+
+
+
+
+</p></body></html>

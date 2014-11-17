@@ -1,0 +1,197 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Bayesian inference for non-stationary distributions
+\layout Author
+
+Tomas Ukkonen
+\layout Standard
+
+
+\size footnotesize 
+- Some notes about how to use bayesian inference with non-stationary problems.
+\layout Section
+
+Introduction
+\layout Standard
+
+Besides complexity of computing bayesian inference with complex distributions
+ straightforward use of bayesian inference makes two assumptions which restrict
+ it's practical usability.
+ It is often assumed that target distributions are stationary instead of
+ being non-stationary, time dependent distributions and that samples given
+ to bayesian inference are independenty and identically distributed instead
+ of being correlated.
+\layout Standard
+
+For examle, if at first one million samples are collected between time period
+ [0,1] seconds and then hundred samples are collected between [1,10] seconds
+ then in many problems it seems good idea to give more weight to samples
+ collected between [1,10] seconds.
+ This is especially true if problem is to predict future values of data
+ and distribution of data is likely change as a function of time.
+\layout Section
+
+Non-Stationary Normal Inference
+\layout Standard
+
+In non-stationary problems one wants to inference distribution of parameters
+ 
+\begin_inset Formula $x(t)$
+\end_inset 
+
+: 
+\begin_inset Formula $p_{x(t)}(x)$
+\end_inset 
+
+.
+ The random variable 
+\begin_inset Formula $x(t)$
+\end_inset 
+
+'s distribution is non-stationary so sampling time of each sample 
+\begin_inset Formula $d(t)$
+\end_inset 
+
+ must be known.
+ Intelligent inference to calculate might be
+\layout Standard
+\added_space_bottom medskip \align center 
+
+\begin_inset Formula $p(x(t)|d(t),x(s))\sim p(d(t)|x(t))p(x(t)|x(s))$
+\end_inset 
+
+.
+\layout Standard
+
+In equation 
+\begin_inset Formula $t>s$
+\end_inset 
+
+ and 
+\begin_inset Formula $s$
+\end_inset 
+
+ is time of the previous update.
+ This is normal inference except for prior distribution of 
+\begin_inset Formula $x(t)$
+\end_inset 
+
+ which isn't 
+\begin_inset Formula $x(s)$
+\end_inset 
+
+ but instead merely depend on it in a more weakly ways.
+\layout Standard
+
+Finding out good conditional distribution for 
+\begin_inset Formula $p(x(t)|x(s))$
+\end_inset 
+
+ can be hard.
+ However, it's easy to find out seemingly good distribution if everything
+ is assumed to be normally distributed and some, maybe not correct, assumptions
+ are made which make things very easy to calculate.
+\layout Standard
+
+Let 
+\begin_inset Formula $z=x(t)-x(s)$
+\end_inset 
+
+ be normally distributed 
+\begin_inset Formula $N(0,\alpha^{|t-s|}A)$
+\end_inset 
+
+ where 
+\begin_inset Formula $\alpha$
+\end_inset 
+
+ is free parameter and 
+\begin_inset Formula $A$
+\end_inset 
+
+ could be 
+\begin_inset Formula $\Sigma_{x(s)}$
+\end_inset 
+
+.
+ It seems plausible to make assumption that on average mean value of distributio
+n doesn't change.
+ Accuracy or uncertainty, as covariance is often intepreted, should change
+ if distribution is known to be non-stationary.
+ A variable 
+\begin_inset Formula $y=x(t)=z+x(s)$
+\end_inset 
+
+ is sum of two normally distributed variables so the resulting variable
+ is also normally distributed and it's mean and covariance are
+\layout Standard
+\align center 
+
+\begin_inset Formula $\mu_{y}=\mu_{z}+\mu_{s}=\mu_{s}$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $\Sigma_{y}=\Sigma_{z}+\Sigma_{x(s)}=\alpha^{|t-s|}A+\Sigma_{x(s)}=(\alpha^{|t-s|}+1)\Sigma_{x(s)}$
+\end_inset 
+
+.
+\layout Standard
+
+And the last equivalency holds only if 
+\begin_inset Formula $A=\Sigma_{x(s)}$
+\end_inset 
+
+.
+ What is not known is 
+\begin_inset Formula $\alpha$
+\end_inset 
+
+ which should be also calculated through Bayesian inference.
+\layout Standard
+
+TODO
+\layout Standard
+
+Distribution of 
+\begin_inset Formula $\alpha$
+\end_inset 
+
+...
+ ...
+ and using it 
+\begin_inset Formula $\alpha$
+\end_inset 
+
+can be inferenced...
+\layout Standard
+
+Covariance matrix should be also calculated through bayesian inference...
+\the_end

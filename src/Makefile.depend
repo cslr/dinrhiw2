@@ -1,0 +1,5 @@
+point.o: point.cpp point.h printable.h point.cpp
+static_array.o: static_array.cpp static_array.h array.h container.h \
+ static_array.cpp
+dynamic_array.o: dynamic_array.cpp dynamic_array.h array.h container.h \
+ stack.h queue.h dynamic_array.cpp

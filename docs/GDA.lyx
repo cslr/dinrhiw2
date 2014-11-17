@@ -1,0 +1,623 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+Gaussian Distribution based Aggloromative Clustering
+\layout Author
+
+Tomas Ukkonen <tomas.ukkonen@iki.fi>
+\newline 
+Nuways research
+\layout Abstract
+
+GDA clustering and/or modelling aims to give good clustering results if
+ partly implicit assumptions about properties of good clustering hold in
+ a given problem.
+ This means more CPU time is needed for processing data.
+ GDA uses a hierarchical, aggloromative, bottom-up clustering method were
+ clusters are merged according to their similarity.
+ GDA clustering attempts to combine closely related tasks: distribution
+ modelling (through the mixture of gaussians approximation) and clustering
+ of data.
+ The hierarchical approach tries to create a multiple level of detail solution
+ to clustering and distribution estimation problems.
+ *SOMETHING ABOUT RESULTS*
+\layout Section
+
+Idea
+\layout Standard
+
+Each cluster is modelled as one big gaussian distribution around mean of
+ points that belong to it.
+ For each cluster number of points 
+\begin_inset Formula $n_{x}$
+\end_inset 
+
+, mean 
+\begin_inset Formula $\textrm{\mu_{x}}$
+\end_inset 
+
+ and matrix 
+\begin_inset Formula $S_{x}=E[xx^{T}]$
+\end_inset 
+
+ or 
+\begin_inset Formula $\sum_{x}$
+\end_inset 
+
+ are kept up-to-date.
+ Parameters above can be easily updated when merging clusters.
+\layout Standard
+\added_space_top medskip \align center 
+
+\begin_inset Formula $n_{x\cup y}=n_{x}+n_{y}$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $\mu_{x\cup y}=\frac{n_{x}}{n_{x}+n_{y}}\mu_{x}+\frac{n_{y}}{n_{x}+n_{y}}\mu_{y}$
+\end_inset 
+
+
+\layout Standard
+\added_space_bottom medskip \align center 
+
+\begin_inset Formula $S_{x\cup y}=\frac{n_{x}}{n_{x}+n_{y}}S_{x}+\frac{n_{y}}{n_{x}+n_{y}}S_{y}$
+\end_inset 
+
+
+\layout Standard
+
+Because covariance matrix is needed in practice and it can be either calculated
+ from parameters 
+\begin_inset Formula $\sum_{x}=S_{x}-\mu_{x}\mu_{x}^{T}$
+\end_inset 
+
+ or instead of 
+\begin_inset Formula $S$
+\end_inset 
+
+, 
+\begin_inset Formula $\sum$
+\end_inset 
+
+can be directly used:
+\layout Standard
+\added_space_top medskip \align center 
+
+\begin_inset Formula $\sum_{x\cup y}=S_{x\cup y}-\mu_{x\cup y}\mu_{x\cup y}^{T}$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $=\frac{n_{x}}{n_{x}+n_{y}}S_{x}+\frac{n_{y}}{n_{x}+n_{y}}S_{y}-\frac{n_{x}^{2}}{(n_{x}+n_{y})^{2}}\mu_{x}\mu_{x}^{T}-\frac{n_{x}n_{y}}{(n_{x}+n_{y})^{2}}\mu_{y}\mu_{x}^{T}-\frac{n_{x}n_{y}}{(n_{x}+n_{y})^{2}}\mu_{x}\mu_{y}^{T}-\frac{n_{y}^{2}}{(n_{x}+n_{y})^{2}}\mu_{y}\mu_{y}^{T}$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $=\frac{n_{x}}{n_{x}+n_{y}}\sum_{x}+\frac{n_{Y}}{n_{x}+n_{y}}\sum_{y}+\frac{n_{x}n_{y}}{(n_{x}+n_{y})^{2}}(\mu_{x}\mu_{x}^{T}+\mu_{y}\mu_{y}^{T}-\mu_{y}\mu_{x}^{T}-\mu_{x}\mu_{y}^{T})$
+\end_inset 
+
+
+\layout Standard
+\added_space_bottom medskip \align center 
+
+\begin_inset Formula $=\frac{n_{x}}{n_{x}+n_{y}}\sum_{x}+\frac{n_{Y}}{n_{x}+n_{y}}\sum_{y}+\frac{n_{x}n_{y}}{(n_{x}+n_{y})^{2}}(\mu_{x}-\mu_{y})(\mu_{x}-\mu_{y})^{T}$
+\end_inset 
+
+
+\layout Standard
+
+By using the above equation parameters of clusters can be 
+\begin_inset Formula $(n_{x},\mu_{x},\sum_{x})$
+\end_inset 
+
+.
+\layout Section
+
+Similarity
+\layout Standard
+
+Similarity between clusters is needed when deciding which clusters to merge.
+ One intuitive way to measure similarity between clusters is to measure
+ amount of overlap between clusters.
+\layout Standard
+\align center 
+
+\begin_inset Formula $sim(x,y)=\int p_{x}(z)*p_{y}(z)dz$
+\end_inset 
+
+
+\layout Standard
+
+Because both distributions are normal distributions it is then a relatively
+ easy task to calculate similarity 
+\begin_inset Formula $sim(x,y)$
+\end_inset 
+
+ as a function of relevant parameters 
+\begin_inset Formula $sim(\mu_{x},\sum_{x},\mu_{y},\sum_{y})$
+\end_inset 
+
+.
+\layout Standard
+
+
+\begin_inset Formula $sim(x,y)$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $=\int|\Sigma_{x}|^{-\frac{d}{2}}(2\pi)^{-\frac{d}{2}}e^{-\frac{1}{2}(z-\mu_{x})^{T}\Sigma_{x}^{-1}(z-\mu_{x})}|\Sigma_{y}|^{-\frac{d}{2}}(2\pi)^{-\frac{d}{2}}e^{-\frac{1}{2}(z-\mu_{y})^{T}\Sigma_{y}^{-1}(z-\mu_{y})}dz$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $=|\Sigma_{x}|^{-\frac{d}{2}}|\Sigma_{y}|^{-\frac{d}{2}}(2\pi)^{-d}e^{-[\frac{1}{2}\mu_{x}^{T}\Sigma_{x}^{-1}\mu_{x}+\frac{1}{2}\mu_{y}^{T}\Sigma_{y}^{-1}\mu_{y}]}*$
+\end_inset 
+
+
+\layout Standard
+\added_space_bottom medskip 
+
+\begin_inset Formula $\int e^{-\frac{1}{2}[z^{T}(\Sigma_{x}^{-1}+\Sigma_{y}^{-1})z-2(\mu_{x}^{T}\Sigma_{x}^{-1}+\mu_{y}^{T}\Sigma_{y}^{-1})z]}dz$
+\end_inset 
+
+
+\layout Standard
+
+By marking
+\layout Standard
+\align center 
+
+\begin_inset Formula $\Sigma_{z}^{-1}=\Sigma_{x}^{-1}+\Sigma_{y}^{-1}$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $\Sigma_{z}^{-1}\mu_{z}=(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})$
+\end_inset 
+
+
+\layout Standard
+\added_space_top medskip \added_space_bottom medskip 
+Above equation can be written as
+\layout Standard
+
+
+\begin_inset Formula $|\Sigma_{x}|^{-\frac{d}{2}}|\Sigma_{y}|^{-\frac{d}{2}}(2\pi)^{-d}e^{-[\frac{1}{2}\mu_{x}^{T}\Sigma_{x}^{-1}\mu_{x}+\frac{1}{2}\mu_{y}^{T}\Sigma_{y}^{-1}\mu_{y}]}*$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $e^{+\frac{1}{2}(\mu_{x}^{T}\Sigma_{x}^{-1}+\mu_{y}^{T}\Sigma_{y}^{-1})(\Sigma_{x}^{-1}+\Sigma_{y}^{-1})^{-1}(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})}$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $\int e^{-\frac{1}{2}(z^{T}\Sigma_{z}^{-1}z-2\mu_{z}^{T}\Sigma_{z}^{-1}z+\mu_{z}^{T}\Sigma_{z}^{-1}\mu_{z})}dz$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $=|\Sigma_{z}|^{\frac{d}{2}}|\Sigma_{x}|^{-\frac{d}{2}}|\Sigma_{y}|^{-\frac{d}{2}}(2\pi)^{-d}(2\pi)^{\frac{d}{2}}e^{-[\frac{1}{2}\mu_{x}^{T}\Sigma_{x}^{-1}\mu_{x}+\frac{1}{2}\mu_{y}^{T}\Sigma_{y}^{-1}\mu_{y}]}*$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $e^{+\frac{1}{2}(\mu_{x}^{T}\Sigma_{x}^{-1}+\mu_{y}^{T}\Sigma_{y}^{-1})(\Sigma_{x}^{-1}+\Sigma_{y}^{-1})^{-1}(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})}$
+\end_inset 
+
+
+\layout Standard
+
+
+\begin_inset Formula $=(2\pi)^{-\frac{d}{2}}(\frac{|\Sigma_{z}|}{|\Sigma_{y}||\Sigma_{x}|})^{\frac{d}{2}}e^{-\frac{1}{2}[\mu_{x}^{T}\Sigma_{x}^{-1}\mu_{x}+\mu_{y}^{T}\Sigma_{y}^{-1}\mu_{y}-(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})^{T}(\Sigma_{x}^{-1}+\Sigma_{y}^{-1})^{-1}(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})]}$
+\end_inset 
+
+.
+\layout Standard
+\added_space_top medskip \added_space_bottom medskip 
+Because in practice there may be cases were most of the values are almost
+ zero, taking logarithm removes exponentation and makes round of errors
+ due finite precision less likely.
+\layout Standard
+\align center 
+
+\begin_inset Formula $sim(x,y)=$
+\end_inset 
+
+
+\layout Standard
+\align center 
+
+\begin_inset Formula $-\frac{d}{2}ln(2\pi*|\Sigma_{x}||\Sigma_{y}||\Sigma_{x}^{-1}+\Sigma_{y}^{-1}|)-\frac{1}{2}\mu_{x}^{T}\Sigma_{x}^{-1}\mu_{x}-\frac{1}{2}\mu_{y}^{T}\Sigma_{y}^{-1}\mu_{y}$
+\end_inset 
+
+
+\layout Standard
+\added_space_bottom medskip \align center 
+
+\begin_inset Formula $+\frac{1}{2}(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})^{T}(\Sigma_{x}^{-1}+\Sigma_{y}^{-1})^{-1}(\Sigma_{x}^{-1}\mu_{x}+\Sigma_{y}^{-1}\mu_{y})$
+\end_inset 
+
+.
+\layout Standard
+
+This similarity measure doesn't (seem to, I haven't really formally checked)
+ satisfy motonicity (in a sense of defined in (ref.) Statistical Natural
+ Language Processing book (material from research papers of course)) so
+ it isn't really good similarity measure for clustering.
+ Two other similarity measures that could be used are described in the next
+ section.
+\layout Subsection
+
+Better similarity measures
+\layout Subsubsection
+
+Mutual Information Loss
+\layout Standard
+
+As described in (ref.
+ Statistical Natural Language Processing) minimizing a mutual information
+ loss when selecting which cluster to merge forces selection to merge clusters
+ with large amount of mutual information which still satisfies monotonicity
+ requirement.
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $MILoss(i,j)=\sum I(c_{k};c_{i})+I(c_{k};c_{j})-I(c_{k};c_{i}\cup c_{j})$
+\end_inset 
+
+.
+\layout Standard
+
+Common information between clusters, which are described by normal distributions
+ is easy to calculate when the joint distribution is assumed to be normal
+ distribution created through merging approach described earlier.
+ This common information measure doesn't measure optimum (in a minimum descripti
+on length/entropy sense) common information.
+ However, it does measure common information when everything is approximated
+ with gaussians (TODO: show that this is in a sense 'optimal' when clusters
+ are approximated with gaussians).
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $I(a,b)=H(a)+H(b)-H(a,b)$
+\end_inset 
+
+
+\layout Standard
+
+And it is straightforward task to calculate entropy of gaussian distributed
+ variables.
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $I(a,b)=d*(1+ln(2\pi))+\frac{1}{2}ln(|\Sigma_{a}||\Sigma_{b}|)-H(a,b)$
+\end_inset 
+
+
+\layout Standard
+
+Calculating 
+\begin_inset Formula $H(a,b)$
+\end_inset 
+
+ without joint distribution to use is impossible to do but by defining common
+ non-optimally compressed data 
+\begin_inset Formula $H_{C}$
+\end_inset 
+
+ representation lenght (information with limited computing powers or abilities).
+ Where 
+\begin_inset Formula $C$
+\end_inset 
+
+ marks restrictions to a representation coding and 
+\begin_inset Formula $C(A)$
+\end_inset 
+
+ is a distribution under restrictions 
+\begin_inset Formula $C$
+\end_inset 
+
+ which minimizes
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $H_{C}(A)=H(A)+D_{A|C(A)}$
+\end_inset 
+
+
+\layout Standard
+
+So mutual common information under restrictions 
+\begin_inset Formula $C$
+\end_inset 
+
+ is
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $I_{C}(a,b)=H_{C}(a)+H_{C}(b)-H_{C}(a,b)$
+\end_inset 
+
+.
+\layout Standard
+
+In GDA all data is forced to be normally distributed and compression would
+ be based on normal assumptions so 
+\begin_inset Formula $H_{C}(a)$
+\end_inset 
+
+ and 
+\begin_inset Formula $H_{C}(b)$
+\end_inset 
+
+ are same as above.
+ But this definition is still too vague to define exact meaning of 
+\begin_inset Formula $H_{C}(a,b)$
+\end_inset 
+
+.
+ If 
+\begin_inset Formula $C$
+\end_inset 
+
+ literally means 
+\begin_inset Quotes eld
+\end_inset 
+
+pick 
+\begin_inset Formula $d$
+\end_inset 
+
+-dimensional normal distribution with smallest Kullback-Leibler divergence
+\begin_inset Quotes erd
+\end_inset 
+
+ then task is to find parameters which minimize 
+\begin_inset Formula $D_{p(a,b)|N(\mu_{z},\Sigma_{z})}$
+\end_inset 
+
+, where 
+\begin_inset Formula $2d$
+\end_inset 
+
+ dimensional distribution 
+\begin_inset Formula $p(a,b)$
+\end_inset 
+
+ is not exactly known.
+ This seems to be difficult task to do exactly but intuitively divergence
+ for representing observations from mixture of gaussians defined by 
+\series bold 
+
+\begin_inset Formula $a$
+\end_inset 
+
+ 
+\series default 
+and 
+\series bold 
+
+\begin_inset Formula $b$
+\end_inset 
+
+ 
+\series default 
+could be quite small by defining 
+\begin_inset Formula $H_{C}(a,b)=2H(a\cup b)$
+\end_inset 
+
+ (in other words clusters are merged to bigger normally distributed cluster
+ as defined in the previous section).
+ This gives approximation for mutual information
+\layout Standard
+\added_space_top smallskip \added_space_bottom medskip \align center 
+
+\begin_inset Formula $I_{C}(a,b)=\frac{1}{2}ln\frac{|\Sigma_{a}||\Sigma_{b}|}{|\Sigma_{a\cup b}|^{2}}$
+\end_inset 
+
+
+\layout Standard
+
+Where 
+\begin_inset Formula $\Sigma_{a\cup b}=\frac{n_{a}}{n_{a}+n_{b}}\Sigma_{a}+\frac{n_{b}}{n_{a}+n_{b}}\Sigma_{b}+\frac{n_{a}n_{b}}{(n_{a}+n_{b})^{2}}(\mu_{a}-\mu_{b})(\mu_{a}-\mu_{b})^{T}$
+\end_inset 
+
+
+\layout Standard
+
+Above is ONLY INTUITION BASED approximation so it is uncertain whether this
+ is works well in all possible or typical cases.
+\layout Standard
+
+At least the change of distance between clusters seem to have desired effect
+ on this mutual information approximation because when the distance between
+ means is big the static covariance terms can be ignored and 
+\begin_inset Formula $\Sigma_{a\cup b}\approx\Sigma_{a\cup b}^{*}=\frac{n_{a}n_{b}}{(n_{a}+n_{b})^{2}}(\mu_{a}-\mu_{b})(\mu_{a}-\mu_{b})^{T}$
+\end_inset 
+
+.
+ The derivate of 
+\begin_inset Formula $ln|\Sigma_{a\cup b}^{*}|=\sum ln(\lambda_{i})$
+\end_inset 
+
+ and 
+\begin_inset Formula $trace(\Sigma_{a\cup b}^{*})=\sum\lambda_{i}=\frac{n_{a}n_{b}}{(n_{a}+n_{b})^{2}}||\mu_{a}-\mu_{b}||^{2}$
+\end_inset 
+
+ has same sign as function of 
+\begin_inset Formula $||\mu_{a}-\mu_{b}||$
+\end_inset 
+
+ and because 
+\begin_inset Formula $trace\rightarrow\infty$
+\end_inset 
+
+, when 
+\begin_inset Formula $||\mu_{a}-\mu_{b}||\rightarrow\infty$
+\end_inset 
+
+, also 
+\begin_inset Formula $|\Sigma_{a\cup b}^{*}|\rightarrow\infty$
+\end_inset 
+
+as desired.
+\layout Subsubsection
+
+Total overlap
+\layout Standard
+
+As indicated by the previous result, when clusters overlap they are likely
+ to share much information.
+ Therefore a mutual information loss motivated candidate for merging criterion
+ would minimize total overlap loss caused by merge.
+ This causes merged clusters to overlap much with each other and little
+ with other ones.
+\layout Standard
+\added_space_top smallskip \added_space_bottom smallskip \align center 
+
+\begin_inset Formula $MOL(i,j)=\sum_{a\neq i,j}[OL(a,i)+OL(a,j)-OL(a,i\cup j)]$
+\end_inset 
+
+
+\layout Standard
+
+Where clusters to merge are selected by minimizing mutual overlap loss 
+\begin_inset Formula $(i,j)=min_{i,j}MOL(i,j)$
+\end_inset 
+
+.
+\layout Section
+
+Algorithm
+\layout Standard
+
+An practical algorithm which implements GDA clustering takes 
+\begin_inset Formula $O(n^{2})$
+\end_inset 
+
+ time and space.
+\layout List
+\labelwidthstring 00.00.0000
+
+1 Create list where there's entry for each cluster and each entry has
+\newline 
+list of similarities between other clusters
+\layout List
+\labelwidthstring 00.00.0000
+
+2 Find the biggest similarity from list of clusters.
+\layout List
+\labelwidthstring 00.00.0000
+
+3 Merge clusters with biggest similarity, recalculate similarity between
+ other 
+\newline 
+clusters and remove other cluster from each entry's similarity list.
+\layout List
+\labelwidthstring 00.00.0000
+
+4 During update also find the new biggest similarity and update tree data
+\newline 
+structure representing clustering.
+ Continue till number of clusters is one.
+\layout Standard
+
+Above hierarcical clustering algorithm is quite self explanatory except
+ that with single point clusters covariance matrix is zero and similarity
+ measures proposed above cannot be used.
+ It seems to be good idea to do rough clustering with too many clusters.
+ These clusters can be created with K-means algorithm by setting K to be
+ value directly related to N, maybe 
+\begin_inset Formula $K=ln(N)$
+\end_inset 
+
+ for large 
+\begin_inset Formula $N$
+\end_inset 
+
+s could work well enough.
+ Better value could be selected if one knows the expected number of good
+ clusters.
+ The number of clusters used in the initial K-means step should be chosen
+ so that good clusters are divided to many parts by K-means algorithm.
+\layout Subsection
+
+Expected number of clusters
+\layout Standard
+
+By making reasonable assumptions about data maybe some 
+\begin_inset Quotes eld
+\end_inset 
+
+non-informative
+\begin_inset Quotes erd
+\end_inset 
+
+ (a term somewhat misused and borrowed from bayesian terminology) guesses
+ could be made by using only a few very simple parameters about data such
+ as number of points, mean, covariance and some higher moments.
+\layout Section
+
+Bayesian update method and MoG modelling
+\layout Standard
+
+Above method could be also used to calculate tree like structure which creates
+ mixture of gaussians at different resolution levels where resolution is
+ specified by a cluster size before which clusters are split into two smaller
+ clusters according to GDA hierarchical clustering tree.
+\layout Standard
+
+Because GDA tree provides a multiresolutional, approximate MoG model for
+ modelling data where solutions at different levels are strongly related,
+ it seems plausible to try to find fast bayesian inference method for updating
+ GDA tree.
+ 
+\the_end
