@@ -1,4 +1,4 @@
-After building and installing dinrhiw library and tools (tools directory) successfully you have too programs: *dstool* and *nntool*.
+After building and installing dinrhiw library and tools (tools directory) successfully you have two programs: *dstool* and *nntool*.
 
 The _dstool_ is used to preprocess and store data in binary format for nntool. It accepts ASCII datafiles where each row is a single observation and numerical (floating point) data is separated by spaces. When doing machine learning one then needs to create two ASCII files: input data (x) and corresponding output (y) data file when learning relation y = f(x). 
 
