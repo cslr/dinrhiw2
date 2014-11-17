@@ -44,7 +44,7 @@ realclean: clean removelib
 	$(CD) src/crypto && $(MAKE) realclean
 	$(CD) src/neuralnetwork && $(MAKE) realclean
 	$(RM) dinrhiw.pc
-	$(RM) Makefile # .. suicide, can be done?
+	$(RM) Makefile 
 	$(RM) src/Makefile src/math/Makefile src/crypto/Makefile
 	$(RM) src/neuralnetwork/Makefile	
 	$(RM) config.log
