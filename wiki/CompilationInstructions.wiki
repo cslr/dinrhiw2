@@ -1,0 +1,21 @@
+The library can be tricky to get working. Here are basic instructions.
+
+1. Get the code from the repository.
+2. use build.sh to build configure script and other things
+3. Configure script fails if you don't have necessarily (few general) support libraries installed. Install development libraries and you are ok. (libz-dev, libgmp-dev, blas and *pkg-config*). I guess you can get these from prepackaged debs or rpms.
+
+make
+make makelib
+su root
+make install | tee install.log
+
+After this go to *tools* subdirectory:
+
+make
+make install | tee install.log
+
+This will build test programs: aescipher, *dstool* and *nntool*. After this execute *test_data.sh* and *test_data2.sh* scripts. It will do basic data preprocessing and show how to learn relationships from the data using dstool and nntool (_wine_measurements_ and _breast_cancer_ data). Currently, the script does (only thing that is possible) basic data optimization using PCA preprocessing and gradient descent with early stopping and prints the results to the output showing that the prediction code works.
+
+So currently the library creates a command-line tool that can be used to do (multistart parallel) gradient descent optimization of neural network weights as well as HMC sampling from a simple bayesian neural network code.
+
+TODO: cleanup the code there are lots of classes that are not used. Remove references to CORBA etc as they are NOT going to be implemented.
