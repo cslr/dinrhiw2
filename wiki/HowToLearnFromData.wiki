@@ -47,3 +47,5 @@ tail wdbc.out
 }}}
 
 Here dstool is first used to import data into binary format (-create, -import), after which data is preprocessed (-padd) to have zero mean and unit variance (PCA) without correlations. After this nntool is used to learn from the data ("grad") using a gradient descent algorithm. The learnt neural network is then tested by clearing the output data (-clear) and by storing ("use") and printing (-print:1) the predicted output of the network. Finally, some real correct outputs (tail wdbc.out) is printed on the screen for comparision.
+
+A more complex data learning technique can be activated by using _test_data3_bayes.sh_ script which used a simple bayesian model and sampling technique to approximate bayesian inference to learn sample of probable neural network parameters which are then used to estimate E(y|x) and Var(y|x). This technique is slower but gives somewhat better results in difficult problems like in dataset 3 where dinrhiw's algorithms cannot find a good model to predict outputs from inputs.
