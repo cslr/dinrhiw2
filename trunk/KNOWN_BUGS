@@ -7,9 +7,11 @@ It currently does NOT work on MinGW32/win32 platform because
   valgrind everything (testcases) and RECHECK/REREAD nnetwork code carefully.
   (read backpropagation/gradient code carefully)
 
-* HMC nnetwork sampler maybe BUGGY and need more testing
-  - write testcases for sampling mixture of normal distributions and
-    see visually (octave datafile import) that results are correct
+  * The problem maybe in NNGradDescent code.
+
+  * HMC nnetwork sampler maybe BUGGY and need more testing
+    - write testcases for sampling mixture of normal distributions and
+      see visually (octave datafile import) that results are correct
 
 * ICA code probably has some bugs (with bad data)
 
@@ -27,9 +29,5 @@ It currently does NOT work on MinGW32/win32 platform because
 
 * realnumber (arbitrary precision math): sin() and cos() function calls fail
   as they are not implemented.
-
-- there is no normal random number generator (randn rng) which
-  would be nice when testing sampling codes
-  (ziggurat method for normal numbers)
 
 
