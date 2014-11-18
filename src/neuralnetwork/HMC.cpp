@@ -161,9 +161,11 @@ namespace whiteice
     // this means our HMC sampler has 
     // higher quality samples immediately
     // it has started
-    {
-      nnet.randomize(); // initally random
 
+    nnet.randomize(); // initally random
+
+#if 0
+    {
       std::vector<unsigned int> arch;
       nnet.getArchitecture(arch);
 
@@ -194,6 +196,7 @@ namespace whiteice
       }
       
     }
+#endif
     
 
     threadIsRunning = 0;
