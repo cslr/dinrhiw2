@@ -13,16 +13,6 @@
 #include "nnetwork.h"
 #include "atlas.h"
 
-#if 0
-#define _DEBUG
-#include "CMemLeak.h"
-#endif
-
-#if 0
-#define MEMWATCH
-#include "memwatch.h"
-#endif
-
 
 namespace whiteice
 {
