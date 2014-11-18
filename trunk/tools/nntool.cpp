@@ -202,11 +202,11 @@ int main(int argc, char** argv)
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
-	  printf("\r%d tries: %f (%f minutes remaining)         ", solutions, error.c[0], (secs - counter)/60.0f);
+	  printf("\r%d tries: %f (%f minutes)           ", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
 	
-	printf("\r%d tries: %f (%f minutes remaining)           \n", solutions, error.c[0], (secs - counter)/60.0f);
+	printf("\r%d tries: %f (%f minutes)             \n", solutions, error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
 
 	search.stopComputation();
@@ -508,9 +508,9 @@ int main(int argc, char** argv)
 	
 	if(hmc.getNumberOfSamples() > 0){
 	  if(secs > 0)
-	    printf("\r%d samples: %f (%f minutes remaining)                 ", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0], (secs - counter)/60.0);
+	    printf("\r%d samples: %f (%f minutes)                 ", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0], (secs - counter)/60.0);
 	  else{
-	    printf("\r%d/%d samples : %f (%f minutes remaining)                ",
+	    printf("\r%d/%d samples : %f (%f minutes)                ",
 		   hmc.getNumberOfSamples(), samples,
 		   hmc.getMeanError(100).c[0], eta.estimate()/60.0);
 	  }
@@ -525,9 +525,9 @@ int main(int argc, char** argv)
       hmc.stopSampler();
 
       if(secs > 0)
-	printf("\r%d samples : %f                    \n", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0]);
+	printf("\r%d samples : %f                           \n", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0]);
       else
-	printf("\r%d/%d samples : %f                 \n", hmc.getNumberOfSamples(), samples, hmc.getMeanError(100).c[0]);
+	printf("\r%d/%d samples : %f                        \n", hmc.getNumberOfSamples(), samples, hmc.getMeanError(100).c[0]);
       
       fflush(stdout);
       

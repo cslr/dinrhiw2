@@ -292,9 +292,6 @@ namespace whiteice
     try{
       if(nnets.size() <= 0) return false;
       
-      for(unsigned int i=0;i<nnets.size();i++)
-	if(nnets[i]->iscompressed()) return false;
-
       whiteice::conffile configuration;
 
       std::vector<int> ints;

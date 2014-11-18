@@ -20,7 +20,7 @@ namespace whiteice
 {
   
   template < typename T = math::atlas_real<float> >
-    class nnetwork : public compressable
+    class nnetwork
     {
     public:
     
@@ -28,10 +28,7 @@ namespace whiteice
     // Use load to load some useful network
     nnetwork(); 
     nnetwork(const nnetwork& nn);
-    nnetwork(const unsigned int layers, 
-	     const unsigned int width); //*L*W rectangle network
-    nnetwork(const std::vector<unsigned int>& nnstruc,
-	     bool compressed_network = false) throw(std::invalid_argument);
+    nnetwork(const std::vector<unsigned int>& nnarch) throw(std::invalid_argument);
     
     virtual ~nnetwork();
 
@@ -57,25 +54,15 @@ namespace whiteice
     
     bool randomize();
     
-    // sets learning rate globally
-    bool setlearningrate(T rate);
-    
     // calculates gradient grad(error) = grad(right - output)
     bool gradient(const math::vertex<T>& error,
 		  math::vertex<T>& grad) const;
-    
-    // changes weights (smaller error): w_new -= lrate*w
-    bool backprop(const math::vertex<T>& error);
     
     ////////////////////////////////////////////////////////////
     
     // load & saves neuralnetwork data from file
     bool load(const std::string& filename) throw();
     bool save(const std::string& filename) const throw();
-
-    // load & saves neuralnetwork data from file
-    bool load2(const std::string& filename) throw();
-    bool save2(const std::string& filename) const throw();
     
     // exports and imports neural network parameters to/from vertex
     bool exportdata(math::vertex<T>& v) const throw();
@@ -87,12 +74,6 @@ namespace whiteice
     // changes NN to compressed form of operation or
     // back to normal non-compressed form
     
-    bool compress() throw();
-    bool decompress() throw();
-    bool iscompressed() const throw();
-    
-    // returns compression ratio: compressed/orig
-    float ratio() const throw();
     
     ////////////////////////////////////////////////////////////
     private:
@@ -111,24 +92,22 @@ namespace whiteice
     mutable math::vertex<T> inputValues;
     mutable math::vertex<T> outputValues;
     
-    bool compressed;
+
     bool hasValidBPData;
-    MemoryCompressor* compressor;
     
-    // architecture (eg. 3-2-6) info (0 terminated integer string)
-    unsigned int* arch;
-    unsigned int maxwidth;
-    unsigned int archLength;
-    
-    unsigned int* flags;
+    // architecture (eg. 3-2-6) info
+    std::vector<unsigned int> arch;
+    unsigned int maxwidth;    
     unsigned int size;
+
+    std::vector<T> data;
+    std::vector<T> bpdata;
     
-    T* state;
-    T* data;
-    T* bpdata;
-    T* temp;
-    
-    T rate;
+    std::vector<T> state;
+    std::vector<T> temp;
+
+    // bool compressed;
+    // MemoryCompressor* compressor;
   };
   
   

@@ -123,7 +123,6 @@
 #include "nnetwork.h"
 #include "NNGradDescent.h"
 #include "NNRandomSearch.h"
-#include "backprop.h"
 
 #include "KMeans.h"
 #include "SOM2D.h"
