@@ -58,8 +58,8 @@ int main(int argc, char** argv)
     srand(time(0));
 
     if(secs <= 0) // no time limit
-      samples = 2000; // we take 2000 samples
-
+      samples = 4000; // we take 4000 samples (hard coded for now)
+    
     const unsigned int threads = // for multithread-enabled code
       (unsigned int)numberOfCPUThreads();
     
