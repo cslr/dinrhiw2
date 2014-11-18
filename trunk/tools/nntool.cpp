@@ -43,7 +43,6 @@ int main(int argc, char** argv)
     std::vector<std::string> lmods;
     std::vector<unsigned int> arch;
     unsigned int cmdmode;
-    std::string ior, cns;
     bool daemon, verbose;
     
     bool overtrain = false;
@@ -51,13 +50,21 @@ int main(int argc, char** argv)
     unsigned int samples = 0;
     unsigned int secs = 0;
     
-    parse_commandline(argc, argv, datafn, nnfn, 
-		      lmethod, lmods, arch, 
-		      cmdmode, secs, ior, cns,
-		      daemon, verbose);
+    parse_commandline(argc,
+		      argv,
+		      datafn,
+		      nnfn, 
+		      lmethod,
+		      lmods,
+		      arch, 
+		      cmdmode,
+		      secs,
+		      samples,
+		      daemon,
+		      verbose);
     srand(time(0));
 
-    if(secs <= 0) // no time limit
+    if(secs <= 0 && samples <= 0) // no time limit
       samples = 4000; // we take 4000 samples (hard coded for now)
     
     const unsigned int threads = // for multithread-enabled code
@@ -684,6 +691,7 @@ void print_usage(bool all)
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
+  printf("--samples N    samples N iterations in bayesian inference (eg. 2500)\n");
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");

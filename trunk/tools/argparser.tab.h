@@ -12,7 +12,7 @@ void parse_commandline(int argc, char** argv,
 		       std::vector<std::string>& lmods,
 		       std::vector<unsigned int>& arch,
 		       unsigned int& cmdmode,
-		       unsigned int& secs, std::string& ior, std::string& cns,
+		       unsigned int& secs, unsigned int& samples,
 		       bool& daemon, bool& verbose);
 
 #endif
