@@ -57,10 +57,10 @@ namespace whiteice
 
       private:
 	std::vector<unsigned int> nn_arch;
-	
+      
         vertex<T> bestx;
-	T best_error;
-	unsigned int converged_solutions;
+        T best_error;
+        unsigned int converged_solutions;
 
 	const whiteice::dataset<T>* data;
 	

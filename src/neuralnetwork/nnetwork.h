@@ -71,10 +71,6 @@ namespace whiteice
     // number of dimensions used by import/export
     unsigned int exportdatasize() const throw(); 
     
-    // changes NN to compressed form of operation or
-    // back to normal non-compressed form
-    
-    
     ////////////////////////////////////////////////////////////
     private:
     

@@ -27,8 +27,6 @@ namespace whiteice
     running = false;
     paused = false;
     
-    // nnet = net;
-    
     pthread_mutex_init(&solution_lock, 0);
     pthread_mutex_init(&start_lock, 0);      
   }
@@ -162,8 +160,8 @@ namespace whiteice
     // higher quality samples immediately
     // it has started
 
-    nnet.randomize(); // initally random
-
+    // nnet.randomize(); // initally random
+    
 #if 0
     {
       std::vector<unsigned int> arch;
