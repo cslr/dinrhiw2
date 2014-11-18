@@ -497,6 +497,7 @@ int main(int argc, char** argv)
 	}
       }
 
+      
       const bool adaptive = true;
       whiteice::HMC<> hmc(*nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
