@@ -18,7 +18,7 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v wine-test.ds ?-10-? winenn.cfg bayes
+./nntool --samples 5000 -v wine-test.ds ?-10-? winenn.cfg bayes
 
 # testing
 

@@ -38,10 +38,8 @@
     bool version;
     bool hasTIME;
     unsigned int secs;
-    bool hasIOR;
-    std::string ior;
-    bool hasCNS;
-    std::string cns;
+    bool hasSAMPLES;
+    unsigned int samples;
     
     std::string datafile;
     std::string arch;
@@ -78,8 +76,7 @@
 %token <str> OPT_VERBOSE
 %token <str> OPT_VERSION
 %token <str> OPT_TIME
-%token <str> OPT_IOR
-%token <str> OPT_CORBA_NS
+%token <str> OPT_SAMPLES
 %token <str> OPT_ENDOPT
 
 /* LMETHOD */
@@ -122,9 +119,9 @@ option:	OPT_DAEMON             { __info.daemon  = true; }
       | OPT_HELP               { __info.help    = true; }
       | OPT_VERBOSE            { __info.verbose = true; }
       | OPT_VERSION            { __info.version = true; }
-      | OPT_TIME NUMBER        { __info.hasTIME  = true; __info.secs = $2; }
-      | OPT_IOR FILENAME       { __info.hasIOR  = true; __info.ior = $2; }
-      | OPT_CORBA_NS anystring { __info.hasCNS  = true; __info.cns = $2; }
+      | OPT_TIME NUMBER        { __info.hasTIME = true; __info.secs = $2; }
+      | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
+
 ;
 
 
@@ -203,7 +200,8 @@ void parse_commandline(int argc, char** argv,
 		       std::vector<std::string>& lmods,
 		       std::vector<unsigned int>& arch,
 		       unsigned int& cmdmode,
-		       unsigned int& secs, std::string& ior, std::string& cns,
+		       unsigned int& secs,
+		       unsigned int& samples,
 		       bool& daemon, bool& verbose)
 {
   // defaults
@@ -248,10 +246,8 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "--time"; p.code = OPT_TIME;
     cmdparamslist.push_back(p);
-    p.name = "--ior"; p.code = OPT_IOR;
-    cmdparamslist.push_back(p);
-    p.name = "--cns"; p.code = OPT_CORBA_NS;
-    cmdparamslist.push_back(p);
+    p.name = "--samples"; p.code = OPT_SAMPLES;
+    cmdparamslist.push_back(p);    
     p.name = "--"; p.code = OPT_ENDOPT;
     cmdparamslist.push_back(p);
 
@@ -277,15 +273,15 @@ void parse_commandline(int argc, char** argv,
   }
   
   
-  __info.daemon  = false;
-  __info.verbose = false;
-  __info.help    = false;
-  __info.version = false;
-  __info.hasTIME = false;
-  __info.hasIOR  = false;
-  __info.hasCNS  = false;
-  __info.secs    = 0;
-  __info.method  = "use";
+  __info.daemon     = false;
+  __info.verbose    = false;
+  __info.help       = false;
+  __info.version    = false;
+  __info.hasTIME    = false;
+  __info.hasSAMPLES = false;
+  __info.secs       = 0;
+  __info.samples    = 0;
+  __info.method     = "use";
   
   
   if(yyparse() == 0){
@@ -306,42 +302,6 @@ void parse_commandline(int argc, char** argv,
     
     
     // error checks for parameters
-    
-    if(__info.daemon){
-      if(!__info.hasIOR && !__info.hasCNS){
-	if(__info.datafile.size() > 0){
-	  print_usage(false);
-	  fprintf(stderr, "error: daemon mode process cannot have a data source.\n");
-	  exit(-1);
-	}
-	
-	if(__info.method.size() > 0 || __info.mods.size() > 0){
-	  print_usage(false);
-	  fprintf(stderr, "error: you cannot use learning method switches when starting a daemon process.\n");
-	  exit(-1);
-	}
-      }
-    }
-    
-    
-    if(true){
-      if(__info.hasIOR){
-	print_usage(false);
-	fprintf(stderr, "error: PID and IOR switches are mutually exclusive.\n");
-	exit(-1);
-      }
-      else if(__info.hasCNS){
-	print_usage(false);
-	fprintf(stderr, "error: PID and NamingService name switches are mutually exclusive.\n");
-	exit(-1);
-      }
-    }
-    else if(__info.hasIOR && __info.hasCNS){
-      print_usage(false);
-      fprintf(stderr, "error: IOR and NamingService name switches are mutually exclusive.\n");
-      exit(-1);
-    }
-    
     
     if(__info.daemon == false){
       if(__info.datafile.size() <= 0){
@@ -437,19 +397,11 @@ void parse_commandline(int argc, char** argv,
     
     nnfilename = __info.nnfile;
     datafilename = __info.datafile;
-    
-    // cmdmode
-    // 0 = no target,
-    // 2 = ior target, 3 = NamingService target
-    
+        
     cmdmode = 0; 
-    secs = __info.secs;
-    ior  = __info.ior;
-    cns  = __info.cns;
-    
-    if(__info.hasIOR) cmdmode = 2;
-    else if(__info.hasCNS) cmdmode = 3;
-    
+    secs    = __info.secs;
+    samples = __info.samples;
+        
     return;
   }
   else {
