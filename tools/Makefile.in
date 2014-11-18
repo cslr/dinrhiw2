@@ -1,6 +1,6 @@
-# builds algos library test programs.
-# requires algos library has been installed to 
-# the system
+# builds dinrhow library tools/programs.
+# requires that dinrhiw2 library has been installed to 
+# the system (and have pkg-config installed)
 #
 
 CC = @CC@
