@@ -12,8 +12,6 @@
 #include "odd_sigmoid.h"
 
 #include "nnetwork.h"
-#include "backprop.h"
-
 #include "GDALogic.h"
 
 #include "dataset.h"
