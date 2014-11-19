@@ -1525,6 +1525,65 @@ void activation_test()
 void nnetwork_test()
 {
   try{
+    std::cout << "NNETWORK TEST -1: GET/SET PARAMETER TESTS"
+	      << std::endl;
+
+    std::vector<unsigned int> arch;
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(5);
+    
+    nnetwork<> nn(arch); // 4-4-4-5 network (3 layer network)
+
+    math::vertex<> b;
+    math::matrix<> W;
+
+    nn.getBias(b, 0);
+    nn.getWeights(W, 0);
+
+    std::cout << "First layer W*x + b." << std::endl;
+    std::cout << "W = " << W << std::endl;
+    std::cout << "b = " << b << std::endl;
+
+    math::vertex<> all;
+    nn.exportdata(all);
+
+    std::cout << "whole nn vector = " << all << std::endl;
+
+    W(0,0) = 100.0f;
+
+    if(nn.setWeights(W, 1) == false)
+      std::cout << "ERROR: cannot set NN weights." << std::endl;
+
+    b.resize(5);
+
+    if(nn.setBias(b, 2) == false)
+      std::cout << "ERROR: cannot set NN bias." << std::endl;
+    
+    math::vertex<> b2;
+
+    if(nn.getBias(b2, 2) == false)
+      std::cout << "ERROR: cannot get NN bias." << std::endl;
+
+    if(b.size() != b2.size())
+      std::cout << "ERROR: bias terms mismatch (size)." << std::endl;
+
+    math::vertex<> e = b - b2;
+
+    if(e.norm() > 0.01)
+      std::cout << "ERROR: bias terms mismatch." << std::endl;
+    
+      
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+
+  
+
+  
+  try{
     std::cout << "NNETWORK TEST 0: SAVE() AND LOAD() TEST" << std::endl;
     
     nnetwork<>* nn;
@@ -1593,83 +1652,7 @@ void nnetwork_test()
     std::cout << "Unexpected exception: " << e.what() << std::endl;
   }  
 
-#if 0
-  try{
-    std::cout << "NNETWORK TEST 1: SIMPLE PROBLEM + BACKPROP (BROKEN)" << std::endl;
-    
-    nnetwork<>* nn;
-    
-    std::vector<unsigned int> arch;
-    arch.push_back(2);
-    arch.push_back(20);
-    arch.push_back(2);
-    
-    nn = new nnetwork<>(arch);
-    
-    const unsigned int size = 500;
-    
-    
-    std::vector< math::vertex< math::atlas_real<float> > > input(size);
-    std::vector< math::vertex< math::atlas_real<float> > > output(size);
-    
-    for(unsigned int i = 0;i<size;i++){
-      input[i].resize(2);
-      output[i].resize(2);
-      
-      input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
-      input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
-      
-      // output[i][0] = input[i][0] - math::atlas_real<float>(0.2f)*input[i][1];
-      // output[i][1] = math::atlas_real<float>(-0.12f)*input[i][0] + math::atlas_real<float>(0.1f)*input[i][1];
 
-      output[i][0] = input[i][0] + input[i][1];
-      output[i][1] = whiteice::math::sin(whiteice::math::abs(input[i][0] - input[i][1]));
-      
-    }
-    
-    
-    dataset<> data;
-    std::string inString, outString;
-    inString = "input";
-    outString = "output";
-    data.createCluster(inString,  2);
-    data.createCluster(outString, 2);
-    
-    data.add(0, input);
-    data.add(1, output);
-    
-    data.preprocess(0);
-    data.preprocess(1);
-    
-    for(unsigned int i=0;i<data.size(0);i++)
-      std::cout << "INPUT: " << data.access(0,i) << std::endl;
-    
-    backprop<> bp;
-    bp.setData(nn, &data);
-    
-    
-    unsigned int counter = 0;
-    math::atlas_real<float> error = math::atlas_real<float>(1000.0f);
-    while(error > math::atlas_real<float>(0.001f) && counter < 10000){
-      
-      if(!bp.improve(1))
-	std::cout << "improve failed." << std::endl;
-      
-      error = bp.getError();
-      
-      std::cout << counter << " : " << error << std::endl;
-      
-      counter++;
-    }
-    
-    std::cout << counter << " : " << error << std::endl;
-    
-    delete nn;
-  }
-  catch(std::exception& e){
-    std::cout << "Unexpected exception: " << e.what() << std::endl;
-  }
-#endif
   
   
   try{
