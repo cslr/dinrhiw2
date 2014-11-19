@@ -131,11 +131,11 @@ namespace whiteice
       T trace() const throw(std::logic_error);
       
       unsigned int size() const throw();
-      unsigned int ysize() const throw();      
-      unsigned int xsize() const throw();
+      unsigned int ysize() const throw(); // rows      
+      unsigned int xsize() const throw(); // columns
       
-      bool resize_x(unsigned int d) throw();
-      bool resize_y(unsigned int d) throw();
+      bool resize_x(unsigned int d) throw(); // columns
+      bool resize_y(unsigned int d) throw(); // rows
       bool resize(unsigned int y, unsigned int x) throw();
       
       // calculates 2-norm of row or column subvector. if second coordinate is bigger

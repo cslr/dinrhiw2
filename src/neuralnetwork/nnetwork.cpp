@@ -696,7 +696,7 @@ namespace whiteice
   
   template <typename T>
   bool nnetwork<T>::importdata(const math::vertex<T>& v) throw(){
-    if(v.size() < size)
+    if(v.size() != size)
       return false;
     
     // nn imports FROM vertex, vertex exports TO network
@@ -709,8 +709,100 @@ namespace whiteice
   unsigned int nnetwork<T>::exportdatasize() const throw(){
     return size;
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+
+  template <typename T>
+  bool nnetwork<T>::getBias(math::vertex<T>& b, unsigned int layer) const throw()
+  {
+    if(layer+1 >= arch.size()) return false;
+
+    b.resize(arch[layer+1]);
+
+    const T* dptr = &(data[0]);
+
+    for(unsigned int i=0;i<layer;i++){
+      dptr = dptr + arch[i]*arch[i+1];
+      dptr = dptr + arch[i+1];
+    }
+
+    dptr = dptr + arch[layer]*arch[layer+1];
+
+    for(unsigned int i=0;i<b.size();i++)
+      b[i] = dptr[i];
+
+    return true;
+  }
+
   
+  template <typename T>
+  bool nnetwork<T>::setBias(const math::vertex<T>& b, unsigned int layer) throw()
+  {
+    if(layer+1 >= arch.size()) return false;
+
+    if(b.size() != arch[layer+1]) return false;
+
+    T* dptr = &(data[0]);
+
+    for(unsigned int i=0;i<layer;i++){
+      dptr = dptr + arch[i]*arch[i+1];
+      dptr = dptr + arch[i+1];
+    }
+
+    dptr = dptr + arch[layer]*arch[layer+1];
+
+    for(unsigned int i=0;i<b.size();i++)
+      dptr[i] = b[i];
+
+    return true;
+  }
   
+
+  template <typename T>
+  bool nnetwork<T>::getWeights(math::matrix<T>& w, unsigned int layer) const throw()
+  {
+    if(layer+1 >= arch.size()) return false;
+
+    w.resize(arch[layer+1], arch[layer]);
+
+    const T* dptr = &(data[0]);
+
+    for(unsigned int i=0;i<layer;i++){
+      dptr = dptr + arch[i]*arch[i+1];
+      dptr = dptr + arch[i+1];
+    }
+
+    for(unsigned int j=0;j<arch[layer+1];j++)
+      for(unsigned int i=0;i<arch[layer];i++)
+	w(j,i) = dptr[j*arch[layer] + i];
+
+    return true;
+  }
+
+  
+  template <typename T>
+  bool nnetwork<T>::setWeights(const math::matrix<T>& w, unsigned int layer) throw()
+  {
+    if(layer+1 >= arch.size()) return false;
+
+    if(w.ysize() != arch[layer+1] || w.xsize() != arch[layer])
+      return false;
+
+    T* dptr = &(data[0]);
+
+    for(unsigned int i=0;i<layer;i++){
+      dptr = dptr + arch[i]*arch[i+1];
+      dptr = dptr + arch[i+1];
+    }
+
+    for(unsigned int j=0;j<arch[layer+1];j++)
+      for(unsigned int i=0;i<arch[layer];i++)
+	dptr[j*arch[layer] + i] = w(j,i);
+
+    return true;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
   
   // y = W*x
   template <typename T>

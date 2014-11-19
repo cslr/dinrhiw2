@@ -63,13 +63,24 @@ namespace whiteice
     // load & saves neuralnetwork data from file
     bool load(const std::string& filename) throw();
     bool save(const std::string& filename) const throw();
+
+    ////////////////////////////////////////////////////////////
     
     // exports and imports neural network parameters to/from vertex
     bool exportdata(math::vertex<T>& v) const throw();
     bool importdata(const math::vertex<T>& v) throw();
     
     // number of dimensions used by import/export
-    unsigned int exportdatasize() const throw(); 
+    unsigned int exportdatasize() const throw();
+
+    ////////////////////////////////////////////////////////////
+
+    // gets and sets network parameters: Weight matrixes and biases
+    bool getBias(math::vertex<T>& b, unsigned int layer) const throw();
+    bool setBias(const math::vertex<T>& b, unsigned int layer) throw();
+
+    bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
+    bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
     
     ////////////////////////////////////////////////////////////
     private:
