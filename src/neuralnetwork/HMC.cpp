@@ -416,7 +416,8 @@ namespace whiteice
     // q = location, p = momentum, H(q,p) = hamiltonian
     math::vertex<T> q, p;
     
-    nnet.exportdata(q); // random position q
+    nnet.exportdata(q); // initial position q
+                        // (from the input nnetwork weights)
     
     p.resize(q.size()); // momentum is initially zero
     p.zero();

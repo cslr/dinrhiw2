@@ -1,4 +1,6 @@
 /*
+ * Heuristics for initializing nnetwork weights.
+ * 
  * TESTING THIS IDEA:
  * 
  * used to test idea where we use aprox. 
@@ -63,6 +65,24 @@ namespace whiteice
    */
   bool initialize_nnetwork(const std::vector<deep_ica_parameters>& parameters,
 			   nnetwork<>& nnet);
+
+
+  /**
+   * helper function to normalize neural network weight vectors 
+   * ||w|| = 1 and ||b|| = 1 for each layer
+   * 
+   * (forcing this between every gradient descent steps in directly
+   *  forces neural network weights to COMPETE against each other,
+   *  this can be also useful in random search and in initialization
+   *  step of the neural network weights)
+   *
+   * NOTE: if input x ~ N(0, I) then 
+   *          Var[w^t x] = w^t COV(x) * w = ||w|| = 1 and variance
+   *          of the output layer is fixed to be 1, which forces
+   *          the problem to be "nice"
+   */
+  bool normalize_weights_to_unity(nnetwork<>& nnet,
+				  bool normalizeLastLayer = false);
 
 };
 

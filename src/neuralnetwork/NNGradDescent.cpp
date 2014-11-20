@@ -61,7 +61,8 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::startOptimize(const whiteice::dataset<T>& data,
 					 const std::vector<unsigned int>& arch, 
-					 unsigned int NTHREADS)
+					 unsigned int NTHREADS,
+					 unsigned int MAXITERS)
     {
       if(arch.size() < 2) return false;
 
@@ -86,6 +87,7 @@ namespace whiteice
       
       this->data = &data;
       this->NTHREADS = NTHREADS;
+      this->MAXITERS = MAXITERS;
       this->nn_arch = arch;
       best_error = T(1000.0f);
       converged_solutions = 0;
@@ -203,8 +205,13 @@ namespace whiteice
 	  }
 	}
 
-	
+	// starting location for neural network
 	nnetwork<T> nn(nn_arch);
+
+	// use heuristic to normalize
+	// weights to unity
+	// (so variance of data in network is close to 1)
+	normalize_weights_to_unity(nn); 
 	
 	// 2. normal gradient descent
 	///////////////////////////////////////
@@ -222,8 +229,8 @@ namespace whiteice
 	  ratio = T(1000.0f);
 	  
 	  while(error > T(0.001f) && 
-		ratio > T(0.00005f) && 
-		counter < 10000)
+		ratio > T(0.000001f) && 
+		counter < MAXITERS)
 	  {
 	    prev_error = error;
 	    error = T(0.0f);
@@ -317,10 +324,10 @@ namespace whiteice
 
 
     
-    template class NNGradDescent< float >;
-    template class NNGradDescent< double >;
+    // template class NNGradDescent< float >;
+    // template class NNGradDescent< double >;
     template class NNGradDescent< atlas_real<float> >;
-    template class NNGradDescent< atlas_real<double> >;    
+    // template class NNGradDescent< atlas_real<double> >;    
     
   };
 };

@@ -32,7 +32,7 @@ namespace whiteice
 		       std::vector< math::vertex<T> >& weights);
     
 
-    // calculates E[f(input,w)] and Var[f(x,w)] for given input
+    // calculates E[f(input,w)] = E[y|x] and Var[f(x,w)] = Var[y|x] for given input
     bool calculate(const math::vertex<T>& input,
 		   math::vertex<T>& mean,
 		   math::matrix<T>& covariance);

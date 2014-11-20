@@ -1,3 +1,4 @@
+
 #!/bin/sh
 
 rm -f commviol-test.ds
@@ -17,8 +18,11 @@ rm -f commviol-test.ds
 ./dstool -list commviol-test.ds
 
 # uses nntool trying to learn from dataset
+# (multistart gradient descent and then one large gradient descent reduction)
 
-./nntool -v commviol-test.ds 141-10-4 commviol-nn.cfg grad
+./nntool --samples 2000 --time 1800 -v commviol-test.ds 141-10-4 commviol-nn.cfg parallelgrad
+./nntool --samples 10000 --load -v commviol-test.ds 141-10-4 commviol-nn.cfg grad
+./nntool --samples 2000 --load -v commviol-test.ds 141-10-4 commviol-nn.cfg bayes
 
 ##################################################
 # testing
