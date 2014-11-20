@@ -43,10 +43,8 @@ int main(int argc, char** argv)
     std::vector<std::string> lmods;
     std::vector<unsigned int> arch;
     unsigned int cmdmode;
-    bool daemon, verbose;
+    bool no_init, verbose;
     
-    bool overtrain = false;
-
     unsigned int samples = 0;
     unsigned int secs = 0;
     
@@ -60,17 +58,17 @@ int main(int argc, char** argv)
 		      cmdmode,
 		      secs,
 		      samples,
-		      daemon,
+		      no_init,
 		      verbose);
     srand(time(0));
 
     if(secs <= 0 && samples <= 0) // no time limit
-      samples = 4000; // we take 4000 samples (hard coded for now)
+      samples = 4000; // we take 4000 samples/tries as the default
     
     const unsigned int threads = // for multithread-enabled code
       (unsigned int)numberOfCPUThreads();
     
-    if(cmdmode != 0 || daemon == true){
+    if(cmdmode != 0){
       printf("Daemon and 'send command' modes aren't supported yet.\n");
       return 0;
     }
@@ -166,9 +164,48 @@ int main(int argc, char** argv)
 
     fflush(stdout);
     
-    if(lmethod == "grad+ot"){ // overtraining is activated
-      lmethod = "grad";
-      overtrain = true;
+
+
+    /*
+     * initializes nnetwork weight values using 
+     * (simple) deep ica if possible
+     */
+    if(lmethod != "use" && no_init == false)
+    {
+      // analyzes nnetwork architecture of deep ica priming
+      unsigned int dimension = arch[0];
+      unsigned int counter = 0;
+
+      while(arch[counter] == dimension)
+	counter++;
+      
+      
+      if(counter >= 2){
+	unsigned int deepness = counter/2;
+	
+	if(verbose)
+	  std::cout << "Deep ICA initialization ("
+		    << 2*deepness << " layers) of NN weights"
+		    << std::endl;
+	
+
+	std::vector< math::vertex<> > D;
+
+	for(dataset<>::iterator i=data.begin();i!=data.end();i++){
+	  D.push_back(*i);
+	}
+	
+	std::vector<deep_ica_parameters> p;
+	
+	bool ok = false;
+
+	if(deep_nonlin_ica(D, p, deepness) == true)
+	  if(initialize_nnetwork(p, *nn) == true)
+	    ok = true;
+	
+	if(!ok)
+	  std::cout << "WARNING: calculating deep ICA failed." << std::endl;
+      }
     }
     
     
@@ -279,14 +316,11 @@ int main(int argc, char** argv)
       if(verbose){
 	std::cout << "Starting neural network gradient descent optimizer.."
 		  << std::endl;
-	if(overtrain)
-	  std::cout << "Overtraining gradient descent method." << std::endl;
-	else
-	  std::cout << "Gradient descent with early stopping (testing dataset)." << std::endl;
+	std::cout << "Gradient descent with early stopping (testing dataset)." << std::endl;
       }
       
       
-      if(overtrain == false){
+      {
 	// divide data to training and testing sets
 	dataset<> dtrain, dtest;
 	
@@ -335,8 +369,8 @@ int main(int argc, char** argv)
 	  math::vertex<> prev_sumgrad;
 	  
 	  while(error > math::atlas_real<float>(0.001f) && 
-		ratio > math::atlas_real<float>(0.00001f) && 
-		counter < 10000)
+		// ratio > math::atlas_real<float>(0.00001f) && 
+		counter < samples)
 	  {
 	    prev_error = error;
 	    error = math::atlas_real<float>(0.0f);
@@ -409,77 +443,6 @@ int main(int argc, char** argv)
 	}
 
       }
-      else{
-	math::vertex<> grad, err, weights;
-	
-	unsigned int counter = 0;
-	math::atlas_real<float> prev_error, error, ratio;
-	math::atlas_real<float> lrate = math::atlas_real<float>(0.01f);
-	math::atlas_real<float> delta_error = 0.0f;
-	
-	error = math::atlas_real<float>(1000.0f);
-	prev_error = math::atlas_real<float>(1000.0f);
-	ratio = math::atlas_real<float>(1000.0f);
-
-	math::vertex<> sumgrad;
-	math::atlas_real<float> ninv =
-	  math::atlas_real<float>(1.0f/data.size(0));
-
-	
-	// we are overtraining so we ignore the ratio-parameter
-	// as a stopping condition
-	
-	while(error > math::atlas_real<float>(0.001f) && 
-	      counter < 10000)
-	{
-	  prev_error = error;
-	  error = math::atlas_real<float>(0.0f);
-	  
-	  // goes through data, calculates gradient
-	  // exports weights, weights -= lrate*gradient
-	  // imports weights back
-	  
-	  for(unsigned int i=0;i<data.size(0);i++){
-	    nn->input() = data.access(0, i);
-	    nn->calculate(true);
-	    err = data.access(1,i) - nn->output();
-	    
-	    for(unsigned int j=0;j<err.size();j++)
-	      error += (err[j]*err[j]) / math::atlas_real<float>((float)err.size());
-	    
-	    if(nn->gradient(err, grad) == false)
-	      std::cout << "gradient failed." << std::endl;
-	    
-	    if(i == 0)
-	      sumgrad = ninv*grad;
-	    else
-	      sumgrad += ninv*grad;	    
-	    
-	  }
-
-	  if(nn->exportdata(weights) == false)
-	    std::cout << "export failed." << std::endl;
-	  
-	  weights -= lrate * sumgrad;
-	  
-	  if(nn->importdata(weights) == false)
-	    std::cout << "import failed." << std::endl;
-
-	  
-	  error /= math::atlas_real<float>((float)data.size());
-	  
-	  delta_error = abs(error - prev_error);
-	  ratio = delta_error / error;
-	  
-	  printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
-	  fflush(stdout);
-	  
-	  counter++;
-	}
-	
-	printf("\r%d : %f (%f)                  \n", counter, error.c[0], ratio.c[0]);
-	fflush(stdout);
-     }
 
       bnn->importNetwork(*nn);
       
@@ -691,8 +654,9 @@ void print_usage(bool all)
   printf("-v             shows ETA and other details\n");
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
+  printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
-  printf("--samples N    samples N iterations in bayesian inference (eg. 2500)\n");
+  printf("--samples N    samples N samples or defines max iterations (eg. 2500)\n");
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");

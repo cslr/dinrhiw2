@@ -18,12 +18,12 @@ rm -f wdbc-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v wdbc-test.ds ?-20-? wdbcnn.cfg grad
+./nntool -v wdbc-test.ds 30-30-30-20-1 wdbcnn.cfg grad
 
 ##################################################
 # testing
 
-./nntool -v wdbc-test.ds ?-20-? wdbcnn.cfg use
+./nntool -v wdbc-test.ds 30-30-30-20-1 wdbcnn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
@@ -32,7 +32,7 @@ cp -f wdbc-test.ds wdbc-pred.ds
 ./dstool -clear:1 wdbc-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v wdbc-pred.ds 30-20-1 wdbcnn.cfg use
+./nntool -v wdbc-pred.ds 30-30-30-20-1 wdbcnn.cfg use
 
 ./dstool -list wdbc-test.ds
 ./dstool -list wdbc-pred.ds

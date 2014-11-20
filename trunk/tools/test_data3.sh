@@ -18,12 +18,12 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v commviol-test.ds ?-20-? commviol-nn.cfg grad
+./nntool -v commviol-test.ds 141-20-? commviol-nn.cfg grad
 
 ##################################################
 # testing
 
-./nntool -v commviol-test.ds ?-20-? commviol-nn.cfg use
+./nntool -v commviol-test.ds 141-20-? commviol-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
