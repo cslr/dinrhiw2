@@ -37,12 +37,15 @@ namespace whiteice
 	 * Uses neural network with architecture arch.
 	 *
 	 * Executes NTHREADS in parallel when looking for
-	 * the optimal solution.
+	 * the optimal solution and goes max to 
+	 * MAXITERS iterations when looking for gradient
+	 * descent solution
 	 */
 	bool startOptimize(const whiteice::dataset<T>& data,
 			   const std::vector<unsigned int>& arch,
-			   unsigned int NTHREADS);
-
+			   unsigned int NTHREADS,
+			   unsigned int MAXITERS = 10000);
+      
 
 	/*
 	 * returns the best NN solution found so far and
@@ -65,6 +68,7 @@ namespace whiteice
 	const whiteice::dataset<T>* data;
 	
 	unsigned int NTHREADS;
+        unsigned int MAXITERS;
 	std::vector<pthread_t> optimizer_thread;
 	pthread_mutex_t solution_lock, start_lock;
 
@@ -83,10 +87,10 @@ namespace whiteice
 {
   namespace math
   {
-    extern template class NNGradDescent< float >;
+    // extern template class NNGradDescent< float >;
     extern template class NNGradDescent< double >;
-    extern template class NNGradDescent< atlas_real<float> >;
-    extern template class NNGradDescent< atlas_real<double> >;
+    // extern template class NNGradDescent< atlas_real<float> >;
+    // extern template class NNGradDescent< atlas_real<double> >;
     
     
   };

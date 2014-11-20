@@ -27,9 +27,13 @@
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
 
+
 void print_usage(bool all);
 
-int numberOfCPUThreads();
+void sleepms(unsigned int ms);
+
+
+
 
 using namespace whiteice;
 
@@ -44,6 +48,7 @@ int main(int argc, char** argv)
     std::vector<unsigned int> arch;
     unsigned int cmdmode;
     bool no_init, verbose;
+    bool load, help = false;
     
     unsigned int samples = 0;
     unsigned int secs = 0;
@@ -59,11 +64,18 @@ int main(int argc, char** argv)
 		      secs,
 		      samples,
 		      no_init,
+		      load,
+		      help,
 		      verbose);
     srand(time(0));
 
     if(secs <= 0 && samples <= 0) // no time limit
       samples = 4000; // we take 4000 samples/tries as the default
+
+    if(help){ // prints command line usage information
+      print_usage(true);
+      return 0;
+    }
     
     const unsigned int threads = // for multithread-enabled code
       (unsigned int)numberOfCPUThreads();
@@ -170,21 +182,31 @@ int main(int argc, char** argv)
      * initializes nnetwork weight values using 
      * (simple) deep ica if possible
      */
-    if(lmethod != "use" && no_init == false)
+    if(lmethod != "use" && no_init == false && load == false)
     {
+      if(verbose)
+	std::cout << "Heuristics: NN weights normalization initialization."
+		  << std::endl;
+
+      if(normalize_weights_to_unity(*nn, true) == false){
+	std::cout << "ERROR: NN weights normalization FAILED."
+		  << std::endl;
+	return -1;
+      }
+
+      
       // analyzes nnetwork architecture of deep ica priming
       unsigned int dimension = arch[0];
       unsigned int counter = 0;
-
+      
       while(arch[counter] == dimension)
 	counter++;
-      
       
       if(counter >= 2){
 	unsigned int deepness = counter/2;
 	
 	if(verbose)
-	  std::cout << "Deep ICA initialization ("
+	  std::cout << "Heuristics: deep ICA initialization ("
 		    << 2*deepness << " layers) of NN weights"
 		    << std::endl;
 	
@@ -207,6 +229,42 @@ int main(int argc, char** argv)
 	  std::cout << "WARNING: calculating deep ICA failed." << std::endl;
       }
     }
+    else if(load == true){
+      if(verbose)
+	std::cout << "Loading the previous network data from the disk." << std::endl;
+
+      if(bnn->load(nnfn) == false){
+	std::cout << "ERROR: Loading neural network failed." << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	nn = NULL;
+	return -1;
+      }
+
+      std::vector< math::vertex<> > weights;
+      std::vector< unsigned int > arch;
+
+      if(bnn->exportSamples(arch, weights) == false){
+	std::cout << "ERROR: Loading neural network failed." << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	nn = NULL;
+	return -1;
+      }
+
+      // just pick one randomly if there are multiple ones
+      unsigned int index = 0;
+      if(weights.size() > 1)
+	index = rand() % weights.size();
+
+      if(nn->importdata(weights[index]) == false){
+	std::cout << "ERROR: Loading neural network failed (incorrect network architecture?)." << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	return -1;
+      }
+      
+    }
     
     
     // learning or activation
@@ -217,6 +275,11 @@ int main(int argc, char** argv)
       if(verbose)
 	std::cout << "Starting neural network parallel random search (T=" << secs << " seconds, " << threads << " threads).."
 		  << std::endl;
+
+      if(secs <= 0){
+	fprintf(stderr, "Random search requires --time TIME command line switch.\n");
+	return -1;
+      }
       
       math::NNRandomSearch<> search;
       search.startOptimize(data, arch, threads);
@@ -233,24 +296,17 @@ int main(int argc, char** argv)
 	      counter < secs) // compute max SECS seconds
 	{
 	  search.getSolution(*nn, error, solutions);
-	  	  
-#ifndef WINNT
-	  struct timespec ts;
-	  ts.tv_sec  = 0;
-	  ts.tv_nsec = 500000000; // 500ms
-	  nanosleep(&ts, 0);
-#else
-	  Sleep(500);
-#endif
+
+	  sleepms(500);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
-	  printf("\r%d tries: %f (%f minutes)           ", solutions, error.c[0], (secs - counter)/60.0f);
+	  printf("\r%d tries: %f [%f minutes]           ", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
 	
-	printf("\r%d tries: %f (%f minutes)             \n", solutions, error.c[0], (secs - counter)/60.0f);
+	printf("\r%d tries: %f [%f minutes]             \n", solutions, error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
 
 	search.stopComputation();
@@ -263,14 +319,24 @@ int main(int argc, char** argv)
       
 
     }
-    else if(lmethod == "parallelgrad"){      
+    else if(lmethod == "parallelgrad"){ 
       
       if(verbose)
 	std::cout << "Starting neural network parallel multistart gradient descent (T=" << secs << " seconds, " << threads << " threads).."
 		  << std::endl;
       
+      if(secs <= 0){
+	fprintf(stderr, "Parallel gradient descent requires --time TIME command line switch.\n");
+	return -1;
+      }
+      
+      
       math::NNGradDescent<> grad;
-      grad.startOptimize(data, arch, threads);
+
+      if(samples > 0)
+	grad.startOptimize(data, arch, threads, samples);
+      else
+	grad.startOptimize(data, arch, threads);
 
       
       {
@@ -283,24 +349,17 @@ int main(int argc, char** argv)
 	while(counter < secs) // compute max SECS seconds
 	{
 	  grad.getSolution(*nn, error, solutions);
-	  	  
-#ifndef WINNT
-	  struct timespec ts;
-	  ts.tv_sec  = 0;
-	  ts.tv_nsec = 500000000; // 500ms
-	  nanosleep(&ts, 0);
-#else
-	  Sleep(500);
-#endif
+
+	  sleepms(500);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
-	  printf("\r%d tries: %f (%f minutes remaining)         ", solutions, error.c[0], (secs - counter)/60.0f);
+	  printf("\r%d tries: %f [%f minutes]         ", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
 	
-	printf("\r%d tries: %f (%f minutes remaining)           \n", solutions, error.c[0], (secs - counter)/60.0f);
+	printf("\r%d tries: %f [%f minutes]           \n", solutions, error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
 
 	grad.stopComputation();
@@ -367,14 +426,18 @@ int main(int argc, char** argv)
 	  ratio = math::atlas_real<float>(1000.0f);
 
 	  math::vertex<> prev_sumgrad;
+
+	  whiteice::linear_ETA<float> eta;
+	  if(samples > 0)
+	    eta.start(0.0f, (float)samples);
 	  
 	  while(error > math::atlas_real<float>(0.001f) && 
-		// ratio > math::atlas_real<float>(0.00001f) && 
+		ratio > math::atlas_real<float>(0.000001f) &&
 		counter < samples)
 	  {
 	    prev_error = error;
 	    error = math::atlas_real<float>(0.0f);
-	    
+
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
@@ -432,13 +495,15 @@ int main(int argc, char** argv)
 	    delta_error = abs(error - prev_error);
 	    ratio = delta_error / error;
 	    
-	    printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
+	    printf("\r%d/%d iterations: %f (%f) [%f minutes]                  ", counter, samples, error.c[0], ratio.c[0], eta.estimate()/60.0);
+		   
 	    fflush(stdout);
 	    
 	    counter++;
+	    eta.update((float)counter);
 	  }
 	
-	  printf("\r%d : %f (%f)                  \n", counter, error.c[0], ratio.c[0]);
+	  printf("\r%d/%d : %f (%f) [%f minutes]                 \n", counter, samples, error.c[0], ratio.c[0], eta.estimate()/60.0);
 	  fflush(stdout);
 	}
 
@@ -479,11 +544,16 @@ int main(int argc, char** argv)
 	
 	if(hmc.getNumberOfSamples() > 0){
 	  if(secs > 0)
-	    printf("\r%d samples: %f (%f minutes)                 ", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0], (secs - counter)/60.0);
+	    printf("\r%d samples: %f [%f minutes]                 ",
+		   hmc.getNumberOfSamples(),
+		   hmc.getMeanError(100).c[0],
+		   (secs - counter)/60.0);
 	  else{
-	    printf("\r%d/%d samples : %f (%f minutes)                ",
-		   hmc.getNumberOfSamples(), samples,
-		   hmc.getMeanError(100).c[0], eta.estimate()/60.0);
+	    printf("\r%d/%d samples : %f [%f minutes]             ",
+		   hmc.getNumberOfSamples(),
+		   samples,
+		   hmc.getMeanError(100).c[0],
+		   eta.estimate()/60.0);
 	  }
 	  fflush(stdout);
 	}
@@ -610,7 +680,7 @@ int main(int argc, char** argv)
     if(lmethod != "use"){
       if(bnn){
 	if(bnn->save(nnfn) == false){
-	  std::cout << "Saving network data failed." << std::endl;
+	  std::cout << "Saving neural network data failed." << std::endl;
 	  delete bnn;
 	  return -1;
 	}
@@ -640,6 +710,19 @@ int main(int argc, char** argv)
 
 
 
+void sleepms(unsigned int ms)
+{
+#ifndef WINNT
+  struct timespec ts;
+  ts.tv_sec  = 0;
+  ts.tv_nsec = 500000000; // 500ms
+  nanosleep(&ts, 0);
+#else
+  Sleep(500);
+#endif 
+}
+
+
 void print_usage(bool all)
 {
   printf("Usage: nntool [options] [data] [arch] <nnfile> [lmethod]\n");
@@ -655,6 +738,7 @@ void print_usage(bool all)
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
+  printf("--load         use previously computed network weights as the starting point\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
   printf("--samples N    samples N samples or defines max iterations (eg. 2500)\n");
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");

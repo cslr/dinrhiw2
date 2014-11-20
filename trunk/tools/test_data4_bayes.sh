@@ -40,5 +40,7 @@ cp -f iris-test.ds iris-pred.ds
 ./dstool -print:1 iris-pred.ds
 tail iris.out
 
+echo "Bayesian inference with deep network structure DO NOT converge"
+
 
 

@@ -171,6 +171,8 @@ namespace whiteice
 
       // FIXME: can throw bad_alloc exception (do try{}catch();)
       nnetwork<T>* __test_nn = new nnetwork<T>(nn_arch);
+      
+      normalize_weights_to_unity(*__test_nn);
 
       for(unsigned int i=0;i<top_solutions.size();i++){
 	__test_nn->exportdata(top_solutions[i].solution);
@@ -185,6 +187,9 @@ namespace whiteice
 
 	// creates random neural network
 	nnetwork<T> nn(nn_arch);
+
+	normalize_weights_to_unity(nn);
+	
 	math::vertex<T> err, weights;
 	T error = T(0.0f);
 	
@@ -210,6 +215,9 @@ namespace whiteice
 
 	  weights *= T(1.0f)/sum;
 	  nn.importdata(weights);
+
+	  normalize_weights_to_unity(nn);
+	  nn.exportdata(weights);
 	}
 	// otherwise we use randomly generated weights
 	// [pure random search]
@@ -279,10 +287,10 @@ namespace whiteice
 
 
     
-    template class NNRandomSearch< float >;
-    template class NNRandomSearch< double >;
+    //template class NNRandomSearch< float >;
+    //template class NNRandomSearch< double >;
     template class NNRandomSearch< atlas_real<float> >;
-    template class NNRandomSearch< atlas_real<double> >;    
+    //template class NNRandomSearch< atlas_real<double> >;    
     
   };
 };

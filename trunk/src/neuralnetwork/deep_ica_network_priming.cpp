@@ -180,5 +180,59 @@ namespace whiteice
 
     return true;
   }
+  
+  
+  /**
+   * helper function to normalize neural network weight vectors 
+   * ||w|| = 1 and ||b|| = 1 for each layer
+   * 
+   * (forcing this between every gradient descent steps in directly
+   *  forces neural network weights to COMPETE against each other,
+   *  this can be also useful in random search and in initialization
+   *  step of the neural network weights)
+   *
+   * NOTE: if input x ~ N(0, I) then 
+   *          Var[w^t x] = w^t COV(x) * w = ||w|| = 1 and variance
+   *          of the output layer is fixed to be 1, which forces
+   *          the problem to be "nice"
+   *
+   * NOTE2: normalization of the last layer does not make
+   *        much sense so we don't do it as a default.
+   *        (We need to get results that are close to correct ones)
+   */
+  bool normalize_weights_to_unity(nnetwork<>& nnet,
+				  bool normalizeLastLayer)
+  {
+    std::vector<unsigned int> arch;
 
+    nnet.getArchitecture(arch);
+
+    unsigned int N = arch.size()-1;
+
+    if(normalizeLastLayer == false)
+      N = arch.size()-2;
+
+    for(unsigned int i=0;i<N;i++){
+      math::matrix<> W;
+      math::vertex<> b;
+     
+      if(!nnet.getWeights(W, i)) return false;
+
+      for(unsigned int j=0;j<W.ysize();j++){
+	W.rowcopyto(b, j);
+	b.normalize();
+	W.rowcopyfrom(b, j);
+      }
+      
+      nnet.setWeights(W,i);
+
+      if(!nnet.getBias(b, i)) return false;
+      b.normalize();
+      nnet.setBias(b, i);
+    }
+
+    return true;
+  }
+
+  
 };
