@@ -20,8 +20,8 @@
 
 #include "bayesian_nnetwork.h"
 #include "HMC.h"
-
 #include "HMC_gaussian.h"
+#include "deep_ica_network_priming.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -1522,8 +1522,61 @@ void activation_test()
 
 /************************************************************************/
 
+
 void nnetwork_test()
 {
+  try{
+    std::cout << "NNETWORK TEST -2: GET/SET DEEP ICA PARAMETERS"
+	      << std::endl;
+
+    std::vector< math::vertex<> > data;
+    
+    for(unsigned int i=0;i<1000;i++){
+      double t = i/500.0f - 1.0f;
+      math::vertex<> x;
+      x.resize(4);
+      x[0] = sin(2.0*t);
+      x[1] = cos(t)*cos(t)*cos(t);
+      x[2] = sin(1.0 + 2.0*cos(t));
+      x[3] = ((float)rand())/((float)RAND_MAX);
+
+      data.push_back(x);
+    }
+
+    std::vector<deep_ica_parameters> params;
+    unsigned int deepness = 2;
+
+    if(deep_nonlin_ica(data, params, deepness) == false)
+      std::cout << "ERROR: deep_nonlin_ica FAILED." << std::endl;
+
+    std::cout << "Parameter layers: " << params.size() << std::endl;
+
+    std::vector<unsigned int> layers;
+
+    layers.push_back(4);
+
+    for(unsigned int i=0;i<params.size();i++){
+      layers.push_back(4);
+      layers.push_back(4);
+    }
+    
+    layers.push_back(6);
+    layers.push_back(2);
+    
+    nnetwork<> nn(layers);
+
+    if(initialize_nnetwork(params, nn) == false){
+      std::cout << "ERROR: initialize_nnetwork FAILED." << std::endl;
+    }
+    
+    
+    std::cout << "Deep ICA network init PASSED." << std::endl;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+
+
   try{
     std::cout << "NNETWORK TEST -1: GET/SET PARAMETER TESTS"
 	      << std::endl;
@@ -1578,7 +1631,7 @@ void nnetwork_test()
   }
   catch(std::exception& e){
     std::cout << "Unexpected exception: " << e.what() << std::endl;
-  }
+  }  
 
   
 

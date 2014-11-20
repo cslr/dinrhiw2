@@ -65,10 +65,10 @@
   
   struct arg_info
   {
-    bool daemon;
     bool verbose;
     bool help;
     bool version;
+    bool noinit;
     bool hasTIME;
     unsigned int secs;
     bool hasSAMPLES;
@@ -112,7 +112,7 @@ extern int yydebug;
     STRING = 259,
     FILENAME = 260,
     ARCHSTRING = 261,
-    OPT_DAEMON = 262,
+    OPT_NOINIT = 262,
     OPT_HELP = 263,
     OPT_VERBOSE = 264,
     OPT_VERSION = 265,
@@ -349,7 +349,7 @@ static const unsigned char yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "NUMBER", "STRING", "FILENAME",
-  "ARCHSTRING", "OPT_DAEMON", "OPT_HELP", "OPT_VERBOSE", "OPT_VERSION",
+  "ARCHSTRING", "OPT_NOINIT", "OPT_HELP", "OPT_VERBOSE", "OPT_VERSION",
   "OPT_TIME", "OPT_SAMPLES", "OPT_ENDOPT", "LM_USE", "LM_PARALLELGRAD",
   "LM_GRAD", "LM_GRAD_OT", "LM_RANDOM", "LM_BAYES", "MMOD_OVERTRAIN",
   "MMOD_PCA", "MMOD_ICA", "$accept", "arg", "optseq", "anystring",
@@ -921,7 +921,7 @@ yyuserAction (yyRuleNum yyn, size_t yyrhslen, yyGLRStackItem* yyvsp,
 
   case 9:
 #line 118 "argparser.ypp" /* glr.c:783  */
-    { __info.daemon  = true; }
+    { __info.noinit  = true; }
 #line 926 "argparser.tab.cpp" /* glr.c:783  */
     break;
 
@@ -2750,13 +2750,13 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& cmdmode,
 		       unsigned int& secs,
 		       unsigned int& samples,
-		       bool& daemon, bool& verbose)
+		       bool& no_init, bool& verbose)
 {
   // defaults
   
   lmethod = "use";
   cmdmode = 0;
-  daemon = false;
+  no_init = false;
   verbose = false;
   
   
@@ -2784,7 +2784,7 @@ void parse_commandline(int argc, char** argv,
   
   {
     cmdparserpair p;
-    p.name = "--daemon"; p.code = OPT_DAEMON;
+    p.name = "--no-init"; p.code = OPT_NOINIT;
     cmdparamslist.push_back(p);
     p.name = "--help"; p.code = OPT_HELP;
     cmdparamslist.push_back(p);
@@ -2821,7 +2821,7 @@ void parse_commandline(int argc, char** argv,
   }
   
   
-  __info.daemon     = false;
+  __info.noinit     = false;
   __info.verbose    = false;
   __info.help       = false;
   __info.version    = false;
@@ -2849,12 +2849,11 @@ void parse_commandline(int argc, char** argv,
     }
     
     
-    // error checks for parameters
-    
-    if(__info.daemon == false){
+        // error checks for parameters
+    {
       if(__info.datafile.size() <= 0){
 	print_usage(false);
-	fprintf(stderr, "error: data i/o source is needed when starting narya in non-daemon mode.\n");
+	fprintf(stderr, "error: data i/o source is needed.\n");
 	exit(-1);
       }
       
@@ -2937,7 +2936,7 @@ void parse_commandline(int argc, char** argv,
     
     // sets output variables
     
-    daemon  = __info.daemon;
+    no_init = __info.noinit;
     verbose = __info.verbose;
     
     lmethod = __info.method;

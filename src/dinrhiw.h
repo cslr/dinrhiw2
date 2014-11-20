@@ -123,6 +123,7 @@
 #include "nnetwork.h"
 #include "NNGradDescent.h"
 #include "NNRandomSearch.h"
+#include "deep_ica_network_priming.h"
 
 #include "KMeans.h"
 #include "SOM2D.h"

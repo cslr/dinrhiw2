@@ -16,7 +16,7 @@ Kielioppi
     6          | FILENAME
     7          | NUMBER
 
-    8 option: OPT_DAEMON
+    8 option: OPT_NOINIT
     9       | OPT_HELP
    10       | OPT_VERBOSE
    11       | OPT_VERSION
@@ -60,7 +60,7 @@ NUMBER (258) 7 12 13
 STRING (259) 4
 FILENAME (260) 6 17
 ARCHSTRING (261) 5 19
-OPT_DAEMON (262) 8
+OPT_NOINIT (262) 8
 OPT_HELP (263) 9
 OPT_VERBOSE (264) 10
 OPT_VERSION (265) 11
@@ -112,7 +112,7 @@ Tila 0
 
     0 $accept: . arg $end
 
-    OPT_DAEMON   siirto, ja siirry tilaan 1
+    OPT_NOINIT   siirto, ja siirry tilaan 1
     OPT_HELP     siirto, ja siirry tilaan 2
     OPT_VERBOSE  siirto, ja siirry tilaan 3
     OPT_VERSION  siirto, ja siirry tilaan 4
@@ -128,7 +128,7 @@ Tila 0
 
 Tila 1
 
-    8 option: OPT_DAEMON .
+    8 option: OPT_NOINIT .
 
     $default  supistaminen käyttäen sääntöä 8 (option)
 
@@ -190,7 +190,7 @@ Tila 9
 
     3 optseq: option . optseq
 
-    OPT_DAEMON   siirto, ja siirry tilaan 1
+    OPT_NOINIT   siirto, ja siirry tilaan 1
     OPT_HELP     siirto, ja siirry tilaan 2
     OPT_VERBOSE  siirto, ja siirry tilaan 3
     OPT_VERSION  siirto, ja siirry tilaan 4
