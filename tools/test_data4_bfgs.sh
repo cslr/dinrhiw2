@@ -18,12 +18,12 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --time 60 iris-test.ds 4-4-1 iris-nn.cfg bfgs
+./nntool -v --samples 50 iris-test.ds 4-4-4-1 iris-nn.cfg bfgs
 
 ##################################################
 # testing
 
-./nntool -v iris-test.ds 4-4-1 iris-nn.cfg use
+./nntool -v iris-test.ds 4-4-4-1 iris-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]

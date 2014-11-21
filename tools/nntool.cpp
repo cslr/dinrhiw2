@@ -166,11 +166,15 @@ int main(int argc, char** argv)
     bayesian_nnetwork<>* bnn = new bayesian_nnetwork<>();
     
     if(verbose && !stdinout_io){
+      math::vertex<> w;
+      nn->exportdata(w);
+      
       if(lmethod == "use")
-	printf("Processing %d data points.\n", data.size(0));
+	printf("Processing %d data points (%d parameters in neural network).\n", data.size(0), w.size());
       else
-	printf("%d data points for %d -> %d mapping.\n",
-	       data.size(0), data.dimension(0), data.dimension(1));
+	printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
+	       data.size(0), data.dimension(0), data.dimension(1),
+	       w.size());
     }
     
 
@@ -272,12 +276,17 @@ int main(int argc, char** argv)
     if(lmethod == "bfgs"){
       unsigned int threads = (unsigned int)numberOfCPUThreads();
       
-      if(verbose)
-	std::cout << "Starting neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
-		  << std::endl;
+      if(verbose){
+	if(secs > 0)
+	  std::cout << "Starting neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
+		    << std::endl;
+	else
+	  std::cout << "Starting neural network BFGS optimization (" << threads << " threads).."
+		    << std::endl;
+      }
 
-      if(secs <= 0){
-	fprintf(stderr, "BFGS search requires --time TIME command line switch.\n");
+      if(secs <= 0 && samples <= 0){
+	fprintf(stderr, "BFGS search requires --time or --samples command line switch.\n");
 	return -1;
       }
       
@@ -289,8 +298,10 @@ int main(int argc, char** argv)
 	math::atlas_real<float> error = 1000.0f;
 	math::vertex<> w;
 	unsigned int iterations = 0;
+	whiteice::linear_ETA<float> eta;
 
-	std::cout << "AAA" << std::endl;
+	if(samples > 0)
+	  eta.start(0.0f, (float)samples);
 
 	// initial starting position
 	nn->exportdata(w);
@@ -298,26 +309,47 @@ int main(int argc, char** argv)
 	bfgs.minimize(w);
 
 	while(error > math::atlas_real<float>(0.001f) &&
-	      counter < secs) // compute max SECS seconds
+	      (counter < secs || secs <= 0) && // compute max SECS seconds
+	      (iterations < samples || samples <= 0))
 	{
-	  bfgs.getSolution(w, error, iterations);
-
-	  error = bfgs.getError();
-
 	  sleep(1);
+
+	  bfgs.getSolution(w, error, iterations);
+	  
+	  error = bfgs.getError();
+	  
+	  eta.update(iterations);
 
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
+
+	  if(secs > 0){
+	    printf("\r%d iters: %f [%f minutes]           ",
+		   iterations, 
+		   error.c[0], (secs - counter)/60.0f);
+	  }
+	  else{
+	    printf("\r%d/%d iters: %f [%f minutes]           ",
+		   iterations, samples,  
+		   error.c[0], eta.estimate()/60.0f);
+
+	  }
+
 	  
-	  printf("\r%d iters: %f [%f minutes]           ",
-		 iterations, 
-		 error.c[0], (secs - counter)/60.0f);
+	  
 	  fflush(stdout);
 	}
+	      
 	
-	printf("\r%d iters: %f [%f minutes]             \n",
-	       iterations,
-	       error.c[0], (secs - counter)/60.0f);
+	if(secs > 0)
+	  printf("\r%d iters: %f [%f minutes]             \n",
+		 iterations,
+		 error.c[0], (secs - counter)/60.0f);
+	else
+	  printf("\r%d/%d iters: %f [%f minutes]           \n",
+		 iterations, samples,  
+		 error.c[0], eta.estimate()/60.0f);
+	  
 	fflush(stdout);
 
 	bfgs.stopComputation();
@@ -813,7 +845,7 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, bfgs (experimental!)\n\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, bfgs\n\n");
   
   printf("Report bugs to <dinrhiw2.sourceforge.net>.\n");
   
