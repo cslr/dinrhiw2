@@ -545,12 +545,12 @@ int main(int argc, char** argv)
 	    math::vertex<> sumgrad;
 	    math::atlas_real<float> ninv =
 	      math::atlas_real<float>(1.0f/dtrain.size(0));
-	    
+
 	    for(unsigned int i=0;i<dtrain.size(0);i++){
 	      nn->input() = dtrain.access(0, i);
 	      nn->calculate(true);
 	      err = dtrain.access(1,i) - nn->output();
-	      
+
 	      if(nn->gradient(err, grad) == false)
 		std::cout << "gradient failed." << std::endl;
 
@@ -559,11 +559,12 @@ int main(int argc, char** argv)
 	      else
 		sumgrad += ninv*grad;
 	    }
-
+	    
 	    
 	    if(nn->exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 
+	    
 	    if(prev_sumgrad.size() <= 1){
 	      weights -= lrate * sumgrad;
 	      prev_sumgrad = lrate * sumgrad;
