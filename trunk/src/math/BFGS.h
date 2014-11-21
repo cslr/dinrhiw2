@@ -44,6 +44,10 @@ namespace whiteice
       private:
         void linesearch(vertex<T>& xn,
 			const vertex<T>& x, const vertex<T>& d) const;
+
+        bool wolfe_conditions(const vertex<T>& x0,
+			      const T& alpha,
+			      const vertex<T>& p) const;
       
         // current solution
 	vertex<T> bestx; 
