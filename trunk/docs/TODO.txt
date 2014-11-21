@@ -1,65 +1,42 @@
 TODO
 
-- check Hamiltonian MCMC (HMC) sampling neural network
-  code to run properly. [WRITE TEST CASES!]
-
-  * is HMCMC.cpp properly implemented?
-  [go through the code and theory of sampling using HMC code]
-
-  [check whether resulting distributions of weights do make sense,
-   create a test case where p(w) is known in advance
-   and then check if p(samples) converges to p(w)]
-
+- OPTIMIZE BFGS for speed. It is the MAIN workhorse for optimization.
+  * implement L-BFGS later
+  
+- HMC sampler:
   [check convergence by starting N sampling threads and
    then sample until ||m_w_j - m_x_i|| converges close
    enough to zero] (mean values are close enough each other)
 
-  see book (pages 495-496)
-
 - GA3, ga3_test_function.h: fully implement and test
   genetic algorithm optimization for real-valued vectors.
-
-- BIG TASK: implement RBM deep belief networks (deep learning) code
-
-  * implement NN learning using
-    initial unsupervised RBM-DBN learning step
+  - change GA implementation to sort offspring and select the better upper part (radix sort) (+ some randomness)
 
 - write configure script to detect existence of
   NVIDIA BLAS-library and use it if it exists instead of generic
   BLAS-library (should work on my new laptop)
 
-- adaptive smart step sizes (lrate) for gradient descent optimization
-  * currently we use fixed step size which leads
-    often to SLOW convergence
-
 - there are bugs in classes that create internal pthreads to do
   background execution. the pthread-entry functions are not
-  templated to do proper pointer casts (to templated pointer type) 
+  templated to do proper pointer casts (to templated pointer type)
 
 - bugfix and debugging:
   * valgrind, gdb
+
 - make it compile cleanly under MinGW
-- bugfix and implement nntool fully [dinrhiw-tools]
+
+- write configure scripts to use SSE instructions
+  if they are detected by the scripts
+
+- BIG TASK: implement RBM deep belief networks (deep learning) code
+  * implement NN learning using initial unsupervised learning step
+
 - DOCUMENTATION
-* COMPLEX numbers are not currently supported properly
-
-- BFGS and nntool.cpp, USE optimized_nnetwork_function
-  * is the sign of the gradient ok, is the line search OK 
-    [should one use 0.1*gradient descent or something?]
-    - or do better line search: exponential seach
-      at points: 1.5**(-15..10)
-
 
 ----------------------------------------------------------------
 OLD TODO
 
-
-TEST
-	AMD64 MATH: SYLVESTER EQ SOLVER FAIL
-
-
-  - change GA implementation to sort offspring and select the better upper part (radix sort)
-    (+ some randomness)
+  - AMD64 MATH: SYLVESTER EQ SOLVER FAIL
 
   TEST
    - write TEST to test gramschmidt<>(vector) gives same as gramschimidt<>(matrix)
@@ -70,36 +47,13 @@ TEST
   test datamining code
 
 
-  IMPLEMENT
-   - generic inference/distribution engine (own paper, Buzz like model,
-     	     			    	    use CORBA component architecture)
-
-   - space of gaussian distributions and bayesian SOM through SoGD solution (SND)
-
-   - polya tree based high dimensional distribution estimation
-   - bayesian nonlinear 'ICA' where source distributions can be multivariate and
-     total number of source dimensions can be higher than observer dimensions.
-     (not all are independent after this one)
-   - generic framework for bayesian NN
-
-  compare effiency between:
-    memcpy(), atlas based Xcopy()s, fpucopy() and mmxcopy()
-    and replace copying in matrix / vertex with faster copiers.
-    this can make a difference because need to make (partial) copy of
-    matrix/vertex arises quite often
-
 (MAYBE) BUGS/ERRORS
-  add gmp library/headers check
 
   avl-tree remove_node() has serious bugs:
     avl-tree infinite loops
     avl-tree forgots/drops non-removed nodes (bad)
     avl-tree isn't balanced after removal of nodes (bug).
     (calculate with paper&pencil with small examples..)
-
-  write householder rotation tests.
-  (optimized ATLAS implementation is known to be correct,
-   write test that checks generic code gives same results)
 
   test and/or add accuracy of symmetric eigenvalue solver
   (PCA seems to fail sometimes)
@@ -108,75 +62,4 @@ TEST
   - what other datamining methods would be needed/useful(?)
   - copy from own Java code
 
-
-notes:
-  (NN) PSO really doesn't scale to high dimensions as
-       can be expected from pseudo random search.
-       With big NN's PSO cannot increase NN performance
-       at all (for example 128-10-1 can be already too big)
-  
-
 ===================================================================
-
-
-
- - write configure script and pkg-config's algos.pc file
-   * atlas_XXX variable autodetection
- - write test code for library 
-   (tests that use as a external library works)
-
-
- - detect cpu and select and load needed ATLAS library
-   * compile module for each cpu type and load the correct one at runtime
-     (works if all CPUs have same arch. (shouldn't be issue?))
-
- - implement wiener filter and my own predictive
-   bayesian finite-impulse-response filter (bfir.m)
-   compare these two: matlab results were promising.
-
- - linear filters (wiener, kalman, adaptive ones)
-   (copy and generalize (atlas based) wiener filter from silence repository) 
-
-
- - implement *some* traditional recurrent neural network learning algorithms
-   which can be then compared with PSO based rNN learning/optimizer
-   ( practical linear O(n) NN optimizers )
-
- - test activation function parameterization idea with PSO
-   (this will probably lead to higher variance error unless there's enough data.
-    NN function parameters should be kept at some chosen value and free'ed for
-    optimization after(?) enough data for other network parameters have been seen)
-
- - change nnPSO to operate with pointers to parameter vectors (with given length) and
-   optimize neuralnetwork to have everything in a few large continous memory chunks
-   -> nnPSO no need for exportdata() and importdata(), nnPSO can work directly with
-      NN parameters
-
-   
-  - what the PSO+rNN performance (compared to others) is interesting to see
-    AFAIK PSO with recurrent NNs haven't been done before
-
-----------------------------------------------------------------------------------
-
- - timed_boolean code doesn't work (testcases)
-
- - implement: network growing and parsing algorithms
-   (these are needed in order to have good bias/variance balance during learning)
-
- - test function(void*& ptr) parameters ... don't seem to work correctly.
-
- - add VQ step to SOM
- 
- - genetic algorithms: test many ideas about ADAPTIVE parameter space representation change /
-                       redundancy reduction during optimization process
-                       (so that optimization is faster
-                       (potentially O(2**n) -> polynomal changes))
- 
- - hypersurfaces, hypercircle: do testing 
-  
- - fft / ifft			50% (math dir code: generalize to free length fft) 
-
- - fast basic dsp		1% (fast optimized vector code for digital audio
-                                    whiteice_sadd() etc. stuff .. later)
- 
---------------------------------------------------------------------
