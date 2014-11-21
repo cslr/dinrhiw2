@@ -45,8 +45,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool BFGS<T>::minimize(whiteice::optimized_function<T>* f,
-			   vertex<T>& x0)
+    bool BFGS<T>::minimize(vertex<T>& x0)
     {
       pthread_mutex_lock( &thread_lock );
       if(thread_running){
@@ -57,17 +56,16 @@ namespace whiteice
       // calculates initial solution
       pthread_mutex_lock( &solution_lock );
       this->bestx = x0;
-      f->calculate(x0, this->besty);
-      H.resize(x0.size(), x0.size());
-      H.identity();
+      this->besty = U(x0);
+      iterations  = 0;
       
       pthread_mutex_lock( &solution_lock );
-      
+
+      thread_running = true;
       pthread_create(&optimizer_thread, 0,
 		     __bfgs_optimizer_thread_init,
 		     (void*)this);
       pthread_detach( optimizer_thread);
-      thread_running = true;
       
       pthread_mutex_unlock( &thread_lock );
       
@@ -76,12 +74,13 @@ namespace whiteice
     
     
     template <typename T>
-    bool BFGS<T>::getSolution(vertex<T>& x, T& y)
+    bool BFGS<T>::getSolution(vertex<T>& x, T& y, unsigned int& iterations) const
     {
       // gets current solution
       pthread_mutex_lock( &solution_lock );
       x = bestx;
       y = besty;
+      iterations = this->iterations;
       pthread_mutex_lock( &solution_lock );
       
       return true;
@@ -127,12 +126,39 @@ namespace whiteice
 	pthread_mutex_unlock( &thread_lock );
 	return false;
       }
-      
-      pthread_cancel( optimizer_thread );
+
       thread_running = false;
+      pthread_cancel( optimizer_thread );
       pthread_mutex_unlock( &thread_lock );
       
       return true;
+    }
+
+
+    template <typename T>
+    void BFGS<T>::linesearch(vertex<T>& xn,
+			     const vertex<T>& x,
+			     const vertex<T>& d) const
+    {
+      // finds the correct scale first
+      // (exponential search)
+
+      T localbest = U(x + d);
+      math::vertex<T> localbestx = x + d;
+      
+      for(int j=-6;j<=6;j++){
+	float an = powf(2.0f, (float)j);
+
+	math::vertex<T> t = x + T(an)*d;
+	T tvalue = U(t);
+
+	if(tvalue < localbest){
+	  localbest = tvalue;
+	  localbestx = t;
+	}
+      }
+
+      xn = localbestx;
     }
     
     
@@ -143,94 +169,91 @@ namespace whiteice
       vertex<T> x(bestx), xn;
       vertex<T> s, q;
       T y;
+
+      matrix<T> H; // H is INVERSE of hessian matrix
+      H.resize(bestx.size(), bestx.size());
+      H.identity();
       
       
-      if(f->hasGradient()){
-	while(1){
-	  ////////////////////////////////////////////////////////////
-	  
-	  f->grad(x, g);
-	  linsolve(H, d, g);
-	  
-	  // linear search
-	  xn = x + d; // really simple for now
-	  
-	  f->calculate(xn, y);
-	  
-	  if(y < besty){
-	    pthread_mutex_lock( &solution_lock );
-	    bestx = xn;
-	    besty = y;
-	    pthread_mutex_unlock( &solution_lock );
-	  }
-	  
-	  // updates hessian
-	  s = xn - x;
-	  q = f->grad(xn) - f->grad(x);
-	  
-	  T scal = ((s*s)[0])/((s*(H*s))[0]);
-	  
-	  // slow, optimize with CBLAS H += a*(H^t * H)
-	  matrix<T> Q(H); // make copy of matrix
-	  Q.transpose();  // isn't needed
-	  
-	  H -= scal*Q*H; // makes copy of matrix
-	  
-	  
-	  // H += (q*q')/(q'*s) (optimize with CBLAS)
-	  scal = (q*s)[0];
-	  
-	  for(unsigned int j=0,index=0;j<H.ysize();j++)
-	    for(unsigned int i=0;i<H.xsize();i++,index++)
-	      H[index] += scal*q[j]*q[i];
-	  
-	  x = xn;
-	  
-	  ////////////////////////////////////////////////////////////
-	  // checks if thread has been cancelled.
-	  pthread_testcancel();
-	  
-	  // checks if thread has been ordered to sleep
-	  while(sleep_mode){
-#ifndef WINNT
-	    struct timespec ts;
-	    ts.tv_sec  = 0;
-	    ts.tv_nsec = 10000000; // 10ms
-	    nanosleep(&ts, 0);
-#else
-	    Sleep(10);
-#endif
-	  }
+      while(thread_running){
+	////////////////////////////////////////////////////////////
+	g = Ugrad(x);
+	d = -H*g; // linsolve(H, d, -g); 
+	
+	// linear search finds xn = x + alpha*d
+	// so that U(xn) is minimized
+	linesearch(xn, x, d); 
+
+	y = U(xn);
+	
+	if(y < besty){
+	  pthread_mutex_lock( &solution_lock );
+	  bestx = xn;
+	  besty = y;
+	  pthread_mutex_unlock( &solution_lock );
 	}
 	
-      }
-      else{ // don't have gradient, must approximate it
-	while(1){
-	  ////////////////////////////////////////////////////////////
-	  
-	  std::cout << "aprox gradient method hasn't been implemented yet."
-		    << std::endl;
-	  
-	  
-	  ////////////////////////////////////////////////////////////
-	  // checks if thread has been cancelled.
-	  pthread_testcancel();
-	  
-	  // checks if thread has been ordered to sleep
-	  while(sleep_mode){
-#ifndef WINNT
-	    struct timespec ts;
-	    ts.tv_sec  = 0;
-	    ts.tv_nsec = 50000000; // 50ms
-	    nanosleep(&ts, 0);
-#else
-	    Sleep(50);
+	// updates hessian approximation (BFGS method)
+	s = xn - x;
+	q = Ugrad(xn) - g; // Ugrad(xn) - Ugrad(x)
+
+	T r = T(1.0f)/(s*q)[0];
+
+	
+	matrix<T> A;
+	A.resize(x.size(), x.size());
+	A.identity();
+	A = A - r*s.outerproduct(q);
+
+	matrix<T> B;
+	B.resize(x.size(), x.size());
+	B.identity();
+	B = B - r*q.outerproduct(s);
+	
+	H += A*H*B;
+	H += r*s.outerproduct();
+
+	x = xn;
+
+	iterations++;
+
+#if 0	
+	T scal = ((s*s)[0])/((s*(H*s))[0]);
+	
+	// slow, optimize with CBLAS H += a*(H^t * H)
+	matrix<T> Q(H); // make copy of matrix
+	Q.transpose();  // isn't needed
+	
+	H -= scal*Q*H; // makes copy of matrix
+	
+	
+	// H += (q*q')/(q'*s) (optimize with CBLAS)
+	scal = (q*s)[0];
+	
+	for(unsigned int j=0,index=0;j<H.ysize();j++)
+	  for(unsigned int i=0;i<H.xsize();i++,index++)
+	    H[index] += scal*q[j]*q[i];
+	
+	x = xn;
 #endif
-	  }
+	////////////////////////////////////////////////////////////
+	// checks if thread has been cancelled.
+	pthread_testcancel();
+	
+	// checks if thread has been ordered to sleep
+	while(sleep_mode){
+#ifndef WINNT
+	  struct timespec ts;
+	  ts.tv_sec  = 0;
+	  ts.tv_nsec = 500000000; // 500ms
+	  nanosleep(&ts, 0);
+#else
+	  Sleep(500);
+#endif
 	}
       }
-	
-	
+      
+      
       // everything done. time to quit
       
       pthread_mutex_lock( &thread_lock );

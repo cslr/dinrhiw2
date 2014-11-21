@@ -124,7 +124,7 @@ extern int yydebug;
     LM_USE = 270,
     LM_PARALLELGRAD = 271,
     LM_GRAD = 272,
-    LM_GRAD_OT = 273,
+    LM_BFGS = 273,
     LM_RANDOM = 274,
     LM_BAYES = 275,
     MMOD_OVERTRAIN = 276,
@@ -353,7 +353,7 @@ static const char *const yytname[] =
   "$end", "error", "$undefined", "NUMBER", "STRING", "FILENAME",
   "ARCHSTRING", "OPT_NOINIT", "OPT_LOAD", "OPT_HELP", "OPT_VERBOSE",
   "OPT_VERSION", "OPT_TIME", "OPT_SAMPLES", "OPT_ENDOPT", "LM_USE",
-  "LM_PARALLELGRAD", "LM_GRAD", "LM_GRAD_OT", "LM_RANDOM", "LM_BAYES",
+  "LM_PARALLELGRAD", "LM_GRAD", "LM_BFGS", "LM_RANDOM", "LM_BAYES",
   "MMOD_OVERTRAIN", "MMOD_PCA", "MMOD_ICA", "$accept", "arg", "optseq",
   "anystring", "option", "endopt", "data", "arch", "nnfile", "lmethod",
   "mbasic", "mmodseq", "mmod", YY_NULLPTR
@@ -2818,7 +2818,7 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);
-    p.name = "grad+ot"; p.code = LM_GRAD_OT;
+    p.name = "bfgs"; p.code = LM_BFGS;
     cmdparamslist.push_back(p);
     p.name = "parallelgrad"; p.code = LM_PARALLELGRAD;
     cmdparamslist.push_back(p);

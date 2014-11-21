@@ -1,6 +1,13 @@
 /*
- * basic algoritms library
+ * dinrhiw2
  * 
+ * neural network training library
+ *
+'* BFGS*.h       BFGS optimization for neural networks 
+ * HMC           Hybrid Monte Carlo sampler for neural networks
+ * NNGradDescent neural network parallel gradient descent optimizer
+ * 
+ * OLD:
  *   basic datatypes
  *   class/function behaviour morphers
  *   tree structures and sorting
@@ -11,11 +18,6 @@
  *   basic cryptography
  *   feedforward neural networks
  *   clustering: SOM2D, KMeans
- *   
- * in progress/partially working
- *   simplex optimization
- *   crude probability distrubtion estimator
- *   timed_boolean
  */
 
 
@@ -23,6 +25,7 @@
 #define lib_dinrhiw_h
 
 #include "BFGS.h"
+#include "BFGS_nnetwork.h"
 
 #include "array.h"
 #include "static_array.h"

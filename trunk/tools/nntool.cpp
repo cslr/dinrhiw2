@@ -269,7 +269,72 @@ int main(int argc, char** argv)
     
     // learning or activation
     
-    if(lmethod == "random"){
+    if(lmethod == "bfgs"){
+      unsigned int threads = (unsigned int)numberOfCPUThreads();
+      
+      if(verbose)
+	std::cout << "Starting neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
+		  << std::endl;
+
+      if(secs <= 0){
+	fprintf(stderr, "BFGS search requires --time TIME command line switch.\n");
+	return -1;
+      }
+      
+      BFGS_nnetwork<> bfgs(*nn, data);
+      
+      {
+	time_t t0 = time(0);
+	unsigned int counter = 0;
+	math::atlas_real<float> error = 1000.0f;
+	math::vertex<> w;
+	unsigned int iterations = 0;
+
+	// initial starting position
+	nn->exportdata(w);
+	bfgs.minimize(w);
+	
+	
+	while(error > math::atlas_real<float>(0.001f) &&
+	      counter < secs) // compute max SECS seconds
+	{
+	  bfgs.getSolution(w, error, iterations);
+	  error = bfgs.getError();
+	  
+	  sleepms(500);
+	  
+	  time_t t1 = time(0);
+	  counter = (unsigned int)(t1 - t0); // time-elapsed
+
+	  printf("\r%d iterations: %f [%f minutes]           ",
+		 iterations, 
+		 error.c[0], (secs - counter)/60.0f);
+	  fflush(stdout);
+	}
+	
+	printf("\r%d iterations: %f [%f minutes]             \n",
+	       iterations,
+	       error.c[0], (secs - counter)/60.0f);
+	fflush(stdout);
+
+	bfgs.stopComputation();
+
+	// gets the final (optimum) solution
+	bfgs.getSolution(w, error, iterations);
+	
+	if(nn->importdata(w) == false){
+	  std::cout << "ERROR: internal error" << std::endl;
+	  return -1;
+	}
+	if(bnn->importNetwork(*nn) == false){
+	  std::cout << "ERROR: internal error" << std::endl;
+	  return -1;
+	}
+      }
+      
+      
+    }
+    else if(lmethod == "random"){
       unsigned int threads = (unsigned int)numberOfCPUThreads();
       
       if(verbose)
@@ -745,7 +810,7 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, grad, grad+ot, parallelgrad, random, bayes\n\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, bfgs (experimental!)\n\n");
   
   printf("Report bugs to <dinrhiw2.sourceforge.net>.\n");
   
