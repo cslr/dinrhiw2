@@ -3,7 +3,7 @@ The library was originally developed during 1998-2005. There is no plans to deve
 Machine learning component contains: 
 
   * unix commands line tools to do machine learning from scripts (nntool, dstool)
-  * BFGS neural network (2nd order) optimizer
+  * BFGS neural network 2nd order optimizer
   * basic BayesianNeuralNetwork using adaptive hybrid monte carlo sampling
   * principal component analysis (PCA) and independent component analysis (ICA) preprocessing methods
   * multistart gradient descent optimizer for neural networks
@@ -29,9 +29,13 @@ class nnetwork<>
 
 class dataset<>
 
-class NNGradDescent<> (neural network gradient descent)
+class BFGS<>
 
-class HMC<> (hamiltonian monte carlo sampling for neural networks)
+class BFGS_nnetwork<> (neural network BFGS optimizer)
+
+class NNGradDescent<> (parallel neural network gradient descent)
+
+class HMC<> (parallel hamiltonian monte carlo sampling for neural networks)
 
 tools/nntool
 
@@ -43,8 +47,8 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
 == TODO ==
 
   * cleanup the code and remove classes that are not needed and don't belong to this library
+  * optimize BFGS code
   * DOCUMENTATION, bug fixing
-  * test and fully implement BFGS neural network code
   * the use of BLAS libraries for GPUs to make things faster (NVIDIA CUDA and cuBLAS) - currently the library uses generic BLAS for matrix operations
   * try to remove few x86 dependencies (cpuid instruction)
 
