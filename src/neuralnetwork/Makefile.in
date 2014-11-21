@@ -12,7 +12,7 @@ SOURCES = neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp ide
 	tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
 	GeneticAlgorithm.cpp GeneticAlgorithm2.cpp test_function2.cpp \
 	NNGradDescent.cpp NNRandomSearch.cpp HMC.cpp bayesian_nnetwork.cpp HMC_abstract.cpp HMC_gaussian.cpp \
-	GA3.cpp ga3_test_function.cpp deep_ica_network_priming.cpp
+	GA3.cpp ga3_test_function.cpp deep_ica_network_priming.cpp BFGS_nnetwork.cpp
 
 OBJECTS= neuron.o neuronlayer.o \
 	activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
@@ -22,12 +22,12 @@ OBJECTS= neuron.o neuronlayer.o \
 	SOM2D.o KMeans.o nnetwork.o HC.o GDALogic.o \
 	GeneticAlgorithm.o GeneticAlgorithm2.o test_function2.o \
 	NNGradDescent.o NNRandomSearch.o HMC.o bayesian_nnetwork.o HMC_abstract.o HMC_gaussian.o \
-	GA3.o ga3_test_function.o deep_ica_network_priming.o
+	GA3.o ga3_test_function.o deep_ica_network_priming.o BFGS_nnetwork.o
 
 EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math/integer.o \
 	../math/matrix_rotations.o ../math/eig.o ../math/correlation.o ../math/blade_math.o \
 	../math/real.o 	../dataset.o ../conffile.o ../MemoryCompressor.o ../linear_ETA.o \
-	../dynamic_bitset.o ../math/ica.o
+	../dynamic_bitset.o ../math/ica.o ../math/BFGS.o
 
 
 TARGET1_OBJECTS= tst/test.o 

@@ -1,5 +1,6 @@
 /*
  * Broyden-Fletcher-Goldfarb-Shanno (BFGS) optimizer
+ * minimizes the target error function.
  */
 
 
@@ -22,11 +23,18 @@ namespace whiteice
       public:
 	BFGS();
 	~BFGS();
+      
+      protected:
+        /* optimized function */
+
+        virtual T U(const vertex<T>& x) const = 0;
+        virtual vertex<T> Ugrad(const vertex<T>& x) const = 0;
+
+      public:
 	
-	bool minimize(whiteice::optimized_function<T>* f,
-		      vertex<T>& x0);
+        bool minimize(vertex<T>& x0);
 	
-	bool getSolution(vertex<T>& x, T& y);
+        bool getSolution(vertex<T>& x, T& y, unsigned int& iterations) const;
 	
 	// continues, pauses, stops computation
 	bool continueComputation();
@@ -34,18 +42,17 @@ namespace whiteice
 	bool stopComputation();
 	
       private:
-	whiteice::optimized_function<T>* f;
-	
-	// current solution
+        void linesearch(vertex<T>& xn,
+			const vertex<T>& x, const vertex<T>& d) const;
+      
+        // current solution
 	vertex<T> bestx; 
 	T besty;
+        volatile unsigned int iterations;
 	
-	matrix<T> H; // initial (positive definite) hessian matrix
-	
-	
-	bool sleep_mode, thread_running;
+        volatile bool sleep_mode, thread_running;
 	pthread_t optimizer_thread;
-	pthread_mutex_t sleep_lock, thread_lock, solution_lock;
+        mutable pthread_mutex_t sleep_lock, thread_lock, solution_lock;
 	
 	
       public:

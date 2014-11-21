@@ -251,17 +251,17 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h \
- optimized_nnetwork_function.h nnetwork.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
- GDALogic.h KMeans.h
+ ../conffile.h NNGradDescent.h NNRandomSearch.h \
+ deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h HCLogic.h hctree.h GDALogic.h KMeans.h
 GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
  optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
  ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -305,16 +305,17 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h \
- optimized_nnetwork_function.h nnetwork.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h
+ ../conffile.h NNGradDescent.h NNRandomSearch.h \
+ deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h HCLogic.h hctree.h
 test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
  optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
  ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -358,17 +359,18 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h \
- optimized_nnetwork_function.h nnetwork.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
- GDALogic.h GDALogic.h HMC_gaussian.h HMC_abstract.h
+ ../conffile.h NNGradDescent.h NNRandomSearch.h \
+ deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h HCLogic.h hctree.h GDALogic.h \
+ GDALogic.h HMC_gaussian.h HMC_abstract.h
 pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h ../math/atlas.h \
  ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
@@ -459,13 +461,13 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/atlas.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h ../conffile.h \
- NNGradDescent.h NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h \
- optimized_nnetwork_function.h nnetwork.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ NNGradDescent.h NNRandomSearch.h deep_ica_network_priming.h nnetwork.h \
+ KMeans.h SOM2D.h ../ETA.h optimized_nnetwork_function.h \
+ negative_function.h stretched_function.h identity_activation.h \
+ odd_sigmoid.h threshold.h treshold.h multidimensional_gaussian.h \
+ gaussian.h HMC.h bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -513,13 +515,13 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h ../math/atlas.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h ../conffile.h \
- NNGradDescent.h NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h \
- optimized_nnetwork_function.h nnetwork.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ NNGradDescent.h NNRandomSearch.h deep_ica_network_priming.h nnetwork.h \
+ KMeans.h SOM2D.h ../ETA.h optimized_nnetwork_function.h \
+ negative_function.h stretched_function.h identity_activation.h \
+ odd_sigmoid.h threshold.h treshold.h multidimensional_gaussian.h \
+ gaussian.h HMC.h bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -568,15 +570,16 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/atlas.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
- NNRandomSearch.h KMeans.h SOM2D.h ../ETA.h optimized_nnetwork_function.h \
- nnetwork.h negative_function.h stretched_function.h \
- identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h GA3.h \
- rbf.h rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h
+ NNRandomSearch.h deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h \
+ ../ETA.h optimized_nnetwork_function.h negative_function.h \
+ stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
+ treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h
 bayesian_nnetwork.o: bayesian_nnetwork.cpp bayesian_nnetwork.h nnetwork.h \
  ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
  ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
@@ -636,3 +639,29 @@ ga3_test_function.o: ga3_test_function.cpp ga3_test_function.h function.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h activation_function.h \
  function.h
+deep_ica_network_priming.o: deep_ica_network_priming.cpp \
+ deep_ica_network_priming.h ../math/vertex.h ../math/atlas.h \
+ ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h nnetwork.h ../conffile.h \
+ ../math/eig.h ../math/correlation.h
+BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
+ optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
+ ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h nnetwork.h ../conffile.h \
+ ../dataset.h ../math/ica.h

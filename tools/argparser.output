@@ -40,7 +40,7 @@ Kielioppi
 
    24 mbasic: LM_USE
    25       | LM_GRAD
-   26       | LM_GRAD_OT
+   26       | LM_BFGS
    27       | LM_PARALLELGRAD
    28       | LM_RANDOM
    29       | LM_BAYES
@@ -72,7 +72,7 @@ OPT_ENDOPT (269) 16
 LM_USE (270) 24
 LM_PARALLELGRAD (271) 27
 LM_GRAD (272) 25
-LM_GRAD_OT (273) 26
+LM_BFGS (273) 26
 LM_RANDOM (274) 28
 LM_BAYES (275) 29
 MMOD_OVERTRAIN (276) 32
@@ -342,7 +342,7 @@ Tila 26
     LM_USE           siirto, ja siirry tilaan 27
     LM_PARALLELGRAD  siirto, ja siirry tilaan 28
     LM_GRAD          siirto, ja siirry tilaan 29
-    LM_GRAD_OT       siirto, ja siirry tilaan 30
+    LM_BFGS          siirto, ja siirry tilaan 30
     LM_RANDOM        siirto, ja siirry tilaan 31
     LM_BAYES         siirto, ja siirry tilaan 32
 
@@ -375,7 +375,7 @@ Tila 29
 
 Tila 30
 
-   26 mbasic: LM_GRAD_OT .
+   26 mbasic: LM_BFGS .
 
     $default  supistaminen käyttäen sääntöä 26 (mbasic)
 

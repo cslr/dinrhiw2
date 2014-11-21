@@ -85,7 +85,7 @@
 %token <str> LM_USE
 %token <str> LM_PARALLELGRAD
 %token <str> LM_GRAD
-%token <str> LM_GRAD_OT
+%token <str> LM_BFGS
 %token <str> LM_RANDOM
 %token <str> LM_BAYES
 
@@ -151,7 +151,7 @@ lmethod: /* empty */
 
 mbasic: LM_USE     { __info.method = $1; }
       | LM_GRAD    { __info.method = $1; }
-      | LM_GRAD_OT { __info.method = $1; }
+      | LM_BFGS    { __info.method = $1; }
       | LM_PARALLELGRAD { __info.method = $1; }
       | LM_RANDOM  { __info.method = $1; }
       | LM_BAYES   { __info.method = $1; }
@@ -262,7 +262,7 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);
-    p.name = "grad+ot"; p.code = LM_GRAD_OT;
+    p.name = "bfgs"; p.code = LM_BFGS;
     cmdparamslist.push_back(p);
     p.name = "parallelgrad"; p.code = LM_PARALLELGRAD;
     cmdparamslist.push_back(p);
