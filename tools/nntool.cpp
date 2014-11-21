@@ -290,29 +290,32 @@ int main(int argc, char** argv)
 	math::vertex<> w;
 	unsigned int iterations = 0;
 
+	std::cout << "AAA" << std::endl;
+
 	// initial starting position
 	nn->exportdata(w);
+
 	bfgs.minimize(w);
-	
-	
+
 	while(error > math::atlas_real<float>(0.001f) &&
 	      counter < secs) // compute max SECS seconds
 	{
 	  bfgs.getSolution(w, error, iterations);
+
 	  error = bfgs.getError();
-	  
-	  sleepms(500);
-	  
+
+	  sleep(1);
+
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
-
-	  printf("\r%d iterations: %f [%f minutes]           ",
+	  
+	  printf("\r%d iters: %f [%f minutes]           ",
 		 iterations, 
 		 error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
 	
-	printf("\r%d iterations: %f [%f minutes]             \n",
+	printf("\r%d iters: %f [%f minutes]             \n",
 	       iterations,
 	       error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
