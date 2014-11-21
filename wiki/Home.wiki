@@ -47,7 +47,7 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
 == TODO ==
 
   * cleanup the code and remove classes that are not needed and don't belong to this library
-  * optimize BFGS code and write parallel search code (random starting points)
+  * optimize and implement L-BFGS code and write parallel search code (random starting points)
   * DOCUMENTATION, bug fixing
   * the use of BLAS libraries for GPUs to make things faster (NVIDIA CUDA and cuBLAS) - currently the library uses generic BLAS for matrix operations
   * try to remove few x86 dependencies (cpuid instruction)
@@ -57,7 +57,7 @@ There are better free libraries available so there is no much point in developin
 
 == PLATFORMS ==
 
-The software has been developed in Linux (x86 and amd64). It compiles with MINGW/Windows compiler but crashes because of strange bugs. It has been reported to work correctly in Cygwin 32bit environment (but cygwin license is a problem).
+The software has been developed in Linux (x86 and amd64). It compiles with MINGW/Windows compiler but crashes because of strange bugs. It has been reported to work correctly in Cygwin 32bit environment (but cygwin license is a problem). Currently there are few x86 specific instructions (CPUID) and assumptions (size of int and float etc) so only x86 and amd64/x86_64 are fully supported.
 
 == DONATE ==
 
