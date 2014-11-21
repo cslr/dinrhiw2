@@ -287,7 +287,7 @@ namespace whiteice
 	    
 	    error /= T((float)dtest.size());
 	    
-	    delta_error = abs(error - prev_error);
+	    delta_error = (prev_error - error);
 	    ratio = delta_error / error;
 
 	    // printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);

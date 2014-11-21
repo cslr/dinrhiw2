@@ -492,7 +492,7 @@ int main(int argc, char** argv)
 	    
 	    error /= math::atlas_real<float>((float)dtest.size());
 	    
-	    delta_error = abs(error - prev_error);
+	    delta_error = (prev_error - error); // if the error is negative we stop
 	    ratio = delta_error / error;
 	    
 	    printf("\r%d/%d iterations: %f (%f) [%f minutes]                  ", counter, samples, error.c[0], ratio.c[0], eta.estimate()/60.0);
