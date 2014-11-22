@@ -24,7 +24,7 @@
 #include <windows.h>
 #endif
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "number.h"
 #include "vertex.h"
 #include "quaternion.h"
@@ -68,8 +68,8 @@ void modular_test();
 void compression_test();
 void correlation_test();
 
-void atlas_compile_tests();
-void atlas_correctness_tests();
+void blas_compile_tests();
+void blas_correctness_tests();
 
 //////////////////////////////////////////////////////////////////////
 
@@ -195,10 +195,10 @@ int main()
     compression_test();
     
     std::cout << "ATLAS COMPILE TESTS" << std::endl;
-    atlas_compile_tests();
+    blas_compile_tests();
   
     std::cout << "ATLAS CORRECTNESS TESTS" << std::endl;
-    atlas_correctness_tests();
+    blas_correctness_tests();
     
     std::cout << "(AUTO)CORRELATION CALCULATION TESTS" << std::endl;  
     correlation_test();
@@ -1905,7 +1905,7 @@ void compression_test()
     
     for(unsigned int j=0;j<10;j++)
     {
-      vertex< atlas_real<float> > a, b;
+      vertex< blas_real<float> > a, b;
       a.resize( 1 + rand() % 7461 );
       b.resize( a.size() );
       
@@ -2013,7 +2013,7 @@ void compression_test()
 
     for(unsigned int j=0;j<10;j++)
     {
-      matrix< atlas_real<float> > a, b;
+      matrix< blas_real<float> > a, b;
       a.resize( 1 + rand() % 34, 1 + rand() % 34);
       b.resize( a.ysize(), a.xsize() );
       
@@ -2202,7 +2202,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 
-void atlas_correctness_tests()
+void blas_correctness_tests()
 {
   std::cout << "ATLAS DATA TYPE FUNCTIONALITY TESTS" << std::endl;
   
@@ -2214,7 +2214,7 @@ void atlas_correctness_tests()
     std::cout << "ATLAS SQRT() AND ABS() TESTS" << std::endl;
     {
       float a[10];
-      atlas_real<float> b[10];
+      blas_real<float> b[10];
       
       // sets up data
       for(unsigned int i=0;i<10;i++){
@@ -2228,7 +2228,7 @@ void atlas_correctness_tests()
 	
 	float delta = a[i] - b[i].c[0];
 	if(fabsf(delta) > 0.001f){
-	  std::cout << "ERROR: atlas_real square root returned wrong result" << std::endl;
+	  std::cout << "ERROR: blas_real square root returned wrong result" << std::endl;
 	  std::cout << "A[i] = " << a[i] << "  B[i] = " << b[i].c[0] << std::endl;
 	}
 	  
@@ -2239,15 +2239,15 @@ void atlas_correctness_tests()
       
       for(unsigned int i=0;i<10;i++){
 	float orig = a[i];
-	atlas_real<float> origb = b[i];
+	blas_real<float> origb = b[i];
 	a[i] = whiteice::math::abs(a[i]);
 	b[i] = whiteice::math::abs(b[i]);
 	
 	float delta = a[i] - b[i].c[0];
 	if(fabsf(delta) > 0.001f){
-	  std::cout << "ERROR: atlas_real abs() returned wrong result" << std::endl;
+	  std::cout << "ERROR: blas_real abs() returned wrong result" << std::endl;
 	  std::cout << "Input: " << orig << " , " << origb.c[0] << std::endl;
-	  atlas_real<float> bb = b[i];
+	  blas_real<float> bb = b[i];
 	  std::cout << "A[i] = " << a[i] << "  B[i] = " << bb.c[0] << std::endl;
 	}
       }
@@ -2266,14 +2266,14 @@ void atlas_correctness_tests()
       // float tests
       
       whiteice::math::gvertex<float>* fver;
-      whiteice::math::vertex< atlas_real<float> >* aver;
+      whiteice::math::vertex< blas_real<float> >* aver;
       
       // ctor, [] operator, some comparision and resize tests
       for(unsigned int i=0;i<100;i++){
 	const unsigned int N = (rand() % 20) + 1;
 	
 	fver = new gvertex<float>(N);
-	aver = new vertex< atlas_real<float> >(N);
+	aver = new vertex< blas_real<float> >(N);
 	
 	if(fver->size() != aver->size())
 	  throw test_exception("gvertex size mismatch");
@@ -2293,7 +2293,7 @@ void atlas_correctness_tests()
 	
 	// alternative ctor
 	whiteice::math::gvertex<float> g2(*fver);
-	whiteice::math::vertex< atlas_real<float> > a2(*aver);
+	whiteice::math::vertex< blas_real<float> > a2(*aver);
 	
 	if(g2 != *fver)
 	  throw test_exception("generic gvertex: comparision error when used copy ctor");
@@ -2360,12 +2360,12 @@ void atlas_correctness_tests()
       
       // "=" and "==" and "!=" operator tests
       {
-	whiteice::math::vertex< atlas_real<float> >* a;
+	whiteice::math::vertex< blas_real<float> >* a;
 	
 	const unsigned int N = (rand() % 20) + 1;
 	const unsigned int M = (rand() % 20) + 1;
 	
-	a = new vertex< atlas_real<float> >[N];
+	a = new vertex< blas_real<float> >[N];
 	
 	for(unsigned int i=0;i<N;i++)
 	  a[i].resize(M);
@@ -2428,7 +2428,7 @@ void atlas_correctness_tests()
       const unsigned int N = (rand() % 20) + 1;
       
       whiteice::math::gvertex<float> a(N), b(N), c(N);
-      whiteice::math::vertex< atlas_real<float> > d(N), e(N), f(N);
+      whiteice::math::vertex< blas_real<float> > d(N), e(N), f(N);
       std::string str;
       
       for(unsigned int i=0;i<1000;i++){ // number of iterations
@@ -2503,8 +2503,8 @@ void atlas_correctness_tests()
       whiteice::math::gvertex<float> a(N), b(N);
       float c;
       
-      whiteice::math::vertex< atlas_real<float> > d(N), e(N);
-      atlas_real<float> f;
+      whiteice::math::vertex< blas_real<float> > d(N), e(N);
+      blas_real<float> f;
       
       std::string str;
       
@@ -2594,7 +2594,7 @@ void atlas_correctness_tests()
       const unsigned int N = (rand() % 10) + 1;
       
       whiteice::math::gvertex<float> a(N), b(N), c(N);
-      whiteice::math::vertex< atlas_real<float> > d(N), e(N), f(N);
+      whiteice::math::vertex< blas_real<float> > d(N), e(N), f(N);
       std::string str;
       
       for(unsigned int i=0;i<1000;i++){ // number of iterations
@@ -2719,7 +2719,7 @@ void atlas_correctness_tests()
       // float tests
       
       whiteice::math::gmatrix<float>* fmat;
-      whiteice::math::matrix< atlas_real<float> >* amat;
+      whiteice::math::matrix< blas_real<float> >* amat;
       
       // ctor, [] operator, some comparision and resize tests
       for(unsigned int i=0;i<100;i++){
@@ -2727,7 +2727,7 @@ void atlas_correctness_tests()
 	const unsigned int N2 = (rand() % 20) + 1;
 	
 	fmat = new gmatrix<float>(N1, N2);
-	amat = new matrix< atlas_real<float> >(N1, N2);
+	amat = new matrix< blas_real<float> >(N1, N2);
 	
 	if(fmat->xsize() != amat->xsize() ||
 	   fmat->ysize() != amat->ysize() )	  
@@ -2754,7 +2754,7 @@ void atlas_correctness_tests()
 	
 	// alternative ctor
 	whiteice::math::gmatrix<float> g2(*fmat);
-	whiteice::math::matrix< atlas_real<float> > a2(*amat);
+	whiteice::math::matrix< blas_real<float> > a2(*amat);
 	
 	if(g2 != *fmat)
 	  throw test_exception("generic gmatrix: comparision error when used copy ctor");
@@ -2896,7 +2896,7 @@ void atlas_correctness_tests()
       const unsigned int N2 = (rand() % 20) + 1;
       
       whiteice::math::gmatrix<float> a(N1,N2), b(N1,N2), c(N1,N2);
-      whiteice::math::matrix< atlas_real<float> > d(N1,N2), e(N1,N2), f(N1,N2);
+      whiteice::math::matrix< blas_real<float> > d(N1,N2), e(N1,N2), f(N1,N2);
       std::string str;
       
       for(unsigned int i=0;i<100;i++){ // number of iterations
@@ -2979,8 +2979,8 @@ void atlas_correctness_tests()
       whiteice::math::gmatrix<float> a(N,N), b(N,N);
       float c;
       
-      whiteice::math::matrix< atlas_real<float> > d(N,N), e(N,N);
-      atlas_real<float> f;
+      whiteice::math::matrix< blas_real<float> > d(N,N), e(N,N);
+      blas_real<float> f;
       
       std::string str;
       
@@ -3072,7 +3072,7 @@ void atlas_correctness_tests()
       const unsigned int N2 = N1;
       
       whiteice::math::gmatrix<float> a(N1,N2), b(N1,N2), c(N1,N2);
-      whiteice::math::matrix< atlas_real<float> > d(N1,N2), e(N1,N2), f(N1,N2);
+      whiteice::math::matrix< blas_real<float> > d(N1,N2), e(N1,N2), f(N1,N2);
       std::string str;
       
       for(unsigned int i=0;i<100;i++){ // number of iterations
@@ -3180,14 +3180,14 @@ void atlas_correctness_tests()
     // GMATRIX & GVERTEX TESTS    
     // M*x, x*M, x * y' (outer product)
     {
-      // tests with atlas_real<float> againt
+      // tests with blas_real<float> againt
       // generic gmatrix/gvertex code
       
       const unsigned int N1 = ((rand() % 20) + 1);
       const unsigned int N2 = ((rand() % 20) + 1);
       
-      whiteice::math::vertex< atlas_real<float> > v[2];
-      whiteice::math::matrix< atlas_real<float> > M;
+      whiteice::math::vertex< blas_real<float> > v[2];
+      whiteice::math::matrix< blas_real<float> > M;
       
       whiteice::math::gvertex<float> u[2];
       whiteice::math::gmatrix<float> N;
@@ -3351,33 +3351,33 @@ void atlas_correctness_tests()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void atlas_compile_tests()
+void blas_compile_tests()
 {  
   {
     std::cout << "ATLAS primitives test\n";
     
-    if(sizeof(atlas_real<float>) != sizeof(float))
+    if(sizeof(blas_real<float>) != sizeof(float))
       std::cout << "ERROR: wrong atlas primitive size, real float"
 		<< std::endl;
 	
-    if(sizeof(atlas_complex<float>) != 2*sizeof(float))
+    if(sizeof(blas_complex<float>) != 2*sizeof(float))
       std::cout << "ERROR: wrong atlas primitive size, complex float"
 		<< std::endl;
 
-    if(sizeof(atlas_real<double>) != sizeof(double))
+    if(sizeof(blas_real<double>) != sizeof(double))
       std::cout << "ERROR: wrong atlas primitive size, real double"
 		<< std::endl;
 	
-    if(sizeof(atlas_complex<double>) != 2*sizeof(double))
+    if(sizeof(blas_complex<double>) != 2*sizeof(double))
       std::cout << "ERROR: wrong atlas primitive size, complex double"
 		<< std::endl;
        
     
     // some calculation tests
     
-    atlas_complex<float> c;
+    blas_complex<float> c;
     c = 1;
-    atlas_real<float>* r = new atlas_real<float>[1024];
+    blas_real<float>* r = new blas_real<float>[1024];
     
     r[10] = 10.0f;
     r[10] += 15.0f;
@@ -3392,7 +3392,7 @@ void atlas_compile_tests()
   {
     std::cout << "ATLAS gvertex test\n";
     
-    vertex< atlas_real<float> > a, b, c, d(10);
+    vertex< blas_real<float> > a, b, c, d(10);
     vertex<>* xx;
     xx = new vertex<>[10];
     
@@ -3419,7 +3419,7 @@ void atlas_compile_tests()
     std::cout << "|A| = " << a.norm() << std::endl;
     
     std::cout << "C = " << c << std::endl;
-    c = atlas_real<float>(2.0f) * a + b;
+    c = blas_real<float>(2.0f) * a + b;
     std::cout << "C = " << c << std::endl;
     std::cout << "|C| = " << c.norm() << std::endl;
     
@@ -3470,13 +3470,13 @@ void atlas_compile_tests()
   // ATLAS gmatrix test
   {
     std::cout << "ATLAS gmatrix test\n";    
-    matrix< atlas_real<float> > A, B, C;
+    matrix< blas_real<float> > A, B, C;
     
     A(1,0) = 69;
     std::cout << "A = " << A << std::endl;
     B.identity();
     std::cout << "B = " << B << std::endl;    
-    B = atlas_real<float>(2.0f) *  B;
+    B = blas_real<float>(2.0f) *  B;
     std::cout << "B = " << B << std::endl;
     C = B*A;
     std::cout << "C = " << C << std::endl;
@@ -3490,8 +3490,8 @@ void atlas_compile_tests()
   // ATLAS gmatrix * ATLAS gvertex test
   {
     std::cout << "ATLAS gmatrix&gvertex test\n";
-    matrix< atlas_real<float> > A(4,4),B,C;
-    vertex< atlas_real<float> > a(4),b,c;
+    matrix< blas_real<float> > A(4,4),B,C;
+    vertex< blas_real<float> > a(4),b,c;
     
     A.identity();
     a[0] = -31415729;
@@ -3524,9 +3524,9 @@ void correlation_test()
   
   // test autocorrelation with a list of vectors
   try{
-    std::vector< vertex< atlas_real<float> > > vectors;
-    matrix< atlas_real<float> > R, pR;
-    vertex< atlas_real<float> > v;
+    std::vector< vertex< blas_real<float> > > vectors;
+    matrix< blas_real<float> > R, pR;
+    vertex< blas_real<float> > v;
     
     // TEST 1: correctness test
 
@@ -3650,8 +3650,8 @@ void correlation_test()
   
   // tests autocorrelation with matrix'es row vectors
   try{
-    matrix< atlas_real<float> > V;
-    matrix< atlas_real<float> > R, pR;
+    matrix< blas_real<float> > V;
+    matrix< blas_real<float> > R, pR;
     
     // TEST 1: correctness test
     V.resize(10, 5);
@@ -3743,11 +3743,11 @@ void correlation_test()
   
   // comparision test between implementations
   try{  
-    matrix< atlas_real<float> > V;
-    std::vector< vertex< atlas_real<float> > > vectors;
-    vertex< atlas_real<float> > v;
+    matrix< blas_real<float> > V;
+    std::vector< vertex< blas_real<float> > > vectors;
+    vertex< blas_real<float> > v;
     
-    matrix< atlas_real<float> > R1, R2 , E;
+    matrix< blas_real<float> > R1, R2 , E;
     
     
     for(unsigned int i=0;i<100;i++){

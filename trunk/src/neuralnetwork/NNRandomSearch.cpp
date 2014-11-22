@@ -289,8 +289,8 @@ namespace whiteice
     
     //template class NNRandomSearch< float >;
     //template class NNRandomSearch< double >;
-    template class NNRandomSearch< atlas_real<float> >;
-    //template class NNRandomSearch< atlas_real<double> >;    
+    template class NNRandomSearch< blas_real<float> >;
+    //template class NNRandomSearch< blas_real<double> >;    
     
   };
 };
@@ -302,7 +302,7 @@ extern "C" {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
     
     if(optimizer_ptr)
-      ((whiteice::math::NNRandomSearch< whiteice::math::atlas_real<float> >*)optimizer_ptr)->__optimizerloop();
+      ((whiteice::math::NNRandomSearch< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
     
     pthread_exit(0);
 

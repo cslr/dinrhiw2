@@ -495,9 +495,9 @@ namespace whiteice
     
     //////////////////////////////////////////////////////////////////////
     
-    template class StochasticOptimizer< atlas_real<float> >;
-    template class IHRSearch< atlas_real<float> >;
-    template class GradientDescent< atlas_real<float> >;
+    template class StochasticOptimizer< blas_real<float> >;
+    template class IHRSearch< blas_real<float> >;
+    template class GradientDescent< blas_real<float> >;
     
     
   };

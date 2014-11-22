@@ -8,7 +8,7 @@
 #include "function.h"
 #include "vertex.h"
 #include "matrix.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 #ifndef optimized_function_h
 #define optimized_function_h

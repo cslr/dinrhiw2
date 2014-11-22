@@ -21,9 +21,6 @@
 // change to use SDL instead of DLIB
 
 #include <dinrhiw/dinrhiw.h> // core library
-#if 0
-#include <dlib/dlib.h>   // dlib graphics
-#endif
 
 #include <string.h>
 #include "dataplot.h"
@@ -48,7 +45,7 @@ void show_plot(const std::vector<int>& ivalues,         Font* font) throw();
 void show_plot(const std::vector<float>& fvalues,       Font* font) throw();
 void show_plot(const std::vector<std::string>& svalues, Font* font) throw();
 
-void show_scatterplot(const std::vector< math::vertex< math::atlas_real<float> > >& data, Font* font,
+void show_scatterplot(const std::vector< math::vertex< math::blas_real<float> > >& data, Font* font,
 		      const std::vector<std::string>& labels, const std::vector<unsigned int>& labeled);
 
 
@@ -141,7 +138,7 @@ int main(int argc, char** argv)
     
     
     
-    std::vector<math::vertex< math::atlas_real<float> > > data;
+    std::vector<math::vertex< math::blas_real<float> > > data;
     std::vector<unsigned int> labeled;
     std::vector<std::string> labels;
     
@@ -149,7 +146,7 @@ int main(int argc, char** argv)
     {
       // FIXME: doesn't handle outliers correctly
       
-      math::vertex< math::atlas_real<float> > mean(dimension);
+      math::vertex< math::blas_real<float> > mean(dimension);
       std::vector<std::string> point_names;
       std::vector<std::string> tmp_labels;
       float varerror;
@@ -162,7 +159,7 @@ int main(int argc, char** argv)
       
       
       for(unsigned int i=0;i<symbols.size();i++){
-	math::vertex< math::atlas_real<float> > d(dimension);
+	math::vertex< math::blas_real<float> > d(dimension);
 	
 	if(datafile.get(symbols[i], fvalues)){
 	  if(fvalues.size() == dimension){
@@ -187,14 +184,14 @@ int main(int argc, char** argv)
       mean /= data.size();
       
       // mean removal and correlation matrix calculation
-      math::matrix< math::atlas_real<float> > R;
+      math::matrix< math::blas_real<float> > R;
       
       for(unsigned int i=0;i<data.size();i++)
 	data[i] -= mean;
       
       math::autocorrelation(R, data);
       
-      math::matrix< math::atlas_real<float> > A(dimension,dimension);
+      math::matrix< math::blas_real<float> > A(dimension,dimension);
 
       symmetric_eig(R, A);
       
@@ -258,7 +255,7 @@ int main(int argc, char** argv)
 	}
 	else{
 	  for(unsigned int i=0;i<A.xsize();i++){
-	    math::atlas_real<float> tmp = A(0,i);
+	    math::blas_real<float> tmp = A(0,i);
 	    A(0,i) = A(1,i);
 	    A(1,i) = tmp;
 	  }
@@ -730,7 +727,7 @@ void show_plot(const std::vector<std::string>& svalues,
 }
 
 
-void show_scatterplot(const std::vector< math::vertex< math::atlas_real<float> > >& data, Font* font,
+void show_scatterplot(const std::vector< math::vertex< math::blas_real<float> > >& data, Font* font,
 		      const std::vector<std::string>& labels, const std::vector<unsigned int>& labeled)
 {
   if(font == 0 || data.size() == 0)

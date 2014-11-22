@@ -401,15 +401,15 @@ namespace whiteice
     bool convert(double& B, const double& A) throw(){ B = A; return true; }
     
     
-    bool convert(float& B, atlas_real<float>& A) throw(){ B = (float)A.c[0]; return true; }
-    bool convert(float& B, atlas_real<double>& A) throw(){ B = (float)A.c[0]; return true; }
-    bool convert(double& B, atlas_real<float>& A) throw(){ B = (double)A.c[0]; return true; }
-    bool convert(double& B, atlas_real<double>& A) throw(){ B = (double)A.c[0]; return true; }
+    bool convert(float& B, blas_real<float>& A) throw(){ B = (float)A.c[0]; return true; }
+    bool convert(float& B, blas_real<double>& A) throw(){ B = (float)A.c[0]; return true; }
+    bool convert(double& B, blas_real<float>& A) throw(){ B = (double)A.c[0]; return true; }
+    bool convert(double& B, blas_real<double>& A) throw(){ B = (double)A.c[0]; return true; }
     
-    bool convert(float& B, atlas_complex<float>& A) throw(){ B = (float)A.real(); return false; }
-    bool convert(float& B, atlas_complex<double>& A) throw(){ B = (float)A.real(); return false; }
-    bool convert(double& B, atlas_complex<float>& A) throw(){ B = (double)A.real(); return false; }
-    bool convert(double& B, atlas_complex<double>& A) throw(){ B = (double)A.real(); return false; }
+    bool convert(float& B, blas_complex<float>& A) throw(){ B = (float)A.real(); return false; }
+    bool convert(float& B, blas_complex<double>& A) throw(){ B = (float)A.real(); return false; }
+    bool convert(double& B, blas_complex<float>& A) throw(){ B = (double)A.real(); return false; }
+    bool convert(double& B, blas_complex<double>& A) throw(){ B = (double)A.real(); return false; }
     
     
     //////////////////////////////////////////////////////////////////////

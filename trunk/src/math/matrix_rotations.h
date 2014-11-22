@@ -7,7 +7,7 @@
 #ifndef math_matrix_rotations_h
 #define math_matrix_rotations_h
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 namespace whiteice
 {
@@ -122,14 +122,14 @@ namespace whiteice
     
 
     
-    extern template bool rhouseholder_vector< atlas_real<float> >
-      (vertex< atlas_real<float> >& v,
-       const matrix< atlas_real<float> >& M,
+    extern template bool rhouseholder_vector< blas_real<float> >
+      (vertex< blas_real<float> >& v,
+       const matrix< blas_real<float> >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
-    extern template bool rhouseholder_vector< atlas_real<double> >
-      (vertex< atlas_real<double> >& v,
-       const matrix< atlas_real<double> >& M,
+    extern template bool rhouseholder_vector< blas_real<double> >
+      (vertex< blas_real<double> >& v,
+       const matrix< blas_real<double> >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
     extern template bool rhouseholder_vector< float >
@@ -144,18 +144,18 @@ namespace whiteice
        bool rowdir);
     
     
-    extern template bool rhouseholder_leftrot< atlas_real<float> > 
-      (matrix< atlas_real<float> >& A,
+    extern template bool rhouseholder_leftrot< blas_real<float> > 
+      (matrix< blas_real<float> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<float> >& v);
-    extern template bool rhouseholder_leftrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A,
+       vertex< blas_real<float> >& v);
+    extern template bool rhouseholder_leftrot< blas_real<double> >
+      (matrix< blas_real<double> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<double> >& v);
+       vertex< blas_real<double> >& v);
     extern template bool rhouseholder_leftrot< float > 
       (matrix< float >& A,
        const unsigned int i,
@@ -170,18 +170,18 @@ namespace whiteice
        vertex< double >& v);
     
     
-    extern template bool rhouseholder_rightrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A,
+    extern template bool rhouseholder_rightrot< blas_real<float> >
+      (matrix< blas_real<float> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<float> >& v);
-    extern template bool rhouseholder_rightrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A,
+       vertex< blas_real<float> >& v);
+    extern template bool rhouseholder_rightrot< blas_real<double> >
+      (matrix< blas_real<double> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<double> >& v);
+       vertex< blas_real<double> >& v);
     extern template bool rhouseholder_rightrot< float >
       (matrix< float >& A,
        const unsigned int i,
@@ -197,21 +197,21 @@ namespace whiteice
 
     
     
-    extern template void rgivens< atlas_real<float> >
-      (const atlas_real<float>& a, const atlas_real<float>& b, vertex< atlas_real<float> >& p);
-    extern template void rgivens< atlas_real<double> >
-      (const atlas_real<double>& a, const atlas_real<double>& b, vertex< atlas_real<double> >& p);
+    extern template void rgivens< blas_real<float> >
+      (const blas_real<float>& a, const blas_real<float>& b, vertex< blas_real<float> >& p);
+    extern template void rgivens< blas_real<double> >
+      (const blas_real<double>& a, const blas_real<double>& b, vertex< blas_real<double> >& p);
     extern template void rgivens< float >
       (const float& a, const float& b, vertex< float >& p);
     extern template void rgivens< double >
       (const double& a, const double& b, vertex< double >& p);
     
     
-    extern template void rgivens_rightrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, const vertex< atlas_real<float> >& p,
+    extern template void rgivens_rightrot< blas_real<float> >
+      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
-    extern template void rgivens_rightrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, const vertex< atlas_real<double> >& p,
+    extern template void rgivens_rightrot< blas_real<double> >
+      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
     extern template void rgivens_rightrot< float >
       (matrix< float >& A, const vertex< float >& p,
@@ -221,11 +221,11 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);
     
     
-    extern template void rgivens_leftrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, const vertex< atlas_real<float> >& p,
+    extern template void rgivens_leftrot< blas_real<float> >
+      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
-    extern template void rgivens_leftrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, const vertex< atlas_real<double> >& p,
+    extern template void rgivens_leftrot< blas_real<double> >
+      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
     extern template void rgivens_leftrot< float >
       (matrix< float >& A, const vertex< float >& p,

@@ -6,7 +6,7 @@
 #define gcd_h
 
 #include <vector>
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "blade_math.h"
 #include "integer.h"
 

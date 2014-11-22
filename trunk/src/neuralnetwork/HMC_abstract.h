@@ -14,13 +14,13 @@
 
 #include "vertex.h"
 #include "matrix.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 namespace whiteice
 {
 
-  template <typename T = math::atlas_real<float> >
+  template <typename T = math::blas_real<float> >
   class HMC_abstract
   {
     public:
@@ -82,8 +82,8 @@ namespace whiteice
 {
   extern template class HMC_abstract< float >;
   extern template class HMC_abstract< double >;
-  extern template class HMC_abstract< math::atlas_real<float> >;
-  extern template class HMC_abstract< math::atlas_real<double> >;    
+  extern template class HMC_abstract< math::blas_real<float> >;
+  extern template class HMC_abstract< math::blas_real<double> >;    
 };
 
 

@@ -40,8 +40,8 @@ namespace whiteice
   
   extern template class identity_activation<float>;
   extern template class identity_activation<double>;
-  extern template class identity_activation< math::atlas_real<float> >;
-  extern template class identity_activation< math::atlas_real<double> >;
+  extern template class identity_activation< math::blas_real<float> >;
+  extern template class identity_activation< math::blas_real<double> >;
     
   
 }

@@ -13,16 +13,16 @@
 
 namespace whiteice
 {
-  template <typename T=math::atlas_real<float> >
+  template <typename T=math::blas_real<float> >
     class BFGS_nnetwork : public whiteice::math::BFGS<T>
     {
     public:
       BFGS_nnetwork(const nnetwork<T>& net,
 		    const dataset<T>& d);
-      
+    
       ~BFGS_nnetwork();
-
-      // calculates current solutions best error
+    
+      // calculates the current solution's best error
       T getError() const;
 
     protected:
@@ -38,8 +38,8 @@ namespace whiteice
 
   extern template class BFGS_nnetwork< float >;
   extern template class BFGS_nnetwork< double >;
-  extern template class BFGS_nnetwork< math::atlas_real<float> >;
-  extern template class BFGS_nnetwork< math::atlas_real<double> >;
+  extern template class BFGS_nnetwork< math::blas_real<float> >;
+  extern template class BFGS_nnetwork< math::blas_real<double> >;
   
 }
 

@@ -198,7 +198,7 @@ namespace whiteice
   
   template class optimized_nnetwork_function< float >;
   template class optimized_nnetwork_function< double >;
-  template class optimized_nnetwork_function< math::atlas_real<float> >;
-  template class optimized_nnetwork_function< math::atlas_real<double> >;
+  template class optimized_nnetwork_function< math::blas_real<float> >;
+  template class optimized_nnetwork_function< math::blas_real<double> >;
   
 };

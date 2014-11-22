@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <string>
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "vertex.h"
 
 
@@ -79,8 +79,8 @@ namespace whiteice
   
   extern template class KMeans< float >;  
   extern template class KMeans< double >;  
-  extern template class KMeans< math::atlas_real<float> >;
-  extern template class KMeans< math::atlas_real<double> >;
+  extern template class KMeans< math::blas_real<float> >;
+  extern template class KMeans< math::blas_real<double> >;
   
 };
 

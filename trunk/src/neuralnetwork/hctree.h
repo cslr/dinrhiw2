@@ -7,7 +7,7 @@
 
 namespace whiteice
 {
-  template <typename Parameters, typename T = whiteice::math::atlas_real<float> >
+  template <typename Parameters, typename T = whiteice::math::blas_real<float> >
     class hcnode
     {
       public:

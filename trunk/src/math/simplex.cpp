@@ -38,7 +38,7 @@
 
 #include "simplex.h"
 #include "blade_math.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 #ifdef WINNT
 #include <windows.h>

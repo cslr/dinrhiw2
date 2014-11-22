@@ -71,8 +71,8 @@ namespace whiteice
   
   extern template class neuron< float >;
   extern template class neuron< double >;
-  extern template class neuron< math::atlas_real<float> >;
-  extern template class neuron< math::atlas_real<double> >;
+  extern template class neuron< math::blas_real<float> >;
+  extern template class neuron< math::blas_real<double> >;
   
 }
   

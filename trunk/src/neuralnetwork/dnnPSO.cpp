@@ -7,8 +7,8 @@ namespace whiteice
 {
   template class dnnPSO_optimized_function<float>;
   template class dnnPSO_optimized_function<double>;
-  template class dnnPSO_optimized_function< math::atlas_real<float> >;
-  template class dnnPSO_optimized_function< math::atlas_real<double> >;
+  template class dnnPSO_optimized_function< math::blas_real<float> >;
+  template class dnnPSO_optimized_function< math::blas_real<double> >;
   
   
   

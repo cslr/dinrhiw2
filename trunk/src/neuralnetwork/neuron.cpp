@@ -15,7 +15,6 @@
 #include "odd_sigmoid.h"
 #include "neuron.h"
 #include "global.h"
-// #include "dlib.h"
 
 
 using namespace std;
@@ -240,8 +239,8 @@ namespace whiteice
   
   template class neuron< float >;
   template class neuron< double >;  
-  template class neuron< math::atlas_real<float> >;
-  template class neuron< math::atlas_real<double> >;
+  template class neuron< math::blas_real<float> >;
+  template class neuron< math::blas_real<double> >;
   
 }
 

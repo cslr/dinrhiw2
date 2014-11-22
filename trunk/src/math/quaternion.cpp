@@ -622,13 +622,13 @@ namespace whiteice
     
     template class quaternion<float>;
     template class quaternion<double>;
-    template class quaternion< atlas_real<float> >;
-    template class quaternion< atlas_real<double> >;
+    template class quaternion< blas_real<float> >;
+    template class quaternion< blas_real<double> >;
     
     template std::ostream& operator<< <float>(std::ostream& ios, const quaternion<float>& q);
     template std::ostream& operator<< <double>(std::ostream& ios, const quaternion<double>& q);
-    template std::ostream& operator<< <atlas_real<float> >(std::ostream& ios, const quaternion<atlas_real<float> >& q);
-    template std::ostream& operator<< <atlas_real<double> >(std::ostream& ios, const quaternion<atlas_real<double> >& q);
+    template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const quaternion<blas_real<float> >& q);
+    template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const quaternion<blas_real<double> >& q);
     
   }
 }

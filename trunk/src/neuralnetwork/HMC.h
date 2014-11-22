@@ -16,7 +16,7 @@
 #include "vertex.h"
 #include "matrix.h"
 #include "dataset.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "nnetwork.h"
 #include "bayesian_nnetwork.h"
 
@@ -24,7 +24,7 @@
 namespace whiteice
 {
 
-  template <typename T = math::atlas_real<float> >
+  template <typename T = math::blas_real<float> >
   class HMC
   {
     public:
@@ -87,8 +87,8 @@ namespace whiteice
 {
   extern template class HMC< float >;
   extern template class HMC< double >;
-  extern template class HMC< math::atlas_real<float> >;
-  extern template class HMC< math::atlas_real<double> >;    
+  extern template class HMC< math::blas_real<float> >;
+  extern template class HMC< math::blas_real<double> >;    
 };
 
 

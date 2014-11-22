@@ -217,8 +217,8 @@ namespace whiteice
 {
   template class GA3< float >;
   template class GA3< double >;
-  template class GA3< math::atlas_real<float> >;
-  template class GA3< math::atlas_real<double> >;    
+  template class GA3< math::blas_real<float> >;
+  template class GA3< math::blas_real<double> >;    
 };
 
 
@@ -228,7 +228,7 @@ extern "C" {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
     
     if(ptr)
-      ((whiteice::GA3< whiteice::math::atlas_real<float> >*)ptr)->__optimization_thread();
+      ((whiteice::GA3< whiteice::math::blas_real<float> >*)ptr)->__optimization_thread();
     
     pthread_exit(0);
 

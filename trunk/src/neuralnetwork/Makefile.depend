@@ -1,8 +1,9 @@
-neuron.o: neuron.cpp activation_function.h function.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/vertex.h \
- ../math/atlas.h ../math/number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h backpropagation.h nn_iterative_correction.h \
- neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
+neuron.o: neuron.cpp activation_function.h function.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
@@ -11,10 +12,10 @@ neuron.o: neuron.cpp activation_function.h function.h ../math/atlas.h \
  neuronlayer.h activation_function.h function.h odd_sigmoid.h \
  ../math/blade_math.h neuron.h ../global.h ../../config.h
 neuronlayer.o: neuronlayer.cpp neuronlayer.h ../math/matrix.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  ../math/number.h ../compressable.h ../MemoryCompressor.h \
  ../compressable.h ../math/linear_algebra.h ../math/matrix.h \
- ../math/vertex.h backpropagation.h ../math/atlas.h \
+ ../math/vertex.h backpropagation.h ../math/dinrhiw_blas.h \
  nn_iterative_correction.h ../math/vertex.h neuralnetwork.h \
  backpropagation.h neuronlayer.h neuronlayer.h ../math/correlation.h \
  ../dynamic_bitset.h ../math/integer.h ../math/blade_math.h \
@@ -24,33 +25,9 @@ neuronlayer.o: neuronlayer.cpp neuronlayer.h ../math/matrix.h \
  function.h backpropagation.h odd_sigmoid.h ../math/blade_math.h \
  ../global.h ../../config.h
 activation_function.o: activation_function.cpp activation_function.h \
- function.h ../math/atlas.h ../math/atlas_primitives.h \
- ../math/ownexception.h ../math/vertex.h ../math/atlas.h ../math/number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h nn_iterative_correction.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
- ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
- ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
- ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
- ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h
-odd_sigmoid.o: odd_sigmoid.cpp odd_sigmoid.h ../math/blade_math.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
- ../math/number.h ../math/integer.h ../math/gvertex.h ../math/gmatrix.h \
- ../math/gmatrix.cpp ../math/blade_math.h function.h ../math/real.h \
- ../math/vertex.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h backpropagation.h ../math/atlas.h \
- nn_iterative_correction.h ../math/vertex.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/correlation.h \
- ../dynamic_bitset.h ../math/integer.h ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h ../math/quaternion.h \
- ../math/gvertex.cpp activation_function.h function.h
-identity_activation.o: identity_activation.cpp identity_activation.h \
- activation_function.h function.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/vertex.h \
- ../math/atlas.h ../math/number.h ../compressable.h ../MemoryCompressor.h \
+ function.h ../math/dinrhiw_blas.h ../math/blas_primitives.h \
+ ../math/ownexception.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/number.h ../compressable.h ../MemoryCompressor.h \
  ../compressable.h backpropagation.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
@@ -58,11 +35,23 @@ identity_activation.o: identity_activation.cpp identity_activation.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h ../math/blade_math.h
-multidimensional_gaussian.o: multidimensional_gaussian.cpp \
- multidimensional_gaussian.h activation_function.h function.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
- ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
+ neuronlayer.h activation_function.h function.h
+odd_sigmoid.o: odd_sigmoid.cpp odd_sigmoid.h ../math/blade_math.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/number.h ../math/integer.h ../math/gvertex.h ../math/gmatrix.h \
+ ../math/gmatrix.cpp ../math/blade_math.h function.h ../math/real.h \
+ ../math/vertex.h ../compressable.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
+ nn_iterative_correction.h ../math/vertex.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/correlation.h \
+ ../dynamic_bitset.h ../math/integer.h ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h ../math/quaternion.h \
+ ../math/gvertex.cpp activation_function.h function.h
+identity_activation.o: identity_activation.cpp identity_activation.h \
+ activation_function.h function.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h backpropagation.h \
  nn_iterative_correction.h neuralnetwork.h backpropagation.h \
  neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
@@ -72,11 +61,24 @@ multidimensional_gaussian.o: multidimensional_gaussian.cpp \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h activation_function.h \
  function.h ../math/blade_math.h
-neuralnetwork.o: neuralnetwork.cpp neuralnetwork.h ../compressable.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
- backpropagation.h nn_iterative_correction.h ../math/vertex.h \
- ../math/atlas.h ../math/number.h ../MemoryCompressor.h ../compressable.h \
+multidimensional_gaussian.o: multidimensional_gaussian.cpp \
+ multidimensional_gaussian.h activation_function.h function.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
  backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h ../math/blade_math.h
+neuralnetwork.o: neuralnetwork.cpp neuralnetwork.h ../compressable.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ backpropagation.h nn_iterative_correction.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
@@ -86,10 +88,10 @@ neuralnetwork.o: neuralnetwork.cpp neuralnetwork.h ../compressable.h \
  ../conffile.h odd_sigmoid.h ../math/blade_math.h activation_function.h \
  function.h identity_activation.h
 backpropagation.o: backpropagation.cpp nn_iterative_correction.h \
- ../math/vertex.h ../math/atlas.h ../math/atlas_primitives.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/blas_primitives.h \
  ../math/ownexception.h ../math/number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h backpropagation.h \
- ../math/atlas.h nn_iterative_correction.h neuralnetwork.h \
+ ../math/dinrhiw_blas.h nn_iterative_correction.h neuralnetwork.h \
  backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -99,10 +101,10 @@ backpropagation.o: backpropagation.cpp nn_iterative_correction.h \
  neuronlayer.h activation_function.h function.h neuralnetwork.h \
  backpropagation.h ../dataset.h ../math/ica.h
 stretched_function.o: stretched_function.cpp stretched_function.h \
- optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -112,9 +114,9 @@ stretched_function.o: stretched_function.cpp stretched_function.h \
  neuronlayer.h activation_function.h function.h ../math/blade_math.h
 optimized_nnetwork_function.o: optimized_nnetwork_function.cpp \
  optimized_nnetwork_function.h function.h ../math/vertex.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  ../math/number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h backpropagation.h ../math/atlas.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
  nn_iterative_correction.h neuralnetwork.h backpropagation.h \
  neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
  ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
@@ -124,10 +126,10 @@ optimized_nnetwork_function.o: optimized_nnetwork_function.cpp \
  ../math/matrix_rotations.h neuronlayer.h activation_function.h \
  function.h optimized_function.h nnetwork.h ../conffile.h ../dataset.h \
  ../math/ica.h
-PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -137,11 +139,11 @@ PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/atlas.h \
  neuronlayer.h activation_function.h function.h optimized_function.h \
  function.h negative_function.h stretched_function.h
 test_function.o: test_function.cpp test_function.h optimized_function.h \
- function.h ../math/vertex.h ../math/atlas.h ../math/atlas_primitives.h \
- ../math/ownexception.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- ../math/atlas.h nn_iterative_correction.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
+ function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
+ neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
@@ -149,10 +151,10 @@ test_function.o: test_function.cpp test_function.h optimized_function.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h activation_function.h function.h
 negative_function.o: negative_function.cpp negative_function.h \
- optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -161,10 +163,10 @@ negative_function.o: negative_function.cpp negative_function.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h activation_function.h function.h
 nnPSO.o: nnPSO.cpp nnPSO.h neuralnetwork.h ../compressable.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  backpropagation.h nn_iterative_correction.h ../math/vertex.h \
- ../math/atlas.h ../math/number.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
@@ -173,10 +175,10 @@ nnPSO.o: nnPSO.cpp nnPSO.h neuralnetwork.h ../compressable.h \
  backpropagation.h activation_function.h function.h neuronlayer.h \
  ../dataset.h ../math/ica.h optimized_function.h function.h PSO.h
 dnnPSO.o: dnnPSO.cpp dnnPSO.h neuralnetwork.h ../compressable.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  backpropagation.h nn_iterative_correction.h ../math/vertex.h \
- ../math/atlas.h ../math/number.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
@@ -184,10 +186,10 @@ dnnPSO.o: dnnPSO.cpp dnnPSO.h neuralnetwork.h ../compressable.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  backpropagation.h activation_function.h function.h neuronlayer.h \
  ../dataset.h ../math/ica.h optimized_function.h function.h PSO.h
-SOM2D.o: SOM2D.cpp SOM2D.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+SOM2D.o: SOM2D.cpp SOM2D.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -196,30 +198,31 @@ SOM2D.o: SOM2D.cpp SOM2D.h ../math/vertex.h ../math/atlas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h activation_function.h function.h ../data_source.h ../ETA.h \
  ../linear_ETA.h ../ETA.h ../linear_ETA.cpp ../linear_ETA.h ../conffile.h
-KMeans.o: KMeans.cpp KMeans.h ../math/atlas.h ../math/atlas_primitives.h \
- ../math/ownexception.h ../math/vertex.h ../math/atlas.h ../math/number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h nn_iterative_correction.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
- ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
- ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
- ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
- ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h ../conffile.h \
- ../math/blade_math.h
-HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
- function.h ../math/vertex.h ../math/atlas.h ../math/atlas_primitives.h \
- ../math/ownexception.h ../math/number.h ../compressable.h \
+KMeans.o: KMeans.cpp KMeans.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h backpropagation.h \
- ../math/atlas.h nn_iterative_correction.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
+ nn_iterative_correction.h neuralnetwork.h backpropagation.h \
+ neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
+ ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/blade_math.h ../math/integer.h \
+ ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
+ ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
+ ../math/matrix_rotations.h neuronlayer.h activation_function.h \
+ function.h ../conffile.h ../math/blade_math.h
+HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
+ function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
+ neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h ../array.h ../container.h \
+ neuronlayer.h activation_function.h BFGS_nnetwork.h nnetwork.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../array.h ../container.h \
  ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
  ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
  ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
@@ -233,7 +236,7 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
  ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
  ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../math/number.h \
- ../math/blade_math.h ../math/atlas_primitives.h ../math/real.h \
+ ../math/blade_math.h ../math/blas_primitives.h ../math/real.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -248,11 +251,10 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
  ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
  ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
  ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
- ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h \
- deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
@@ -263,17 +265,18 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
  ../memory_access_timing.h ../list_source.h ../list_source.cpp \
  test_function.h test_function2.h HCLogic.h hctree.h GDALogic.h KMeans.h
 GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
- optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h ../array.h ../container.h \
+ neuronlayer.h activation_function.h BFGS_nnetwork.h nnetwork.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../array.h ../container.h \
  ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
  ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
  ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
@@ -287,7 +290,7 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
  ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
  ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../math/number.h \
- ../math/blade_math.h ../math/atlas_primitives.h ../math/real.h \
+ ../math/blade_math.h ../math/blas_primitives.h ../math/real.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -302,11 +305,10 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
  ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
  ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
  ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
- ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h \
- deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
@@ -317,17 +319,18 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/BFGS.h \
  ../memory_access_timing.h ../list_source.h ../list_source.cpp \
  test_function.h test_function2.h HCLogic.h hctree.h
 test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
- optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h ../array.h ../container.h \
+ neuronlayer.h activation_function.h BFGS_nnetwork.h nnetwork.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../array.h ../container.h \
  ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
  ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
  ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
@@ -341,7 +344,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
  ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
  ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../math/number.h \
- ../math/blade_math.h ../math/atlas_primitives.h ../math/real.h \
+ ../math/blade_math.h ../math/blas_primitives.h ../math/real.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -356,11 +359,10 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
  ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
  ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
  ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
- ../crypto/SHA.h ../global.h ../../config.h ../dataset.h ../math/ica.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- ../dataset.h PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h \
- ../conffile.h NNGradDescent.h NNRandomSearch.h \
- deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h ../ETA.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
@@ -371,37 +373,37 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/BFGS.h \
  ../memory_access_timing.h ../list_source.h ../list_source.cpp \
  test_function.h test_function2.h HCLogic.h hctree.h GDALogic.h \
  GDALogic.h HMC_gaussian.h HMC_abstract.h
-pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
- neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
- ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
- ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
- ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
- ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h optimized_function.h \
- test_function.h
-somtest.o: tst/somtest.cpp SOM2D.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
- neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
- ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
- ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
- ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
- ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h activation_function.h function.h ../data_source.h ../ETA.h \
- KMeans.h
+pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/number.h ../compressable.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
+ nn_iterative_correction.h neuralnetwork.h backpropagation.h \
+ neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
+ ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/blade_math.h ../math/integer.h \
+ ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
+ ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
+ ../math/matrix_rotations.h neuronlayer.h activation_function.h \
+ function.h optimized_function.h test_function.h
+somtest.o: tst/somtest.cpp SOM2D.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/number.h ../compressable.h ../MemoryCompressor.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
+ nn_iterative_correction.h neuralnetwork.h backpropagation.h \
+ neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
+ ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/blade_math.h ../math/integer.h \
+ ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
+ ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
+ ../math/matrix_rotations.h neuronlayer.h activation_function.h \
+ function.h ../data_source.h ../ETA.h KMeans.h
 gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
  ../dynamic_bitset.h ../math/integer.h ../math/number.h \
  ../math/ownexception.h GeneticAlgorithm2.cpp test_function2.h GA3.h \
- ../math/vertex.h ../math/atlas.h ../math/atlas_primitives.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/blas_primitives.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../math/blade_math.h ../math/integer.h \
@@ -417,118 +419,118 @@ GeneticAlgorithm2.o: GeneticAlgorithm2.cpp GeneticAlgorithm2.h function.h \
 test_function2.o: test_function2.cpp test_function2.h function.h \
  ../dynamic_bitset.h ../math/integer.h ../math/number.h \
  ../math/ownexception.h
-NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../dataset.h \
- ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- nn_iterative_correction.h neuralnetwork.h backpropagation.h \
- neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
- ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
- ../math/integer.h ../math/blade_math.h ../math/integer.h \
- ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
- ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
- ../math/matrix_rotations.h neuronlayer.h activation_function.h \
- function.h ../math/ica.h ../dinrhiw.h ../math/BFGS.h \
- optimized_function.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../function_access_control.h ../unique_id.h \
- ../function_access_control.cpp ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../math/number.h ../math/blade_math.h \
- ../math/atlas_primitives.h ../math/real.h ../math/modular.h \
- ../math/gcd.h ../math/gcd.cpp ../math/gcd.h ../primality_test.h \
- ../primality_test.cpp ../math/quaternion.h ../math/gmatrix.h \
- ../math/gvertex.h ../math/norms.h ../math/linear_algebra.h \
- ../math/linear_equations.h ../math/matrix_rotations.h ../math/eig.h \
- ../conversion.h ../math/correlation.h ../math/bezier.h \
- ../math/bezier.cpp ../math/bezier.h ../math/bezier_density.h \
- ../math/bezier_surface.h ../math/bezier_surface.cpp \
- ../math/bezier_surface.h ../math/hermite.h ../math/hermite.cpp \
- ../math/hermite.h PSO.h optimized_function.h GeneticAlgorithm.h \
- GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
- GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h ../data_source.h \
- ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
- ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
- ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
- ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
- activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h ../conffile.h \
- NNGradDescent.h NNRandomSearch.h deep_ica_network_priming.h nnetwork.h \
- KMeans.h SOM2D.h ../ETA.h optimized_nnetwork_function.h \
- negative_function.h stretched_function.h identity_activation.h \
- odd_sigmoid.h threshold.h treshold.h multidimensional_gaussian.h \
- gaussian.h HMC.h bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h
-NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../dataset.h \
- ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- nn_iterative_correction.h neuralnetwork.h backpropagation.h \
- neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
- ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
- ../math/integer.h ../math/blade_math.h ../math/integer.h \
- ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
- ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
- ../math/matrix_rotations.h neuronlayer.h activation_function.h \
- function.h ../math/ica.h ../dinrhiw.h ../math/BFGS.h \
- optimized_function.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../function_access_control.h ../unique_id.h \
- ../function_access_control.cpp ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../math/number.h ../math/blade_math.h \
- ../math/atlas_primitives.h ../math/real.h ../math/modular.h \
- ../math/gcd.h ../math/gcd.cpp ../math/gcd.h ../primality_test.h \
- ../primality_test.cpp ../math/quaternion.h ../math/gmatrix.h \
- ../math/gvertex.h ../math/norms.h ../math/linear_algebra.h \
- ../math/linear_equations.h ../math/matrix_rotations.h ../math/eig.h \
- ../conversion.h ../math/correlation.h ../math/bezier.h \
- ../math/bezier.cpp ../math/bezier.h ../math/bezier_density.h \
- ../math/bezier_surface.h ../math/bezier_surface.cpp \
- ../math/bezier_surface.h ../math/hermite.h ../math/hermite.cpp \
- ../math/hermite.h PSO.h optimized_function.h GeneticAlgorithm.h \
- GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
- GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h ../data_source.h \
- ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
- ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
- ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
- ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
- activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h ../conffile.h \
- NNGradDescent.h NNRandomSearch.h deep_ica_network_priming.h nnetwork.h \
- KMeans.h SOM2D.h ../ETA.h optimized_nnetwork_function.h \
- negative_function.h stretched_function.h identity_activation.h \
- odd_sigmoid.h threshold.h treshold.h multidimensional_gaussian.h \
- gaussian.h HMC.h bayesian_nnetwork.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
- ../math/superresolution.h ../math/superresolution.cpp \
- ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
- ../list_source.cpp test_function.h test_function2.h
-HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../dataset.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h ../math/ica.h \
+ ../dinrhiw.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
+ nnetwork.h ../conffile.h ../array.h ../container.h ../static_array.h \
+ ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
+ ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
+ ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
+ ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
+ ../math/ownexception.h ../function_access_control.h ../unique_id.h \
+ ../function_access_control.cpp ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ ../math/linear_algebra.h ../math/linear_equations.h \
+ ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
+ ../math/correlation.h ../math/bezier.h ../math/bezier.cpp \
+ ../math/bezier.h ../math/bezier_density.h ../math/bezier_surface.h \
+ ../math/bezier_surface.cpp ../math/bezier_surface.h ../math/hermite.h \
+ ../math/hermite.cpp ../math/hermite.h PSO.h optimized_function.h \
+ GeneticAlgorithm.h GeneticAlgorithm.cpp GeneticAlgorithm.h \
+ GeneticAlgorithm2.h GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h \
+ ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
+ ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
+ ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
+ activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h
+NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../dataset.h ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h ../math/ica.h \
+ ../dinrhiw.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
+ nnetwork.h ../conffile.h ../array.h ../container.h ../static_array.h \
+ ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
+ ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
+ ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
+ ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
+ ../math/ownexception.h ../function_access_control.h ../unique_id.h \
+ ../function_access_control.cpp ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ ../math/linear_algebra.h ../math/linear_equations.h \
+ ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
+ ../math/correlation.h ../math/bezier.h ../math/bezier.cpp \
+ ../math/bezier.h ../math/bezier_density.h ../math/bezier_surface.h \
+ ../math/bezier_surface.cpp ../math/bezier_surface.h ../math/hermite.h \
+ ../math/hermite.cpp ../math/hermite.h PSO.h optimized_function.h \
+ GeneticAlgorithm.h GeneticAlgorithm.cpp GeneticAlgorithm.h \
+ GeneticAlgorithm2.h GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h \
+ ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
+ ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
+ ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
+ activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h \
+ bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
+ hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
+ ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
+ ../math/superresolution.cpp ../math/superresolution.h \
+ ../memory_access_timing.h ../list_source.h ../list_source.cpp \
+ test_function.h test_function2.h
+HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -538,12 +540,12 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/atlas.h \
  neuronlayer.h activation_function.h function.h ../dataset.h \
  ../math/ica.h nnetwork.h ../conffile.h bayesian_nnetwork.h \
  NNGradDescent.h ../dinrhiw.h ../math/BFGS.h optimized_function.h \
- ../array.h ../container.h ../static_array.h ../static_array.cpp \
- ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
- ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
- ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
- ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
- ../function_access_control.h ../unique_id.h \
+ BFGS_nnetwork.h nnetwork.h ../array.h ../container.h ../static_array.h \
+ ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
+ ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
+ ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
+ ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
+ ../math/ownexception.h ../function_access_control.h ../unique_id.h \
  ../function_access_control.cpp ../dynamic_ctor_protection.h \
  ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
  ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
@@ -552,50 +554,48 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/atlas.h \
  ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
  ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
  ../conffile.h ../math/number.h ../math/blade_math.h \
- ../math/atlas_primitives.h ../math/real.h ../math/modular.h \
- ../math/gcd.h ../math/gcd.cpp ../math/gcd.h ../primality_test.h \
- ../primality_test.cpp ../math/quaternion.h ../math/gmatrix.h \
- ../math/gvertex.h ../math/norms.h ../math/linear_algebra.h \
- ../math/linear_equations.h ../math/matrix_rotations.h ../math/eig.h \
- ../conversion.h ../math/correlation.h ../math/bezier.h \
- ../math/bezier.cpp ../math/bezier.h ../math/bezier_density.h \
- ../math/bezier_surface.h ../math/bezier_surface.cpp \
- ../math/bezier_surface.h ../math/hermite.h ../math/hermite.cpp \
- ../math/hermite.h PSO.h optimized_function.h GeneticAlgorithm.h \
- GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
- GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h ../data_source.h \
- ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
+ ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ ../math/linear_algebra.h ../math/linear_equations.h \
+ ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
+ ../math/correlation.h ../math/bezier.h ../math/bezier.cpp \
+ ../math/bezier.h ../math/bezier_density.h ../math/bezier_surface.h \
+ ../math/bezier_surface.cpp ../math/bezier_surface.h ../math/hermite.h \
+ ../math/hermite.cpp ../math/hermite.h PSO.h optimized_function.h \
+ GeneticAlgorithm.h GeneticAlgorithm.cpp GeneticAlgorithm.h \
+ GeneticAlgorithm2.h GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h \
+ ../data_source.h ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
  ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
  ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
  ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
  PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
- NNRandomSearch.h deep_ica_network_priming.h nnetwork.h KMeans.h SOM2D.h \
- ../ETA.h optimized_nnetwork_function.h negative_function.h \
- stretched_function.h identity_activation.h odd_sigmoid.h threshold.h \
- treshold.h multidimensional_gaussian.h gaussian.h HMC.h \
- bayesian_nnetwork.h GA3.h rbf.h rbf.cpp multidimensional_gaussian.h \
- hypervolume.h hypervolume.cpp hypervolume.h ../math/pdftree.h \
- ../math/simplex.h ../timed_boolean.h ../math/superresolution.h \
- ../math/superresolution.cpp ../math/superresolution.h \
- ../memory_access_timing.h ../list_source.h ../list_source.cpp \
- test_function.h test_function2.h
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h GA3.h \
+ rbf.h rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ ../math/superresolution.h ../math/superresolution.cpp \
+ ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
+ ../list_source.cpp test_function.h test_function2.h
 bayesian_nnetwork.o: bayesian_nnetwork.cpp bayesian_nnetwork.h nnetwork.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
- ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- nn_iterative_correction.h neuralnetwork.h backpropagation.h \
- neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
- ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
- ../math/integer.h ../math/blade_math.h ../math/integer.h \
- ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
- ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
- ../math/matrix_rotations.h neuronlayer.h activation_function.h \
- function.h ../conffile.h
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h ../conffile.h
 HMC_abstract.o: HMC_abstract.cpp HMC_abstract.h ../math/vertex.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  ../math/number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h backpropagation.h ../math/atlas.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
  nn_iterative_correction.h neuralnetwork.h backpropagation.h \
  neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
  ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
@@ -605,9 +605,9 @@ HMC_abstract.o: HMC_abstract.cpp HMC_abstract.h ../math/vertex.h \
  ../math/matrix_rotations.h neuronlayer.h activation_function.h \
  function.h
 HMC_gaussian.o: HMC_gaussian.cpp HMC_gaussian.h ../math/vertex.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
  ../math/number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h backpropagation.h ../math/atlas.h \
+ ../compressable.h backpropagation.h ../math/dinrhiw_blas.h \
  nn_iterative_correction.h neuralnetwork.h backpropagation.h \
  neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
  ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
@@ -616,10 +616,10 @@ HMC_gaussian.o: HMC_gaussian.cpp HMC_gaussian.h ../math/vertex.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h activation_function.h \
  function.h HMC_abstract.h
-GA3.o: GA3.cpp GA3.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+GA3.o: GA3.cpp GA3.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -628,22 +628,22 @@ GA3.o: GA3.cpp GA3.h function.h ../math/vertex.h ../math/atlas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h activation_function.h function.h
 ga3_test_function.o: ga3_test_function.cpp ga3_test_function.h function.h \
- ../math/atlas.h ../math/atlas_primitives.h ../math/ownexception.h \
- ../math/vertex.h ../math/atlas.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- nn_iterative_correction.h neuralnetwork.h backpropagation.h \
- neuronlayer.h ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
- ../math/vertex.h ../math/correlation.h ../dynamic_bitset.h \
- ../math/integer.h ../math/blade_math.h ../math/integer.h \
- ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
- ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
- ../math/matrix_rotations.h neuronlayer.h activation_function.h \
- function.h
-deep_ica_network_priming.o: deep_ica_network_priming.cpp \
- deep_ica_network_priming.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../math/dinrhiw_blas.h ../math/blas_primitives.h ../math/ownexception.h \
+ ../math/vertex.h ../math/dinrhiw_blas.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h activation_function.h function.h
+deep_ica_network_priming.o: deep_ica_network_priming.cpp \
+ deep_ica_network_priming.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
@@ -653,10 +653,10 @@ deep_ica_network_priming.o: deep_ica_network_priming.cpp \
  neuronlayer.h activation_function.h function.h nnetwork.h ../conffile.h \
  ../math/eig.h ../math/correlation.h
 BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
- optimized_function.h function.h ../math/vertex.h ../math/atlas.h \
- ../math/atlas_primitives.h ../math/ownexception.h ../math/number.h \
+ optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
- backpropagation.h ../math/atlas.h nn_iterative_correction.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
  neuralnetwork.h backpropagation.h neuronlayer.h ../math/matrix.h \
  ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
  ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \

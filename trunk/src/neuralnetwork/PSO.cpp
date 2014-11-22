@@ -566,8 +566,8 @@ namespace whiteice
   
   template class PSO<float>;
   template class PSO<double>;
-  template class PSO< math::atlas_real<float> >;
-  template class PSO< math::atlas_real<double> >;
+  template class PSO< math::blas_real<float> >;
+  template class PSO< math::blas_real<double> >;
   
 }
 

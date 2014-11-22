@@ -4,7 +4,7 @@
 #define vertex_cpp
 
 #include "vertex.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "ownexception.h"
 #include "gcd.h"
 #include "number.h"
@@ -50,7 +50,7 @@ namespace whiteice
       this->data = 0;
       
       if(i > 0){
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
 	// electric fence don't know about posix_memalign()
 	posix_memalign((void**)&(this->data),
 		       (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
@@ -83,7 +83,7 @@ namespace whiteice
 	throw illegal_operation("vertex ctor: to be copied vertex is compressed");
       
       if(v.data){
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
 	// electric fence don't know about posix_memalign()
 	posix_memalign((void**)&(this->data),
 		       (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
@@ -96,22 +96,22 @@ namespace whiteice
 	  throw std::bad_alloc();
 	
 	
-	if(typeid(T) == typeid(atlas_real<float>)){
+	if(typeid(T) == typeid(blas_real<float>)){
 	  cblas_scopy(v.dataSize,
 		      (const float*)v.data, 1,
 		      (float*)(this->data), 1);
 	}
-	else if(typeid(T) == typeid(atlas_complex<float>)){
+	else if(typeid(T) == typeid(blas_complex<float>)){
 	  cblas_ccopy(v.dataSize,
 		      (const float*)v.data, 1,
 		      (float*)(this->data), 1);
 	}
-	else if(typeid(T) == typeid(atlas_real<double>)){
+	else if(typeid(T) == typeid(blas_real<double>)){
 	  cblas_dcopy(v.dataSize,
 		      (const double*)v.data, 1,
 		      (double*)(this->data), 1);
 	}
-	else if(typeid(T) == typeid(atlas_complex<double>)){
+	else if(typeid(T) == typeid(blas_complex<double>)){
 	  cblas_zcopy(v.dataSize,
 		      (const double*)v.data, 1,
 		      (double*)(this->data), 1);
@@ -134,7 +134,7 @@ namespace whiteice
       this->data = 0;
       
       if(v.size() > 0){
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
 	posix_memalign((void**)&(this->data),
 		       (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
 		       v.size()*sizeof(T));
@@ -212,22 +212,22 @@ namespace whiteice
     {
       T len; // cblas_Xnrm2 optimizated functions
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	len = (T)cblas_snrm2(dataSize, (float*)data, 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	len = (T)cblas_scnrm2(dataSize, (float*)data, 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	len = (T)cblas_dnrm2(dataSize, (double*)data, 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	len = (T)cblas_dznrm2(dataSize, (double*)data, 1);
 	
 	return len;
@@ -254,22 +254,22 @@ namespace whiteice
 	return len;
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	len = (T)cblas_snrm2(j - i,(float*)(&(data[i])), 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	len = (T)cblas_scnrm2(j - i,(float*)(&(data[i])), 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	len = (T)cblas_dnrm2(j - i,(double*)(&(data[i])), 1);
 	
 	return len;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	len = (T)cblas_dznrm2(j - i,(double*)(&(data[i])), 1);
 	
 	return len;
@@ -295,22 +295,22 @@ namespace whiteice
       if(len == T(0)) return false;
       len = T(1) / len;
     
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(dataSize, *((float*)&len), (float*)data, 1);
 	return true;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cscal(dataSize, (const float*)&len, (float*)data, 1);
 	return true;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(dataSize, *((double*)&len), (double*)data, 1);
 	return true;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zscal(dataSize, (const double*)&len, (double*)data, 1);
 	return true;
@@ -331,10 +331,10 @@ namespace whiteice
     {
       if(dataSize <= 0) return;
       
-      if(typeid(T) == typeid(atlas_real<float>) ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>) ||
-	 typeid(T) == typeid(atlas_complex<double>) ||
+      if(typeid(T) == typeid(blas_real<float>) ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>) ||
+	 typeid(T) == typeid(blas_complex<double>) ||
 	 typeid(T) == typeid(float) ||
 	 typeid(T) == typeid(double))
       {
@@ -382,25 +382,25 @@ namespace whiteice
       
       // cblas_Xaxpy() (alpha = -1) -> r = x - y
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	float alpha = -1;
 	
 	cblas_saxpy(dataSize, alpha, (float*)v.data, 1,
 		    (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	T alpha; alpha = -1;
 	
 	cblas_caxpy(dataSize, (const float*)&alpha, (float*)v.data, 1,
 		    (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	double alpha = -1;
 	
 	cblas_daxpy(dataSize, alpha, (double*)v.data, 1,
 		    (double*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	T alpha; alpha = -1;
 	
 	cblas_zaxpy(dataSize, (const double*)&alpha, (double*)v.data, 1,
@@ -433,12 +433,12 @@ namespace whiteice
 	vertex<T> r(1);
 	r = T(0);
 	
-	if(typeid(T) == typeid(atlas_real<float>)){
+	if(typeid(T) == typeid(blas_real<float>)){
 	  *((T*)&(r.data[0])) = T(cblas_sdot(dataSize, (float*)data, 1,
 					     (float*)v.data, 1));
 	  return r;
 	}
-	else if(typeid(T) == typeid(atlas_complex<float>)){
+	else if(typeid(T) == typeid(blas_complex<float>)){
 #ifdef OPENBLAS
 	  cblas_cdotc_sub(dataSize, (float*)data, sizeof(T),
 			  //  (float*)v.data, 1, (openblas_complex_float*)&(r.data[0]));
@@ -450,12 +450,12 @@ namespace whiteice
 #endif
 	  return r;
 	}
-	else if(typeid(T) == typeid(atlas_real<double>)){
+	else if(typeid(T) == typeid(blas_real<double>)){
 	  *((T*)&(r.data[0])) = T(cblas_ddot(dataSize, (double*)data, 1,
 					     (double*)v.data, 1));
 	  return r;
 	}
-	else if(typeid(T) == typeid(atlas_complex<double>)){
+	else if(typeid(T) == typeid(blas_complex<double>)){
 #ifdef OPENBLAS
 	  cblas_zdotc_sub(dataSize, (double*)data, 1,
 			  // (double*)v.data, 1, (openblas_complex_double*)&(r.data[0]));
@@ -508,22 +508,22 @@ namespace whiteice
     {
       vertex<T> r(*this);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(dataSize, -1.0f, (float*)r.data, 1);
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_csscal(dataSize, -1.0f, (float*)r.data, 1);
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(dataSize, -1.0, (double*)r.data, 1);
 	return r;      
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zdscal(dataSize, -1.0, (double*)r.data, 1);
 	return r;
@@ -648,10 +648,10 @@ namespace whiteice
       if(v.dataSize != dataSize)
 	throw uncomparable("vertex compare: dimension mismatch");
       
-      if(typeid(T) == typeid(atlas_real<float>)    ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>)   ||
-	 typeid(T) == typeid(atlas_complex<double>)){
+      if(typeid(T) == typeid(blas_real<float>)    ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>)   ||
+	 typeid(T) == typeid(blas_complex<double>)){
 	
 	return (memcmp(v.data, data, dataSize*sizeof(T)) == 0);
       }
@@ -674,10 +674,10 @@ namespace whiteice
 	throw uncomparable("vertex compare: dimension mismatch");
       
       
-      if(typeid(T) == typeid(atlas_real<float>)    ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>)   ||
-	 typeid(T) == typeid(atlas_complex<double>)){
+      if(typeid(T) == typeid(blas_real<float>)    ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>)   ||
+	 typeid(T) == typeid(blas_complex<double>)){
 	
 	return (memcmp(v.data, data, dataSize*sizeof(T)) != 0);
       }
@@ -768,19 +768,19 @@ namespace whiteice
     {
       vertex<T> r(dataSize);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(dataSize, *((float*)&s), (float*)data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_caxpy(dataSize, (const float*)&s, (float*)data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(dataSize, *((double*)&s), (double*)data, 1, (double*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zaxpy(dataSize, (const double*)&s, (double*)data, 1, (double*)r.data, 1);
       }
@@ -801,19 +801,19 @@ namespace whiteice
       vertex<T> r(dataSize);      
       T ss = T(1)/s;      
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(dataSize, *((float*)&ss), (float*)data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_caxpy(dataSize, (const float*)&ss, (float*)data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(dataSize, *((double*)&ss), (double*)data, 1, (double*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zaxpy(dataSize, (const double*)&ss, (double*)data, 1, (double*)r.data, 1);
       }
@@ -831,19 +831,19 @@ namespace whiteice
     template <typename T>
     vertex<T>& vertex<T>::operator*=(const T& s) throw()
     {
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(dataSize, *((float*)&s), (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cscal(dataSize, (const float*)&s, (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(dataSize, *((double*)&s), (double*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zscal(dataSize, (const double*)&s, (double*)data, 1);
       }
@@ -862,19 +862,19 @@ namespace whiteice
     {
       T ss = T(1.0)/s;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(dataSize, *((float*)&ss), (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cscal(dataSize, (const float*)&ss, (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(dataSize, *((double*)&ss), (double*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zscal(dataSize, (const double*)&ss, (double*)data, 1);
       }
@@ -894,21 +894,21 @@ namespace whiteice
     {
       vertex<T> r(v.dataSize);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(v.dataSize, *((float*)&s), (float*)v.data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
-	atlas_complex<float> ss(*((atlas_complex<float>*)&s));
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	blas_complex<float> ss(*((blas_complex<float>*)&s));
 	
 	cblas_caxpy(v.dataSize, (const float*)&ss, (float*)v.data, 1, (float*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(v.dataSize, *((double*)&s), (double*)v.data, 1, (double*)r.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
-	atlas_complex<double> ss(*((atlas_complex<double>*)&s));
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	blas_complex<double> ss(*((blas_complex<double>*)&s));
 	
 	cblas_zaxpy(v.dataSize, (const double*)&ss, (double*)v.data, 1, (double*)r.data, 1);
       }
@@ -934,7 +934,7 @@ namespace whiteice
       // BLAS level 2
       // uses optimized cblas_Xgemv() functions
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sgemv(CblasRowMajor, CblasTrans,
 		    M.numRows, M.numCols,
@@ -944,8 +944,8 @@ namespace whiteice
 	
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
-	atlas_complex<float> a, b;
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	blas_complex<float> a, b;
 	a = 1.0f; b = 0.0f;
 	
 	cblas_cgemv(CblasRowMajor, CblasTrans,
@@ -957,7 +957,7 @@ namespace whiteice
 	return r;
 
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dgemv(CblasRowMajor, CblasTrans,
 		    M.numRows, M.numCols,
 		    1.0, (double*)M.data, M.numCols,
@@ -966,8 +966,8 @@ namespace whiteice
 	
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
-	atlas_complex<float> a, b;
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	blas_complex<float> a, b;
 	a = 1.0f; b = 0.0f;	
 	
 	cblas_zgemv(CblasRowMajor, CblasTrans,
@@ -1022,7 +1022,7 @@ namespace whiteice
       const unsigned int N = dataSize;
       T s = T(1.0f);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	matrix<T> M(N, N);
 	
 	cblas_sspr(CblasRowMajor, CblasUpper, N, 
@@ -1039,7 +1039,7 @@ namespace whiteice
 		      (float*)&(M.data[(i+1)*N + i]), N);
 	return M;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	matrix<T> M(N, N);
 	
 	cblas_chpr(CblasRowMajor, CblasUpper, N,
@@ -1056,7 +1056,7 @@ namespace whiteice
 		      (float*)&(M.data[(i+1)*N + i]), N);
 	return M;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	matrix<T> M(N, N);
 	
 	cblas_dspr(CblasRowMajor, CblasUpper, N, 
@@ -1073,7 +1073,7 @@ namespace whiteice
 		      (double*)&(M.data[(i+1)*N + i]), N);
 	return M;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	matrix<T> M(N, N);
 	
 	cblas_zhpr(CblasRowMajor, CblasUpper, N,
@@ -1339,10 +1339,10 @@ namespace whiteice
     template class vertex<unsigned int>;
     template class vertex<unsigned char>;
     
-    template class vertex< atlas_real<float> >;
-    template class vertex< atlas_real<double> >;
-    template class vertex< atlas_complex<float> >;
-    template class vertex< atlas_complex<double> >;
+    template class vertex< blas_real<float> >;
+    template class vertex< blas_real<double> >;
+    template class vertex< blas_complex<float> >;
+    template class vertex< blas_complex<double> >;
     
     template vertex<float> operator*<float>(const float& s, const vertex<float>& v);
     template vertex<double> operator*<double>(const double& s, const vertex<double>& v);
@@ -1358,17 +1358,17 @@ namespace whiteice
     template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
     template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
       
-    template vertex<atlas_real<float> > operator*<atlas_real<float> >
-      (const atlas_real<float>& s, const vertex<atlas_real<float> >& v);
+    template vertex<blas_real<float> > operator*<blas_real<float> >
+      (const blas_real<float>& s, const vertex<blas_real<float> >& v);
 									     
-    template vertex<atlas_real<double> > operator*<atlas_real<double> >
-      (const atlas_real<double>& s, const vertex<atlas_real<double> >& v);
+    template vertex<blas_real<double> > operator*<blas_real<double> >
+      (const blas_real<double>& s, const vertex<blas_real<double> >& v);
     
-    template vertex<atlas_complex<float> > operator*<atlas_complex<float> >
-      (const atlas_complex<float>& s, const vertex<atlas_complex<float> >& v);
+    template vertex<blas_complex<float> > operator*<blas_complex<float> >
+      (const blas_complex<float>& s, const vertex<blas_complex<float> >& v);
     
-    template vertex<atlas_complex<double> > operator*<atlas_complex<double> >
-      (const atlas_complex<double>& s, const vertex<atlas_complex<double> >& v);
+    template vertex<blas_complex<double> > operator*<blas_complex<double> >
+      (const blas_complex<double>& s, const vertex<blas_complex<double> >& v);
        
     
     template std::ostream& operator<< <float>(std::ostream& ios, const vertex<float>&);
@@ -1381,10 +1381,10 @@ namespace whiteice
     template std::ostream& operator<< <unsigned int>(std::ostream& ios, const vertex<unsigned int>&);
     template std::ostream& operator<< <unsigned char>(std::ostream& ios, const vertex<unsigned char>&);
     
-    template std::ostream& operator<< <atlas_real<float> >(std::ostream& ios, const vertex<atlas_real<float> >&);
-    template std::ostream& operator<< <atlas_real<double> >(std::ostream& ios, const vertex<atlas_real<double> >&);
-    template std::ostream& operator<< <atlas_complex<float> >(std::ostream& ios, const vertex<atlas_complex<float> >&);
-    template std::ostream& operator<< <atlas_complex<double> >(std::ostream& ios, const vertex<atlas_complex<double> >&);
+    template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const vertex<blas_real<float> >&);
+    template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const vertex<blas_real<double> >&);
+    template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const vertex<blas_complex<float> >&);
+    template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const vertex<blas_complex<double> >&);
     
   };
 };

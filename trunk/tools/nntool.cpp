@@ -295,7 +295,7 @@ int main(int argc, char** argv)
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::atlas_real<float> error = 1000.0f;
+	math::blas_real<float> error = 1000.0f;
 	math::vertex<> w;
 	unsigned int iterations = 0;
 	whiteice::linear_ETA<float> eta;
@@ -308,7 +308,7 @@ int main(int argc, char** argv)
 
 	bfgs.minimize(w);
 
-	while(error > math::atlas_real<float>(0.001f) &&
+	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0))
 	{
@@ -388,11 +388,11 @@ int main(int argc, char** argv)
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::atlas_real<float> error = 100.0f;
+	math::blas_real<float> error = 100.0f;
 	unsigned int solutions = 0;
 	
 	
-	while(error > math::atlas_real<float>(0.001f) &&
+	while(error > math::blas_real<float>(0.001f) &&
 	      counter < secs) // compute max SECS seconds
 	{
 	  search.getSolution(*nn, error, solutions);
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::atlas_real<float> error = 100.0f;
+	math::blas_real<float> error = 100.0f;
 	unsigned int solutions = 0;
 	
 	
@@ -516,14 +516,14 @@ int main(int argc, char** argv)
 	  math::vertex<> grad, err, weights;
 	  
 	  unsigned int counter = 0;
-	  math::atlas_real<float> prev_error, error, ratio;
-	  math::atlas_real<float> lrate =
-	    math::atlas_real<float>(0.05f);
-	  math::atlas_real<float> delta_error = 0.0f;
+	  math::blas_real<float> prev_error, error, ratio;
+	  math::blas_real<float> lrate =
+	    math::blas_real<float>(0.05f);
+	  math::blas_real<float> delta_error = 0.0f;
 	  
-	  error = math::atlas_real<float>(1000.0f);
-	  prev_error = math::atlas_real<float>(1000.0f);
-	  ratio = math::atlas_real<float>(1000.0f);
+	  error = math::blas_real<float>(1000.0f);
+	  prev_error = math::blas_real<float>(1000.0f);
+	  ratio = math::blas_real<float>(1000.0f);
 
 	  math::vertex<> prev_sumgrad;
 
@@ -531,20 +531,20 @@ int main(int argc, char** argv)
 	  if(samples > 0)
 	    eta.start(0.0f, (float)samples);
 	  
-	  while(error > math::atlas_real<float>(0.001f) && 
-		ratio > math::atlas_real<float>(0.000001f) &&
+	  while(error > math::blas_real<float>(0.001f) && 
+		ratio > math::blas_real<float>(0.000001f) &&
 		counter < samples)
 	  {
 	    prev_error = error;
-	    error = math::atlas_real<float>(0.0f);
+	    error = math::blas_real<float>(0.0f);
 
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
 
 	    math::vertex<> sumgrad;
-	    math::atlas_real<float> ninv =
-	      math::atlas_real<float>(1.0f/dtrain.size(0));
+	    math::blas_real<float> ninv =
+	      math::blas_real<float>(1.0f/dtrain.size(0));
 
 	    for(unsigned int i=0;i<dtrain.size(0);i++){
 	      nn->input() = dtrain.access(0, i);
@@ -570,8 +570,8 @@ int main(int argc, char** argv)
 	      prev_sumgrad = lrate * sumgrad;
 	    }
 	    else{
-	      math::atlas_real<float> momentum =
-		math::atlas_real<float>(0.8f);
+	      math::blas_real<float> momentum =
+		math::blas_real<float>(0.8f);
 	      weights -= lrate * sumgrad + momentum*prev_sumgrad;
 	      prev_sumgrad = lrate * sumgrad;
 	    }
@@ -588,10 +588,10 @@ int main(int argc, char** argv)
 	      err = dtest.access(1,i) - nn->output();
 	      
 	      for(unsigned int i=0;i<err.size();i++)
-		error += (err[i]*err[i]) / math::atlas_real<float>((float)err.size());
+		error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	    }
 	    
-	    error /= math::atlas_real<float>((float)dtest.size());
+	    error /= math::blas_real<float>((float)dtest.size());
 	    
 	    delta_error = (prev_error - error); // if the error is negative we stop
 	    ratio = delta_error / error;
@@ -734,7 +734,7 @@ int main(int argc, char** argv)
       
       
       if(compare_clusters == true){
-	math::atlas_real<float> error = math::atlas_real<float>(0.0f);
+	math::blas_real<float> error = math::blas_real<float>(0.0f);
 	math::vertex<> err;
 	
 	for(unsigned int i=0;i<data.size(0);i++){
@@ -745,11 +745,11 @@ int main(int argc, char** argv)
 	  err = data.access(1,i) - out;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
-	    error += (err[i]*err[i]) / math::atlas_real<float>((float)err.size());
+	    error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	  
 	}
 	
-	error /= math::atlas_real<float>((float)data.size());
+	error /= math::blas_real<float>((float)data.size());
 	
 	std::cout << "Average error in dataset: " << error << std::endl;
       }

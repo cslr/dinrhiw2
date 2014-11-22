@@ -35,7 +35,7 @@ int main(int argc, char ** argv, char **envp)
 
     while(1){
       whiteice::math::vertex<> s;
-      math::atlas_real<float> r;
+      math::blas_real<float> r;
 
       r = ga.getBestSolution(s);
 

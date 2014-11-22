@@ -126,8 +126,8 @@ namespace whiteice
   
   extern template class PSO<float>;
   extern template class PSO<double>;
-  extern template class PSO< math::atlas_real<float> >;
-  extern template class PSO< math::atlas_real<double> >;
+  extern template class PSO< math::blas_real<float> >;
+  extern template class PSO< math::blas_real<double> >;
   
 };
 

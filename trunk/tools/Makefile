@@ -1,6 +1,6 @@
-# builds algos library test programs.
-# requires algos library has been installed to 
-# the system
+# builds dinrhow library tools/programs.
+# requires that dinrhiw2 library has been installed to 
+# the system (and have pkg-config installed)
 #
 
 CC = gcc
@@ -10,7 +10,7 @@ BISON = bison
 CP = cp
 RM = rm
 
-OPTIMIZE=-O3 -g -DIA32 -ffast-math
+OPTIMIZE=-O3 -g -DIA32 -ffast-math -msse3
 
 CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall `pkg-config dinrhiw --cflags`
 CXXFLAGS = -g -O2  $(CFLAGS)

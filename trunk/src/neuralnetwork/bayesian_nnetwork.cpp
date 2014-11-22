@@ -11,7 +11,7 @@
 #include <typeinfo>
 
 #include "nnetwork.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 
@@ -373,7 +373,7 @@ namespace whiteice
   
   template class bayesian_nnetwork< float >;
   template class bayesian_nnetwork< double >;  
-  template class bayesian_nnetwork< math::atlas_real<float> >;
-  template class bayesian_nnetwork< math::atlas_real<double> >;
+  template class bayesian_nnetwork< math::blas_real<float> >;
+  template class bayesian_nnetwork< math::blas_real<double> >;
   
 };

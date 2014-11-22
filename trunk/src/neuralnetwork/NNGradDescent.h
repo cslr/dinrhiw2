@@ -9,7 +9,7 @@
 
 
 #include <pthread.h>
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "dataset.h"
 #include "dinrhiw.h"
 
@@ -21,7 +21,7 @@ namespace whiteice
 {
   namespace math
   {
-    template <typename T=atlas_real<float> >
+    template <typename T=blas_real<float> >
       class NNGradDescent
       {
       public:
@@ -89,8 +89,8 @@ namespace whiteice
   {
     // extern template class NNGradDescent< float >;
     extern template class NNGradDescent< double >;
-    // extern template class NNGradDescent< atlas_real<float> >;
-    // extern template class NNGradDescent< atlas_real<double> >;
+    // extern template class NNGradDescent< blas_real<float> >;
+    // extern template class NNGradDescent< blas_real<double> >;
     
     
   };

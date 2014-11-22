@@ -43,8 +43,8 @@ namespace whiteice
   
   extern template class gaussian<float>;
   extern template class gaussian<double>;
-  extern template class gaussian< math::atlas_real<float> >;
-  extern template class gaussian< math::atlas_real<double> >;
+  extern template class gaussian< math::blas_real<float> >;
+  extern template class gaussian< math::blas_real<double> >;
     
   
 }

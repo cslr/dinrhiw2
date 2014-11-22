@@ -8,8 +8,8 @@ namespace whiteice
 {
   template class threshold<float>;
   template class threshold<double>;
-  template class threshold< math::atlas_real<float> >;
-  template class threshold< math::atlas_real<double> >;
+  template class threshold< math::blas_real<float> >;
+  template class threshold< math::blas_real<double> >;
   
   
   

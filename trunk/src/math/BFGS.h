@@ -6,7 +6,7 @@
 
 #include <pthread.h>
 #include "optimized_function.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 #ifndef BFGS_h
 #define BFGS_h
@@ -17,7 +17,7 @@ namespace whiteice
   namespace math
   {
     
-    template <typename T=atlas_real<float> >
+    template <typename T=blas_real<float> >
       class BFGS
       {
       public:
@@ -37,12 +37,19 @@ namespace whiteice
         bool getSolution(vertex<T>& x, T& y, unsigned int& iterations) const;
 	
 	// continues, pauses, stops computation
-	bool continueComputation();
-	bool pauseComputation();
+        bool continueComputation();
+        bool pauseComputation();
 	bool stopComputation();
+
+        // returns true if solution converged and we cannot
+        // find better solution
+        bool solutionConverged() const;
+
+        // returns true if optimization thread is running
+        bool isRunning() const;
 	
       private:
-        void linesearch(vertex<T>& xn,
+        bool linesearch(vertex<T>& xn,
 			const vertex<T>& x, const vertex<T>& d) const;
 
         bool wolfe_conditions(const vertex<T>& x0,
@@ -54,7 +61,7 @@ namespace whiteice
 	T besty;
         volatile unsigned int iterations;
 	
-        volatile bool sleep_mode, thread_running;
+        volatile bool sleep_mode, thread_running, solution_converged;
 	pthread_t optimizer_thread;
         mutable pthread_mutex_t sleep_lock, thread_lock, solution_lock;
 	
@@ -76,8 +83,8 @@ namespace whiteice
     
     extern template class BFGS< float >;
     extern template class BFGS< double >;
-    extern template class BFGS< atlas_real<float> >;
-    extern template class BFGS< atlas_real<double> >;
+    extern template class BFGS< blas_real<float> >;
+    extern template class BFGS< blas_real<double> >;
     
   };
 };

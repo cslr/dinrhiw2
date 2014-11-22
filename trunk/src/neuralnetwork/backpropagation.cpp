@@ -72,7 +72,7 @@ namespace whiteice
     
     // iterates from backward to forward
     
-    if(typeid(T) == typeid(math::atlas_real<float>)){
+    if(typeid(T) == typeid(math::blas_real<float>)){
     
       while(i != nn.layers.begin()){
 	temp = lgrad; // creates copy of current gradient
@@ -132,11 +132,11 @@ namespace whiteice
 		  (float*)((*i)->b.data), 1);
       
     }
-    else if(typeid(T) == typeid(math::atlas_complex<float>)){
+    else if(typeid(T) == typeid(math::blas_complex<float>)){
       
-      math::atlas_complex<float> one(1.0f);
-      math::atlas_complex<float> zero(0.0f);
-      math::atlas_complex<float> lr(1.0f);
+      math::blas_complex<float> one(1.0f);
+      math::blas_complex<float> zero(0.0f);
+      math::blas_complex<float> lr(1.0f);
       
       while(i != nn.layers.begin()){
 	temp = lgrad; // creates copy of current gradient
@@ -187,7 +187,7 @@ namespace whiteice
       
       
     }
-    else if(typeid(T) == typeid(math::atlas_real<double>)){
+    else if(typeid(T) == typeid(math::blas_real<double>)){
       
       while(i != nn.layers.begin()){
 	temp = lgrad; // creates copy of current gradient
@@ -235,11 +235,11 @@ namespace whiteice
 		  (double*)((*i)->b.data), 1);
       
     }
-    else if(typeid(T) == typeid(math::atlas_complex<double>)){
+    else if(typeid(T) == typeid(math::blas_complex<double>)){
       
-      math::atlas_complex<double> one(1.0f);
-      math::atlas_complex<double> zero(0.0f);
-      math::atlas_complex<double> lr(1.0f);
+      math::blas_complex<double> one(1.0f);
+      math::blas_complex<double> zero(0.0f);
+      math::blas_complex<double> lr(1.0f);
       
       while(i != nn.layers.begin()){
 	temp = lgrad; // creates copy of current gradient
@@ -678,8 +678,8 @@ namespace whiteice
   
   template class backpropagation< float >;
   template class backpropagation< double >;
-  template class backpropagation< math::atlas_real<float> >;
-  template class backpropagation< math::atlas_real<double> >;
+  template class backpropagation< math::blas_real<float> >;
+  template class backpropagation< math::blas_real<double> >;
   
   
 }

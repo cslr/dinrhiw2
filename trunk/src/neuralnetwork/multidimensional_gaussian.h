@@ -53,8 +53,8 @@ namespace whiteice
   
   extern template class multidimensional_gaussian< float >;
   extern template class multidimensional_gaussian< double >;
-  extern template class multidimensional_gaussian< math::atlas_real<float> >;
-  extern template class multidimensional_gaussian< math::atlas_real<double> >;
+  extern template class multidimensional_gaussian< math::blas_real<float> >;
+  extern template class multidimensional_gaussian< math::blas_real<double> >;
   
 }
 

@@ -7,7 +7,7 @@
  */
 
 #include "function.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "vertex.h"
 #include <vector>
 
@@ -41,12 +41,12 @@ namespace whiteice
   
   extern template class activation_function<float>;
   extern template class activation_function<double>;
-  extern template class activation_function< math::atlas_real<float> >;
-  extern template class activation_function< math::atlas_real<double> >;
+  extern template class activation_function< math::blas_real<float> >;
+  extern template class activation_function< math::blas_real<double> >;
   extern template class activation_function< math::vertex<float> >;
   extern template class activation_function< math::vertex<double> >;
-  extern template class activation_function< math::vertex<math::atlas_real<float> > >;
-  extern template class activation_function< math::vertex<math::atlas_real<double> > >;
+  extern template class activation_function< math::vertex<math::blas_real<float> > >;
+  extern template class activation_function< math::vertex<math::blas_real<double> > >;
   
 }
 

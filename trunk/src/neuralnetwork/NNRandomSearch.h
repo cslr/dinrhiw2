@@ -9,7 +9,7 @@
 
 
 #include <pthread.h>
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "dataset.h"
 #include "dinrhiw.h"
 
@@ -22,7 +22,7 @@ namespace whiteice
   namespace math
   {
     // used to store top N results during the search
-    template <typename T=atlas_real<float> >
+    template <typename T=blas_real<float> >
       struct nn_solution
       {
 	vertex<T> solution;
@@ -30,7 +30,7 @@ namespace whiteice
       };
       
     
-    template <typename T=atlas_real<float> >
+    template <typename T=blas_real<float> >
       class NNRandomSearch
       {
       public:
@@ -94,8 +94,8 @@ namespace whiteice
   {
     //extern template class NNRandomSearch< float >;
     //extern template class NNRandomSearch< double >;
-    extern template class NNRandomSearch< atlas_real<float> >;
-    //extern template class NNRandomSearch< atlas_real<double> >;o
+    extern template class NNRandomSearch< blas_real<float> >;
+    //extern template class NNRandomSearch< blas_real<double> >;o
     
     
   };

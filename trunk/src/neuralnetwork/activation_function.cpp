@@ -50,12 +50,12 @@ namespace whiteice
   
   template class activation_function<float>;
   template class activation_function<double>;
-  template class activation_function< math::atlas_real<float> >;
-  template class activation_function< math::atlas_real<double> >;
+  template class activation_function< math::blas_real<float> >;
+  template class activation_function< math::blas_real<double> >;
   template class activation_function< math::vertex<float> >;
   template class activation_function< math::vertex<double> >;
-  template class activation_function< math::vertex<math::atlas_real<float> > >;
-  template class activation_function< math::vertex<math::atlas_real<double> > >;
+  template class activation_function< math::vertex<math::blas_real<float> > >;
+  template class activation_function< math::vertex<math::blas_real<double> > >;
   
 }
 

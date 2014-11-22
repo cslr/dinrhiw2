@@ -51,8 +51,8 @@ namespace whiteice
   
   extern template class odd_sigmoid<float>;
   extern template class odd_sigmoid<double>;
-  extern template class odd_sigmoid< math::atlas_real<float> >;
-  extern template class odd_sigmoid< math::atlas_real<double> >;
+  extern template class odd_sigmoid< math::blas_real<float> >;
+  extern template class odd_sigmoid< math::blas_real<double> >;
   
 }
   

@@ -8,7 +8,7 @@
 #define nnetwork_h
 
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "conffile.h"
 #include "compressable.h"
@@ -19,7 +19,7 @@
 namespace whiteice
 {
   
-  template < typename T = math::atlas_real<float> >
+  template < typename T = math::blas_real<float> >
     class nnetwork
     {
     public:
@@ -121,8 +121,8 @@ namespace whiteice
   
   extern template class nnetwork< float >;
   extern template class nnetwork< double >;  
-  extern template class nnetwork< math::atlas_real<float> >;
-  extern template class nnetwork< math::atlas_real<double> >;
+  extern template class nnetwork< math::blas_real<float> >;
+  extern template class nnetwork< math::blas_real<double> >;
   
 };
 

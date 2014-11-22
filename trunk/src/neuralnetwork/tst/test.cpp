@@ -16,7 +16,7 @@
 
 #include "dataset.h"
 #include "nnPSO.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 #include "bayesian_nnetwork.h"
 #include "HMC.h"
@@ -196,7 +196,7 @@ void hmc_test()
 
     FILE* out = fopen("gaussian.out", "wt");
 
-    std::vector< math::vertex< math::atlas_real<float> > > samples;
+    std::vector< math::vertex< math::blas_real<float> > > samples;
     sampler.getSamples(samples);
 
     for(unsigned int i=0;i<samples.size();i++){
@@ -216,7 +216,7 @@ void hmc_test()
 
 /************************************************************/
 
-void rechcprint_test(hcnode< GDAParams, math::atlas_real<float> >* node,
+void rechcprint_test(hcnode< GDAParams, math::blas_real<float> >* node,
 		     unsigned int depth);
 
 
@@ -225,17 +225,17 @@ void gda_clustering_test()
   std::cout << "GDA CLUSTERING TEST" << std::endl;
   
   {
-    whiteice::HC<GDAParams, math::atlas_real<float> > hc;
+    whiteice::HC<GDAParams, math::blas_real<float> > hc;
     whiteice::GDALogic behaviour;
     
-    std::vector< math::vertex< math::atlas_real<float> > > data;
+    std::vector< math::vertex< math::blas_real<float> > > data;
     
     // creates test data
     {
-      std::vector< math::vertex< math::atlas_real<float> > > means;
+      std::vector< math::vertex< math::blas_real<float> > > means;
       std::vector< unsigned int > sizes; // variance of all clusters is same
       
-      math::vertex< math::atlas_real<float> > v(2);
+      math::vertex< math::blas_real<float> > v(2);
       v[0] =  3.0f; v[1] =  7.5f; means.push_back(v); sizes.push_back(20);
       v[0] =  2.0f; v[1] =  5.0f; means.push_back(v); sizes.push_back(10);
       v[0] =  3.0f; v[1] =  5.0f; means.push_back(v); sizes.push_back(10);
@@ -284,7 +284,7 @@ void gda_clustering_test()
 }
 
 
-void rechcprint_test(hcnode< GDAParams, math::atlas_real<float> >* node,
+void rechcprint_test(hcnode< GDAParams, math::blas_real<float> >* node,
 		     unsigned int depth)
 {
   std::cout << "NODE " << std::hex << node 
@@ -327,8 +327,8 @@ void compressed_neuralnetwork_test()
   // first test - compare values are same with compressed and
   // uncompressed neural network
   {
-    neuralnetwork< atlas_real<float> >* nn;
-    neuralnetwork< atlas_real<float> >* cnn;
+    neuralnetwork< blas_real<float> >* nn;
+    neuralnetwork< blas_real<float> >* cnn;
     
     std::vector<unsigned int> nn_arch;
     nn_arch.push_back(2);
@@ -336,9 +336,9 @@ void compressed_neuralnetwork_test()
     nn_arch.push_back(100);
     nn_arch.push_back(2);
     
-    nn = new neuralnetwork< atlas_real<float> >(nn_arch, false);
+    nn = new neuralnetwork< blas_real<float> >(nn_arch, false);
     nn->randomize();
-    cnn = new neuralnetwork< atlas_real<float> >(*nn);
+    cnn = new neuralnetwork< blas_real<float> >(*nn);
     
     if(cnn->compress() == false){
       std::cout << "neural network compression failed"
@@ -391,8 +391,8 @@ void compressed_neuralnetwork_test()
   // second test - compression rate of taught neural network
   // (compression ratio of random network >= 1)
   {
-    neuralnetwork< atlas_real<float> >* nn;
-    neuralnetwork< atlas_real<float> >* cnn;
+    neuralnetwork< blas_real<float> >* nn;
+    neuralnetwork< blas_real<float> >* cnn;
     
     std::vector<unsigned int> nn_arch;
     nn_arch.push_back(2);
@@ -400,20 +400,20 @@ void compressed_neuralnetwork_test()
     nn_arch.push_back(100);
     nn_arch.push_back(2);
     
-    nn = new neuralnetwork< atlas_real<float> >(nn_arch, false);
+    nn = new neuralnetwork< blas_real<float> >(nn_arch, false);
     
     nn->randomize();
     
     //////////////////////////////////////////////////
     // teaches nn
     
-    dataset< atlas_real<float> >  in(2), out(2);
+    dataset< blas_real<float> >  in(2), out(2);
     
     // creates data
     {
       const unsigned int SIZE = 1000;
-      std::vector< math::vertex<math::atlas_real<float> > > input;
-      std::vector< math::vertex<math::atlas_real<float> > > output;
+      std::vector< math::vertex<math::blas_real<float> > > input;
+      std::vector< math::vertex<math::blas_real<float> > > output;
     
       input.resize(SIZE);
       output.resize(SIZE);
@@ -441,9 +441,9 @@ void compressed_neuralnetwork_test()
     
     // pso learner
     {
-      nnPSO< math::atlas_real<float> >* nnoptimizer;
+      nnPSO< math::blas_real<float> >* nnoptimizer;
       nnoptimizer = 
-	new nnPSO<math::atlas_real<float> >(nn, &in, &out, 20);
+	new nnPSO<math::blas_real<float> >(nn, &in, &out, 20);
 
       nnoptimizer->improve(25);
       std::cout << "learnt nn error: " << nnoptimizer->getError()
@@ -458,7 +458,7 @@ void compressed_neuralnetwork_test()
     
     //////////////////////////////////////////////////
     
-    cnn = new neuralnetwork< atlas_real<float> >(*nn);
+    cnn = new neuralnetwork< blas_real<float> >(*nn);
     
     if(cnn->compress() == false){
       std::cout << "neural network compression failed"
@@ -490,11 +490,11 @@ void simple_dataset_test()
     std::cout << "DATASET PREPROCESS TEST" 
 	      << std::endl;
     
-    math::atlas_real<float> a;
+    math::blas_real<float> a;
     
-    math::vertex< math::atlas_real<float> > v[2];
-    std::vector< math::vertex<math::atlas_real<float> > > data;
-    dataset< math::atlas_real<float> > set(2);
+    math::vertex< math::blas_real<float> > v[2];
+    std::vector< math::vertex<math::blas_real<float> > > data;
+    dataset< math::blas_real<float> > set(2);
     
     data.resize(2);
     data[0].resize(2);
@@ -560,14 +560,14 @@ void neuralnetwork_pso_test()
   try{
     std::cout << "NEURAL NETWORK PARTICLE SWARM OPTIMIZER" << std::endl;
     
-    neuralnetwork< math::atlas_real<float> >* nn;
-    nnPSO< math::atlas_real<float> >* nnoptimizer;
-    dataset< math::atlas_real<float> > I1(2), O1(1);
+    neuralnetwork< math::blas_real<float> >* nn;
+    nnPSO< math::blas_real<float> >* nnoptimizer;
+    dataset< math::blas_real<float> > I1(2), O1(1);
     
     const unsigned int SIZE = 10000;
     
-    std::vector< math::vertex<math::atlas_real<float> > > input;
-    std::vector< math::vertex<math::atlas_real<float> > > output;
+    std::vector< math::vertex<math::blas_real<float> > > input;
+    std::vector< math::vertex<math::blas_real<float> > > output;
     
     // creates data
     {
@@ -600,8 +600,8 @@ void neuralnetwork_pso_test()
     }
     
     
-    I1.preprocess(dataset< math::atlas_real<float> >::dnMeanVarianceNormalization);
-    O1.preprocess(dataset< math::atlas_real<float> >::dnMeanVarianceNormalization);
+    I1.preprocess(dataset< math::blas_real<float> >::dnMeanVarianceNormalization);
+    O1.preprocess(dataset< math::blas_real<float> >::dnMeanVarianceNormalization);
     
     
     std::vector<unsigned int> nn_arch;
@@ -609,7 +609,7 @@ void neuralnetwork_pso_test()
     nn_arch.push_back(10);
     nn_arch.push_back(1);
     
-    nn = new neuralnetwork< math::atlas_real<float> >(nn_arch);
+    nn = new neuralnetwork< math::blas_real<float> >(nn_arch);
     nn->randomize();
     
     // nn arch
@@ -626,7 +626,7 @@ void neuralnetwork_pso_test()
     const unsigned int STEP = 10;
     
     nnoptimizer = 
-      new nnPSO<math::atlas_real<float> >
+      new nnPSO<math::blas_real<float> >
       (nn, &I1, &O1, SWARM_SIZE);
     
     nnoptimizer->verbosity(true);
@@ -667,7 +667,7 @@ void neuralnetwork_saveload_test()
     // create random networks - save & load them and check that
     // NN is same after load
     
-    neuralnetwork< math::atlas_real<float> >* nn[2];
+    neuralnetwork< math::blas_real<float> >* nn[2];
     std::vector<unsigned int> s;
     
     std::string file = "nnarch.cfg";
@@ -687,23 +687,23 @@ void neuralnetwork_saveload_test()
       }
       
       
-      nn[0] = new neuralnetwork< math::atlas_real<float> >(s);
-      nn[1] = new neuralnetwork< math::atlas_real<float> >(2, 2);
+      nn[0] = new neuralnetwork< math::blas_real<float> >(s);
+      nn[1] = new neuralnetwork< math::blas_real<float> >(2, 2);
       
       // set random values of neural network
       nn[0]->randomize();
       
       for(unsigned int j=0;j<nn[0]->length();j++){
 	(*nn[0])[j].moment() = 
-	  math::atlas_real<float>(((float)rand()) / ((float)RAND_MAX));
+	  math::blas_real<float>(((float)rand()) / ((float)RAND_MAX));
 	
 	(*nn[0])[j].learning_rate() = 
-	  math::atlas_real<float>(((float)rand()) / ((float)RAND_MAX));
+	  math::blas_real<float>(((float)rand()) / ((float)RAND_MAX));
 	
-	math::vertex<math::atlas_real<float> >& bb =
+	math::vertex<math::blas_real<float> >& bb =
 	  (*nn[0])[j].bias();
 	
-	math::matrix<math::atlas_real<float> >& MM =
+	math::matrix<math::blas_real<float> >& MM =
 	  (*nn[0])[j].weights();
 	
 	for(unsigned int k=0;k<bb.size();k++)
@@ -846,15 +846,15 @@ void neuronlayer_test()
   try{    
     
     {
-      math::vertex< math::atlas_real<float> > input, output;
-      neuronlayer< math::atlas_real<float> >* l;
+      math::vertex< math::blas_real<float> > input, output;
+      neuronlayer< math::blas_real<float> >* l;
       
-      odd_sigmoid< math::atlas_real<float> > os;
+      odd_sigmoid< math::blas_real<float> > os;
       
       input.resize(10);
       output.resize(5);
       
-      l = new neuronlayer< math::atlas_real<float> >(&input, &output, os);
+      l = new neuronlayer< math::blas_real<float> >(&input, &output, os);
       
       if(l->input_size() != 10)
 	throw test_exception("neuronlayer input_size() returns wrong value");
@@ -872,10 +872,10 @@ void neuronlayer_test()
       
       // sets bias and weights
       
-      math::matrix< math::atlas_real<float> >& W = l->weights();
-      math::vertex< math::atlas_real<float> >& b = l->bias();
+      math::matrix< math::blas_real<float> >& W = l->weights();
+      math::vertex< math::blas_real<float> >& b = l->bias();
       
-      W = math::atlas_real<float>(0.0f); // set W
+      W = math::blas_real<float>(0.0f); // set W
       
       for(unsigned int i=0;i<b.size();i++)
 	b[i] = ((float)rand())/((float)RAND_MAX);
@@ -894,7 +894,7 @@ void neuronlayer_test()
       
       // calculates mean squared error
       {
-	math::atlas_real<float> error = 0.0f;
+	math::blas_real<float> error = 0.0f;
 	
 	for(unsigned int i=0;i<output.size();i++)
 	  error += output[i]*output[i];
@@ -911,17 +911,17 @@ void neuronlayer_test()
     
     
     {
-      math::vertex< math::atlas_real<float> > input, output;
-      neuronlayer< math::atlas_real<float> >* l;
-      odd_sigmoid< math::atlas_real<float> > os;
+      math::vertex< math::blas_real<float> > input, output;
+      neuronlayer< math::blas_real<float> >* l;
+      odd_sigmoid< math::blas_real<float> > os;
       
       input.resize(10);
       output.resize(10);
       
-      l = new neuronlayer< math::atlas_real<float> >(&input, &output, os);
+      l = new neuronlayer< math::blas_real<float> >(&input, &output, os);
       
-      math::matrix< math::atlas_real<float> >& W = l->weights();
-      math::vertex< math::atlas_real<float> >& b = l->bias();
+      math::matrix< math::blas_real<float> >& W = l->weights();
+      math::vertex< math::blas_real<float> >& b = l->bias();
     
       // W = I, b = 0. test
       
@@ -950,7 +950,7 @@ void neuronlayer_test()
       output -= input;
       
       {
-	math::atlas_real<float> error = 0.0f;
+	math::blas_real<float> error = 0.0f;
 	
 	for(unsigned int j=0;j<output.size();j++)
 	  error += output[j] * output[j];
@@ -964,17 +964,17 @@ void neuronlayer_test()
     
     
     {
-      math::vertex< math::atlas_real<float> > input, output;
-      neuronlayer< math::atlas_real<float> >* l;
-      odd_sigmoid< math::atlas_real<float> > os;
+      math::vertex< math::blas_real<float> > input, output;
+      neuronlayer< math::blas_real<float> >* l;
+      odd_sigmoid< math::blas_real<float> > os;
       
       input.resize((rand() % 13) + 1);
       output.resize((rand() % 13) + 1);
       
-      l = new neuronlayer< math::atlas_real<float> >(&input, &output, os);
+      l = new neuronlayer< math::blas_real<float> >(&input, &output, os);
       
-      math::matrix< math::atlas_real<float> >& W = l->weights();
-      math::vertex< math::atlas_real<float> >& b = l->bias();
+      math::matrix< math::blas_real<float> >& W = l->weights();
+      math::vertex< math::blas_real<float> >& b = l->bias();
       
       // sets weights and biases
       
@@ -992,7 +992,7 @@ void neuronlayer_test()
       for(unsigned int i=0;i<input.size();i++)
 	input[i] = ((float)rand())/((float)RAND_MAX);
       
-      math::vertex< math::atlas_real<float> > result(input);
+      math::vertex< math::blas_real<float> > result(input);
       
       result = W*result;
       result += b;
@@ -1005,7 +1005,7 @@ void neuronlayer_test()
       result -= output;
       
       {
-	math::atlas_real<float> error = 0.0f;
+	math::blas_real<float> error = 0.0f;
 	
 	for(unsigned int i=0;i<result.size();i++)
 	  error += result[i] * result[i];
@@ -1030,14 +1030,14 @@ void neuronlayer_test()
   try{
 
     {
-      neuronlayer< math::atlas_real<float> >* l[2];
-      math::vertex< math::atlas_real<float> > input;
-      math::vertex< math::atlas_real<float> > output;
+      neuronlayer< math::blas_real<float> >* l[2];
+      math::vertex< math::blas_real<float> > input;
+      math::vertex< math::blas_real<float> > output;
       
       input.resize(10);
       output.resize(1);
       
-      l[0] = new neuronlayer< math::atlas_real<float> >(10, 1);
+      l[0] = new neuronlayer< math::blas_real<float> >(10, 1);
       l[0]->input() = &input;
       l[0]->output() = &output;
       
@@ -1046,8 +1046,8 @@ void neuronlayer_test()
       
       // sets up biases and weights randomly
       
-      math::vertex< math::atlas_real<float> >& b = l[0]->bias();
-      math::matrix< math::atlas_real<float> >& W = l[0]->weights();
+      math::vertex< math::blas_real<float> >& b = l[0]->bias();
+      math::matrix< math::blas_real<float> >& W = l[0]->weights();
       
       for(unsigned int i=0;i<b.size();i++)
 	b[i] = ((float)rand())/((float)RAND_MAX);
@@ -1058,7 +1058,7 @@ void neuronlayer_test()
 	}
       
       
-      l[1] = new neuronlayer< math::atlas_real<float> >(*(l[0]));
+      l[1] = new neuronlayer< math::blas_real<float> >(*(l[0]));
       
       if(l[0]->input() != l[1]->input()){
 	throw test_exception("neuronlayer copy ctor simple sameness tests failed [input()]");
@@ -1103,7 +1103,7 @@ void neuronlayer_test()
       for(unsigned int i=0;i<output.size();i++)
 	(*(l[0]->output()))[i] = ((float)rand())/((float)RAND_MAX);
       
-      math::vertex< math::atlas_real<float> > alternative_output(*(l[0]->output()));
+      math::vertex< math::blas_real<float> > alternative_output(*(l[0]->output()));
       
       l[0]->output() = &alternative_output;
       
@@ -1115,7 +1115,7 @@ void neuronlayer_test()
       {
 	// calculates error
 	
-	math::atlas_real<float> error = 0.0f;
+	math::blas_real<float> error = 0.0f;
 	
 	for(unsigned int i=0;i<output.size();i++)
 	  error += output[i]*output[i];
@@ -1236,8 +1236,8 @@ void backprop_test(const unsigned int size)
     
     /* tests linear separation ability of nn between two classes */
     
-    std::vector< math::vertex<math::atlas_real<float> > > input(size);
-    std::vector< math::vertex<math::atlas_real<float> > > output(size);
+    std::vector< math::vertex<math::blas_real<float> > > input(size);
+    std::vector< math::vertex<math::blas_real<float> > > output(size);
 
     // creates data
     for(unsigned int i = 0;i<size;i++){
@@ -1251,20 +1251,20 @@ void backprop_test(const unsigned int size)
       output[i][1] = -0.12f*input[i][0] + 0.1f*input[i][1];      
     }
     
-    dataset< math::atlas_real<float> > I0(2);
+    dataset< math::blas_real<float> > I0(2);
     if(!I0.add(input)){
       std::cout << "dataset creation failed\n";
       return;
     }
     
-    dataset< math::atlas_real<float> > I1(2);
+    dataset< math::blas_real<float> > I1(2);
     if(!I1.add(output)){
       std::cout << "dataset creation failed\n";
       return;
     }
     
     std::cout << "pre abs maxs" << std::endl;
-    math::atlas_real<float> mm = 0.0, MM = 0.0;
+    math::blas_real<float> mm = 0.0, MM = 0.0;
     
     for(unsigned int i=0;i<I0.size();i++){
       if(mm < whiteice::math::abs(I0[i][0]))
@@ -1291,8 +1291,8 @@ void backprop_test(const unsigned int size)
     std::cout << "MM = " << MM << std::endl;
     
     
-    neuralnetwork< math::atlas_real<float> >* nn;
-    backpropagation< math::atlas_real<float> > bp;
+    neuralnetwork< math::blas_real<float> >* nn;
+    backpropagation< math::blas_real<float> > bp;
     
     vector<unsigned int> nn_arch;
     nn_arch.push_back(2);
@@ -1301,15 +1301,15 @@ void backprop_test(const unsigned int size)
     
     /* two outputs == bad - fix/make nn structure more dynamic,
        ignores second one */
-    nn = new neuralnetwork< math::atlas_real<float> >(nn_arch); 
+    nn = new neuralnetwork< math::blas_real<float> >(nn_arch); 
     nn->randomize();
     
-    math::vertex< math::atlas_real<float> >& nn_input  = nn->input();
-    math::vertex< math::atlas_real<float> >& nn_output = nn->output();
+    math::vertex< math::blas_real<float> >& nn_input  = nn->input();
+    math::vertex< math::blas_real<float> >& nn_output = nn->output();
     
-    math::vertex< math::atlas_real<float> > correct_output(2);
+    math::vertex< math::blas_real<float> > correct_output(2);
     
-    math::atlas_real<float> sum_error;
+    math::blas_real<float> sum_error;
     
     
     std::cout << "NN-ARCH = ";
@@ -1335,7 +1335,7 @@ void backprop_test(const unsigned int size)
 	correct_output[0] = I1[index][0];
 	correct_output[1] = I1[index][1];
 	
-	math::atlas_real<float> sq_error = 
+	math::blas_real<float> sq_error = 
 	  (nn_output[0] - correct_output[0])*(nn_output[0] - correct_output[0]) +
 	  (nn_output[1] - correct_output[1])*(nn_output[1] - correct_output[1]);
 	
@@ -1356,7 +1356,7 @@ void backprop_test(const unsigned int size)
 	
       }
       
-      sum_error = sqrt(sum_error / ((math::atlas_real<float>)I0.size()) );
+      sum_error = sqrt(sum_error / ((math::blas_real<float>)I0.size()) );
       
       cout << "MEAN SQUARED ERROR: " << sum_error << endl;
     }
@@ -1723,8 +1723,8 @@ void nnetwork_test()
     const unsigned int size = 500;
     
     
-    std::vector< math::vertex< math::atlas_real<float> > > input(size);
-    std::vector< math::vertex< math::atlas_real<float> > > output(size);
+    std::vector< math::vertex< math::blas_real<float> > > input(size);
+    std::vector< math::vertex< math::blas_real<float> > > output(size);
     
     for(unsigned int i = 0;i<size;i++){
       input[i].resize(2);
@@ -1733,8 +1733,8 @@ void nnetwork_test()
       input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       
-      output[i][0] = input[i][0] - math::atlas_real<float>(0.2f)*input[i][1];
-      output[i][1] = math::atlas_real<float>(-0.12f)*input[i][0] + math::atlas_real<float>(0.1f)*input[i][1];
+      output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
       
     }
     
@@ -1755,10 +1755,10 @@ void nnetwork_test()
     math::vertex<> grad, err, weights;
     
     unsigned int counter = 0;
-    math::atlas_real<float> error = math::atlas_real<float>(1000.0f);
-    math::atlas_real<float> lrate = math::atlas_real<float>(0.01f);
-    while(error > math::atlas_real<float>(0.001f) && counter < 10000){
-      error = math::atlas_real<float>(0.0f);
+    math::blas_real<float> error = math::blas_real<float>(1000.0f);
+    math::blas_real<float> lrate = math::blas_real<float>(0.01f);
+    while(error > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_real<float>(0.0f);
       
       // goes through data, calculates gradient
       // exports weights, weights -= 0.01*gradient
@@ -1784,7 +1784,7 @@ void nnetwork_test()
 	  std::cout << "import failed." << std::endl;
       }
       
-      error /= math::atlas_real<float>((float)data.size());
+      error /= math::blas_real<float>((float)data.size());
       
       std::cout << counter << " : " << error << std::endl;
       
@@ -1815,8 +1815,8 @@ void nnetwork_test()
     const unsigned int size = 500;
     
     
-    std::vector< math::vertex< math::atlas_real<float> > > input(size);
-    std::vector< math::vertex< math::atlas_real<float> > > output(size);
+    std::vector< math::vertex< math::blas_real<float> > > input(size);
+    std::vector< math::vertex< math::blas_real<float> > > output(size);
     
     for(unsigned int i = 0;i<size;i++){
       input[i].resize(2);
@@ -1825,8 +1825,8 @@ void nnetwork_test()
       input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       
-      output[i][0] = input[i][0] - math::atlas_real<float>(0.2f)*input[i][1];
-      output[i][1] = math::atlas_real<float>(-0.12f)*input[i][0] + math::atlas_real<float>(0.1f)*input[i][1];
+      output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
       
     }
     
@@ -1848,18 +1848,18 @@ void nnetwork_test()
     math::vertex<> sumgrad;
     
     unsigned int counter = 0;
-    math::atlas_real<float> error = math::atlas_real<float>(1000.0f);
-    math::atlas_real<float> lrate = math::atlas_real<float>(0.01f);
+    math::blas_real<float> error = math::blas_real<float>(1000.0f);
+    math::blas_real<float> lrate = math::blas_real<float>(0.01f);
     
-    while(error > math::atlas_real<float>(0.001f) && counter < 10000){
-      error = math::atlas_real<float>(0.0f);
+    while(error > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_real<float>(0.0f);
       
       // goes through data, calculates gradient
       // exports weights, weights -= 0.01*gradient
       // imports weights back
 
-      math::atlas_real<float> ninv =
-	math::atlas_real<float>(1.0f/data.size(0));
+      math::blas_real<float> ninv =
+	math::blas_real<float>(1.0f/data.size(0));
       
       for(unsigned int i=0;i<data.size(0);i++){
 	nn->input() = data.access(0, i);
@@ -1888,7 +1888,7 @@ void nnetwork_test()
 	std::cout << "import failed." << std::endl;
 
       
-      error /= math::atlas_real<float>((float)data.size());
+      error /= math::blas_real<float>((float)data.size());
       
       std::cout << counter << " : " << error << std::endl;
       
@@ -1920,8 +1920,8 @@ void nnetwork_test()
     const unsigned int size = 500;
     
     
-    std::vector< math::vertex< math::atlas_real<float> > > input(size);
-    std::vector< math::vertex< math::atlas_real<float> > > output(size);
+    std::vector< math::vertex< math::blas_real<float> > > input(size);
+    std::vector< math::vertex< math::blas_real<float> > > output(size);
     
     for(unsigned int i = 0;i<size;i++){
       input[i].resize(2);
@@ -1930,8 +1930,8 @@ void nnetwork_test()
       input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       
-      output[i][0] = input[i][0] - math::atlas_real<float>(0.2f)*input[i][1];
-      output[i][1] = math::atlas_real<float>(-0.12f)*input[i][0] + math::atlas_real<float>(0.1f)*input[i][1];
+      output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
       
     }
     
@@ -1969,7 +1969,7 @@ void nnetwork_test()
       nn->importdata(hmc.getMean());
     }
 
-    math::atlas_real<float> error = math::atlas_real<float>(0.0f);
+    math::blas_real<float> error = math::blas_real<float>(0.0f);
       
     for(unsigned int i=0;i<data.size(0);i++){
       nn->input() = data.access(0, i);
@@ -1981,7 +1981,7 @@ void nnetwork_test()
     }
       
     
-    error /= math::atlas_real<float>((float)data.size());
+    error /= math::blas_real<float>((float)data.size());
     
     std::cout << "FINAL MEAN ERROR : " << error << std::endl;
     

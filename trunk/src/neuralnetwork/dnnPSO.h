@@ -109,8 +109,8 @@ namespace whiteice
   
   extern template class dnnPSO_optimized_function<float>;
   extern template class dnnPSO_optimized_function<double>;
-  extern template class dnnPSO_optimized_function< math::atlas_real<float> >;
-  extern template class dnnPSO_optimized_function< math::atlas_real<double> >;
+  extern template class dnnPSO_optimized_function< math::blas_real<float> >;
+  extern template class dnnPSO_optimized_function< math::blas_real<double> >;
   
 };
 

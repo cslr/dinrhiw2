@@ -5,7 +5,7 @@
 #ifndef quaternion_h
 #define quaternion_h
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "number.h"
 #include <iostream>
 #include <exception>
@@ -25,7 +25,7 @@ namespace whiteice
       class matrix;
     
     
-    template <typename T = atlas_real<float> >
+    template <typename T = blas_real<float> >
       class quaternion : public whiteice::number<quaternion<T>, T, T, unsigned int>
     {
       public:
@@ -102,13 +102,13 @@ namespace whiteice
     
     extern template class quaternion<float>;
     extern template class quaternion<double>;
-    extern template class quaternion< atlas_real<float> >;
-    extern template class quaternion< atlas_real<double> >;
+    extern template class quaternion< blas_real<float> >;
+    extern template class quaternion< blas_real<double> >;
     
     extern template std::ostream& operator<< <float>(std::ostream& ios, const quaternion<float>& q);
     extern template std::ostream& operator<< <double>(std::ostream& ios, const quaternion<double>& q);
-    extern template std::ostream& operator<< <atlas_real<float> >(std::ostream& ios, const quaternion<atlas_real<float> >& q);
-    extern template std::ostream& operator<< <atlas_real<double> >(std::ostream& ios, const quaternion<atlas_real<double> >& q);
+    extern template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const quaternion<blas_real<float> >& q);
+    extern template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const quaternion<blas_real<double> >& q);
     
   }
 }

@@ -11,12 +11,12 @@
 #include <vector>
 #include "function.h"
 #include "vertex.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include <pthread.h>
 
 namespace whiteice
 {
-  template <typename T=math::atlas_real<float> >
+  template <typename T=math::blas_real<float> >
   class GA3
   {
   public:
@@ -76,8 +76,8 @@ namespace whiteice
 {
   extern template class GA3< float >;
   extern template class GA3< double >;
-  extern template class GA3< math::atlas_real<float> >;
-  extern template class GA3< math::atlas_real<double> >;    
+  extern template class GA3< math::blas_real<float> >;
+  extern template class GA3< math::blas_real<double> >;    
 };
 
 

@@ -5,7 +5,7 @@
 
 #include "matrix.h"
 #include "vertex.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 // #define OPENBLAS 1
 
@@ -14,28 +14,28 @@ namespace whiteice
   namespace math
   {
     
-    template bool gramschmidt< atlas_real<float> >
-      (matrix< atlas_real<float> >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_real<double> >
-      (matrix< atlas_real<double> >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_complex<float> >
-      (matrix< atlas_complex<float> >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_complex<double> >
-      (matrix< atlas_complex<double> >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_real<float> >
+      (matrix< blas_real<float> >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_real<double> >
+      (matrix< blas_real<double> >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_complex<float> >
+      (matrix< blas_complex<float> >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_complex<double> >
+      (matrix< blas_complex<double> >& B, const unsigned int i, const unsigned int j);
     template bool gramschmidt<float>
       (matrix<float>& B, const unsigned int i, const unsigned int j);
     template bool gramschmidt<double>
       (matrix<double>& B, const unsigned int i, const unsigned int j);
     
     
-    template bool gramschmidt< atlas_real<float> >
-      (std::vector< vertex< atlas_real<float> > >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_real<double> >
-      (std::vector< vertex< atlas_real<double> > >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_complex<float> >
-      (std::vector< vertex< atlas_complex<float> > >& B, const unsigned int i, const unsigned int j);
-    template bool gramschmidt< atlas_complex<double> >
-      (std::vector< vertex< atlas_complex<double> > >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_real<float> >
+      (std::vector< vertex< blas_real<float> > >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_real<double> >
+      (std::vector< vertex< blas_real<double> > >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_complex<float> >
+      (std::vector< vertex< blas_complex<float> > >& B, const unsigned int i, const unsigned int j);
+    template bool gramschmidt< blas_complex<double> >
+      (std::vector< vertex< blas_complex<double> > >& B, const unsigned int i, const unsigned int j);
     template bool gramschmidt<float>
       (std::vector< vertex<float> >& B, const unsigned int i, const unsigned int j);
     template bool gramschmidt<double>
@@ -61,11 +61,11 @@ namespace whiteice
       z.resize(M);
       
 
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	for(unsigned int n=i;n<j;n++){
 	  z = T(0);
-	  atlas_real<float> w;
+	  blas_real<float> w;
 	  
 	  
 	  for(unsigned int k=i;k<n;k++){
@@ -94,11 +94,11 @@ namespace whiteice
 	}
 	
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	for(unsigned int n=i;n<j;n++){
 	  z = T(0);
-	  atlas_complex<float> w;
+	  blas_complex<float> w;
 	  
 	  for(unsigned int k=i;k<n;k++){
 	    // w = dot(B.data[k*numCols], B.data[n*numCols], numRows);
@@ -122,7 +122,7 @@ namespace whiteice
 	  }
 	  
 	  // B[n] -= z;
-	  w = atlas_complex<float>(-1.0f);
+	  w = blas_complex<float>(-1.0f);
 	  cblas_caxpy(B.numRows, (const float*)&w,
 		      (float*)z.data, 1,
 		      (float*)&(B.data[n*B.numCols]), 1);
@@ -134,11 +134,11 @@ namespace whiteice
 	}
 	
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	for(unsigned int n=i;n<j;n++){
 	  z = T(0);
-	  atlas_real<double> w;
+	  blas_real<double> w;
 	  
 	  for(unsigned int k=i;k<n;k++){
 	    // w = dot(B.data[k*B.numCols], B.data[n*B.numCols], B.numRows);
@@ -165,11 +165,11 @@ namespace whiteice
 	}
 	
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	for(unsigned int n=i;n<j;n++){
 	  z = T(0);
-	  atlas_complex<double> w;
+	  blas_complex<double> w;
 	  
 	  for(unsigned int k=i;k<n;k++){
 	    // w = dot(B.data[k*numCols], B.data[n*numCols], numRows);
@@ -193,7 +193,7 @@ namespace whiteice
 	  }
 	  
 	  // B[n] -= z;
-	  w = atlas_complex<double>(-1.0);
+	  w = blas_complex<double>(-1.0);
 	  cblas_zaxpy(B.numRows, (const double*)&w,
 		      (double*)z.data, 1,
 		      (double*)&(B.data[n*B.numCols]), 1);

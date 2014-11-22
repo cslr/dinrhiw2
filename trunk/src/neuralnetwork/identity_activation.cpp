@@ -72,8 +72,8 @@ namespace whiteice
   
   template class identity_activation<float>;
   template class identity_activation<double>;
-  template class identity_activation< math::atlas_real<float> >;
-  template class identity_activation< math::atlas_real<double> >;
+  template class identity_activation< math::blas_real<float> >;
+  template class identity_activation< math::blas_real<double> >;
   
 }
 

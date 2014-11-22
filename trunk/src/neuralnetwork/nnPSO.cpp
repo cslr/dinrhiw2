@@ -481,12 +481,12 @@ namespace whiteice
   
   template class nnPSO<float>;
   template class nnPSO<double>;
-  template class nnPSO< math::atlas_real<float> >;
-  template class nnPSO< math::atlas_real<double> >;
+  template class nnPSO< math::blas_real<float> >;
+  template class nnPSO< math::blas_real<double> >;
   template class nnPSO_optimized_function<float>;
   template class nnPSO_optimized_function<double>;
-  template class nnPSO_optimized_function< math::atlas_real<float> >;
-  template class nnPSO_optimized_function< math::atlas_real<double> >;
+  template class nnPSO_optimized_function< math::blas_real<float> >;
+  template class nnPSO_optimized_function< math::blas_real<double> >;
   
   
 };
