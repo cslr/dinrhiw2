@@ -66,8 +66,8 @@ namespace whiteice
   
   extern template class stretched_function<float>;
   extern template class stretched_function<double>;
-  extern template class stretched_function< math::atlas_real<float> >;
-  extern template class stretched_function< math::atlas_real<double> >;
+  extern template class stretched_function< math::blas_real<float> >;
+  extern template class stretched_function< math::blas_real<double> >;
   
 }
 

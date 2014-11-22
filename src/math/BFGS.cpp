@@ -24,6 +24,7 @@ namespace whiteice
     {
       thread_running = false;
       sleep_mode = false;
+      solution_converged = false;
       pthread_mutex_init(&thread_lock, 0);
       pthread_mutex_init(&sleep_lock, 0);
       pthread_mutex_init(&solution_lock, 0);
@@ -64,6 +65,7 @@ namespace whiteice
 
       thread_running = true;
       sleep_mode = false;
+      solution_converged = false;
       
       pthread_create(&optimizer_thread, 0,
 		     __bfgs_optimizer_thread_init,
@@ -92,7 +94,8 @@ namespace whiteice
     
     // continues, pauses, stops computation
     template <typename T>
-    bool BFGS<T>::continueComputation(){
+    bool BFGS<T>::continueComputation()
+    {
       pthread_mutex_lock( &sleep_lock );
       sleep_mode = false;
       pthread_mutex_unlock( &sleep_lock );
@@ -102,7 +105,8 @@ namespace whiteice
     
     
     template <typename T>
-    bool BFGS<T>::pauseComputation(){
+    bool BFGS<T>::pauseComputation()
+    {
       pthread_mutex_lock( &sleep_lock );
       sleep_mode = true;
       pthread_mutex_unlock( &sleep_lock );
@@ -128,8 +132,24 @@ namespace whiteice
     }
 
 
+    // returns true if solution converged and we cannot
+    // find better solution
     template <typename T>
-    void BFGS<T>::linesearch(vertex<T>& xn,
+    bool BFGS<T>::solutionConverged() const
+    {
+      return solution_converged;
+    }
+    
+    // returns true if optimization thread is running
+    template <typename T>
+    bool BFGS<T>::isRunning() const
+    {
+      return thread_running;
+    }
+    
+
+    template <typename T>
+    bool BFGS<T>::linesearch(vertex<T>& xn,
 			     const vertex<T>& x,
 			     const vertex<T>& d) const
     {
@@ -181,7 +201,7 @@ namespace whiteice
 	k++;
       }
       
-
+      
       /*
       if(found <= 0)
 	std::cout << "NO NEW SOLUTIONS FOUND: " << k 
@@ -189,10 +209,12 @@ namespace whiteice
       else
 	std::cout << "BEST ALPHA= " << best_alpha << std::endl;
       */
-
+      
       xn = localbestx;
-    }
 
+      return (found > 0);
+    }
+    
     
     template <typename T>
     bool BFGS<T>::wolfe_conditions(const vertex<T>& x0,
@@ -230,7 +252,10 @@ namespace whiteice
 	
 	  // linear search finds xn = x + alpha*d
 	  // so that U(xn) is minimized
-	  linesearch(xn, x, d); 
+	  if(linesearch(xn, x, d) == false){
+	    solution_converged = true;
+	    break; // we stop computation as we cannot find better solution
+	  }
 	  
 	  y = U(xn);
 
@@ -296,8 +321,8 @@ namespace whiteice
     
     template class BFGS< float >;
     template class BFGS< double >;
-    template class BFGS< atlas_real<float> >;
-    template class BFGS< atlas_real<double> >;    
+    template class BFGS< blas_real<float> >;
+    template class BFGS< blas_real<double> >;    
     
   };
 };
@@ -311,7 +336,7 @@ extern "C" {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
     
     if(optimizer_ptr)
-      ((whiteice::math::BFGS< whiteice::math::atlas_real<float> >*)optimizer_ptr)->__optimizerloop();
+      ((whiteice::math::BFGS< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
     
     pthread_exit(0);
 

@@ -78,8 +78,8 @@ void test_matrix_rotations()
     
     // basic functionality test
     {
-      matrix< atlas_real<float> > A, B;
-      vertex< atlas_real<float> > x, y, z;
+      matrix< blas_real<float> > A, B;
+      vertex< blas_real<float> > x, y, z;
       
       A.resize(4,4);
       B.resize(4,4);
@@ -187,8 +187,8 @@ void test_matrix_rotations()
     
     // basic functionality test
     {
-      matrix< atlas_real<float> > A, B;
-      vertex< atlas_real<float> > x, y, z;
+      matrix< blas_real<float> > A, B;
+      vertex< blas_real<float> > x, y, z;
       
       A.resize(4,4);
       B.resize(4,4);
@@ -255,8 +255,8 @@ void test_matrix_rotations()
     /////////////////////////////////////////////////////////
     // qr step with implicit wilkinson shift algorithm test
     
-    matrix< atlas_real<float> > A, I;
-    vertex< atlas_real<float> > x, y, z;
+    matrix< blas_real<float> > A, I;
+    vertex< blas_real<float> > x, y, z;
     
     std::cout << "Implicit wilkinson shift test" << std::endl;
     
@@ -822,7 +822,7 @@ void test_basic_linear()
     unsigned int k = 3 + (rand() % 30); // random matrix size
     unsigned int l = 3 + (rand() % 30);
     
-    matrix< whiteice::math::atlas_complex<double> > A,B,C,X;
+    matrix< whiteice::math::blas_complex<double> > A,B,C,X;
     A.resize(k,k);
     B.resize(l,l);
     C.resize(k,l);
@@ -830,17 +830,17 @@ void test_basic_linear()
  
     for(unsigned int j=0;j<A.ysize();j++)
       for(unsigned int i=0;i<A.xsize();i++)
-	A(j,i) = whiteice::math::atlas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
+	A(j,i) = whiteice::math::blas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
 							((float)rand()/((float)RAND_MAX) - 0.5) );
     
     for(unsigned int j=0;j<B.ysize();j++)
       for(unsigned int i=0;i<B.xsize();i++)
-	B(j,i) = whiteice::math::atlas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
+	B(j,i) = whiteice::math::blas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
 							((float)rand()/((float)RAND_MAX) - 0.5) );
 
     for(unsigned int j=0;j<X.ysize();j++)
       for(unsigned int i=0;i<X.xsize();i++)
-	X(j,i) = whiteice::math::atlas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
+	X(j,i) = whiteice::math::blas_complex<double>( ((float)rand()/((float)RAND_MAX) - 0.5),
 							((float)rand()/((float)RAND_MAX) - 0.5) );
     
     C = A*X - X*B;
@@ -869,7 +869,7 @@ void test_eigenproblem_tests()
   std::cout << "TESTS FOR EIGENVALUE PROBLEM ALGORITHMS" << std::endl;
   
   try{
-    matrix< atlas_real<float> > A, R, Q;
+    matrix< blas_real<float> > A, R, Q;
     bool ok = true;
 
     A.resize(10,10);
@@ -889,7 +889,7 @@ void test_eigenproblem_tests()
       
       R -= A;
       
-      atlas_real<float> error = 0.0f;
+      blas_real<float> error = 0.0f;
       
       for(unsigned int index=0;index<A.xsize()*A.ysize();index++){
 	error += whiteice::math::abs(R[index]);
@@ -938,7 +938,7 @@ void test_eigenproblem_tests()
   
   // hessenberg reduction
   try{
-    matrix< atlas_real<double> > A,Q, AA, QQ;
+    matrix< blas_real<double> > A,Q, AA, QQ;
     A.resize(4,4); Q.resize(4,4);
     
     A(0,0) =  1; A(0,1) = -1; A(0,2) =  0; A(0,3) =  0;
@@ -991,7 +991,7 @@ void test_eigenproblem_tests()
     std::cout << "SYMMETRIC EIGENVALUE SOLVER TESTS" << std::endl;
     
     bool ok = true;
-    matrix< atlas_real<double> > A, X, D;
+    matrix< blas_real<double> > A, X, D;
     A.resize(4,4);        
     
     A(0,0) =  22.000; A(0,1) =  38.000; A(0,2) = -2.0000; A(0,3) =  46.000;
@@ -1015,7 +1015,7 @@ void test_eigenproblem_tests()
       
       // this isn't that easy because EVD isn't unique
       
-      matrix< atlas_real<double> > CD, CX;
+      matrix< blas_real<double> > CD, CX;
       CD.resize(4,4); CX.resize(4,4);
       
       CD(0,0)  =  12.6467; CD(0,1)  =  0.0000; CD(0,2)  =  0.0000; CD(0,3)  =  0.0000;
@@ -1038,7 +1038,7 @@ void test_eigenproblem_tests()
       CX = CX * X;
       
       
-      atlas_real<double> error = 0.0;
+      blas_real<double> error = 0.0;
       
       for(unsigned int j=0;j<CX.ysize();j++){
 	for(unsigned int i=0;i<CX.xsize();i++){
@@ -1097,7 +1097,7 @@ void test_eigenproblem_tests()
       }
       else{ // checks for correctness
 	
-	matrix< atlas_real<double> > C;
+	matrix< blas_real<double> > C;
 	
 	C = X*D;
 	X.transpose();
@@ -1105,7 +1105,7 @@ void test_eigenproblem_tests()
 	
 	C -= A;
 	
-	atlas_real<double> error = 0.0;
+	blas_real<double> error = 0.0;
 	
 	for(unsigned int j=0;j<C.ysize();j++)
 	  for(unsigned int i=0;i<C.xsize();i++)
@@ -1154,8 +1154,8 @@ void test_eigenproblem_tests()
   
   // PCA calculation test
   try{
-    matrix< atlas_real<float> > R, V;
-    std::vector< vertex< atlas_real<float> > > list;
+    matrix< blas_real<float> > R, V;
+    std::vector< vertex< blas_real<float> > > list;
     unsigned int DIM = 5, SIZE = 1000;
     list.resize(SIZE);
     R.resize(DIM,DIM);
@@ -1208,9 +1208,9 @@ void test_eigenproblem_tests()
     std::cout << "SVD CALCULATION TESTS" << std::endl;
     bool ok = true;
     
-    matrix< atlas_real<float> > A, B;
-    matrix< atlas_real<float> > AS, AU, AV, BS, BU, BV;
-    matrix< atlas_real<float> > T;
+    matrix< blas_real<float> > A, B;
+    matrix< blas_real<float> > AS, AU, AV, BS, BU, BV;
+    matrix< blas_real<float> > T;
     
     A.resize(3,5);
     
@@ -1282,7 +1282,7 @@ void test_ica()
     std::cout << "NON-ITERATIVE ICA TEST" << std::endl;
     
     const unsigned int NUM = 5000;
-    matrix< atlas_real<float> > SXDATA, SYDATA, XDATA, YDATA;
+    matrix< blas_real<float> > SXDATA, SYDATA, XDATA, YDATA;
     SXDATA.resize(NUM, 3);
     SYDATA.resize(NUM, 3);
     XDATA.resize(NUM, 3);
@@ -1303,7 +1303,7 @@ void test_ica()
     
     // removes mean and non unit variance from x data
     {
-      vertex< atlas_real<float> > mean(3);
+      vertex< blas_real<float> > mean(3);
       float scaling = (1.0f/((float)NUM));
       
       for(unsigned int i=0;i<NUM;i++){
@@ -1318,7 +1318,7 @@ void test_ica()
 	SXDATA(i,2) -= mean[2];
       }
       
-      vertex< atlas_real<float> > var(3);
+      vertex< blas_real<float> > var(3);
       
       for(unsigned int i=0;i<NUM;i++){
 	var[0] += SXDATA(i,0)*SXDATA(i,0);
@@ -1326,9 +1326,9 @@ void test_ica()
 	var[2] += SXDATA(i,2)*SXDATA(i,2);
       }
       
-      var[0] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[0]);
-      var[1] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[1]);
-      var[2] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[2]);
+      var[0] = blas_real<float>(1.0) / whiteice::math::sqrt(var[0]);
+      var[1] = blas_real<float>(1.0) / whiteice::math::sqrt(var[1]);
+      var[2] = blas_real<float>(1.0) / whiteice::math::sqrt(var[2]);
       
       for(unsigned int i=0;i<NUM;i++){
 	SXDATA(i,0) = SXDATA(i,0) * var[0];
@@ -1346,7 +1346,7 @@ void test_ica()
     
     // removes mean and non unit variance
     {
-      vertex< atlas_real<float> > mean(3);
+      vertex< blas_real<float> > mean(3);
       float scaling = (1.0f/((float)NUM));
       
       for(unsigned int i=0;i<NUM;i++){
@@ -1361,7 +1361,7 @@ void test_ica()
 	SYDATA(i,2) -= mean[2];
       }
       
-      vertex< atlas_real<float> > var(3);
+      vertex< blas_real<float> > var(3);
       
       for(unsigned int i=0;i<NUM;i++){
 	var[0] += SYDATA(i,0)*SYDATA(i,0);
@@ -1369,9 +1369,9 @@ void test_ica()
 	var[2] += SYDATA(i,2)*SYDATA(i,2);
       }
       
-      var[0] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[0]);
-      var[1] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[1]);
-      var[2] = atlas_real<float>(1.0) / whiteice::math::sqrt(var[2]);
+      var[0] = blas_real<float>(1.0) / whiteice::math::sqrt(var[0]);
+      var[1] = blas_real<float>(1.0) / whiteice::math::sqrt(var[1]);
+      var[2] = blas_real<float>(1.0) / whiteice::math::sqrt(var[2]);
       
       for(unsigned int i=0;i<NUM;i++){
 	SYDATA(i,0) = SYDATA(i,0) * var[0];
@@ -1381,8 +1381,8 @@ void test_ica()
     }
     
     // linear mixing matrices
-    matrix< atlas_real<float> > AX, AY;
-    matrix< atlas_real<float> > AXt, AYt;
+    matrix< blas_real<float> > AX, AY;
+    matrix< blas_real<float> > AXt, AYt;
     AX.resize(3,3);
     AY.resize(3,3);
     
@@ -1405,7 +1405,7 @@ void test_ica()
     
     // calculates ICA solution for XDATA
     
-    matrix< atlas_real<float> > W;
+    matrix< blas_real<float> > W;
     if(ica(XDATA,W, true) == false){
       std::cout << "ERROR:  ICA failed" << std::endl;
     }

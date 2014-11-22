@@ -44,8 +44,8 @@ namespace whiteice
   
   extern template class threshold<float>;
   extern template class threshold<double>;
-  extern template class threshold< math::atlas_real<float> >;
-  extern template class threshold< math::atlas_real<double> >;
+  extern template class threshold< math::blas_real<float> >;
+  extern template class threshold< math::blas_real<double> >;
   
 }
   

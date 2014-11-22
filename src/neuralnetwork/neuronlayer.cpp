@@ -253,7 +253,7 @@ namespace whiteice
     
     state = b;
     
-    if(typeid(T) == typeid(math::atlas_real<float>)){
+    if(typeid(T) == typeid(math::blas_real<float>)){
       
       cblas_sgemv(CblasRowMajor, CblasNoTrans,
   		  W.ysize(), W.xsize(),             
@@ -261,8 +261,8 @@ namespace whiteice
 		  (float*)(input_data->data), 1,
   		  1.0f, (float*)state.data, 1);
     }
-    else if(typeid(T) == typeid(math::atlas_complex<float>)){
-      math::atlas_complex<float> a; a = 1.0f;
+    else if(typeid(T) == typeid(math::blas_complex<float>)){
+      math::blas_complex<float> a; a = 1.0f;
       
       
       cblas_cgemv(CblasRowMajor, CblasNoTrans,
@@ -271,7 +271,7 @@ namespace whiteice
 		  (float*)(input_data->data), 1,
   		  (float*)(&a), (float*)state.data, 1);
     }
-    else if(typeid(T) == typeid(math::atlas_real<double>)){
+    else if(typeid(T) == typeid(math::blas_real<double>)){
       
       cblas_dgemv(CblasRowMajor, CblasNoTrans,
   		  W.ysize(), W.xsize(),
@@ -279,8 +279,8 @@ namespace whiteice
 		  (double*)(input_data->data), 1,
   		  1.0, (double*)state.data, 1);
     }
-    else if(typeid(T) == typeid(math::atlas_complex<double>)){
-      math::atlas_complex<double> a; a = 1.0;
+    else if(typeid(T) == typeid(math::blas_complex<double>)){
+      math::blas_complex<double> a; a = 1.0;
       
       cblas_zgemv(CblasRowMajor, CblasNoTrans,
   		  W.ysize(), W.xsize(),
@@ -354,8 +354,8 @@ namespace whiteice
   
   template class neuronlayer<float>;
   template class neuronlayer<double>;
-  template class neuronlayer< math::atlas_real<float> >;
-  template class neuronlayer< math::atlas_real<double> >;
+  template class neuronlayer< math::blas_real<float> >;
+  template class neuronlayer< math::blas_real<double> >;
 
 }
   

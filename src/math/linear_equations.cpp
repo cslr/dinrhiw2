@@ -10,7 +10,7 @@
 #include "linear_equations.h"
 #include "matrix.h"
 #include "vertex.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 namespace whiteice
@@ -20,15 +20,15 @@ namespace whiteice
     
     // explicit template instantations
     
-    template bool linsolve< atlas_real<float> >
-    (matrix< atlas_real<float> >& A, 
-     vertex< atlas_real<float> >& x, 
-     const vertex< atlas_real<float> >& b) throw();
+    template bool linsolve< blas_real<float> >
+    (matrix< blas_real<float> >& A, 
+     vertex< blas_real<float> >& x, 
+     const vertex< blas_real<float> >& b) throw();
     
-    template bool linsolve< atlas_real<double> >
-    (matrix< atlas_real<double> >& A, 
-     vertex< atlas_real<double> >& x, 
-     const vertex< atlas_real<double> >& b) throw();
+    template bool linsolve< blas_real<double> >
+    (matrix< blas_real<double> >& A, 
+     vertex< blas_real<double> >& x, 
+     const vertex< blas_real<double> >& b) throw();
     
     template bool linsolve<float>
     (matrix<float>& A, 
@@ -42,15 +42,15 @@ namespace whiteice
     
     
     
-    template bool linlsqsolve< atlas_real<float> >
-    (matrix< atlas_real<float> >& A, 
-     const vertex< atlas_real<float> >& b, 
-     vertex< atlas_real<float> >& x) throw();
+    template bool linlsqsolve< blas_real<float> >
+    (matrix< blas_real<float> >& A, 
+     const vertex< blas_real<float> >& b, 
+     vertex< blas_real<float> >& x) throw();
     
-    template bool linlsqsolve< atlas_real<double> >
-    (matrix< atlas_real<double> >& A, 
-     const vertex< atlas_real<double> >& b, 
-     vertex< atlas_real<double> >& x) throw();
+    template bool linlsqsolve< blas_real<double> >
+    (matrix< blas_real<double> >& A, 
+     const vertex< blas_real<double> >& b, 
+     vertex< blas_real<double> >& x) throw();
     
     template bool linlsqsolve<float>
     (matrix<float>& A, 
@@ -64,23 +64,23 @@ namespace whiteice
     
     
     
-    template bool cholesky_factorization< atlas_real<float> >
-      (matrix< atlas_real<float> >& A) throw();
-    template bool cholesky_factorization< atlas_real<double> >
-      (matrix< atlas_real<double> >& A) throw();
+    template bool cholesky_factorization< blas_real<float> >
+      (matrix< blas_real<float> >& A) throw();
+    template bool cholesky_factorization< blas_real<double> >
+      (matrix< blas_real<double> >& A) throw();
     template bool cholesky_factorization<float>
       (matrix<float>& A) throw();
     template bool cholesky_factorization<double>
       (matrix<double>& A) throw();    
     
     
-    template bool solvegg< atlas_real<float> >
-    (matrix< atlas_real<float> >& C, 
-     vertex< atlas_real<float> >& x) throw();
+    template bool solvegg< blas_real<float> >
+    (matrix< blas_real<float> >& C, 
+     vertex< blas_real<float> >& x) throw();
     
-    template bool solvegg< atlas_real<double> >
-    (matrix< atlas_real<double> >& C, 
-     vertex< atlas_real<double> >& x) throw();
+    template bool solvegg< blas_real<double> >
+    (matrix< blas_real<double> >& C, 
+     vertex< blas_real<double> >& x) throw();
     
     template bool solvegg<float>
       (matrix<float>& C, vertex<float>& x) throw();
@@ -88,34 +88,34 @@ namespace whiteice
       (matrix<double>& C, vertex<double>& x) throw();
     
     
-    template void solve_sylvester< atlas_real<float> >
-    (const matrix< atlas_real<float> >& A,
-     const matrix< atlas_real<float> >& B,
-     matrix< atlas_real<float> >& C,
+    template void solve_sylvester< blas_real<float> >
+    (const matrix< blas_real<float> >& A,
+     const matrix< blas_real<float> >& B,
+     matrix< blas_real<float> >& C,
      const unsigned int i, const unsigned int j,
      const unsigned int a, const unsigned int k,
      const unsigned int l, const unsigned int b);
     
-    template void solve_sylvester< atlas_real<double> >
-    (const matrix< atlas_real<double> >& A,
-     const matrix< atlas_real<double> >& B,
-     matrix< atlas_real<double> >& C,
+    template void solve_sylvester< blas_real<double> >
+    (const matrix< blas_real<double> >& A,
+     const matrix< blas_real<double> >& B,
+     matrix< blas_real<double> >& C,
      const unsigned int i, const unsigned int j,
      const unsigned int a, const unsigned int k,
      const unsigned int l, const unsigned int b);
     
-    template void solve_sylvester< atlas_complex<float> >
-    (const matrix< atlas_complex<float> >& A,
-     const matrix< atlas_complex<float> >& B,
-     matrix< atlas_complex<float> >& C,
+    template void solve_sylvester< blas_complex<float> >
+    (const matrix< blas_complex<float> >& A,
+     const matrix< blas_complex<float> >& B,
+     matrix< blas_complex<float> >& C,
      const unsigned int i, const unsigned int j,
      const unsigned int a, const unsigned int k,
      const unsigned int l, const unsigned int b);
     
-    template void solve_sylvester< atlas_complex<double> >
-    (const matrix< atlas_complex<double> >& A,
-     const matrix< atlas_complex<double> >& B,
-     matrix< atlas_complex<double> >& C,
+    template void solve_sylvester< blas_complex<double> >
+    (const matrix< blas_complex<double> >& A,
+     const matrix< blas_complex<double> >& B,
+     matrix< blas_complex<double> >& C,
      const unsigned int i, const unsigned int j,
      const unsigned int a, const unsigned int k,
      const unsigned int l, const unsigned int b);

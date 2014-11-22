@@ -61,14 +61,16 @@ namespace whiteice
       for(unsigned int i=0;i<Rxx.ysize();i++){
 	if(D(i,i) < 0.0)
 	  D(i,i) = math::abs(D(i,i));
-	if(D(i,i) <= 10e-5)
-	  D(i,i) = 10e-5; // dirty way to handle singular matrixes
-
-	// sets diagonal variances to 0.5
-	math::atlas_real<float> d = D(i,i);
-	math::atlas_real<float> s = 0.5f;
-	
-	D(i,i) =s/sqrt(d);
+	if(D(i,i) <= 10e-6){
+	  D(i,i) = 0.0; // dirty way to handle singular matrixes (just force the data to zero)
+	}
+	else{
+	  // sets diagonal variances to 0.5
+	  math::blas_real<float> d = D(i,i);
+	  math::blas_real<float> s = 0.5f;
+	  
+	  D(i,i) =s/sqrt(d);
+	}
       }
 
       p.W_pca = V * D * V.transpose();

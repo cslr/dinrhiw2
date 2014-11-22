@@ -202,10 +202,10 @@ void test_dataset_ica()
     if(data.createCluster(name, 4) == false)
       throw test_exception("createCluster failed.");
 
-    std::vector<math::atlas_real<float> > t;
+    std::vector<math::blas_real<float> > t;
     t.resize(1000);
 
-    math::matrix< math::atlas_real<float> > A;
+    math::matrix< math::blas_real<float> > A;
     A.resize(4,4);
     for(unsigned int j=0;j<A.ysize();j++)
       for(unsigned int i=0;i<A.xsize();i++)
@@ -214,7 +214,7 @@ void test_dataset_ica()
     for(unsigned int i=0;i<t.size();i++){
       float T = 10.0f*((float)i/((float)t.size()));
       t[i] = T;
-      math::vertex< math::atlas_real<float> > d, x;
+      math::vertex< math::blas_real<float> > d, x;
       d.resize(4);
       d[0] = sin(T);
       d[1] = cos(T)*cos(T)*cos(T);

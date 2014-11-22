@@ -8,7 +8,7 @@
 #include "function.h"
 #include "vertex.h"
 #include "matrix.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "optimized_function.h"
 #include "nnetwork.h"
 #include "dataset.h"
@@ -21,7 +21,7 @@ namespace whiteice
   // function for BFGS optimization (minimization) of squared error
   // of neural network errors (nnetwork)
 
-  template <typename T=math::atlas_real<float> >
+  template <typename T=math::blas_real<float> >
     class optimized_nnetwork_function : public optimized_function<T>
     {
     public:
@@ -76,8 +76,8 @@ namespace whiteice
 {
   extern template class optimized_nnetwork_function< float >;
   extern template class optimized_nnetwork_function< double >;
-  extern template class optimized_nnetwork_function< math::atlas_real<float> >;
-  extern template class optimized_nnetwork_function< math::atlas_real<double> >;
+  extern template class optimized_nnetwork_function< math::blas_real<float> >;
+  extern template class optimized_nnetwork_function< math::blas_real<double> >;
 
 };
 

@@ -391,8 +391,8 @@ namespace whiteice
 {  
   template class HMC_abstract< float >;
   template class HMC_abstract< double >;
-  template class HMC_abstract< math::atlas_real<float> >;
-  template class HMC_abstract< math::atlas_real<double> >;    
+  template class HMC_abstract< math::blas_real<float> >;
+  template class HMC_abstract< math::blas_real<double> >;    
 };
 
 
@@ -402,7 +402,7 @@ extern "C" {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
     
     if(ptr)
-      ((whiteice::HMC_abstract< whiteice::math::atlas_real<float> >*)ptr)->__sampler_loop();
+      ((whiteice::HMC_abstract< whiteice::math::blas_real<float> >*)ptr)->__sampler_loop();
     
     pthread_exit(0);
 

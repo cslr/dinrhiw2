@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "eig.h"
 #include "dataset.h"
@@ -1705,8 +1705,8 @@ namespace whiteice
   //////////////////////////////////////////////////////////////////////
   
   
-  template class dataset< whiteice::math::atlas_real<float> >;
-  template class dataset< whiteice::math::atlas_real<double> >;
+  template class dataset< whiteice::math::blas_real<float> >;
+  template class dataset< whiteice::math::blas_real<double> >;
   template class dataset< float >;
   template class dataset< double >;    
   

@@ -9,7 +9,7 @@
 
 #include "optimized_function.h"
 #include "maximizer.h"
-#include "atlas_primitives.h"
+#include "blas_primitives.h"
 #include "integer.h"
 
 #include "odefunction.h"
@@ -62,7 +62,7 @@ int main(int argc, char** argv)
  * probability distribution
  */
 
-class gaussian_balls : public whiteice::optimized_function< atlas_real<float> >
+class gaussian_balls : public whiteice::optimized_function< blas_real<float> >
 {
 public:
   
@@ -88,15 +88,15 @@ public:
   }
   
   // calculates value of function
-  atlas_real<float> operator() (const whiteice::math::vertex<atlas_real<float> >& x) const {
+  blas_real<float> operator() (const whiteice::math::vertex<blas_real<float> >& x) const {
     return this->calculate(x);
   }
   
   // calculates value
-  atlas_real<float> calculate(const whiteice::math::vertex<atlas_real<float> >& x) const {
+  blas_real<float> calculate(const whiteice::math::vertex<blas_real<float> >& x) const {
     
-    whiteice::math::vertex<atlas_real<float> > r(dim);
-    atlas_real<float> result = 0.0f;    
+    whiteice::math::vertex<blas_real<float> > r(dim);
+    blas_real<float> result = 0.0f;    
     
     for(unsigned int i=0;i<centers.size();i++){
       r = (centers[i] - x)/variance;
@@ -108,7 +108,7 @@ public:
   
   
   // creates copy of object
-  whiteice::function<whiteice::math::vertex<atlas_real<float> >,atlas_real<float> >* clone() const {
+  whiteice::function<whiteice::math::vertex<blas_real<float> >,blas_real<float> >* clone() const {
     gaussian_balls* gb = 
       new gaussian_balls(centers.size(), dim);
     
@@ -122,34 +122,34 @@ public:
     return gb;
   }
   
-  atlas_real<float> goodvalue() const{
+  blas_real<float> goodvalue() const{
     return calculate(centers[0]);
   }
   
 
-  void calculate(const whiteice::math::vertex< whiteice::math::atlas_real<float> >& x, atlas_real<float>& y) const{
+  void calculate(const whiteice::math::vertex< whiteice::math::blas_real<float> >& x, blas_real<float>& y) const{
     y = calculate(x);
     return; }
   
   // dummy functions
   
   bool hasGradient() const throw(){ return false; }
-  whiteice::math::vertex< atlas_real<float> > grad(whiteice::math::vertex< atlas_real<float> >& x) const{ return x; }
-  void grad(whiteice::math::vertex< atlas_real<float> >& x, whiteice::math::vertex< atlas_real<float> >& y) const{ return; }
+  whiteice::math::vertex< blas_real<float> > grad(whiteice::math::vertex< blas_real<float> >& x) const{ return x; }
+  void grad(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::vertex< blas_real<float> >& y) const{ return; }
       
   bool hasHessian() const throw(){ return false; }
-  whiteice::math::matrix< atlas_real<float> > hessian(whiteice::math::vertex< atlas_real<float> >& x) const{ return x.outerproduct(); }
-  void hessian(whiteice::math::vertex< atlas_real<float> >& x, whiteice::math::matrix< atlas_real<float> >& y) const{ return; }
+  whiteice::math::matrix< blas_real<float> > hessian(whiteice::math::vertex< blas_real<float> >& x) const{ return x.outerproduct(); }
+  void hessian(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::matrix< blas_real<float> >& y) const{ return; }
 
 private:
-  std::vector< whiteice::math::vertex<atlas_real<float> > > centers;
+  std::vector< whiteice::math::vertex<blas_real<float> > > centers;
   unsigned int dim;
-  atlas_real<float> variance;
+  blas_real<float> variance;
 };
 
 
 
-class gaussian_halfballs : public whiteice::optimized_function< atlas_real<float> >
+class gaussian_halfballs : public whiteice::optimized_function< blas_real<float> >
 {
 public:
   
@@ -178,15 +178,15 @@ public:
   }
   
   // calculates value of function
-  atlas_real<float> operator() (const whiteice::math::vertex<atlas_real<float> >& x) const {
+  blas_real<float> operator() (const whiteice::math::vertex<blas_real<float> >& x) const {
     return this->calculate(x);
   }
   
   // calculates value
-  atlas_real<float> calculate(const whiteice::math::vertex<atlas_real<float> >& x) const {
+  blas_real<float> calculate(const whiteice::math::vertex<blas_real<float> >& x) const {
     
-    whiteice::math::vertex<atlas_real<float> > r(dim);
-    atlas_real<float> result = 0.0f;    
+    whiteice::math::vertex<blas_real<float> > r(dim);
+    blas_real<float> result = 0.0f;    
     
     for(unsigned int i=0;i<centers.size();i++){
       r = (centers[i] - x)/variance;
@@ -197,7 +197,7 @@ public:
   }
   
   // creates copy of object
-  whiteice::function<whiteice::math::vertex<atlas_real<float> >,atlas_real<float> >* clone() const {
+  whiteice::function<whiteice::math::vertex<blas_real<float> >,blas_real<float> >* clone() const {
     gaussian_halfballs* gb = 
       new gaussian_halfballs(centers.size(), dim);
     
@@ -211,12 +211,12 @@ public:
     return gb;
   }
   
-  atlas_real<float> goodvalue() const{
+  blas_real<float> goodvalue() const{
     return calculate(centers[0]);
   }
   
   
-  void calculate(const whiteice::math::vertex< whiteice::math::atlas_real<float> >& x, atlas_real<float>& y) const{
+  void calculate(const whiteice::math::vertex< whiteice::math::blas_real<float> >& x, blas_real<float>& y) const{
     y = calculate(x);
     return;
   }
@@ -224,18 +224,18 @@ public:
   // dummy functions
   
   bool hasGradient() const throw(){ return false; }
-  whiteice::math::vertex< atlas_real<float> > grad(whiteice::math::vertex< atlas_real<float> >& x) const{ return x; }
-  void grad(whiteice::math::vertex< atlas_real<float> >& x, whiteice::math::vertex< atlas_real<float> >& y) const{ return; }
+  whiteice::math::vertex< blas_real<float> > grad(whiteice::math::vertex< blas_real<float> >& x) const{ return x; }
+  void grad(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::vertex< blas_real<float> >& y) const{ return; }
       
   bool hasHessian() const throw(){ return false; }
-  whiteice::math::matrix< atlas_real<float> > hessian(whiteice::math::vertex< atlas_real<float> >& x) const{ return x.outerproduct(); }
-  void hessian(whiteice::math::vertex< atlas_real<float> >& x, whiteice::math::matrix< atlas_real<float> >& y) const{ return; }
+  whiteice::math::matrix< blas_real<float> > hessian(whiteice::math::vertex< blas_real<float> >& x) const{ return x.outerproduct(); }
+  void hessian(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::matrix< blas_real<float> >& y) const{ return; }
   
 
 private:
-  std::vector< whiteice::math::vertex<atlas_real<float> > > centers;
+  std::vector< whiteice::math::vertex<blas_real<float> > > centers;
   unsigned int dim;
-  atlas_real<float> variance;
+  blas_real<float> variance;
 };
 
 
@@ -245,11 +245,11 @@ void test_optimization()
   try{
     std::cout << "OPTIMIZATION TESTS" << std::endl;
     
-    whiteice::math::StochasticOptimizer<atlas_real<float> >* so;
+    whiteice::math::StochasticOptimizer<blas_real<float> >* so;
     
-    // so = new whiteice::math::IHRSearch<atlas_real<float> >();
-    so = new whiteice::math::GradientDescent<atlas_real<float> >();
-    whiteice::optimized_function< atlas_real<float> >* of;
+    // so = new whiteice::math::IHRSearch<blas_real<float> >();
+    so = new whiteice::math::GradientDescent<blas_real<float> >();
+    whiteice::optimized_function< blas_real<float> >* of;
     
     // 10 balls in 1000 dimensions
     // of = new gaussian_balls(10, 1000);
@@ -266,7 +266,7 @@ void test_optimization()
     so->optimize(of, 10.0f);
     
     while(1){
-      whiteice::math::vertex<atlas_real<float> > v;
+      whiteice::math::vertex<blas_real<float> > v;
       
       std::cout << "BEST SOLUTION: "
 		<< so->getSolution(v)
@@ -318,15 +318,15 @@ void test_permfact()
 
 
 
-class odeproblem1 : public odefunction< atlas_real<double> >
+class odeproblem1 : public odefunction< blas_real<double> >
 {
 public:
   odeproblem1(){ }
   ~odeproblem1(){ }
   
   // calculates value
-  whiteice::math::vertex< atlas_real<double> > calculate
-  (const odeparam< atlas_real<double> >& x) const PURE_FUNCTION {
+  whiteice::math::vertex< blas_real<double> > calculate
+  (const odeparam< blas_real<double> >& x) const PURE_FUNCTION {
     // simple problem
     // 
     // x'(t) = v
@@ -341,9 +341,9 @@ public:
     // z'(t) = A*z(t), where z = [x v]
     // A = [0 1; -k 0]
     
-    atlas_real<double> k = 2.0;
+    blas_real<double> k = 2.0;
     
-    whiteice::math::vertex< atlas_real<double> > dz(2);
+    whiteice::math::vertex< blas_real<double> > dz(2);
     dz[0] = x.y[1];
     dz[1] = -k*x.y[0];
     
@@ -356,19 +356,19 @@ public:
   }
   
   // calculates value of function
-  whiteice::math::vertex< atlas_real<double> > operator() (const odeparam< atlas_real<double> >& x) const PURE_FUNCTION {
+  whiteice::math::vertex< blas_real<double> > operator() (const odeparam< blas_real<double> >& x) const PURE_FUNCTION {
     return calculate(x);
   }
   
   // calculates value 
   // (optimized version, this is faster because output value isn't copied)
-  void calculate(const odeparam< atlas_real<double> >& x,
-		 whiteice::math::vertex< atlas_real<double> >& y) const {
+  void calculate(const odeparam< blas_real<double> >& x,
+		 whiteice::math::vertex< blas_real<double> >& y) const {
     y = calculate(x);
   }
   
   // creates copy of object
-  whiteice::function< odeparam< atlas_real<double> >, whiteice::math::vertex< atlas_real<double> > >* clone() const {
+  whiteice::function< odeparam< blas_real<double> >, whiteice::math::vertex< blas_real<double> > >* clone() const {
     return new odeproblem1();
   }
   
@@ -376,15 +376,15 @@ private:
   
 };
 
-class odeproblem2 : public odefunction< atlas_real<double> >
+class odeproblem2 : public odefunction< blas_real<double> >
 {
 public:
   odeproblem2(){ }
   ~odeproblem2(){ }
   
   // calculates value
-  whiteice::math::vertex< atlas_real<double> > calculate
-  (const odeparam< atlas_real<double> >& x) const PURE_FUNCTION {
+  whiteice::math::vertex< blas_real<double> > calculate
+  (const odeparam< blas_real<double> >& x) const PURE_FUNCTION {
     // harder problem which 
     // requires adaptive step-length
     // velocity increases as a function of time so that
@@ -403,9 +403,9 @@ public:
     // z'(t) = A(t)*z(t), where z = [x v]
     // A(t) = [0 1; -4*k*t^2 1/t]
     
-    atlas_real<double> k4 = 8.0; // k = 2.0
+    blas_real<double> k4 = 8.0; // k = 2.0
     
-    whiteice::math::vertex< atlas_real<double> > dz(2);
+    whiteice::math::vertex< blas_real<double> > dz(2);
     dz[0] = x.y[1];
     dz[1] = x.y[1]/x.t - k4*x.t*x.t*x.y[0];
     
@@ -420,19 +420,19 @@ public:
   }
   
   // calculates value of function
-  whiteice::math::vertex< atlas_real<double> > operator() (const odeparam< atlas_real<double> >& x) const PURE_FUNCTION {
+  whiteice::math::vertex< blas_real<double> > operator() (const odeparam< blas_real<double> >& x) const PURE_FUNCTION {
     return calculate(x);
   }
   
   // calculates value 
   // (optimized version, this is faster because output value isn't copied)
-  void calculate(const odeparam< atlas_real<double> >& x,
-		 whiteice::math::vertex< atlas_real<double> >& y) const {
+  void calculate(const odeparam< blas_real<double> >& x,
+		 whiteice::math::vertex< blas_real<double> >& y) const {
     y = calculate(x);
   }
   
   // creates copy of object
-  whiteice::function< odeparam< atlas_real<double> >, whiteice::math::vertex< atlas_real<double> > >* clone() const {
+  whiteice::function< odeparam< blas_real<double> >, whiteice::math::vertex< blas_real<double> > >* clone() const {
     return new odeproblem2();
   }
   
@@ -449,7 +449,7 @@ void test_rungekutta()
 	      << std::endl;
     
     // tests Runge-Kutta integrator with two test problems
-    RungeKutta< atlas_real<double> > rk;
+    RungeKutta< blas_real<double> > rk;
     
     // simple problem
     // 
@@ -468,11 +468,11 @@ void test_rungekutta()
     odeproblem1 ode1;
     rk.setFunction(&ode1);
     
-    vertex< atlas_real<double> > y0(2);
-    atlas_real<double> k = 2.0;
+    vertex< blas_real<double> > y0(2);
+    blas_real<double> k = 2.0;
     
-    std::vector< vertex< atlas_real<double> > > points;
-    std::vector< atlas_real<double> > times;
+    std::vector< vertex< blas_real<double> > > points;
+    std::vector< blas_real<double> > times;
     y0[0] = 0.0;
     y0[1] = whiteice::math::sqrt(k);
     
@@ -482,11 +482,11 @@ void test_rungekutta()
     
     std::cout << points.size() << " data points." << std::endl;
     
-    atlas_real<double> error = 0.0;
+    blas_real<double> error = 0.0;
     for(unsigned int i=0;i<points.size();i++){
       y0[0] = sin(whiteice::math::sqrt(k)*times[i]);
       
-      error += abs(y0[0] - points[i][0])/atlas_real<double>((double)points.size());
+      error += abs(y0[0] - points[i][0])/blas_real<double>((double)points.size());
     }
     
     std::cout << "average error: " << error << std::endl << std::endl;
@@ -515,7 +515,7 @@ void test_rungekutta()
     points.clear();
     times.clear();
     
-    atlas_real<double> v = 0.01;
+    blas_real<double> v = 0.01;
     
     y0[0] = whiteice::math::sqrt(k)*v*v;
     y0[1] = 2.0*whiteice::math::sqrt(k)*v;
@@ -530,7 +530,7 @@ void test_rungekutta()
     for(unsigned int i=0;i<points.size();i++){
       y0[0] = sin(whiteice::math::sqrt(k)*times[i]*times[i]);
       
-      error += abs(y0[0] - points[i][0])/atlas_real<double>((double)points.size());
+      error += abs(y0[0] - points[i][0])/blas_real<double>((double)points.size());
     }
     
     std::cout << "average error: " << error << std::endl << std::endl;

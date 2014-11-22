@@ -114,8 +114,8 @@ namespace whiteice
   
   template class negative_function< float >;
   template class negative_function< double >;  
-  template class negative_function< math::atlas_real<float> >;
-  template class negative_function< math::atlas_real<double> >;
+  template class negative_function< math::blas_real<float> >;
+  template class negative_function< math::blas_real<double> >;
   
 }
 

@@ -1,7 +1,7 @@
 
 #include "KMeans.h"
 #include "conffile.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "blade_math.h"
 
 #include <stdio.h>
@@ -710,8 +710,8 @@ namespace whiteice
   
   template class KMeans< float >;  
   template class KMeans< double >;  
-  template class KMeans< math::atlas_real<float> >;
-  template class KMeans< math::atlas_real<double> >;
+  template class KMeans< math::blas_real<float> >;
+  template class KMeans< math::blas_real<double> >;
   
 }
   

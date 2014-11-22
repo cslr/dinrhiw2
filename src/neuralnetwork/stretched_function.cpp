@@ -19,8 +19,8 @@ namespace whiteice
   
   template class stretched_function<float>;
   template class stretched_function<double>;
-  template class stretched_function< math::atlas_real<float> >;
-  template class stretched_function< math::atlas_real<double> >;
+  template class stretched_function< math::blas_real<float> >;
+  template class stretched_function< math::blas_real<double> >;
   
   
   

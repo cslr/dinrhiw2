@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <exception>
 #include "matrix.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "activation_function.h"
 #include "compressable.h"
 
@@ -26,7 +26,7 @@ namespace whiteice
   
   
   
-  template <typename T=math::atlas_real<float> >
+  template <typename T=math::blas_real<float> >
     class neuronlayer : public compressable
   {
     public:
@@ -105,8 +105,8 @@ namespace whiteice
   
   extern template class neuronlayer<float>;
   extern template class neuronlayer<double>;
-  extern template class neuronlayer< math::atlas_real<float> >;
-  extern template class neuronlayer< math::atlas_real<double> >;
+  extern template class neuronlayer< math::blas_real<float> >;
+  extern template class neuronlayer< math::blas_real<double> >;
     
 }
 

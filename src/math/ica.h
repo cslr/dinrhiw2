@@ -28,20 +28,20 @@ namespace whiteice
     // non-converged ICs should be checked for gassianity and gaussian ones should
     // grouped and PCAed so that the gaussian subspace is also solved as well as possible
     
-    extern template bool ica< atlas_real<float> >
-      (const matrix< atlas_real<float> >& D, matrix< atlas_real<float> >& W, bool verbose) throw();
-    extern template bool ica< atlas_real<double> >
-      (const matrix< atlas_real<double> >& D, matrix< atlas_real<double> >& W, bool verbose) throw();
+    extern template bool ica< blas_real<float> >
+      (const matrix< blas_real<float> >& D, matrix< blas_real<float> >& W, bool verbose) throw();
+    extern template bool ica< blas_real<double> >
+      (const matrix< blas_real<double> >& D, matrix< blas_real<double> >& W, bool verbose) throw();
     extern template bool ica< float >
       (const matrix<float>& D, matrix<float>& W, bool verbose) throw();
     extern template bool ica< double >
       (const matrix<double>& D, matrix<double>& W, bool verbose) throw();
 
     
-    extern template bool ica< atlas_real<float> >
-      (const std::vector< math::vertex< atlas_real<float> > >& data, matrix< atlas_real<float> >& W, bool verbose) throw();
-    extern template bool ica< atlas_real<double> >
-      (const std::vector< math::vertex< atlas_real<double> > >& data, matrix< atlas_real<double> >& W, bool verbose) throw();
+    extern template bool ica< blas_real<float> >
+      (const std::vector< math::vertex< blas_real<float> > >& data, matrix< blas_real<float> >& W, bool verbose) throw();
+    extern template bool ica< blas_real<double> >
+      (const std::vector< math::vertex< blas_real<double> > >& data, matrix< blas_real<double> >& W, bool verbose) throw();
     extern template bool ica< float >
       (const std::vector< math::vertex<float> >& data, matrix<float>& W, bool verbose) throw();
     extern template bool ica< double >

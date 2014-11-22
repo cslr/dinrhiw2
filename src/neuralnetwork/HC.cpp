@@ -217,6 +217,6 @@ namespace whiteice
   ////////////////////////////////////////////////////////////
   // explicit template instantations
   
-  template class HC<GDAParams, math::atlas_real<float> >;
+  template class HC<GDAParams, math::blas_real<float> >;
   
 };

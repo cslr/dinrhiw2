@@ -123,8 +123,8 @@ namespace whiteice
   
   template class BFGS_nnetwork< float >;
   template class BFGS_nnetwork< double >;
-  template class BFGS_nnetwork< math::atlas_real<float> >;
-  template class BFGS_nnetwork< math::atlas_real<double> >;
+  template class BFGS_nnetwork< math::blas_real<float> >;
+  template class BFGS_nnetwork< math::blas_real<double> >;
 
   
 };

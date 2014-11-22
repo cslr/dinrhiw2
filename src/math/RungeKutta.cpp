@@ -146,9 +146,9 @@ namespace whiteice
     
     template class RungeKutta< float >;
     template class RungeKutta< double >;
-    template class RungeKutta< atlas_real<float> >;
-    template class RungeKutta< atlas_real<double> >;
-    //template class RungeKutta< atlas_complex<float> >;
-    //template class RungeKutta< atlas_complex<double> >;
+    template class RungeKutta< blas_real<float> >;
+    template class RungeKutta< blas_real<double> >;
+    //template class RungeKutta< blas_complex<float> >;
+    //template class RungeKutta< blas_complex<double> >;
   };
 };

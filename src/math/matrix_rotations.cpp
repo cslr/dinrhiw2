@@ -3,7 +3,7 @@
 #include <exception>
 
 #include "matrix_rotations.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "matrix.h"
 
@@ -16,14 +16,14 @@ namespace whiteice
     
     /* explicit template instantations */
     
-    template bool rhouseholder_vector< atlas_real<float> >
-      (vertex< atlas_real<float> >& v,
-       const matrix< atlas_real<float> >& M,
+    template bool rhouseholder_vector< blas_real<float> >
+      (vertex< blas_real<float> >& v,
+       const matrix< blas_real<float> >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
-    template bool rhouseholder_vector< atlas_real<double> >
-      (vertex< atlas_real<double> >& v,
-       const matrix< atlas_real<double> >& M,
+    template bool rhouseholder_vector< blas_real<double> >
+      (vertex< blas_real<double> >& v,
+       const matrix< blas_real<double> >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
     template bool rhouseholder_vector< float >
@@ -38,18 +38,18 @@ namespace whiteice
        bool rowdir);
     
     
-    template bool rhouseholder_leftrot< atlas_real<float> > 
-      (matrix< atlas_real<float> >& A,
+    template bool rhouseholder_leftrot< blas_real<float> > 
+      (matrix< blas_real<float> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<float> >& v);
-    template bool rhouseholder_leftrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A,
+       vertex< blas_real<float> >& v);
+    template bool rhouseholder_leftrot< blas_real<double> >
+      (matrix< blas_real<double> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<double> >& v);
+       vertex< blas_real<double> >& v);
     template bool rhouseholder_leftrot< float > 
       (matrix< float >& A,
        const unsigned int i,
@@ -64,18 +64,18 @@ namespace whiteice
        vertex< double >& v);
     
     
-    template bool rhouseholder_rightrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A,
+    template bool rhouseholder_rightrot< blas_real<float> >
+      (matrix< blas_real<float> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<float> >& v);
-    template bool rhouseholder_rightrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A,
+       vertex< blas_real<float> >& v);
+    template bool rhouseholder_rightrot< blas_real<double> >
+      (matrix< blas_real<double> >& A,
        const unsigned int i,
        const unsigned int M,
        const unsigned int k,
-       vertex< atlas_real<double> >& v);
+       vertex< blas_real<double> >& v);
     template bool rhouseholder_rightrot< float >
       (matrix< float >& A,
        const unsigned int i,
@@ -91,10 +91,10 @@ namespace whiteice
     
     
     
-    template void rgivens< atlas_real<float> >
-      (const atlas_real<float>& a, const atlas_real<float>& b, vertex< atlas_real<float> >& p);
-    template void rgivens< atlas_real<double> >
-      (const atlas_real<double>& a, const atlas_real<double>& b, vertex< atlas_real<double> >& p);
+    template void rgivens< blas_real<float> >
+      (const blas_real<float>& a, const blas_real<float>& b, vertex< blas_real<float> >& p);
+    template void rgivens< blas_real<double> >
+      (const blas_real<double>& a, const blas_real<double>& b, vertex< blas_real<double> >& p);
     template void rgivens< float >
       (const float& a, const float& b, vertex< float >& p);
     template void rgivens< double >
@@ -102,11 +102,11 @@ namespace whiteice
     
     
     
-    template void rgivens_rightrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, const vertex< atlas_real<float> >& p,
+    template void rgivens_rightrot< blas_real<float> >
+      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
-    template void rgivens_rightrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, const vertex< atlas_real<double> >& p,
+    template void rgivens_rightrot< blas_real<double> >
+      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
     template void rgivens_rightrot< float >
       (matrix< float >& A, const vertex< float >& p,
@@ -116,11 +116,11 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);    
     
     
-    template void rgivens_leftrot< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, const vertex< atlas_real<float> >& p,
+    template void rgivens_leftrot< blas_real<float> >
+      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
-    template void rgivens_leftrot< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, const vertex< atlas_real<double> >& p,
+    template void rgivens_leftrot< blas_real<double> >
+      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
     template void rgivens_leftrot< float >
       (matrix< float >& A, const vertex< float >& p,
@@ -202,7 +202,7 @@ namespace whiteice
 	  return false;
 	
 	
-	if(typeid(T) == typeid(atlas_real<float>)){
+	if(typeid(T) == typeid(blas_real<float>)){
 	  // w = beta * A' * v
 	  cblas_sgemv(CblasRowMajor, CblasTrans, v.size(), M,
 		      *((float*)&beta), (float*)&(A.data[k*A.numCols + i]), A.xsize(),
@@ -213,7 +213,7 @@ namespace whiteice
 		     1.0f, (float*)v.data, 1, (float*)w.data, 1,
 		     (float*)&(A.data[k*A.numCols + i]), A.xsize());
 	}
-	else if(typeid(T) == typeid(atlas_real<double>)){
+	else if(typeid(T) == typeid(blas_real<double>)){
 	  // w = beta * A' * v
 	  cblas_dgemv(CblasRowMajor, CblasTrans, v.size(), M,
 		      *((double*)&beta), (double*)&(A.data[k*A.numCols + i]), A.xsize(),
@@ -278,7 +278,7 @@ namespace whiteice
 	  return false;
 	
 	
-	if(typeid(T) == typeid(atlas_real<float>)){
+	if(typeid(T) == typeid(blas_real<float>)){
 	  // w = beta * A * v
 	  cblas_sgemv(CblasRowMajor, CblasNoTrans, M, v.size(),
 		      *((float*)&beta), (float*)&(A.data[i*A.numCols + k]), A.xsize(),
@@ -289,7 +289,7 @@ namespace whiteice
 		     1.0f, (float*)w.data, 1, (float*)v.data, 1,
 		     (float*)&(A.data[i*A.numCols + k]), A.xsize());
 	}
-	else if(typeid(T) == typeid(atlas_real<double>)){
+	else if(typeid(T) == typeid(blas_real<double>)){
 	  // w = beta * A * v
 	  cblas_dgemv(CblasRowMajor, CblasNoTrans, M, v.size(),
 		      *((double*)&beta), (double*)&(A.data[i*A.numCols + k]), A.xsize(),

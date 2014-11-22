@@ -31,11 +31,11 @@ void print_usage();
 
 bool importdata(const std::string& filename, 
 		unsigned int cluster,
-		whiteice::dataset< math::atlas_real<float> >* data);
+		whiteice::dataset< math::blas_real<float> >* data);
 
 bool exportdata(const std::string& filename,
 		unsigned int cluster,
-		whiteice::dataset< math::atlas_real<float> >* data);
+		whiteice::dataset< math::blas_real<float> >* data);
 
 
 
@@ -54,8 +54,8 @@ int main(int argc, char** argv)
     
     // implementation of commands
     
-    whiteice::dataset< math::atlas_real<float> >* data =
-      new whiteice::dataset< math::atlas_real<float> >();
+    whiteice::dataset< math::blas_real<float> >* data =
+      new whiteice::dataset< math::blas_real<float> >();
     
 
     if(action != "create" || options.size() != 0){
@@ -76,19 +76,19 @@ int main(int argc, char** argv)
 		  << data->dimension(i) << " dimensions, "
 		  << data->size(i) << " points." << std::endl;
 	
-	std::vector<whiteice::dataset< math::atlas_real<float> >::data_normalization> norms;
+	std::vector<whiteice::dataset< math::blas_real<float> >::data_normalization> norms;
 	if(data->getPreprocessings(i, norms)){
 	  std::cout << "Cluster " << i << " \"" << data->getName(i) << "\" : ";
 	  
 	  for(unsigned int j=0;j<norms.size();j++){
 	    if(j != 0) std::cout << " , ";
-	    if(norms[j] == whiteice::dataset< math::atlas_real<float> >::dnMeanVarianceNormalization)
+	    if(norms[j] == whiteice::dataset< math::blas_real<float> >::dnMeanVarianceNormalization)
 	      std::cout << "meanvar";
-	    else if(norms[j] == whiteice::dataset< math::atlas_real<float> >::dnSoftMax)
+	    else if(norms[j] == whiteice::dataset< math::blas_real<float> >::dnSoftMax)
 	      std::cout << "outlier";
-	    else if(norms[j] == whiteice::dataset< math::atlas_real<float> >::dnCorrelationRemoval)
+	    else if(norms[j] == whiteice::dataset< math::blas_real<float> >::dnCorrelationRemoval)
 	      std::cout << "pca";
-	    else if(norms[j] == whiteice::dataset< math::atlas_real<float> >::dnLinearICA)
+	    else if(norms[j] == whiteice::dataset< math::blas_real<float> >::dnLinearICA)
 	      std::cout << "ica";
 	    else
 	      std::cout << "<unknown>" << std::endl;
@@ -254,8 +254,8 @@ int main(int argc, char** argv)
       
     }
     else if(action == "add" && options.size() == 2){
-      whiteice::dataset< math::atlas_real<float> >* data2 =
-	new whiteice::dataset< math::atlas_real<float> >();
+      whiteice::dataset< math::blas_real<float> >* data2 =
+	new whiteice::dataset< math::blas_real<float> >();
       
       if(data2->load(datafile2) == false){
 	std::cout << "Cannot load file: " << datafile2 << std::endl;
@@ -447,21 +447,21 @@ int main(int argc, char** argv)
 	}
 	
 	
-	std::vector<dataset< math::atlas_real<float> >::data_normalization> norms;
+	std::vector<dataset< math::blas_real<float> >::data_normalization> norms;
 	
 	for(unsigned int i=1;i<options.size();i++){
 	  if(options[i] == "meanvar"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnMeanVarianceNormalization);
+	    norms.push_back(dataset< math::blas_real<float> >::dnMeanVarianceNormalization);
 	  }
 	  else if(options[i] == "outlier"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnSoftMax);
+	    norms.push_back(dataset< math::blas_real<float> >::dnSoftMax);
 	    
 	  }
 	  else if(options[i] == "pca"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnCorrelationRemoval);
+	    norms.push_back(dataset< math::blas_real<float> >::dnCorrelationRemoval);
 	  }
 	  else if(options[i] == "ica"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnLinearICA);
+	    norms.push_back(dataset< math::blas_real<float> >::dnLinearICA);
 	  }
 	  else{
 	    std::cout << "Unrecognized preprocessing option(s)."
@@ -512,21 +512,21 @@ int main(int argc, char** argv)
 	}
 	
 	
-	std::vector<dataset< math::atlas_real<float> >::data_normalization> norms;
+	std::vector<dataset< math::blas_real<float> >::data_normalization> norms;
 	
 	for(unsigned int i=1;i<options.size();i++){
 	  if(options[i] == "meanvar"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnMeanVarianceNormalization);
+	    norms.push_back(dataset< math::blas_real<float> >::dnMeanVarianceNormalization);
 	  }
 	  else if(options[i] == "outlier"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnSoftMax);
+	    norms.push_back(dataset< math::blas_real<float> >::dnSoftMax);
 	    
 	  }
 	  else if(options[i] == "pca"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnCorrelationRemoval);
+	    norms.push_back(dataset< math::blas_real<float> >::dnCorrelationRemoval);
 	  }
 	  else if(options[i] == "ica"){
-	    norms.push_back(dataset< math::atlas_real<float> >::dnLinearICA);
+	    norms.push_back(dataset< math::blas_real<float> >::dnLinearICA);
 	  }
 	  else{
 	    std::cout << "Unrecognized preprocessing options"
@@ -537,7 +537,7 @@ int main(int argc, char** argv)
 	}
 	
 	// LIST = CURRENT \ NORMS = CURRENT AND (CONJ(NORMS))
-	std::vector<dataset< math::atlas_real<float> >::data_normalization> current, list;
+	std::vector<dataset< math::blas_real<float> >::data_normalization> current, list;
 	if(data->getPreprocessings(cluster, current) == false){
 	  std::cout << "No such cluster or internal error." << std::endl;
 	  delete data;
@@ -717,7 +717,7 @@ void print_usage()
 
 bool importdata(const std::string& filename, 
 		unsigned int cluster,
-		whiteice::dataset< math::atlas_real<float> >* data)
+		whiteice::dataset< math::blas_real<float> >* data)
 {
   if(data == 0) return false;
   
@@ -782,7 +782,7 @@ bool importdata(const std::string& filename,
     
     
     // intepretes buffer as a vector
-    math::vertex< math::atlas_real<float> > line;
+    math::vertex< math::blas_real<float> > line;
     s = buffer;
     unsigned int index = 0;
     
@@ -824,7 +824,7 @@ bool importdata(const std::string& filename,
 
 bool exportdata(const std::string& filename,
 		unsigned int cluster,
-		whiteice::dataset< math::atlas_real<float> >* data)
+		whiteice::dataset< math::blas_real<float> >* data)
 {
   if(data == 0) 
     return false;
@@ -846,7 +846,7 @@ bool exportdata(const std::string& filename,
   const unsigned int N = data->size(cluster);
   
   for(unsigned int i=0;i<N;i++){
-    whiteice::math::vertex< math::atlas_real<float> > v;
+    whiteice::math::vertex< math::blas_real<float> > v;
     v = data->access(cluster, i);
     
     if(v.size() > 0){

@@ -43,6 +43,6 @@ namespace whiteice
 {
   template class ga3_test_function< float >;
   template class ga3_test_function< double >;
-  template class ga3_test_function< math::atlas_real<float> >;
-  template class ga3_test_function< math::atlas_real<double> >;    
+  template class ga3_test_function< math::blas_real<float> >;
+  template class ga3_test_function< math::blas_real<double> >;    
 };

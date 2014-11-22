@@ -2,7 +2,7 @@
 // TODO: implement missing parts (this isn't fully done (afaik) and/or test
 //
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "number.h"
 #include "ownexception.h"
 
@@ -100,15 +100,15 @@ namespace whiteice
     bool convert(double& B, const float&  A) throw();
     bool convert(double& B, const double& A) throw();
     
-    bool convert(float& B, atlas_real<float>& A) throw();
-    bool convert(float& B, atlas_complex<float>& A) throw();
-    bool convert(float& B, atlas_real<double>& A) throw();
-    bool convert(float& B, atlas_complex<double>& A) throw();
+    bool convert(float& B, blas_real<float>& A) throw();
+    bool convert(float& B, blas_complex<float>& A) throw();
+    bool convert(float& B, blas_real<double>& A) throw();
+    bool convert(float& B, blas_complex<double>& A) throw();
     
-    bool convert(double& B, atlas_real<float>& A) throw();
-    bool convert(double& B, atlas_complex<float>& A) throw();
-    bool convert(double& B, atlas_real<double>& A) throw();
-    bool convert(double& B, atlas_complex<double>& A) throw();
+    bool convert(double& B, blas_real<float>& A) throw();
+    bool convert(double& B, blas_complex<float>& A) throw();
+    bool convert(double& B, blas_real<double>& A) throw();
+    bool convert(double& B, blas_complex<double>& A) throw();
     
     
     //////////////////////////////////////////////////////////////////////
@@ -245,7 +245,7 @@ namespace whiteice
       }
     
     
-    // sqrt() for atlas primitives is in "atlas_primitives.h"
+    // sqrt() for atlas primitives is in "blas_primitives.h"
     
     
     
@@ -262,11 +262,11 @@ namespace whiteice
     // unlimited power ...
     realnumber pow(const realnumber& x, const realnumber& y);
     
-    atlas_real<float> pow(atlas_real<float> x,
-			  atlas_real<float> y) PURE_FUNCTION;
+    blas_real<float> pow(blas_real<float> x,
+			  blas_real<float> y) PURE_FUNCTION;
     
-    atlas_real<double> pow(atlas_real<double> x,
-			   atlas_real<double> y) PURE_FUNCTION;
+    blas_real<double> pow(blas_real<double> x,
+			   blas_real<double> y) PURE_FUNCTION;
     
     
     
@@ -303,15 +303,15 @@ namespace whiteice
     }
     
     
-    inline atlas_real<float> pow(atlas_real<float> x,
-				 atlas_real<float> y){
-      return atlas_real<float>( ::powf(x.c[0], y.c[0]) );
+    inline blas_real<float> pow(blas_real<float> x,
+				 blas_real<float> y){
+      return blas_real<float>( ::powf(x.c[0], y.c[0]) );
     }
     
     
-    inline atlas_real<double> pow(atlas_real<double> x,
-				  atlas_real<double> y){
-      return atlas_real<double>( std::pow(x.c[0], y.c[0]) );
+    inline blas_real<double> pow(blas_real<double> x,
+				  blas_real<double> y){
+      return blas_real<double>( std::pow(x.c[0], y.c[0]) );
     }
     
     
@@ -333,10 +333,10 @@ namespace whiteice
       whiteice::math::complex<T> arg(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_real<T> arg(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> arg(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_complex<T> arg(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> arg(const blas_complex<T>& x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -364,12 +364,12 @@ namespace whiteice
     
     
     template <typename T>
-      atlas_real<T> arg(const atlas_real<T>& x){ return T(0.0); }
+      blas_real<T> arg(const blas_real<T>& x){ return T(0.0); }
     
     template <typename T>
-      atlas_complex<T> arg(const atlas_complex<T>& x)
+      blas_complex<T> arg(const blas_complex<T>& x)
       {
-	return atlas_complex<T>(std::arg(std::complex<T>(x.c[0], x.c[1])));
+	return blas_complex<T>(std::arg(std::complex<T>(x.c[0], x.c[1])));
       }
     
 
@@ -393,12 +393,12 @@ namespace whiteice
       exp(const std::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      inline whiteice::math::atlas_real<T> 
-      exp(whiteice::math::atlas_real<T> x) PURE_FUNCTION;
+      inline whiteice::math::blas_real<T> 
+      exp(whiteice::math::blas_real<T> x) PURE_FUNCTION;
     
     template <typename T>
-      inline whiteice::math::atlas_complex<T> 
-      exp(whiteice::math::atlas_complex<T> x) PURE_FUNCTION;
+      inline whiteice::math::blas_complex<T> 
+      exp(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -419,13 +419,13 @@ namespace whiteice
       }
     
     template <typename T>
-      inline whiteice::math::atlas_real<T> exp(whiteice::math::atlas_real<T> x){
-        return whiteice::math::atlas_real<T>(whiteice::math::exp(x.c[0]));
+      inline whiteice::math::blas_real<T> exp(whiteice::math::blas_real<T> x){
+        return whiteice::math::blas_real<T>(whiteice::math::exp(x.c[0]));
       }
     
     template <typename T>
-      inline whiteice::math::atlas_complex<T> exp(whiteice::math::atlas_complex<T> x){
-        return whiteice::math::atlas_complex<T>( whiteice::math::exp( std::complex<T>(x[0], x[1]) ) );
+      inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
+        return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x[0], x[1]) ) );
     }
     
     
@@ -448,12 +448,12 @@ namespace whiteice
       log(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::atlas_real<T> 
-      log(whiteice::math::atlas_real<T> x) PURE_FUNCTION;
+      whiteice::math::blas_real<T> 
+      log(whiteice::math::blas_real<T> x) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::atlas_complex<T> 
-      log(whiteice::math::atlas_complex<T> x) PURE_FUNCTION;
+      whiteice::math::blas_complex<T> 
+      log(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -478,15 +478,15 @@ namespace whiteice
 
     
     template <typename T>
-      inline whiteice::math::atlas_real<T> log(whiteice::math::atlas_real<T> x)
+      inline whiteice::math::blas_real<T> log(whiteice::math::blas_real<T> x)
       {
-	return whiteice::math::atlas_real<T>(whiteice::math::log(x.c[0]));
+	return whiteice::math::blas_real<T>(whiteice::math::log(x.c[0]));
       }
     
     template <typename T>
-      inline whiteice::math::atlas_complex<T> log(whiteice::math::atlas_complex<T> x)
+      inline whiteice::math::blas_complex<T> log(whiteice::math::blas_complex<T> x)
       {
-	return whiteice::math::atlas_complex<T>( whiteice::math::log( std::complex<T>(x[0], x[1]) ) );
+	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x[0], x[1]) ) );
       }
     
     
@@ -495,8 +495,8 @@ namespace whiteice
     
     double lgamma(double x, int* signp);
     float lgamma(float x, int* signp);
-    whiteice::math::atlas_real<float> lgamma(whiteice::math::atlas_real<float> x, int* signp);
-    whiteice::math::atlas_real<double> lgamma(whiteice::math::atlas_real<double> x, int* signp);
+    whiteice::math::blas_real<float> lgamma(whiteice::math::blas_real<float> x, int* signp);
+    whiteice::math::blas_real<double> lgamma(whiteice::math::blas_real<double> x, int* signp);
     
     
     //////////////////////////////////////////////////////////////////////
@@ -523,19 +523,19 @@ namespace whiteice
 #endif
     }
     
-    inline whiteice::math::atlas_real<float> lgamma(whiteice::math::atlas_real<float> x, int* signp){
+    inline whiteice::math::blas_real<float> lgamma(whiteice::math::blas_real<float> x, int* signp){
 #ifdef WINNT
-      return whiteice::math::atlas_real<float>(lgamma(x.c[0], signp));
+      return whiteice::math::blas_real<float>(lgamma(x.c[0], signp));
 #else
-      return whiteice::math::atlas_real<float>(lgammaf_r(x.c[0], signp));
+      return whiteice::math::blas_real<float>(lgammaf_r(x.c[0], signp));
 #endif
     }
     
-    inline whiteice::math::atlas_real<double> lgamma(whiteice::math::atlas_real<double> x, int* signp){
+    inline whiteice::math::blas_real<double> lgamma(whiteice::math::blas_real<double> x, int* signp){
 #ifdef WINNT
-      return whiteice::math::atlas_real<double>(lgamma(x.c[0], signp));
+      return whiteice::math::blas_real<double>(lgamma(x.c[0], signp));
 #else
-      return whiteice::math::atlas_real<double>(lgamma_r(x.c[0], signp));
+      return whiteice::math::blas_real<double>(lgamma_r(x.c[0], signp));
 #endif
     }
     
@@ -558,10 +558,10 @@ namespace whiteice
     
     realnumber sin(const realnumber& x);
     
-    atlas_real<float> sin(const atlas_real<float>& x) PURE_FUNCTION;
-    atlas_real<double> sin(const atlas_real<double>& x) PURE_FUNCTION;
-    atlas_complex<float> sin(const atlas_complex<float>& x) PURE_FUNCTION;
-    atlas_complex<double> sin(const atlas_complex<double>& x) PURE_FUNCTION;
+    blas_real<float> sin(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> sin(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> sin(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> sin(const blas_complex<double>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -578,21 +578,21 @@ namespace whiteice
       return realnumber(0.0);
     }
     
-    inline atlas_real<float> sin(const atlas_real<float>& x){
-      return atlas_real<float>(::sinf(x.c[0]));
+    inline blas_real<float> sin(const blas_real<float>& x){
+      return blas_real<float>(::sinf(x.c[0]));
     }
     
-    inline atlas_real<double> sin(const atlas_real<double>& x){
-      return atlas_real<double>(::sin(x.c[0]));
+    inline blas_real<double> sin(const blas_real<double>& x){
+      return blas_real<double>(::sin(x.c[0]));
     }
     
     
-    inline atlas_complex<float> sin(const atlas_complex<float>& x){
-      return atlas_complex<float>(std::sin<float>(std::complex<float>(x.c[0],x.c[1])));
+    inline blas_complex<float> sin(const blas_complex<float>& x){
+      return blas_complex<float>(std::sin<float>(std::complex<float>(x.c[0],x.c[1])));
     }
     
-    inline atlas_complex<double> sin(const atlas_complex<double>& x){
-      return atlas_complex<double>(std::sin<double>(std::complex<double>(x.c[0],x.c[1])));
+    inline blas_complex<double> sin(const blas_complex<double>& x){
+      return blas_complex<double>(std::sin<double>(std::complex<double>(x.c[0],x.c[1])));
     }
     
     
@@ -609,10 +609,10 @@ namespace whiteice
     
     realnumber cos(const realnumber& x);
     
-    atlas_real<float> cos(const atlas_real<float>& x) PURE_FUNCTION;
-    atlas_real<double> cos(const atlas_real<double>& x) PURE_FUNCTION;
-    atlas_complex<float> cos(const atlas_complex<float>& x) PURE_FUNCTION;
-    atlas_complex<double> cos(const atlas_complex<double>& x) PURE_FUNCTION;
+    blas_real<float> cos(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> cos(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> cos(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> cos(const blas_complex<double>& x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -628,20 +628,20 @@ namespace whiteice
       return realnumber(0.0);
     }
     
-    inline atlas_real<float> cos(const atlas_real<float>& x){
-      return atlas_real<float>(::cosf(x.c[0]));
+    inline blas_real<float> cos(const blas_real<float>& x){
+      return blas_real<float>(::cosf(x.c[0]));
     }
     
-    inline atlas_real<double> cos(const atlas_real<double>& x){
-      return atlas_real<double>(::cos(x.c[0]));
+    inline blas_real<double> cos(const blas_real<double>& x){
+      return blas_real<double>(::cos(x.c[0]));
     }
     
-    inline atlas_complex<float> cos(const atlas_complex<float>& x){
-      return atlas_complex<float>(std::cos<float>(std::complex<float>(x.c[0],x.c[1])));
+    inline blas_complex<float> cos(const blas_complex<float>& x){
+      return blas_complex<float>(std::cos<float>(std::complex<float>(x.c[0],x.c[1])));
     }
     
-    inline atlas_complex<double> cos(const atlas_complex<double>& x){
-      return atlas_complex<double>(std::cos<double>(std::complex<double>(x.c[0],x.c[1])));
+    inline blas_complex<double> cos(const blas_complex<double>& x){
+      return blas_complex<double>(std::cos<double>(std::complex<double>(x.c[0],x.c[1])));
     }
     
     
@@ -656,7 +656,7 @@ namespace whiteice
     realnumber abs(const realnumber& x);
     
     template <typename T>
-      atlas_real<T> abs(atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> abs(blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
       vertex<T> abs(const vertex<T>& x) PURE_FUNCTION;
@@ -699,9 +699,9 @@ namespace whiteice
     
     
     template <typename T>
-      atlas_real<T> abs(atlas_real<T>& x)
+      blas_real<T> abs(blas_real<T>& x)
       {
-	atlas_real<T> y(x);
+	blas_real<T> y(x);
 	y.c[0] = whiteice::math::abs(y.c[0]);
 	
 	return y;
@@ -761,7 +761,7 @@ namespace whiteice
     
     
     // abs() for atlas primitives are in
-    // "atlas_primitives.h"
+    // "blas_primitives.h"
     
     
     //////////////////////////////////////////////////////////////////////
@@ -790,10 +790,10 @@ namespace whiteice
       whiteice::math::complex<T> conj(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_real<T> conj(const atlas_real<T>& a) PURE_FUNCTION;
+      blas_real<T> conj(const blas_real<T>& a) PURE_FUNCTION;
     
     template <typename T>
-      atlas_complex<T> conj(const atlas_complex<T>& a) PURE_FUNCTION;
+      blas_complex<T> conj(const blas_complex<T>& a) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -838,15 +838,15 @@ namespace whiteice
     
     
     template <typename T>
-      atlas_real<T> conj(const atlas_real<T>& a)
+      blas_real<T> conj(const blas_real<T>& a)
       {
 	return a;
       }
     
     template <typename T>
-      atlas_complex<T> conj(const atlas_complex<T>& a)
+      blas_complex<T> conj(const blas_complex<T>& a)
       {
-	atlas_real<T> r;
+	blas_real<T> r;
 	r.c[0] =  a.c[0];
 	r.c[1] = -a.c[1];
 	
@@ -872,10 +872,10 @@ namespace whiteice
       T real(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_real<T> real(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> real(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_complex<T> real(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> real(const blas_complex<T>& x) PURE_FUNCTION;
     
     double imag(double x) PURE_FUNCTION;
     float imag(float x) PURE_FUNCTION;
@@ -891,10 +891,10 @@ namespace whiteice
       T imag(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_real<T> imag(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> imag(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_complex<T> imag(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -920,13 +920,13 @@ namespace whiteice
       }
     
     template <typename T>
-      atlas_real<T> real(const atlas_real<T>& x)
+      blas_real<T> real(const blas_real<T>& x)
       {
 	return x.c[0];
       }    
     
     template <typename T>
-      atlas_complex<T> real(const atlas_complex<T>& x)
+      blas_complex<T> real(const blas_complex<T>& x)
       {
 	return x.c[0];
       }
@@ -956,13 +956,13 @@ namespace whiteice
       }
     
     template <typename T>
-      atlas_real<T> imag(const atlas_real<T>& x)
+      blas_real<T> imag(const blas_real<T>& x)
       {
 	return T(0.0);
       }    
     
     template <typename T>
-      atlas_complex<T> imag(const atlas_complex<T>& x)
+      blas_complex<T> imag(const blas_complex<T>& x)
       {
 	return x.c[1];
       }
@@ -1005,18 +1005,18 @@ namespace whiteice
       whiteice::math::complex<T> trunc(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_real<T> ceil(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> ceil(const blas_real<T>& x) PURE_FUNCTION;
     template <typename T>
-      atlas_real<T> floor(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> floor(const blas_real<T>& x) PURE_FUNCTION;
     template <typename T>
-      atlas_real<T> trunc(const atlas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> trunc(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      atlas_complex<T> ceil(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> ceil(const blas_complex<T>& x) PURE_FUNCTION;
     template <typename T>
-      atlas_complex<T> floor(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> floor(const blas_complex<T>& x) PURE_FUNCTION;
     template <typename T>
-      atlas_complex<T> trunc(const atlas_complex<T>& x) PURE_FUNCTION;
+      blas_complex<T> trunc(const blas_complex<T>& x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -1089,37 +1089,37 @@ namespace whiteice
     
     
     template <typename T>
-    inline atlas_real<T> ceil(const atlas_real<T>& x){
-      return atlas_real<T>(whiteice::math::ceil(x.c[0]));
+    inline blas_real<T> ceil(const blas_real<T>& x){
+      return blas_real<T>(whiteice::math::ceil(x.c[0]));
     }
     
     template <typename T>
-    inline atlas_real<T> floor(const atlas_real<T>& x){
-      return atlas_real<T>(whiteice::math::floor(x.c[0]));
+    inline blas_real<T> floor(const blas_real<T>& x){
+      return blas_real<T>(whiteice::math::floor(x.c[0]));
     }
     
     template <typename T>
-    inline atlas_real<T> trunc(const atlas_real<T>& x){
-      return atlas_real<T>(whiteice::math::trunc(x.c[0]));
+    inline blas_real<T> trunc(const blas_real<T>& x){
+      return blas_real<T>(whiteice::math::trunc(x.c[0]));
     }
     
     
     template <typename T>
-    inline atlas_complex<T> ceil(const atlas_complex<T>& x){
-      return atlas_complex<T>(whiteice::math::ceil(x.c[0]),
+    inline blas_complex<T> ceil(const blas_complex<T>& x){
+      return blas_complex<T>(whiteice::math::ceil(x.c[0]),
 			      whiteice::math::ceil(x.c[1]));
     }
     
     template <typename T>
-    inline atlas_complex<T> floor(const atlas_complex<T>& x){
-      return atlas_complex<T>(whiteice::math::floor(x.c[0]),
+    inline blas_complex<T> floor(const blas_complex<T>& x){
+      return blas_complex<T>(whiteice::math::floor(x.c[0]),
 			      whiteice::math::floor(x.c[1]));
     }
     
     template <typename T>
-    inline atlas_complex<T> trunc(const atlas_complex<T>& x){
-      return atlas_complex<T>(whiteice::math::trunc(x.c[0]),
-			      whiteice::math::trunc(x.c[1]));
+    inline blas_complex<T> trunc(const blas_complex<T>& x){
+      return blas_complex<T>(whiteice::math::trunc(x.c[0]),
+			     whiteice::math::trunc(x.c[1]));
     }
     
     

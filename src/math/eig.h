@@ -12,7 +12,7 @@
 #define eig_h
 
 #include "blade_math.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 namespace whiteice
@@ -95,18 +95,18 @@ namespace whiteice
     
     
     
-    extern template bool eig2x2matrix< atlas_real<float> >
-      (const matrix< atlas_real<float> >& A, vertex< atlas_real<float> >& d, 
-       matrix< atlas_real<float> >& X, bool complex_ok);
-    extern template bool eig2x2matrix< atlas_real<double> >
-      (const matrix< atlas_real<double> >& A, vertex< atlas_real<double> >& d,
-       matrix< atlas_real<double> >& X, bool complex_ok);
-    extern template bool eig2x2matrix< atlas_complex<float> >
-      (const matrix< atlas_complex<float> >& A, vertex< atlas_complex<float> >& d,
-       matrix< atlas_complex<float> >& X, bool complex_ok);
-    extern template bool eig2x2matrix< atlas_complex<double> >
-      (const matrix< atlas_complex<double> >& A, vertex< atlas_complex<double> >& d,
-       matrix< atlas_complex<double> >& X, bool complex_ok);
+    extern template bool eig2x2matrix< blas_real<float> >
+      (const matrix< blas_real<float> >& A, vertex< blas_real<float> >& d, 
+       matrix< blas_real<float> >& X, bool complex_ok);
+    extern template bool eig2x2matrix< blas_real<double> >
+      (const matrix< blas_real<double> >& A, vertex< blas_real<double> >& d,
+       matrix< blas_real<double> >& X, bool complex_ok);
+    extern template bool eig2x2matrix< blas_complex<float> >
+      (const matrix< blas_complex<float> >& A, vertex< blas_complex<float> >& d,
+       matrix< blas_complex<float> >& X, bool complex_ok);
+    extern template bool eig2x2matrix< blas_complex<double> >
+      (const matrix< blas_complex<double> >& A, vertex< blas_complex<double> >& d,
+       matrix< blas_complex<double> >& X, bool complex_ok);
     extern template bool eig2x2matrix<float>
       (const matrix<float>& A, vertex<float>& d, matrix<float>& X, bool complex_ok);
     extern template bool eig2x2matrix<double>
@@ -120,10 +120,10 @@ namespace whiteice
        
     
     
-    extern template bool hessenberg_reduction< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, matrix< atlas_real<float> >& Q);
-    extern template bool hessenberg_reduction< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, matrix< atlas_real<double> >& Q);
+    extern template bool hessenberg_reduction< blas_real<float> >
+      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& Q);
+    extern template bool hessenberg_reduction< blas_real<double> >
+      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& Q);
     extern template bool hessenberg_reduction<float>
       (matrix<float>& A, matrix<float>& Q);
     extern template bool hessenberg_reduction<double>
@@ -131,19 +131,19 @@ namespace whiteice
     
     
     
-    extern template bool qr< atlas_real<float> > (matrix< atlas_real<float> >&  A,
-						  matrix< atlas_real<float> >&  Q);
-    extern template bool qr< atlas_real<double> >(matrix< atlas_real<double> >& A,
-						  matrix< atlas_real<double> >& Q);
+    extern template bool qr< blas_real<float> > (matrix< blas_real<float> >&  A,
+						  matrix< blas_real<float> >&  Q);
+    extern template bool qr< blas_real<double> >(matrix< blas_real<double> >& A,
+						  matrix< blas_real<double> >& Q);
     extern template bool qr<float> (matrix<float>&  A, matrix<float>&  Q);
     extern template bool qr<double>(matrix<double>& A, matrix<double>& Q);
     
     
-    extern template bool implicit_symmetric_qrstep_wilkinson< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, matrix< atlas_real<float> >& X,
+    extern template bool implicit_symmetric_qrstep_wilkinson< blas_real<float> >
+      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& X,
        unsigned int e1, unsigned int N);
-    extern template bool implicit_symmetric_qrstep_wilkinson< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, matrix< atlas_real<double> >& X,
+    extern template bool implicit_symmetric_qrstep_wilkinson< blas_real<double> >
+      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& X,
        unsigned int e1, unsigned int N);
     extern template bool implicit_symmetric_qrstep_wilkinson<float>
       (matrix<float>& A, matrix<float>& X,
@@ -154,20 +154,20 @@ namespace whiteice
     
     
     
-    extern template bool symmetric_eig< atlas_real<float> >
-      (matrix< atlas_real<float> >& A, matrix< atlas_real<float> >& D);
-    extern template bool symmetric_eig< atlas_real<double> >
-      (matrix< atlas_real<double> >& A, matrix< atlas_real<double> >& D);
+    extern template bool symmetric_eig< blas_real<float> >
+      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& D);
+    extern template bool symmetric_eig< blas_real<double> >
+      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D);
     extern template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D);
     extern template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D);
     
     
-    extern template bool svd< atlas_real<float> >
-      (matrix< atlas_real<float> >& A,
-       matrix< atlas_real<float> >& U, matrix< atlas_real<float> >& V);
-    extern template bool svd< atlas_real<double> >
-      (matrix< atlas_real<double> >& A,
-       matrix< atlas_real<double> >& U, matrix< atlas_real<double> >& V);
+    extern template bool svd< blas_real<float> >
+      (matrix< blas_real<float> >& A,
+       matrix< blas_real<float> >& U, matrix< blas_real<float> >& V);
+    extern template bool svd< blas_real<double> >
+      (matrix< blas_real<double> >& A,
+       matrix< blas_real<double> >& U, matrix< blas_real<double> >& V);
     extern template bool svd<float>
       (matrix<float>& A, matrix<float>& U, matrix<float>& V);
     extern template bool svd<double>

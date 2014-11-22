@@ -31,7 +31,7 @@ namespace whiteice
       T s = T(1.0f) / T(data.size());
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){	
+      if(typeid(T) == typeid(blas_real<float>)){	
 	
 	while(i != data.end()){
 	  cblas_sspr(CblasRowMajor, CblasUpper, N, 
@@ -56,7 +56,7 @@ namespace whiteice
 		      (float*)&(R.data[i*N + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*N + i]), N);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	while(i != data.end()){
 	  cblas_chpr(CblasRowMajor, CblasUpper, N,
@@ -81,7 +81,7 @@ namespace whiteice
 		      (float*)&(R.data[i*N + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*N + i]), N);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	while(i != data.end()){
 	  cblas_dspr(CblasRowMajor, CblasUpper, N, 
@@ -106,7 +106,7 @@ namespace whiteice
 		      (double*)&(R.data[i*N + 1 + i]), 1,
 		      (double*)&(R.data[(i+1)*N + i]), N);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	while(i != data.end()){
 	  cblas_zhpr(CblasRowMajor, CblasUpper, N,
@@ -167,7 +167,7 @@ namespace whiteice
       
       T s = T(1.0) / T((double)N);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_ssyrk(CblasRowMajor, CblasUpper, CblasTrans, K, N,
 		    *((float*)&s), (float*)W.data, W.xsize(),
@@ -180,7 +180,7 @@ namespace whiteice
 		      (float*)&(R.data[(i+1)*K + i]), K);
 
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cherk(CblasRowMajor, CblasUpper, CblasTrans, K, N,
 		    *((float*)&s), (float*)W.data, W.xsize(),
@@ -192,7 +192,7 @@ namespace whiteice
 		      (float*)&(R.data[i*K + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*K + i]), K);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dsyrk(CblasRowMajor, CblasUpper, CblasTrans, K, N,
 		    *((double*)&s), (double*)W.data, W.xsize(),
@@ -205,7 +205,7 @@ namespace whiteice
 		      (double*)&(R.data[(i+1)*K + i]), K);
 
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zherk(CblasRowMajor, CblasUpper, CblasTrans, K, N,
 		    *((double*)&s), (double*)W.data, W.xsize(),
@@ -253,7 +253,7 @@ namespace whiteice
       T s = T(1.0f) / T(data.size());
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){	
+      if(typeid(T) == typeid(blas_real<float>)){	
 	
 	while(i != data.end()){
 	  cblas_sspr(CblasRowMajor, CblasUpper, N, 
@@ -277,7 +277,7 @@ namespace whiteice
 	
 	m *= s;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	while(i != data.end()){
 	  cblas_chpr(CblasRowMajor, CblasUpper, N,
@@ -301,7 +301,7 @@ namespace whiteice
 	
 	m *= s;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	while(i != data.end()){
 	  cblas_dspr(CblasRowMajor, CblasUpper, N, 
@@ -325,7 +325,7 @@ namespace whiteice
 	
 	m *= s;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	while(i != data.end()){
 	  cblas_zhpr(CblasRowMajor, CblasUpper, N,
@@ -446,14 +446,14 @@ namespace whiteice
     template bool autocorrelation<float>(matrix<float>& R, const std::vector< vertex<float> >& data);
     template bool autocorrelation<double>(matrix<double>& R, const std::vector< vertex<double> >& data);
     
-    template bool autocorrelation<atlas_real<float> >(matrix<atlas_real<float> >& R,
-						      const std::vector< vertex<atlas_real<float> > >& data);
-    template bool autocorrelation<atlas_real<double> >(matrix<atlas_real<double> >& R,
-						       const std::vector< vertex<atlas_real<double> > >& data);
-    template bool autocorrelation<atlas_complex<float> >(matrix<atlas_complex<float> >& R,
-							 const std::vector< vertex<atlas_complex<float> > >& data);
-    template bool autocorrelation<atlas_complex<double> >(matrix<atlas_complex<double> >& R,
-							  const std::vector< vertex<atlas_complex<double> > >& data);
+    template bool autocorrelation<blas_real<float> >(matrix<blas_real<float> >& R,
+						      const std::vector< vertex<blas_real<float> > >& data);
+    template bool autocorrelation<blas_real<double> >(matrix<blas_real<double> >& R,
+						       const std::vector< vertex<blas_real<double> > >& data);
+    template bool autocorrelation<blas_complex<float> >(matrix<blas_complex<float> >& R,
+							 const std::vector< vertex<blas_complex<float> > >& data);
+    template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
+							  const std::vector< vertex<blas_complex<double> > >& data);
     template bool autocorrelation<complex<float> >(matrix<complex<float> >& R,
 						   const std::vector< vertex<complex<float> > >& data);
     template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
@@ -463,51 +463,51 @@ namespace whiteice
     template bool autocorrelation<float>(matrix<float>& R, const matrix<float>& W);
     template bool autocorrelation<double>(matrix<double>& R, const matrix<double>& W);
     
-    template bool autocorrelation<atlas_real<float> >(matrix<atlas_real<float> >& R,
-						      const matrix<atlas_real<float> >& W);
-    template bool autocorrelation<atlas_real<double> >(matrix<atlas_real<double> >& R,
-						       const matrix<atlas_real<double> >& W);
-    template bool autocorrelation<atlas_complex<float> >(matrix<atlas_complex<float> >& R,
-							 const matrix<atlas_complex<float> >& W);
-    template bool autocorrelation<atlas_complex<double> >(matrix<atlas_complex<double> >& R,
-							  const matrix<atlas_complex<double> >& W);
+    template bool autocorrelation<blas_real<float> >(matrix<blas_real<float> >& R,
+						      const matrix<blas_real<float> >& W);
+    template bool autocorrelation<blas_real<double> >(matrix<blas_real<double> >& R,
+						       const matrix<blas_real<double> >& W);
+    template bool autocorrelation<blas_complex<float> >(matrix<blas_complex<float> >& R,
+							 const matrix<blas_complex<float> >& W);
+    template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
+							  const matrix<blas_complex<double> >& W);
     
     
-    template bool mean_covariance_estimate< atlas_real<float> >
-    (vertex< atlas_real<float> >& m, matrix< atlas_real<float> >& R,
-     const std::vector< vertex< atlas_real<float> > >& data);
+    template bool mean_covariance_estimate< blas_real<float> >
+    (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,
+     const std::vector< vertex< blas_real<float> > >& data);
     
-    template bool mean_covariance_estimate< atlas_real<double> >
-    (vertex< atlas_real<double> >& m, matrix< atlas_real<double> >& R,
-     const std::vector< vertex< atlas_real<double> > >& data);
+    template bool mean_covariance_estimate< blas_real<double> >
+    (vertex< blas_real<double> >& m, matrix< blas_real<double> >& R,
+     const std::vector< vertex< blas_real<double> > >& data);
     
-    template bool mean_covariance_estimate< atlas_complex<float> >
-    (vertex< atlas_complex<float> >& m, matrix< atlas_complex<float> >& R,
-     const std::vector< vertex< atlas_complex<float> > >& data);
+    template bool mean_covariance_estimate< blas_complex<float> >
+    (vertex< blas_complex<float> >& m, matrix< blas_complex<float> >& R,
+     const std::vector< vertex< blas_complex<float> > >& data);
     
-    template bool mean_covariance_estimate< atlas_complex<double> > 
-    (vertex< atlas_complex<double> >& m, matrix< atlas_complex<double> >& R,
-     const std::vector< vertex< atlas_complex<double> > >& data);
+    template bool mean_covariance_estimate< blas_complex<double> > 
+    (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
+     const std::vector< vertex< blas_complex<double> > >& data);
     
     
-    template bool mean_covariance_estimate< atlas_real<float> >
-    (vertex< atlas_real<float> >& m, matrix< atlas_real<float> >& R,
-     const std::vector< vertex< atlas_real<float> > >& data,
+    template bool mean_covariance_estimate< blas_real<float> >
+    (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,
+     const std::vector< vertex< blas_real<float> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
 
-    template bool mean_covariance_estimate< atlas_real<double> >
-    (vertex< atlas_real<double> >& m, matrix< atlas_real<double> >& R,
-     const std::vector< vertex< atlas_real<double> > >& data,
+    template bool mean_covariance_estimate< blas_real<double> >
+    (vertex< blas_real<double> >& m, matrix< blas_real<double> >& R,
+     const std::vector< vertex< blas_real<double> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
     
-    template bool mean_covariance_estimate< atlas_complex<float> >
-    (vertex< atlas_complex<float> >& m, matrix< atlas_complex<float> >& R,
-     const std::vector< vertex< atlas_complex<float> > >& data,
+    template bool mean_covariance_estimate< blas_complex<float> >
+    (vertex< blas_complex<float> >& m, matrix< blas_complex<float> >& R,
+     const std::vector< vertex< blas_complex<float> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
     
-    template bool mean_covariance_estimate< atlas_complex<double> >
-    (vertex< atlas_complex<double> >& m, matrix< atlas_complex<double> >& R,
-     const std::vector< vertex< atlas_complex<double> > >& data,
+    template bool mean_covariance_estimate< blas_complex<double> >
+    (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
+     const std::vector< vertex< blas_complex<double> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
     
 

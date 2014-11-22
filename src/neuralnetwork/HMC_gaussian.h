@@ -15,14 +15,14 @@
 
 #include "vertex.h"
 #include "matrix.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "HMC_abstract.h"
 
 
 namespace whiteice
 {
 
-  template <typename T = math::atlas_real<float> >
+  template <typename T = math::blas_real<float> >
   class HMC_gaussian : public HMC_abstract<T>
   {
     public:
@@ -50,8 +50,8 @@ namespace whiteice
 {
   extern template class HMC_gaussian< float >;
   extern template class HMC_gaussian< double >;
-  extern template class HMC_gaussian< math::atlas_real<float> >;
-  extern template class HMC_gaussian< math::atlas_real<double> >;    
+  extern template class HMC_gaussian< math::blas_real<float> >;
+  extern template class HMC_gaussian< math::blas_real<double> >;    
 };
 
 

@@ -11,8 +11,8 @@ namespace whiteice
 {
   template class gaussian<float>;
   template class gaussian<double>;
-  template class gaussian< math::atlas_real<float> >;
-  template class gaussian< math::atlas_real<double> >;
+  template class gaussian< math::blas_real<float> >;
+  template class gaussian< math::blas_real<double> >;
   
   
   

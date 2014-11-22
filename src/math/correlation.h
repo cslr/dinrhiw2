@@ -6,7 +6,7 @@
 #define math_correlation_h
 
 #include <vector>
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "dynamic_bitset.h"
 
 namespace whiteice
@@ -59,14 +59,14 @@ namespace whiteice
     extern template bool autocorrelation<float>(matrix<float>& R, const std::vector< vertex<float> >& data);
     extern template bool autocorrelation<double>(matrix<double>& R, const std::vector< vertex<double> >& data);
     
-    extern template bool autocorrelation<atlas_real<float> >(matrix<atlas_real<float> >& R,
-							     const std::vector< vertex<atlas_real<float> > >& data);
-    extern template bool autocorrelation<atlas_real<double> >(matrix<atlas_real<double> >& R,
-							      const std::vector< vertex<atlas_real<double> > >& data);
-    extern template bool autocorrelation<atlas_complex<float> >(matrix<atlas_complex<float> >& R,
-								const std::vector< vertex<atlas_complex<float> > >& data);
-    extern template bool autocorrelation<atlas_complex<double> >(matrix<atlas_complex<double> >& R,
-								 const std::vector< vertex<atlas_complex<double> > >& data);
+    extern template bool autocorrelation<blas_real<float> >(matrix<blas_real<float> >& R,
+							     const std::vector< vertex<blas_real<float> > >& data);
+    extern template bool autocorrelation<blas_real<double> >(matrix<blas_real<double> >& R,
+							      const std::vector< vertex<blas_real<double> > >& data);
+    extern template bool autocorrelation<blas_complex<float> >(matrix<blas_complex<float> >& R,
+								const std::vector< vertex<blas_complex<float> > >& data);
+    extern template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
+								 const std::vector< vertex<blas_complex<double> > >& data);
     extern template bool autocorrelation<complex<float> >(matrix<complex<float> >& R,
 							  const std::vector< vertex<complex<float> > >& data);
     extern template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
@@ -76,50 +76,50 @@ namespace whiteice
     extern template bool autocorrelation<float>(matrix<float>& R, const matrix<float>& W);
     extern template bool autocorrelation<double>(matrix<double>& R, const matrix<double>& W);
     
-    extern template bool autocorrelation<atlas_real<float> >(matrix<atlas_real<float> >& R,
-							     const matrix<atlas_real<float> >& W);
-    extern template bool autocorrelation<atlas_real<double> >(matrix<atlas_real<double> >& R,
-							      const matrix<atlas_real<double> >& W);
-    extern template bool autocorrelation<atlas_complex<float> >(matrix<atlas_complex<float> >& R,
-								const matrix<atlas_complex<float> >& W);
-    extern template bool autocorrelation<atlas_complex<double> >(matrix<atlas_complex<double> >& R,
-								 const matrix<atlas_complex<double> >& W);
+    extern template bool autocorrelation<blas_real<float> >(matrix<blas_real<float> >& R,
+							     const matrix<blas_real<float> >& W);
+    extern template bool autocorrelation<blas_real<double> >(matrix<blas_real<double> >& R,
+							      const matrix<blas_real<double> >& W);
+    extern template bool autocorrelation<blas_complex<float> >(matrix<blas_complex<float> >& R,
+								const matrix<blas_complex<float> >& W);
+    extern template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
+								 const matrix<blas_complex<double> >& W);
     
-    extern template bool mean_covariance_estimate< atlas_real<float> >
-      (vertex< atlas_real<float> >& m, matrix< atlas_real<float> >& R,
-       const std::vector< vertex< atlas_real<float> > >& data);
+    extern template bool mean_covariance_estimate< blas_real<float> >
+      (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,
+       const std::vector< vertex< blas_real<float> > >& data);
 
-    extern template bool mean_covariance_estimate< atlas_real<double> >
-      (vertex< atlas_real<double> >& m, matrix< atlas_real<double> >& R,
-       const std::vector< vertex< atlas_real<double> > >& data);
+    extern template bool mean_covariance_estimate< blas_real<double> >
+      (vertex< blas_real<double> >& m, matrix< blas_real<double> >& R,
+       const std::vector< vertex< blas_real<double> > >& data);
     
-    extern template bool mean_covariance_estimate< atlas_complex<float> >
-      (vertex< atlas_complex<float> >& m, matrix< atlas_complex<float> >& R,
-       const std::vector< vertex< atlas_complex<float> > >& data);
+    extern template bool mean_covariance_estimate< blas_complex<float> >
+      (vertex< blas_complex<float> >& m, matrix< blas_complex<float> >& R,
+       const std::vector< vertex< blas_complex<float> > >& data);
     
-    extern template bool mean_covariance_estimate< atlas_complex<double> > 
-      (vertex< atlas_complex<double> >& m, matrix< atlas_complex<double> >& R,
-       const std::vector< vertex< atlas_complex<double> > >& data);
+    extern template bool mean_covariance_estimate< blas_complex<double> > 
+      (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
+       const std::vector< vertex< blas_complex<double> > >& data);
     
     
-    extern template bool mean_covariance_estimate< atlas_real<float> >
-      (vertex< atlas_real<float> >& m, matrix< atlas_real<float> >& R,
-       const std::vector< vertex< atlas_real<float> > >& data,
+    extern template bool mean_covariance_estimate< blas_real<float> >
+      (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,
+       const std::vector< vertex< blas_real<float> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
     
-    extern template bool mean_covariance_estimate< atlas_real<double> >
-      (vertex< atlas_real<double> >& m, matrix< atlas_real<double> >& R,
-       const std::vector< vertex< atlas_real<double> > >& data,
+    extern template bool mean_covariance_estimate< blas_real<double> >
+      (vertex< blas_real<double> >& m, matrix< blas_real<double> >& R,
+       const std::vector< vertex< blas_real<double> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
     
-    extern template bool mean_covariance_estimate< atlas_complex<float> >
-      (vertex< atlas_complex<float> >& m, matrix< atlas_complex<float> >& R,
-       const std::vector< vertex< atlas_complex<float> > >& data,
+    extern template bool mean_covariance_estimate< blas_complex<float> >
+      (vertex< blas_complex<float> >& m, matrix< blas_complex<float> >& R,
+       const std::vector< vertex< blas_complex<float> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
     
-    extern template bool mean_covariance_estimate< atlas_complex<double> >
-      (vertex< atlas_complex<double> >& m, matrix< atlas_complex<double> >& R,
-       const std::vector< vertex< atlas_complex<double> > >& data,
+    extern template bool mean_covariance_estimate< blas_complex<double> >
+      (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
+       const std::vector< vertex< blas_complex<double> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
     
   }

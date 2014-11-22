@@ -7,7 +7,7 @@
 #define backpropagation_h
 
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "nn_iterative_correction.h"
 
 
@@ -78,8 +78,8 @@ namespace whiteice
 {
   extern template class backpropagation< float >;
   extern template class backpropagation< double >;
-  extern template class backpropagation< math::atlas_real<float> >;
-  extern template class backpropagation< math::atlas_real<double> >;
+  extern template class backpropagation< math::blas_real<float> >;
+  extern template class backpropagation< math::blas_real<double> >;
 };
 
 

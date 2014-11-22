@@ -11,7 +11,7 @@
 
 #include <vector>
 #include "vertex.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "ica.h"
 
 #include <stdexcept>
@@ -24,7 +24,7 @@
 namespace whiteice
 {
   
-  template <typename T = math::atlas_real<float> >
+  template <typename T = math::blas_real<float> >
     class dataset
     {
       public:
@@ -223,8 +223,8 @@ namespace whiteice
   
   //////////////////////////////////////////////////////////////////////
   
-  extern template class dataset< whiteice::math::atlas_real<float> >;
-  extern template class dataset< whiteice::math::atlas_real<double> >;
+  extern template class dataset< whiteice::math::blas_real<float> >;
+  extern template class dataset< whiteice::math::blas_real<double> >;
   extern template class dataset< float >;
   extern template class dataset< double >;
   

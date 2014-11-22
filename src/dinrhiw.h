@@ -72,10 +72,10 @@
 #include "conffile.h"
 #include "unique_id.h"
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include "number.h"
 #include "blade_math.h"
-#include "atlas_primitives.h"
+#include "blas_primitives.h"
 #include "integer.h"
 #include "real.h"
 #include "modular.h"

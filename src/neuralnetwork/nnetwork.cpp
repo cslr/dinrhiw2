@@ -11,7 +11,7 @@
 #include <typeinfo>
 
 #include "nnetwork.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 namespace whiteice
@@ -923,7 +923,7 @@ namespace whiteice
   
   template class nnetwork< float >;
   template class nnetwork< double >;  
-  template class nnetwork< math::atlas_real<float> >;
-  template class nnetwork< math::atlas_real<double> >;
+  template class nnetwork< math::blas_real<float> >;
+  template class nnetwork< math::blas_real<double> >;
   
 };

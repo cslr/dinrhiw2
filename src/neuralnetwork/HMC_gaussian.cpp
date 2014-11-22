@@ -51,7 +51,7 @@ namespace whiteice
 {
   template class HMC_gaussian< float >;
   template class HMC_gaussian< double >;
-  template class HMC_gaussian< math::atlas_real<float> >;
-  template class HMC_gaussian< math::atlas_real<double> >;  
+  template class HMC_gaussian< math::blas_real<float> >;
+  template class HMC_gaussian< math::blas_real<double> >;  
   
 };

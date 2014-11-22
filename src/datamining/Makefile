@@ -4,7 +4,7 @@
 CC = gcc
 CXX= g++
 
-OPTIMIZE=-O3 -g -DIA32 -ffast-math
+OPTIMIZE=-O3 -g -DIA32 -ffast-math -msse3
 CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 

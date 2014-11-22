@@ -7,7 +7,7 @@
 #ifndef vertex_h
 #define vertex_h
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 #include "ownexception.h"
 #include "number.h"
@@ -58,7 +58,7 @@ namespace whiteice
     
     
     
-    template <typename T=atlas_real<float> >
+    template <typename T=blas_real<float> >
       class vertex : public number<vertex<T>, T, T, unsigned int>
       // multiple-inheritance doesn't work with neuralnetwork/tst/test.cpp
       //   simple_dataset_test() etc.  ..  it's probably compiler bug
@@ -270,10 +270,10 @@ namespace whiteice{
     extern template class vertex<unsigned int>;
     extern template class vertex<unsigned char>;
         
-    extern template class vertex< atlas_real<float> >;
-    extern template class vertex< atlas_real<double> >;
-    extern template class vertex< atlas_complex<float> >;
-    extern template class vertex< atlas_complex<double> >;
+    extern template class vertex< blas_real<float> >;
+    extern template class vertex< blas_real<double> >;
+    extern template class vertex< blas_complex<float> >;
+    extern template class vertex< blas_complex<double> >;
     
     extern template vertex<float> operator*<float>(const float& s, const vertex<float>& v);
     extern template vertex<double> operator*<double>(const double& s, const vertex<double>& v);
@@ -289,17 +289,17 @@ namespace whiteice{
     extern template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
     extern template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
       
-    extern template vertex<atlas_real<float> > operator*<atlas_real<float> >
-      (const atlas_real<float>& s, const vertex<atlas_real<float> >& v);
+    extern template vertex<blas_real<float> > operator*<blas_real<float> >
+      (const blas_real<float>& s, const vertex<blas_real<float> >& v);
     
-    extern template vertex<atlas_real<double> > operator*<atlas_real<double> >
-      (const atlas_real<double>& s, const vertex<atlas_real<double> >& v);
+    extern template vertex<blas_real<double> > operator*<blas_real<double> >
+      (const blas_real<double>& s, const vertex<blas_real<double> >& v);
 									     
-    extern template vertex<atlas_complex<float> > operator*<atlas_complex<float> >
-      (const atlas_complex<float>& s, const vertex<atlas_complex<float> >& v);
+    extern template vertex<blas_complex<float> > operator*<blas_complex<float> >
+      (const blas_complex<float>& s, const vertex<blas_complex<float> >& v);
     
-    extern template vertex<atlas_complex<double> > operator*<atlas_complex<double> >
-      (const atlas_complex<double>& s, const vertex<atlas_complex<double> >& v);
+    extern template vertex<blas_complex<double> > operator*<blas_complex<double> >
+      (const blas_complex<double>& s, const vertex<blas_complex<double> >& v);
        
     
     
@@ -313,10 +313,10 @@ namespace whiteice{
     extern template std::ostream& operator<< <unsigned int>(std::ostream& ios, const vertex<unsigned int>&);
     extern template std::ostream& operator<< <unsigned char>(std::ostream& ios, const vertex<unsigned char>&);
     
-    extern template std::ostream& operator<< <atlas_real<float> >(std::ostream& ios, const vertex<atlas_real<float> >&);
-    extern template std::ostream& operator<< <atlas_real<double> >(std::ostream& ios, const vertex<atlas_real<double> >&);
-    extern template std::ostream& operator<< <atlas_complex<float> >(std::ostream& ios, const vertex<atlas_complex<float> >&);
-    extern template std::ostream& operator<< <atlas_complex<double> >(std::ostream& ios, const vertex<atlas_complex<double> >&);
+    extern template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const vertex<blas_real<float> >&);
+    extern template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const vertex<blas_real<double> >&);
+    extern template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const vertex<blas_complex<float> >&);
+    extern template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const vertex<blas_complex<double> >&);
     
     
   };

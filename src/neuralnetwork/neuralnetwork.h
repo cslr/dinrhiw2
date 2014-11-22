@@ -4,7 +4,7 @@
  *
  * NOTE: user must also implement 'bool whiteice::convert(float&, const T&) throw()'
  * conversion functions from T -> to float in order to make save() and load() to work.
- * (see SRC/math/atlas_primitives.h for example / used by atlas_read<float> )
+ * (see SRC/math/blas_primitives.h for example / used by blas_read<float> )
  *
  * also T(float) should be able to convert floating point number to type T number.
  * (read save() and load() for details)
@@ -18,7 +18,7 @@
 #include <exception>
 
 #include "compressable.h"
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 
 
 namespace whiteice
@@ -30,7 +30,7 @@ namespace whiteice
   
 
   
-  template <typename T=math::atlas_real<float> >
+  template <typename T=math::blas_real<float> >
     class neuralnetwork : public compressable
   {
     public:
@@ -124,8 +124,8 @@ namespace whiteice
 {
   extern template class neuralnetwork< float >;
   extern template class neuralnetwork< double >;  
-  extern template class neuralnetwork< math::atlas_real<float> >;
-  extern template class neuralnetwork< math::atlas_real<double> >;
+  extern template class neuralnetwork< math::blas_real<float> >;
+  extern template class neuralnetwork< math::blas_real<double> >;
   
 };
 

@@ -30,7 +30,7 @@ namespace whiteice
       numCols = 0;
       data = 0;
 
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
 		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
@@ -55,7 +55,7 @@ namespace whiteice
     {
       data = 0;
 
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
 		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
@@ -67,22 +67,22 @@ namespace whiteice
       if(!data) throw std::bad_alloc();
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(M.numRows*M.numCols,
 		    (const float*)M.data, 1,
 		    (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	cblas_ccopy(M.numRows*M.numCols,
 		    (const float*)M.data, 1,
 		    (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dcopy(M.numRows*M.numCols,
 		    (const double*)M.data, 1,
 		    (double*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	cblas_zcopy(M.numRows*M.numCols,
 		    (const double*)M.data, 1,
 		    (double*)data, 1);
@@ -104,7 +104,7 @@ namespace whiteice
     {
       data = 0;
 
-#ifdef ATLAS_MEMALIGN
+#ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
 		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
@@ -182,7 +182,7 @@ namespace whiteice
       
       matrix<T> R(numRows, M.numCols);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 		    numRows, M.numCols, M.numRows,
@@ -190,8 +190,8 @@ namespace whiteice
 		    0.0f, (float*)R.data, R.numCols);
 	return R;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
-	atlas_complex<float> a, b;
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	blas_complex<float> a, b;
 	a = 1.0f; b = 0.0f;
 	
 	cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
@@ -200,15 +200,15 @@ namespace whiteice
 		    (float*)(&b), (float*)R.data, R.numCols);
 	return R;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 		    numRows, M.numCols, M.numRows,
 		    1.0, (double*)data, numCols, (double*)M.data, M.numCols,
 		    0.0, (double*)R.data, R.numCols);
 	return R;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
-	atlas_complex<double> a, b;
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	blas_complex<double> a, b;
 	a = 1.0; b = 0.0;
 	
 	cblas_zgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
@@ -306,7 +306,7 @@ namespace whiteice
       
       matrix<T> R(numRows, M.numCols);
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 		    numRows, M.numCols, M.numRows,
@@ -319,8 +319,8 @@ namespace whiteice
 	
 	return (*this);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
-	atlas_complex<float> a, b;
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	blas_complex<float> a, b;
 	a = 1.0f; b = 0.0f;
 	
 	cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
@@ -333,7 +333,7 @@ namespace whiteice
 	
 	return (*this);	
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 		    numRows, M.numCols, M.numRows,
 		    1.0, (double*)data, numCols, (double*)M.data, M.numCols,
@@ -345,8 +345,8 @@ namespace whiteice
 	
 	return (*this);	
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
-	atlas_complex<double> a, b;
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	blas_complex<double> a, b;
 	a = 1.0; b = 0.0;	
 	
 	cblas_zgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
@@ -420,10 +420,10 @@ namespace whiteice
       if(M.numCols != numCols || M.numRows != numRows)
 	throw illegal_operation("'==' operator: matrix size mismatch");
       
-      if(typeid(T) == typeid(atlas_real<float>)    ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>)   ||
-	 typeid(T) == typeid(atlas_complex<double>)){
+      if(typeid(T) == typeid(blas_real<float>)    ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>)   ||
+	 typeid(T) == typeid(blas_complex<double>)){
 	
 	return (memcmp(data, M.data, numCols*numRows*sizeof(T)) == 0);
       }
@@ -445,10 +445,10 @@ namespace whiteice
       
       if(numCols*numRows <= 0) return false;
       
-      if(typeid(T) == typeid(atlas_real<float>)    ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>)   ||
-	 typeid(T) == typeid(atlas_complex<double>)){
+      if(typeid(T) == typeid(blas_real<float>)    ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>)   ||
+	 typeid(T) == typeid(blas_complex<double>)){
 	
 	return (memcmp(data, M.data, numCols*numRows*sizeof(T)) != 0);
       }
@@ -527,19 +527,19 @@ namespace whiteice
       matrix<T> M(numRows,numCols);
       const unsigned int MSIZE = numRows*numCols;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(MSIZE, *((float*)&s), (float*)data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_caxpy(MSIZE, (const float*)&s, (float*)data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(MSIZE, *((double*)&s), (double*)data, 1, (double*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zaxpy(MSIZE, (const double*)&s, (double*)data, 1, (double*)M.data, 1);
       }
@@ -559,19 +559,19 @@ namespace whiteice
       matrix<T> M(N.numRows, N.numCols);
       const unsigned int MSIZE = N.numRows*N.numCols;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(MSIZE, *((float*)&s), (float*)N.data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_caxpy(MSIZE, (const float*)&s, (float*)N.data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(MSIZE, *((double*)&s), (double*)N.data, 1, (double*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zaxpy(MSIZE, (const double*)&s, (double*)N.data, 1, (double*)M.data, 1);
       }
@@ -592,19 +592,19 @@ namespace whiteice
       const unsigned int MSIZE = numRows*numCols;
       T ss = T(1.0)/s;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_saxpy(MSIZE, *((float*)&ss), (float*)data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_caxpy(MSIZE, (const float*)&ss, (float*)data, 1, (float*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_daxpy(MSIZE, *((double*)&ss), (double*)data, 1, (double*)M.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zaxpy(MSIZE, (const double*)&ss, (double*)data, 1, (double*)M.data, 1);
       }
@@ -623,19 +623,19 @@ namespace whiteice
       const unsigned int MSIZE = numRows*numCols;
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(MSIZE, *((float*)&s), (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cscal(MSIZE, (const float*)&s, (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(MSIZE, *((double*)&s), (double*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zscal(MSIZE, (const double*)&s, (double*)data, 1);
       }
@@ -655,19 +655,19 @@ namespace whiteice
       T ss = T(1.0)/s;
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sscal(MSIZE, *((float*)&ss), (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	
 	cblas_cscal(MSIZE, (const float*)&ss, (float*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dscal(MSIZE, *((double*)&ss), (double*)data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	
 	cblas_zscal(MSIZE, (const double*)&ss, (double*)data, 1);
       }
@@ -696,7 +696,7 @@ namespace whiteice
       // BLAS level 2
       // uses optimized cblas_Xgemv() functions
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_sgemv(CblasRowMajor, CblasNoTrans,
 		    numRows, numCols,
@@ -705,8 +705,8 @@ namespace whiteice
 	
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
-	atlas_complex<float> a, b;
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	blas_complex<float> a, b;
 	a = 1.0f; b = 0.0f;
 	
 	cblas_cgemv(CblasRowMajor, CblasNoTrans,
@@ -716,7 +716,7 @@ namespace whiteice
 	
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	
 	cblas_dgemv(CblasRowMajor, CblasNoTrans,
 		    numRows, numCols,
@@ -725,8 +725,8 @@ namespace whiteice
 	
 	return r;
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
-	atlas_complex<double> a, b;
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	blas_complex<double> a, b;
 	a = 1.0f; b = 0.0f;	
 	
 	cblas_zgemv(CblasRowMajor, CblasNoTrans,
@@ -1156,10 +1156,10 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::zero()
     {
-      if(typeid(T) == typeid(atlas_real<float>) ||
-	 typeid(T) == typeid(atlas_complex<float>) ||
-	 typeid(T) == typeid(atlas_real<double>) ||
-	 typeid(T) == typeid(atlas_complex<double>) ||
+      if(typeid(T) == typeid(blas_real<float>) ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_real<double>) ||
+	 typeid(T) == typeid(blas_complex<double>) ||
 	 typeid(T) == typeid(float) ||
 	 typeid(T) == typeid(double)){
 	
@@ -1303,16 +1303,16 @@ namespace whiteice
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
       if(x2 >= numCols) x2 = numCols - 1;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	return T( cblas_snrm2(x2 - x1 + 1, (const float*)&(data[y*numCols + x1]), 1) );
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	return T( cblas_scnrm2(x2 - x1 + 1, (const float*)&(data[y*numCols + x1]), 1) );
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	return T( cblas_dnrm2(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1) );
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	return T( cblas_dznrm2(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1) );
       }
       else{ // generic length calculation
@@ -1335,16 +1335,16 @@ namespace whiteice
       
       if(y2 > numRows) y2 = numRows - 1;
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	return T( cblas_snrm2(y2 - y1 + 1, (const float*)&(data[y1*numCols + x]), numCols) );
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	return T( cblas_scnrm2(y2 - y1 + 1, (const float*)&(data[y1*numCols + x]), numCols) );
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	return T( cblas_dnrm2(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols) );
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	return T( cblas_dznrm2(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols) );
       }
       else{ // generic length calculation
@@ -1372,16 +1372,16 @@ namespace whiteice
 	throw std::bad_alloc();
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(x2 - x1 + 1, (const float*)&(data[y*numCols + x1]), 1, (float*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	cblas_ccopy(x2 - x1 + 1, (const float*)&(data[y*numCols + x1]), 1, (float*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dcopy(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1, (double*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	cblas_zcopy(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1, (double*)v.data, 1);
       }
       else{ // generic vector copy
@@ -1404,16 +1404,16 @@ namespace whiteice
 	throw std::bad_alloc();
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(y2 - y1 + 1, (const float*)&(data[y1*numCols + x]), numCols, (float*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	cblas_ccopy(y2 - y1 + 1, (const float*)&(data[y1*numCols + x]), numCols, (float*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dcopy(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols, (double*)v.data, 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	cblas_zcopy(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols, (double*)v.data, 1);
       }
       else{ // generic copy
@@ -1433,16 +1433,16 @@ namespace whiteice
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(x2 - x1 + 1, (const float*)v.data, 1, (float*)&(data[y*numCols + x1]), 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	cblas_ccopy(x2 - x1 + 1, (const float*)v.data, 1, (float*)&(data[y*numCols + x1]), 1);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dcopy(x2 - x1 + 1, (const double*)v.data, 1, (double*)&(data[y*numCols + x1]), 1);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	cblas_zcopy(x2 - x1 + 1, (const double*)v.data, 1, (double*)&(data[y*numCols + x1]), 1);
       }
       else{ // generic vector copy
@@ -1461,16 +1461,16 @@ namespace whiteice
 	throw std::out_of_range("colnorm(): bad indeces to matrix");      
       
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(y2 - y1 + 1, (const float*)v.data, 1, (float*)&(data[y1*numCols + x]), numCols);
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	cblas_ccopy(y2 - y1 + 1, (const float*)v.data, 1, (float*)&(data[y1*numCols + x]), numCols);
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	cblas_dcopy(y2 - y1 + 1, (const double*)v.data, 1, (double*)&(data[y1*numCols + x]), numCols);
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	cblas_zcopy(y2 - y1 + 1, (const double*)v.data, 1, (double*)&(data[y1*numCols + x]), numCols);
       }
       else{ // generic length calculation
@@ -1561,7 +1561,7 @@ namespace whiteice
       // TODO: write code (and test it) which normalizes each column to have unit length
       // (main difference , incX is numCols and length is numRows etc.
       
-      if(typeid(T) == typeid(atlas_real<float>)){
+      if(typeid(T) == typeid(blas_real<float>)){
 	float f;
 	
 	for(unsigned int j=0;j<numRows;j++){
@@ -1573,7 +1573,7 @@ namespace whiteice
 	  cblas_sscal(numCols,  f, (float*)&(data[j*numCols]), 1);
 	}
       }
-      else if(typeid(T) == typeid(atlas_complex<float>)){
+      else if(typeid(T) == typeid(blas_complex<float>)){
 	float f;
 	
 	for(unsigned int j=0;j<numRows;j++){
@@ -1585,7 +1585,7 @@ namespace whiteice
 	  cblas_csscal(numCols,  f, (float*)&(data[j*numCols]), 1);
 	}	
       }
-      else if(typeid(T) == typeid(atlas_real<double>)){
+      else if(typeid(T) == typeid(blas_real<double>)){
 	double f;
 	
 	for(unsigned int j=0;j<numRows;j++){
@@ -1597,7 +1597,7 @@ namespace whiteice
 	  cblas_dscal(numCols,  f, (double*)&(data[j*numCols]), 1);
 	}
       }
-      else if(typeid(T) == typeid(atlas_complex<double>)){
+      else if(typeid(T) == typeid(blas_complex<double>)){
 	double f;
 	
 	for(unsigned int j=0;j<numRows;j++){
@@ -1745,10 +1745,10 @@ namespace whiteice
     template class matrix<unsigned int>;
     template class matrix<unsigned char>;
         
-    template class matrix< atlas_real<float> >;
-    template class matrix< atlas_real<double> >;
-    template class matrix< atlas_complex<float> >;
-    template class matrix< atlas_complex<double> >;
+    template class matrix< blas_real<float> >;
+    template class matrix< blas_real<double> >;
+    template class matrix< blas_complex<float> >;
+    template class matrix< blas_complex<double> >;
     
     
     template matrix<float> operator*<float>(const float&, const matrix<float>&) throw(std::invalid_argument);
@@ -1766,17 +1766,17 @@ namespace whiteice
       throw(std::invalid_argument);
     
     
-    template matrix<atlas_real<float> > operator*<atlas_real<float> >
-      (const atlas_real<float>&, const matrix<atlas_real<float> >&) throw(std::invalid_argument);
+    template matrix<blas_real<float> > operator*<blas_real<float> >
+      (const blas_real<float>&, const matrix<blas_real<float> >&) throw(std::invalid_argument);
        
-    template matrix<atlas_real<double> > operator*<atlas_real<double> >
-      (const atlas_real<double>&, const matrix<atlas_real<double> >&) throw(std::invalid_argument);
+    template matrix<blas_real<double> > operator*<blas_real<double> >
+      (const blas_real<double>&, const matrix<blas_real<double> >&) throw(std::invalid_argument);
     
     
-    template matrix<atlas_complex<float> > operator*<atlas_complex<float> >
-      (const atlas_complex<float>&, const matrix<atlas_complex<float> >&) throw(std::invalid_argument);
-    template matrix<atlas_complex<double> > operator*<atlas_complex<double> >
-      (const atlas_complex<double>&, const matrix<atlas_complex<double> >&) throw(std::invalid_argument);
+    template matrix<blas_complex<float> > operator*<blas_complex<float> >
+      (const blas_complex<float>&, const matrix<blas_complex<float> >&) throw(std::invalid_argument);
+    template matrix<blas_complex<double> > operator*<blas_complex<double> >
+      (const blas_complex<double>&, const matrix<blas_complex<double> >&) throw(std::invalid_argument);
         
     template std::ostream& operator<< <float>(std::ostream& ios, const matrix<float>& M);
     template std::ostream& operator<< <double>(std::ostream& ios, const matrix<double>& M);
@@ -1786,10 +1786,10 @@ namespace whiteice
     template std::ostream& operator<< <char>(std::ostream& ios, const matrix<char>& M);
     template std::ostream& operator<< <unsigned int>(std::ostream& ios, const matrix<unsigned int>& M);
     template std::ostream& operator<< <unsigned char>(std::ostream& ios, const matrix<unsigned char>& M);
-    template std::ostream& operator<< <atlas_real<float> >(std::ostream& ios, const matrix<atlas_real<float> >& M);
-    template std::ostream& operator<< <atlas_real<double> >(std::ostream& ios, const matrix<atlas_real<double> >& M);
-    template std::ostream& operator<< <atlas_complex<float> >(std::ostream& ios, const matrix<atlas_complex<float> >& M);
-    template std::ostream& operator<< <atlas_complex<double> >(std::ostream& ios, const matrix<atlas_complex<double> >& M);
+    template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const matrix<blas_real<float> >& M);
+    template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const matrix<blas_real<double> >& M);
+    template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const matrix<blas_complex<float> >& M);
+    template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const matrix<blas_complex<double> >& M);
     
     
   };

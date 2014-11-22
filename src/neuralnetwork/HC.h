@@ -25,7 +25,7 @@ namespace whiteice
   
   template < 
     typename Parameters,
-    typename T = whiteice::math::atlas_real<float>
+    typename T = whiteice::math::blas_real<float>
     >
     class HC
     {
@@ -69,7 +69,7 @@ namespace whiteice
 namespace whiteice
 {
   
-  extern template class HC<GDAParams, math::atlas_real<float> >;
+  extern template class HC<GDAParams, math::blas_real<float> >;
   
 };
 

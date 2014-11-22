@@ -5,7 +5,7 @@
 #ifndef linear_algebra_h
 #define linear_algebra_h
 
-#include "atlas.h"
+#include "dinrhiw_blas.h"
 #include <vector>
 
 
@@ -28,27 +28,27 @@ namespace whiteice
     template <typename T>
       bool gramschmidt(std::vector< vertex<T> >& B, const unsigned int i, const unsigned int j);
     
-    extern template bool gramschmidt< atlas_real<float> >
-      (matrix< atlas_real<float> >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_real<double> >
-      (matrix< atlas_real<double> >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_complex<float> >
-      (matrix< atlas_complex<float> >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_complex<double> >
-      (matrix< atlas_complex<double> >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_real<float> >
+      (matrix< blas_real<float> >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_real<double> >
+      (matrix< blas_real<double> >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_complex<float> >
+      (matrix< blas_complex<float> >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_complex<double> >
+      (matrix< blas_complex<double> >& B, const unsigned int i, const unsigned int j);
     extern template bool gramschmidt<float>
       (matrix<float>& B, const unsigned int i, const unsigned int j);
     extern template bool gramschmidt<double>
       (matrix<double>& B, const unsigned int i, const unsigned int j);
     
-    extern template bool gramschmidt< atlas_real<float> >
-      (std::vector< vertex< atlas_real<float> > >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_real<double> >
-      (std::vector< vertex< atlas_real<double> > >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_complex<float> >
-      (std::vector< vertex< atlas_complex<float> > >& B, const unsigned int i, const unsigned int j);
-    extern template bool gramschmidt< atlas_complex<double> >
-      (std::vector< vertex< atlas_complex<double> > >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_real<float> >
+      (std::vector< vertex< blas_real<float> > >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_real<double> >
+      (std::vector< vertex< blas_real<double> > >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_complex<float> >
+      (std::vector< vertex< blas_complex<float> > >& B, const unsigned int i, const unsigned int j);
+    extern template bool gramschmidt< blas_complex<double> >
+      (std::vector< vertex< blas_complex<double> > >& B, const unsigned int i, const unsigned int j);
     extern template bool gramschmidt<float>
       (std::vector< vertex<float> >& B, const unsigned int i, const unsigned int j);
     extern template bool gramschmidt<double>

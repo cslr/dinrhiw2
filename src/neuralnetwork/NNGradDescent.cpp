@@ -326,8 +326,8 @@ namespace whiteice
     
     // template class NNGradDescent< float >;
     // template class NNGradDescent< double >;
-    template class NNGradDescent< atlas_real<float> >;
-    // template class NNGradDescent< atlas_real<double> >;    
+    template class NNGradDescent< blas_real<float> >;
+    // template class NNGradDescent< blas_real<double> >;    
     
   };
 };
@@ -339,7 +339,7 @@ extern "C" {
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
     
     if(optimizer_ptr)
-      ((whiteice::math::NNGradDescent< whiteice::math::atlas_real<float> >*)optimizer_ptr)->__optimizerloop();
+      ((whiteice::math::NNGradDescent< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
     
     pthread_exit(0);
 

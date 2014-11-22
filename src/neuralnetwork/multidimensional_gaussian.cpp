@@ -165,8 +165,8 @@ namespace whiteice
   
   template class multidimensional_gaussian< float >;
   template class multidimensional_gaussian< double >;
-  template class multidimensional_gaussian< math::atlas_real<float> >;
-  template class multidimensional_gaussian< math::atlas_real<double> >;
+  template class multidimensional_gaussian< math::blas_real<float> >;
+  template class multidimensional_gaussian< math::blas_real<double> >;
   
 }
   

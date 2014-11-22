@@ -1178,8 +1178,8 @@ namespace whiteice
   
   template class neuralnetwork< float >;
   template class neuralnetwork< double >;  
-  template class neuralnetwork< math::atlas_real<float> >;
-  template class neuralnetwork< math::atlas_real<double> >;
+  template class neuralnetwork< math::blas_real<float> >;
+  template class neuralnetwork< math::blas_real<double> >;
   
 }
 

@@ -49,10 +49,10 @@ namespace whiteice
     
     extern template class RungeKutta< float >;
     extern template class RungeKutta< double >;
-    extern template class RungeKutta< atlas_real<float> >;
-    extern template class RungeKutta< atlas_real<double> >;
-    //extern template class RungeKutta< atlas_complex<float> >;
-    //extern template class RungeKutta< atlas_complex<double> >;
+    extern template class RungeKutta< blas_real<float> >;
+    extern template class RungeKutta< blas_real<double> >;
+    //extern template class RungeKutta< blas_complex<float> >;
+    //extern template class RungeKutta< blas_complex<double> >;
     
   };
 };
