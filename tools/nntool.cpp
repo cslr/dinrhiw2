@@ -310,13 +310,14 @@ int main(int argc, char** argv)
 
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0))
+	      (iterations < samples || samples <= 0) &&
+	      bfgs.isRunning())
 	{
 	  sleep(1);
 
 	  bfgs.getSolution(w, error, iterations);
 	  
-	  error = bfgs.getError();
+	  error = bfgs.getError(w);
 	  
 	  eta.update(iterations);
 

@@ -1,6 +1,7 @@
 TODO
 
 - OPTIMIZE BFGS for speed. It is the MAIN workhorse for optimization.
+  * add early stopping algorithm to BGFS algorithm
   * implement L-BFGS later
   
 - HMC sampler:

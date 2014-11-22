@@ -18,10 +18,9 @@ rm -f commviol-test.ds
 ./dstool -list commviol-test.ds
 
 # uses nntool trying to learn from dataset
-# (multistart gradient descent and then one large gradient descent reduction)
+# (first BFGS optimization and then sample using bayesian sampler)
 
-./nntool --samples 1000 --time 3600 -v commviol-test.ds 141-10-4 commviol-nn.cfg parallelgrad
-./nntool --samples 10000 --load -v commviol-test.ds 141-10-4 commviol-nn.cfg grad
+./nntool --samples 100 -v commviol-test.ds 141-10-4 commviol-nn.cfg bfgs
 ./nntool --samples 2000 --load -v commviol-test.ds 141-10-4 commviol-nn.cfg bayes
 
 ##################################################

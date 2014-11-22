@@ -242,10 +242,25 @@ namespace whiteice
       matrix<T> H; // H is INVERSE of hessian matrix
       H.resize(bestx.size(), bestx.size());
       H.identity();
+
+      T prev_error = T(1000.0f);
+      T error      = T(1000.0f);
+      T ratio      = T(1000.0f);
       
       
       while(thread_running){
 	try{
+	  // we keep iterating until we converge (later) or
+	  // the real error starts to increase
+	  prev_error = error;
+	  error = getError(x);
+	  ratio = (prev_error - error)/prev_error;
+
+	  if(ratio < T(0.0f)){
+	    break;
+	  }
+
+
 	  ////////////////////////////////////////////////////////////
 	  g = Ugrad(x);
 	  d = -H*g; // linsolve(H, d, -g);
