@@ -9,6 +9,36 @@ namespace whiteice
   BFGS_nnetwork<T>::BFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d) :
     net(nn), data(d)
   {
+    // divides data to to training and testing sets
+    ///////////////////////////////////////////////
+    
+    dtrain = data;
+    dtest  = data;
+    
+    dtrain.clearData(0);
+    dtrain.clearData(1);
+    dtest.clearData(0);
+    dtest.clearData(1);
+    
+    
+    for(unsigned int i=0;i<data.size(0);i++){
+      const unsigned int r = (rand() & 1);
+      
+      if(r == 0){
+	math::vertex<T> in  = data.access(0,i);
+	math::vertex<T> out = data.access(1,i);
+	
+	dtrain.add(0, in,  true);
+	dtrain.add(1, out, true);
+      }
+      else{
+	math::vertex<T> in  = data.access(0,i);
+	math::vertex<T> out = data.access(1,i);
+	
+	dtest.add(0, in,  true);
+	dtest.add(1, out, true);	    
+      }
+    }
     
   }
 
@@ -20,30 +50,25 @@ namespace whiteice
 
 
   template <typename T>
-  T BFGS_nnetwork<T>::getError() const
+  T BFGS_nnetwork<T>::getError(const math::vertex<T>& x) const
   {
     whiteice::nnetwork<T> nnet(this->net);
-
-    math::vertex<T> x;
-    T y;
-    unsigned int iters;
-    this->getSolution(x, y, iters);
     nnet.importdata(x);
     
     math::vertex<T> err;
     T e = T(0.0f);
 
     // E = SUM 0.5*e(i)^2
-    for(unsigned int i=0;i<data.size(0);i++){
-      nnet.input() = data.access(0, i);
+    for(unsigned int i=0;i<dtest.size(0);i++){
+      nnet.input() = dtest.access(0, i);
       nnet.calculate(false);
-      err = data.access(1, i) - nnet.output();
+      err = dtest.access(1, i) - nnet.output();
       T inv = T(1.0f/err.size());
       err = inv*(err*err);
       e += T(0.5f)*err[0];
     }
     
-    e /= T( (float)data.size(0) ); // per N
+    e /= T( (float)dtest.size(0) ); // per N
 
     return e;
   }
@@ -60,10 +85,10 @@ namespace whiteice
     T e = T(0.0f);
 
     // E = SUM 0.5*e(i)^2
-    for(unsigned int i=0;i<data.size(0);i++){
-      nnet.input() = data.access(0, i);
+    for(unsigned int i=0;i<dtrain.size(0);i++){
+      nnet.input() = dtrain.access(0, i);
       nnet.calculate(false);
-      err = data.access(1, i) - nnet.output();
+      err = dtrain.access(1, i) - nnet.output();
       // T inv = T(1.0f/err.size());
       err = (err*err);
       e += T(0.5f)*err[0];
@@ -92,10 +117,10 @@ namespace whiteice
 
     nnet.importdata(x);
 
-    for(unsigned int i=0;i<data.size(0);i++){
-      nnet.input() = data.access(0, i);
+    for(unsigned int i=0;i<dtrain.size(0);i++){
+      nnet.input() = dtrain.access(0, i);
       nnet.calculate(true);
-      err = data.access(1,i) - nnet.output();
+      err = dtrain.access(1,i) - nnet.output();
       
       if(nnet.gradient(err, grad) == false){
 	std::cout << "gradient failed." << std::endl;

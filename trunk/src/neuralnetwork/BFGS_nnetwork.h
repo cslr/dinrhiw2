@@ -10,6 +10,7 @@
 #include "BFGS.h"
 #include "nnetwork.h"
 #include "dataset.h"
+#include "vertex.h"
 
 namespace whiteice
 {
@@ -22,16 +23,25 @@ namespace whiteice
     
       ~BFGS_nnetwork();
     
-      // calculates the current solution's best error
-      T getError() const;
-
     protected:
 
+      // optimized function
       virtual T U(const math::vertex<T>& x) const;
       virtual math::vertex<T> Ugrad(const math::vertex<T>& x) const;
 
+    public:
+    
+      // calculates the current solution's "real" error
+      // (we keep iterating until U(x) converges or getError()
+      //  increases instead of decreasing)
+      T getError(const math::vertex<T>& x) const;
+
+    private:
       const nnetwork<T> net;
       const dataset<T>& data;
+    
+      dataset<T> dtrain;
+      dataset<T> dtest;
       
     };
 

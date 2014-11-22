@@ -30,7 +30,19 @@ namespace whiteice
         virtual T U(const vertex<T>& x) const = 0;
         virtual vertex<T> Ugrad(const vertex<T>& x) const = 0;
 
+
       public:
+        /* 
+	 * error function we are (indirectly) optimizing)
+	 * can be same as U(x) if there are no uncertainties,
+	 * but can be different if we are optimizing 
+	 * statistical model and want to have early stopping
+	 * in order to prevent optimizing to statistical
+	 * noise.
+	 */
+        virtual T getError(const vertex<T>& x) const = 0;
+      
+      
 	
         bool minimize(vertex<T>& x0);
 	
