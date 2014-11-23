@@ -1,8 +1,9 @@
 TODO
 
-- OPTIMIZE BFGS for speed. It is the MAIN workhorse for optimization.
-  * add early stopping algorithm to BGFS algorithm
-  * implement L-BFGS later
+- OPTIMIZE BFGS for speed:
+  * implement L-BFGS for large neural networks
+    (in practice we ALWAYS have rank(H) << dim(H)
+     so there is no point in trying to estimate the whole H)
   
 - HMC sampler:
   [check convergence by starting N sampling threads and
@@ -11,7 +12,8 @@ TODO
 
 - GA3, ga3_test_function.h: fully implement and test
   genetic algorithm optimization for real-valued vectors.
-  - change GA implementation to sort offspring and select the better upper part (radix sort) (+ some randomness)
+  - change GA implementation to sort offspring and select
+    the better upper part (radix sort) (+ some randomness)
 
 - write configure script to detect existence of
   NVIDIA BLAS-library and use it if it exists instead of generic
