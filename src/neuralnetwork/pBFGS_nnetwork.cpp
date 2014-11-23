@@ -175,7 +175,7 @@ namespace whiteice
       T inv = T(1.0f/err.size());
       err = inv*(err*err);
       e += err[0];
-      // e += T(0.5f)*err[0];
+      e += T(0.5f)*err[0];
     }
     
     e /= T( (float)data.size(0) ); // per N

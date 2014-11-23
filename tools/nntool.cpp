@@ -735,6 +735,7 @@ int main(int argc, char** argv)
       
       if(compare_clusters == true){
 	math::blas_real<float> error = math::blas_real<float>(0.0f);
+	math::blas_real<float> c = math::blas_real<float>(0.5f);
 	math::vertex<> err;
 	
 	for(unsigned int i=0;i<data.size(0);i++){
@@ -745,7 +746,7 @@ int main(int argc, char** argv)
 	  err = data.access(1,i) - out;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
-	    error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	    error += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	  
 	}
 	
