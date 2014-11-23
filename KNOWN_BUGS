@@ -1,17 +1,16 @@
 
 Code is only tested and known to compile on Debian/Linux (amd64).
 It has been reported to work on Cygwin32 bit platform.
-It currently does NOT work on MinGW32/win32 platform because
+It currently does NOT work on MinGW32/win32 platform, maybe because of compiler bugs(?).
 
 * neural network code: nnetwork has some bugs(?),
   valgrind everything (testcases) and RECHECK/REREAD nnetwork code carefully.
   (read backpropagation/gradient code carefully)
 
-  * The problem maybe in NNGradDescent code.
+  * The problem may be in NNGradDescent code.
 
-  * HMC nnetwork sampler maybe BUGGY and need more testing
-    - write testcases for sampling mixture of normal distributions and
-      see visually (octave datafile import) that results are correct
+* OUT OF MEMORY problems with BIG neural networks or BIG DATA
+  leads to strange error messages that are not properly handled.
 
 * ICA code probably has some bugs (with bad data)
 
@@ -22,10 +21,6 @@ It currently does NOT work on MinGW32/win32 platform because
     - does not happen on Cygwin32 so it seems this is a compiler bug (gcc)?
     - or a strange data access error. run valgrind on 32bit linux platform
       (create a VM machine)
-
-* BFGS optimization DO NOT work (is not complete) and is buggy. 
-  This would be nice to use when training neural networks so
-  it's robust implementation would be nice.
 
 * realnumber (arbitrary precision math): sin() and cos() function calls fail
   as they are not implemented.
