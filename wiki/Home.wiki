@@ -3,7 +3,7 @@ The library was originally developed during 1998-2005. There is no plans to deve
 Machine learning component contains: 
 
   * unix commands line tools to do machine learning from scripts (nntool, dstool)
-  * multistart BFGS neural network 2nd order optimizer
+  * multistart L-BFGS neural network 2nd order optimizer
   * basic BayesianNeuralNetwork using adaptive hybrid monte carlo sampling
   * principal component analysis (PCA) and independent component analysis (ICA) preprocessing methods
   * multistart gradient descent optimizer for neural networks
