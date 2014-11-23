@@ -11,9 +11,8 @@
  * ARCH    = AC(-AC)*-AC
  * AC      = <number> | "?"
  * NNFILE  = <filename>
- * LMETHOD = MBASIC MMOD*
- * MBASIC  = use | bp | grad | bfgs | bayes
- * MMOD    = "+ot" | "+pca" | "+ica"
+ * LMETHOD = MBASIC 
+ * MBASIC  = use | random | grad | bfgs | bayes | lbfgs
  * 
  */
 
@@ -86,6 +85,7 @@
 %token <str> LM_PARALLELGRAD
 %token <str> LM_GRAD
 %token <str> LM_BFGS
+%token <str> LM_LBFGS
 %token <str> LM_RANDOM
 %token <str> LM_BAYES
 
@@ -152,6 +152,7 @@ lmethod: /* empty */
 mbasic: LM_USE     { __info.method = $1; }
       | LM_GRAD    { __info.method = $1; }
       | LM_BFGS    { __info.method = $1; }
+      | LM_LBFGS   { __info.method = $1; }
       | LM_PARALLELGRAD { __info.method = $1; }
       | LM_RANDOM  { __info.method = $1; }
       | LM_BAYES   { __info.method = $1; }
@@ -263,6 +264,8 @@ void parse_commandline(int argc, char** argv,
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);
     p.name = "bfgs"; p.code = LM_BFGS;
+    cmdparamslist.push_back(p);
+    p.name = "lbfgs"; p.code = LM_LBFGS;
     cmdparamslist.push_back(p);
     p.name = "parallelgrad"; p.code = LM_PARALLELGRAD;
     cmdparamslist.push_back(p);
