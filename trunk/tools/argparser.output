@@ -41,16 +41,17 @@ Kielioppi
    24 mbasic: LM_USE
    25       | LM_GRAD
    26       | LM_BFGS
-   27       | LM_PARALLELGRAD
-   28       | LM_RANDOM
-   29       | LM_BAYES
+   27       | LM_LBFGS
+   28       | LM_PARALLELGRAD
+   29       | LM_RANDOM
+   30       | LM_BAYES
 
-   30 mmodseq: %empty
-   31        | mmod mmodseq
+   31 mmodseq: %empty
+   32        | mmod mmodseq
 
-   32 mmod: MMOD_OVERTRAIN
-   33     | MMOD_PCA
-   34     | MMOD_ICA
+   33 mmod: MMOD_OVERTRAIN
+   34     | MMOD_PCA
+   35     | MMOD_ICA
 
 
 Päätteet, säännöillä missä niin tarvitaan
@@ -70,44 +71,45 @@ OPT_TIME (267) 13
 OPT_SAMPLES (268) 14
 OPT_ENDOPT (269) 16
 LM_USE (270) 24
-LM_PARALLELGRAD (271) 27
+LM_PARALLELGRAD (271) 28
 LM_GRAD (272) 25
 LM_BFGS (273) 26
-LM_RANDOM (274) 28
-LM_BAYES (275) 29
-MMOD_OVERTRAIN (276) 32
-MMOD_PCA (277) 33
-MMOD_ICA (278) 34
+LM_LBFGS (274) 27
+LM_RANDOM (275) 29
+LM_BAYES (276) 30
+MMOD_OVERTRAIN (277) 33
+MMOD_PCA (278) 34
+MMOD_ICA (279) 35
 
 
 Ei-päätteet, säännöillä missä niitä tarvitaan
 
-$accept (24)
+$accept (25)
     vasemmalla: 0
-arg (25)
+arg (26)
     vasemmalla: 1, oikealla: 0
-optseq (26)
+optseq (27)
     vasemmalla: 2 3, oikealla: 1 3
-anystring (27)
+anystring (28)
     vasemmalla: 4 5 6 7, oikealla: 21
-option (28)
+option (29)
     vasemmalla: 8 9 10 11 12 13 14, oikealla: 3
-endopt (29)
+endopt (30)
     vasemmalla: 15 16, oikealla: 1
-data (30)
+data (31)
     vasemmalla: 17 18, oikealla: 1
-arch (31)
+arch (32)
     vasemmalla: 19 20, oikealla: 1
-nnfile (32)
+nnfile (33)
     vasemmalla: 21, oikealla: 1
-lmethod (33)
+lmethod (34)
     vasemmalla: 22 23, oikealla: 1
-mbasic (34)
-    vasemmalla: 24 25 26 27 28 29, oikealla: 23
-mmodseq (35)
-    vasemmalla: 30 31, oikealla: 23 31
-mmod (36)
-    vasemmalla: 32 33 34, oikealla: 31
+mbasic (35)
+    vasemmalla: 24 25 26 27 28 29 30, oikealla: 23
+mmodseq (36)
+    vasemmalla: 31 32, oikealla: 23 32
+mmod (37)
+    vasemmalla: 33 34 35, oikealla: 32
 
 
 Tila 0
@@ -343,13 +345,14 @@ Tila 26
     LM_PARALLELGRAD  siirto, ja siirry tilaan 28
     LM_GRAD          siirto, ja siirry tilaan 29
     LM_BFGS          siirto, ja siirry tilaan 30
-    LM_RANDOM        siirto, ja siirry tilaan 31
-    LM_BAYES         siirto, ja siirry tilaan 32
+    LM_LBFGS         siirto, ja siirry tilaan 31
+    LM_RANDOM        siirto, ja siirry tilaan 32
+    LM_BAYES         siirto, ja siirry tilaan 33
 
     $default  supistaminen käyttäen sääntöä 22 (lmethod)
 
-    lmethod  siirry tilaan 33
-    mbasic   siirry tilaan 34
+    lmethod  siirry tilaan 34
+    mbasic   siirry tilaan 35
 
 
 Tila 27
@@ -361,9 +364,9 @@ Tila 27
 
 Tila 28
 
-   27 mbasic: LM_PARALLELGRAD .
+   28 mbasic: LM_PARALLELGRAD .
 
-    $default  supistaminen käyttäen sääntöä 27 (mbasic)
+    $default  supistaminen käyttäen sääntöä 28 (mbasic)
 
 
 Tila 29
@@ -382,83 +385,90 @@ Tila 30
 
 Tila 31
 
-   28 mbasic: LM_RANDOM .
+   27 mbasic: LM_LBFGS .
 
-    $default  supistaminen käyttäen sääntöä 28 (mbasic)
+    $default  supistaminen käyttäen sääntöä 27 (mbasic)
 
 
 Tila 32
 
-   29 mbasic: LM_BAYES .
+   29 mbasic: LM_RANDOM .
 
     $default  supistaminen käyttäen sääntöä 29 (mbasic)
 
 
 Tila 33
 
+   30 mbasic: LM_BAYES .
+
+    $default  supistaminen käyttäen sääntöä 30 (mbasic)
+
+
+Tila 34
+
     1 arg: optseq endopt data arch nnfile lmethod .
 
     $default  supistaminen käyttäen sääntöä 1 (arg)
 
 
-Tila 34
+Tila 35
 
    23 lmethod: mbasic . mmodseq
 
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 35
-    MMOD_PCA        siirto, ja siirry tilaan 36
-    MMOD_ICA        siirto, ja siirry tilaan 37
+    MMOD_OVERTRAIN  siirto, ja siirry tilaan 36
+    MMOD_PCA        siirto, ja siirry tilaan 37
+    MMOD_ICA        siirto, ja siirry tilaan 38
 
-    $default  supistaminen käyttäen sääntöä 30 (mmodseq)
+    $default  supistaminen käyttäen sääntöä 31 (mmodseq)
 
-    mmodseq  siirry tilaan 38
-    mmod     siirry tilaan 39
-
-
-Tila 35
-
-   32 mmod: MMOD_OVERTRAIN .
-
-    $default  supistaminen käyttäen sääntöä 32 (mmod)
+    mmodseq  siirry tilaan 39
+    mmod     siirry tilaan 40
 
 
 Tila 36
 
-   33 mmod: MMOD_PCA .
+   33 mmod: MMOD_OVERTRAIN .
 
     $default  supistaminen käyttäen sääntöä 33 (mmod)
 
 
 Tila 37
 
-   34 mmod: MMOD_ICA .
+   34 mmod: MMOD_PCA .
 
     $default  supistaminen käyttäen sääntöä 34 (mmod)
 
 
 Tila 38
 
+   35 mmod: MMOD_ICA .
+
+    $default  supistaminen käyttäen sääntöä 35 (mmod)
+
+
+Tila 39
+
    23 lmethod: mbasic mmodseq .
 
     $default  supistaminen käyttäen sääntöä 23 (lmethod)
 
 
-Tila 39
-
-   31 mmodseq: mmod . mmodseq
-
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 35
-    MMOD_PCA        siirto, ja siirry tilaan 36
-    MMOD_ICA        siirto, ja siirry tilaan 37
-
-    $default  supistaminen käyttäen sääntöä 30 (mmodseq)
-
-    mmodseq  siirry tilaan 40
-    mmod     siirry tilaan 39
-
-
 Tila 40
 
-   31 mmodseq: mmod mmodseq .
+   32 mmodseq: mmod . mmodseq
+
+    MMOD_OVERTRAIN  siirto, ja siirry tilaan 36
+    MMOD_PCA        siirto, ja siirry tilaan 37
+    MMOD_ICA        siirto, ja siirry tilaan 38
 
     $default  supistaminen käyttäen sääntöä 31 (mmodseq)
+
+    mmodseq  siirry tilaan 41
+    mmod     siirry tilaan 40
+
+
+Tila 41
+
+   32 mmodseq: mmod mmodseq .
+
+    $default  supistaminen käyttäen sääntöä 32 (mmodseq)

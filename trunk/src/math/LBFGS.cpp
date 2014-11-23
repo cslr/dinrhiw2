@@ -245,7 +245,7 @@ namespace whiteice
       T ratio      = T(1000.0f);
 
       
-      unsigned int M = 20; // history size
+      unsigned int M = 35; // history size
       std::list< vertex<T> > yk;
       std::list< vertex<T> > sk;
       std::list< T > rk;
@@ -301,14 +301,14 @@ namespace whiteice
 	      typename std::list< vertex<T> >::reverse_iterator si;
 	      typename std::list< vertex<T> >::reverse_iterator yi;
 	      typename std::list< T >::reverse_iterator ri;
-	      unsigned int i = 0;
+	      int i = 0;
 
 	      const unsigned int m = sk.size();
 		
-	      for(si = sk.rbegin(), yi = yk.rbegin(), ri = rk.rbegin(), i=0;si!=sk.rend();si++,yi++,ri++,i++)
+	      for(si = sk.rbegin(), yi = yk.rbegin(), ri = rk.rbegin(), i=m-1;si!=sk.rend();si++,yi++,ri++,i--)
 	      {
-		beta[m-1-i] = (*ri) * ((*yi) * z)[0];
-		z = z + (*si) * (beta[m-1-i] - alpha[m-1-i]);
+		beta[i] = (*ri) * ((*yi) * z)[0];
+		z = z + (*si) * (alpha[i] - beta[i]);
 	      }
 	      
 	    }
@@ -343,7 +343,7 @@ namespace whiteice
 	  
 	  s = xn - x;
 	  vertex<T> yy = Ugrad(xn) - g; // Ugrad(xn) - Ugrad(x)
-	  T r = T(1.0f)/(s*y)[0];
+	  T r = T(1.0f)/(s*yy)[0];
 
 	  sk.push_front(s);
 	  yk.push_front(yy);
