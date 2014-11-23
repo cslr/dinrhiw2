@@ -28,6 +28,9 @@ namespace whiteice
     bool minimize(unsigned int NUMTHREADS);
 
     bool getSolution(math::vertex<T>& x, T& y, unsigned int& iterations) const;
+
+    T getError(const math::vertex<T>& x) const;
+    
     // continues, pauses, stops computation
     bool continueComputation();
     bool pauseComputation();

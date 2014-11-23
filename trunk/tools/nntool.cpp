@@ -275,14 +275,13 @@ int main(int argc, char** argv)
     
     if(lmethod == "bfgs"){
       unsigned int threads = (unsigned int)numberOfCPUThreads();
-      threads = 1; // BFGS do not currently suppory multiple threads
       
       if(verbose){
 	if(secs > 0)
-	  std::cout << "Starting neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
+	  std::cout << "Starting neural network parallel BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
 		    << std::endl;
 	else
-	  std::cout << "Starting neural network BFGS optimization with early stopping (" << threads << " threads).."
+	  std::cout << "Starting neural network parallel BFGS optimization with early stopping (" << threads << " threads).."
 		    << std::endl;
       }
 
@@ -291,7 +290,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      BFGS_nnetwork<> bfgs(*nn, data);
+      pBFGS_nnetwork<> bfgs(*nn, data);
       
       {
 	time_t t0 = time(0);
@@ -305,14 +304,13 @@ int main(int argc, char** argv)
 	  eta.start(0.0f, (float)samples);
 
 	// initial starting position
-	nn->exportdata(w);
-
-	bfgs.minimize(w);
+	// nn->exportdata(w);
+	
+	bfgs.minimize(threads);
 
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0) &&
-	      bfgs.isRunning())
+	      (iterations < samples || samples <= 0))
 	{
 	  sleep(1);
 
@@ -355,7 +353,7 @@ int main(int argc, char** argv)
 	fflush(stdout);
 
 	bfgs.stopComputation();
-
+	
 	// gets the final (optimum) solution
 	bfgs.getSolution(w, error, iterations);
 	
