@@ -38,8 +38,13 @@ namespace whiteice
       pthread_cancel( updater_thread );
     }
     
-    for(unsigned int i=0;i<optimizers.size();i++)
+    for(unsigned int i=0;i<optimizers.size();i++){
       optimizers[i]->stopComputation();
+      delete optimizers[i];
+      optimizers[i] = NULL;
+    }
+
+    optimizers.resize(0);
     
     pthread_mutex_unlock( &bfgs_lock );
     
@@ -86,9 +91,19 @@ namespace whiteice
     }
     catch(std::exception& e){
       for(unsigned int i=0;i<optimizers.size();i++){
-	if(optimizers[i])
+	if(optimizers[i]){
 	  delete optimizers[i];
+	  optimizers[i] = NULL;
+	}
       }
+
+      thread_running = false;
+
+      optimizers.resize(0);
+      
+      pthread_mutex_unlock( &bfgs_lock );
+      
+      return false;
     }
 
 
@@ -125,19 +140,47 @@ namespace whiteice
       math::vertex<T> _x;
       T _y;
       unsigned int iters = 0;
-      
-      if(optimizers[i]->getSolution(_x,_y,iters)){
-	if(_y < y){
-	  y = _y;
-	  x = _x;
+
+      if(optimizers[i] != NULL){
+	if(optimizers[i]->getSolution(_x,_y,iters)){
+	  if(_y < y){
+	    y = _y;
+	    x = _x;
+	  }
+	  iterations += iters;
 	}
-        iterations += iters;
       }
     }
 
     pthread_mutex_unlock( &bfgs_lock );
     
     return true;
+  }
+
+  
+  template <typename T>
+  T pBFGS_nnetwork<T>::getError(const math::vertex<T>& x) const
+  {
+    whiteice::nnetwork<T> nnet(this->net);
+    nnet.importdata(x);
+    
+    math::vertex<T> err;
+    T e = T(0.0f);
+
+    // E = SUM e(i)^2
+    for(unsigned int i=0;i<data.size(0);i++){
+      nnet.input() = data.access(0, i);
+      nnet.calculate(false);
+      err = data.access(1, i) - nnet.output();
+      T inv = T(1.0f/err.size());
+      err = inv*(err*err);
+      e += err[0];
+      // e += T(0.5f)*err[0];
+    }
+    
+    e /= T( (float)data.size(0) ); // per N
+
+    return e;
   }
 
   
@@ -197,6 +240,9 @@ namespace whiteice
     }
 
     thread_running = false;
+    pthread_cancel( updater_thread );
+
+    optimizers.resize(0);
 
     pthread_mutex_unlock( &bfgs_lock );
 
@@ -211,10 +257,6 @@ namespace whiteice
     while(1){
       sleep(1);
       
-      // checks that if some BFGS thread has been converged or
-      // not running anymore and recreates a new optimizer thread
-      // after checking what the best solution found was
-
       pthread_testcancel();
 	
       pthread_mutex_lock( &bfgs_lock );
@@ -223,6 +265,11 @@ namespace whiteice
 	pthread_mutex_unlock( &bfgs_lock );
 	break;
       }
+
+      
+      // checks that if some BFGS thread has been converged or
+      // not running anymore and recreates a new optimizer thread
+      // after checking what the best solution found was
       
       try{
 	
@@ -259,7 +306,7 @@ namespace whiteice
 	    
 	    math::vertex<T> w;
 	    nn.exportdata(w);
-	
+	    
 	    optimizers[i]->minimize(w);
 	  }
 	}
