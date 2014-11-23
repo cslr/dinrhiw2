@@ -2,7 +2,7 @@
 
 Code is only tested and known to compile on Debian/Linux (amd64).
 
-  * The problem may be in NNGradDescent code seem to have some strange bug. It causes strange bad_alloc() errors if used in combination with other methods.
+  * NNGradDescent code seem to have some strange bug. It causes strange bad_alloc() errors if used in combination with other methods.
 
   * OUT OF MEMORY problems with BIG neural networks or BIG DATA leads to strange error messages that are not properly handled.
 
