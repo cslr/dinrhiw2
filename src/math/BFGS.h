@@ -22,7 +22,7 @@ namespace whiteice
       {
       public:
 	BFGS();
-	~BFGS();
+        virtual ~BFGS();
       
       protected:
         /* optimized function */
