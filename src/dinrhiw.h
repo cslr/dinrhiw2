@@ -12,7 +12,7 @@
  *   class/function behaviour morphers
  *   tree structures and sorting
  *   misc utilities
- *   fast linear algebra library (PCA, SVD)
+ *   linear algebra library (PCA, SVD)
  *   data interpolation
  *   heuristical optimizers: GA, PSO
  *   basic cryptography
@@ -27,6 +27,10 @@
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"
 #include "pBFGS_nnetwork.h"
+
+#include "LBFGS.h"
+#include "LBFGS_nnetwork.h"
+#include "pLBFGS_nnetwork.h"
 
 #include "array.h"
 #include "static_array.h"
