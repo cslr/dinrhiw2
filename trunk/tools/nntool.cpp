@@ -278,10 +278,10 @@ int main(int argc, char** argv)
       
       if(verbose){
 	if(secs > 0)
-	  std::cout << "Starting neural network parallel BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
+	  std::cout << "Starting neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
 		    << std::endl;
 	else
-	  std::cout << "Starting neural network parallel BFGS optimization with early stopping (" << threads << " threads).."
+	  std::cout << "Starting neural network BFGS optimization with early stopping (" << threads << " threads).."
 		    << std::endl;
       }
 
