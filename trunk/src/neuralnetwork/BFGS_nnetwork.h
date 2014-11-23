@@ -21,7 +21,7 @@ namespace whiteice
       BFGS_nnetwork(const nnetwork<T>& net,
 		    const dataset<T>& d);
     
-      ~BFGS_nnetwork();
+      virtual ~BFGS_nnetwork();
     
     protected:
 

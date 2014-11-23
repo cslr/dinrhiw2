@@ -275,13 +275,14 @@ int main(int argc, char** argv)
     
     if(lmethod == "bfgs"){
       unsigned int threads = (unsigned int)numberOfCPUThreads();
+      threads = 1; // BFGS do not currently suppory multiple threads
       
       if(verbose){
 	if(secs > 0)
-	  std::cout << "Starting neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
+	  std::cout << "Starting neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
 		    << std::endl;
 	else
-	  std::cout << "Starting neural network BFGS optimization (" << threads << " threads).."
+	  std::cout << "Starting neural network BFGS optimization with early stopping (" << threads << " threads).."
 		    << std::endl;
       }
 
