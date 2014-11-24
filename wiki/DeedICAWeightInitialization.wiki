@@ -2,7 +2,7 @@
 
 == Deep ICA ==
 
-Dinrhiw's nntool uses some heuristics when selecting weights when training neural networks.
+Dinrhiw's nntool uses some heuristics when selecting initial weights when training neural networks (currently deep ica is only used by gradient descent and bayesian sampling).
 
 Initially all weights are [-1,1] uniformly distributed after which each weight vectors in matrix W are normalized to have unit lengths. The idea here is to fix the variance of the state variables to unity. Assume that input data has initially zero mean, unit variance and no correlations (PCA, cov = I). Now, if y = w^t x means that also y has zero mean and have unit covariance because cov(y) = w^t Cov w = w^t I w = ||w||^2 = 1. This keeps data in a good range when considering tanh(x) non-linearity.
 
