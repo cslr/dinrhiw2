@@ -50,6 +50,7 @@ namespace whiteice
 
     pthread_t updater_thread;
     mutable pthread_mutex_t bfgs_lock;
+    mutable pthread_mutex_t thread_lock;
 
     public:
 

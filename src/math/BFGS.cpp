@@ -36,10 +36,14 @@ namespace whiteice
     {
       pthread_mutex_lock( &thread_lock );
       if(thread_running){
-	pthread_cancel( optimizer_thread );
+	// pthread_cancel( optimizer_thread );
 	thread_running = false;
+	
+	// waits for thread to stop
+	pthread_join( optimizer_thread, NULL);
       }
       pthread_mutex_unlock( &thread_lock );
+
       
       pthread_mutex_destroy(&thread_lock);
       pthread_mutex_destroy(&sleep_lock);
@@ -70,7 +74,7 @@ namespace whiteice
       pthread_create(&optimizer_thread, 0,
 		     __bfgs_optimizer_thread_init,
 		     (void*)this);
-      pthread_detach( optimizer_thread);
+      // pthread_detach( optimizer_thread);
       
       pthread_mutex_unlock( &thread_lock );
       
@@ -125,7 +129,8 @@ namespace whiteice
       }
 
       thread_running = false;
-      pthread_cancel( optimizer_thread );
+      pthread_join( optimizer_thread, NULL);
+      // pthread_cancel( optimizer_thread );
       pthread_mutex_unlock( &thread_lock );
       
       return true;
@@ -315,7 +320,7 @@ namespace whiteice
 
 	////////////////////////////////////////////////////////////
 	// checks if thread has been cancelled.
-	pthread_testcancel();
+	// pthread_testcancel();
 	
 	// checks if thread has been ordered to sleep
 	while(sleep_mode){
@@ -325,10 +330,19 @@ namespace whiteice
       
       
       // everything done. time to quit
+      // THIS IS NOT THREAD-SAFE ?!?!
       
-      pthread_mutex_lock( &thread_lock );
-      thread_running = false;
-      pthread_mutex_unlock( &thread_lock );
+      if(pthread_mutex_trylock( &thread_lock ) == 0){
+	thread_running = false;
+	pthread_mutex_unlock( &thread_lock );
+      }
+      else{
+	// cannot get the mutex
+	// [something is happenind to thread_running]
+	// so we just exit and let the mutex owner decide
+	// what to do
+      }
+      
     }
     
     

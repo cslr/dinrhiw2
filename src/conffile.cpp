@@ -49,15 +49,17 @@ namespace whiteice
   }
   
   
-  // loads and/or saves settigns to file
+  // loads and/or saves settings to file
   bool conffile::load(const std::string& filename) throw()
   {    
-    // 1024*1024 is a limitation of configuration file line length.
+    // 20*1024*1024 is a limitation of configuration file line length.
     // conffile is not meant for massive data structures
-    // (aprox. more than 100 000 elements per line)
+    // (aprox. more than 2 000 000 elements per line)
+    // [10 char per item]
     
     ifstream file;
-    char buffer[1024*1024];
+    const unsigned int BUFLEN=20*1024*1024;
+    char buffer[BUFLEN];
     string line;
     
     std::vector<int> i;
@@ -73,7 +75,7 @@ namespace whiteice
     strings.clear();
     floats.clear();
 
-    file.getline(buffer, 1024*1024);
+    file.getline(buffer, BUFLEN);
     line = buffer;
     
     do{
@@ -94,7 +96,7 @@ namespace whiteice
 	}
       }
       
-      file.getline(buffer, 1024*1024);
+      file.getline(buffer, BUFLEN);
       line = buffer;
     }
     while(!file.eof() && file.good());

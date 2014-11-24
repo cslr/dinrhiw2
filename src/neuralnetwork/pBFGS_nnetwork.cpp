@@ -23,20 +23,25 @@ namespace whiteice
   {
     thread_running = false;
     pthread_mutex_init(&bfgs_lock, 0);
+    pthread_mutex_init(&thread_lock, 0);
   }
 
   
   template <typename T>
   pBFGS_nnetwork<T>::~pBFGS_nnetwork()
   {
-    //TODO: stop all computation here
-
-    pthread_mutex_lock( &bfgs_lock );
-
+    pthread_mutex_lock( &thread_lock );
+    
     if(thread_running){
       thread_running = false;
-      pthread_cancel( updater_thread );
+      // pthread_cancel( updater_thread );
+      pthread_join( updater_thread, NULL );
     }
+
+    pthread_mutex_unlock( &thread_lock );
+
+
+    pthread_mutex_lock( &bfgs_lock );
     
     for(unsigned int i=0;i<optimizers.size();i++){
       optimizers[i]->stopComputation();
@@ -49,16 +54,25 @@ namespace whiteice
     pthread_mutex_unlock( &bfgs_lock );
     
     pthread_mutex_destroy(&bfgs_lock);
+    pthread_mutex_destroy(&thread_lock);
   }
   
 
   template <typename T>
   bool pBFGS_nnetwork<T>::minimize(unsigned int NUMTHREADS)
   {
+    pthread_mutex_lock( &thread_lock );
+
+    if(thread_running){
+      pthread_mutex_unlock( &thread_lock );
+      return false; // already running
+    }
+    
     pthread_mutex_lock( &bfgs_lock );
     
-    if(optimizers.size() > 0){
+    if(optimizers.size() > 0){     
       pthread_mutex_unlock( &bfgs_lock );
+      pthread_mutex_unlock( &thread_lock );
       return false; // already running
     }
 
@@ -98,24 +112,24 @@ namespace whiteice
       }
 
       thread_running = false;
-
       optimizers.resize(0);
-      
       pthread_mutex_unlock( &bfgs_lock );
-      
+      pthread_mutex_unlock( &thread_lock );
       return false;
     }
 
+    pthread_mutex_unlock( &bfgs_lock );
 
+    
     thread_running = true;
-
     pthread_create(&updater_thread, 0,
 		   __pbfgs_thread_init,
 		   (void*)this);
-    pthread_detach(updater_thread);
-    
+    // pthread_detach(updater_thread);
 
-    pthread_mutex_unlock( &bfgs_lock );
+    pthread_mutex_unlock( &thread_lock );
+
+    
 
     return true;
   }
@@ -226,6 +240,20 @@ namespace whiteice
   template <typename T>
   bool pBFGS_nnetwork<T>::stopComputation()
   {
+    pthread_mutex_lock( &thread_lock );
+
+    if(thread_running == false){ // nothing to stop
+      pthread_mutex_unlock( &thread_lock );
+      return false;
+    }
+    
+    thread_running = false;
+    // pthread_cancel( updater_thread );
+    pthread_join( updater_thread, NULL);
+
+    pthread_mutex_unlock( &thread_lock );
+    
+
     pthread_mutex_lock( &bfgs_lock );
     
     if(optimizers.size() <= 0){
@@ -239,9 +267,6 @@ namespace whiteice
       optimizers[i] = NULL;
     }
 
-    thread_running = false;
-    pthread_cancel( updater_thread );
-
     optimizers.resize(0);
 
     pthread_mutex_unlock( &bfgs_lock );
@@ -254,22 +279,14 @@ namespace whiteice
   void pBFGS_nnetwork<T>::__updater_loop()
   {
     
-    while(1){
+    while(thread_running){
       sleep(1);
       
-      pthread_testcancel();
-	
       pthread_mutex_lock( &bfgs_lock );
-
-      if(thread_running == false){
-	pthread_mutex_unlock( &bfgs_lock );
-	break;
-      }
-
       
       // checks that if some BFGS thread has been converged or
       // not running anymore and recreates a new optimizer thread
-      // after checking what the best solution found was
+      // after checking what the best solution found was updated
       
       try{
 	
@@ -316,6 +333,8 @@ namespace whiteice
       
       pthread_mutex_unlock( &bfgs_lock );
     }
+    
+    
   }
   
   

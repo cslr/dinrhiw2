@@ -7,7 +7,11 @@ It currently does NOT work on MinGW32/win32 platform, maybe because of compiler 
   valgrind everything (testcases) and RECHECK/REREAD nnetwork code carefully.
   (read backpropagation/gradient code carefully)
 
-  * The problem may be in NNGradDescent code.
+  * The problem may be in NNGradDescent code (threading?)
+
+* BFGS and LBFGS parallel code has rare threading/synchronization issues
+  (thread_running is MODIFIED by theading loop but somebody may get/modify
+   the thread_running (mutex) BEFORE we exit)
 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.
