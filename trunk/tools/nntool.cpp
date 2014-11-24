@@ -206,7 +206,7 @@ int main(int argc, char** argv)
       while(arch[counter] == dimension)
 	counter++;
       
-      if(counter >= 2){
+      if(counter > 2){
 	unsigned int deepness = counter/2;
 	
 	if(verbose)
