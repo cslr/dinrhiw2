@@ -51,59 +51,67 @@ namespace whiteice
   
   // loads and/or saves settings to file
   bool conffile::load(const std::string& filename) throw()
-  {    
-    // 20*1024*1024 is a limitation of configuration file line length.
-    // conffile is not meant for massive data structures
-    // (aprox. more than 2 000 000 elements per line)
-    // [10 char per item]
-    
-    ifstream file;
-    const unsigned int BUFLEN=20*1024*1024;
-    char buffer[BUFLEN];
-    string line;
-    
-    std::vector<int> i;
-    std::vector<float> f;
-    std::vector<std::string> s;
-    std::string str;
-
-    file.open(filename.c_str());
-    if(!file.is_open()) return false;
-    if(!file.good()) return false;
-    
-    integers.clear();
-    strings.clear();
-    floats.clear();
-
-    file.getline(buffer, BUFLEN);
-    line = buffer;
-    
-    do{
-      i.clear();
-      f.clear();
-      s.clear();
-      str = "";
+  {
+    try{
+      // 20*1024*1024 is a limitation of configuration file line length.
+      // conffile is not meant for massive data structures
+      // (aprox. more than 2 000 000 elements per line)
+      // [10 char per item]
       
-      if(parse(line, str, i, f, s)){
-	if(!i.empty()){
-	  integers[str] = i;
-	}
-	else if(!f.empty()){
-	  floats[str] = f;
-	}
-	else if(!s.empty()){
-	  strings[str] = s;
-	}
-      }
+      ifstream file;
+      const unsigned int BUFLEN=20*1024*1024;
+      char* buffer = new char[BUFLEN];
+      string line;
       
+      std::vector<int> i;
+      std::vector<float> f;
+      std::vector<std::string> s;
+      std::string str;
+      
+      file.open(filename.c_str());
+      if(!file.is_open()) return false;
+      if(!file.good()) return false;
+      
+      integers.clear();
+      strings.clear();
+      floats.clear();
+
       file.getline(buffer, BUFLEN);
       line = buffer;
+      
+      do{
+	i.clear();
+	f.clear();
+	s.clear();
+	str = "";
+	
+	if(parse(line, str, i, f, s)){
+	  if(!i.empty()){
+	    integers[str] = i;
+	  }
+	  else if(!f.empty()){
+	    floats[str] = f;
+	  }
+	  else if(!s.empty()){
+	    strings[str] = s;
+	  }
+	}
+	
+	file.getline(buffer, BUFLEN);
+	line = buffer;
+      }
+      while(!file.eof() && file.good());
+      
+      file.close();
+
+      delete[] buffer;
+      
+      return true;
     }
-    while(!file.eof() && file.good());
-    
-    file.close();
-    
-    return true;
+    catch(std::exception& e){
+      // most probably out of memory error
+      return false;
+    }
   }
   
   
