@@ -20,7 +20,7 @@ rm -f commviol-test.ds
 # uses nntool trying to learn from dataset
 # (first BFGS optimization and then sample using bayesian sampler)
 
-./nntool --samples 100 -v commviol-test.ds 141-10-4 commviol-nn.cfg bfgs
+./nntool --samples 100 -v commviol-test.ds 141-10-4 commviol-nn.cfg lbfgs
 ./nntool --samples 2000 --load -v commviol-test.ds 141-10-4 commviol-nn.cfg bayes
 
 ##################################################

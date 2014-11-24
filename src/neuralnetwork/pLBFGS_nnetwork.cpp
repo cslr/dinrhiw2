@@ -88,8 +88,11 @@ namespace whiteice
 	optimizers[i] = new LBFGS_nnetwork<T>(net, data);
 	
 	nnetwork<T> nn(this->net);
-	nn.randomize();
-	normalize_weights_to_unity(nn);
+	
+	if(i != 0){ // we keep a single instance of the original nn in a starting set
+	  nn.randomize();
+	  normalize_weights_to_unity(nn);
+	}
 	
 	math::vertex<T> w;
 	nn.exportdata(w);
