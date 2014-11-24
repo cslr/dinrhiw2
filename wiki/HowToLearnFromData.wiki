@@ -50,4 +50,4 @@ Here dstool is first used to import data into binary format (-create, -import), 
 
 A more complex data learning technique can be activated by using _test_data3_bayes.sh_ script which uses a simple bayesian model and sampling technique to approximate bayesian inference to learn sample of probable neural network parameters which are then used to estimate E(y|x) and Var(y|x). This technique is slower but gives somewhat better results in difficult problems like in dataset 3 where dinrhiw's algorithms cannot find a good model to predict outputs from inputs.
 
-However, the current best method to use when learning from data is L-BFGS method that is activated using ("*lbfgs*") learning method.
+However, the current best method to use when learning from data is L-BFGS method that is activated using ("*lbfgs*") learning method instead of "grad" or "bayes".
