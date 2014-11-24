@@ -1,4 +1,4 @@
-#summary Read me first
+#summary read me first
 
 The library was originally developed during 1998-2005. There is no plans to develop the private library any further and this is the official fork of the library to be LGPL-licensed code (2014). The primary aim of the library is to provide machine learning tools for *[https://sourceforge.net/projects/resonanz/ Resonanz]* project.
 
