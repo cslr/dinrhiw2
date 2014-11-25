@@ -27,6 +27,10 @@ namespace whiteice
    * stores them to parameters. calculations are done recursively
    * by first calculating PCA and one-layer non-linear ICA and
    * then calling this function again with deepness-1.
+   *
+   * NOTE: currently using tanh(x) non-linearity, sinh(x) would
+   *       be better but DO NOT work for nnetwork initialization
+   *       which uses tanh(x) 
    */
   bool deep_nonlin_ica(std::vector< math::vertex<> >& data,
 		       std::vector<deep_ica_parameters>&
@@ -102,7 +106,8 @@ namespace whiteice
 	math::vertex<> d1 = data[i];
 
 	for(unsigned int ii=0;ii<d1.size();ii++){
-	  d1[ii] = sinhf(d1[ii].c[0]);
+	  // d1[ii] = sinhf(d1[ii].c[0]);
+	  d1[ii] = tanhf(d1[ii].c[0]);
 	}
 
 	sinh_data.push_back(d1);
@@ -133,7 +138,13 @@ namespace whiteice
 	x = p.W_ica * x + p.b_ica;
 
 	for(unsigned int ii=0;ii<x.size();ii++)
-	  x[ii] = asinhf(x[ii].c[0]);
+	  // x[ii] = asinhf(x[ii].c[0]);
+	  if(x[ii].c[0] >= 0.9999f)
+	    x[ii] = atanhf(0.9999f);
+	  else if(x[ii].c[0] <= -0.9999f)
+	    x[ii] = atanhf(-0.9999f);
+	  else
+	    x[ii] = atanhf(x[ii].c[0]);
 
 	// overwrites the data vector with preprocessed data
 	data[i] = x; 

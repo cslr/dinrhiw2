@@ -18,7 +18,7 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 50 --threads 1 --overfit commviol-test.ds 141-141-141-141-141-4 commviol-nn.cfg lbfgs
+./nntool -v --samples 50 --threads 1 commviol-test.ds 141-141-141-141-141-4 commviol-nn.cfg lbfgs
 
 ##################################################
 # testing
