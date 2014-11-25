@@ -1,0 +1,15 @@
+#summary weight initialization codes in nntool
+
+== Deep ICA ==
+
+Dinrhiw's nntool uses some heuristics when selecting initial weights when training neural networks (currently deep ica is only used by gradient descent, L-BFGS and bayesian sampling).
+
+Initially all weights are [-1,1] uniformly distributed after which each weight vectors in matrix W are normalized to have unit lengths. The idea here is to fix the variance of the state variables to unity. Assume that input data has initially zero mean, unit variance and no correlations (PCA, cov = I). Now, if y = w^t^x means that also y has zero mean and have unit covariance because cov(y) = w^t^ Cov w = w^t^ I w = |w|^2^ = 1. This keeps data in a good range when considering tanh(x) non-linearity.
+
+Deep ICA algorithm (used by grad, bayes method) is based on idea that we are training deep N-N-N-N-N-OUTPUT structured neural networks. Here we try to compute non-linear independent component's of input data by diagonalizing Gxx = E{g(x)g(x)^t^} higher-order correlation matrix where higher order correlations are eliminated by first whitening data with standard PCA operation and then by diagnonalizing Gxx with transformation z = g^-1(W*g(x)) and defining g(x) = g'(x) - E{g'(x)} so that g(x) is zero preserving E{g(x)} = 0. 
+
+For generating higher order moments we use g(x) = sinh(x) because it preserves sign of the input and higher order moments g(x) = SUM a_k x^(2k+1)^ where a_k > 0. Additionally, sinh(x) has inverse for all variables and does not lead to complex values unlike tanh(x) function. After non-linear transformation we then have Gzz = W E{g(x)g(x)^t^} W^t^ = W Gxx W^t^ and W matrix can be chosen to be W = X^t^, when Gxx = X D X^t^ is Gxx's eigenvalue decomposition. (We do not want to try to change scale when diagonalizing non-linear Gxx).
+
+So in deep ICA we first compute PCA for the first layer, use sinh() non-linearity and then furthermore whiten higher order moments using W after which we use asinh(x) non-linearities (bias terms fix the mean values of the data to zero). Additionally, because tanh(x) and sinh(x) are close to linear transformations near zero. We directly insert PCA and W matrixes and bias-terms into regular neural network using tanh(x) non-linearities and let the final output layer weights to be randomly chosen. After this optimization methods are used to tune W and b matrixes to work with tanh(x) non-linearities (?).
+
+This then leads to deep N-N-N-N-N-N-N-output like neural networks. In MATLAB I have successfully used 100 deep ICA steps to create interesting independent components and normal linear independent components often emerge after just we steps of deep ICA.
