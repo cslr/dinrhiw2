@@ -17,4 +17,6 @@ So in deep ICA we first compute PCA for the first layer, use sinh() non-linearit
 This then leads to deep N-N-N-N-N-N-N-output like neural networks. In MATLAB I have successfully used 100 deep ICA steps to create interesting independent components and normal linear independent components often emerge after just we steps of deep ICA.
 
 NOTE: instead of sinh or tanh non-linearities we could maybe also use x^3^ moment generating function and ignore rest of the x^5^, x^7^.. terms but it seems that just using x^3^ leads to some kind of overfitting or at least the independent component signals are VERY different now (which maybe good if they manage to find on/off square functions that are easy to use for classification).
+
+http://technotes5.blogspot.fi/2014/11/non-linear-deep-ica.html
  
