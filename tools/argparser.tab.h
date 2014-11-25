@@ -13,8 +13,9 @@ void parse_commandline(int argc, char** argv,
 		       std::vector<unsigned int>& arch,
 		       unsigned int& cmdmode,
 		       unsigned int& secs, unsigned int& samples,
+		       unsigned int& threads,
 		       bool& no_init,
-		       bool& load, bool& help, 
+		       bool& load, bool& overfit, bool& help, 
 		       bool& verbose);
 
 #endif

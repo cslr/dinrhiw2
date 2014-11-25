@@ -21,7 +21,7 @@ namespace whiteice
       class BFGS
       {
       public:
-	BFGS();
+        BFGS(bool overfit=false); // overfit: do not use early stopping via getError() function
         virtual ~BFGS();
       
       protected:
@@ -72,6 +72,8 @@ namespace whiteice
 	vertex<T> bestx; 
 	T besty;
         volatile unsigned int iterations;
+
+        bool overfit;
 	
         volatile bool sleep_mode, thread_running, solution_converged;
 	pthread_t optimizer_thread;

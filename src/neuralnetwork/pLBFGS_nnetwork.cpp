@@ -18,12 +18,15 @@ namespace whiteice
   
   template <typename T>
   pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const nnetwork<T>& nn,
-				    const dataset<T>& d) :
+				      const dataset<T>& d,
+				      bool overfit) :
     net(nn), data(d)
   {
     thread_running = false;
     pthread_mutex_init(&bfgs_lock, 0);
     pthread_mutex_init(&thread_lock, 0);
+
+    this->overfit = overfit;
   }
   
   
@@ -85,7 +88,7 @@ namespace whiteice
 
     try{
       for(unsigned int i=0;i<optimizers.size();i++){
-	optimizers[i] = new LBFGS_nnetwork<T>(net, data);
+	optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 	
 	nnetwork<T> nn(this->net);
 	
@@ -321,7 +324,7 @@ namespace whiteice
 	  }
 
 	  if(optimizers[i] == NULL){
-	    optimizers[i] = new LBFGS_nnetwork<T>(net, data);
+	    optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 
 	    nnetwork<T> nn(this->net);
 	    nn.randomize();

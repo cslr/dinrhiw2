@@ -22,7 +22,7 @@ namespace whiteice
     {
     public:
 
-    pLBFGS_nnetwork(const nnetwork<T>& net, const dataset<T>& data);
+    pLBFGS_nnetwork(const nnetwork<T>& net, const dataset<T>& data, bool overfit=false);
     ~pLBFGS_nnetwork();
 
     bool minimize(unsigned int NUMTHREADS);
@@ -43,6 +43,8 @@ namespace whiteice
 
     volatile bool thread_running;
     std::vector< LBFGS_nnetwork<T>* > optimizers;
+
+    bool overfit;
 
     math::vertex<T> global_best_x;
     T global_best_y;

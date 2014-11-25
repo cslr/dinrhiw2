@@ -5,8 +5,8 @@ libdir=@libdir@
 includedir=@includedir@/dinrhiw
 
 Name: whiteice::dinrhiw
-Description: whiteice::dinrhiw - basic linear algebra and machine learning library
-Version: 0.550
+Description: whiteice::dinrhiw - basic linear algebra and machine learning library and tools
+Version: 0.58
 Requires: 
 Libs: -L@atlas_libpath@ @EXTRA_LIBPATHS@ -ldinrhiw -lz -lgmp -lblas
 Cflags: -I@prefix@/include/dinrhiw @EXTRA_INCLUDEPATHS@ @conf_flags@

@@ -4,15 +4,16 @@
  * grammar
  *
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
- * OPTIONS = "--no-init" | "-v" | "--help" | "--version" |
- *           "--time" <number> | "--load"
+ * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
+ *           "--time" <number> | "--load" | "--samples <NUMBER>" |
+ *           "--threads <number>"
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
  * AC      = <number> | "?"
  * NNFILE  = <filename>
  * LMETHOD = MBASIC 
- * MBASIC  = use | random | grad | bfgs | bayes | lbfgs
+ * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs
  * 
  */
 
@@ -35,11 +36,14 @@
     bool load;
     bool help;
     bool version;
+    bool overfit;
     bool noinit;
     bool hasTIME;
     unsigned int secs;
     bool hasSAMPLES;
     unsigned int samples;
+
+    unsigned int threads;
     
     std::string datafile;
     std::string arch;
@@ -72,19 +76,22 @@
 
 /* OPTIONS */
 %token <str> OPT_NOINIT
+%token <str> OPT_OVERFIT
 %token <str> OPT_LOAD
 %token <str> OPT_HELP
 %token <str> OPT_VERBOSE
 %token <str> OPT_VERSION
 %token <str> OPT_TIME
 %token <str> OPT_SAMPLES
+%token <str> OPT_THREADS
 %token <str> OPT_ENDOPT
 
 /* LMETHOD */
 %token <str> LM_USE
 %token <str> LM_PARALLELGRAD
 %token <str> LM_GRAD
-%token <str> LM_BFGS
+%token <str> LM_PBFGS
+%token <str> LM_PLBFGS
 %token <str> LM_LBFGS
 %token <str> LM_RANDOM
 %token <str> LM_BAYES
@@ -118,10 +125,12 @@ anystring: STRING     { $$ = $1; }
 ;
 
 option:	OPT_NOINIT             { __info.noinit  = true; }
+      | OPT_OVERFIT            { __info.overfit = true; }
       | OPT_HELP               { __info.help    = true; }
       | OPT_LOAD               { __info.load    = true; }
       | OPT_VERBOSE            { __info.verbose = true; }
       | OPT_VERSION            { __info.version = true; }
+      | OPT_THREADS NUMBER     { __info.threads = $2; }
       | OPT_TIME NUMBER        { __info.hasTIME = true; __info.secs = $2; }
       | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
 
@@ -151,7 +160,8 @@ lmethod: /* empty */
 
 mbasic: LM_USE     { __info.method = $1; }
       | LM_GRAD    { __info.method = $1; }
-      | LM_BFGS    { __info.method = $1; }
+      | LM_PBFGS   { __info.method = $1; }
+      | LM_PLBFGS  { __info.method = $1; }      
       | LM_LBFGS   { __info.method = $1; }
       | LM_PARALLELGRAD { __info.method = $1; }
       | LM_RANDOM  { __info.method = $1; }
@@ -206,8 +216,9 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& cmdmode,
 		       unsigned int& secs,
 		       unsigned int& samples,
+		       unsigned int& threads,
 		       bool& no_init,
-		       bool& load, bool& help,
+		       bool& load, bool& overfit, bool& help,
 		       bool& verbose)
 {
   // defaults
@@ -218,6 +229,7 @@ void parse_commandline(int argc, char** argv,
   verbose = false;
   load    = false;
   help    = false;
+  threads = 0;
   
   // handles simple params 
   // (not handled correctly by grammar which assumes network file
@@ -246,6 +258,8 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "--no-init"; p.code = OPT_NOINIT;
     cmdparamslist.push_back(p);
+    p.name = "--overfit"; p.code = OPT_OVERFIT;
+    cmdparamslist.push_back(p);    
     p.name = "--help"; p.code = OPT_HELP;
     cmdparamslist.push_back(p);
     p.name = "-v"; p.code = OPT_VERBOSE;
@@ -253,6 +267,8 @@ void parse_commandline(int argc, char** argv,
     p.name = "--version"; p.code = OPT_VERSION;
     cmdparamslist.push_back(p);
     p.name = "--time"; p.code = OPT_TIME;
+    cmdparamslist.push_back(p);		
+    p.name = "--threads"; p.code = OPT_THREADS;
     cmdparamslist.push_back(p);
     p.name = "--samples"; p.code = OPT_SAMPLES;
     cmdparamslist.push_back(p);    
@@ -263,10 +279,12 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);
-    p.name = "bfgs"; p.code = LM_BFGS;
+    p.name = "parallelbfgs"; p.code = LM_PBFGS;
+    cmdparamslist.push_back(p);
+    p.name = "parallellbfgs"; p.code = LM_PLBFGS;
     cmdparamslist.push_back(p);
     p.name = "lbfgs"; p.code = LM_LBFGS;
-    cmdparamslist.push_back(p);
+    cmdparamslist.push_back(p);    
     p.name = "parallelgrad"; p.code = LM_PARALLELGRAD;
     cmdparamslist.push_back(p);
     p.name = "random"; p.code = LM_RANDOM;
@@ -287,11 +305,13 @@ void parse_commandline(int argc, char** argv,
   __info.verbose    = false;
   __info.load       = false;
   __info.help       = false;
+  __info.help       = false;  
   __info.version    = false;
   __info.hasTIME    = false;
   __info.hasSAMPLES = false;
   __info.secs       = 0;
   __info.samples    = 0;
+  __info.threads    = 0;
   __info.method     = "use";
   
   
@@ -403,6 +423,7 @@ void parse_commandline(int argc, char** argv,
     load    = __info.load;
     help    = __info.help;
     verbose = __info.verbose;
+    overfit = __info.overfit;
     
     lmethod = __info.method;
     lmods   = __info.mods;
@@ -413,6 +434,7 @@ void parse_commandline(int argc, char** argv,
     cmdmode = 0; 
     secs    = __info.secs;
     samples = __info.samples;
+    threads = __info.threads;
         
     return;
   }

@@ -20,7 +20,7 @@ namespace whiteice
   {
     
     template <typename T>
-    BFGS<T>::BFGS()
+    BFGS<T>::BFGS(bool overfit)
     {
       thread_running = false;
       sleep_mode = false;
@@ -28,6 +28,8 @@ namespace whiteice
       pthread_mutex_init(&thread_lock, 0);
       pthread_mutex_init(&sleep_lock, 0);
       pthread_mutex_init(&solution_lock, 0);
+
+      this->overfit = overfit;
     }
     
     
@@ -257,14 +259,16 @@ namespace whiteice
 	try{
 	  // we keep iterating until we converge (later) or
 	  // the real error starts to increase
-	  prev_error = error;
-	  error = getError(x);
-	  ratio = (prev_error - error)/prev_error;
-
-	  if(ratio < T(0.0f)){
-	    break;
+	  if(overfit == false){
+	    prev_error = error;
+	    error = getError(x);
+	    ratio = (prev_error - error)/prev_error;
+	    
+	    if(ratio < T(0.0f)){
+	      break;
+	    }
 	  }
-
+	    
 
 	  ////////////////////////////////////////////////////////////
 	  g = Ugrad(x);
