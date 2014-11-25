@@ -385,6 +385,51 @@ namespace whiteice
     
     return true;
   }
+
+  
+  /*
+   * downsamples all clusters jointly down to samples samples.
+   * fails if clusters have different sizes or samples == 0 or
+   * it is larger that given samples. 
+   */
+  template <typename T>
+  bool dataset<T>::downsampleAll(unsigned int samples) throw()
+  {
+    if(clusters.size() <= 0) return false;
+
+    const unsigned int N = clusters[0].data.size();
+
+    for(unsigned int i=0;i<clusters.size();i++){
+      if(clusters[i].data.size() != N)
+	return false;
+    }
+
+    if(samples >= N){
+      return false;
+    }
+    else if(samples == 0){
+      for(unsigned int i=0;i<clusters.size();i++){
+	clusters[i].data.clear();
+      }
+      return true;
+    }
+
+    std::vector<dataset<T>::cluster> d;
+    d.resize(clusters.size());
+
+    for(unsigned int i=0;i<samples;i++){
+      unsigned int index = rand() % N;
+      
+      for(unsigned int j=0;j<clusters.size();j++){
+	d[j].data.push_back(clusters[j].data[index]);
+      }
+    }
+
+    for(unsigned int j=0;j<clusters.size();j++)
+      clusters[j].data = d[j].data;
+
+    return true;
+  }
   
   
   // iterators for dataset

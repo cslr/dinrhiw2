@@ -75,6 +75,12 @@ namespace whiteice
       
       // clears data and preprocessing information
       bool clearAll(unsigned int index = 0);
+
+      // reduces data by taking sample or 'samples' samples from
+      // each cluster (which must have equal size) and keeps
+      // order of samples between different clusters the same
+      // so ith element of cluster A match to ith element of cluster B
+      bool downsampleAll(unsigned int samples) throw();
       
       /* defines dataset<T>::iterator */
       typedef typename std::vector< math::vertex<T> >::iterator iterator;

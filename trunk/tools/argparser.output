@@ -1,5 +1,5 @@
-Tila 18 ristiriidat: 1 siirto/supistaminen
-Tila 21 ristiriidat: 1 siirto/supistaminen
+Tila 20 ristiriidat: 1 siirto/supistaminen
+Tila 23 ristiriidat: 1 siirto/supistaminen
 
 
 Kielioppi
@@ -23,120 +23,123 @@ Kielioppi
    12       | OPT_VERBOSE
    13       | OPT_VERSION
    14       | OPT_THREADS NUMBER
-   15       | OPT_TIME NUMBER
-   16       | OPT_SAMPLES NUMBER
+   15       | OPT_DATASIZE NUMBER
+   16       | OPT_TIME NUMBER
+   17       | OPT_SAMPLES NUMBER
 
-   17 endopt: %empty
-   18       | OPT_ENDOPT
+   18 endopt: %empty
+   19       | OPT_ENDOPT
 
-   19 data: %empty
-   20     | FILENAME
+   20 data: %empty
+   21     | FILENAME
 
-   21 arch: %empty
-   22     | ARCHSTRING
+   22 arch: %empty
+   23     | ARCHSTRING
 
-   23 nnfile: anystring
+   24 nnfile: anystring
 
-   24 lmethod: %empty
-   25        | mbasic mmodseq
+   25 lmethod: %empty
+   26        | mbasic mmodseq
 
-   26 mbasic: LM_USE
-   27       | LM_GRAD
-   28       | LM_PBFGS
-   29       | LM_PLBFGS
-   30       | LM_LBFGS
-   31       | LM_PARALLELGRAD
-   32       | LM_RANDOM
-   33       | LM_BAYES
+   27 mbasic: LM_USE
+   28       | LM_GRAD
+   29       | LM_PBFGS
+   30       | LM_PLBFGS
+   31       | LM_LBFGS
+   32       | LM_PARALLELGRAD
+   33       | LM_RANDOM
+   34       | LM_BAYES
 
-   34 mmodseq: %empty
-   35        | mmod mmodseq
+   35 mmodseq: %empty
+   36        | mmod mmodseq
 
-   36 mmod: MMOD_OVERTRAIN
-   37     | MMOD_PCA
-   38     | MMOD_ICA
+   37 mmod: MMOD_OVERTRAIN
+   38     | MMOD_PCA
+   39     | MMOD_ICA
 
 
 Päätteet, säännöillä missä niin tarvitaan
 
 $end (0) 0
 error (256)
-NUMBER (258) 7 14 15 16
+NUMBER (258) 7 14 15 16 17
 STRING (259) 4
-FILENAME (260) 6 20
-ARCHSTRING (261) 5 22
+FILENAME (260) 6 21
+ARCHSTRING (261) 5 23
 OPT_NOINIT (262) 8
 OPT_OVERFIT (263) 9
 OPT_LOAD (264) 11
 OPT_HELP (265) 10
 OPT_VERBOSE (266) 12
 OPT_VERSION (267) 13
-OPT_TIME (268) 15
-OPT_SAMPLES (269) 16
+OPT_TIME (268) 16
+OPT_SAMPLES (269) 17
 OPT_THREADS (270) 14
-OPT_ENDOPT (271) 18
-LM_USE (272) 26
-LM_PARALLELGRAD (273) 31
-LM_GRAD (274) 27
-LM_PBFGS (275) 28
-LM_PLBFGS (276) 29
-LM_LBFGS (277) 30
-LM_RANDOM (278) 32
-LM_BAYES (279) 33
-MMOD_OVERTRAIN (280) 36
-MMOD_PCA (281) 37
-MMOD_ICA (282) 38
+OPT_DATASIZE (271) 15
+OPT_ENDOPT (272) 19
+LM_USE (273) 27
+LM_PARALLELGRAD (274) 32
+LM_GRAD (275) 28
+LM_PBFGS (276) 29
+LM_PLBFGS (277) 30
+LM_LBFGS (278) 31
+LM_RANDOM (279) 33
+LM_BAYES (280) 34
+MMOD_OVERTRAIN (281) 37
+MMOD_PCA (282) 38
+MMOD_ICA (283) 39
 
 
 Ei-päätteet, säännöillä missä niitä tarvitaan
 
-$accept (28)
+$accept (29)
     vasemmalla: 0
-arg (29)
+arg (30)
     vasemmalla: 1, oikealla: 0
-optseq (30)
+optseq (31)
     vasemmalla: 2 3, oikealla: 1 3
-anystring (31)
-    vasemmalla: 4 5 6 7, oikealla: 23
-option (32)
-    vasemmalla: 8 9 10 11 12 13 14 15 16, oikealla: 3
-endopt (33)
-    vasemmalla: 17 18, oikealla: 1
-data (34)
-    vasemmalla: 19 20, oikealla: 1
-arch (35)
-    vasemmalla: 21 22, oikealla: 1
-nnfile (36)
-    vasemmalla: 23, oikealla: 1
-lmethod (37)
-    vasemmalla: 24 25, oikealla: 1
-mbasic (38)
-    vasemmalla: 26 27 28 29 30 31 32 33, oikealla: 25
-mmodseq (39)
-    vasemmalla: 34 35, oikealla: 25 35
-mmod (40)
-    vasemmalla: 36 37 38, oikealla: 35
+anystring (32)
+    vasemmalla: 4 5 6 7, oikealla: 24
+option (33)
+    vasemmalla: 8 9 10 11 12 13 14 15 16 17, oikealla: 3
+endopt (34)
+    vasemmalla: 18 19, oikealla: 1
+data (35)
+    vasemmalla: 20 21, oikealla: 1
+arch (36)
+    vasemmalla: 22 23, oikealla: 1
+nnfile (37)
+    vasemmalla: 24, oikealla: 1
+lmethod (38)
+    vasemmalla: 25 26, oikealla: 1
+mbasic (39)
+    vasemmalla: 27 28 29 30 31 32 33 34, oikealla: 26
+mmodseq (40)
+    vasemmalla: 35 36, oikealla: 26 36
+mmod (41)
+    vasemmalla: 37 38 39, oikealla: 36
 
 
 Tila 0
 
     0 $accept: . arg $end
 
-    OPT_NOINIT   siirto, ja siirry tilaan 1
-    OPT_OVERFIT  siirto, ja siirry tilaan 2
-    OPT_LOAD     siirto, ja siirry tilaan 3
-    OPT_HELP     siirto, ja siirry tilaan 4
-    OPT_VERBOSE  siirto, ja siirry tilaan 5
-    OPT_VERSION  siirto, ja siirry tilaan 6
-    OPT_TIME     siirto, ja siirry tilaan 7
-    OPT_SAMPLES  siirto, ja siirry tilaan 8
-    OPT_THREADS  siirto, ja siirry tilaan 9
+    OPT_NOINIT    siirto, ja siirry tilaan 1
+    OPT_OVERFIT   siirto, ja siirry tilaan 2
+    OPT_LOAD      siirto, ja siirry tilaan 3
+    OPT_HELP      siirto, ja siirry tilaan 4
+    OPT_VERBOSE   siirto, ja siirry tilaan 5
+    OPT_VERSION   siirto, ja siirry tilaan 6
+    OPT_TIME      siirto, ja siirry tilaan 7
+    OPT_SAMPLES   siirto, ja siirry tilaan 8
+    OPT_THREADS   siirto, ja siirry tilaan 9
+    OPT_DATASIZE  siirto, ja siirry tilaan 10
 
     $default  supistaminen käyttäen sääntöä 2 (optseq)
 
-    arg     siirry tilaan 10
-    optseq  siirry tilaan 11
-    option  siirry tilaan 12
+    arg     siirry tilaan 11
+    optseq  siirry tilaan 12
+    option  siirry tilaan 13
 
 
 Tila 1
@@ -183,331 +186,346 @@ Tila 6
 
 Tila 7
 
-   15 option: OPT_TIME . NUMBER
+   16 option: OPT_TIME . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 13
+    NUMBER  siirto, ja siirry tilaan 14
 
 
 Tila 8
 
-   16 option: OPT_SAMPLES . NUMBER
+   17 option: OPT_SAMPLES . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 14
+    NUMBER  siirto, ja siirry tilaan 15
 
 
 Tila 9
 
    14 option: OPT_THREADS . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 15
+    NUMBER  siirto, ja siirry tilaan 16
 
 
 Tila 10
 
-    0 $accept: arg . $end
+   15 option: OPT_DATASIZE . NUMBER
 
-    $end  siirto, ja siirry tilaan 16
+    NUMBER  siirto, ja siirry tilaan 17
 
 
 Tila 11
 
-    1 arg: optseq . endopt data arch nnfile lmethod
+    0 $accept: arg . $end
 
-    OPT_ENDOPT  siirto, ja siirry tilaan 17
-
-    $default  supistaminen käyttäen sääntöä 17 (endopt)
-
-    endopt  siirry tilaan 18
+    $end  siirto, ja siirry tilaan 18
 
 
 Tila 12
 
-    3 optseq: option . optseq
+    1 arg: optseq . endopt data arch nnfile lmethod
 
-    OPT_NOINIT   siirto, ja siirry tilaan 1
-    OPT_OVERFIT  siirto, ja siirry tilaan 2
-    OPT_LOAD     siirto, ja siirry tilaan 3
-    OPT_HELP     siirto, ja siirry tilaan 4
-    OPT_VERBOSE  siirto, ja siirry tilaan 5
-    OPT_VERSION  siirto, ja siirry tilaan 6
-    OPT_TIME     siirto, ja siirry tilaan 7
-    OPT_SAMPLES  siirto, ja siirry tilaan 8
-    OPT_THREADS  siirto, ja siirry tilaan 9
+    OPT_ENDOPT  siirto, ja siirry tilaan 19
 
-    $default  supistaminen käyttäen sääntöä 2 (optseq)
+    $default  supistaminen käyttäen sääntöä 18 (endopt)
 
-    optseq  siirry tilaan 19
-    option  siirry tilaan 12
+    endopt  siirry tilaan 20
 
 
 Tila 13
 
-   15 option: OPT_TIME NUMBER .
+    3 optseq: option . optseq
 
-    $default  supistaminen käyttäen sääntöä 15 (option)
+    OPT_NOINIT    siirto, ja siirry tilaan 1
+    OPT_OVERFIT   siirto, ja siirry tilaan 2
+    OPT_LOAD      siirto, ja siirry tilaan 3
+    OPT_HELP      siirto, ja siirry tilaan 4
+    OPT_VERBOSE   siirto, ja siirry tilaan 5
+    OPT_VERSION   siirto, ja siirry tilaan 6
+    OPT_TIME      siirto, ja siirry tilaan 7
+    OPT_SAMPLES   siirto, ja siirry tilaan 8
+    OPT_THREADS   siirto, ja siirry tilaan 9
+    OPT_DATASIZE  siirto, ja siirry tilaan 10
+
+    $default  supistaminen käyttäen sääntöä 2 (optseq)
+
+    optseq  siirry tilaan 21
+    option  siirry tilaan 13
 
 
 Tila 14
 
-   16 option: OPT_SAMPLES NUMBER .
+   16 option: OPT_TIME NUMBER .
 
     $default  supistaminen käyttäen sääntöä 16 (option)
 
 
 Tila 15
 
+   17 option: OPT_SAMPLES NUMBER .
+
+    $default  supistaminen käyttäen sääntöä 17 (option)
+
+
+Tila 16
+
    14 option: OPT_THREADS NUMBER .
 
     $default  supistaminen käyttäen sääntöä 14 (option)
 
 
-Tila 16
+Tila 17
+
+   15 option: OPT_DATASIZE NUMBER .
+
+    $default  supistaminen käyttäen sääntöä 15 (option)
+
+
+Tila 18
 
     0 $accept: arg $end .
 
     $default  accept
 
 
-Tila 17
+Tila 19
 
-   18 endopt: OPT_ENDOPT .
+   19 endopt: OPT_ENDOPT .
 
-    $default  supistaminen käyttäen sääntöä 18 (endopt)
+    $default  supistaminen käyttäen sääntöä 19 (endopt)
 
 
-Tila 18
+Tila 20
 
     1 arg: optseq endopt . data arch nnfile lmethod
 
-    FILENAME  siirto, ja siirry tilaan 20
+    FILENAME  siirto, ja siirry tilaan 22
 
-    FILENAME  [supistaminen käyttäen sääntöä 19 (data)]
-    $default  supistaminen käyttäen sääntöä 19 (data)
+    FILENAME  [supistaminen käyttäen sääntöä 20 (data)]
+    $default  supistaminen käyttäen sääntöä 20 (data)
 
-    data  siirry tilaan 21
+    data  siirry tilaan 23
 
 
-Tila 19
+Tila 21
 
     3 optseq: option optseq .
 
     $default  supistaminen käyttäen sääntöä 3 (optseq)
 
 
-Tila 20
-
-   20 data: FILENAME .
-
-    $default  supistaminen käyttäen sääntöä 20 (data)
-
-
-Tila 21
-
-    1 arg: optseq endopt data . arch nnfile lmethod
-
-    ARCHSTRING  siirto, ja siirry tilaan 22
-
-    ARCHSTRING  [supistaminen käyttäen sääntöä 21 (arch)]
-    $default    supistaminen käyttäen sääntöä 21 (arch)
-
-    arch  siirry tilaan 23
-
-
 Tila 22
 
-   22 arch: ARCHSTRING .
+   21 data: FILENAME .
 
-    $default  supistaminen käyttäen sääntöä 22 (arch)
+    $default  supistaminen käyttäen sääntöä 21 (data)
 
 
 Tila 23
 
-    1 arg: optseq endopt data arch . nnfile lmethod
+    1 arg: optseq endopt data . arch nnfile lmethod
 
-    NUMBER      siirto, ja siirry tilaan 24
-    STRING      siirto, ja siirry tilaan 25
-    FILENAME    siirto, ja siirry tilaan 26
-    ARCHSTRING  siirto, ja siirry tilaan 27
+    ARCHSTRING  siirto, ja siirry tilaan 24
 
-    anystring  siirry tilaan 28
-    nnfile     siirry tilaan 29
+    ARCHSTRING  [supistaminen käyttäen sääntöä 22 (arch)]
+    $default    supistaminen käyttäen sääntöä 22 (arch)
+
+    arch  siirry tilaan 25
 
 
 Tila 24
+
+   23 arch: ARCHSTRING .
+
+    $default  supistaminen käyttäen sääntöä 23 (arch)
+
+
+Tila 25
+
+    1 arg: optseq endopt data arch . nnfile lmethod
+
+    NUMBER      siirto, ja siirry tilaan 26
+    STRING      siirto, ja siirry tilaan 27
+    FILENAME    siirto, ja siirry tilaan 28
+    ARCHSTRING  siirto, ja siirry tilaan 29
+
+    anystring  siirry tilaan 30
+    nnfile     siirry tilaan 31
+
+
+Tila 26
 
     7 anystring: NUMBER .
 
     $default  supistaminen käyttäen sääntöä 7 (anystring)
 
 
-Tila 25
+Tila 27
 
     4 anystring: STRING .
 
     $default  supistaminen käyttäen sääntöä 4 (anystring)
 
 
-Tila 26
+Tila 28
 
     6 anystring: FILENAME .
 
     $default  supistaminen käyttäen sääntöä 6 (anystring)
 
 
-Tila 27
+Tila 29
 
     5 anystring: ARCHSTRING .
 
     $default  supistaminen käyttäen sääntöä 5 (anystring)
 
 
-Tila 28
-
-   23 nnfile: anystring .
-
-    $default  supistaminen käyttäen sääntöä 23 (nnfile)
-
-
-Tila 29
-
-    1 arg: optseq endopt data arch nnfile . lmethod
-
-    LM_USE           siirto, ja siirry tilaan 30
-    LM_PARALLELGRAD  siirto, ja siirry tilaan 31
-    LM_GRAD          siirto, ja siirry tilaan 32
-    LM_PBFGS         siirto, ja siirry tilaan 33
-    LM_PLBFGS        siirto, ja siirry tilaan 34
-    LM_LBFGS         siirto, ja siirry tilaan 35
-    LM_RANDOM        siirto, ja siirry tilaan 36
-    LM_BAYES         siirto, ja siirry tilaan 37
-
-    $default  supistaminen käyttäen sääntöä 24 (lmethod)
-
-    lmethod  siirry tilaan 38
-    mbasic   siirry tilaan 39
-
-
 Tila 30
 
-   26 mbasic: LM_USE .
+   24 nnfile: anystring .
 
-    $default  supistaminen käyttäen sääntöä 26 (mbasic)
+    $default  supistaminen käyttäen sääntöä 24 (nnfile)
 
 
 Tila 31
 
-   31 mbasic: LM_PARALLELGRAD .
+    1 arg: optseq endopt data arch nnfile . lmethod
 
-    $default  supistaminen käyttäen sääntöä 31 (mbasic)
+    LM_USE           siirto, ja siirry tilaan 32
+    LM_PARALLELGRAD  siirto, ja siirry tilaan 33
+    LM_GRAD          siirto, ja siirry tilaan 34
+    LM_PBFGS         siirto, ja siirry tilaan 35
+    LM_PLBFGS        siirto, ja siirry tilaan 36
+    LM_LBFGS         siirto, ja siirry tilaan 37
+    LM_RANDOM        siirto, ja siirry tilaan 38
+    LM_BAYES         siirto, ja siirry tilaan 39
+
+    $default  supistaminen käyttäen sääntöä 25 (lmethod)
+
+    lmethod  siirry tilaan 40
+    mbasic   siirry tilaan 41
 
 
 Tila 32
 
-   27 mbasic: LM_GRAD .
+   27 mbasic: LM_USE .
 
     $default  supistaminen käyttäen sääntöä 27 (mbasic)
 
 
 Tila 33
 
-   28 mbasic: LM_PBFGS .
-
-    $default  supistaminen käyttäen sääntöä 28 (mbasic)
-
-
-Tila 34
-
-   29 mbasic: LM_PLBFGS .
-
-    $default  supistaminen käyttäen sääntöä 29 (mbasic)
-
-
-Tila 35
-
-   30 mbasic: LM_LBFGS .
-
-    $default  supistaminen käyttäen sääntöä 30 (mbasic)
-
-
-Tila 36
-
-   32 mbasic: LM_RANDOM .
+   32 mbasic: LM_PARALLELGRAD .
 
     $default  supistaminen käyttäen sääntöä 32 (mbasic)
 
 
+Tila 34
+
+   28 mbasic: LM_GRAD .
+
+    $default  supistaminen käyttäen sääntöä 28 (mbasic)
+
+
+Tila 35
+
+   29 mbasic: LM_PBFGS .
+
+    $default  supistaminen käyttäen sääntöä 29 (mbasic)
+
+
+Tila 36
+
+   30 mbasic: LM_PLBFGS .
+
+    $default  supistaminen käyttäen sääntöä 30 (mbasic)
+
+
 Tila 37
 
-   33 mbasic: LM_BAYES .
+   31 mbasic: LM_LBFGS .
+
+    $default  supistaminen käyttäen sääntöä 31 (mbasic)
+
+
+Tila 38
+
+   33 mbasic: LM_RANDOM .
 
     $default  supistaminen käyttäen sääntöä 33 (mbasic)
 
 
-Tila 38
+Tila 39
+
+   34 mbasic: LM_BAYES .
+
+    $default  supistaminen käyttäen sääntöä 34 (mbasic)
+
+
+Tila 40
 
     1 arg: optseq endopt data arch nnfile lmethod .
 
     $default  supistaminen käyttäen sääntöä 1 (arg)
 
 
-Tila 39
-
-   25 lmethod: mbasic . mmodseq
-
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 40
-    MMOD_PCA        siirto, ja siirry tilaan 41
-    MMOD_ICA        siirto, ja siirry tilaan 42
-
-    $default  supistaminen käyttäen sääntöä 34 (mmodseq)
-
-    mmodseq  siirry tilaan 43
-    mmod     siirry tilaan 44
-
-
-Tila 40
-
-   36 mmod: MMOD_OVERTRAIN .
-
-    $default  supistaminen käyttäen sääntöä 36 (mmod)
-
-
 Tila 41
 
-   37 mmod: MMOD_PCA .
+   26 lmethod: mbasic . mmodseq
 
-    $default  supistaminen käyttäen sääntöä 37 (mmod)
+    MMOD_OVERTRAIN  siirto, ja siirry tilaan 42
+    MMOD_PCA        siirto, ja siirry tilaan 43
+    MMOD_ICA        siirto, ja siirry tilaan 44
+
+    $default  supistaminen käyttäen sääntöä 35 (mmodseq)
+
+    mmodseq  siirry tilaan 45
+    mmod     siirry tilaan 46
 
 
 Tila 42
 
-   38 mmod: MMOD_ICA .
+   37 mmod: MMOD_OVERTRAIN .
 
-    $default  supistaminen käyttäen sääntöä 38 (mmod)
+    $default  supistaminen käyttäen sääntöä 37 (mmod)
 
 
 Tila 43
 
-   25 lmethod: mbasic mmodseq .
+   38 mmod: MMOD_PCA .
 
-    $default  supistaminen käyttäen sääntöä 25 (lmethod)
+    $default  supistaminen käyttäen sääntöä 38 (mmod)
 
 
 Tila 44
 
-   35 mmodseq: mmod . mmodseq
+   39 mmod: MMOD_ICA .
 
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 40
-    MMOD_PCA        siirto, ja siirry tilaan 41
-    MMOD_ICA        siirto, ja siirry tilaan 42
-
-    $default  supistaminen käyttäen sääntöä 34 (mmodseq)
-
-    mmodseq  siirry tilaan 45
-    mmod     siirry tilaan 44
+    $default  supistaminen käyttäen sääntöä 39 (mmod)
 
 
 Tila 45
 
-   35 mmodseq: mmod mmodseq .
+   26 lmethod: mbasic mmodseq .
+
+    $default  supistaminen käyttäen sääntöä 26 (lmethod)
+
+
+Tila 46
+
+   36 mmodseq: mmod . mmodseq
+
+    MMOD_OVERTRAIN  siirto, ja siirry tilaan 42
+    MMOD_PCA        siirto, ja siirry tilaan 43
+    MMOD_ICA        siirto, ja siirry tilaan 44
 
     $default  supistaminen käyttäen sääntöä 35 (mmodseq)
+
+    mmodseq  siirry tilaan 47
+    mmod     siirry tilaan 46
+
+
+Tila 47
+
+   36 mmodseq: mmod mmodseq .
+
+    $default  supistaminen käyttäen sääntöä 36 (mmodseq)

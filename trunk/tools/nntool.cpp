@@ -51,11 +51,15 @@ int main(int argc, char** argv)
     bool load, help = false;
     bool overfit = false;
     
-    unsigned int samples = 0;
-    unsigned int secs = 0;
+    unsigned int samples = 0; // number of samples or iterations in learning process
+    unsigned int secs = 0;    // how many seconds the learning process should take
 
+    // number of threads used in optimization
     unsigned int threads = 0;
-    
+
+    // number of datapoints to be used in learning (taken randomly from the dataset)
+    unsigned int dataSize = 0;
+
     parse_commandline(argc,
 		      argv,
 		      datafn,
@@ -67,6 +71,7 @@ int main(int argc, char** argv)
 		      secs,
 		      samples,
 		      threads,
+		      dataSize,
 		      no_init,
 		      load,
 		      overfit,
@@ -185,10 +190,15 @@ int main(int argc, char** argv)
 	       w.size());
     }
     
-
-    fflush(stdout);
     
+    fflush(stdout);
 
+    
+    if(lmethod != "use" && dataSize > 0 && dataSize < data.size(0)){
+      printf("Resampling dataset down to %d datapoints.\n", dataSize);
+
+      data.downsampleAll(dataSize);
+    }
 
     /*
      * initializes nnetwork weight values using 
@@ -281,8 +291,6 @@ int main(int argc, char** argv)
     
     // learning or activation
     if(lmethod == "lbfgs"){
-
-      // TODO IMPLEMENT ME (direct LBFGS)
       
       if(verbose){
 	if(overfit == false){
@@ -1071,8 +1079,9 @@ void print_usage(bool all)
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
   printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
-  printf("--samples N    samples N samples or defines max iterations (eg. 2500)\n");
+  printf("--samples N    samples N samples or defines max iterations (eg. 2500) to be used in optimization/sampling\n");
   printf("--threads N    uses N parallel threads when looking for solution\n");
+  printf("--data N       takes randomly N samples of data for the learning process (N/2 used in training)\n");
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
