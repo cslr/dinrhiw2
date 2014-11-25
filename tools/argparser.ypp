@@ -6,7 +6,7 @@
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
  *           "--time" <number> | "--load" | "--samples <NUMBER>" |
- *           "--threads <number>"
+ *           "--threads <number>" | --data <number>
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
@@ -44,6 +44,8 @@
     unsigned int samples;
 
     unsigned int threads;
+
+    unsigned int dataSize;
     
     std::string datafile;
     std::string arch;
@@ -84,6 +86,7 @@
 %token <str> OPT_TIME
 %token <str> OPT_SAMPLES
 %token <str> OPT_THREADS
+%token <str> OPT_DATASIZE
 %token <str> OPT_ENDOPT
 
 /* LMETHOD */
@@ -124,14 +127,15 @@ anystring: STRING     { $$ = $1; }
          | NUMBER     { char tmp[80]; sprintf(tmp, "%d", $1); $$ = strdup(tmp); }
 ;
 
-option:	OPT_NOINIT             { __info.noinit  = true; }
-      | OPT_OVERFIT            { __info.overfit = true; }
-      | OPT_HELP               { __info.help    = true; }
-      | OPT_LOAD               { __info.load    = true; }
-      | OPT_VERBOSE            { __info.verbose = true; }
-      | OPT_VERSION            { __info.version = true; }
-      | OPT_THREADS NUMBER     { __info.threads = $2; }
-      | OPT_TIME NUMBER        { __info.hasTIME = true; __info.secs = $2; }
+option:	OPT_NOINIT             { __info.noinit   = true; }
+      | OPT_OVERFIT            { __info.overfit  = true; }
+      | OPT_HELP               { __info.help     = true; }
+      | OPT_LOAD               { __info.load     = true; }
+      | OPT_VERBOSE            { __info.verbose  = true; }
+      | OPT_VERSION            { __info.version  = true; }
+      | OPT_THREADS NUMBER     { __info.threads  = $2; }
+      | OPT_DATASIZE NUMBER    { __info.dataSize = $2; }
+      | OPT_TIME NUMBER        { __info.hasTIME  = true; __info.secs = $2; }
       | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
 
 ;
@@ -217,6 +221,7 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& secs,
 		       unsigned int& samples,
 		       unsigned int& threads,
+		       unsigned int& dataSize,
 		       bool& no_init,
 		       bool& load, bool& overfit, bool& help,
 		       bool& verbose)
@@ -270,6 +275,8 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);		
     p.name = "--threads"; p.code = OPT_THREADS;
     cmdparamslist.push_back(p);
+    p.name = "--data"; p.code = OPT_DATASIZE;
+    cmdparamslist.push_back(p);    
     p.name = "--samples"; p.code = OPT_SAMPLES;
     cmdparamslist.push_back(p);    
     p.name = "--"; p.code = OPT_ENDOPT;
@@ -312,6 +319,7 @@ void parse_commandline(int argc, char** argv,
   __info.secs       = 0;
   __info.samples    = 0;
   __info.threads    = 0;
+  __info.dataSize   = 0;
   __info.method     = "use";
   
   
@@ -431,10 +439,11 @@ void parse_commandline(int argc, char** argv,
     nnfilename = __info.nnfile;
     datafilename = __info.datafile;
         
-    cmdmode = 0; 
-    secs    = __info.secs;
-    samples = __info.samples;
-    threads = __info.threads;
+    cmdmode  = 0; 
+    secs     = __info.secs;
+    samples  = __info.samples;
+    threads  = __info.threads;
+    dataSize = __info.dataSize;
         
     return;
   }
