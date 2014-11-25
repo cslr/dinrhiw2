@@ -328,7 +328,8 @@ int main(int argc, char** argv)
 
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0))
+	      (iterations < samples || samples <= 0) && // or max samples
+	      bfgs.solutionConverged() == false && bfgs.isRunning() == true) // or until solution converged.. (or exit due error)
 	{
 	  sleep(1);
 
