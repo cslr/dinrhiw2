@@ -49,9 +49,12 @@ int main(int argc, char** argv)
     unsigned int cmdmode;
     bool no_init, verbose;
     bool load, help = false;
+    bool overfit = false;
     
     unsigned int samples = 0;
     unsigned int secs = 0;
+
+    unsigned int threads = 0;
     
     parse_commandline(argc,
 		      argv,
@@ -63,8 +66,10 @@ int main(int argc, char** argv)
 		      cmdmode,
 		      secs,
 		      samples,
+		      threads,
 		      no_init,
 		      load,
+		      overfit,
 		      help,
 		      verbose);
     srand(time(0));
@@ -76,9 +81,12 @@ int main(int argc, char** argv)
       print_usage(true);
       return 0;
     }
+
+
+    if(threads <= 0)
+      threads = // for multithread-enabled code
+	(unsigned int)numberOfCPUThreads();
     
-    const unsigned int threads = // for multithread-enabled code
-      (unsigned int)numberOfCPUThreads();
     
     if(cmdmode != 0){
       printf("Daemon and 'send command' modes aren't supported yet.\n");
@@ -272,17 +280,131 @@ int main(int argc, char** argv)
     
     
     // learning or activation
-    
-    if(lmethod == "bfgs"){
-      unsigned int threads = (unsigned int)numberOfCPUThreads();
+    if(lmethod == "lbfgs"){
+
+      // TODO IMPLEMENT ME (direct LBFGS)
       
       if(verbose){
+	if(overfit == false){
+	  if(secs > 0)
+	    std::cout << "Starting neural network L-BFGS optimization with early stopping (T=" << secs << " seconds).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting neural network L-BFGS optimization with early stopping).."
+		      << std::endl;
+	}
+	else{
+	  if(secs > 0)
+	    std::cout << "Starting neural network L-BFGS optimization (T=" << secs << " seconds threads).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting neural network L-BFGS optimization.."
+		      << std::endl;
+	}
+      }
+
+      if(secs <= 0 && samples <= 0){
+	fprintf(stderr, "L-BFGS search requires --time or --samples command line switch.\n");
+	return -1;
+      }
+      
+      LBFGS_nnetwork<> bfgs(*nn, data, overfit);
+      
+      {
+	time_t t0 = time(0);
+	unsigned int counter = 0;
+	math::blas_real<float> error = 1000.0f;
+	math::vertex<> w;
+	unsigned int iterations = 0;
+	whiteice::linear_ETA<float> eta;
+
+	if(samples > 0)
+	  eta.start(0.0f, (float)samples);
+
+	// initial starting position
+	nn->exportdata(w);
+	
+	bfgs.minimize(w);
+
+	while(error > math::blas_real<float>(0.001f) &&
+	      (counter < secs || secs <= 0) && // compute max SECS seconds
+	      (iterations < samples || samples <= 0))
+	{
+	  sleep(1);
+
+	  bfgs.getSolution(w, error, iterations);
+	  
+	  error = bfgs.getError(w);
+	  
+	  eta.update(iterations);
+
+	  time_t t1 = time(0);
+	  counter = (unsigned int)(t1 - t0); // time-elapsed
+
+	  if(secs > 0){
+	    printf("\r%d iters: %f [%f minutes]           ",
+		   iterations, 
+		   error.c[0], (secs - counter)/60.0f);
+	  }
+	  else{
+	    printf("\r%d/%d iters: %f [%f minutes]           ",
+		   iterations, samples,  
+		   error.c[0], eta.estimate()/60.0f);
+
+	  }
+
+	  
+	  
+	  fflush(stdout);
+	}
+	      
+	
 	if(secs > 0)
-	  std::cout << "Starting neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
-		    << std::endl;
+	  printf("\r%d iters: %f [%f minutes]             \n",
+		 iterations,
+		 error.c[0], (secs - counter)/60.0f);
 	else
-	  std::cout << "Starting neural network BFGS optimization with early stopping (" << threads << " threads).."
-		    << std::endl;
+	  printf("\r%d/%d iters: %f [%f minutes]           \n",
+		 iterations, samples,  
+		 error.c[0], eta.estimate()/60.0f);
+	  
+	fflush(stdout);
+
+	bfgs.stopComputation();
+	
+	// gets the final (optimum) solution
+	bfgs.getSolution(w, error, iterations);
+	
+	if(nn->importdata(w) == false){
+	  std::cout << "ERROR: internal error" << std::endl;
+	  return -1;
+	}
+	if(bnn->importNetwork(*nn) == false){
+	  std::cout << "ERROR: internal error" << std::endl;
+	  return -1;
+	}
+      }
+      
+    }
+    else if(lmethod == "parallelbfgs"){
+      
+      if(verbose){
+	if(overfit == false){
+	  if(secs > 0)
+	    std::cout << "Starting parallel neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting parallel neural network BFGS optimization with early stopping (" << threads << " threads).."
+		      << std::endl;
+	}
+	else{
+	  if(secs > 0)
+	    std::cout << "Starting parallel neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting parallel neural network BFGS optimization (" << threads << " threads).."
+		      << std::endl;
+	}
       }
 
       if(secs <= 0 && samples <= 0){
@@ -290,7 +412,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      pBFGS_nnetwork<> bfgs(*nn, data);
+      pBFGS_nnetwork<> bfgs(*nn, data, overfit);
       
       {
 	time_t t0 = time(0);
@@ -369,16 +491,25 @@ int main(int argc, char** argv)
       
       
     }
-    else if(lmethod == "lbfgs"){
-      unsigned int threads = (unsigned int)numberOfCPUThreads();
+    else if(lmethod == "parallellbfgs"){
       
       if(verbose){
-	if(secs > 0)
-	  std::cout << "Starting neural network L-BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
-		    << std::endl;
-	else
-	  std::cout << "Starting neural network L-BFGS optimization with early stopping (" << threads << " threads).."
-		    << std::endl;
+	if(overfit == false){
+	  if(secs > 0)
+	    std::cout << "Starting parallel neural network L-BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting parallel neural network L-BFGS optimization with early stopping (" << threads << " threads).."
+		      << std::endl;
+	}
+	else{
+	  if(secs > 0)
+	    std::cout << "Starting parallel neural network L-BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
+		      << std::endl;
+	  else
+	    std::cout << "Starting parallel neural network L-BFGS optimization (" << threads << " threads).."
+		      << std::endl;
+	}
       }
 
       if(secs <= 0 && samples <= 0){
@@ -386,7 +517,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      pLBFGS_nnetwork<> bfgs(*nn, data);
+      pLBFGS_nnetwork<> bfgs(*nn, data, overfit);
       
       {
 	time_t t0 = time(0);
@@ -936,14 +1067,18 @@ void print_usage(bool all)
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
-  printf("--load         use previously computed network weights as the starting point (grad, bayes methods)\n");
+  printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
+  printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
   printf("--samples N    samples N samples or defines max iterations (eg. 2500)\n");
+  printf("--threads N    uses N parallel threads when looking for solution\n");
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, bfgs, lbfgs\n\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs\n");
+  printf("               parallel methods use random location multistart/restart parallel search\n");
+  printf("               until timeout or the number of samples has been reeached\n\n");
   
   printf("Report bugs to <dinrhiw2.sourceforge.net>.\n");
   

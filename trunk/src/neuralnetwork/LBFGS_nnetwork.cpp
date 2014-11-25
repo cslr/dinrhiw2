@@ -6,8 +6,8 @@ namespace whiteice
 {
 
   template <typename T>
-  LBFGS_nnetwork<T>::LBFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d) :
-    net(nn), data(d)
+  LBFGS_nnetwork<T>::LBFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d, bool overfit) :
+    net(nn), data(d), whiteice::math::LBFGS<T>(overfit)
   {
     // divides data to to training and testing sets
     ///////////////////////////////////////////////

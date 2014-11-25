@@ -19,7 +19,7 @@ namespace whiteice
     {
     public:
       BFGS_nnetwork(const nnetwork<T>& net,
-		    const dataset<T>& d);
+		    const dataset<T>& d, bool overfit=false);
     
       virtual ~BFGS_nnetwork();
     
