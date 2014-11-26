@@ -731,11 +731,13 @@ namespace whiteice
 
 	  if(d > T(10e-8)){
 	      invD(j,j) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	      D(j,j)    = whiteice::math::sqrt(whiteice::math::abs(d));
 	  }
 	  else{
 	    invD(j,j) = T(0.0f);
+	    D(j,j)    = T(0.0f);
 	  }
-	  D(j,j)    = whiteice::math::sqrt(whiteice::math::abs(d));
+	  
 	}
 	
 	Vt = V;
@@ -1307,15 +1309,15 @@ namespace whiteice
 	
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
-
+	  
 	  if(d > T(10e-8)){
 	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	    D(i,i)    = whiteice::math::sqrt(whiteice::math::abs(d));
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
+	    D(i,i)    = T(0.0f);
 	  }
-	  
-	  D(i,i)    = whiteice::math::sqrt(whiteice::math::abs(d));
 	  
 	}
 	
