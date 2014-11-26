@@ -413,7 +413,7 @@ namespace whiteice
       }
       return true;
     }
-
+    
     std::vector<dataset<T>::cluster> d;
     d.resize(clusters.size());
 
@@ -728,8 +728,13 @@ namespace whiteice
 	
 	for(unsigned int j=0;j<D.ysize();j++){
 	  T d = invD(j,j);
-	  
-	  invD(j,j) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+
+	  if(d > T(10e-8)){
+	      invD(j,j) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	  }
+	  else{
+	    invD(j,j) = T(0.0f);
+	  }
 	  D(j,j)    = whiteice::math::sqrt(whiteice::math::abs(d));
 	}
 	
@@ -1302,8 +1307,14 @@ namespace whiteice
 	
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
+
+	  if(d > T(10e-8)){
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	  }
+	  else{
+	    invD(i,i) = T(0.0f);
+	  }
 	  
-	  invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
 	  D(i,i)    = whiteice::math::sqrt(whiteice::math::abs(d));
 	  
 	}
@@ -1666,7 +1677,7 @@ namespace whiteice
     vec -= clusters[index].mean;
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(clusters[index].variance[i] > T(0.0))
+      if(clusters[index].variance[i] > T(10e-8))
 	vec[i] /= (T(4.0)*clusters[index].variance[i]);
     }
     
@@ -1680,7 +1691,7 @@ namespace whiteice
     // [x' * sqrt(var)] + mean
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(clusters[index].variance[i] > T(0.0))
+      if(clusters[index].variance[i] > T(10e-8))
 	vec[i] *= (T(4.0)*clusters[index].variance[i]);
     }
     

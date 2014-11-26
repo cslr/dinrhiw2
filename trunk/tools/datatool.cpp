@@ -430,6 +430,23 @@ int main(int argc, char** argv)
       }
       
     }
+    else if(action == "data" && options.size() == 1){
+      // resamples data down to N datapoints
+
+      // loads gets
+      const char* startp = options[0].c_str();
+      char *endp = (char*)startp;
+      const unsigned int number = (unsigned int)strtol(startp, &endp, 10);
+      
+      if(data->downsampleAll(number) == false){
+	std::cout << "Downsampling data to " << number
+		  << " datapoint(s) failed." << std::endl;
+	delete data;
+	return -1;
+      }
+      
+      
+    }
     else if(action == "padd" && options.size() > 1){
       // adds preprocessing to cluster (names: meanvar, outlier, pca)
       
@@ -679,6 +696,7 @@ bool parse(int argc, char** argv,
   okcmds.push_back("remove");
   okcmds.push_back("padd");
   okcmds.push_back("premove");
+  okcmds.push_back("data");
   
   
   for(unsigned int i=0;i<okcmds.size();i++)
@@ -694,7 +712,7 @@ void print_usage()
   printf("Usage: datatool <command> <datafile> [asciifile | datafile]\n");
   printf("A tool for manipulating whiteice::dataset files.\n");
   printf("\n");
-  printf(" -list                      lists clusters, number datapoints, preprocessings.\n");
+  printf(" -list                      lists clusters, number of datapoints, preprocessings.\n");
   printf("                            (default action)\n");
   printf(" -print[:<c1>[:<b>[:<e>]]]  prints contents of cluster c1 (indexes [<b>,<e>])\n");
   printf(" -create                    creates new empty dataset (<dataset> file doesn't exist)\n");
@@ -710,6 +728,7 @@ void print_usage()
   printf(" -premove:<c1>:<name>+      removes preprocesing(s) from cluster\n");
   printf("                            preprocess names: meanvar, outlier, pca, ica\n");
   printf("                            note: ica implementation is unstable and may not work\n");
+  printf(" -data:N                    resample all cluster sizes down to N datapoints\n");
   printf("\n");
   printf("This program is distributed under LGPL license <dinrhiw2.sourceforge.net>.\n");
 } 
