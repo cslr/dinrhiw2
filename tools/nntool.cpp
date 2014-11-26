@@ -361,8 +361,6 @@ int main(int argc, char** argv)
 		   error.c[0], eta.estimate()/60.0f);
 
 	  }
-
-	  
 	  
 	  fflush(stdout);
 	}
@@ -376,6 +374,13 @@ int main(int argc, char** argv)
 	  printf("\r%d/%d iters: %f [%f minutes]           \n",
 		 iterations, samples,  
 		 error.c[0], eta.estimate()/60.0f);
+	
+	if(bfgs.solutionConverged()){
+	  printf("Optimizer solution converged and cannot improve the result further.\n");
+	}
+	else if(bfgs.isRunning() == false){
+	  printf("Optimizer stopped running (early stopping/overfitting).\n");
+	}
 	  
 	fflush(stdout);
 
@@ -1090,7 +1095,7 @@ void print_usage(bool all)
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reeached\n\n");
   
-  printf("Report bugs to <dinrhiw2.sourceforge.net>.\n");
+  printf("Report bugs to <dinrhiw2.googlecode.com>.\n");
   
 }
 
