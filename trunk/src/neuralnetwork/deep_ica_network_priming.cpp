@@ -65,7 +65,7 @@ namespace whiteice
       for(unsigned int i=0;i<Rxx.ysize();i++){
 	if(D(i,i) < 0.0)
 	  D(i,i) = math::abs(D(i,i));
-	if(D(i,i) <= 10e-6){
+	if(D(i,i) <= 10e-8){
 	  D(i,i) = 0.0; // dirty way to handle singular matrixes (just force the data to zero)
 	}
 	else{

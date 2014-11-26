@@ -18,7 +18,7 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 50 wine-test.ds 13-13-13-10-? winenn.cfg bfgs
+./nntool -v --samples 50 wine-test.ds 13-13-13-10-? winenn.cfg parallelbfgs
 
 # testing
 

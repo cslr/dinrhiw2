@@ -176,7 +176,7 @@ namespace whiteice
 
       unsigned int k = 0;
 
-      while(found <= 0 && k <= 20){
+      while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
 	T alpha = T(0.0f);
 	T tvalue;
 	
