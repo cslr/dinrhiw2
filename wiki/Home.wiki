@@ -51,8 +51,8 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
   * cleanup the code and remove classes that are not needed and don't belong to this library
   * implement experimental y = asinh( B sinh(A x) ) neural network that uses sinh(x) and asinh(x) non-linearities instead of tanh(x) as DeepICAWeightInitialization implies it might be easy to initialize and use
   * DOCUMENTATION, bug fixing - alternatively implement deep ICA with tanh(x) non-linearities
-  * the use of BLAS libraries for GPUs to make things faster (NVIDIA CUDA and cuBLAS) - currently the library uses generic BLAS for matrix operations
-  * try to remove few x86 dependencies (cpuid instruction)
+  * detect and use OpenBLAS or NVIDIA cuBLAS (GPU) if they are installed to the system (currently using generic blas libraries)
+  * try to remove few direct x86 dependencies (cpuid instruction)
 
 
 There are better free libraries available so there is no much point in developing this library much further (except from the point of enough competition which keeps OS model working). However, development of *nntool* and other command-line tools to do *machine learning using shell scripts is maybe interesting*. To support this *nntool* and *dstool* command line tools should be developed as easy to use from command line as possible.
