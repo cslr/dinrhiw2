@@ -139,12 +139,14 @@ namespace whiteice
 
 	for(unsigned int ii=0;ii<x.size();ii++)
 	  // x[ii] = asinhf(x[ii].c[0]);
+	  
 	  if(x[ii].c[0] >= 0.9999f)
 	    x[ii] = atanhf(0.9999f);
 	  else if(x[ii].c[0] <= -0.9999f)
 	    x[ii] = atanhf(-0.9999f);
 	  else
 	    x[ii] = atanhf(x[ii].c[0]);
+	  
 
 	// overwrites the data vector with preprocessed data
 	data[i] = x; 
