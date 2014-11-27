@@ -1,6 +1,6 @@
 #summary notes about blas performance
 
-Performance of learning to recognize hand-written digits (10.000 examples from MNIST hand-written digits database). 
+Performance of learning to recognize hand-written digits (10.000 examples from MNIST hand-written digits database). This is SLOW for my (unoptimized) L-BFGS implementation (tuned for mathematical accuracy instead of speed).
 
 BLAS performace (mini laptop Intel Atom N450 1.66 Ghz):
 
