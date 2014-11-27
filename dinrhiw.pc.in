@@ -8,5 +8,5 @@ Name: whiteice::dinrhiw
 Description: whiteice::dinrhiw - basic linear algebra and machine learning library and tools
 Version: 0.58
 Requires: 
-Libs: -L@atlas_libpath@ @EXTRA_LIBPATHS@ -ldinrhiw -lz -lgmp -lblas
+Libs: @EXTRA_LIBPATHS@ -ldinrhiw -lz -lgmp @EXTRA_LIBS@
 Cflags: -I@prefix@/include/dinrhiw @EXTRA_INCLUDEPATHS@ @conf_flags@

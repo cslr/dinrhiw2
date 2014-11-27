@@ -27,7 +27,7 @@ AC_MSG_CHECKING([is -I/usr/local/include command line parameter needed])
 
 dnl not checked right now, just added
 AC_MSG_RESULT([yes (not checked, write real check)])
-AC_SUBST([EXTRA_INCLUDEPATHS],[-I/usr/local/include])
+EXTRA_INCLUDEPATHS="-I/usr/local/include"
 
 dnl checks if -L/usr/local/lib is needed to
 dnl link with libraries in /usr/local/lib
@@ -35,8 +35,7 @@ AC_MSG_CHECKING([is -L/usr/local/lib command line parameter needed])
 
 dnl not checked right now, just added
 AC_MSG_RESULT([yes (not checked, write real check)])
-AC_SUBST([EXTRA_LIBPATHS],[-L/usr/local/lib])
-
+EXTRA_LIBPATHS="-L/usr/local/lib"
 
 dnl checks if isfinite() is defined
 AC_MSG_CHECKING([for isfinite()])
@@ -85,16 +84,16 @@ AC_MSG_CHECKING([CPU family])
 AC_MSG_RESULT($cpufamily)
 
 dnl enables CPU specific optimization flags
-optimization_flags="-O3 -ffast-math"
+optimization_flags="-O3 -ffast-math -DBLAS_MEMALIGN"
 conf_flags=""
 
 if [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
-    optimization_flags="-O3 -g -DIA32 -ffast-math"
+    optimization_flags="-O3 -g -DIA32 -ffast-math -DBLAS_MEMALIGN"
     conf_flags="-DIA32"
 fi
 
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math"
+    optimization_flags="-O3 -g -DAMD64 -ffast-math -DBLAS_MEMALIGN"
     conf_flags="-DAMD64"
 fi
 
@@ -119,7 +118,7 @@ dnl check for GMP integer library
 AC_MSG_CHECKING([for GMP library])
 GMP_LIBRARY="no"
 
-`gcc -o gmp gmptest.c -I /usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
+`gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
    GMP_LIBRARY="yes"
@@ -141,6 +140,38 @@ if [[ $? -eq 0 ]]; then
 else
     AC_MSG_ERROR([no, install BLAS implementation with cblas.h])
 fi
+
+BLAS_CFLAGS="-I/usr/local/include/"
+BLAS_LIBS="-lblas -L/usr/local/lib/"
+
+AC_MSG_CHECKING([for OpenBLAS library (1)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+    OPENBLAS="yes"
+    BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
+    BLAS_LIBS="-lopenblas -L/usr/local/lib/"
+    AC_MSG_RESULT([yes, headers in /usr/local/include(?)])
+else
+    AC_MSG_RESULT([no OpenBLAS detected])
+    OPENBLAS="no"
+fi
+
+AC_MSG_CHECKING([for OpenBLAS library (2)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+
+if [[ $? -eq 0 ]]; then
+    OPENBLAS="yes"
+    BLAS_CFLAGS="-DOPENBLAS -I/include/"
+    BLAS_LIBS="-L/lib/ -lopenblas"
+    AC_MSG_RESULT([yes, headers in /include(?)])
+else
+    AC_MSG_RESULT([no OpenBLAS detected])
+    OPENBLAS="no"
+fi
+
+
 
 dnl checking for ZLIB header files and library
 AC_MSG_CHECKING([for ZLIB library and headers])
@@ -197,10 +228,15 @@ elif [[ $cpu_sse = "yes" ]]; then
    optimization_flags="$optimization_flags -msse"
 fi
 
+EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS"
+EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"
 
-
+AC_SUBST([EXTRA_INCLUDEPATHS],[$EXTRA_INCLUDEPATHS])
+AC_SUBST([EXTRA_LIBPATHS],[$EXTRA_LIBPATHS])
+AC_SUBST([EXTRA_LIBS],[$EXTRA_LIBS])
 AC_SUBST([optimization_flags],[$optimization_flags])
 AC_SUBST([conf_flags], [$conf_flags])
+AC_SUBST([conf_libs], [$conf_libs])
 
 AC_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/math/Makefile])

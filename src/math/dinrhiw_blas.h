@@ -6,6 +6,10 @@ extern "C" {
 
 #include <cblas.h>
 
+#ifdef OPENBLAS
+#include "openblas_config.h"
+#endif
+
 }
 
 #include "blas_primitives.h"
