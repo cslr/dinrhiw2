@@ -11,6 +11,7 @@ Machine learning component contains:
   * multistart gradient descent optimizer for neural networks
   * multi-threaded (multicore CPUs) code to support parallel search
   * uses BLAS interface for matrix/vector math which is optimized for speed
+  * heuristics to pre-train deep neural network parameters (see my deep ica notes)
 
 Additionally, the library contains basic linear algebra and various other general computer science algorithms like radix sorting (for floating point numbers through conversion code O(N)), hermite curve interpolation and cryptography (AES, DES..). The compiler used is GCC <https://gcc.gnu.org/> and the build process uses GNU Makefile and autoconf. The library also uses few C++11 features meaning that only the newest GCC C++ compilers are likely to work. 
 
