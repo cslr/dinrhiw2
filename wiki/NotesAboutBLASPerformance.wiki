@@ -8,6 +8,13 @@ Performance of learning to recognize hand-written digits (10.000 examples from M
   * cuBLAS (NVIDIA): N/A
 
 
-Command: nntool -v --samples 50 --threads 1 --overfit $DATASET2 784-784-784-1 $NNET lbfgs
+Command: 
+{{{
+DATASET2="mnist10k.ds"
+DATASET3="mnist10k-test.ds"
+NNET="mnist10k.cfg"
+
+nntool -v --samples 50 --threads 1 --overfit $DATASET2 784-784-784-1 $NNET lbfgs
+}}}
 
 784x784x784x1 neural network with deep ica initialization of weights and L-BFGS optimization (memory M=35).
