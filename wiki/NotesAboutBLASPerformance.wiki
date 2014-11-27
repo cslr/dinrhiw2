@@ -1,9 +1,11 @@
 #summary notes about blas performance
 
-Performance of learning to recognize hand-written digits (10.000 examples from MNIST hand-written digits database). BLAS performace (mini laptop Intel Atom N450 1.66 Ghz):
+Performance of learning to recognize hand-written digits (10.000 examples from MNIST hand-written digits database). 
 
-  * reference BLAS implementation: 6000 minutes
-  * OpenBLAS: 3000 minutes (50% faster)
+BLAS performace (mini laptop Intel Atom N450 1.66 Ghz):
+
+  * reference BLAS implementation: ~6000 minutes
+  * OpenBLAS: ~3000 minutes (50% faster)
   * ATLAS: ?
   * cuBLAS (NVIDIA): N/A
 
