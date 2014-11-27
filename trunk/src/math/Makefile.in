@@ -33,7 +33,7 @@ SOURCES = blade_math.cpp ownexception.cpp \
 
 
 
-LIBS = @EXTRA_LIBPATHS@ -lgmp -lz -lpthread -lblas
+LIBS = @EXTRA_LIBPATHS@ -lgmp -lz -lpthread @EXTRA_LIBS@
 
 TEST_OBJ = tst/test.o
 TARGET = testsuite

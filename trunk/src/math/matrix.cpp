@@ -31,9 +31,9 @@ namespace whiteice
       data = 0;
 
 #ifdef BLAS_MEMALIGN
-      // electric fence don't know about posix_memalign()
+      // NOTE: electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
-		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
+		     (8/whiteice::gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
 		     ysize*xsize*sizeof(T));
 #else
       data = (T*)malloc(ysize*xsize*sizeof(T));
@@ -58,7 +58,7 @@ namespace whiteice
 #ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
-		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
+		     (8/whiteice::gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
 		     M.numRows*M.numCols*sizeof(T));
 #else
       data = (T*)malloc(M.numRows*M.numCols*sizeof(T));
@@ -107,7 +107,7 @@ namespace whiteice
 #ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
       posix_memalign((void**)&data,
-		     (8/gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
+		     (8/whiteice::gcd<unsigned int>(8,sizeof(void*)))*sizeof(void*),
 		     diagonal.size()*diagonal.size()*sizeof(T));
 #else
       data = (T*)malloc(diagonal.size()*diagonal.size()*sizeof(T));

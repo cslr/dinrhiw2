@@ -20,7 +20,7 @@ SOURCES = AssociationRuleFinder.cpp test/tst.cpp \
 
 TARGET  = tst
 
-LIBS= @EXTRA_LIBPATHS@ -lz -lgmp -L/usr/lib/3dnow -lblas -lcblas -lgfortran
+LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 
 ##################################################
 
