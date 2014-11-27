@@ -339,8 +339,8 @@ int main(int argc, char** argv)
 	      (iterations < samples || samples <= 0) && // or max samples
 	      bfgs.solutionConverged() == false && bfgs.isRunning() == true) // or until solution converged.. (or exit due error)
 	{
-	  sleep(1);
-
+	  sleep(10);
+	  
 	  bfgs.getSolution(w, error, iterations);
 	  
 	  error = bfgs.getError(w);
@@ -448,7 +448,7 @@ int main(int argc, char** argv)
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0))
 	{
-	  sleep(1);
+	  sleep(10);
 
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -553,7 +553,7 @@ int main(int argc, char** argv)
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0))
 	{
-	  sleep(1);
+	  sleep(10);
 
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -638,7 +638,7 @@ int main(int argc, char** argv)
 	{
 	  search.getSolution(*nn, error, solutions);
 
-	  sleepms(500);
+	  sleepms(10000);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
@@ -691,7 +691,7 @@ int main(int argc, char** argv)
 	{
 	  grad.getSolution(*nn, error, solutions);
 
-	  sleepms(500);
+	  sleepms(10000);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
@@ -899,7 +899,8 @@ int main(int argc, char** argv)
 	  }
 	  fflush(stdout);
 	}
-	sleep(1);
+	
+	sleep(10);
 
 	time_t t1 = time(0);
 	counter = (unsigned int)(t1 - t0);
