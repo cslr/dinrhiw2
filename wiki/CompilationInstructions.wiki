@@ -3,7 +3,7 @@ The library can be tricky to get working. Here are basic instructions.
   # get the code from the repository: HowToCheckoutSourceCode
   # use *build.sh* to build configure script and other things
   # configure script fails if you don't have necessarily (few general) support libraries installed. Install development libraries and you are ok. (libz-dev, libgmp-dev, blas and *pkg-config*). I guess you can get these from prepackaged debs or rpms.
-  # if you care about speed, pre-install *OpenBLAS* before configure so it detects it and links to openblas instead of some more general slower library (alternatively, make sure that blas library it tries to link with is FAST)
+  # if you care about speed, pre-install *OpenBLAS* before configure so it detects it and links to openblas instead of some more general slower library (alternatively, make sure that blas library it tries to link with as a default is FAST)
   # after build.sh execute: *make; make makelib; su root; make install | tee install.log*
 
 After this go to *tools* subdirectory:
