@@ -12,7 +12,7 @@ For generating higher order moments we use g(x) = sinh(x) because it preserves s
 
 So in deep ICA we first compute PCA for the first layer, use sinh() non-linearity and then furthermore whiten higher order moments using W after which we use asinh(x) non-linearities (bias terms fix the mean values of the data to zero). Additionally, because tanh(x) and sinh(x) are close to linear transformations near zero. We directly insert PCA and W matrixes and bias-terms into regular neural network using tanh(x) non-linearities and let the final output layer weights to be randomly chosen. After this optimization methods are used to tune W and b matrixes to work with tanh(x) non-linearities (?). 
 
-*In practice, it seems that using sinh(x) and then diagonalizing Gxx matrix DO NOT WORK, but using tanh(x) and atanh(x) non-linearities work OK with pure tanh(x) network (when |x| > 0.999 means that we use atanh(+-0.999) so there are no complex numbers).*
+*In practice, it seems that using sinh(x) and then diagonalizing Gxx matrix DO NOT WORK, but using tanh(x) and atanh(x) non-linearities work OK with pure tanh(x) network (when |x| > 0.999 means that we use atanh(+-0.999) so there are no complex numbers). The current implementation uses g(x)=tanh(x) non-linearity.*
 
 This then leads to deep N-N-N-N-N-N-N-output like neural networks. In MATLAB I have successfully used 100 deep ICA steps to create interesting independent components and normal linear independent components often emerge after just we steps of deep ICA.
 
@@ -20,3 +20,6 @@ NOTE: instead of sinh or tanh non-linearities we could maybe also use x^3^ momen
 
 http://technotes5.blogspot.fi/2014/11/non-linear-deep-ica.html
  
+For details, read [https://code.google.com/p/dinrhiw2/source/browse/trunk/src/neuralnetwork/deep_ica_network_priming.cpp the source code].
+
+In practice, the use of deep ica weight vector initialization seem to cause 22% improvement in training scores of difficult problems. It is not that much but because the method is quite fast (you have to compute matrix eigenvalue decomposition thought) it can be used.
