@@ -46,14 +46,13 @@ tools/nntool
 tools/dstool
 
 
-are the primary classes and tools to look at and use. Also read HowToLearnFromData page. Install *OpenBLAS* before configure and compilation as it links with it if possible or make sure the generic BLAS library is optimized instead of some generic library.
+are the primary classes and tools to look at and use. Also read HowToLearnFromData page.
 
 == TODO ==
 
   * cleanup the code and remove classes that are not needed and don't belong to this library
   * implement experimental y = asinh( B sinh(A x) ) neural network that uses sinh(x) and asinh(x) non-linearities instead of tanh(x) as DeepICAWeightInitialization implies it might be easy to initialize and use
   * DOCUMENTATION, bug fixing - alternatively implement deep ICA with tanh(x) non-linearities
-  * detect and use NVIDIA cuBLAS (GPU) if it is installed
   * try to remove few direct x86 dependencies (cpuid instruction)
   * test and improve algorithms so that they work with real-world data: MNIST handwritten digits training data (784 dimensional input data) 
 
