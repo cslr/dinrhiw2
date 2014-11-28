@@ -46,7 +46,7 @@ CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++11 @EXTRA_INCLUDEPA
 
 CXXFLAGS=-Wall $(CFLAGS) @CXXFLAGS@ -g -I. -I.. -I../.. -I../math -I../crypto $(OPTIMIZE)
 
-LIBS= @EXTRA_LIBPATHS@ -lgmp -lz @EXTRA_LIBS@
+LIBS= @EXTRA_LIBPATHS@ -lgmp -lz -lpthread @EXTRA_LIBS@
 
 ##################################################
 
