@@ -1,8 +1,8 @@
-Tila 20 ristiriidat: 1 siirto/supistaminen
-Tila 23 ristiriidat: 1 siirto/supistaminen
+State 20 conflicts: 1 shift/reduce
+State 23 conflicts: 1 shift/reduce
 
 
-Kielioppi
+Grammar
 
     0 $accept: arg $end
 
@@ -58,7 +58,7 @@ Kielioppi
    39     | MMOD_ICA
 
 
-Päätteet, säännöillä missä niin tarvitaan
+Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
@@ -90,442 +90,442 @@ MMOD_PCA (282) 38
 MMOD_ICA (283) 39
 
 
-Ei-päätteet, säännöillä missä niitä tarvitaan
+Nonterminals, with rules where they appear
 
 $accept (29)
-    vasemmalla: 0
+    on left: 0
 arg (30)
-    vasemmalla: 1, oikealla: 0
+    on left: 1, on right: 0
 optseq (31)
-    vasemmalla: 2 3, oikealla: 1 3
+    on left: 2 3, on right: 1 3
 anystring (32)
-    vasemmalla: 4 5 6 7, oikealla: 24
+    on left: 4 5 6 7, on right: 24
 option (33)
-    vasemmalla: 8 9 10 11 12 13 14 15 16 17, oikealla: 3
+    on left: 8 9 10 11 12 13 14 15 16 17, on right: 3
 endopt (34)
-    vasemmalla: 18 19, oikealla: 1
+    on left: 18 19, on right: 1
 data (35)
-    vasemmalla: 20 21, oikealla: 1
+    on left: 20 21, on right: 1
 arch (36)
-    vasemmalla: 22 23, oikealla: 1
+    on left: 22 23, on right: 1
 nnfile (37)
-    vasemmalla: 24, oikealla: 1
+    on left: 24, on right: 1
 lmethod (38)
-    vasemmalla: 25 26, oikealla: 1
+    on left: 25 26, on right: 1
 mbasic (39)
-    vasemmalla: 27 28 29 30 31 32 33 34, oikealla: 26
+    on left: 27 28 29 30 31 32 33 34, on right: 26
 mmodseq (40)
-    vasemmalla: 35 36, oikealla: 26 36
+    on left: 35 36, on right: 26 36
 mmod (41)
-    vasemmalla: 37 38 39, oikealla: 36
+    on left: 37 38 39, on right: 36
 
 
-Tila 0
+State 0
 
     0 $accept: . arg $end
 
-    OPT_NOINIT    siirto, ja siirry tilaan 1
-    OPT_OVERFIT   siirto, ja siirry tilaan 2
-    OPT_LOAD      siirto, ja siirry tilaan 3
-    OPT_HELP      siirto, ja siirry tilaan 4
-    OPT_VERBOSE   siirto, ja siirry tilaan 5
-    OPT_VERSION   siirto, ja siirry tilaan 6
-    OPT_TIME      siirto, ja siirry tilaan 7
-    OPT_SAMPLES   siirto, ja siirry tilaan 8
-    OPT_THREADS   siirto, ja siirry tilaan 9
-    OPT_DATASIZE  siirto, ja siirry tilaan 10
+    OPT_NOINIT    shift, and go to state 1
+    OPT_OVERFIT   shift, and go to state 2
+    OPT_LOAD      shift, and go to state 3
+    OPT_HELP      shift, and go to state 4
+    OPT_VERBOSE   shift, and go to state 5
+    OPT_VERSION   shift, and go to state 6
+    OPT_TIME      shift, and go to state 7
+    OPT_SAMPLES   shift, and go to state 8
+    OPT_THREADS   shift, and go to state 9
+    OPT_DATASIZE  shift, and go to state 10
 
-    $default  supistaminen käyttäen sääntöä 2 (optseq)
+    $default  reduce using rule 2 (optseq)
 
-    arg     siirry tilaan 11
-    optseq  siirry tilaan 12
-    option  siirry tilaan 13
+    arg     go to state 11
+    optseq  go to state 12
+    option  go to state 13
 
 
-Tila 1
+State 1
 
     8 option: OPT_NOINIT .
 
-    $default  supistaminen käyttäen sääntöä 8 (option)
+    $default  reduce using rule 8 (option)
 
 
-Tila 2
+State 2
 
     9 option: OPT_OVERFIT .
 
-    $default  supistaminen käyttäen sääntöä 9 (option)
+    $default  reduce using rule 9 (option)
 
 
-Tila 3
+State 3
 
    11 option: OPT_LOAD .
 
-    $default  supistaminen käyttäen sääntöä 11 (option)
+    $default  reduce using rule 11 (option)
 
 
-Tila 4
+State 4
 
    10 option: OPT_HELP .
 
-    $default  supistaminen käyttäen sääntöä 10 (option)
+    $default  reduce using rule 10 (option)
 
 
-Tila 5
+State 5
 
    12 option: OPT_VERBOSE .
 
-    $default  supistaminen käyttäen sääntöä 12 (option)
+    $default  reduce using rule 12 (option)
 
 
-Tila 6
+State 6
 
    13 option: OPT_VERSION .
 
-    $default  supistaminen käyttäen sääntöä 13 (option)
+    $default  reduce using rule 13 (option)
 
 
-Tila 7
+State 7
 
    16 option: OPT_TIME . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 14
+    NUMBER  shift, and go to state 14
 
 
-Tila 8
+State 8
 
    17 option: OPT_SAMPLES . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 15
+    NUMBER  shift, and go to state 15
 
 
-Tila 9
+State 9
 
    14 option: OPT_THREADS . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 16
+    NUMBER  shift, and go to state 16
 
 
-Tila 10
+State 10
 
    15 option: OPT_DATASIZE . NUMBER
 
-    NUMBER  siirto, ja siirry tilaan 17
+    NUMBER  shift, and go to state 17
 
 
-Tila 11
+State 11
 
     0 $accept: arg . $end
 
-    $end  siirto, ja siirry tilaan 18
+    $end  shift, and go to state 18
 
 
-Tila 12
+State 12
 
     1 arg: optseq . endopt data arch nnfile lmethod
 
-    OPT_ENDOPT  siirto, ja siirry tilaan 19
+    OPT_ENDOPT  shift, and go to state 19
 
-    $default  supistaminen käyttäen sääntöä 18 (endopt)
+    $default  reduce using rule 18 (endopt)
 
-    endopt  siirry tilaan 20
+    endopt  go to state 20
 
 
-Tila 13
+State 13
 
     3 optseq: option . optseq
 
-    OPT_NOINIT    siirto, ja siirry tilaan 1
-    OPT_OVERFIT   siirto, ja siirry tilaan 2
-    OPT_LOAD      siirto, ja siirry tilaan 3
-    OPT_HELP      siirto, ja siirry tilaan 4
-    OPT_VERBOSE   siirto, ja siirry tilaan 5
-    OPT_VERSION   siirto, ja siirry tilaan 6
-    OPT_TIME      siirto, ja siirry tilaan 7
-    OPT_SAMPLES   siirto, ja siirry tilaan 8
-    OPT_THREADS   siirto, ja siirry tilaan 9
-    OPT_DATASIZE  siirto, ja siirry tilaan 10
+    OPT_NOINIT    shift, and go to state 1
+    OPT_OVERFIT   shift, and go to state 2
+    OPT_LOAD      shift, and go to state 3
+    OPT_HELP      shift, and go to state 4
+    OPT_VERBOSE   shift, and go to state 5
+    OPT_VERSION   shift, and go to state 6
+    OPT_TIME      shift, and go to state 7
+    OPT_SAMPLES   shift, and go to state 8
+    OPT_THREADS   shift, and go to state 9
+    OPT_DATASIZE  shift, and go to state 10
 
-    $default  supistaminen käyttäen sääntöä 2 (optseq)
+    $default  reduce using rule 2 (optseq)
 
-    optseq  siirry tilaan 21
-    option  siirry tilaan 13
+    optseq  go to state 21
+    option  go to state 13
 
 
-Tila 14
+State 14
 
    16 option: OPT_TIME NUMBER .
 
-    $default  supistaminen käyttäen sääntöä 16 (option)
+    $default  reduce using rule 16 (option)
 
 
-Tila 15
+State 15
 
    17 option: OPT_SAMPLES NUMBER .
 
-    $default  supistaminen käyttäen sääntöä 17 (option)
+    $default  reduce using rule 17 (option)
 
 
-Tila 16
+State 16
 
    14 option: OPT_THREADS NUMBER .
 
-    $default  supistaminen käyttäen sääntöä 14 (option)
+    $default  reduce using rule 14 (option)
 
 
-Tila 17
+State 17
 
    15 option: OPT_DATASIZE NUMBER .
 
-    $default  supistaminen käyttäen sääntöä 15 (option)
+    $default  reduce using rule 15 (option)
 
 
-Tila 18
+State 18
 
     0 $accept: arg $end .
 
     $default  accept
 
 
-Tila 19
+State 19
 
    19 endopt: OPT_ENDOPT .
 
-    $default  supistaminen käyttäen sääntöä 19 (endopt)
+    $default  reduce using rule 19 (endopt)
 
 
-Tila 20
+State 20
 
     1 arg: optseq endopt . data arch nnfile lmethod
 
-    FILENAME  siirto, ja siirry tilaan 22
+    FILENAME  shift, and go to state 22
 
-    FILENAME  [supistaminen käyttäen sääntöä 20 (data)]
-    $default  supistaminen käyttäen sääntöä 20 (data)
+    FILENAME  [reduce using rule 20 (data)]
+    $default  reduce using rule 20 (data)
 
-    data  siirry tilaan 23
+    data  go to state 23
 
 
-Tila 21
+State 21
 
     3 optseq: option optseq .
 
-    $default  supistaminen käyttäen sääntöä 3 (optseq)
+    $default  reduce using rule 3 (optseq)
 
 
-Tila 22
+State 22
 
    21 data: FILENAME .
 
-    $default  supistaminen käyttäen sääntöä 21 (data)
+    $default  reduce using rule 21 (data)
 
 
-Tila 23
+State 23
 
     1 arg: optseq endopt data . arch nnfile lmethod
 
-    ARCHSTRING  siirto, ja siirry tilaan 24
+    ARCHSTRING  shift, and go to state 24
 
-    ARCHSTRING  [supistaminen käyttäen sääntöä 22 (arch)]
-    $default    supistaminen käyttäen sääntöä 22 (arch)
+    ARCHSTRING  [reduce using rule 22 (arch)]
+    $default    reduce using rule 22 (arch)
 
-    arch  siirry tilaan 25
+    arch  go to state 25
 
 
-Tila 24
+State 24
 
    23 arch: ARCHSTRING .
 
-    $default  supistaminen käyttäen sääntöä 23 (arch)
+    $default  reduce using rule 23 (arch)
 
 
-Tila 25
+State 25
 
     1 arg: optseq endopt data arch . nnfile lmethod
 
-    NUMBER      siirto, ja siirry tilaan 26
-    STRING      siirto, ja siirry tilaan 27
-    FILENAME    siirto, ja siirry tilaan 28
-    ARCHSTRING  siirto, ja siirry tilaan 29
+    NUMBER      shift, and go to state 26
+    STRING      shift, and go to state 27
+    FILENAME    shift, and go to state 28
+    ARCHSTRING  shift, and go to state 29
 
-    anystring  siirry tilaan 30
-    nnfile     siirry tilaan 31
+    anystring  go to state 30
+    nnfile     go to state 31
 
 
-Tila 26
+State 26
 
     7 anystring: NUMBER .
 
-    $default  supistaminen käyttäen sääntöä 7 (anystring)
+    $default  reduce using rule 7 (anystring)
 
 
-Tila 27
+State 27
 
     4 anystring: STRING .
 
-    $default  supistaminen käyttäen sääntöä 4 (anystring)
+    $default  reduce using rule 4 (anystring)
 
 
-Tila 28
+State 28
 
     6 anystring: FILENAME .
 
-    $default  supistaminen käyttäen sääntöä 6 (anystring)
+    $default  reduce using rule 6 (anystring)
 
 
-Tila 29
+State 29
 
     5 anystring: ARCHSTRING .
 
-    $default  supistaminen käyttäen sääntöä 5 (anystring)
+    $default  reduce using rule 5 (anystring)
 
 
-Tila 30
+State 30
 
    24 nnfile: anystring .
 
-    $default  supistaminen käyttäen sääntöä 24 (nnfile)
+    $default  reduce using rule 24 (nnfile)
 
 
-Tila 31
+State 31
 
     1 arg: optseq endopt data arch nnfile . lmethod
 
-    LM_USE           siirto, ja siirry tilaan 32
-    LM_PARALLELGRAD  siirto, ja siirry tilaan 33
-    LM_GRAD          siirto, ja siirry tilaan 34
-    LM_PBFGS         siirto, ja siirry tilaan 35
-    LM_PLBFGS        siirto, ja siirry tilaan 36
-    LM_LBFGS         siirto, ja siirry tilaan 37
-    LM_RANDOM        siirto, ja siirry tilaan 38
-    LM_BAYES         siirto, ja siirry tilaan 39
+    LM_USE           shift, and go to state 32
+    LM_PARALLELGRAD  shift, and go to state 33
+    LM_GRAD          shift, and go to state 34
+    LM_PBFGS         shift, and go to state 35
+    LM_PLBFGS        shift, and go to state 36
+    LM_LBFGS         shift, and go to state 37
+    LM_RANDOM        shift, and go to state 38
+    LM_BAYES         shift, and go to state 39
 
-    $default  supistaminen käyttäen sääntöä 25 (lmethod)
+    $default  reduce using rule 25 (lmethod)
 
-    lmethod  siirry tilaan 40
-    mbasic   siirry tilaan 41
+    lmethod  go to state 40
+    mbasic   go to state 41
 
 
-Tila 32
+State 32
 
    27 mbasic: LM_USE .
 
-    $default  supistaminen käyttäen sääntöä 27 (mbasic)
+    $default  reduce using rule 27 (mbasic)
 
 
-Tila 33
+State 33
 
    32 mbasic: LM_PARALLELGRAD .
 
-    $default  supistaminen käyttäen sääntöä 32 (mbasic)
+    $default  reduce using rule 32 (mbasic)
 
 
-Tila 34
+State 34
 
    28 mbasic: LM_GRAD .
 
-    $default  supistaminen käyttäen sääntöä 28 (mbasic)
+    $default  reduce using rule 28 (mbasic)
 
 
-Tila 35
+State 35
 
    29 mbasic: LM_PBFGS .
 
-    $default  supistaminen käyttäen sääntöä 29 (mbasic)
+    $default  reduce using rule 29 (mbasic)
 
 
-Tila 36
+State 36
 
    30 mbasic: LM_PLBFGS .
 
-    $default  supistaminen käyttäen sääntöä 30 (mbasic)
+    $default  reduce using rule 30 (mbasic)
 
 
-Tila 37
+State 37
 
    31 mbasic: LM_LBFGS .
 
-    $default  supistaminen käyttäen sääntöä 31 (mbasic)
+    $default  reduce using rule 31 (mbasic)
 
 
-Tila 38
+State 38
 
    33 mbasic: LM_RANDOM .
 
-    $default  supistaminen käyttäen sääntöä 33 (mbasic)
+    $default  reduce using rule 33 (mbasic)
 
 
-Tila 39
+State 39
 
    34 mbasic: LM_BAYES .
 
-    $default  supistaminen käyttäen sääntöä 34 (mbasic)
+    $default  reduce using rule 34 (mbasic)
 
 
-Tila 40
+State 40
 
     1 arg: optseq endopt data arch nnfile lmethod .
 
-    $default  supistaminen käyttäen sääntöä 1 (arg)
+    $default  reduce using rule 1 (arg)
 
 
-Tila 41
+State 41
 
    26 lmethod: mbasic . mmodseq
 
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 42
-    MMOD_PCA        siirto, ja siirry tilaan 43
-    MMOD_ICA        siirto, ja siirry tilaan 44
+    MMOD_OVERTRAIN  shift, and go to state 42
+    MMOD_PCA        shift, and go to state 43
+    MMOD_ICA        shift, and go to state 44
 
-    $default  supistaminen käyttäen sääntöä 35 (mmodseq)
+    $default  reduce using rule 35 (mmodseq)
 
-    mmodseq  siirry tilaan 45
-    mmod     siirry tilaan 46
+    mmodseq  go to state 45
+    mmod     go to state 46
 
 
-Tila 42
+State 42
 
    37 mmod: MMOD_OVERTRAIN .
 
-    $default  supistaminen käyttäen sääntöä 37 (mmod)
+    $default  reduce using rule 37 (mmod)
 
 
-Tila 43
+State 43
 
    38 mmod: MMOD_PCA .
 
-    $default  supistaminen käyttäen sääntöä 38 (mmod)
+    $default  reduce using rule 38 (mmod)
 
 
-Tila 44
+State 44
 
    39 mmod: MMOD_ICA .
 
-    $default  supistaminen käyttäen sääntöä 39 (mmod)
+    $default  reduce using rule 39 (mmod)
 
 
-Tila 45
+State 45
 
    26 lmethod: mbasic mmodseq .
 
-    $default  supistaminen käyttäen sääntöä 26 (lmethod)
+    $default  reduce using rule 26 (lmethod)
 
 
-Tila 46
+State 46
 
    36 mmodseq: mmod . mmodseq
 
-    MMOD_OVERTRAIN  siirto, ja siirry tilaan 42
-    MMOD_PCA        siirto, ja siirry tilaan 43
-    MMOD_ICA        siirto, ja siirry tilaan 44
+    MMOD_OVERTRAIN  shift, and go to state 42
+    MMOD_PCA        shift, and go to state 43
+    MMOD_ICA        shift, and go to state 44
 
-    $default  supistaminen käyttäen sääntöä 35 (mmodseq)
+    $default  reduce using rule 35 (mmodseq)
 
-    mmodseq  siirry tilaan 47
-    mmod     siirry tilaan 46
+    mmodseq  go to state 47
+    mmod     go to state 46
 
 
-Tila 47
+State 47
 
    36 mmodseq: mmod mmodseq .
 
-    $default  supistaminen käyttäen sääntöä 36 (mmodseq)
+    $default  reduce using rule 36 (mmodseq)

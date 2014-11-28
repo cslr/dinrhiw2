@@ -144,33 +144,34 @@ fi
 BLAS_CFLAGS="-I/usr/local/include/"
 BLAS_LIBS="-lblas -L/usr/local/lib/"
 
-AC_MSG_CHECKING([for OpenBLAS library (1)])
-`gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
-
-if [[ $? -eq 0 ]]; then
-    OPENBLAS="yes"
-    BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
-    BLAS_LIBS="-lopenblas -L/usr/local/lib/"
-    AC_MSG_RESULT([yes, headers in /usr/local/include(?)])
-else
-    AC_MSG_RESULT([no OpenBLAS detected])
-    OPENBLAS="no"
-fi
-
-AC_MSG_CHECKING([for OpenBLAS library (2)])
-`gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
-
-
-if [[ $? -eq 0 ]]; then
-    OPENBLAS="yes"
-    BLAS_CFLAGS="-DOPENBLAS -I/include/"
-    BLAS_LIBS="-L/lib/ -lopenblas"
-    AC_MSG_RESULT([yes, headers in /include(?)])
-else
-    AC_MSG_RESULT([no OpenBLAS detected])
-    OPENBLAS="no"
-fi
-
+dnl 
+dnl AC_MSG_CHECKING([for OpenBLAS library (1)])
+dnl `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
+dnl 
+dnl if [[ $? -eq 0 ]]; then
+dnl     OPENBLAS="yes"
+dnl     BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
+dnl     BLAS_LIBS="-lopenblas -L/usr/local/lib/"
+dnl     AC_MSG_RESULT([yes, headers in /usr/local/include(?)])
+dnl else
+dnl     AC_MSG_RESULT([no OpenBLAS detected])
+dnl     OPENBLAS="no"
+dnl fi
+dnl 
+dnl AC_MSG_CHECKING([for OpenBLAS library (2)])
+dnl `gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
+dnl 
+dnl 
+dnl if [[ $? -eq 0 ]]; then
+dnl     OPENBLAS="yes"
+dnl     BLAS_CFLAGS="-DOPENBLAS -I/include/"
+dnl     BLAS_LIBS="-L/lib/ -lopenblas"
+dnl     AC_MSG_RESULT([yes, headers in /include(?)])
+dnl else
+dnl     AC_MSG_RESULT([no OpenBLAS detected])
+dnl     OPENBLAS="no"
+dnl fi
+dnl 
 
 
 dnl checking for ZLIB header files and library
