@@ -4012,37 +4012,37 @@ fi
 BLAS_CFLAGS="-I/usr/local/include/"
 BLAS_LIBS="-lblas -L/usr/local/lib/"
 
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (1)" >&5
 $as_echo_n "checking for OpenBLAS library (1)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-    OPENBLAS="yes"
-    BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
-    BLAS_LIBS="-lopenblas -L/usr/local/lib/"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include(?)" >&5
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
+   BLAS_LIBS="-lopenblas -L/usr/local/lib/"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include(?)" >&5
 $as_echo "yes, headers in /usr/local/include(?)" >&6; }
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-    OPENBLAS="no"
+   OPENBLAS="no"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (2)" >&5
 $as_echo_n "checking for OpenBLAS library (2)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
-
 if [ $? -eq 0 ]; then
-    OPENBLAS="yes"
-    BLAS_CFLAGS="-DOPENBLAS -I/include/"
-    BLAS_LIBS="-L/lib/ -lopenblas"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /include(?)" >&5
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/include/"
+   BLAS_LIBS="-L/lib/ -lopenblas"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /include(?)" >&5
 $as_echo "yes, headers in /include(?)" >&6; }
 else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-    OPENBLAS="no"
+   OPENBLAS="no"
 fi
 
 
