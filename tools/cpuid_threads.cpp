@@ -57,7 +57,7 @@ int numberOfCPUThreads()
   
   // Detect hyper-threads
   // bool hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
-  
+
   return (int)logical;
 }
 
