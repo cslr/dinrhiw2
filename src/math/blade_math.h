@@ -643,6 +643,101 @@ namespace whiteice
     inline blas_complex<double> cos(const blas_complex<double>& x){
       return blas_complex<double>(std::cos<double>(std::complex<double>(x.c[0],x.c[1])));
     }
+
+
+    //////////////////////////////////////////////////////////////////////
+    // sinh
+    
+    float sinh(float x) PURE_FUNCTION;
+    double sinh(double x) PURE_FUNCTION;
+    int sinh(int x) PURE_FUNCTION;
+    unsigned int sinh(unsigned int x) PURE_FUNCTION;
+    char sinh(char x) PURE_FUNCTION;
+    unsigned char sinh(unsigned char x) PURE_FUNCTION;
+    
+    realnumber sinh(const realnumber& x);
+    
+    blas_real<float> sinh(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> sinh(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> sinh(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> sinh(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    //////////////////////////////////////////////////////////////////////
+    
+    inline float sinh(float x){ return ::sinhf(x); }
+    inline double sinh(double x){ return ::sinh(x); }
+    inline int sinh(int x){ return (int)::sinhf((float)x); }
+    inline unsigned int sinh(unsigned int x){ return (unsigned int)::sinhf((float)x); }
+    inline char sinh(char x){ return (char)::sinhf((float)x); }
+    inline unsigned char sinh(unsigned char x){ return (unsigned char)::sinhf((float)x); }
+    
+    inline realnumber sinh(const realnumber& x){
+      assert(0);
+      return realnumber(0.0);
+    }
+    
+    inline blas_real<float> sinh(const blas_real<float>& x){
+      return blas_real<float>(::sinhf(x.c[0]));
+    }
+    
+    inline blas_real<double> sinh(const blas_real<double>& x){
+      return blas_real<double>(::sinh(x.c[0]));
+    }
+    
+    inline blas_complex<float> sinh(const blas_complex<float>& x){
+      return blas_complex<float>(std::sinh<float>(std::complex<float>(x.c[0],x.c[1])));
+    }
+    
+    inline blas_complex<double> sinh(const blas_complex<double>& x){
+      return blas_complex<double>(std::sinh<double>(std::complex<double>(x.c[0],x.c[1])));
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // cosh
+    
+    float cosh(float x) PURE_FUNCTION;
+    double cosh(double x) PURE_FUNCTION;
+    int cosh(int x) PURE_FUNCTION;
+    unsigned int cosh(unsigned int x) PURE_FUNCTION;
+    char cosh(char x) PURE_FUNCTION;
+    unsigned char cosh(unsigned char x) PURE_FUNCTION;
+    
+    realnumber cosh(const realnumber& x);
+    
+    blas_real<float> cosh(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> cosh(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> cosh(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> cosh(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    //////////////////////////////////////////////////////////////////////
+    
+    inline float cosh(float x){ return ::coshf(x); }
+    inline double cosh(double x){ return ::cosh(x); }
+    inline int cosh(int x){ return (int)::coshf((float)x); }
+    inline unsigned int cosh(unsigned int x){ return (unsigned int)::coshf((float)x); }
+    inline char cosh(char x){ return (char)::coshf((float)x); }
+    inline unsigned char cosh(unsigned char x){ return (unsigned char)::coshf((float)x); }
+    
+    inline realnumber cosh(const realnumber& x){
+      assert(0);
+      return realnumber(0.0);
+    }
+    
+    inline blas_real<float> cosh(const blas_real<float>& x){
+      return blas_real<float>(::coshf(x.c[0]));
+    }
+    
+    inline blas_real<double> cosh(const blas_real<double>& x){
+      return blas_real<double>(::cosh(x.c[0]));
+    }
+    
+    inline blas_complex<float> cosh(const blas_complex<float>& x){
+      return blas_complex<float>(std::cosh<float>(std::complex<float>(x.c[0],x.c[1])));
+    }
+    
+    inline blas_complex<double> cosh(const blas_complex<double>& x){
+      return blas_complex<double>(std::cosh<double>(std::complex<double>(x.c[0],x.c[1])));
+    }
     
     
     //////////////////////////////////////////////////////////////////////

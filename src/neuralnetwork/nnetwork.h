@@ -33,7 +33,7 @@ namespace whiteice
     public:
     
     // creates useless 1x1 network. 
-    // Use load to load some useful network
+    // Use to load some useful network
     nnetwork(); 
     nnetwork(const nnetwork& nn);
     nnetwork(const std::vector<unsigned int>& nnarch) throw(std::invalid_argument);
@@ -91,6 +91,11 @@ namespace whiteice
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
     
     ////////////////////////////////////////////////////////////
+    protected:
+    
+    inline T nonlin(const T& input) const throw(); // non-linearity used in neural network
+    inline T Dnonlin(const T& input) const throw(); // derivate of non-linearity used in neural network
+    
     private:
     
     inline void gemv(unsigned int yd, unsigned int xd, T* W, T* x, T* y);

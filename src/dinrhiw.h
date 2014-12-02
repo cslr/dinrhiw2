@@ -32,6 +32,8 @@
 #include "LBFGS_nnetwork.h"
 #include "pLBFGS_nnetwork.h"
 
+#include "sinh_nnetwork.h"
+
 #include "array.h"
 #include "static_array.h"
 #include "dynamic_array.h"

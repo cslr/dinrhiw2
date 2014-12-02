@@ -165,6 +165,148 @@ namespace whiteice
       return deep_nonlin_ica(data, parameters, deepness - 1);
     }
   }
+
+
+
+  /**
+   * calculates 2*deepness layer "neural network" weights and
+   * stores them to parameters. calculations are done recursively
+   * by first calculating PCA and one-layer non-linear ICA and
+   * then calling this function again with deepness-1.
+   *
+   * NOTE: this one uses sinh(x) non-linearity that works
+   *       with sinh_nnetwork()
+   */
+  bool deep_nonlin_ica_sinh(std::vector< math::vertex<> >& data,
+			    std::vector<deep_ica_parameters>&
+			    parameters, unsigned int deepness)
+  {
+    if(data.size() <= 0)
+      return false;
+    
+    if(deepness <= 0){ // time to stop
+      return (parameters.size() > 0);
+    }
+
+    struct deep_ica_parameters p;
+    
+    // initially we calculate PCA for this layer's data
+    {
+      // 1. removes mean value
+      // 2. calculates covariance matrix Rxx and whitens the data
+      
+      math::vertex<> mean;
+      math::matrix<> Rxx;
+      math::matrix<> V;
+
+      if(math::mean_covariance_estimate<>(mean, Rxx, data) == false)
+	return false;
+
+      if(math::symmetric_eig<>(Rxx, V) == false)
+	return false;
+
+      math::matrix<>& D = Rxx; // Rxx contains now diagnonal matrix
+
+      for(unsigned int i=0;i<Rxx.ysize();i++){
+	if(D(i,i) < 0.0)
+	  D(i,i) = math::abs(D(i,i));
+	if(D(i,i) <= 10e-8){
+	  D(i,i) = 0.0; // dirty way to handle singular matrixes (just force the data to zero)
+	}
+	else{
+	  // sets diagonal variances to 0.5
+	  math::blas_real<float> d = D(i,i);
+	  math::blas_real<float> s = 0.5f;
+	  
+	  D(i,i) =s/sqrt(d);
+	}
+      }
+
+      p.W_pca = V * D * V.transpose();
+      p.b_pca = - p.W_pca*mean;
+
+      // actual processes the data (PCA)
+      for(unsigned int i=0;i<data.size();i++){
+	data[i] = p.W_pca * data[i] + p.b_pca;
+      }
+
+      if(math::mean_covariance_estimate<>(mean, Rxx, data) == false)
+	return false;
+
+      // std::cout << "mean = " << mean << std::endl;
+      // std::cout << "Rxx = " << Rxx << std::endl;
+    }
+
+    
+    /*
+     * next we do diagnalize E[sinh(x)sinh(x)^t] matrix 
+     * where aim is to remove higher order correlations 
+     * from the data
+     */
+    {
+      std::vector< math::vertex<> > sinh_data;
+      math::vertex<> sinh_mean;
+
+      for(unsigned int i=0;i<data.size();i++){
+	math::vertex<> d1 = data[i];
+
+	for(unsigned int ii=0;ii<d1.size();ii++){
+	  d1[ii] = sinhf(d1[ii].c[0]);
+	  // d1[ii] = tanhf(d1[ii].c[0]);
+	}
+
+	sinh_data.push_back(d1);
+      }
+
+      math::vertex<> mean;
+      math::matrix<> Rxx;
+      math::matrix<> V;
+
+      if(math::mean_covariance_estimate<>(mean, Rxx, sinh_data) == false)
+	return false;
+
+      if(math::symmetric_eig<>(Rxx, V) == false)
+	return false;
+      
+      p.W_ica = V.transpose();
+
+      Rxx.identity();
+      Rxx = Rxx - p.W_ica;
+      
+      p.b_ica = Rxx*mean;
+
+      // now we transform data through g^-1(W*g(x)) transform
+      // g_new(x) = g(x) - E[g(x)] in order to keep E[g(x)] = 0
+      
+      for(unsigned int i=0;i<sinh_data.size();i++){
+	math::vertex<> x = sinh_data[i];
+	x = p.W_ica * x + p.b_ica;
+
+	for(unsigned int ii=0;ii<x.size();ii++)
+	  x[ii] = asinhf(x[ii].c[0]);
+	  
+	/*
+	  if(x[ii].c[0] >= 0.9999f)
+	    x[ii] = atanhf(0.9999f);
+	  else if(x[ii].c[0] <= -0.9999f)
+	    x[ii] = atanhf(-0.9999f);
+	  else
+	    x[ii] = atanhf(x[ii].c[0]);
+	*/
+
+	// overwrites the data vector with preprocessed data
+	data[i] = x; 
+      }
+    }
+
+    
+    // this layer processing is done so we move to the next layer
+    {
+      parameters.push_back(p);
+
+      return deep_nonlin_ica(data, parameters, deepness - 1);
+    }
+  }
   
 
   /**

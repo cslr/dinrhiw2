@@ -175,8 +175,8 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::calculate(bool gradInfo)
   {
-    const T af = T(1.7159f);
-    const T bf = T(0.6666f);
+    // const T af = T(1.7159f);
+    // const T bf = T(0.6666f);
     
     if(!inputValues.exportData(&(state[0]))) return false;
     
@@ -218,10 +218,15 @@ namespace whiteice
 	  // f(x) = b * ( (1 - Exp[-ax]) / (1 + Exp[-ax]) )
 	  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
 	  
+#if 0
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
 	    T expbx = math::exp(-bf*state[i]);
 	    // state[i] = af * ( (T(1.0f) - expbx) / (T(1.0f) + expbx) );
 	    state[i] = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) ); // numerically more stable (no NaNs)
+	  }
+#endif
+	  for(unsigned int i=0;i<arch[aindex+1];i++){
+	    state[i] = nonlin(state[i]);
 	  }
 	}
 	
@@ -248,11 +253,15 @@ namespace whiteice
 	if(aindex+2 < arch.size()){ // not the last layer
 	  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
 	  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
-	  
+#if 0
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
 	    T expbx = math::exp(-bf*state[i]);
 	    // state[i] = af * ( (T(1.0f) - expbx) / (T(1.0f) + expbx) );
 	    state[i] = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) ); // numerically more stable (no NaNs)
+	  }
+#endif
+	  for(unsigned int i=0;i<arch[aindex+1];i++){
+	    state[i] = nonlin(state[i]);
 	  }
 	}
       
@@ -300,11 +309,8 @@ namespace whiteice
   bool nnetwork<T>::gradient(const math::vertex<T>& error,
 			     math::vertex<T>& grad) const
   {
-    // updates weights with backpropagation
-    // this is cut'n'paste + small changes from backprop()
-    
-    const T af = T(1.7159f);
-    const T bf = T(0.6666f);
+    // const T af = T(1.7159f);
+    // const T bf = T(0.6666f);
         
     if(!hasValidBPData)
       return false;
@@ -407,8 +413,11 @@ namespace whiteice
 	//
 	// f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a ) 
 	
+#if 0
 	T fxa = (*bptr)/af;
 	sum *= (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
+#endif
+	sum *= Dnonlin(*bptr);
 	
 	temp[x] = sum;
 	bptr++; // BUG HERE???
@@ -470,6 +479,28 @@ namespace whiteice
     return true;
   }
   
+  
+  template <typename T> // non-linearity used in neural network
+  inline T nnetwork<T>::nonlin(const T& input) const throw(){
+    const T af = T(1.7159f);
+    const T bf = T(0.6666f);
+    
+    T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
+    T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
+    
+    return output;
+  }
+  
+  template <typename T> // derivat of non-linearity used in neural network
+  inline T nnetwork<T>::Dnonlin(const T& input) const throw(){
+    const T af = T(1.7159f);
+    const T bf = T(0.6666f);
+    
+    T fxa = input/af;
+    T output = (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
+    
+    return output;
+  }
   
   //////////////////////////////////////////////////////////////////////
   

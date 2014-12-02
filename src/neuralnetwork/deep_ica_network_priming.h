@@ -53,6 +53,16 @@ namespace whiteice
 		       parameters, unsigned int deepness);
 
   /**
+   * calculates 2*deepness layer "neural network" weights and
+   * stores them to parameters. calculations are done recursively
+   * by first calculating PCA and one-layer non-linear ICA and
+   * then calling this function again with deepness-1.
+   */
+  bool deep_nonlin_ica_sinh(std::vector< math::vertex<> >& data,
+			    std::vector<deep_ica_parameters>&
+			    parameters, unsigned int deepness);
+  
+  /**
    * constructs nnetwork from deep_nonlin_ica solved parameters  
    * by adding rest_of_arch randomly initiaized extra layers
    * after the deep ica layers. The idea is that we construct a network

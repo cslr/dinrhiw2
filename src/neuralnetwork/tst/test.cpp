@@ -12,6 +12,7 @@
 #include "odd_sigmoid.h"
 
 #include "nnetwork.h"
+#include "sinh_nnetwork.h"
 #include "GDALogic.h"
 
 #include "dataset.h"
@@ -44,6 +45,8 @@ void neuronlayer_test2();
 void neuralnetwork_test();
 
 void nnetwork_test();
+void sinh_nnetwork_test();
+
 void bayesian_nnetwork_test();
 void backprop_test(const unsigned int size);
 void neuralnetwork_saveload_test();
@@ -67,6 +70,9 @@ int main()
 
   try{
     nnetwork_test();
+    
+    sinh_nnetwork_test();
+    
     bayesian_nnetwork_test();
 
     hmc_test();
@@ -1990,12 +1996,395 @@ void nnetwork_test()
   catch(std::exception& e){
     std::cout << "Unexpected exception: " << e.what() << std::endl;
   }  
-
-  
-
 }
 
 /******************************************************************/
+
+void sinh_nnetwork_test()
+{
+  try{
+    std::cout << "SINH NNETWORK TEST -2: GET/SET DEEP ICA PARAMETERS"
+	      << std::endl;
+
+    std::vector< math::vertex<> > data;
+    
+    for(unsigned int i=0;i<1000;i++){
+      double t = i/500.0f - 1.0f;
+      math::vertex<> x;
+      x.resize(4);
+      x[0] = sin(2.0*t);
+      x[1] = cos(t)*cos(t)*cos(t);
+      x[2] = sin(1.0 + 2.0*cos(t));
+      x[3] = ((float)rand())/((float)RAND_MAX);
+
+      data.push_back(x);
+    }
+
+    std::vector<deep_ica_parameters> params;
+    unsigned int deepness = 2;
+
+    if(deep_nonlin_ica_sinh(data, params, deepness) == false)
+      std::cout << "ERROR: deep_nonlin_ica FAILED." << std::endl;
+
+    std::cout << "Parameter layers: " << params.size() << std::endl;
+
+    std::vector<unsigned int> layers;
+
+    layers.push_back(4);
+
+    for(unsigned int i=0;i<params.size();i++){
+      layers.push_back(4);
+      layers.push_back(4);
+    }
+    
+    layers.push_back(6);
+    layers.push_back(2);
+    
+    sinh_nnetwork<> nn(layers);
+
+    if(initialize_nnetwork(params, nn) == false){
+      std::cout << "ERROR: initialize_nnetwork FAILED." << std::endl;
+    }
+    
+    
+    std::cout << "Deep ICA network init PASSED." << std::endl;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+
+
+  try{
+    std::cout << "SINH NNETWORK TEST -1: GET/SET PARAMETER TESTS"
+	      << std::endl;
+
+    std::vector<unsigned int> arch;
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(5);
+    
+    sinh_nnetwork<> nn(arch); // 4-4-4-5 network (3 layer network)
+
+    math::vertex<> b;
+    math::matrix<> W;
+
+    nn.getBias(b, 0);
+    nn.getWeights(W, 0);
+
+    std::cout << "First layer W*x + b." << std::endl;
+    std::cout << "W = " << W << std::endl;
+    std::cout << "b = " << b << std::endl;
+
+    math::vertex<> all;
+    nn.exportdata(all);
+
+    std::cout << "whole nn vector = " << all << std::endl;
+
+    W(0,0) = 100.0f;
+
+    if(nn.setWeights(W, 1) == false)
+      std::cout << "ERROR: cannot set NN weights." << std::endl;
+
+    b.resize(5);
+
+    if(nn.setBias(b, 2) == false)
+      std::cout << "ERROR: cannot set NN bias." << std::endl;
+    
+    math::vertex<> b2;
+
+    if(nn.getBias(b2, 2) == false)
+      std::cout << "ERROR: cannot get NN bias." << std::endl;
+
+    if(b.size() != b2.size())
+      std::cout << "ERROR: bias terms mismatch (size)." << std::endl;
+
+    math::vertex<> e = b - b2;
+
+    if(e.norm() > 0.01)
+      std::cout << "ERROR: bias terms mismatch." << std::endl;
+    
+      
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }  
+
+  
+
+  
+  try{
+    std::cout << "SINH NNETWORK TEST 0: SAVE() AND LOAD() TEST" << std::endl;
+    
+    sinh_nnetwork<>* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(18);
+    arch.push_back(10);
+    arch.push_back(1);
+
+    std::vector<unsigned int> arch2;
+    arch2.push_back(8);
+    arch2.push_back(10);
+    arch2.push_back(3);
+    
+    nn = new sinh_nnetwork<>(arch);    
+    nn->randomize();
+    
+    sinh_nnetwork<>* copy = new sinh_nnetwork<>(*nn);
+    
+    if(nn->save("nntest.cfg") == false){
+      std::cout << "nnetwork::save() failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+    
+    nn->randomize();
+    
+    nn = new sinh_nnetwork<>(arch2);    
+    nn->randomize();
+    
+    if(nn->load("nntest.cfg") == false){
+      std::cout << "nnetwork::load() failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+    
+    math::vertex<> p1, p2;
+    
+    if(nn->exportdata(p1) == false || copy->exportdata(p2) == false){
+      std::cout << "nnetwork exportdata failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+    
+    math::vertex<> e = p1 - p2;
+    
+    std::cout << "p1 = " << p1 << std::endl;
+    std::cout << "p2 = " << p2 << std::endl;
+    std::cout << "e  = " << e << std::endl;
+    
+    if(e.norm() > 0.001f){
+      std::cout << "ERROR: save() & load() failed in nnetwork!" << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+       
+      
+    delete nn;
+    nn = 0;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }  
+
+
+  
+  
+  try{
+    std::cout << "SINH NNETWORK TEST 2: SIMPLE PROBLEM + DIRECT GRADIENT DESCENT" << std::endl;
+    
+    sinh_nnetwork<>* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(2);
+    arch.push_back(20);
+    arch.push_back(2);
+    
+    nn = new sinh_nnetwork<>(arch);
+    
+    const unsigned int size = 500;
+    
+    
+    std::vector< math::vertex< math::blas_real<float> > > input(size);
+    std::vector< math::vertex< math::blas_real<float> > > output(size);
+    
+    for(unsigned int i = 0;i<size;i++){
+      input[i].resize(2);
+      output[i].resize(2);
+      
+      input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
+      input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
+      
+      output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
+      
+    }
+    
+    
+    dataset<> data;
+    std::string inString, outString;
+    inString = "input";
+    outString = "output";
+    data.createCluster(inString,  2);
+    data.createCluster(outString, 2);
+    
+    data.add(0, input);
+    data.add(1, output);
+    
+    data.preprocess(0);
+    data.preprocess(1);
+    
+    math::vertex<> grad, err, weights;
+    
+    unsigned int counter = 0;
+    math::blas_real<float> error = math::blas_real<float>(1000.0f);
+    math::blas_real<float> lrate = math::blas_real<float>(0.01f);
+    while(error > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_real<float>(0.0f);
+      
+      // goes through data, calculates gradient
+      // exports weights, weights -= 0.01*gradient
+      // imports weights back
+      
+      for(unsigned int i=0;i<data.size(0);i++){
+	nn->input() = data.access(0, i);
+	nn->calculate(true);
+	err = data.access(1,i) - nn->output();
+	
+	for(unsigned int i=0;i<err.size();i++)
+	  error += err[i]*err[i];
+	
+	if(nn->gradient(err, grad) == false)
+	  std::cout << "gradient failed." << std::endl;
+	
+	if(nn->exportdata(weights) == false)
+	  std::cout << "export failed." << std::endl;
+	
+	weights -= lrate * grad;
+	
+	if(nn->importdata(weights) == false)
+	  std::cout << "import failed." << std::endl;
+      }
+      
+      error /= math::blas_real<float>((float)data.size());
+      
+      std::cout << counter << " : " << error << std::endl;
+      
+      counter++;
+    }
+    
+    std::cout << counter << " : " << error << std::endl;
+    
+    delete nn;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+
+
+  try{
+    std::cout << "SINH NNETWORK TEST 3: SIMPLE PROBLEM + SUM OF DIRECT GRADIENT DESCENT" << std::endl;
+    
+    sinh_nnetwork<>* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(2);
+    arch.push_back(20);
+    arch.push_back(2);
+    
+    nn = new sinh_nnetwork<>(arch);
+    
+    const unsigned int size = 500;
+    
+    
+    std::vector< math::vertex< math::blas_real<float> > > input(size);
+    std::vector< math::vertex< math::blas_real<float> > > output(size);
+    
+    for(unsigned int i = 0;i<size;i++){
+      input[i].resize(2);
+      output[i].resize(2);
+      
+      input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
+      input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
+      
+      output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
+      
+    }
+    
+    
+    dataset<> data;
+    std::string inString, outString;
+    inString = "input";
+    outString = "output";
+    data.createCluster(inString,  2);
+    data.createCluster(outString, 2);
+    
+    data.add(0, input);
+    data.add(1, output);
+    
+    data.preprocess(0);
+    data.preprocess(1);
+    
+    math::vertex<> grad, err, weights;
+    math::vertex<> sumgrad;
+    
+    unsigned int counter = 0;
+    math::blas_real<float> error = math::blas_real<float>(1000.0f);
+    math::blas_real<float> lrate = math::blas_real<float>(0.01f);
+    
+    while(error > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_real<float>(0.0f);
+      
+      // goes through data, calculates gradient
+      // exports weights, weights -= 0.01*gradient
+      // imports weights back
+
+      math::blas_real<float> ninv =
+	math::blas_real<float>(1.0f/data.size(0));
+      
+      for(unsigned int i=0;i<data.size(0);i++){
+	nn->input() = data.access(0, i);
+	nn->calculate(true);
+	err = data.access(1,i) - nn->output();
+	
+	for(unsigned int j=0;j<err.size();j++)
+	  error += err[j]*err[j];
+	
+	if(nn->gradient(err, grad) == false)
+	  std::cout << "gradient failed." << std::endl;
+
+	if(i == 0)
+	  sumgrad = ninv*grad;
+	else
+	  sumgrad += ninv*grad;
+      }
+      
+      
+      if(nn->exportdata(weights) == false)
+	std::cout << "export failed." << std::endl;
+      
+      weights -= lrate * sumgrad;
+      
+      if(nn->importdata(weights) == false)
+	std::cout << "import failed." << std::endl;
+
+      
+      error /= math::blas_real<float>((float)data.size());
+      
+      std::cout << counter << " : " << error << std::endl;
+      
+      counter++;
+    }
+    
+    std::cout << counter << " : " << error << std::endl;
+    
+    delete nn;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+
+}
+
+
+/********************************************************************/
+
 
 void bayesian_nnetwork_test()
 {
