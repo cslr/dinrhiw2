@@ -8,7 +8,7 @@
 
 #include "LBFGS_nnetwork.h"
 #include "LBFGS.h"
-#include "nnetwork.h"
+#include "sinh_nnetwork.h"
 #include "vertex.h"
 #include <vector>
 #include <pthread.h>
@@ -22,7 +22,7 @@ namespace whiteice
     {
     public:
 
-    pLBFGS_nnetwork(const nnetwork<T>& net, const dataset<T>& data, bool overfit=false);
+    pLBFGS_nnetwork(const sinh_nnetwork<T>& net, const dataset<T>& data, bool overfit=false);
     ~pLBFGS_nnetwork();
 
     bool minimize(unsigned int NUMTHREADS);
@@ -38,7 +38,7 @@ namespace whiteice
     
     private:
 
-    const nnetwork<T>& net;
+    const sinh_nnetwork<T>& net;
     const dataset<T>& data;
 
     volatile bool thread_running;

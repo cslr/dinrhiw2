@@ -30,15 +30,21 @@ namespace whiteice
   }
   
   template <typename T>
-  inline T sinh_nnetwork<T>::nonlin(const T& input) const throw() // non-linearity used in neural network
+  inline T sinh_nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw() // non-linearity used in neural network
   {
-    return math::sinh(input);
+    if(layer & 1)
+      return math::sinh(input);
+    else
+      return math::asinh(input);
   }
   
   template <typename T>
-  inline T sinh_nnetwork<T>::Dnonlin(const T& input) const throw() // derivate of non-linearity used in neural network
+  inline T sinh_nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const throw() // derivate of non-linearity used in neural network
   {
-    return math::cosh(input);
+    if(layer & 1)
+      return math::cosh(input);
+    else
+      return T(1.0f)/math::sqrt(input*input + T(1.0f));
   }
     
   

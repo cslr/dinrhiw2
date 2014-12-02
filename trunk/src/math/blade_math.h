@@ -2,6 +2,7 @@
 // TODO: implement missing parts (this isn't fully done (afaik) and/or test
 //
 
+
 #include "dinrhiw_blas.h"
 #include "number.h"
 #include "ownexception.h"
@@ -13,11 +14,15 @@
 #include "function.h"
 #include "real.h"
 
-#include <complex>
-#include <algorithm>
+// #include <cstdio>
+#include <stddef.h>
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <gmp.h>
+
+#include <complex>
 
 #ifndef blade_math_h
 #define blade_math_h
@@ -691,6 +696,55 @@ namespace whiteice
     inline blas_complex<double> sinh(const blas_complex<double>& x){
       return blas_complex<double>(std::sinh<double>(std::complex<double>(x.c[0],x.c[1])));
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // asinh
+
+    float asinh(float x) PURE_FUNCTION;
+    double asinh(double x) PURE_FUNCTION;
+    int asinh(int x) PURE_FUNCTION;
+    unsigned int asinh(unsigned int x) PURE_FUNCTION;
+    char asinh(char x) PURE_FUNCTION;
+    unsigned char asinh(unsigned char x) PURE_FUNCTION;
+    
+    realnumber asinh(const realnumber& x);
+    
+    blas_real<float> asinh(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> asinh(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> asinh(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> asinh(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    //////////////////////////////////////////////////////////////////////
+    
+    inline float asinh(float x){ return ::asinhf(x); }
+    inline double asinh(double x){ return ::asinh(x); }
+    inline int asinh(int x){ return (int)::asinhf((float)x); }
+    inline unsigned int asinh(unsigned int x){ return (unsigned int)::asinhf((float)x); }
+    inline char asinh(char x){ return (char)::asinhf((float)x); }
+    inline unsigned char asinh(unsigned char x){ return (unsigned char)::asinhf((float)x); }
+    
+    inline realnumber asinh(const realnumber& x){
+      assert(0);
+      return realnumber(0.0);
+    }
+    
+    inline blas_real<float> asinh(const blas_real<float>& x){
+      return blas_real<float>(::asinhf(x.c[0]));
+    }
+    
+    inline blas_real<double> asinh(const blas_real<double>& x){
+      return blas_real<double>(::asinh(x.c[0]));
+    }
+
+#if 0    
+    inline blas_complex<float> asinh(const blas_complex<float>& x){
+      return blas_complex<float>(std::asinh<float>(std::complex<float>(x.c[0],x.c[1])));
+    }
+    
+    inline blas_complex<double> asinh(const blas_complex<double>& x){
+      return blas_complex<double>(std::asinh<double>(std::complex<double>(x.c[0],x.c[1])));
+    }
+#endif
 
     //////////////////////////////////////////////////////////////////////
     // cosh

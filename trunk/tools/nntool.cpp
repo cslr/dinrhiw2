@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
     // number of datapoints to be used in learning (taken randomly from the dataset)
     unsigned int dataSize = 0;
-
+    
     parse_commandline(argc,
 		      argv,
 		      datafn,
@@ -178,7 +178,8 @@ int main(int argc, char** argv)
     }
     
 
-    nnetwork<>* nn = new nnetwork<>(arch);
+    nnetwork<>* nn = NULL;
+    nn = new nnetwork<>(arch);
     bayesian_nnetwork<>* bnn = new bayesian_nnetwork<>();
     
     if(verbose && !stdinout_io){
@@ -245,7 +246,7 @@ int main(int argc, char** argv)
 	std::vector<deep_ica_parameters> p;
 	
 	bool ok = false;
-
+	
 	if(deep_nonlin_ica(D, p, deepness) == true)
 	  if(initialize_nnetwork(p, *nn) == true)
 	    ok = true;
@@ -301,7 +302,7 @@ int main(int argc, char** argv)
 	    std::cout << "Starting neural network L-BFGS optimization with early stopping (T=" << secs << " seconds).."
 		      << std::endl;
 	  else
-	    std::cout << "Starting neural network L-BFGS optimization with early stopping).."
+	    std::cout << "Starting neural network L-BFGS optimization with early stopping.."
 		      << std::endl;
 	}
 	else{

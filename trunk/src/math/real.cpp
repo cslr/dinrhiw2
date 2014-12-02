@@ -5,6 +5,7 @@
 
 #include "real.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 namespace whiteice

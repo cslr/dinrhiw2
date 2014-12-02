@@ -8,6 +8,9 @@
 #include "eig.h"
 #include "correlation.h"
 
+#include <stdlib.h>
+
+
 namespace whiteice
 {
   namespace math
