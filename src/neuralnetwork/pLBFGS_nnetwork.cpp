@@ -17,7 +17,7 @@ namespace whiteice
 {
   
   template <typename T>
-  pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const nnetwork<T>& nn,
+  pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const sinh_nnetwork<T>& nn,
 				      const dataset<T>& d,
 				      bool overfit) :
     net(nn), data(d)
@@ -90,7 +90,7 @@ namespace whiteice
       for(unsigned int i=0;i<optimizers.size();i++){
 	optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 	
-	nnetwork<T> nn(this->net);
+	sinh_nnetwork<T> nn(this->net);
 	
 	if(i != 0){ // we keep a single instance of the original nn in a starting set
 	  nn.randomize();
@@ -183,7 +183,7 @@ namespace whiteice
   template <typename T>
   T pLBFGS_nnetwork<T>::getError(const math::vertex<T>& x) const
   {
-    whiteice::nnetwork<T> nnet(this->net);
+    whiteice::sinh_nnetwork<T> nnet(this->net);
     nnet.importdata(x);
     
     math::vertex<T> err;
@@ -326,7 +326,7 @@ namespace whiteice
 	  if(optimizers[i] == NULL){
 	    optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 
-	    nnetwork<T> nn(this->net);
+	    sinh_nnetwork<T> nn(this->net);
 	    nn.randomize();
 	    normalize_weights_to_unity(nn);
 	    

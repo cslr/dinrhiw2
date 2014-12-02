@@ -3,3 +3,151 @@ static_array.o: static_array.cpp static_array.h array.h container.h \
  static_array.cpp
 dynamic_array.o: dynamic_array.cpp dynamic_array.h array.h container.h \
  stack.h queue.h dynamic_array.cpp
+primality_test.o: primality_test.cpp primality_test.h primality_test.cpp
+binary_tree.o: binary_tree.cpp binary_tree.h tree.h container.h \
+ btree_node.h binary_tree.cpp
+dataset.o: dataset.cpp math/dinrhiw_blas.h math/blas_primitives.h \
+ math/ownexception.h math/vertex.h math/dinrhiw_blas.h math/number.h \
+ compressable.h MemoryCompressor.h compressable.h \
+ neuralnetwork/backpropagation.h neuralnetwork/nn_iterative_correction.h \
+ neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
+ neuralnetwork/neuronlayer.h math/matrix.h math/linear_algebra.h \
+ math/matrix.h math/vertex.h math/correlation.h dynamic_bitset.h \
+ math/integer.h math/blade_math.h math/integer.h math/gvertex.h \
+ math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
+ math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
+ neuralnetwork/neuronlayer.h neuralnetwork/activation_function.h \
+ neuralnetwork/function.h math/eig.h dataset.h math/ica.h \
+ math/blade_math.h
+conversion.o: conversion.cpp conversion.h
+unique_id.o: unique_id.cpp unique_id.h
+conffile.o: conffile.cpp ../config.h conffile.h
+linear_ETA.o: linear_ETA.cpp linear_ETA.h ETA.h linear_ETA.cpp
+MemoryCompressor.o: MemoryCompressor.cpp MemoryCompressor.h \
+ compressable.h
+timed_boolean.o: timed_boolean.cpp timed_boolean.h augmented_data.h \
+ ../config.h
+vertex.o: math/vertex.cpp math/vertex.h math/dinrhiw_blas.h \
+ math/blas_primitives.h math/ownexception.h math/number.h compressable.h \
+ MemoryCompressor.h compressable.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ math/vertex.h neuralnetwork/neuralnetwork.h \
+ neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
+ math/matrix.h math/linear_algebra.h math/matrix.h math/correlation.h \
+ dynamic_bitset.h math/integer.h math/blade_math.h math/integer.h \
+ math/gvertex.h math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h \
+ math/real.h math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
+ neuralnetwork/neuronlayer.h neuralnetwork/activation_function.h \
+ neuralnetwork/function.h math/gcd.h math/gcd.cpp
+matrix.o: math/matrix.cpp math/matrix.h math/dinrhiw_blas.h \
+ math/blas_primitives.h math/ownexception.h math/number.h compressable.h \
+ MemoryCompressor.h compressable.h math/linear_algebra.h math/vertex.h \
+ neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
+ neuralnetwork/nn_iterative_correction.h math/vertex.h \
+ neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
+ neuralnetwork/neuronlayer.h math/matrix.h \
+ neuralnetwork/activation_function.h neuralnetwork/function.h \
+ neuralnetwork/neuronlayer.h math/correlation.h dynamic_bitset.h \
+ math/integer.h math/blade_math.h math/integer.h math/gvertex.h \
+ math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
+ math/quaternion.h math/gvertex.cpp math/matrix_rotations.h math/gcd.h \
+ math/gcd.cpp
+ownexception.o: math/ownexception.cpp math/ownexception.h
+test.o: tst/test.cpp point.h printable.h point.cpp point.h static_array.h \
+ array.h container.h static_array.cpp static_array.h dynamic_array.h \
+ stack.h queue.h dynamic_array.cpp dynamic_array.h timed_boolean.h \
+ primality_test.h primality_test.cpp primality_test.h dynamic_bitset.h \
+ math/integer.h math/number.h math/ownexception.h fast_radix.h \
+ fast_radixv.h fast_gradix.h dynamic_bitset.h priority_queue.h \
+ augmented_data.h rbtree.h tree.h rbnode.h rbtree.h rbnode.cpp rbtree.cpp \
+ binary_tree.h btree_node.h binary_tree.cpp binary_tree.h avltree.h \
+ avlnode.h avltree.h avlnode.cpp avltree.cpp dataset.h math/vertex.h \
+ math/dinrhiw_blas.h math/blas_primitives.h compressable.h \
+ MemoryCompressor.h compressable.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
+ neuralnetwork/neuronlayer.h math/matrix.h math/linear_algebra.h \
+ math/matrix.h math/vertex.h math/correlation.h math/blade_math.h \
+ math/integer.h math/gvertex.h math/gmatrix.h math/gmatrix.cpp \
+ neuralnetwork/function.h math/real.h math/quaternion.h math/gvertex.cpp \
+ math/matrix_rotations.h neuralnetwork/neuronlayer.h \
+ neuralnetwork/activation_function.h neuralnetwork/function.h math/ica.h \
+ unique_id.h conffile.h list_source.h data_source.h list_source.cpp \
+ list_source.h
+conv_test.o: tst/conv_test.cpp fast_radix.h conversion.h
+singleton.o: singleton.cpp singleton.h singleton_list.h singleton.cpp
+singleton_list.o: singleton_list.cpp singleton_list.h
+dynamic_bitset.o: dynamic_bitset.cpp dynamic_bitset.h math/integer.h \
+ math/number.h math/ownexception.h
+list_source.o: list_source.cpp list_source.h data_source.h \
+ list_source.cpp
+function_access_control.o: function_access_control.cpp \
+ function_access_control.h exceptions/ownexception.h unique_id.h \
+ function_access_control.cpp
+modtest.o: tst/modtest.cpp singleton.h singleton_list.h singleton.cpp \
+ singleton.h function_access_control.h exceptions/ownexception.h \
+ unique_id.h function_access_control.cpp function_access_control.h
+dinrhiw.o: dinrhiw.cpp dinrhiw.h math/BFGS.h \
+ neuralnetwork/optimized_function.h neuralnetwork/function.h \
+ math/vertex.h math/dinrhiw_blas.h math/blas_primitives.h \
+ math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
+ compressable.h neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
+ neuralnetwork/nn_iterative_correction.h neuralnetwork/neuralnetwork.h \
+ neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
+ math/matrix.h math/linear_algebra.h math/matrix.h math/vertex.h \
+ math/correlation.h dynamic_bitset.h math/integer.h math/blade_math.h \
+ math/integer.h math/gvertex.h math/gmatrix.h math/gmatrix.cpp \
+ neuralnetwork/function.h math/real.h math/quaternion.h math/gvertex.cpp \
+ math/matrix_rotations.h neuralnetwork/neuronlayer.h \
+ neuralnetwork/activation_function.h neuralnetwork/BFGS_nnetwork.h \
+ neuralnetwork/nnetwork.h conffile.h dataset.h math/ica.h \
+ neuralnetwork/pBFGS_nnetwork.h neuralnetwork/BFGS_nnetwork.h \
+ math/LBFGS.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/sinh_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
+ neuralnetwork/LBFGS_nnetwork.h neuralnetwork/sinh_nnetwork.h array.h \
+ container.h static_array.h static_array.cpp dynamic_array.h stack.h \
+ queue.h dynamic_array.cpp search_array.h compressable.h printable.h \
+ data_source.h chainhash.h hash_table.h chainhash.cpp dummystack.h \
+ priority_queue.h dynamic_bitset.h point.h point.cpp \
+ exceptions/ownexception.h function_access_control.h unique_id.h \
+ function_access_control.cpp dynamic_ctor_protection.h singleton.h \
+ singleton_list.h singleton.cpp augmented_data.h tree.h avltree.h \
+ avlnode.h avlnode.cpp avltree.cpp rbtree.h rbnode.h rbnode.cpp \
+ rbtree.cpp binary_tree.h btree_node.h binary_tree.cpp fast_radix.h \
+ fast_gradix.h fast_radixv.h radix_sort.h radix_sortv.h insertion.h ETA.h \
+ linear_ETA.h linear_ETA.cpp MemoryCompressor.h conffile.h math/number.h \
+ math/blade_math.h math/blas_primitives.h math/real.h math/modular.h \
+ math/gcd.h math/gcd.cpp math/gcd.h primality_test.h primality_test.cpp \
+ math/quaternion.h math/gmatrix.h math/gvertex.h math/norms.h \
+ math/linear_algebra.h math/linear_equations.h math/matrix_rotations.h \
+ math/eig.h conversion.h math/correlation.h math/bezier.h math/bezier.cpp \
+ math/bezier.h math/bezier_density.h math/bezier_surface.h \
+ math/bezier_surface.cpp math/bezier_surface.h math/hermite.h \
+ math/hermite.cpp math/hermite.h neuralnetwork/PSO.h \
+ neuralnetwork/optimized_function.h neuralnetwork/GeneticAlgorithm.h \
+ neuralnetwork/GeneticAlgorithm.cpp neuralnetwork/GeneticAlgorithm.h \
+ neuralnetwork/GeneticAlgorithm2.h neuralnetwork/GeneticAlgorithm2.cpp \
+ crypto/Cryptosystem.h data_source.h crypto/DataConversion.h \
+ crypto/DataConversion.cpp crypto/DataConversion.h crypto/AES.h \
+ crypto/Cryptosystem.h crypto/DES.h crypto/DSA.h crypto/PAD.h \
+ crypto/RSA.h crypto/SHA.h global.h ../config.h dataset.h \
+ neuralnetwork/activation_function.h neuralnetwork/neuralnetwork.h \
+ neuralnetwork/neuron.h neuralnetwork/odd_sigmoid.h neuralnetwork/nnPSO.h \
+ neuralnetwork/PSO.h neuralnetwork/dnnPSO.h \
+ neuralnetwork/nn_iterative_correction.h neuralnetwork/nnetwork.h \
+ neuralnetwork/NNGradDescent.h dinrhiw.h neuralnetwork/NNRandomSearch.h \
+ neuralnetwork/deep_ica_network_priming.h neuralnetwork/KMeans.h \
+ neuralnetwork/SOM2D.h ETA.h neuralnetwork/optimized_nnetwork_function.h \
+ neuralnetwork/negative_function.h neuralnetwork/stretched_function.h \
+ neuralnetwork/identity_activation.h neuralnetwork/odd_sigmoid.h \
+ neuralnetwork/threshold.h neuralnetwork/treshold.h \
+ neuralnetwork/multidimensional_gaussian.h neuralnetwork/gaussian.h \
+ neuralnetwork/HMC.h neuralnetwork/bayesian_nnetwork.h \
+ neuralnetwork/bayesian_nnetwork.h neuralnetwork/GA3.h \
+ neuralnetwork/rbf.h neuralnetwork/rbf.cpp \
+ neuralnetwork/multidimensional_gaussian.h neuralnetwork/hypervolume.h \
+ neuralnetwork/hypervolume.cpp neuralnetwork/hypervolume.h math/pdftree.h \
+ math/simplex.h timed_boolean.h math/superresolution.h \
+ math/superresolution.cpp math/superresolution.h memory_access_timing.h \
+ list_source.h list_source.cpp neuralnetwork/test_function.h \
+ neuralnetwork/test_function2.h

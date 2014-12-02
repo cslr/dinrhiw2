@@ -226,7 +226,7 @@ namespace whiteice
 	  }
 #endif
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    state[i] = nonlin(state[i]);
+	    state[i] = nonlin(state[i], aindex + 1);
 	  }
 	}
 	
@@ -261,7 +261,7 @@ namespace whiteice
 	  }
 #endif
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    state[i] = nonlin(state[i]);
+	    state[i] = nonlin(state[i], aindex + 1);
 	  }
 	}
       
@@ -417,7 +417,7 @@ namespace whiteice
 	T fxa = (*bptr)/af;
 	sum *= (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
 #endif
-	sum *= Dnonlin(*bptr);
+	sum *= Dnonlin(*bptr, counter - 1);
 	
 	temp[x] = sum;
 	bptr++; // BUG HERE???
@@ -481,18 +481,18 @@ namespace whiteice
   
   
   template <typename T> // non-linearity used in neural network
-  inline T nnetwork<T>::nonlin(const T& input) const throw(){
+  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw(){
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
     
     T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
     T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
-    
+
     return output;
   }
   
   template <typename T> // derivat of non-linearity used in neural network
-  inline T nnetwork<T>::Dnonlin(const T& input) const throw(){
+  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const throw(){
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
     

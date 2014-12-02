@@ -1721,7 +1721,9 @@ void nnetwork_test()
     
     std::vector<unsigned int> arch;
     arch.push_back(2);
-    arch.push_back(20);
+    arch.push_back(10);
+    arch.push_back(10);
+    arch.push_back(10);
     arch.push_back(2);
     
     nn = new nnetwork<>(arch);

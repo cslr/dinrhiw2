@@ -2,6 +2,7 @@
 #include <iostream>
 #include <typeinfo>
 #include <math.h>
+#include <stdlib.h>
 
 #include "eig.h"
 #include "blade_math.h"
