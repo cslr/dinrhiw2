@@ -92,6 +92,9 @@ int main(int argc, char** argv)
       threads = // for multithread-enabled code
 	(unsigned int)numberOfCPUThreads();
     
+    if(threads <= 0)
+      threads = 1;
+    
     
     if(cmdmode != 0){
       printf("Daemon and 'send command' modes aren't supported yet.\n");
@@ -339,7 +342,7 @@ int main(int argc, char** argv)
 	      (iterations < samples || samples <= 0) && // or max samples
 	      bfgs.solutionConverged() == false && bfgs.isRunning() == true) // or until solution converged.. (or exit due error)
 	{
-	  sleep(10);
+	  sleep(5);
 	  
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -448,7 +451,7 @@ int main(int argc, char** argv)
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0))
 	{
-	  sleep(10);
+	  sleep(5);
 
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -553,7 +556,7 @@ int main(int argc, char** argv)
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0))
 	{
-	  sleep(10);
+	  sleep(5);
 
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -611,7 +614,6 @@ int main(int argc, char** argv)
       
     }    
     else if(lmethod == "random"){
-      unsigned int threads = (unsigned int)numberOfCPUThreads();
       
       if(verbose)
 	std::cout << "Starting neural network parallel random search (T=" << secs << " seconds, " << threads << " threads).."
@@ -638,7 +640,7 @@ int main(int argc, char** argv)
 	{
 	  search.getSolution(*nn, error, solutions);
 
-	  sleepms(10000);
+	  sleepms(5000);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
@@ -691,7 +693,7 @@ int main(int argc, char** argv)
 	{
 	  grad.getSolution(*nn, error, solutions);
 
-	  sleepms(10000);
+	  sleepms(5000);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
@@ -1059,10 +1061,10 @@ void sleepms(unsigned int ms)
 #ifndef WINNT
   struct timespec ts;
   ts.tv_sec  = 0;
-  ts.tv_nsec = 500000000; // 500ms
+  ts.tv_nsec = ms*1000000;
   nanosleep(&ts, 0);
 #else
-  Sleep(500);
+  Sleep(ms);
 #endif 
 }
 
