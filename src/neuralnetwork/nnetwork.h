@@ -2,6 +2,14 @@
  * neural network implementation (V2)
  * work arounds some bugs + has more efficient implementation
  * 
+ * The neural network uses:
+ * - tanh(x) non-linearity y=tanh(Ax+b), 
+ *   expect at the output layer where direct 
+ *   linear transformation is used (y=Ax+b).
+ * - uses direct memory accesses and stores parameters
+ *   as a single big vector
+ * - could benefit optimization from BLAS routines
+ * 
  */
 
 #ifndef nnetwork_h

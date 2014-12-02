@@ -29,8 +29,12 @@ namespace whiteice
    * then calling this function again with deepness-1.
    *
    * NOTE: currently using tanh(x) non-linearity, sinh(x) would
-   *       be better but DO NOT work for nnetwork initialization
-   *       which uses tanh(x) 
+   *       be BETTER but DO NOT work for nnetwork initialization
+   *       which uses tanh(x) non-linearities [sinh(x) 
+   *       non-linearity gives good independent components 
+   *       so creating neural network that uses sinh(x) and
+   *       asinh(x) non-linearities instead of tanh(x) or 
+   *       sigmoidal one's would be interesting]
    */
   bool deep_nonlin_ica(std::vector< math::vertex<> >& data,
 		       std::vector<deep_ica_parameters>&
