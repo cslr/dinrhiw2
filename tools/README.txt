@@ -53,3 +53,6 @@ Machine learning datasets are from UCI Machine learning repository:
 
 http://archive.ics.uci.edu/ml/
 
+Bache, K. & Lichman, M. (2013). UCI Machine Learning Repository 
+[http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, 
+School of Information and Computer Science. 
