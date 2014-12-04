@@ -86,7 +86,7 @@ Tells nntool to be:
   # specifies neural network architecture using special *?-20-?* marking where ? is input/output dimension that is autodetected by nntool from dataset file (so the network architecture will be 11-20-1
   # defines configuration file where the model parameters are saved (or loaded): *winenn.cfg*
   # and finally sets the optimization method *parallelbfgs* (parallel multistart bfgs method which is the best for small networks).
-  # there is cross-validation (early stopping) because **--overfit** parameter is not given meaning that data is divided to training and testing sets and optimization in the training dataset is only continued as long as it improves performance in a testing dataset
+  # there is cross-validation (early stopping) because *--overfit* parameter is not given meaning that data is divided to training and testing sets and optimization in the training dataset is only continued as long as it improves performance in a testing dataset
 
 After running 200 seconds the program then stores the results into winenn.cfg file which is used immediately to calculate average error in a dataset (the numbers displayed during optimization process are approximations).
 
