@@ -151,7 +151,7 @@ namespace whiteice
 
       running = false;
       
-
+      
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	pthread_cancel( optimizer_thread[i] );
       }
@@ -177,41 +177,42 @@ namespace whiteice
       
       thread_is_running++;
       
+      // 1. divides data to to training and testing sets
+      ///////////////////////////////////////////////////
+      
+      whiteice::dataset<T> dtrain, dtest;
+      
+      dtrain = *data;
+      dtest  = *data;
+      
+      dtrain.clearData(0);
+      dtrain.clearData(1);
+      dtest.clearData(0);
+      dtest.clearData(1);
+      
+      
+      for(unsigned int i=0;i<data->size(0);i++){
+	const unsigned int r = (rand() & 1);
+	
+	if(r == 0){
+	  math::vertex<T> in  = data->access(0,i);
+	  math::vertex<T> out = data->access(1,i);
+	  
+	  dtrain.add(0, in,  true);
+	  dtrain.add(1, out, true);
+	}
+	else{
+	  math::vertex<T> in  = data->access(0,i);
+	  math::vertex<T> out = data->access(1,i);
+	  
+	  dtest.add(0, in,  true);
+	  dtest.add(1, out, true);	    
+	}
+      }
+      
+      
       while(running){
 	// keep looking for solution forever
-
-	// 1. divides data to to training and testing sets
-	///////////////////////////////////////////////////
-
-	whiteice::dataset<T> dtrain, dtest;
-
-	dtrain = *data;
-	dtest  = *data;
-
-	dtrain.clearData(0);
-	dtrain.clearData(1);
-	dtest.clearData(0);
-	dtest.clearData(1);
-
-
-	for(unsigned int i=0;i<data->size(0);i++){
-	  const unsigned int r = (rand() & 1);
-	  
-	  if(r == 0){
-	    math::vertex<T> in  = data->access(0,i);
-	    math::vertex<T> out = data->access(1,i);
-	    
-	    dtrain.add(0, in,  true);
-	    dtrain.add(1, out, true);
-	  }
-	  else{
-	    math::vertex<T> in  = data->access(0,i);
-	    math::vertex<T> out = data->access(1,i);
-	    
-	    dtest.add(0, in,  true);
-	    dtest.add(1, out, true);	    
-	  }
-	}
 
 	// starting location for neural network
 	nnetwork<T> nn(nn_arch);
@@ -264,7 +265,13 @@ namespace whiteice
 	      else
 		sumgrad += ninv*grad;
 	    }
-
+	    
+	    // cancellation point
+	    {
+	      thread_is_running--;
+	      pthread_testcancel();
+	      thread_is_running++;
+	    }
 	    	      
 	    if(nn.exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
@@ -297,6 +304,13 @@ namespace whiteice
 	    
 	    delta_error = (prev_error - error);
 	    ratio = delta_error / error;
+	    
+	    // cancellation point
+	    {
+	      thread_is_running--;
+	      pthread_testcancel();
+	      thread_is_running++;
+	    }
 
 	    // printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
 	    // fflush(stdout);
