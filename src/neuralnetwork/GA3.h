@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "function.h"
+#include "optimized_function.h"
 #include "vertex.h"
 #include "dinrhiw_blas.h"
 #include <pthread.h>
@@ -21,8 +22,7 @@ namespace whiteice
   {
   public:
   
-    GA3(function< math::vertex<T>, T>* f,
-	unsigned int dimension);
+    GA3(optimized_function<T>* f);
     ~GA3();
   
     T getCrossover() const throw(){ return p_crossover; }
@@ -37,14 +37,13 @@ namespace whiteice
     // returns the best solution found so far
     T getBestSolution(math::vertex<T>& solution) const throw();
   private:
-    function< math::vertex<T>, T>* f;
+    optimized_function<T>* f;
     unsigned int DIM; // number of dimensions
     
     T p_crossover;
     T p_mutation;
 
     // T goodness => solution
-    // std::map< T, unsigned int > population;
     std::vector< math::vertex<T> > solutions;
     std::vector< T > results;
 

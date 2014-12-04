@@ -91,25 +91,6 @@ namespace whiteice
   }
   
   
-  template <typename T>
-  bool negative_function<T>::hasHessian() const throw(){
-    return f->hasHessian();
-  }
-  
-  template <typename T>
-  math::matrix<T> negative_function<T>::hessian(math::vertex<T>& x) const
-  {
-    return -(f->hessian(x));
-  }
-  
-  template <typename T>
-  void negative_function<T>::hessian(math::vertex<T>& x, math::matrix<T>& y) const
-  {
-    f->hessian(x, y);
-    y = -y;
-  }
-  
-  
   //////////////////////////////////////////////////////////////////////
   
   template class negative_function< float >;

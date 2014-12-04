@@ -1,6 +1,7 @@
 
 #include "GA3.h"
 #include <unistd.h>
+#include <map>
 
 
 extern "C" {
@@ -11,13 +12,12 @@ extern "C" {
 namespace whiteice
 {
   template <typename T>
-  GA3<T>::GA3(function< math::vertex<T>, T>* f,
-	      unsigned int dimension)
+  GA3<T>::GA3(optimized_function<T>* f)
   {
     this->f = f;
-    this->DIM = dimension;
+    this->DIM = f->dimension();
     p_crossover = T(0.80);
-    p_mutation  = T(1.0/sqrt((float)dimension));
+    p_mutation  = T(1.0/sqrt((float)DIM));
   }
   
 
@@ -116,25 +116,20 @@ namespace whiteice
 
 	  T r1 = f->calculate(out1);
 	  T r2 = f->calculate(out2);
+	  
+	  solutions.push_back(out1);
+	  solutions.push_back(out2);
+	  results.push_back(r1);
+	  results.push_back(r2);
 
-	  if(r1 < results[i]){
-	    results[i] = r1;
-	    solutions[i] = out1;
-
-	    if(r1 < very_best_result){
-	      very_best_result = r1;
-	      very_best_candidate = out1;
-	    }
+	  if(r1 < very_best_result){
+	    very_best_result = r1;
+	    very_best_candidate = out1;
 	  }
 
-	  if(r2 < results[mate]){
-	    results[mate] = r2;
-	    solutions[mate] = out2;
-
-	    if(r2 < very_best_result){
-	      very_best_result = r2;
-	      very_best_candidate = out2;
-	    }
+	  if(r2 < very_best_result){
+	    very_best_result = r2;
+	    very_best_candidate = out2;
 	  }
 	}
       }
@@ -153,16 +148,38 @@ namespace whiteice
 
 	  T r1 = f->calculate(out1);
 	  
-	  if(r1 < results[i]){
-	    results[i] = r1;
-	    solutions[i] = out1;
-
-	    if(r1 < very_best_result){
-	      very_best_result = r1;
-	      very_best_candidate = out1;
-	    }
+	  solutions.push_back(out1);
+	  results.push_back(r1);
+	  
+	  if(r1 < very_best_result){
+	    very_best_result = r1;
+	    very_best_candidate = out1;
 	  }
 
+	}
+      }
+      
+      // sort and keep only the POPSIZE best solutions (smallest ones)
+      {
+	std::multimap<T, math::vertex<T> > sorted;
+	
+	for(unsigned int i=0;i<solutions.size();i++){
+	  std::pair< T, math::vertex<T> > p;
+	  p.first = results[i];
+	  p.second = solutions[i];
+	  
+	  sorted.insert(p);
+	}
+	
+	solutions.clear();
+	results.clear();
+	
+	unsigned int index = 0;
+	typename std::multimap<T, math::vertex<T> >::iterator it;
+	
+	for(it=sorted.begin();it!=sorted.end() && index < POPSIZE;it++, index++){
+	  solutions.push_back(it->second);
+	  results.push_back(it->first);
 	}
       }
       
