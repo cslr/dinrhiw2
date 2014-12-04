@@ -2,8 +2,6 @@
 
 Code is only tested and known to compile on Debian/Linux (amd64).
 
-NOTE: parallel L-BFGS method should be better than BFGS for high-dimensional problems but currently parallellbfgs gives strange error messages on some machines. Similarly, parallelgrad (gradient descent) seems to work correctly now, but seems to have strange issues that causes it only use a single core instead of multiple ones it should use.
-
   * NNGradDescent code seem to have some strange bug. It causes strange bad_alloc() errors if used in combination with other methods. This may be thread synchronization related
 
   * LBFGS and BFGS parallel algorithms has rare thread synchronization issues that should be fixed without causing potential deadlocks
