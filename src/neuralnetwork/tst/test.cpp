@@ -1671,6 +1671,8 @@ void nnetwork_test()
     
     nn->randomize();
     
+    delete nn;
+    
     nn = new nnetwork<>(arch2);    
     nn->randomize();
     
@@ -1705,6 +1707,7 @@ void nnetwork_test()
        
       
     delete nn;
+    delete copy;
     nn = 0;
   }
   catch(std::exception& e){
@@ -2144,6 +2147,8 @@ void sinh_nnetwork_test()
     
     nn->randomize();
     
+    delete nn;
+    
     nn = new sinh_nnetwork<>(arch2);    
     nn->randomize();
     
@@ -2176,7 +2181,7 @@ void sinh_nnetwork_test()
       return;
     }
        
-      
+    delete copy;
     delete nn;
     nn = 0;
   }

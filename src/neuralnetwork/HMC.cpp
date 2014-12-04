@@ -1,4 +1,6 @@
-
+/*
+ * hamiltonian MCMC sampling for neural networks
+ */
 
 #include "HMC.h"
 #include "NNGradDescent.h"
@@ -162,41 +164,7 @@ namespace whiteice
 
     // nnet.randomize(); // initally random
     
-#if 0
-    {
-      std::vector<unsigned int> arch;
-      nnet.getArchitecture(arch);
-
-      whiteice::math::NNGradDescent<T> grad;
-
-      // optimize for the optimal position
-      // until we get the first converged solution
-      // (or until timeout which is hard-coded
-      //  to be 2 minutes if problem do not solve)
-      if(grad.startOptimize(data, arch, 1)){
-	time_t start_time = time(0);
-	unsigned int counter = 0;
-	const unsigned int TIMEOUT = 120;
-	
-	T error = T(0.0f);
-	unsigned int converged = 0;
-	
-	while(grad.getSolution(nnet, error, converged) && counter < TIMEOUT){
-	  if(converged > 0)
-	    break; // we got what we wanted
-
-	  sleep(1); // give optimization thread time to run
-
-	  counter = time(0) - start_time;
-	}
-	
-	grad.stopComputation();
-      }
-      
-    }
-#endif
     
-
     threadIsRunning = 0;
     running = true;
     paused = false;
@@ -462,6 +430,13 @@ namespace whiteice
       p -= T(0.5f) * epsilon * Ugrad(q);
 
       p = -p;
+      
+      // cancellation point
+      {
+	threadIsRunning--;
+	pthread_testcancel();
+	threadIsRunning++;
+      }      
       
       T current_U  = U(old_q);
       T proposed_U = U(q);

@@ -88,11 +88,13 @@ namespace whiteice
     template <typename T>
     simplex<T>::~simplex()
     {
+      while(running){
+	pthread_cancel( maximization_thread );
+	sleep(1); // waits for thread to stop
+      }
+      
       running = false;
       has_result = false;
-      
-      if(running)
-	pthread_cancel( maximization_thread );
       
       pthread_mutex_destroy( &simplex_lock );
       

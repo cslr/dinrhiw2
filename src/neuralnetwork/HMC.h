@@ -73,7 +73,7 @@ namespace whiteice
     mutable pthread_mutex_t solution_lock, start_lock;
 
     // number of threads that are running (volatile)
-    volatile unsigned int threadIsRunning;
+    volatile int threadIsRunning;
     
   public:
     void __sampler_loop();

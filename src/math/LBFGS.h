@@ -77,6 +77,8 @@ namespace whiteice
         bool overfit;  
 	
         volatile bool sleep_mode, thread_running, solution_converged;
+        volatile int thread_is_running;
+        
 	pthread_t optimizer_thread;
         mutable pthread_mutex_t sleep_lock, thread_lock, solution_lock;
 	
