@@ -13,7 +13,7 @@
  * AC      = <number> | "?"
  * NNFILE  = <filename>
  * LMETHOD = MBASIC 
- * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs
+ * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs | minimize
  * 
  */
 
@@ -91,6 +91,7 @@
 
 /* LMETHOD */
 %token <str> LM_USE
+%token <str> LM_MINIMIZE
 %token <str> LM_PARALLELGRAD
 %token <str> LM_GRAD
 %token <str> LM_PBFGS
@@ -162,14 +163,15 @@ lmethod: /* empty */
 	 | mbasic mmodseq
 ;
 
-mbasic: LM_USE     { __info.method = $1; }
-      | LM_GRAD    { __info.method = $1; }
-      | LM_PBFGS   { __info.method = $1; }
-      | LM_PLBFGS  { __info.method = $1; }      
-      | LM_LBFGS   { __info.method = $1; }
+mbasic: LM_USE      { __info.method = $1; }
+      | LM_MINIMIZE { __info.method = $1; }
+      | LM_GRAD     { __info.method = $1; }
+      | LM_PBFGS    { __info.method = $1; }
+      | LM_PLBFGS   { __info.method = $1; }      
+      | LM_LBFGS    { __info.method = $1; }
       | LM_PARALLELGRAD { __info.method = $1; }
-      | LM_RANDOM  { __info.method = $1; }
-      | LM_BAYES   { __info.method = $1; }
+      | LM_RANDOM   { __info.method = $1; }
+      | LM_BAYES    { __info.method = $1; }
 ;
 
 mmodseq: /* empty */
@@ -283,6 +285,8 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
 
     p.name = "use"; p.code = LM_USE;
+    cmdparamslist.push_back(p);
+    p.name = "minimize"; p.code = LM_MINIMIZE;
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);

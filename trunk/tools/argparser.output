@@ -8,7 +8,7 @@ Grammar
 
     1 arg: optseq endopt data arch nnfile lmethod
 
-    2 optseq: /* empty */
+    2 optseq: %empty
     3       | option optseq
 
     4 anystring: STRING
@@ -27,35 +27,36 @@ Grammar
    16       | OPT_TIME NUMBER
    17       | OPT_SAMPLES NUMBER
 
-   18 endopt: /* empty */
+   18 endopt: %empty
    19       | OPT_ENDOPT
 
-   20 data: /* empty */
+   20 data: %empty
    21     | FILENAME
 
-   22 arch: /* empty */
+   22 arch: %empty
    23     | ARCHSTRING
 
    24 nnfile: anystring
 
-   25 lmethod: /* empty */
+   25 lmethod: %empty
    26        | mbasic mmodseq
 
    27 mbasic: LM_USE
-   28       | LM_GRAD
-   29       | LM_PBFGS
-   30       | LM_PLBFGS
-   31       | LM_LBFGS
-   32       | LM_PARALLELGRAD
-   33       | LM_RANDOM
-   34       | LM_BAYES
+   28       | LM_MINIMIZE
+   29       | LM_GRAD
+   30       | LM_PBFGS
+   31       | LM_PLBFGS
+   32       | LM_LBFGS
+   33       | LM_PARALLELGRAD
+   34       | LM_RANDOM
+   35       | LM_BAYES
 
-   35 mmodseq: /* empty */
-   36        | mmod mmodseq
+   36 mmodseq: %empty
+   37        | mmod mmodseq
 
-   37 mmod: MMOD_OVERTRAIN
-   38     | MMOD_PCA
-   39     | MMOD_ICA
+   38 mmod: MMOD_OVERTRAIN
+   39     | MMOD_PCA
+   40     | MMOD_ICA
 
 
 Terminals, with rules where they appear
@@ -78,49 +79,50 @@ OPT_THREADS (270) 14
 OPT_DATASIZE (271) 15
 OPT_ENDOPT (272) 19
 LM_USE (273) 27
-LM_PARALLELGRAD (274) 32
-LM_GRAD (275) 28
-LM_PBFGS (276) 29
-LM_PLBFGS (277) 30
-LM_LBFGS (278) 31
-LM_RANDOM (279) 33
-LM_BAYES (280) 34
-MMOD_OVERTRAIN (281) 37
-MMOD_PCA (282) 38
-MMOD_ICA (283) 39
+LM_MINIMIZE (274) 28
+LM_PARALLELGRAD (275) 33
+LM_GRAD (276) 29
+LM_PBFGS (277) 30
+LM_PLBFGS (278) 31
+LM_LBFGS (279) 32
+LM_RANDOM (280) 34
+LM_BAYES (281) 35
+MMOD_OVERTRAIN (282) 38
+MMOD_PCA (283) 39
+MMOD_ICA (284) 40
 
 
 Nonterminals, with rules where they appear
 
-$accept (29)
+$accept (30)
     on left: 0
-arg (30)
+arg (31)
     on left: 1, on right: 0
-optseq (31)
+optseq (32)
     on left: 2 3, on right: 1 3
-anystring (32)
+anystring (33)
     on left: 4 5 6 7, on right: 24
-option (33)
+option (34)
     on left: 8 9 10 11 12 13 14 15 16 17, on right: 3
-endopt (34)
+endopt (35)
     on left: 18 19, on right: 1
-data (35)
+data (36)
     on left: 20 21, on right: 1
-arch (36)
+arch (37)
     on left: 22 23, on right: 1
-nnfile (37)
+nnfile (38)
     on left: 24, on right: 1
-lmethod (38)
+lmethod (39)
     on left: 25 26, on right: 1
-mbasic (39)
-    on left: 27 28 29 30 31 32 33 34, on right: 26
-mmodseq (40)
-    on left: 35 36, on right: 26 36
-mmod (41)
-    on left: 37 38 39, on right: 36
+mbasic (40)
+    on left: 27 28 29 30 31 32 33 34 35, on right: 26
+mmodseq (41)
+    on left: 36 37, on right: 26 37
+mmod (42)
+    on left: 38 39 40, on right: 37
 
 
-state 0
+State 0
 
     0 $accept: . arg $end
 
@@ -142,84 +144,84 @@ state 0
     option  go to state 13
 
 
-state 1
+State 1
 
     8 option: OPT_NOINIT .
 
     $default  reduce using rule 8 (option)
 
 
-state 2
+State 2
 
     9 option: OPT_OVERFIT .
 
     $default  reduce using rule 9 (option)
 
 
-state 3
+State 3
 
    11 option: OPT_LOAD .
 
     $default  reduce using rule 11 (option)
 
 
-state 4
+State 4
 
    10 option: OPT_HELP .
 
     $default  reduce using rule 10 (option)
 
 
-state 5
+State 5
 
    12 option: OPT_VERBOSE .
 
     $default  reduce using rule 12 (option)
 
 
-state 6
+State 6
 
    13 option: OPT_VERSION .
 
     $default  reduce using rule 13 (option)
 
 
-state 7
+State 7
 
    16 option: OPT_TIME . NUMBER
 
     NUMBER  shift, and go to state 14
 
 
-state 8
+State 8
 
    17 option: OPT_SAMPLES . NUMBER
 
     NUMBER  shift, and go to state 15
 
 
-state 9
+State 9
 
    14 option: OPT_THREADS . NUMBER
 
     NUMBER  shift, and go to state 16
 
 
-state 10
+State 10
 
    15 option: OPT_DATASIZE . NUMBER
 
     NUMBER  shift, and go to state 17
 
 
-state 11
+State 11
 
     0 $accept: arg . $end
 
     $end  shift, and go to state 18
 
 
-state 12
+State 12
 
     1 arg: optseq . endopt data arch nnfile lmethod
 
@@ -230,7 +232,7 @@ state 12
     endopt  go to state 20
 
 
-state 13
+State 13
 
     3 optseq: option . optseq
 
@@ -251,49 +253,49 @@ state 13
     option  go to state 13
 
 
-state 14
+State 14
 
    16 option: OPT_TIME NUMBER .
 
     $default  reduce using rule 16 (option)
 
 
-state 15
+State 15
 
    17 option: OPT_SAMPLES NUMBER .
 
     $default  reduce using rule 17 (option)
 
 
-state 16
+State 16
 
    14 option: OPT_THREADS NUMBER .
 
     $default  reduce using rule 14 (option)
 
 
-state 17
+State 17
 
    15 option: OPT_DATASIZE NUMBER .
 
     $default  reduce using rule 15 (option)
 
 
-state 18
+State 18
 
     0 $accept: arg $end .
 
     $default  accept
 
 
-state 19
+State 19
 
    19 endopt: OPT_ENDOPT .
 
     $default  reduce using rule 19 (endopt)
 
 
-state 20
+State 20
 
     1 arg: optseq endopt . data arch nnfile lmethod
 
@@ -305,21 +307,21 @@ state 20
     data  go to state 23
 
 
-state 21
+State 21
 
     3 optseq: option optseq .
 
     $default  reduce using rule 3 (optseq)
 
 
-state 22
+State 22
 
    21 data: FILENAME .
 
     $default  reduce using rule 21 (data)
 
 
-state 23
+State 23
 
     1 arg: optseq endopt data . arch nnfile lmethod
 
@@ -331,14 +333,14 @@ state 23
     arch  go to state 25
 
 
-state 24
+State 24
 
    23 arch: ARCHSTRING .
 
     $default  reduce using rule 23 (arch)
 
 
-state 25
+State 25
 
     1 arg: optseq endopt data arch . nnfile lmethod
 
@@ -351,181 +353,189 @@ state 25
     nnfile     go to state 31
 
 
-state 26
+State 26
 
     7 anystring: NUMBER .
 
     $default  reduce using rule 7 (anystring)
 
 
-state 27
+State 27
 
     4 anystring: STRING .
 
     $default  reduce using rule 4 (anystring)
 
 
-state 28
+State 28
 
     6 anystring: FILENAME .
 
     $default  reduce using rule 6 (anystring)
 
 
-state 29
+State 29
 
     5 anystring: ARCHSTRING .
 
     $default  reduce using rule 5 (anystring)
 
 
-state 30
+State 30
 
    24 nnfile: anystring .
 
     $default  reduce using rule 24 (nnfile)
 
 
-state 31
+State 31
 
     1 arg: optseq endopt data arch nnfile . lmethod
 
     LM_USE           shift, and go to state 32
-    LM_PARALLELGRAD  shift, and go to state 33
-    LM_GRAD          shift, and go to state 34
-    LM_PBFGS         shift, and go to state 35
-    LM_PLBFGS        shift, and go to state 36
-    LM_LBFGS         shift, and go to state 37
-    LM_RANDOM        shift, and go to state 38
-    LM_BAYES         shift, and go to state 39
+    LM_MINIMIZE      shift, and go to state 33
+    LM_PARALLELGRAD  shift, and go to state 34
+    LM_GRAD          shift, and go to state 35
+    LM_PBFGS         shift, and go to state 36
+    LM_PLBFGS        shift, and go to state 37
+    LM_LBFGS         shift, and go to state 38
+    LM_RANDOM        shift, and go to state 39
+    LM_BAYES         shift, and go to state 40
 
     $default  reduce using rule 25 (lmethod)
 
-    lmethod  go to state 40
-    mbasic   go to state 41
+    lmethod  go to state 41
+    mbasic   go to state 42
 
 
-state 32
+State 32
 
    27 mbasic: LM_USE .
 
     $default  reduce using rule 27 (mbasic)
 
 
-state 33
+State 33
 
-   32 mbasic: LM_PARALLELGRAD .
-
-    $default  reduce using rule 32 (mbasic)
-
-
-state 34
-
-   28 mbasic: LM_GRAD .
+   28 mbasic: LM_MINIMIZE .
 
     $default  reduce using rule 28 (mbasic)
 
 
-state 35
+State 34
 
-   29 mbasic: LM_PBFGS .
-
-    $default  reduce using rule 29 (mbasic)
-
-
-state 36
-
-   30 mbasic: LM_PLBFGS .
-
-    $default  reduce using rule 30 (mbasic)
-
-
-state 37
-
-   31 mbasic: LM_LBFGS .
-
-    $default  reduce using rule 31 (mbasic)
-
-
-state 38
-
-   33 mbasic: LM_RANDOM .
+   33 mbasic: LM_PARALLELGRAD .
 
     $default  reduce using rule 33 (mbasic)
 
 
-state 39
+State 35
 
-   34 mbasic: LM_BAYES .
+   29 mbasic: LM_GRAD .
+
+    $default  reduce using rule 29 (mbasic)
+
+
+State 36
+
+   30 mbasic: LM_PBFGS .
+
+    $default  reduce using rule 30 (mbasic)
+
+
+State 37
+
+   31 mbasic: LM_PLBFGS .
+
+    $default  reduce using rule 31 (mbasic)
+
+
+State 38
+
+   32 mbasic: LM_LBFGS .
+
+    $default  reduce using rule 32 (mbasic)
+
+
+State 39
+
+   34 mbasic: LM_RANDOM .
 
     $default  reduce using rule 34 (mbasic)
 
 
-state 40
+State 40
+
+   35 mbasic: LM_BAYES .
+
+    $default  reduce using rule 35 (mbasic)
+
+
+State 41
 
     1 arg: optseq endopt data arch nnfile lmethod .
 
     $default  reduce using rule 1 (arg)
 
 
-state 41
+State 42
 
    26 lmethod: mbasic . mmodseq
 
-    MMOD_OVERTRAIN  shift, and go to state 42
-    MMOD_PCA        shift, and go to state 43
-    MMOD_ICA        shift, and go to state 44
+    MMOD_OVERTRAIN  shift, and go to state 43
+    MMOD_PCA        shift, and go to state 44
+    MMOD_ICA        shift, and go to state 45
 
-    $default  reduce using rule 35 (mmodseq)
+    $default  reduce using rule 36 (mmodseq)
 
-    mmodseq  go to state 45
-    mmod     go to state 46
-
-
-state 42
-
-   37 mmod: MMOD_OVERTRAIN .
-
-    $default  reduce using rule 37 (mmod)
+    mmodseq  go to state 46
+    mmod     go to state 47
 
 
-state 43
+State 43
 
-   38 mmod: MMOD_PCA .
+   38 mmod: MMOD_OVERTRAIN .
 
     $default  reduce using rule 38 (mmod)
 
 
-state 44
+State 44
 
-   39 mmod: MMOD_ICA .
+   39 mmod: MMOD_PCA .
 
     $default  reduce using rule 39 (mmod)
 
 
-state 45
+State 45
+
+   40 mmod: MMOD_ICA .
+
+    $default  reduce using rule 40 (mmod)
+
+
+State 46
 
    26 lmethod: mbasic mmodseq .
 
     $default  reduce using rule 26 (lmethod)
 
 
-state 46
+State 47
 
-   36 mmodseq: mmod . mmodseq
+   37 mmodseq: mmod . mmodseq
 
-    MMOD_OVERTRAIN  shift, and go to state 42
-    MMOD_PCA        shift, and go to state 43
-    MMOD_ICA        shift, and go to state 44
-
-    $default  reduce using rule 35 (mmodseq)
-
-    mmodseq  go to state 47
-    mmod     go to state 46
-
-
-state 47
-
-   36 mmodseq: mmod mmodseq .
+    MMOD_OVERTRAIN  shift, and go to state 43
+    MMOD_PCA        shift, and go to state 44
+    MMOD_ICA        shift, and go to state 45
 
     $default  reduce using rule 36 (mmodseq)
+
+    mmodseq  go to state 48
+    mmod     go to state 47
+
+
+State 48
+
+   37 mmodseq: mmod mmodseq .
+
+    $default  reduce using rule 37 (mmodseq)
