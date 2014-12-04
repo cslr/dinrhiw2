@@ -1410,7 +1410,10 @@ void test_fast_gradix()
       std::cout << "ERROR: RADIX SORTER FAILED." << std::endl;
       test_ok = false;
     }
-
+    
+    delete table;
+    delete ptable;
+    
     if(test_ok)
       std::cout << "TESTS OK." << std::endl;
   }
@@ -3779,6 +3782,7 @@ void test_compression()
       free(cbuffer);
       free(buffer2);
       
+      delete mc;
     }
     
     
@@ -3854,6 +3858,7 @@ void test_compression()
       free(cbuffer);
       free(buffer2);
       
+      delete mc;
     }
     
     

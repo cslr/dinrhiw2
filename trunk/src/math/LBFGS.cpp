@@ -72,11 +72,12 @@ namespace whiteice
       thread_running = true;
       sleep_mode = false;
       solution_converged = false;
+      thread_is_running = 0;
       
       pthread_create(&optimizer_thread, 0,
 		     __lbfgs_optimizer_thread_init,
 		     (void*)this);
-      // pthread_detach( optimizer_thread);
+      pthread_detach( optimizer_thread);
       
       pthread_mutex_unlock( &thread_lock );
       
@@ -131,8 +132,11 @@ namespace whiteice
       }
 
       thread_running = false;
-      // pthread_cancel( optimizer_thread );
-      pthread_join( optimizer_thread, NULL);
+      pthread_cancel( optimizer_thread );
+      
+      while(thread_is_running > 0){
+	sleep(1); // waits for thread to stop running
+      }
       
       pthread_mutex_unlock( &thread_lock );
       
@@ -258,6 +262,8 @@ namespace whiteice
       std::list< vertex<T> > sk;
       std::list< T > rk;
       
+      thread_is_running++;
+      
       
       while(thread_running){
 	try{
@@ -276,6 +282,13 @@ namespace whiteice
 
 	  ////////////////////////////////////////////////////////////
 	  g = Ugrad(x);
+	  
+	  // cancellation point
+	  {
+	    thread_is_running--;
+	    pthread_testcancel();
+	    thread_is_running++;
+	  }
 
 	  // d = -H*g; // linsolve(H, d, -g);	  
 	  // calculates aprox hessian product (L-BFGS method)
@@ -329,12 +342,27 @@ namespace whiteice
 	    d = -g; // initially just follow the gradient
 	  }
 	  
+	  
+	  // cancellation point
+	  {
+	    thread_is_running--;
+	    pthread_testcancel();
+	    thread_is_running++;
+	  }
 	
 	  // linear search finds xn = x + alpha*d
 	  // so that U(xn) is minimized
 	  if(linesearch(xn, x, d) == false){
 	    solution_converged = true;
 	    break; // we stop computation as we cannot find better solution
+	  }
+	  
+	  	  
+	  // cancellation point
+	  {
+	    thread_is_running--;
+	    pthread_testcancel();
+	    thread_is_running++;
 	  }
 	  
 	  y = U(xn);
@@ -365,6 +393,13 @@ namespace whiteice
 	  
 	  x = xn;
 	  
+	  // cancellation point
+	  {
+	    thread_is_running--;
+	    pthread_testcancel();
+	    thread_is_running++;
+	  }
+	  
 	  iterations++;
 	}
 	catch(std::exception& e){
@@ -383,19 +418,9 @@ namespace whiteice
       }
       
       
-      // everything done. time to quit
-      // THIS IS NOT THREAD-SAFE ?!?!
-
-      if(pthread_mutex_trylock( &thread_lock ) == 0){
-	thread_running = false;
-	pthread_mutex_unlock( &thread_lock );
-      }
-      else{
-	// cannot get the mutex
-	// [something is happening to thread_running]
-	// so we just exit and let the mutex owner decide
-	// what to do
-      }
+      thread_is_running--;
+      
+      thread_running = false;
       
     }
     
