@@ -1,6 +1,6 @@
 #summary Example of a simple machine learning task
 
-= Introduction =
+== Machine Learning Step By Step Example ==
 
 Here I'm going to give step-by-step instructions how to do simple machine learning task using dinrhiw tools: *dstool* and *nntool*.
 
