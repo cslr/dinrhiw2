@@ -36,6 +36,9 @@ namespace whiteice
   
     // returns the best solution found so far
     T getBestSolution(math::vertex<T>& solution) const throw();
+  
+    unsigned int getGenerations() const throw();
+  
   private:
     optimized_function<T>* f;
     unsigned int DIM; // number of dimensions
@@ -43,12 +46,13 @@ namespace whiteice
     T p_crossover;
     T p_mutation;
 
-    // T goodness => solution
     std::vector< math::vertex<T> > solutions;
     std::vector< T > results;
 
     math::vertex<T> very_best_candidate;
     T very_best_result;
+  
+    unsigned int generations;
 
     bool running;
     bool thread_running;

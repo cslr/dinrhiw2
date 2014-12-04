@@ -38,8 +38,10 @@ int main(int argc, char ** argv, char **envp)
       math::blas_real<float> r;
 
       r = ga.getBestSolution(s);
+      
+      const unsigned int g = ga.getGenerations();
 
-      std::cout << "Best result: " << r
+      std::cout << "Best result (" << g << " generations) : " << r
 		<< " param: " << s << std::endl;
       sleep(1);
     }
