@@ -4,7 +4,8 @@
 
 Here I'm going to give step-by-step instructions how to do simple machine learning task using dinrhiw tools: *dstool* and *nntool*.
 
-First compile and install 
+First compile and install library and tools: 
+autoconf; ./configure; make; make makelib; su; make install; exit; and cd tools; make all; su; make install; exit;
 
-http://archive.ics.uci.edu/ml/
+After this, lets get some data from UCI machine learning repository http://archive.ics.uci.edu/ml/.
 
