@@ -73,6 +73,7 @@ namespace whiteice
 	pthread_mutex_t solution_lock, start_lock;
 
         volatile bool running;
+        volatile int thread_is_running;
 
       public:
 	void __optimizerloop();

@@ -92,6 +92,7 @@ namespace whiteice
       best_error = T(1000.0f);
       converged_solutions = 0;
       running = true;
+      thread_is_running = 0;
 
       optimizer_thread.resize(NTHREADS);
 
@@ -154,7 +155,13 @@ namespace whiteice
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	pthread_cancel( optimizer_thread[i] );
       }
-
+      
+      while(thread_is_running > 0){
+	pthread_mutex_unlock( &solution_lock );
+	sleep(1); // waits for threads to stop running
+	pthread_mutex_lock( &solution_lock );
+      }
+      
       pthread_mutex_unlock( &start_lock );
       pthread_mutex_unlock( &solution_lock );
 
@@ -167,7 +174,8 @@ namespace whiteice
     {
       if(data == NULL)
 	return; // silent failure if there is bad data
-
+      
+      thread_is_running++;
       
       while(running){
 	// keep looking for solution forever
@@ -318,8 +326,8 @@ namespace whiteice
 	
 	
       }
-
       
+      thread_is_running--;
     }
 
 
