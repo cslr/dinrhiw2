@@ -1,8 +1,8 @@
 /*
- * bayesian neural network (using samples
+ * MCMC bayesian neural network (using samples from p(w|data))
  *
  * supports use of samples of weights p(w) which
- * wll be used to store and load network state and 
+ * will be used to store and load network state and 
  * calculate responses.
  */
 
