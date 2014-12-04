@@ -5,7 +5,22 @@
 Here I'm going to give step-by-step instructions how to do simple machine learning task using dinrhiw tools: *dstool* and *nntool*.
 
 First compile and install library and tools: 
-autoconf; ./configure; make; make makelib; su; make install; exit; and cd tools; make all; su; make install; exit;
+{{{
+autoconf; ./configure; make; make makelib; su; make install; exit;
+}}} 
+
+and 
+
+{{{ 
+cd tools; make all; su; make install; exit;
+}}}
 
 After this, lets get some data from UCI machine learning repository http://archive.ics.uci.edu/ml/.
 
+Specifically, we are going to do machine learning to predict wine quality of different wines based on measurements: https://archive.ics.uci.edu/ml/datasets/Wine+Quality.
+
+{{{
+wget http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv
+}}}
+
+After this
