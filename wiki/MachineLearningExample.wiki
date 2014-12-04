@@ -26,5 +26,28 @@ wget http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/wineq
 The data looks good but requires some preprocessing in order for import of data to the tool chain works. For preprocessing we are going to use perl and write a short script that divides data into 1) input and output files, 2) removes initial labels and 3) removes separators between numbers.
 
 {{{
+#!/usr/bin/perl
+
+open(MYFILE, 'winequality-white.csv');
+open(OUT, ">winequality.out");
+open(IN, ">winequality.in");
+
+$firstLine = <MYFILE>;
+
+while (<MYFILE>) {
+    chomp;
+    @words = split(";", $_);
+    
+    for my $i (0 .. $#words - 1){
+	print IN "@words[$i] ";
+    }
+    print IN "\n";    
+    print OUT "@words[$#words]\n";
+}
+
+close(MYFILE);
+close(OUT);
+close(IN);
 }}}
 
+OK. That was simple but not totally straight-forward to write but once you have write few of these conversion scripts they are simple variations of each other.
