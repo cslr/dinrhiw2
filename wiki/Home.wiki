@@ -51,9 +51,8 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
 
 == TODO ==
 
+  * restricted deep boltzman machines for pre-training (deep) neural networks
   * cleanup the code and remove classes that are not needed and don't belong to this library
-  * implement experimental y = asinh( B sinh(A x) ) neural network that uses sinh(x) and asinh(x) non-linearities instead of tanh(x) as DeepICAWeightInitialization implies it might be easy to initialize and use
-  * DOCUMENTATION, bug fixing - alternatively implement deep ICA with tanh(x) non-linearities
   * try to remove few direct x86 dependencies (cpuid instruction)
   * test and improve algorithms so that they work with real-world data: MNIST handwritten digits training data (784 dimensional input data) 
 
