@@ -55,3 +55,20 @@ OK. That was simple but not totally straight-forward to write but once you have 
 Now we have two files *winequality.in* and *winequality.out*. The first one contains input variables of our problem and the other one the corresponding output values (wine quality).
 
 The next things we are going to do is to use *dstool* to import the data into binary format *nntool* can use and do some simple preprocessing for data in order for it to have correct range ~[-1,1] when using neural network.
+
+Initially, we create a new dataset file using create command and clusters using yet another create commands where we specify number of variables in clusters. After it we are then ready to import our datafiles (winequality.in and winequality.out) using import commands for both clusters (0 and 1). Once our data is inside the file, we then add preprocessings (removal of mean and variance using meanvar and removal of correlations using pca).
+
+{{{
+dstool -create wine-test.ds
+dstool -create:11:input wine-test.ds
+dstool -create:1:output wine-test.ds
+dstool -list wine-test.ds
+dstool -import:0 wine-test.ds winequality.in
+dstool -import:1 wine-test.ds winequality.out
+dstool -padd:0:meanvar wine-test.ds
+dstool -padd:0:pca wine-test.ds
+dstool -padd:1:meanvar wine-test.ds
+}}}
+
+After we have created our dataset files to be used for machine learning, it is now time to do the actual job using *nntool* command.
+
