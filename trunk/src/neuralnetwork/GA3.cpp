@@ -33,6 +33,8 @@ namespace whiteice
   bool GA3<T>::minimize()
   {
     running = true;
+    generations = 0;
+    
     if(pthread_create(&optimizer_thread, 0,
 		      __ga3_thread_init, (void*)this) == 0)
       return true;
@@ -65,7 +67,12 @@ namespace whiteice
     solution = very_best_candidate;
     return very_best_result;
   }
-
+  
+  template <typename T>
+  unsigned int GA3<T>::getGenerations() const throw()
+  {
+    return generations;
+  }
   
   template <typename T>
   void GA3<T>::__optimization_thread()
@@ -183,7 +190,7 @@ namespace whiteice
 	}
       }
       
-      
+      generations++;
     }
 
     thread_running = false;
