@@ -72,3 +72,9 @@ dstool -padd:1:meanvar wine-test.ds
 
 After we have created our dataset files to be used for machine learning, it is now time to do the actual job using *nntool* command.
 
+Nntool accepts myriads of different parameters but basically the idea is to tell nntool what optimization method to use (we are going to use parallelbfgs) and then define how many iterations or seconds the optimization process should run. The command:
+
+{{{
+nntool -v --time 200 wine-test.ds ?-20-? winenn.cfg parallelbfgs
+}}}
+
