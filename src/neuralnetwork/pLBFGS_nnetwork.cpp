@@ -17,7 +17,7 @@ namespace whiteice
 {
   
   template <typename T>
-  pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const sinh_nnetwork<T>& nn,
+  pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const nnetwork<T>& nn,
 				      const dataset<T>& d,
 				      bool overfit) :
     net(nn), data(d)
@@ -43,13 +43,14 @@ namespace whiteice
 
     pthread_mutex_unlock( &thread_lock );
 
-    
     pthread_mutex_lock( &bfgs_lock );
 
     for(unsigned int i=0;i<optimizers.size();i++){
-      optimizers[i]->stopComputation();
-      delete optimizers[i];
-      optimizers[i] = NULL;
+      if(optimizers[i] != NULL){
+	optimizers[i]->stopComputation();
+	delete optimizers[i];
+	optimizers[i] = NULL;
+      }
     }
 
     optimizers.resize(0);
@@ -90,7 +91,7 @@ namespace whiteice
       for(unsigned int i=0;i<optimizers.size();i++){
 	optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 	
-	sinh_nnetwork<T> nn(this->net);
+	nnetwork<T> nn(this->net);
 	
 	if(i != 0){ // we keep a single instance of the original nn in a starting set
 	  nn.randomize();
@@ -183,7 +184,7 @@ namespace whiteice
   template <typename T>
   T pLBFGS_nnetwork<T>::getError(const math::vertex<T>& x) const
   {
-    whiteice::sinh_nnetwork<T> nnet(this->net);
+    whiteice::nnetwork<T> nnet(this->net);
     nnet.importdata(x);
     
     math::vertex<T> err;
@@ -271,9 +272,11 @@ namespace whiteice
     }
     
     for(unsigned int i=0;i<optimizers.size();i++){
-      optimizers[i]->stopComputation();
-      delete optimizers[i];
-      optimizers[i] = NULL;
+      if(optimizers[i] != NULL){
+	optimizers[i]->stopComputation();
+	delete optimizers[i];
+	optimizers[i] = NULL;
+      }
     }
 
     optimizers.resize(0);
@@ -326,7 +329,7 @@ namespace whiteice
 	  if(optimizers[i] == NULL){
 	    optimizers[i] = new LBFGS_nnetwork<T>(net, data, overfit);
 
-	    sinh_nnetwork<T> nn(this->net);
+	    nnetwork<T> nn(this->net);
 	    nn.randomize();
 	    normalize_weights_to_unity(nn);
 	    
@@ -343,6 +346,20 @@ namespace whiteice
       pthread_mutex_unlock( &bfgs_lock );
     }
     
+    
+    pthread_mutex_lock( &bfgs_lock );
+    
+    for(unsigned int i=0;i<optimizers.size();i++){
+      if(optimizers[i] != NULL){
+	optimizers[i]->stopComputation();
+	delete optimizers[i];
+	optimizers[i] = NULL;
+      }
+    }
+    
+    optimizers.resize(0);
+    
+    pthread_mutex_unlock( &bfgs_lock );
     
   }
   
