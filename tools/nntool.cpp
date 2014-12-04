@@ -118,7 +118,7 @@ int main(int argc, char** argv)
 	exit(-1);
       }
       
-      if(lmethod != "use"){
+      if(lmethod != "use" && lmethod != "minimize"){
 	if(data.getNumberOfClusters() < 2){
 	  fprintf(stderr, "error: datafile doesn't contain example pairs.\n");
 	  exit(-1);
@@ -152,11 +152,11 @@ int main(int argc, char** argv)
 	}
       }
       
-      if(data.size(0) == 0 || (data.size(1) == 0 && lmethod != "use")){
+      if(data.size(0) == 0 || (data.size(1) == 0 && (lmethod != "use" && lmethod != "minimize"))){
 	fprintf(stderr, "error: empty datasets cannot be used for training.\n");
 	exit(-1);
       }
-      else if(lmethod != "use" && data.size(0) != data.size(1)){
+      else if((lmethod != "use" && lmethod != "minimize") && data.size(0) != data.size(1)){
 	if(data.size(0) < data.size(1)){
 	  printf("warning: output dataset is larger than input dataset.\n");
 	  printf("some data is discarded. pairing may be incorrect.\n");
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
      * initializes nnetwork weight values using 
      * (simple) deep ica if possible
      */
-    if(lmethod != "use" && no_init == false && load == false)
+    if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
     {
       if(verbose)
 	std::cout << "Heuristics: NN weights normalization initialization."
@@ -903,7 +903,7 @@ int main(int argc, char** argv)
 	  fflush(stdout);
 	}
 	
-	sleep(10);
+	sleep(5);
 
 	time_t t1 = time(0);
 	counter = (unsigned int)(t1 - t0);
@@ -932,6 +932,84 @@ int main(int argc, char** argv)
       //       the largest MODE of p(w|data) distribution as 
       //       this is then the global minima (assuming samples
       //       {w_i} converge to p(w|data)).
+      
+    }
+    else if(lmethod == "minimize"){
+      if(verbose){
+	if(secs > 0){
+	  std::cout << "Finding neural network input (genetic algorithms) with minimum response (T=" 
+		    << secs << " seconds)"
+		    << std::endl;
+	}
+	else{
+	  std::cout << "Finding neural network input (genetic algorithms) with minimum response.."
+		    << std::endl;
+	}
+      }
+      
+            
+      if(bnn->load(nnfn) == false){
+	std::cout << "Loading neural network failed." << std::endl;
+	delete nn;
+	delete bnn;
+	nn = NULL;
+	return -1;
+      }
+      
+      // loads nnetwork weights from BNN
+      {
+	std::vector<unsigned int> arch;
+	std::vector< math::vertex< math::blas_real<float> > > weights;
+	
+	if(bnn->exportSamples(arch, weights) == false){
+	  std::cout << "Loading neural network failed." << std::endl;
+	  delete nn;
+	  delete bnn;
+	  nn = NULL;
+	  return -1;
+	}
+	
+	delete nn;
+	nn = new nnetwork<>(arch);
+	nn->importdata(weights[(rand() % weights.size())]);;
+      }
+      
+      nnetwork_function<> nf(*nn);
+      GA3<> ga(&nf);
+
+      time_t t0 = time(0);
+      unsigned int counter = 0;
+      
+      ga.minimize();
+      
+      whiteice::math::vertex<> s;
+      math::blas_real<float> r;
+      
+      while((ga.getGenerations() < samples && samples > 0) || (counter < secs && secs > 0)){
+	r = ga.getBestSolution(s);
+	const unsigned int g = ga.getGenerations();
+	
+	if(secs > 0){
+	  printf("\r%d generations: %f [%f minutes]                 ",
+		 g, r.c[0],
+		 (secs - counter)/60.0);
+	}
+	else{
+	  printf("\r%d/%d generations : %f             ",
+		 g, samples, r.c[0]);
+	}
+	fflush(stdout);
+	
+	sleep(1);
+	
+	time_t t1 = time(0);
+	counter = (unsigned int)(t1 - t0);
+      }
+      
+      printf("\n");
+      
+      data.invpreprocess(0, s);
+      std::cout << "Best solution found (" << r << "): " << s << std::endl;
       
     }
     else if(lmethod == "use"){
@@ -1024,7 +1102,7 @@ int main(int argc, char** argv)
       }
     }
     
-    if(lmethod != "use"){
+    if(lmethod != "use" && lmethod != "minimize"){
       if(bnn){
 	if(bnn->save(nnfn) == false){
 	  std::cout << "Saving neural network data failed." << std::endl;
@@ -1097,8 +1175,9 @@ void print_usage(bool all)
   printf("<nnfile>       input/output neural networks weights file\n");
   printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs\n");
   printf("               parallel methods use random location multistart/restart parallel search\n");
-  printf("               until timeout or the number of samples has been reeached\n\n");
-  
+  printf("               until timeout or the number of samples has been reached\n");
+  printf("               additionally: minimize method finds input that minimizes the neural network output\n");
+  printf("\n");
   printf("Report bugs to <dinrhiw2.googlecode.com>.\n");
   
 }
