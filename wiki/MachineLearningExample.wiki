@@ -78,3 +78,21 @@ Nntool accepts myriads of different parameters but basically the idea is to tell
 nntool -v --time 200 wine-test.ds ?-20-? winenn.cfg parallelbfgs
 }}}
 
+Tells nntool to be:
+ 
+  # 1) verbose (-v)
+  # use 200 seconds for optimization (--time)
+  # read data from wine-test.ds file
+  # specifies neural network architecture using special ?-20-? marking where ? is input/output dimension that is autodetected by nntool from dataset file (so the network architecture will be 11-20-1
+  # defines configuration file where the model parameters are saved (or loaded): winenn.cfg
+  # and finally sets the optimization method parallelbfgs (parallel multistart bfgs method).
+
+After running 200 seconds the program then stores the results into winenn.cfg file which is used immediately to calculate average error in a dataset (the numbers displayed during optimization process are approximations).
+
+{{{
+nntool -v wine-test.ds ?-20-? winenn.cfg use
+}}}
+
+Reports the average error of the prediction model to be: 0.0188697 which is rather good given that the dataset is difficult to learn. (For example RapidMiner's basic neural network optimizer gives worse results). How to inteprete the error terms then? When the data is properly normalized, results larger than *0.01* mean that the mathematical model cannot fully fit to the data meaning that errors are unacceptably high. And values much below *0.01* mean that the program manages to learn the data well.
+
+
