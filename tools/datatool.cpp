@@ -728,7 +728,7 @@ void print_usage()
   printf(" -premove:<c1>:<name>+      removes preprocesing(s) from cluster\n");
   printf("                            preprocess names: meanvar, outlier, pca, ica\n");
   printf("                            note: ica implementation is unstable and may not work\n");
-  printf(" -data:N                    resample all cluster sizes down to N datapoints\n");
+  printf(" -data:N                    jointly resamples all cluster sizes down to N datapoints\n");
   printf("\n");
   printf("This program is distributed under LGPL license <dinrhiw2.googlecode.com>.\n");
 } 
@@ -867,6 +867,7 @@ bool exportdata(const std::string& filename,
   for(unsigned int i=0;i<N;i++){
     whiteice::math::vertex< math::blas_real<float> > v;
     v = data->access(cluster, i);
+    data->invpreprocess(cluster, v);
     
     if(v.size() > 0){
       fprintf(fp, "%f", v[0].value());
