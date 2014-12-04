@@ -29,7 +29,7 @@ int main(int argc, char ** argv, char **envp)
 
   {
     ga3_test_function<> gtf;
-    GA3<> ga(&gtf, 2);
+    GA3<> ga(&gtf);
     
     ga.minimize();
 

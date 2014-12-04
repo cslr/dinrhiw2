@@ -36,15 +36,6 @@ namespace whiteice
       // gets gradient at given point (faster)
       virtual void grad(math::vertex<T>& x, math::vertex<T>& y) const  = 0;
       
-      
-      
-      virtual bool hasHessian() const throw() PURE_FUNCTION = 0;
-      
-      // gets hessian at given point
-      virtual math::matrix<T> hessian(math::vertex<T>& x) const PURE_FUNCTION = 0;
-      
-      // gets hessian at given point (faster)
-      virtual void hessian(math::vertex<T>& x, math::matrix<T>& y) const = 0;
     };
   
 }

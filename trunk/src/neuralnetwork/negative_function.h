@@ -41,10 +41,6 @@ namespace whiteice
       virtual math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;
       virtual void grad(math::vertex<T>& x, math::vertex<T>& y) const;
       
-      virtual bool hasHessian() const throw() PURE_FUNCTION;
-      virtual math::matrix<T> hessian(math::vertex<T>& x) const PURE_FUNCTION;
-      virtual void hessian(math::vertex<T>& x, math::matrix<T>& y) const;
-      
     private:
       
       optimized_function<T>* f;
