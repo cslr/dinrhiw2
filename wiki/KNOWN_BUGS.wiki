@@ -17,3 +17,7 @@ NOTE: parallel L-BFGS method should be better than BFGS for high-dimensional pro
   * IMPORTANT: reading (and writing) dataset files FAILs on MinGW/Win32 platform:  does not happen on Cygwin32 so it seems this is a compiler bug (gcc)? or a strange data access error. run valgrind on 32bit linux platform (create a VM machine)
 
   * realnumber (arbitrary precision math): sin() and cos() function calls fail as they are not implemented.
+
+TODO
+
+Use valgrind, kcachegrind, alleyoop, valkyrie and other tools to DEBUG EVERYTHING.
