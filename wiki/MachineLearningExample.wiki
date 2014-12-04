@@ -23,4 +23,8 @@ Specifically, we are going to do machine learning to predict wine quality of dif
 wget http://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv
 }}}
 
-After this
+The data looks good but requires some preprocessing in order for import of data to the tool chain works. For preprocessing we are going to use perl and write a short script that divides data into 1) input and output files, 2) removes initial labels and 3) removes separators between numbers.
+
+{{{
+}}}
+
