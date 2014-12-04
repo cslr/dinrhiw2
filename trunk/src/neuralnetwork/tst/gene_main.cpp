@@ -12,6 +12,7 @@
 
 #include "GA3.h"
 #include "ga3_test_function.h"
+#include "nnetwork_function.h"
 #include <unistd.h>
 
 using namespace whiteice;
@@ -26,6 +27,33 @@ void show_results(const class GA* GA) throw();
 int main(int argc, char ** argv, char **envp)
 {
   srand(time(0));
+  
+  {
+    std::vector<unsigned int> arch;
+    arch.push_back(10);
+    arch.push_back(5);
+    arch.push_back(1);
+    nnetwork<> nn(arch);
+    nn.randomize();
+    
+    nnetwork_function<> nf(nn);
+    GA3<> ga(&nf);
+    
+    ga.minimize();
+    
+    while(1){
+      whiteice::math::vertex<> s;
+      math::blas_real<float> r;
+
+      r = ga.getBestSolution(s);
+      
+      const unsigned int g = ga.getGenerations();
+
+      std::cout << "Best result (" << g << " generations) : " << r
+		<< " param: " << s << std::endl;
+      sleep(1);
+    }
+  }
 
   {
     ga3_test_function<> gtf;
@@ -45,7 +73,6 @@ int main(int argc, char ** argv, char **envp)
 		<< " param: " << s << std::endl;
       sleep(1);
     }
-    
   }
   
   if(argc < 2) return 0;

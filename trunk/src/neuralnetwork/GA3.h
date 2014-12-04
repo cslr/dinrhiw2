@@ -46,6 +46,7 @@ namespace whiteice
     T p_crossover;
     T p_mutation;
 
+    // std::multimap<T, math::vertex<T> > population;
     std::vector< math::vertex<T> > solutions;
     std::vector< T > results;
 
