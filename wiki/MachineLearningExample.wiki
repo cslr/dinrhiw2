@@ -96,7 +96,7 @@ nntool -v wine-test.ds ?-20-? winenn.cfg use
 
 Reports the average error of the prediction model to be: 0.0188697 which is rather good given that the dataset is difficult to learn. (For example [http://sourceforge.net/projects/rapidminer/ Rapid Miner] basic neural network optimizer gives worse results). 
 
-How to inteprete the error terms then? When the data is properly normalized, results larger than *0.01* mean that the mathematical model cannot fully fit to the data meaning that errors are unacceptably high. And values much below *0.01* mean that the program manages to learn the data well.
+How to inteprete the error terms then? When the data is properly normalized, results larger than *0.01* mean that the mathematical model cannot fully fit to the data meaning that errors are unacceptably high. And values much below *0.01* mean that the program manages to learn the data well. The results 0.0188697 then means that with proper tuning it might be possible to get good enough results (try to increase optimization time and size of the network slightly).
 
 
 Finally, after learning the data model, we actually re-predict the datapoints and compare them to the real outputs. These steps can be done using the following commands: 
