@@ -717,8 +717,8 @@ void print_usage()
   printf(" -print[:<c1>[:<b>[:<e>]]]  prints contents of cluster c1 (indexes [<b>,<e>])\n");
   printf(" -create                    creates new empty dataset (<dataset> file doesn't exist)\n");
   printf(" -create:<dim>[:name]       creates new empty <dim> dimensional dataset cluster\n");
-  printf(" -import:<c1>               imports data from ascii file to cluster c1\n");
-  printf(" -export:<c1>               exports data from cluster c1 to ascii file\n");
+  printf(" -import:<c1>               imports data from comma separated CSV ascii file to cluster c1\n");
+  printf(" -export:<c1>               exports data from cluster c1 to comma separated CSV ascii file\n");
   printf(" -add:<c1>:<c2>             adds data from another datafile cluster c2 to c1\n");
   printf(" -move:<c1>:<c2>            moves data (internally) from cluster c2 to c1\n");
   printf(" -copy:<c1>:<c2>            copies data (internally) from cluster c2 to c1\n");
@@ -757,7 +757,7 @@ bool importdata(const std::string& filename,
   while(!feof(fp)){
     
     // reads a single line
-    unsigned int len = 80, used = 0;
+    unsigned int len = 4096, used = 0;
     char* buffer = (char*)malloc(len);
     char* s = buffer;
     
@@ -815,7 +815,7 @@ bool importdata(const std::string& filename,
       line[index] = v;
       index++;
       
-      while(*s == ' ') s++;
+      while(*s == ' ' || *s == ',') s++;
     }
 
     // std::cout << line << std::endl;
@@ -874,7 +874,7 @@ bool exportdata(const std::string& filename,
     }
     
     for(unsigned int j=1;j<v.size();j++){
-      fprintf(fp, " %f", v[j].value());
+      fprintf(fp, ", %f", v[j].value());
     }
     
     fprintf(fp, "\n");
