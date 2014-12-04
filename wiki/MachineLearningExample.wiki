@@ -1,0 +1,10 @@
+#summary Example of a simple machine learning task
+
+= Introduction =
+
+Here I'm going to give step-by-step instructions how to do simple machine learning task using dinrhiw tools: *dstool* and *nntool*.
+
+First compile and install 
+
+http://archive.ics.uci.edu/ml/
+
