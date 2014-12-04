@@ -580,8 +580,6 @@ int main(int argc, char** argv)
 
 	  }
 
-	  
-	  
 	  fflush(stdout);
 	}
 	      
@@ -596,9 +594,9 @@ int main(int argc, char** argv)
 		 error.c[0], eta.estimate()/60.0f);
 	  
 	fflush(stdout);
-
-	bfgs.stopComputation();
 	
+	bfgs.stopComputation();
+
 	// gets the final (optimum) solution
 	bfgs.getSolution(w, error, iterations);
 	
@@ -606,12 +604,13 @@ int main(int argc, char** argv)
 	  std::cout << "ERROR: internal error" << std::endl;
 	  return -1;
 	}
+	
 	if(bnn->importNetwork(*nn) == false){
 	  std::cout << "ERROR: internal error" << std::endl;
 	  return -1;
 	}
+	
       }
-      
       
     }    
     else if(lmethod == "random"){
@@ -1102,6 +1101,7 @@ int main(int argc, char** argv)
       }
     }
     
+        
     if(lmethod != "use" && lmethod != "minimize"){
       if(bnn){
 	if(bnn->save(nnfn) == false){
@@ -1118,10 +1118,12 @@ int main(int argc, char** argv)
       nn = 0;
     }
     
+    
     if(bnn){
       delete bnn;
       bnn = 0;
     }
+    
     
     return 0;
   }

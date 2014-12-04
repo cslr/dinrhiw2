@@ -28,8 +28,12 @@ namespace whiteice
   template <typename T>
   bayesian_nnetwork<T>::~bayesian_nnetwork()
   {
-    for(unsigned int i=0;i<nnets.size();i++)
-      if(this->nnets[i]) delete this->nnets[i];
+    for(unsigned int i=0;i<nnets.size();i++){
+      if(this->nnets[i]){
+	delete this->nnets[i];
+	this->nnets[i] = NULL;
+      }
+    }
 
     nnets.clear();
   }
@@ -44,14 +48,16 @@ namespace whiteice
   {
     if(weights.size() <= 0) return false;
     
-    std::vector< nnetwork<T>* > nnets;
-    nnets.resize(weights.size());
+    std::vector< nnetwork<T>* > nnnets;
+    nnnets.resize(weights.size());
     
-    for(unsigned int i=0;i<nnets.size();i++){
-      nnets[i] = new nnetwork<T>(arch);
-      if(nnets[i]->importdata(weights[i]) == false){
-	for(unsigned int j=0;j<=i;j++)
-	  delete nnets[i];
+    for(unsigned int i=0;i<nnnets.size();i++){
+      nnnets[i] = new nnetwork<T>(arch);
+      if(nnnets[i]->importdata(weights[i]) == false){
+	for(unsigned int j=0;j<=i;j++){
+	  delete nnnets[i];
+	  nnnets[i] = NULL;
+	}
 	
 	return false;
       }
@@ -60,9 +66,14 @@ namespace whiteice
 
     // remove old data
     for(unsigned int i=0;i<this->nnets.size();i++)
-      if(this->nnets[i]) delete this->nnets[i];
+      if(this->nnets[i]){
+	delete this->nnets[i];
+	this->nnets[i] = NULL;
+      }
+    
+    nnets.clear();
 
-    this->nnets = nnets; // copies new pointers over old data
+    this->nnets = nnnets; // copies new pointers over old data
 
     return true;
   }
