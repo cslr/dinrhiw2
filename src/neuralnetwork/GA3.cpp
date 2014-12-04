@@ -91,10 +91,10 @@ namespace whiteice
 	v[j] = T(2.0f*((float)rand())/((float)RAND_MAX) - 1.0f);
 
       T r = f->calculate(v);
-
+      
       solutions.push_back(v);
       results.push_back(r);
-
+      
       // population[r] = solutions.size()-1;
 
       if(r < very_best_result){
