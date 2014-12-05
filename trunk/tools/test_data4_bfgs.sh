@@ -18,7 +18,7 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 1000 iris-test.ds 4-4-4-1 iris-nn.cfg parallelbfgs
+./nntool -v --time 200 iris-test.ds 4-4-4-1 iris-nn.cfg parallelbfgs
 
 ##################################################
 # testing
