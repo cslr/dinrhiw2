@@ -670,12 +670,12 @@ void test_realnumber()
       unsigned int j = (n+50) % a.size();
       unsigned int k = (n+99) % a.size();
       
-      if(a[i] > 10000.0 || a[i] < 10000.0 || isnan(b[i]) || isinf(b[i])){
+      if(a[i] > 10000.0 || a[i] < 10000.0 || std::isnan(b[i]) || std::isinf(b[i])){
 	a[i] = 10.0*(((double)rand())/((double)RAND_MAX) - 0.5);
 	b[i] = a[i].getDouble();
       }
       
-      if(a[j] > 100.0 || a[j] < 100.0 || isnan(b[j]) || isinf(b[j])){
+      if(a[j] > 100.0 || a[j] < 100.0 || std::isnan(b[j]) || std::isinf(b[j])){
 	a[j] = 10.0*(((double)rand())/((double)RAND_MAX) - 0.5);
 	b[j] = a[j].getDouble();
       }
@@ -757,7 +757,7 @@ void test_realnumber()
 	break;
       };
 
-      if(!isinf(b[k]) && !isnan(b[k])){
+      if(!std::isinf(b[k]) && !std::isnan(b[k])){
 	 if(abs(a[k] - b[k]) > 0.00001*whiteice::math::abs(a[k])){
 	   std::cout << "MAYBE ERROR OR DOUBLE OUT OF RANGE:" << std::endl;
 	   std::cout << "DELTA: " << (a[k] - b[k]) << std::endl;

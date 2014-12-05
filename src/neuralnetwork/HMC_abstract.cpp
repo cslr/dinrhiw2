@@ -251,6 +251,7 @@ namespace whiteice
     std::random_device rd;
     std::mt19937 gen(rd());
     std::normal_distribution<> rng(0, 1); // N(0,1) variables
+    auto normalrnd = std::bind(rng, std::ref(gen));
 
     // used to adaptively finetune step length epsilon based on accept rate
     // the aim of the adaptation is to keep accept rate near optimal 70%
@@ -262,8 +263,7 @@ namespace whiteice
     while(running) // keep sampling forever
     {
       for(unsigned int i=0;i<p.size();i++)
-	p[i] = T(rng(gen)); // Normal distribution 
-      // p[i] = T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+	p[i] = T(normalrnd()); // Normal distribution 
 
       math::vertex<T> old_q = q;
       math::vertex<T> current_p = p;
