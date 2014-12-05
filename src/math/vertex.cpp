@@ -655,15 +655,17 @@ namespace whiteice
     {
       if(this == &t) return *this; // self-assignment
       
+      // printf("vertex&& operator=\n"); fflush(stdout);
+      
       if(this->data) free(data);
       if(this->compressor) delete compressor;
       
-      this->data = t.data;
-      this->dataSize = t.dataSize;
-      this->compressor = t.compressor;
+      this->data = std::move(t.data);
+      this->dataSize = std::move(t.dataSize);
+      this->compressor = std::move(t.compressor);
       
-      t.data = NULL;
-      t.compressor = NULL;
+      t.data = nullptr;
+      t.compressor = nullptr;
       
       return *this;
     }

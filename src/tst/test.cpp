@@ -1411,8 +1411,8 @@ void test_fast_gradix()
       test_ok = false;
     }
     
-    delete table;
-    delete ptable;
+    delete[] table;
+    delete[] ptable;
     
     if(test_ok)
       std::cout << "TESTS OK." << std::endl;
