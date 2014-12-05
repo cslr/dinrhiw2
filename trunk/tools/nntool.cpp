@@ -229,7 +229,7 @@ int main(int argc, char** argv)
 	counter++;
       
       if(counter > 2){
-	unsigned int deepness = counter/2;
+	unsigned int deepness = (counter-1)/2;
 	
 	if(verbose)
 	  std::cout << "Heuristics: deep ICA initialization ("
