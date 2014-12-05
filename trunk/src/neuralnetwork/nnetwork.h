@@ -125,6 +125,7 @@ namespace whiteice
     
     std::vector<T> state;
     std::vector<T> temp;
+    std::vector<T> lgrad;
 
     // bool compressed;
     // MemoryCompressor* compressor;

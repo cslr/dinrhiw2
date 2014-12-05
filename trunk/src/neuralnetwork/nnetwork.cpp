@@ -43,6 +43,7 @@ namespace whiteice
 
     state.resize(maxwidth);
     temp.resize(maxwidth);
+    lgrad.resize(maxwidth);
     
     inputValues.resize(1);
     outputValues.resize(1);
@@ -60,12 +61,12 @@ namespace whiteice
     maxwidth = nn.maxwidth;
     size = nn.size;
 
-    arch = nn.arch;
+    arch   = nn.arch;
     bpdata = nn.bpdata;
-    data = nn.data;
-    state = nn.state;
-    temp = nn.temp;
-    
+    data   = nn.data;
+    state  = nn.state;
+    temp   = nn.temp;
+    lgrad  = nn.lgrad;
   }
   
   
@@ -96,7 +97,7 @@ namespace whiteice
     }
     
     size = memuse;
-
+    
     data.resize(size);
     
     // intializes all layers (randomly)
@@ -106,6 +107,7 @@ namespace whiteice
 
     state.resize(maxwidth);
     temp.resize(maxwidth);
+    lgrad.resize(maxwidth);
      
     inputValues.resize(arch[0]);
     outputValues.resize(arch[arch.size()-1]);
@@ -134,6 +136,7 @@ namespace whiteice
 
     state = nn.state;
     temp = nn.temp;
+    lgrad = nn.lgrad;
     
     inputValues.resize(nn.inputValues.size());
     outputValues.resize(nn.outputValues.size());
@@ -210,21 +213,14 @@ namespace whiteice
 
 	// s = b + W*s
 	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]); // s += b;
+		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
 	
-	// s = g(v)
+      	// s = g(v)
 	
 	if(aindex+2 < arch.size()){ // not the last layer
 	  // f(x) = b * ( (1 - Exp[-ax]) / (1 + Exp[-ax]) )
 	  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
 	  
-#if 0
-	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    T expbx = math::exp(-bf*state[i]);
-	    // state[i] = af * ( (T(1.0f) - expbx) / (T(1.0f) + expbx) );
-	    state[i] = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) ); // numerically more stable (no NaNs)
-	  }
-#endif
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
 	    state[i] = nonlin(state[i], aindex + 1);
 	  }
@@ -253,13 +249,7 @@ namespace whiteice
 	if(aindex+2 < arch.size()){ // not the last layer
 	  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
 	  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
-#if 0
-	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    T expbx = math::exp(-bf*state[i]);
-	    // state[i] = af * ( (T(1.0f) - expbx) / (T(1.0f) + expbx) );
-	    state[i] = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) ); // numerically more stable (no NaNs)
-	  }
-#endif
+	  
 	  for(unsigned int i=0;i<arch[aindex+1];i++){
 	    state[i] = nonlin(state[i], aindex + 1);
 	  }
@@ -315,14 +305,8 @@ namespace whiteice
     if(!hasValidBPData)
       return false;
     
-    T* lgrad = (T*)malloc(maxwidth * sizeof(T));
-    T* temp  = (T*)malloc(maxwidth * sizeof(T));
-  
-    if(lgrad == 0 || temp == 0){
-      if(lgrad) free(lgrad);
-      if(temp) free(temp);
-      return false;
-    }
+    T* lgrad = (T*)this->lgrad.data();
+    T* temp  = (T*)this->temp.data();
   
     // initial (last layer gradient)
     // error[i] * NONLIN'(v) (last layer NONLIN = id(x), id(x)' = 1)
@@ -337,11 +321,8 @@ namespace whiteice
     unsigned int counter = arch.size() - 1;
     const unsigned int *a = &(arch[arch.size()-1]);
     
-    if(!error.exportData(lgrad)){
-      free(lgrad);
-      free(temp);
+    if(!error.exportData(lgrad))
       return false;
-    }
     
     const T* _bpdata = &(bpdata[0]);
     
@@ -406,17 +387,6 @@ namespace whiteice
 	for(unsigned int y=0;y<rows;y++)
 	  sum += lgrad[y]*_data[x + y*cols];
 	
-	// fast calculation of g'(v) for logistic/sigmoidal non-lins
-	// is g'(v) = g(v)*(1-g(v)) , if a = 1, for a != 1:
-	// is g'(v) = a*g(v)*(1-g(v)) = a*y*(1-y)
-	// in practice:
-	//
-	// f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a ) 
-	
-#if 0
-	T fxa = (*bptr)/af;
-	sum *= (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
-#endif
 	sum *= Dnonlin(*bptr, counter - 1);
 	
 	temp[x] = sum;
@@ -470,10 +440,6 @@ namespace whiteice
       }
       
     }
-    
-    
-    free(lgrad);
-    free(temp);
     
     
     return true;
@@ -652,6 +618,7 @@ namespace whiteice
 
 	state.resize(maxwidth);
 	temp.resize(maxwidth);
+	lgrad.resize(maxwidth);
 
 	hasValidBPData = false;
 	bpdata.resize(1);
@@ -868,19 +835,35 @@ namespace whiteice
 				      T* W, T* x, T* y,
 				      unsigned int dim, T* s, T* b)
   {
-    // uses temporary space to handle correctly
-    // the case when x and y vectors overlap (or are same)
-    // T temp[yd]; [we have global temp to store results]
+    // calculates y = b + W*x (y == x)
     
-    for(unsigned int j=0;j<yd;j++){
-      T sum = b[j];
-      for(unsigned int i=0;i<xd;i++)
-	sum += W[i + j*xd]*x[i];
+#if 0
+    if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
+      memcpy(&(temp[0]), b, yd*sizeof(T));
       
-      temp[j] = sum;
+      cblas_sgemv(CblasRowMajor, CblasNoTrans, yd, xd,
+		  1.0f, (float*)W, xd, (float*)x, 1, 
+		  1.0f, (float*)&(temp[0]), 1);
+      
+      memcpy(y, &(temp[0]), yd*sizeof(T));
     }
-    
-    memcpy(y, &(temp[0]), yd*sizeof(T));
+#endif
+
+    {
+      // uses temporary space to handle correctly
+      // the case when x and y vectors overlap (or are same)
+      // T temp[yd]; [we have global temp to store results]
+      
+      for(unsigned int j=0;j<yd;j++){
+	T sum = b[j];
+	for(unsigned int i=0;i<xd;i++)
+	  sum += W[i + j*xd]*x[i];
+	
+	temp[j] = sum;
+      }
+      
+      memcpy(y, &(temp[0]), yd*sizeof(T));
+    }
   }
   
   

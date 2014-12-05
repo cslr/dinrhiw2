@@ -107,8 +107,8 @@ namespace whiteice
       this->numCols = t.numCols;
       this->compressor = t.compressor;
       
-      t.data = NULL;
-      t.compressor = NULL;
+      t.data = nullptr;
+      t.compressor = nullptr;
     }
     
     
@@ -783,39 +783,6 @@ namespace whiteice
       }
     }
     
-    
-    template <typename T>
-    T& matrix<T>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
-    {
-      return data[index];
-    }
-    
-        
-    template <typename T>
-    const T& matrix<T>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
-    {
-      return data[index];
-    }
-    
-    
-    
-    // matrix extensions
-    template <typename T>
-    T& matrix<T>::operator()(unsigned int y, unsigned int x)
-      throw(std::out_of_range, illegal_operation)
-    {
-      return data[y*numCols + x]; // no range checks
-    }
-    
-    
-    template <typename T>
-    const T& matrix<T>::operator()(unsigned y, unsigned int x) const
-      throw(std::out_of_range, illegal_operation)
-    {
-      return data[y*numCols + x]; // nor range checks
-    }
     
     
     /***************************************************/

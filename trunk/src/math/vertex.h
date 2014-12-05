@@ -91,7 +91,7 @@ namespace whiteice
       bool normalize() throw(); // length = 1
       void zero() throw(); // vertex = 0;
       
-      vertex<T> operator+(const vertex<T>& v) const throw(illegal_operation);
+      vertex<T> operator+(const vertex<T>& v) const throw(illegal_operation);      
       vertex<T> operator-(const vertex<T>& v) const throw(illegal_operation);
       
       // if v.size() != 1 this is inner product - returns vertex with size 1
@@ -134,7 +134,6 @@ namespace whiteice
       template <typename TT>
       friend vertex<TT> operator*(const TT& s, const vertex<TT>& v); // multi from right
       
-      
       // multiply from left
       vertex<T>  operator* (const matrix<T>& m) const throw(std::invalid_argument);    
 
@@ -147,8 +146,17 @@ namespace whiteice
       // element-wise multiplication of vector elements
       vertex<T>& dotmulti(const vertex<T>& v) throw(illegal_operation);
       
-      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation);
-      const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation);
+      
+      inline T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
+      {
+	return data[index]; // no range check
+      }
+      
+      inline const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
+      {
+	return data[index]; // no range check
+      }
+      
       
       bool subvertex(vertex<T>& v, unsigned int x0, unsigned int len) const throw();
       bool write_subvertex(vertex<T>& v, unsigned int x0) throw();

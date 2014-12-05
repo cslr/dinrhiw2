@@ -29,12 +29,12 @@ namespace whiteice
     template <typename T>
     vertex<T>::vertex()
     {
-      this->compressor = 0;
+      this->compressor = nullptr;
       this->dataSize = 0;      
-      this->data = 0;
+      this->data = nullptr;
       
       this->data = (T*)malloc(sizeof(T));
-      if(this->data == 0) throw std::bad_alloc();
+      if(this->data == nullptr) throw std::bad_alloc();
       
       memset(this->data, 0, sizeof(T));
       this->dataSize = 1;      
@@ -45,9 +45,9 @@ namespace whiteice
     template <typename T>
     vertex<T>::vertex(unsigned int i)
     {
-      this->compressor = 0;
+      this->compressor = nullptr;
       this->dataSize = 0;
-      this->data = 0;
+      this->data = nullptr;
       
       if(i > 0){
 #ifdef BLAS_MEMALIGN
@@ -133,8 +133,8 @@ namespace whiteice
       this->dataSize = t.dataSize;
       this->compressor = t.compressor;
       
-      t.data = NULL;
-      t.compressor = NULL;
+      t.data = nullptr;
+      t.compressor = nullptr;
     }
     
     
@@ -380,6 +380,7 @@ namespace whiteice
       
       return r;
     }
+
     
     
     // substracts two vertexes
@@ -1025,27 +1026,6 @@ namespace whiteice
     
     
     /***************************************************/
-    
-    
-    template <typename T>
-    T& vertex<T>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
-    {
-      if(index >= dataSize)
-	throw std::out_of_range("vertex[]: index out of range");
-      
-      return data[index];
-    }
-    
-    template <typename T>
-    const T& vertex<T>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
-    {
-      if(index >= dataSize)
-	throw std::out_of_range("vertex[]: index out of range");
-      
-      return data[index];
-    }
     
     
     template <typename T>
