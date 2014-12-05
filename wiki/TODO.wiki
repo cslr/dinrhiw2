@@ -1,0 +1,11 @@
+#summary misc detailed notes what to do
+
+LIST:
+
+  * implement BFGS code using C++11 threads
+  * then implement pBFGS and pLBFGS using C++11 threads
+  * write job application(s)
+
+
+
+
