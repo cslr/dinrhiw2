@@ -6,6 +6,5 @@ LIST:
   * then implement pBFGS and pLBFGS using C++11 threads
   * write job application(s)
   * write code for negative response between neurons idea when learning per each layer
-
-
+  * implement perfect forwarding of linear algebra (C++ code)
 
