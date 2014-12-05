@@ -655,6 +655,9 @@ namespace whiteice
     {
       if(this == &t) return *this; // self-assignment
       
+      if(this->data) free(data);
+      if(this->compressor) delete compressor;
+      
       this->data = t.data;
       this->dataSize = t.dataSize;
       this->compressor = t.compressor;
