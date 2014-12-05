@@ -56,6 +56,7 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
   * migrate away from posix threads to c++11 threading, improve threading code
   * try to remove few direct x86 dependencies (cpuid instruction)
   * test and improve algorithms so that they work with real-world data: MNIST handwritten digits training data (784 dimensional input data) 
+  * small things: write bash autocomplete scripts for nntool and dstool
 
 
 There are better free libraries available so there is no much point in developing this library much further (except from the point of enough competition which keeps OS model working). However, development of *nntool* and other command-line tools to do *machine learning using shell scripts is maybe interesting*. To support this *nntool* and *dstool* command line tools should be developed as easy to use from command line as possible.
