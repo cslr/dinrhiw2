@@ -6,7 +6,7 @@ CXX = @CXX@
 
 OPTIMIZE=@optimization_flags@
 
-CFLAGS += @CFLAGS@ -Wall -Wno-strict-aliasing -g -I. -I.. -I../.. -I../neuralnetwork -I../math -I/usr/local/include/ $(OPTIMIZE) @EXTRA_INCLUDEPATHS@
+CFLAGS += @CFLAGS@ -Wall -Wno-strict-aliasing -g -std=c++11 -I. -I.. -I../.. -I../neuralnetwork -I../math -I/usr/local/include/ $(OPTIMIZE) @EXTRA_INCLUDEPATHS@
 CXXFLAGS = $(CFLAGS)
 
 
