@@ -12,7 +12,7 @@ RM = rm
 
 OPTIMIZE=-O3 -g -DAMD64 -ffast-math -DBLAS_MEMALIGN -msse3
 
-CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall `pkg-config dinrhiw --cflags`
+CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
 CXXFLAGS = -g -O2  $(CFLAGS)
 
 AESCIPHER_LIBS = `pkg-config dinrhiw --libs` -lgmp
