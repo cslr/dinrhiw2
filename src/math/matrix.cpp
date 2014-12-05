@@ -100,6 +100,19 @@ namespace whiteice
     
     
     template <typename T>
+    matrix<T>::matrix(matrix<T>&& t)
+    {
+      this->data = t.data;
+      this->numRows = t.numRows;
+      this->numCols = t.numCols;
+      this->compressor = t.compressor;
+      
+      t.data = NULL;
+      t.compressor = NULL;
+    }
+    
+    
+    template <typename T>
     matrix<T>::matrix(const vertex<T>& diagonal)
     {
       data = 0;
@@ -409,6 +422,23 @@ namespace whiteice
       }
       
       return (*this);
+    }
+    
+    
+    template <typename T>
+    matrix<T>& matrix<T>::operator=(matrix<T>&& t) throw(illegal_operation)
+    {
+      if(this == &t) return *this; // self-assignment
+      
+      this->data = t.data;
+      this->numRows = t.numRows;
+      this->numCols = t.numCols;
+      this->compressor = t.compressor;
+      
+      t.data = NULL;
+      t.compressor = NULL;
+      
+      return *this;
     }
     
     
