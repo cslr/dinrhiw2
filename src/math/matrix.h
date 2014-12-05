@@ -105,13 +105,27 @@ namespace whiteice
       
       // doesn't behave as expected. returns index:th
       // value from matrix (left->right, top->bottom order)
-      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation);
+      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
+      {
+	return data[index]; // no range check
+      }
       
-      const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation);
+      const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
+      {
+	return data[index]; // no range checks
+      }
       
       
-      T& operator()(unsigned int y, unsigned int x) throw(std::out_of_range, illegal_operation);
-      const T& operator()(unsigned y, unsigned int x) const throw(std::out_of_range, illegal_operation);
+      T& operator()(unsigned int y, unsigned int x) throw(std::out_of_range, illegal_operation)
+      {
+	return data[y*numCols + x]; // no range checks
+      }
+      
+      
+      const T& operator()(unsigned y, unsigned int x) const throw(std::out_of_range, illegal_operation)
+      {
+	return data[y*numCols + x]; // no range checks
+      }
       
       matrix<T>& identity();
       matrix<T>& zero();

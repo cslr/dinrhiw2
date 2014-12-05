@@ -77,7 +77,12 @@ int main()
 
     hmc_test();
 
-    /*
+    activation_test();  
+    
+    gda_clustering_test(); // DO NOT WORK
+
+
+#if 0
     simple_dataset_test();
     backprop_test(500);
     
@@ -85,15 +90,12 @@ int main()
     neuronlayer_test();
     neuronlayer_test2();
     neuralnetwork_test();
-    */
+#endif
+    
 #if 0
     neuralnetwork_pso_test();
     // neuralnetwork_saveload_test();
-    // compressed_neuralnetwork_test();
-    
-    activation_test();  
-    
-    gda_clustering_test();
+    // compressed_neuralnetwork_test();    
 #endif
     
     return 0;
