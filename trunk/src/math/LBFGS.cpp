@@ -3,16 +3,16 @@
 #include "linear_equations.h"
 #include <iostream>
 #include <list>
-#include <pthread.h>
-#include <time.h>
-#include <unistd.h>
-
-#ifdef WINNT
-#include <windows.h>
-#endif
 
 
-extern "C" { static void* __lbfgs_optimizer_thread_init(void *optimizer_ptr); };
+
+template <typename T>
+void __lbfgs_optimizer_thread_init(whiteice::math::LBFGS<T>* ptr)
+{
+  if(ptr) ptr->optimizer_loop(); // TODO use shared pointer
+}
+
+
 
 
 namespace whiteice
@@ -26,10 +26,8 @@ namespace whiteice
       thread_running = false;
       sleep_mode = false;
       solution_converged = false;
-      pthread_mutex_init(&thread_lock, 0);
-      pthread_mutex_init(&sleep_lock, 0);
-      pthread_mutex_init(&solution_lock, 0);
-
+      optimizer_thread = nullptr;
+      
       this->overfit = overfit;
     }
     
@@ -37,49 +35,61 @@ namespace whiteice
     template <typename T>
     LBFGS<T>::~LBFGS()
     {
-      pthread_mutex_lock( &thread_lock );
+      thread_mutex.lock();
+      
       if(thread_running){
-	// pthread_cancel( optimizer_thread );
 	thread_running = false;
 
-	// waits for thread to stop
-	pthread_join( optimizer_thread, NULL);
+	// waits for thread to stop running
+	while(thread_is_running > 0){
+	  std::unique_lock<std::mutex> lk(cond_mutex);
+	  thread_is_running_cond.wait(lk);
+	}
+	
+	if(optimizer_thread)
+	  delete optimizer_thread;
+	optimizer_thread = nullptr;
       }
-      pthread_mutex_unlock( &thread_lock );
       
-      pthread_mutex_destroy(&thread_lock);
-      pthread_mutex_destroy(&sleep_lock);
-      pthread_mutex_destroy(&solution_lock);
+      thread_mutex.unlock();
     }
     
     
     template <typename T>
     bool LBFGS<T>::minimize(vertex<T>& x0)
     {
-      pthread_mutex_lock( &thread_lock );
+      thread_mutex.lock();
+      
       if(thread_running){
-	pthread_mutex_unlock( &thread_lock );
+	thread_mutex.unlock();
 	return false;
       }
       
       // calculates initial solution
-      pthread_mutex_lock( &solution_lock );
-      this->bestx = x0;
-      this->besty = U(x0);
-      iterations  = 0;
-      pthread_mutex_unlock( &solution_lock );
+      solution_mutex.lock();
+      {
+	this->bestx = x0;
+	this->besty = U(x0);
+	iterations  = 0;
+      }
+      solution_mutex.unlock();
 
       thread_running = true;
       sleep_mode = false;
       solution_converged = false;
       thread_is_running = 0;
       
-      pthread_create(&optimizer_thread, 0,
-		     __lbfgs_optimizer_thread_init,
-		     (void*)this);
-      pthread_detach( optimizer_thread);
+      try{
+	optimizer_thread = new thread(__lbfgs_optimizer_thread_init<T>, this);
+	optimizer_thread->detach();
+      }
+      catch(std::exception& e){
+	thread_running = false;
+	thread_mutex.unlock();
+	return false;
+      }
       
-      pthread_mutex_unlock( &thread_lock );
+      thread_mutex.unlock();
       
       return true;
     }
@@ -89,11 +99,13 @@ namespace whiteice
     bool LBFGS<T>::getSolution(vertex<T>& x, T& y, unsigned int& iterations) const
     {
       // gets current solution
-      pthread_mutex_lock( &solution_lock );
-      x = bestx;
-      y = besty;
-      iterations = this->iterations;
-      pthread_mutex_unlock( &solution_lock );
+      solution_mutex.lock();
+      {
+	x = bestx;
+	y = besty;
+	iterations = this->iterations;
+      }
+      solution_mutex.unlock();
       
       return true;
     }
@@ -103,9 +115,11 @@ namespace whiteice
     template <typename T>
     bool LBFGS<T>::continueComputation()
     {
-      pthread_mutex_lock( &sleep_lock );
-      sleep_mode = false;
-      pthread_mutex_unlock( &sleep_lock );
+      sleep_mutex.lock();
+      {
+	sleep_mode = false;
+      }
+      sleep_mutex.unlock();
       
       return true;
     }
@@ -114,31 +128,41 @@ namespace whiteice
     template <typename T>
     bool LBFGS<T>::pauseComputation()
     {
-      pthread_mutex_lock( &sleep_lock );
-      sleep_mode = true;
-      pthread_mutex_unlock( &sleep_lock );
+      sleep_mutex.lock();
+      {
+	sleep_mode = true;
+      }
+      sleep_mutex.unlock();
       
-      return false;
+      return true;
     }
     
     
     template <typename T>
     bool LBFGS<T>::stopComputation()
     {
-      pthread_mutex_lock( &thread_lock );
-      if(!thread_running){
-	pthread_mutex_unlock( &thread_lock );
+      thread_mutex.lock();
+      
+      if(thread_running == false){
+	thread_mutex.unlock();
 	return false;
       }
 
       thread_running = false;
-      pthread_cancel( optimizer_thread );
       
-      while(thread_is_running > 0){
-	sleep(1); // waits for thread to stop running
+      {
+	// waits for thread to stop running
+	while(thread_is_running > 0){
+	  std::unique_lock<std::mutex> lk(cond_mutex);
+	  thread_is_running_cond.wait(lk);
+	}
       }
+
+      if(optimizer_thread)
+	delete optimizer_thread;
+      optimizer_thread = nullptr;
       
-      pthread_mutex_unlock( &thread_lock );
+      thread_mutex.unlock();
       
       return true;
     }
@@ -214,14 +238,6 @@ namespace whiteice
       }
       
       
-      /*
-      if(found <= 0)
-	std::cout << "NO NEW SOLUTIONS FOUND: " << k 
-		  << std::endl;
-      else
-	std::cout << "BEST ALPHA= " << best_alpha << std::endl;
-      */
-      
       xn = localbestx;
 
       return (found > 0);
@@ -244,7 +260,7 @@ namespace whiteice
     
     
     template <typename T>
-    void LBFGS<T>::__optimizerloop()
+    void LBFGS<T>::optimizer_loop()
     {
       
       vertex<T> d, g; // gradient
@@ -263,10 +279,11 @@ namespace whiteice
       std::list< T > rk;
       
       thread_is_running++;
-      
+      thread_is_running_cond.notify_all();
       
       while(thread_running){
 	try{
+	  
 	  // we keep iterating until we converge (later) or
 	  // the real error starts to increase
 	  if(overfit == false){
@@ -286,10 +303,13 @@ namespace whiteice
 	  // cancellation point
 	  {
 	    thread_is_running--;
-	    pthread_testcancel();
+	    if(thread_running == false){
+	      thread_is_running_cond.notify_all();
+	      return;
+	    }
 	    thread_is_running++;
 	  }
-
+	  
 	  // d = -H*g; // linsolve(H, d, -g);	  
 	  // calculates aprox hessian product (L-BFGS method)
 	  if(sk.size() > 0){
@@ -346,10 +366,13 @@ namespace whiteice
 	  // cancellation point
 	  {
 	    thread_is_running--;
-	    pthread_testcancel();
+	    if(thread_running == false){
+	      thread_is_running_cond.notify_all();
+	      return;
+	    }
 	    thread_is_running++;
 	  }
-	
+	  
 	  // linear search finds xn = x + alpha*d
 	  // so that U(xn) is minimized
 	  if(linesearch(xn, x, d) == false){
@@ -357,13 +380,17 @@ namespace whiteice
 	    break; // we stop computation as we cannot find better solution
 	  }
 	  
-	  	  
+	  
 	  // cancellation point
 	  {
 	    thread_is_running--;
-	    pthread_testcancel();
+	    if(thread_running == false){
+	      thread_is_running_cond.notify_all();
+	      return;
+	    }
 	    thread_is_running++;
 	  }
+
 	  
 	  y = U(xn);
 
@@ -372,10 +399,10 @@ namespace whiteice
 	  // std::cout << "y = " << y << std::endl;
 	  
 	  if(y < besty){
-	    pthread_mutex_lock( &solution_lock );
+	    solution_mutex.lock();
 	    bestx = xn;
 	    besty = y;
-	    pthread_mutex_unlock( &solution_lock );
+	    solution_mutex.unlock();
 	  }
 	  
 	  
@@ -393,10 +420,13 @@ namespace whiteice
 	  
 	  x = xn;
 	  
+
 	  // cancellation point
 	  {
 	    thread_is_running--;
-	    pthread_testcancel();
+	    if(thread_running == false){
+	      return;
+	    }
 	    thread_is_running++;
 	  }
 	  
@@ -408,20 +438,18 @@ namespace whiteice
 	}
 
 	////////////////////////////////////////////////////////////
-	// checks if thread has been cancelled.
-	// pthread_testcancel();
 	
 	// checks if thread has been ordered to sleep
 	while(sleep_mode){
-	  sleep(1);
+	  std::chrono::milliseconds duration(1000);
+	  std::this_thread::sleep_for(duration);
 	}
       }
       
       
-      thread_is_running--;
-      
       thread_running = false;
-      
+      thread_is_running--;
+      thread_is_running_cond.notify_all();
     }
     
     
@@ -435,19 +463,3 @@ namespace whiteice
   };
 };
 
-
-
-
-extern "C" {
-  void* __lbfgs_optimizer_thread_init(void *optimizer_ptr)
-  {
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
-    
-    if(optimizer_ptr)
-      ((whiteice::math::LBFGS< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
-    
-    pthread_exit(0);
-
-    return 0;
-  }
-};
