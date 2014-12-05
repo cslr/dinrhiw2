@@ -53,6 +53,7 @@ are the primary classes and tools to look at and use. Also read HowToLearnFromDa
 
   * restricted deep boltzman machines for pre-training (deep) neural networks
   * cleanup the code and remove classes that are not needed and don't belong to this library
+  * migrate away from posix threads to c++11 threading, improve threading code
   * try to remove few direct x86 dependencies (cpuid instruction)
   * test and improve algorithms so that they work with real-world data: MNIST handwritten digits training data (784 dimensional input data) 
 
