@@ -3,10 +3,14 @@
  * minimizes the target error function.
  */
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 
-#include <pthread.h>
 #include "dinrhiw_blas.h"
 #include "vertex.h"
+
 
 #ifndef LBFGS_h
 #define LBFGS_h
@@ -77,14 +81,16 @@ namespace whiteice
         bool overfit;  
 	
         volatile bool sleep_mode, thread_running, solution_converged;
+      
         volatile int thread_is_running;
+        mutable std::mutex cond_mutex;
+        mutable std::condition_variable thread_is_running_cond;
         
-	pthread_t optimizer_thread;
-        mutable pthread_mutex_t sleep_lock, thread_lock, solution_lock;
-	
+        std::thread* optimizer_thread;
+        mutable std::mutex sleep_mutex, thread_mutex, solution_mutex;
 	
       public:
-	void __optimizerloop();
+	void optimizer_loop();
 	
       };
     
