@@ -430,16 +430,18 @@ namespace whiteice
     {
       if(this == &t) return *this; // self-assignment
       
+      // printf("matrix&& operator=\n"); fflush(stdout);
+      
       if(this->data) free(data);
       if(this->compressor) delete compressor;
       
-      this->data = t.data;
-      this->numRows = t.numRows;
-      this->numCols = t.numCols;
-      this->compressor = t.compressor;
+      this->data = std::move(t.data);
+      this->numRows = std::move(t.numRows);
+      this->numCols = std::move(t.numCols);
+      this->compressor = std::move(t.compressor);
       
-      t.data = NULL;
-      t.compressor = NULL;
+      t.data = nullptr;
+      t.compressor = nullptr;
       
       return *this;
     }
