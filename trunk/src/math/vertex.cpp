@@ -125,6 +125,19 @@ namespace whiteice
     }
     
     
+    // makes direct copy of temporal value
+    template <typename T>
+    vertex<T>::vertex(vertex<T>&& t)
+    {
+      this->data = t.data;
+      this->dataSize = t.dataSize;
+      this->compressor = t.compressor;
+      
+      t.data = NULL;
+      t.compressor = NULL;
+    }
+    
+    
     // vertex ctor - makes copy of v
     template <typename T>
     vertex<T>::vertex(const std::vector<T>& v)
@@ -637,6 +650,20 @@ namespace whiteice
       return *this;
     }
     
+    template <typename T>
+    vertex<T>& vertex<T>::operator=(vertex<T>&& t) throw(illegal_operation)
+    {
+      if(this == &t) return *this; // self-assignment
+      
+      this->data = t.data;
+      this->dataSize = t.dataSize;
+      this->compressor = t.compressor;
+      
+      t.data = NULL;
+      t.compressor = NULL;
+      
+      return *this;
+    }
     
     /***************************************************/
 
