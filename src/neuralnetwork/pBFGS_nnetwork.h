@@ -11,7 +11,9 @@
 #include "nnetwork.h"
 #include "vertex.h"
 #include <vector>
-#include <pthread.h>
+
+#include <thread>
+#include <mutex>
 
 
 namespace whiteice
@@ -40,33 +42,37 @@ namespace whiteice
 
     const nnetwork<T>& net;
     const dataset<T>& data;
-
-    volatile bool thread_running;
-    std::vector< BFGS_nnetwork<T>* > optimizers;
-
     bool overfit;
     
     math::vertex<T> global_best_x;
     T global_best_y;
     unsigned int global_iterations;
 
-    pthread_t updater_thread;
-    mutable pthread_mutex_t bfgs_lock;
-    mutable pthread_mutex_t thread_lock;
+    
+    std::vector< std::unique_ptr< BFGS_nnetwork<T> > > optimizers;
+    volatile bool thread_running;
+    volatile int thread_is_running;
+    mutable std::mutex thread_is_running_mutex;
+    mutable std::condition_variable thread_is_running_cond;
+    
+    std::thread updater_thread;
 
-    public:
+    mutable std::mutex bfgs_mutex;
+    mutable std::mutex thread_mutex;
 
-    void __updater_loop();
+    private:
+
+    void updater_loop();
       
     };
 
   
 
     
-  // extern template class pBFGS_nnetwork< float >;
-  // extern template class pBFGS_nnetwork< double >;
+  extern template class pBFGS_nnetwork< float >;
+  extern template class pBFGS_nnetwork< double >;
   extern template class pBFGS_nnetwork< math::blas_real<float> >;
-  // extern template class pBFGS_nnetwork< math::blas_real<double> >;
+  extern template class pBFGS_nnetwork< math::blas_real<double> >;
 
 };
 

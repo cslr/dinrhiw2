@@ -120,7 +120,10 @@ namespace whiteice
     bfgs_mutex.unlock();
 
     thread_running = true;
+    
+    thread_is_running_mutex.lock();
     thread_is_running = 0;
+    thread_is_running_mutex.unlock();
     
     try{
       updater_thread = std::thread(std::bind(&pLBFGS_nnetwork<T>::updater_loop, this));
@@ -129,7 +132,10 @@ namespace whiteice
       // FIXME: should check that thread actually started?
     }
     catch(std::exception& e){
-      optimizers.clear();
+      {
+	std::lock_guard<std::mutex> lock(bfgs_mutex);
+	optimizers.clear();
+      }
       thread_running = false;
       
       thread_mutex.unlock();
@@ -207,9 +213,9 @@ namespace whiteice
     
     if(optimizers.size() <= 0)
       return false;
-
-    for(unsigned int i=0;i<optimizers.size();i++)
-      optimizers[i]->continueComputation();
+    
+    for(auto& o : optimizers)
+      o->continueComputation();
     
     return true;
   }
@@ -222,9 +228,9 @@ namespace whiteice
     
     if(optimizers.size() <= 0)
       return false;
-
-    for(unsigned int i=0;i<optimizers.size();i++)
-      optimizers[i]->pauseComputation();
+    
+    for(auto& o : optimizers)
+      o->pauseComputation();
     
     return true;
   }
@@ -342,7 +348,7 @@ namespace whiteice
 	thread_is_running--;
       }
       thread_is_running_cond.notify_all();
-    }    
+    }
   }
   
   
