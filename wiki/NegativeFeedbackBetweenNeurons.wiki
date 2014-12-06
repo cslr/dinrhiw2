@@ -5,3 +5,7 @@ It uses "negative feedback between neurons". That is, each in each layer, after 
 And after optimizing network with negative feedback. It is then possible to save the result and finally finetune the network for extra performance without such restrictions using gradient descent (alternatively, bayesian HMC sampler could make sense too to handle uncertainty).
 
 That is, the neurons learn to do different tasks and hopefully in deep structures it is possible for neurons to specialize more and more.
+
+==TODO==
+
+Actually find the most orthogonal vector against all other vectors in a layer and move towards it instead of moving AWAY from the mean of other vectors. Genetic algorithms might be here ok to solve this problem.
