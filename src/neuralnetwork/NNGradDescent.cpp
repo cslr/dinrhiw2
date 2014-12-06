@@ -289,6 +289,11 @@ namespace whiteice
 	    if(nn.importdata(weights) == false)
 	      std::cout << "import failed." << std::endl;
 	    
+#if 1
+	    // using negative feedback heuristic 
+	    T alpha = lrate;
+	    negative_feedback_between_neurons(nn, alpha);
+#endif
 	    
 	    // calculates error from the testing dataset
 	    for(unsigned int i=0;i<dtest.size(0);i++){

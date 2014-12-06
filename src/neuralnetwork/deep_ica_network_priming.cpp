@@ -344,6 +344,70 @@ namespace whiteice
   
   
   /**
+   * function to cause negative feedback between neurons of 
+   * each network layer (except the last one). This means that neurons
+   * do differentiate to different inputs. This can be used as a training heuristic
+   * during learning.
+   */
+  template <typename T>
+    bool negative_feedback_between_neurons(nnetwork<T>& nnet, const T& alpha, bool processLastLayer)
+  {
+    std::vector<unsigned int> arch;
+    nnet.getArchitecture(arch);
+    
+    unsigned int N = arch.size() - 1;
+    
+    if(processLastLayer == false)
+      N--;
+    
+    for(unsigned int i=0;i<N;i++){
+      math::matrix<T> W;
+      math::vertex<T> w;
+      
+      if(!nnet.getWeights(W, i)) return false;
+      
+      {
+	std::vector< math::vertex<T> > rows;
+	rows.resize(W.ysize());
+	
+	for(auto& r : rows){
+	  r.resize(W.xsize());
+	  r.zero();
+	}
+	
+	for(unsigned int j=0;j<W.ysize();j++){
+	  W.rowcopyto(w, j);
+	  
+	  for(unsigned int k=0;k<W.ysize();k++){
+	    if(k != j) rows[k] += w;
+	  }
+	}
+	
+	// calculates mean vector of "other" vectors in this layer
+	T scaling = T(1.0f/((float)(W.ysize() - 1)));
+
+	for(auto& r : rows)
+	  r *= scaling;
+	
+	for(unsigned int j=0;j<W.ysize();j++){
+	  W.rowcopyto(w, j);
+	  
+	  w -= alpha*rows[j]; // applies negative feedback with strenght alpha
+	  
+	  W.rowcopyfrom(w, j);
+	}
+      }
+      
+      nnet.setWeights(W,i);
+
+      // do not do anything to bias terms
+    }
+
+    return true;
+  }
+  
+  
+  /**
    * helper function to normalize neural network weight vectors 
    * ||w|| = 1 and ||b|| = 1 for each layer
    * 
@@ -394,15 +458,15 @@ namespace whiteice
     return true;
   }
 
+  template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const float& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const double& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, bool processLastLayer);
 
-  template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet,
-						  bool normalizeLastLayer = false);
-  template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet,
-						   bool normalizeLastLayer = false);
-  template bool normalize_weights_to_unity< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet,
-								     bool normalizeLastLayer = false);
-  template bool normalize_weights_to_unity< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet,
-								      bool normalizeLastLayer = false);
+  template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet, bool normalizeLastLayer);
+  template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet, bool normalizeLastLayer);
+  template bool normalize_weights_to_unity< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, bool normalizeLastLayer);
+  template bool normalize_weights_to_unity< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, bool normalizeLastLayer);
   
   
 };

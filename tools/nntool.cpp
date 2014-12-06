@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
+
 #include <dinrhiw/dinrhiw.h>
 #include <exception>
 
@@ -33,6 +35,8 @@ void print_usage(bool all);
 void sleepms(unsigned int ms);
 
 
+volatile bool stopsignal = false; // is set true if receives CRTL-C or some other signal
+void install_signal_handler();
 
 
 using namespace whiteice;
@@ -87,6 +91,7 @@ int main(int argc, char** argv)
       return 0;
     }
 
+    install_signal_handler();
 
     if(threads <= 0)
       threads = // for multithread-enabled code
@@ -341,7 +346,8 @@ int main(int argc, char** argv)
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0) && // or max samples
-	      bfgs.solutionConverged() == false && bfgs.isRunning() == true) // or until solution converged.. (or exit due error)
+	      bfgs.solutionConverged() == false && bfgs.isRunning() == true && // or until solution converged.. (or exit due error)
+	      !stopsignal) 
 	{
 	  sleep(5);
 	  
@@ -450,7 +456,8 @@ int main(int argc, char** argv)
 
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0))
+	      (iterations < samples || samples <= 0) && 
+	      !stopsignal)
 	{
 	  sleep(5);
 
@@ -555,7 +562,8 @@ int main(int argc, char** argv)
 
 	while(error > math::blas_real<float>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0))
+	      (iterations < samples || samples <= 0) && 
+	      !stopsignal)
 	{
 	  sleep(5);
 
@@ -636,7 +644,8 @@ int main(int argc, char** argv)
 	
 	
 	while(error > math::blas_real<float>(0.001f) &&
-	      counter < secs) // compute max SECS seconds
+	      counter < secs && // compute max SECS seconds
+	      !stopsignal) 
 	{
 	  search.getSolution(*nn, error, solutions);
 
@@ -689,7 +698,7 @@ int main(int argc, char** argv)
 	unsigned int solutions = 0;
 	
 	
-	while(counter < secs) // compute max SECS seconds
+	while(counter < secs && !stopsignal) // compute max SECS seconds
 	{
 	  grad.getSolution(*nn, error, solutions);
 
@@ -776,7 +785,8 @@ int main(int argc, char** argv)
 	  
 	  while(error > math::blas_real<float>(0.001f) && 
 		ratio > math::blas_real<float>(0.000001f) &&
-		counter < samples)
+		counter < samples && 
+		!stopsignal)
 	  {
 	    prev_error = error;
 	    error = math::blas_real<float>(0.0f);
@@ -818,7 +828,12 @@ int main(int argc, char** argv)
 	      weights -= lrate * sumgrad + momentum*prev_sumgrad;
 	      prev_sumgrad = lrate * sumgrad;
 	    }
-	   
+	    
+#if 1
+	    // using negative feedback heuristic
+	    math::blas_real<float> alpha = lrate;
+	    negative_feedback_between_neurons(*nn, alpha);
+#endif
 	    
 	    if(nn->importdata(weights) == false)
 	      std::cout << "import failed." << std::endl;
@@ -882,7 +897,7 @@ int main(int argc, char** argv)
       
       hmc.startSampler(threads);
       
-      while((hmc.getNumberOfSamples() < samples && samples > 0) || (counter < secs && secs > 0)){
+      while(((hmc.getNumberOfSamples() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
 
 	eta.update((float)hmc.getNumberOfSamples());
 	
@@ -984,7 +999,7 @@ int main(int argc, char** argv)
       whiteice::math::vertex<> s;
       math::blas_real<float> r;
       
-      while((ga.getGenerations() < samples && samples > 0) || (counter < secs && secs > 0)){
+      while(((ga.getGenerations() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
 	r = ga.getBestSolution(s);
 	const unsigned int g = ga.getGenerations();
 	
@@ -1136,6 +1151,23 @@ int main(int argc, char** argv)
 }
 
 
+void sigint_signal_handler(int s)
+{
+  stopsignal = true;
+}
+
+
+void install_signal_handler()
+{
+  struct sigaction sih;
+  
+  sih.sa_handler = sigint_signal_handler;
+  sigemptyset(&sih.sa_mask);
+  sih.sa_flags = 0;
+
+  sigaction(SIGINT, &sih, NULL);
+}
+
 
 void sleepms(unsigned int ms)
 {
@@ -1179,6 +1211,9 @@ void print_usage(bool all)
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");
+  printf("               gradient descent algorithms use negative feedback layer feedback heuristic\n");
+  printf("\n");
+  printf("               Ctrl-C shutdowns the program gracefully.\n");
   printf("\n");
   printf("Report bugs to <dinrhiw2.googlecode.com>.\n");
   
