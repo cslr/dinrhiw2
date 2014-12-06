@@ -224,6 +224,11 @@ int main(int argc, char** argv)
 		  << std::endl;
 	return -1;
       }
+      
+      // also sets initial weights to be "orthogonal" against each other
+      math::blas_real<float> alpha = 0.5f;
+      for(unsigned int i=0;i<10;i++)
+	negative_feedback_between_neurons(*nn, alpha);
 
       
       // analyzes nnetwork architecture of deep ica priming
@@ -831,7 +836,7 @@ int main(int argc, char** argv)
 	    
 #if 1
 	    // using negative feedback heuristic
-	    math::blas_real<float> alpha = lrate;
+	    math::blas_real<float> alpha = 0.5f; // lrate;
 	    negative_feedback_between_neurons(*nn, alpha);
 #endif
 	    
@@ -1109,7 +1114,8 @@ int main(int argc, char** argv)
 	  }
 	  
 	  if(data.save(datafn) == true)
-	    std::cout << "Storing results to dataset file." << std::endl;
+	    std::cout << "Storing results to dataset file: " 
+		      << datafn << std::endl;
 	  else
 	    std::cout << "Storing results to dataset file FAILED." << std::endl;
 	}
@@ -1123,6 +1129,10 @@ int main(int argc, char** argv)
 	  std::cout << "Saving neural network data failed." << std::endl;
 	  delete bnn;
 	  return -1;
+	}
+	else{
+	  if(verbose)
+	    std::cout << "Saving neural network data: " << nnfn << std::endl;
 	}
       }
     }

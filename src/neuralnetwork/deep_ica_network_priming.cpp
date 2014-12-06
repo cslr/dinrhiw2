@@ -393,6 +393,7 @@ namespace whiteice
 	  W.rowcopyto(w, j);
 	  
 	  w -= alpha*rows[j]; // applies negative feedback with strenght alpha
+	  w.normalize(); // normalizes weights (back) to unity
 	  
 	  W.rowcopyfrom(w, j);
 	}

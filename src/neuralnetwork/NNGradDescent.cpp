@@ -291,7 +291,7 @@ namespace whiteice
 	    
 #if 1
 	    // using negative feedback heuristic 
-	    T alpha = lrate;
+	    T alpha = T(0.5f); // lrate;
 	    negative_feedback_between_neurons(nn, alpha);
 #endif
 	    
