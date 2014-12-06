@@ -24,7 +24,7 @@ namespace whiteice
     {
     public:
 
-    pBFGS_nnetwork(const nnetwork<T>& net, const dataset<T>& data, bool overfit=false);
+    pBFGS_nnetwork(const nnetwork<T>& net, const dataset<T>& data, bool overfit=false, bool negativefeedback=false);
     ~pBFGS_nnetwork();
 
     bool minimize(unsigned int NUMTHREADS);
@@ -43,6 +43,7 @@ namespace whiteice
     const nnetwork<T>& net;
     const dataset<T>& data;
     bool overfit;
+    bool negativefeedback;
     
     math::vertex<T> global_best_x;
     T global_best_y;

@@ -304,6 +304,8 @@ namespace whiteice
 	    break; // we stop computation as we cannot find better solution
 	  }
 	  
+	  heuristics(xn);
+	  
 	  // cancellation point
 	  {
 	    thread_is_running--;

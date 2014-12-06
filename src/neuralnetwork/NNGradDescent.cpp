@@ -18,12 +18,13 @@ namespace whiteice
   {
 
     template <typename T>
-    NNGradDescent<T>::NNGradDescent()
+    NNGradDescent<T>::NNGradDescent(bool negativefeedback)
     {
       best_error = T(1000.0f);
       converged_solutions = 0;
       data = NULL;
       NTHREADS = 0;
+      this->negativefeedback = negativefeedback;
 
       running = false;
 
@@ -289,11 +290,12 @@ namespace whiteice
 	    if(nn.importdata(weights) == false)
 	      std::cout << "import failed." << std::endl;
 	    
-#if 1
-	    // using negative feedback heuristic 
-	    T alpha = T(0.5f); // lrate;
-	    negative_feedback_between_neurons(nn, alpha);
-#endif
+
+	    if(negativefeedback){
+	      // using negative feedback heuristic 
+	      T alpha = T(0.5f); // lrate;
+	      negative_feedback_between_neurons(nn, alpha);
+	    }
 	    
 	    // calculates error from the testing dataset
 	    for(unsigned int i=0;i<dtest.size(0);i++){

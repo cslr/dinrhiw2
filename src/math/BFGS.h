@@ -32,7 +32,8 @@ namespace whiteice
 
         virtual T U(const vertex<T>& x) const = 0;
         virtual vertex<T> Ugrad(const vertex<T>& x) const = 0;
-
+      
+        virtual bool heuristics(vertex<T>& x) const = 0;
 
       public:
         /* 

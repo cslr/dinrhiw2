@@ -1,14 +1,17 @@
 
 #include "BFGS_nnetwork.h"
+#include "deep_ica_network_priming.h"
 
 
 namespace whiteice
 {
 
   template <typename T>
-  BFGS_nnetwork<T>::BFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d, bool overfit) :
+  BFGS_nnetwork<T>::BFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d, bool overfit, bool negativefeedback) :
     whiteice::math::BFGS<T>(overfit), net(nn), data(d)
   {
+    this->negativefeedback = negativefeedback;
+    
     // divides data to to training and testing sets
     ///////////////////////////////////////////////
     
@@ -144,6 +147,22 @@ namespace whiteice
     return (sumgrad);    
   }
   
+  
+  template <typename T>
+  bool BFGS_nnetwork<T>::heuristics(math::vertex<T>& x) const
+  {
+    if(negativefeedback){
+      whiteice::nnetwork<T> nnet(this->net);
+      nnet.importdata(x);
+      
+      T alpha = T(0.5f);
+      negative_feedback_between_neurons(nnet, alpha);
+      
+      nnet.exportdata(x);
+    }
+    
+    return true;
+  }
   
   
   template class BFGS_nnetwork< float >;

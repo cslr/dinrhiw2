@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <signal.h>
 
+
 #include <dinrhiw/dinrhiw.h>
 #include <exception>
 
@@ -53,7 +54,10 @@ int main(int argc, char** argv)
     unsigned int cmdmode;
     bool no_init, verbose;
     bool load, help = false;
+    
     bool overfit = false;
+    bool adaptive = false;
+    bool negfeedback = false;
     
     unsigned int samples = 0; // number of samples or iterations in learning process
     unsigned int secs = 0;    // how many seconds the learning process should take
@@ -79,6 +83,8 @@ int main(int argc, char** argv)
 		      no_init,
 		      load,
 		      overfit,
+		      adaptive,
+		      negfeedback,
 		      help,
 		      verbose);
     srand(time(0));
@@ -330,7 +336,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      LBFGS_nnetwork<> bfgs(*nn, data, overfit);
+      LBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
@@ -441,7 +447,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      pBFGS_nnetwork<> bfgs(*nn, data, overfit);
+      pBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
@@ -547,7 +553,7 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      pLBFGS_nnetwork<> bfgs(*nn, data, overfit);
+      pLBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
@@ -688,7 +694,7 @@ int main(int argc, char** argv)
       }
       
       
-      math::NNGradDescent<> grad;
+      math::NNGradDescent<> grad(negfeedback);
 
       if(samples > 0)
 	grad.startOptimize(data, arch, threads, samples);
@@ -834,11 +840,11 @@ int main(int argc, char** argv)
 	      prev_sumgrad = lrate * sumgrad;
 	    }
 	    
-#if 1
-	    // using negative feedback heuristic
-	    math::blas_real<float> alpha = 0.5f; // lrate;
-	    negative_feedback_between_neurons(*nn, alpha);
-#endif
+	    if(negfeedback){
+	      // using negative feedback heuristic
+	      math::blas_real<float> alpha = 0.5f; // lrate;
+	      negative_feedback_between_neurons(*nn, alpha);
+	    }
 	    
 	    if(nn->importdata(weights) == false)
 	      std::cout << "import failed." << std::endl;
@@ -890,7 +896,6 @@ int main(int argc, char** argv)
       }
 
       
-      const bool adaptive = true;
       whiteice::HMC<> hmc(*nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
       
@@ -1208,6 +1213,8 @@ void print_usage(bool all)
   printf("--version      displays version and exits\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
+  printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
+  printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
   printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
   printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
   printf("--samples N    samples N samples or defines max iterations (eg. 2500) to be used in optimization/sampling\n");

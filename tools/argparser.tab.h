@@ -16,7 +16,11 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& threads,
 		       unsigned int& dataSize,
 		       bool& no_init,
-		       bool& load, bool& overfit, bool& help, 
+		       bool& load, 
+		       bool& overfit, 
+		       bool& adaptive,
+		       bool& negfeedback,
+		       bool& help, 
 		       bool& verbose);
 
 #endif
