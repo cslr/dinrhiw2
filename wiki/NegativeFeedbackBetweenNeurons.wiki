@@ -1,5 +1,7 @@
-The gradient descent uses one additional heuristic which should improve results of deep neural networks. 
+The gradient descent, BFGS and L-BFGS uses one additional heuristic which try to improve results of deep neural networks. 
 
-It uses "negative feedback between neurons". That is, each in each layer, after gradient descent step, mean weights of other layer's neurons are substracted from each other. This then means that weights of the neural network are dissimilar from each other and each neuron behaves differently from other neurons. 
+It uses "negative feedback between neurons". That is, each in each layer, after gradient descent step, mean weights of other layer's neurons are substracted from each other and weight vector is normalized to one. This then means that weights of the neural network (per layer) are dissimilar from each other and each neuron behaves differently from other neurons [we force weight vectors to be dissimilar while optimizing them for minimum error].
+
+And after optimizing network with negative feedback. It is then possible to save the result and finally finetune the network for extra performance without such restrictions using gradient descent (alternatively, bayesian HMC sampler could make sense too to handle uncertainty).
 
 That is, the neurons learn to do different tasks and hopefully in deep structures it is possible for neurons to specialize more and more.
