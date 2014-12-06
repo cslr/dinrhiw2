@@ -2,8 +2,9 @@
 
 LIST:
 
-  * re-implement BFGS code using C++11 threads
-  * then implement pBFGS and pLBFGS using C++11 threads
   * write job application(s)
   * write code for negative response between neurons idea when learning per each layer
+  * start using eclipse CDT
+  * take realnumber implementation out of dinrhiw make a new library libvilya - unlimited precision floating point math (unlimited power) - experiment heavily with perfect forwarding of rvalues here and write FAST operator overloading library for real (and complex) numbers
+  * write sin/cos and other numerical functions for libvilya
   * implement perfect forwarding of rvalues in linear algebra (matrix/vertex operators)
