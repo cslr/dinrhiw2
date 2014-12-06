@@ -1,0 +1,5 @@
+The gradient descent uses one additional heuristic which should improve results of deep neural networks. 
+
+It uses "negative feedback between neurons". That is, each in each layer, after gradient descent step, mean weights of other layer's neurons are substracted from each other. This then means that weights of the neural network are dissimilar from each other and each neuron behaves differently from other neurons. 
+
+That is, the neurons learn to do different tasks and hopefully in deep structures it is possible for neurons to specialize more and more.
