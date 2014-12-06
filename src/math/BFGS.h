@@ -88,7 +88,7 @@ namespace whiteice
         mutable std::mutex sleep_mutex, thread_mutex, solution_mutex;
 	
 	
-      public:
+      private:
 	void optimizer_loop();
 	
       };

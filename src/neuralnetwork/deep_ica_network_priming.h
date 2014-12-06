@@ -91,8 +91,21 @@ namespace whiteice
    *          of the output layer is fixed to be 1, which forces
    *          the problem to be "nice"
    */
-  bool normalize_weights_to_unity(nnetwork<>& nnet,
-				  bool normalizeLastLayer = false);
+  template <typename T>
+    bool normalize_weights_to_unity(nnetwork<T>& nnet,
+				    bool normalizeLastLayer = false);
+
+
+  extern template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet,
+							 bool normalizeLastLayer = false);
+  extern template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet,
+							  bool normalizeLastLayer = false);
+  extern template bool normalize_weights_to_unity< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet,
+									    bool normalizeLastLayer = false);
+  extern template bool normalize_weights_to_unity< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet,
+									     bool normalizeLastLayer = false);
+
+  
 
 };
 

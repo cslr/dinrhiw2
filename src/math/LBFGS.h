@@ -83,13 +83,13 @@ namespace whiteice
         volatile bool sleep_mode, thread_running, solution_converged;
       
         volatile int thread_is_running;
-        mutable std::mutex cond_mutex;
+        mutable std::mutex thread_is_running_mutex;
         mutable std::condition_variable thread_is_running_cond;
         
         std::thread* optimizer_thread;
         mutable std::mutex sleep_mutex, thread_mutex, solution_mutex;
 	
-      public:
+      private:
 	void optimizer_loop();
 	
       };

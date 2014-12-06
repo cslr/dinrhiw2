@@ -6,14 +6,6 @@
 
 
 
-template <typename T>
-void __lbfgs_optimizer_thread_init(whiteice::math::LBFGS<T>* ptr)
-{
-  if(ptr) ptr->optimizer_loop(); // TODO use shared pointer
-}
-
-
-
 
 namespace whiteice
 {
@@ -42,8 +34,8 @@ namespace whiteice
 
 	// waits for thread to stop running
 	while(thread_is_running > 0){
-	  std::unique_lock<std::mutex> lk(cond_mutex);
-	  thread_is_running_cond.wait(lk);
+	  std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+	  thread_is_running_cond.wait(lock);
 	}
 	
 	if(optimizer_thread)
@@ -80,7 +72,7 @@ namespace whiteice
       thread_is_running = 0;
       
       try{
-	optimizer_thread = new thread(__lbfgs_optimizer_thread_init<T>, this);
+	optimizer_thread = new thread(std::bind(&LBFGS<T>::optimizer_loop, this));
 	optimizer_thread->detach();
       }
       catch(std::exception& e){
@@ -153,7 +145,7 @@ namespace whiteice
       {
 	// waits for thread to stop running
 	while(thread_is_running > 0){
-	  std::unique_lock<std::mutex> lk(cond_mutex);
+	  std::unique_lock<std::mutex> lk(thread_is_running_mutex);
 	  thread_is_running_cond.wait(lk);
 	}
       }
@@ -301,13 +293,12 @@ namespace whiteice
 	  g = Ugrad(x);
 	  
 	  // cancellation point
-	  {
+	  if(thread_running == false){
+	    thread_is_running_mutex.lock();
 	    thread_is_running--;
-	    if(thread_running == false){
-	      thread_is_running_cond.notify_all();
-	      return;
-	    }
-	    thread_is_running++;
+	    thread_is_running_mutex.unlock();
+	    thread_is_running_cond.notify_all();
+	    return;
 	  }
 	  
 	  // d = -H*g; // linsolve(H, d, -g);	  
@@ -364,13 +355,12 @@ namespace whiteice
 	  
 	  
 	  // cancellation point
-	  {
+	  if(thread_running == false){
+	    thread_is_running_mutex.lock();
 	    thread_is_running--;
-	    if(thread_running == false){
-	      thread_is_running_cond.notify_all();
-	      return;
-	    }
-	    thread_is_running++;
+	    thread_is_running_mutex.unlock();
+	    thread_is_running_cond.notify_all();
+	    return;
 	  }
 	  
 	  // linear search finds xn = x + alpha*d
@@ -382,13 +372,12 @@ namespace whiteice
 	  
 	  
 	  // cancellation point
-	  {
+	  if(thread_running == false){
+	    thread_is_running_mutex.lock();
 	    thread_is_running--;
-	    if(thread_running == false){
-	      thread_is_running_cond.notify_all();
-	      return;
-	    }
-	    thread_is_running++;
+	    thread_is_running_mutex.unlock();
+	    thread_is_running_cond.notify_all();
+	    return;
 	  }
 
 	  
@@ -422,12 +411,12 @@ namespace whiteice
 	  
 
 	  // cancellation point
-	  {
+	  if(thread_running == false){
+	    thread_is_running_mutex.lock();
 	    thread_is_running--;
-	    if(thread_running == false){
-	      return;
-	    }
-	    thread_is_running++;
+	    thread_is_running_mutex.unlock();
+	    thread_is_running_cond.notify_all();
+	    return;
 	  }
 	  
 	  iterations++;
@@ -447,9 +436,14 @@ namespace whiteice
       }
       
       
-      thread_running = false;
-      thread_is_running--;
-      thread_is_running_cond.notify_all();
+      
+      {
+	thread_is_running_mutex.lock();
+	thread_is_running--;
+	thread_running = false;
+	thread_is_running_mutex.unlock();
+	thread_is_running_cond.notify_all();
+      }
     }
     
     
