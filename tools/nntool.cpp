@@ -1211,7 +1211,7 @@ void print_usage(bool all)
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");
-  printf("               gradient descent algorithms use negative feedback layer feedback heuristic\n");
+  printf("               gradient descent algorithms use negative feedback heuristic\n");
   printf("\n");
   printf("               Ctrl-C shutdowns the program gracefully.\n");
   printf("\n");
