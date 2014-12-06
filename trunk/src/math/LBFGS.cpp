@@ -288,7 +288,6 @@ namespace whiteice
 	    }
 	  }
 
-
 	  ////////////////////////////////////////////////////////////
 	  g = Ugrad(x);
 	  
@@ -370,6 +369,7 @@ namespace whiteice
 	    break; // we stop computation as we cannot find better solution
 	  }
 	  
+	  heuristics(xn); // heuristically improve xn
 	  
 	  // cancellation point
 	  if(thread_running == false){
@@ -393,7 +393,6 @@ namespace whiteice
 	    besty = y;
 	    solution_mutex.unlock();
 	  }
-	  
 	  
 	  s = xn - x;
 	  vertex<T> yy = Ugrad(xn) - g; // Ugrad(xn) - Ugrad(x)

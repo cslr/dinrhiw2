@@ -19,7 +19,7 @@ namespace whiteice
     {
     public:
       LBFGS_nnetwork(const nnetwork<T>& net,
-		     const dataset<T>& d, bool overfit=false);
+		     const dataset<T>& d, bool overfit=false, bool negativefeedback=false);
     
       virtual ~LBFGS_nnetwork();
     
@@ -28,6 +28,8 @@ namespace whiteice
       // optimized function
       virtual T U(const math::vertex<T>& x) const;
       virtual math::vertex<T> Ugrad(const math::vertex<T>& x) const;
+    
+      virtual bool heuristics(math::vertex<T>& x) const;
 
     public:
     
@@ -39,6 +41,8 @@ namespace whiteice
     private:
       const nnetwork<T> net;
       const dataset<T>& data;
+    
+      bool negativefeedback;
     
       dataset<T> dtrain;
       dataset<T> dtest;

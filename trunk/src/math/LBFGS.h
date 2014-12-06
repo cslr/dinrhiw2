@@ -33,8 +33,10 @@ namespace whiteice
 
         virtual T U(const vertex<T>& x) const = 0;
         virtual vertex<T> Ugrad(const vertex<T>& x) const = 0;
-
-
+      
+        // heuristically improve solution x during LBFGS optimization
+        virtual bool heuristics(vertex<T>& x) const = 0;
+      
       public:
         /* 
 	 * error function we are (indirectly) optimizing)
@@ -65,6 +67,7 @@ namespace whiteice
         bool isRunning() const;
 	
       private:
+      
         bool linesearch(vertex<T>& xn,
 			const vertex<T>& x,
 			const vertex<T>& d) const;

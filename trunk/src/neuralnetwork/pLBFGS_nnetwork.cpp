@@ -17,11 +17,13 @@ namespace whiteice
   template <typename T>
   pLBFGS_nnetwork<T>::pLBFGS_nnetwork(const nnetwork<T>& nn,
 				      const dataset<T>& d,
-				      bool overfit) :
+				      bool overfit,
+				      bool negativefeedback) :
     net(nn), data(d)
   {
     thread_running = false;
     this->overfit = overfit;
+    this->negativefeedback = negativefeedback;
   }
   
   
@@ -84,7 +86,7 @@ namespace whiteice
       unsigned int index = 0;
       
       for(auto& o : optimizers){
-	o.reset(new LBFGS_nnetwork<T>(net, data, overfit));
+	o.reset(new LBFGS_nnetwork<T>(net, data, overfit, negativefeedback));
 	
 	nnetwork<T> nn(this->net);
 	
@@ -309,7 +311,7 @@ namespace whiteice
 	      }
 	      
 	      {
-		o.reset(new LBFGS_nnetwork<T>(net, data, overfit));
+		o.reset(new LBFGS_nnetwork<T>(net, data, overfit, negativefeedback));
 		
 		nnetwork<T> nn(this->net);
 		nn.randomize();

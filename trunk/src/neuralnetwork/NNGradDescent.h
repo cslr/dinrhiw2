@@ -26,7 +26,7 @@ namespace whiteice
       {
       public:
       
-	NNGradDescent();
+	NNGradDescent(bool negativefeedback = false);
 	~NNGradDescent();
 
 	/*
@@ -60,6 +60,8 @@ namespace whiteice
 
       private:
 	std::vector<unsigned int> nn_arch;
+      
+        bool negativefeedback;
       
         vertex<T> bestx;
         T best_error;
