@@ -361,7 +361,8 @@ namespace whiteice
    *        much sense so we don't do it as a default.
    *        (We need to get results that are close to correct ones)
    */
-  bool normalize_weights_to_unity(nnetwork<>& nnet,
+  template <typename T>
+  bool normalize_weights_to_unity(nnetwork<T>& nnet,
 				  bool normalizeLastLayer)
   {
     std::vector<unsigned int> arch;
@@ -374,8 +375,8 @@ namespace whiteice
       N = arch.size()-2;
 
     for(unsigned int i=0;i<N;i++){
-      math::matrix<> W;
-      math::vertex<> b;
+      math::matrix<T> W;
+      math::vertex<T> b;
      
       if(!nnet.getWeights(W, i)) return false;
 
@@ -387,13 +388,21 @@ namespace whiteice
       
       nnet.setWeights(W,i);
 
-      if(!nnet.getBias(b, i)) return false;
-      b.normalize();
-      nnet.setBias(b, i);
+      // do not do anything to bias terms
     }
 
     return true;
   }
 
+
+  template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet,
+						  bool normalizeLastLayer = false);
+  template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet,
+						   bool normalizeLastLayer = false);
+  template bool normalize_weights_to_unity< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet,
+								     bool normalizeLastLayer = false);
+  template bool normalize_weights_to_unity< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet,
+								      bool normalizeLastLayer = false);
+  
   
 };
