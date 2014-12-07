@@ -1,0 +1,15 @@
+#summary documents unix command-line tools
+
+= dstool =
+
+Dstool is the helper program for nntool which will be probably merged with nntool at some point. It reads comma-separated CVS-formatted ASCII data and stores it into format nntool can understand. 
+
+DATA <=> DSTOOL <=> NNTOOL
+
+Command-line arguments of dstool are:
+{{{
+
+}}}
+
+
+= nntool = 
