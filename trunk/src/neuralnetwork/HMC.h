@@ -47,7 +47,7 @@ namespace whiteice
     bool getNetwork(bayesian_nnetwork<T>& bnn);
     
     math::vertex<T> getMean() const;
-    math::matrix<T> getCovariance() const;
+    // math::matrix<T> getCovariance() const; // DO NOT SCALE TO HIGH DIMENSIONS
 
     // calculates mean error for the latest N samples, 0 = all samples
     T getMeanError(unsigned int latestN = 0) const;
@@ -64,7 +64,7 @@ namespace whiteice
     
     // used to calculate statistics when needed
     math::vertex<T> sum_mean;
-    math::matrix<T> sum_covariance;
+    // math::matrix<T> sum_covariance;
     unsigned int sum_N;
 
     volatile bool running, paused;

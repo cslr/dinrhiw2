@@ -50,7 +50,7 @@ namespace whiteice
       
       
 	
-        bool minimize(vertex<T>& x0);
+        bool minimize(vertex<T> x0);
 	
         bool getSolution(vertex<T>& x, T& y, unsigned int& iterations) const;
 	
@@ -76,7 +76,7 @@ namespace whiteice
 			      const T& alpha,
 			      const vertex<T>& p) const;
       
-        // current solution
+        // best solution found
 	vertex<T> bestx; 
 	T besty;
         volatile unsigned int iterations;

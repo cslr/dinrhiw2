@@ -93,6 +93,8 @@ namespace whiteice
 	if(index != 0){ // we keep a single instance of the original nn in a starting set
 	  nn.randomize();
 	  normalize_weights_to_unity(nn);
+	  T alpha = T(0.5f);
+	  negative_feedback_between_neurons(nn, alpha);
 	}
 	
 	math::vertex<T> w;
@@ -316,7 +318,9 @@ namespace whiteice
 		nnetwork<T> nn(this->net);
 		nn.randomize();
 		normalize_weights_to_unity(nn);
-		
+		T alpha = T(0.5f);
+		negative_feedback_between_neurons(nn, alpha);
+
 		math::vertex<T> w;
 		nn.exportdata(w);
 		

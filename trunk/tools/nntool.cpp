@@ -233,9 +233,7 @@ int main(int argc, char** argv)
       
       // also sets initial weights to be "orthogonal" against each other
       math::blas_real<float> alpha = 0.5f;
-      for(unsigned int i=0;i<10;i++)
-	negative_feedback_between_neurons(*nn, alpha);
-
+      negative_feedback_between_neurons(*nn, alpha);
       
       // analyzes nnetwork architecture of deep ica priming
       unsigned int dimension = arch[0];
@@ -363,7 +361,6 @@ int main(int argc, char** argv)
 	  sleep(5);
 	  
 	  bfgs.getSolution(w, error, iterations);
-	  
 	  error = bfgs.getError(w);
 	  
 	  eta.update(iterations);
@@ -741,7 +738,7 @@ int main(int argc, char** argv)
 	std::cout << "Gradient descent with early stopping (testing dataset)." << std::endl;
       }
       
-      
+
       {
 	// divide data to training and testing sets
 	dataset<> dtrain, dtest;
@@ -839,16 +836,14 @@ int main(int argc, char** argv)
 	      weights -= lrate * sumgrad + momentum*prev_sumgrad;
 	      prev_sumgrad = lrate * sumgrad;
 	    }
+
+	     nn->importdata(weights);
 	    
 	    if(negfeedback){
 	      // using negative feedback heuristic
-	      math::blas_real<float> alpha = 0.5f; // lrate;
+	      math::blas_real<float> alpha = 0.5f;
 	      negative_feedback_between_neurons(*nn, alpha);
 	    }
-	    
-	    if(nn->importdata(weights) == false)
-	      std::cout << "import failed." << std::endl;
-
 	    
 	    // calculates error from the testing dataset
 	    for(unsigned int i=0;i<dtest.size(0);i++){
@@ -861,6 +856,7 @@ int main(int argc, char** argv)
 	    }
 	    
 	    error /= math::blas_real<float>((float)dtest.size());
+	    error *= math::blas_real<float>(0.5F); // missing scaling constant
 	    
 	    delta_error = (prev_error - error); // if the error is negative we stop
 	    ratio = delta_error / error;

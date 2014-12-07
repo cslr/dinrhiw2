@@ -16,6 +16,7 @@
 #include "deep_ica_network_priming.h"
 #include "eig.h"
 #include "correlation.h"
+#include "linear_algebra.h"
 #include <math.h>
 
 
@@ -364,38 +365,32 @@ namespace whiteice
       math::matrix<T> W;
       math::vertex<T> w;
       
-      if(!nnet.getWeights(W, i)) return false;
+      nnet.getWeights(W, i);
       
+      
+      // orthonormalizes the weight vector basis
       {
 	std::vector< math::vertex<T> > rows;
 	rows.resize(W.ysize());
 	
-	for(auto& r : rows){
-	  r.resize(W.xsize());
-	  r.zero();
-	}
-	
 	for(unsigned int j=0;j<W.ysize();j++){
 	  W.rowcopyto(w, j);
-	  
-	  for(unsigned int k=0;k<W.ysize();k++){
-	    if(k != j) rows[k] += w;
-	  }
+	  rows[j] = w;
 	}
 	
-	// calculates mean vector of "other" vectors in this layer
-	T scaling = T(1.0f/((float)(W.ysize() - 1)));
+	gramschmidt(rows, 0, rows.size());
 
-	for(auto& r : rows)
-	  r *= scaling;
-	
 	for(unsigned int j=0;j<W.ysize();j++){
 	  W.rowcopyto(w, j);
 	  
-	  w -= alpha*rows[j]; // applies negative feedback with strenght alpha
-	  w.normalize(); // normalizes weights (back) to unity
+	  w.normalize();
+	  w = (T(1.0f) - alpha)*w + alpha*rows[j];
+	  w.normalize();
 	  
-	  W.rowcopyfrom(w, j);
+	  w *= T(2.0f); // scaling
+	  
+	  W.rowcopyfrom(w,j);
+	  
 	}
       }
       
@@ -448,6 +443,9 @@ namespace whiteice
       for(unsigned int j=0;j<W.ysize();j++){
 	W.rowcopyto(b, j);
 	b.normalize();
+	
+	b *= T(2.0f); // scaling
+	
 	W.rowcopyfrom(b, j);
       }
       

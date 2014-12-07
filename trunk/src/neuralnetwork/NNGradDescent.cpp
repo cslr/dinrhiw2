@@ -218,10 +218,11 @@ namespace whiteice
 	// starting location for neural network
 	nnetwork<T> nn(nn_arch);
 
-	// use heuristic to normalize
-	// weights to unity
-	// (so variance of data in network is close to 1)
+	// use heuristic to normalize weights to unity
+	nn.randomize();
 	normalize_weights_to_unity(nn); 
+	T alpha = T(0.5f);
+	negative_feedback_between_neurons(nn, alpha);
 	
 	// 2. normal gradient descent
 	///////////////////////////////////////
