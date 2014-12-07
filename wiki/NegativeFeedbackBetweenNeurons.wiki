@@ -8,4 +8,10 @@ That is, the neurons learn to do different tasks and hopefully in deep structure
 
 ==TODO==
 
-Actually find the most orthogonal vector against all other vectors in a layer and move towards it instead of moving AWAY from the mean of other vectors. Genetic algorithms might be here ok to solve this problem.
+Actually find the most orthogonal vector against all other vectors in a layer and move towards it instead of moving AWAY from the mean of other vectors. Gram-schmidt orthogonalization is a simple approach to this.
+
+A much more sophisticated approach: collect input samples per each layer. Then calculate linear ICA (FastICA implementation) to find good orthogonal representation of the data. After this, assign each PCA+ICA vector to the closest (inner product) vector in input layer (use the first ones extracted). After this do normalized move towards that direction just like in with gram-schmidt case. This should then cause each layer of neural network to extract independent components (orthogonal basis still just like in gram-schmidt but MUCH higher quality) which *should* be useful for feature extraction. 
+
+NOTE: initially use calculate just PCA of the collected samples and later extend this to the ICA (if the idea seems to work).
+
+Code: https://code.google.com/p/dinrhiw2/source/browse/trunk/src/neuralnetwork/deep_ica_network_priming.cpp
