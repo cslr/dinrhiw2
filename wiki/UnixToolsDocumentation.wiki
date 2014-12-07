@@ -78,3 +78,12 @@ Create, train and use neural network(s).
 
 Report bugs to <dinrhiw2.googlecode.com>.
 }}}
+
+  # The *v* option tells nntool to be more verbose printing out many informational messages about what is happening.
+  # The *help* option prints out long list of commands.
+  # *No-init* option tells nntool not to use default weight initialization heuristics (still used by parallelgrad,bfgs,lbfgs) but start from a random weight initialization.
+  # *Overfit* option tells nntool to continue optimization desprite the cross-validation (testing dataset) tells it should do early stopping (the default).
+  # *Adaptive* option is used my bayes/hmc sampler to use adaptive step length heuristics which should improve sampler's convergence to the target distribution (posterior distribution of neural network weights).
+  # The *negfb* option activates "negative feedback between neurons" heuristic during training which can be very useful to force different neurons to behave independently (otherwise different neuronal units can be correlated) and use neural network's capacity efficiently.
+  # *load* option tells to load network from the disk and start training from it instead of starting from the scratch. This is useful when you want to use different training algorithms in sequence.
+  # 
