@@ -1,4 +1,5 @@
 #summary documents unix command-line tools
+#labels 1
 
 = dstool =
 
@@ -85,5 +86,18 @@ Report bugs to <dinrhiw2.googlecode.com>.
   # *Overfit* option tells nntool to continue optimization desprite the cross-validation (testing dataset) tells it should do early stopping (the default).
   # *Adaptive* option is used my bayes/hmc sampler to use adaptive step length heuristics which should improve sampler's convergence to the target distribution (posterior distribution of neural network weights).
   # The *negfb* option activates "negative feedback between neurons" heuristic during training which can be very useful to force different neurons to behave independently (otherwise different neuronal units can be correlated) and use neural network's capacity efficiently.
-  # *load* option tells to load network from the disk and start training from it instead of starting from the scratch. This is useful when you want to use different training algorithms in sequence.
-  # 
+  # *Load* option tells to load network from the disk and start training from it instead of starting from the scratch. This is useful when you want to use different training algorithms in sequence.
+  # *Time* and *samples* options can be used to specify the time used or the samples (or iterations) collected during the learning process. Very useful commands when the training processes can take several hours.
+  # The *threads* option is used specify number of threads used by nntool. It is used by parallel algorithms (as a default nntool autodetects the number of processor cores and uses that number of theads).
+  # *Data* option is same as in dstool. When reading data from the dataset, the number of datapoints is downsampled to N datapoints before they are used.
+
+The other arguments (non-options) are:
+
+  # *Data* the dataset file to read and use (from dstool).
+  # *Arch* the architecture of the neural network that will be trained or used. Specifies number of units per layer. For example, 10-5-2 tells to train neural network with 10 inputs, 5 units in a hidden layer and 2 units in a output layer.
+  # *Nnfile* neural network configuration filename where the results of the training are stored to (or read from)
+  # *Lmethod* is maybe to the most important parameter of nntool. It specifies the learning method that will be used: _random_ means to use random search, _grad_ means to use gradient descent, _bayes_ causes nntool to use HMC sampling, _lbfgs_ uses LBFGS optimization, _parallelgrad_ uses multistart parallel multithreaded gradient descent, _parallelbfgs_ uses multistart parallel multithreaded BFGS optimization and finally _parallellbfgs_ uses multistart parallel multithreaded L-BFGS optimization.
+
+The parallel multithreaded optimization methods operate using the same logic. N threads are started that work in paralel which is runs independent optimization process, checks for convergence and stores result as the global best if a better result is found - and restarts the search from the start until timeout or number of iterations has been reached (samples).
+
+Additionally there is *use* method which operates in two modes. If the dataset has two clusters (like in training mode). The neural network model is used to predict the results and average squared prediction error in data is computed. Alternatively, if the dataset has a single (input) cluster and another empty cluster. Then predicted results are stored into empty cluster which can be then printed or exported into CSV-formated ASCII file using dstool. 
