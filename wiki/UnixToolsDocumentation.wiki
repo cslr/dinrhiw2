@@ -32,5 +32,14 @@ A tool for manipulating whiteice::dataset files.
 This program is distributed under LGPL license <dinrhiw2.googlecode.com>.
 }}}
 
+  # The *list* command lists dataset information: the number of datapoints, clusters and their preprocessing methods. It exists just for informational and testing purposes.
+  # Similarly, the *print* command prints given clusters datapoints for debugging purposes.
+  # The *create* command creates a new cluster into dataset containing D dimensions. The importing of data into dataset always starts with this command.
+  # *import* and *export* commands are used to bring and save data to/from dataset and are most important commands that one needs to use when wanting to process datafile with nntool.
+  # *add*, *move*, *copy*, *clear* and *remove* commands are seldom used and can be used to move datapoints between clusters
+  # the *padd* command another essential command that can be used to preprocess data before it is fed to neural network. The _meanvar_ is maybe the most essential command here as it removed mean and normalizes variance of (input) data to unity making it nice to work with nntool's neural network implementation.
+ # *premove* command can be used to remove preprocessings from data.
+ # *data* command JOINTLY downsamples number of datapoints from all clusters down to N datapoints. This requires that number of datapoints in each cluster is  the same in each cluster (the usual case). 
+
 
 = nntool = 
