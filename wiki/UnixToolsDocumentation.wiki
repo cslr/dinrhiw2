@@ -44,6 +44,10 @@ This program is distributed under LGPL license <dinrhiw2.googlecode.com>.
 
 = nntool = 
 
+NNtool is the primary program in dinrhiw2. It is used to create, train and use neural networks. It reads dataset files created by dstool and stores results back to dataset files or text-formated neural network configuration files. It doesn't show results anyway but only prints some machine learning statistics and estimated time it takes to complete the (time consuming) commands. Many of its algorithms take advantage of multicore CPUs through multithreading and use  optimized BLAS-libraries to carry out computations.
+
+Arguments of the program are: 
+
 {{{
 Usage: nntool [options] [data] [arch] <nnfile> [lmethod]
 Create, train and use neural network(s).
