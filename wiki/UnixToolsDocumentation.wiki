@@ -43,3 +43,38 @@ This program is distributed under LGPL license <dinrhiw2.googlecode.com>.
 
 
 = nntool = 
+
+{{{
+Usage: nntool [options] [data] [arch] <nnfile> [lmethod]
+Try 'nntool --help' for more information.
+error: command line syntax error.
+cutesolar@moria:~/code/dinrhiw2/tools$ nntool --help
+Usage: nntool [options] [data] [arch] <nnfile> [lmethod]
+Create, train and use neural network(s).
+
+-v             shows ETA and other details
+--help         shows this help
+--version      displays version and exits
+--no-init      do not use heuristics when initializing nn weights
+--overfit      do not use early stopping (bfgs,lbfgs)
+--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)
+--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)
+--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)
+--time TIME    sets time limit for multistart optimization and bayesian inference
+--samples N    samples N samples or defines max iterations (eg. 2500) to be used in optimization/sampling
+--threads N    uses N parallel threads when looking for solution
+--data N       takes randomly N samples of data for the learning process (N/2 used in training)
+[data]         a source file for inputs or i/o examples (binary file)
+               (whiteice data file format created by dstool)
+[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?
+<nnfile>       input/output neural networks weights file
+[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs
+               parallel methods use random location multistart/restart parallel search
+               until timeout or the number of samples has been reached
+               additionally: minimize method finds input that minimizes the neural network output
+               gradient descent algorithms use negative feedback heuristic
+
+               Ctrl-C shutdowns the program gracefully.
+
+Report bugs to <dinrhiw2.googlecode.com>.
+}}}
