@@ -46,10 +46,6 @@ This program is distributed under LGPL license <dinrhiw2.googlecode.com>.
 
 {{{
 Usage: nntool [options] [data] [arch] <nnfile> [lmethod]
-Try 'nntool --help' for more information.
-error: command line syntax error.
-cutesolar@moria:~/code/dinrhiw2/tools$ nntool --help
-Usage: nntool [options] [data] [arch] <nnfile> [lmethod]
 Create, train and use neural network(s).
 
 -v             shows ETA and other details
