@@ -2,7 +2,7 @@
 
 = dstool =
 
-Dstool is the helper program for nntool which will be probably merged with nntool at some point. It reads comma-separated CVS-formatted ASCII data and stores it into format nntool can understand. 
+Dstool is a helper program for nntool which will be probably merged with nntool at some point. It reads comma-separated CVS-formatted ASCII data and stores it into a format nntool can understand. 
 
 *DATA* <=> *DSTOOL* <=> *NNTOOL*
 
