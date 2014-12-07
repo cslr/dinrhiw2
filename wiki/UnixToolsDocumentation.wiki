@@ -4,7 +4,7 @@
 
 Dstool is a helper program for nntool which will be probably merged with nntool at some point. It reads comma-separated CVS-formatted ASCII data and stores it into a format nntool can understand. 
 
-*DATA* <=> *DSTOOL* <=> *NNTOOL*
+*DATAFILE* <=> *DSTOOL* <=> *NNTOOL*
 
 Command-line arguments of dstool are:
 {{{
