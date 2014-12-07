@@ -43,7 +43,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool BFGS<T>::minimize(vertex<T>& x0)
+    bool BFGS<T>::minimize(vertex<T> x0)
     {
       thread_mutex.lock();
       
@@ -55,6 +55,8 @@ namespace whiteice
       // calculates initial solution
       solution_mutex.lock();
       {
+	heuristics(x0);
+	
 	this->bestx = x0;
 	this->besty = U(x0);
 	iterations  = 0;

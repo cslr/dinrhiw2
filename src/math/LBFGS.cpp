@@ -48,7 +48,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool LBFGS<T>::minimize(vertex<T>& x0)
+    bool LBFGS<T>::minimize(vertex<T> x0)
     {
       thread_mutex.lock();
       
@@ -60,8 +60,11 @@ namespace whiteice
       // calculates initial solution
       solution_mutex.lock();
       {
+	heuristics(x0);
+	
 	this->bestx = x0;
 	this->besty = U(x0);
+	
 	iterations  = 0;
       }
       solution_mutex.unlock();
@@ -90,7 +93,7 @@ namespace whiteice
     template <typename T>
     bool LBFGS<T>::getSolution(vertex<T>& x, T& y, unsigned int& iterations) const
     {
-      // gets current solution
+      // gets the best found solution
       solution_mutex.lock();
       {
 	x = bestx;
@@ -382,16 +385,15 @@ namespace whiteice
 
 	  
 	  y = U(xn);
-
+	  
 	  // std::cout << "xn = " << xn << std::endl;
 	  // std::cout << "H = " << H << std::endl;
 	  // std::cout << "y = " << y << std::endl;
 	  
 	  if(y < besty){
-	    solution_mutex.lock();
+	    std::lock_guard<std::mutex> lock(solution_mutex);
 	    bestx = xn;
-	    besty = y;
-	    solution_mutex.unlock();
+	    besty = y;	    
 	  }
 	  
 	  s = xn - x;

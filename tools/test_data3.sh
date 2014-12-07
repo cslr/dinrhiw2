@@ -18,7 +18,8 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool --samples 10000 -v commviol-test.ds 141-20-20-20-20-20-20-4 commviol-nn.cfg grad
+nice -n0 ./nntool --samples 10000 --negfb -v commviol-test.ds 141-20-20-20-20-20-20-4 commviol-nn.cfg grad
+nice -n0 ./nntool --samples 10000 --load  -v commviol-test.ds 141-20-20-20-20-20-20-4 commviol-nn.cfg grad
 
 ##################################################
 # testing

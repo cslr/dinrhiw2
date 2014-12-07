@@ -48,7 +48,7 @@ namespace whiteice
       
       
 	
-        bool minimize(vertex<T>& x0);
+        bool minimize(vertex<T> x0);
 	
         bool getSolution(vertex<T>& x, T& y, unsigned int& iterations) const;
 	

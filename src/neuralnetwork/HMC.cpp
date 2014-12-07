@@ -24,7 +24,7 @@ namespace whiteice
     
     sum_N = 0;
     sum_mean.zero();
-    sum_covariance.zero();
+    // sum_covariance.zero();
     
     running = false;
     paused = false;
@@ -192,7 +192,7 @@ namespace whiteice
     
     samples.clear();
     sum_mean.zero();
-    sum_covariance.zero();
+    // sum_covariance.zero();
     sum_N = 0;
     
     pthread_mutex_unlock( &start_lock );
@@ -319,7 +319,7 @@ namespace whiteice
     }
   }
   
-  
+#if 0
   template <typename T>
   math::matrix<T> HMC<T>::getCovariance() const
   {
@@ -345,6 +345,7 @@ namespace whiteice
       return C;
     }
   }
+#endif
 
 
   template <typename T>
@@ -460,12 +461,12 @@ namespace whiteice
 	
 	if(sum_N > 0){
 	  sum_mean += q;
-	  sum_covariance += q.outerproduct();
+	  //sum_covariance += q.outerproduct();
 	  sum_N++;
 	}
 	else{
 	  sum_mean = q;
-	  sum_covariance = q.outerproduct();
+	  // sum_covariance = q.outerproduct();
 	  sum_N++;
 	}
 	
@@ -489,12 +490,12 @@ namespace whiteice
 	
 	if(sum_N > 0){
 	  sum_mean += q;
-	  sum_covariance += q.outerproduct();
+	  // sum_covariance += q.outerproduct();
 	  sum_N++;
 	}
 	else{
 	  sum_mean = q;
-	  sum_covariance = q.outerproduct();
+	  // sum_covariance = q.outerproduct();
 	  sum_N++;
 	}
 	
