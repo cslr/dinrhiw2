@@ -4,11 +4,32 @@
 
 Dstool is the helper program for nntool which will be probably merged with nntool at some point. It reads comma-separated CVS-formatted ASCII data and stores it into format nntool can understand. 
 
-DATA <=> DSTOOL <=> NNTOOL
+*DATA* <=> *DSTOOL* <=> *NNTOOL*
 
 Command-line arguments of dstool are:
 {{{
+Usage: datatool <command> <datafile> [asciifile | datafile]
+A tool for manipulating whiteice::dataset files.
 
+ -list                      lists clusters, number of datapoints, preprocessings.
+                            (default action)
+ -print[:<c1>[:<b>[:<e>]]]  prints contents of cluster c1 (indexes [<b>,<e>])
+ -create                    creates new empty dataset (<dataset> file doesn't exist)
+ -create:<dim>[:name]       creates new empty <dim> dimensional dataset cluster
+ -import:<c1>               imports data from comma separated CSV ascii file to cluster c1
+ -export:<c1>               exports data from cluster c1 to comma separated CSV ascii file
+ -add:<c1>:<c2>             adds data from another datafile cluster c2 to c1
+ -move:<c1>:<c2>            moves data (internally) from cluster c2 to c1
+ -copy:<c1>:<c2>            copies data (internally) from cluster c2 to c1
+ -clear:<c1>                clears dataset cluster c1 (but doesn't remove cluster)
+ -remove:<c1>               removes dataset cluster c1
+ -padd:<c1>:<name>+         adds preprocessing(s) to cluster
+ -premove:<c1>:<name>+      removes preprocesing(s) from cluster
+                            preprocess names: meanvar, outlier, pca, ica
+                            note: ica implementation is unstable and may not work
+ -data:N                    jointly resamples all cluster sizes down to N datapoints
+
+This program is distributed under LGPL license <dinrhiw2.googlecode.com>.
 }}}
 
 
