@@ -383,11 +383,13 @@ namespace whiteice
 	for(unsigned int j=0;j<W.ysize();j++){
 	  W.rowcopyto(w, j);
 	  
+	  T l = w.norm();
+	  
 	  w.normalize();
 	  w = (T(1.0f) - alpha)*w + alpha*rows[j];
 	  w.normalize();
 	  
-	  w *= T(2.0f); // scaling
+	  w *= l; // T(2.0f); no scaling
 	  
 	  W.rowcopyfrom(w,j);
 	  
