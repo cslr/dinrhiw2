@@ -159,7 +159,7 @@ namespace whiteice
       
       nnet.exportdata(x);
     }
-    
+
     return true;
   }
   

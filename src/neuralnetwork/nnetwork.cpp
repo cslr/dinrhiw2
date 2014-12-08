@@ -181,6 +181,9 @@ namespace whiteice
     if(!inputValues.exportData(&(state[0])))
       return false;
     
+    if(collectSamples)
+      samples.resize(arch.size()-1);
+    
     
     // unsigned int* a = &(arch[0]);
     unsigned int aindex = 0;
@@ -195,10 +198,6 @@ namespace whiteice
 
 	bpdata.resize(bpsize);
       }
-      
-      if(collectSamples)
-	samples.resize(arch.size()-1);
-      
       
       T* bpptr = &(bpdata[0]);
       T* dptr = &(data[0]);
@@ -729,6 +728,11 @@ namespace whiteice
   }
 
   ////////////////////////////////////////////////////////////////////////////
+  
+  template <typename T>
+  unsigned int nnetwork<T>::getLayers() const throw(){
+    return (arch.size()-1); 
+  }
 
   template <typename T>
   bool nnetwork<T>::getBias(math::vertex<T>& b, unsigned int layer) const throw()
@@ -832,7 +836,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw()
   {
-    if(layer >= samples.size()) return false;
+    if(layer >= this->samples.size()) return false;
     samples = this->samples[layer];
     return true;
   }

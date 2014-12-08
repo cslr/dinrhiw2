@@ -85,6 +85,14 @@ namespace whiteice
     extern template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
 								 const matrix<blas_complex<double> >& W);
     
+    extern template bool mean_covariance_estimate< float >
+      (vertex< float >& m, matrix< float >& R,
+       const std::vector< vertex< float > >& data);
+
+    extern template bool mean_covariance_estimate< double >
+      (vertex< double >& m, matrix< double >& R,
+       const std::vector< vertex< double > >& data);
+    
     extern template bool mean_covariance_estimate< blas_real<float> >
       (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,
        const std::vector< vertex< blas_real<float> > >& data);
@@ -101,6 +109,16 @@ namespace whiteice
       (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
        const std::vector< vertex< blas_complex<double> > >& data);
     
+    
+    extern template bool mean_covariance_estimate< float >
+      (vertex< float >& m, matrix< float >& R,
+       const std::vector< vertex< float > >& data,
+       const std::vector< whiteice::dynamic_bitset >& missing);
+    
+    extern template bool mean_covariance_estimate< double >
+      (vertex< double >& m, matrix< double >& R,
+       const std::vector< vertex< double > >& data,
+       const std::vector< whiteice::dynamic_bitset >& missing);
     
     extern template bool mean_covariance_estimate< blas_real<float> >
       (vertex< blas_real<float> >& m, matrix< blas_real<float> >& R,

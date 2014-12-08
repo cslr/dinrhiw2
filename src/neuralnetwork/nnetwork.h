@@ -84,6 +84,8 @@ namespace whiteice
     unsigned int exportdatasize() const throw();
 
     ////////////////////////////////////////////////////////////
+    
+    unsigned int getLayers() const throw();
 
     // gets and sets network parameters: Weight matrixes and biases
     bool getBias(math::vertex<T>& b, unsigned int layer) const throw();
