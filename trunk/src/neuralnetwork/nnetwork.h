@@ -55,8 +55,10 @@ namespace whiteice
 
     void getArchitecture(std::vector<unsigned int>& arch) const;
     
-    bool calculate(bool gradInfo = false);
-    bool operator()(bool gradInfo = false){ return calculate(gradInfo); }
+    bool calculate(bool gradInfo = false, bool collectSamples = false);
+    bool operator()(bool gradInfo = false, bool collectSamples = false){
+      return calculate(gradInfo, collectSamples);
+    }
     
     unsigned int length() const; // number of layers
     
@@ -89,6 +91,10 @@ namespace whiteice
 
     bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
+    
+    unsigned int getSamplesCollected() const throw();
+    bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
+    void clearSamples() throw();
     
     ////////////////////////////////////////////////////////////
     protected:
@@ -126,6 +132,10 @@ namespace whiteice
     std::vector<T> state;
     std::vector<T> temp;
     std::vector<T> lgrad;
+    
+    // used to collect samples about data passing through the network,
+    // this will then be used later to do unsupervised regularization of training data
+    std::vector< std::vector< math::vertex<T> > > samples;
 
     // bool compressed;
     // MemoryCompressor* compressor;
