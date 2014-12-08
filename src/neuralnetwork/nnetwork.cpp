@@ -176,12 +176,10 @@ namespace whiteice
    * information for calculating gradient (bpdata)
    */
   template <typename T>
-  bool nnetwork<T>::calculate(bool gradInfo)
+  bool nnetwork<T>::calculate(bool gradInfo, bool collectSamples)
   {
-    // const T af = T(1.7159f);
-    // const T bf = T(0.6666f);
-    
-    if(!inputValues.exportData(&(state[0]))) return false;
+    if(!inputValues.exportData(&(state[0])))
+      return false;
     
     
     // unsigned int* a = &(arch[0]);
@@ -198,6 +196,9 @@ namespace whiteice
 	bpdata.resize(bpsize);
       }
       
+      if(collectSamples)
+	samples.resize(arch.size()-1);
+      
       
       T* bpptr = &(bpdata[0]);
       T* dptr = &(data[0]);
@@ -207,6 +208,13 @@ namespace whiteice
 	// copies layer input x to bpdata
 	memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
 	bpptr += arch[aindex];
+	
+	if(collectSamples){
+	  math::vertex<T> x;
+	  x.resize(arch[aindex]);
+	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  samples[aindex].push_back(x);
+	}
 
 	// gemv(a[1], a[0], dptr, state, state); // s = W*s
 	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
@@ -237,6 +245,14 @@ namespace whiteice
       T* dptr = &(data[0]);
       
       while(aindex+1 < arch.size()){
+	
+	if(collectSamples){
+	  math::vertex<T> x;
+	  x.resize(arch[aindex]);
+	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  samples[aindex].push_back(x);
+	}
+	
 	// gemv(a[1], a[0], dptr, state, state); // s = W*s
 	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
 
@@ -802,6 +818,30 @@ namespace whiteice
 	dptr[j*arch[layer] + i] = w(j,i);
 
     return true;
+  }
+  
+  template <typename T>
+  unsigned int nnetwork<T>::getSamplesCollected() const throw()
+  {
+    if(samples.size() > 0)
+      return samples[0].size();
+    else
+      return 0;
+  }
+  
+  template <typename T>
+  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw()
+  {
+    if(layer >= samples.size()) return false;
+    samples = this->samples[layer];
+    return true;
+  }
+  
+  template <typename T>
+  void nnetwork<T>::clearSamples() throw()
+  {
+    for(auto& s : samples)
+      s.clear();
   }
 
   /////////////////////////////////////////////////////////////////////////////
