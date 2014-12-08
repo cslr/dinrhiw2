@@ -10,12 +10,13 @@ rm -f commviol-test.ds
 ./dstool -import:0 commviol-test.ds commviol.in
 ./dstool -import:1 commviol-test.ds commviol.out
 ./dstool -padd:0:meanvar commviol-test.ds
-# ./dstool -padd:0:ica commviol-test.ds
 ./dstool -padd:1:meanvar commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 1000 --negfb commviol-test.ds 141-20-4 commviol-nn.cfg parallellbfgs
+./nntool -v --samples 1000 commviol-test.ds 141-20-4 commviol-nn.cfg lbfgs
+# ./nntool -v --samples 1000 --overfit --negfb commviol-test.ds 141-20-4 commviol-nn.cfg lbfgs
+# ./nntool -v --samples 1000 --negfb commviol-test.ds 141-20-4 commviol-nn.cfg parallellbfgs
 #./nntool -v --samples 100 --load  --overfit commviol-test.ds 141-141-4-4 commviol-nn.cfg lbfgs
 # ./nntool -v --samples 1000 --load commviol-test.ds 141-141-4-4 commviol-nn.cfg bayes
 

@@ -1286,6 +1286,7 @@ namespace whiteice
 	  if(preprocess(index, dnMeanVarianceNormalization) == false)
 	    return false;
 	
+	// we can use autocorrelation because mean is already zero
 	if(autocorrelation(clusters[index].Rxx,
 			   clusters[index].data) == false){
 	  std::cout << "Calculating autocorrelation failed." << std::endl;

@@ -85,6 +85,14 @@ namespace whiteice
    */
   template <typename T>
     bool negative_feedback_between_neurons(nnetwork<T>& nnet, const T& alpha, bool processLastLayer = false);
+  
+  
+  /**
+   * calculates ica for each layer and moves weight vectors towards "ICA-subspace".
+   * this will mean that neurons do differentiate maximally to different inputs.
+   */
+  template <typename T>
+    bool neuronlayerwise_ica(nnetwork<T>& nnet, const T& alpha, unsigned int layer);
 
 
   /**
@@ -103,6 +111,12 @@ namespace whiteice
    */
   template <typename T>
     bool normalize_weights_to_unity(nnetwork<T>& nnet, bool normalizeLastLayer = false);
+  
+  
+  extern template bool neuronlayerwise_ica<float>(nnetwork<float>& nnet, const float& alpha, unsigned int layer);
+  extern template bool neuronlayerwise_ica<double>(nnetwork<double>& nnet, const double& alpha, unsigned int layer);
+  extern template bool neuronlayerwise_ica< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, unsigned int layer);
+  extern template bool neuronlayerwise_ica< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, unsigned int layer);
   
   extern template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const float& alpha, bool processLastLayer);
   extern template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const double& alpha, bool processLastLayer);

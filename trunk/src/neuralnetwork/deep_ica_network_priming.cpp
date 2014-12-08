@@ -17,8 +17,10 @@
 #include "eig.h"
 #include "correlation.h"
 #include "linear_algebra.h"
-#include <math.h>
+#include "ica.h"
 
+#include <math.h>
+#include <set>
 
 
 namespace whiteice
@@ -405,6 +407,134 @@ namespace whiteice
   }
   
   
+  template <typename T>
+  bool neuronlayerwise_ica(nnetwork<T>& nnet, const T& alpha, unsigned int layer)
+  {
+    std::vector<unsigned int> arch;
+    nnet.getArchitecture(arch);
+    
+    const unsigned int& l = layer;
+    
+    {
+      math::matrix<T> W;
+      math::vertex<T> w, wxx;
+      
+      if(nnet.getWeights(W, l) == false)
+	return false;
+      
+      std::vector< math::vertex<T> > samples;
+      if(nnet.getSamples(samples, l) == false)
+	return false;
+      
+      
+      // calculates ICA of layer's input
+      math::matrix<T> Wxx;
+      // math::vertex<T> m_wxx;
+      
+      {
+	math::vertex<T> m;
+	math::matrix<T> Cxx;
+	
+	if(mean_covariance_estimate(m, Cxx, samples) == false)
+	  return false;
+	
+	math::matrix<T> V, Vt, invD, D(Cxx);
+	
+	if(symmetric_eig(D, V) == false)
+	  return false;
+	
+	invD = D;
+	
+	for(unsigned int i=0;i<invD.ysize();i++){
+	  T d = invD(i,i);
+	  
+	  if(d > T(10e-8)){
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	  }
+	  else{
+	    invD(i,i) = T(0.0f);
+	  }
+	  
+	}
+	
+	Vt = V;
+	Vt.transpose();
+	
+	Wxx = V * invD * Vt; // for ICA use: ICA * invD * Vt;
+	
+	
+	// next we calculate ICA vectors: we process data with PCA first
+	for(unsigned int i=0;i<samples.size();i++){
+	  samples[i] -= m;
+	  samples[i] = Wxx*samples[i];
+	}
+	
+	
+	math::matrix<T> ICA;
+	if(math::ica(samples, ICA))
+	  Wxx = ICA * invD * Vt;
+	else
+	  return false;
+	
+	// m_wxx = -Wxx*m;
+      }
+      
+      
+      // next we match each row of Wxx to row in W (largest inner product found)
+      // and we move W's row towards Wxx as with gram-schmidt orthonormalization
+      {
+	std::set<unsigned int> S;
+	
+	for(unsigned int s=0;s<W.ysize();s++)
+	  S.insert(s); // list of still available weight vectors
+	
+	for(unsigned int j=0;j<W.ysize() && S.size() > 0;j++){
+	  Wxx.rowcopyto(wxx, j);
+	  wxx.normalize();
+	  
+	  T best_value = T(0.0f);
+	  unsigned int best_index = 0;
+	  
+	  for(auto& s : S){
+	    W.rowcopyto(w, s);
+	    w.normalize();
+	    T dot = (wxx*w)[0];
+	    
+	    if(dot > best_value){
+	      best_value = dot;
+	      best_index = s;
+	    }
+	  }
+	  
+	  S.erase(best_index);
+	  
+	  // moves the closest weight vector towards wxx
+	  W.rowcopyto(w, best_index);
+	  
+	  T len = w.norm();
+	  
+	  w.normalize();
+	  w = (T(1.0f) - alpha)*w + alpha*wxx;
+	  w.normalize();
+	  
+	  w *= len;
+	  
+	  W.rowcopyfrom(w, j);
+	  
+	}
+      }
+      
+      
+      if(nnet.setWeights(W, l) == false)
+	return false;
+      
+      // do not do anything to bias terms
+    }
+
+    return true;
+  }
+  
+  
   /**
    * helper function to normalize neural network weight vectors 
    * ||w|| = 1 and ||b|| = 1 for each layer
@@ -458,6 +588,12 @@ namespace whiteice
 
     return true;
   }
+  
+  
+  template bool neuronlayerwise_ica<float>(nnetwork<float>& nnet, const float& alpha, unsigned int layer);
+  template bool neuronlayerwise_ica<double>(nnetwork<double>& nnet, const double& alpha, unsigned int layer);
+  template bool neuronlayerwise_ica< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, unsigned int layer);
+  template bool neuronlayerwise_ica< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, unsigned int layer);
 
   template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const float& alpha, bool processLastLayer);
   template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const double& alpha, bool processLastLayer);

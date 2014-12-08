@@ -235,6 +235,26 @@ int main(int argc, char** argv)
       math::blas_real<float> alpha = 0.5f;
       negative_feedback_between_neurons(*nn, alpha);
       
+      // then use ica to set directions towards independenct components of 
+      // the inputs of each layer
+      for(unsigned int l=0;l<nn->getLayers();l++)
+      {
+	// goes through the data and collects samples per layer
+	for(unsigned int i=0;i<data.size(0);i++){
+	  nn->input() = data.access(0, i);
+	  nn->calculate(false, true);
+	}
+	
+	const math::blas_real<float> alpha = 1.0f;
+	if(neuronlayerwise_ica(*nn, alpha, l) == false){
+	  std::cout << "Warning: calculating ICA for input data failed (layer: " 
+		    << l << ")" << std::endl;
+	}
+	
+	nn->clearSamples();
+      }
+      
+#if 0
       // analyzes nnetwork architecture of deep ica priming
       unsigned int dimension = arch[0];
       unsigned int counter = 0;
@@ -268,6 +288,8 @@ int main(int argc, char** argv)
 	if(!ok)
 	  std::cout << "WARNING: calculating deep ICA failed." << std::endl;
       }
+#endif
+      
     }
     else if(load == true){
       if(verbose)
@@ -735,7 +757,8 @@ int main(int argc, char** argv)
       if(verbose){
 	std::cout << "Starting neural network gradient descent optimizer.."
 		  << std::endl;
-	std::cout << "Gradient descent with early stopping (testing dataset)." << std::endl;
+	if(overfit == false)
+	  std::cout << "Early stopping (testing dataset)." << std::endl;
       }
       
 
@@ -791,11 +814,14 @@ int main(int argc, char** argv)
 	  if(samples > 0)
 	    eta.start(0.0f, (float)samples);
 	  
-	  while(error > math::blas_real<float>(0.001f) && 
-		ratio > math::blas_real<float>(0.000001f) &&
-		counter < samples && 
-		!stopsignal)
+	  while(counter < samples && !stopsignal)
 	  {
+	    if(overfit == false){
+	      if(error < math::blas_real<float>(0.001f) || ratio < math::blas_real<float>(0.000001f))
+		 break;
+	    }
+	    
+
 	    prev_error = error;
 	    error = math::blas_real<float>(0.0f);
 
