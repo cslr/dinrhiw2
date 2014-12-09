@@ -418,8 +418,12 @@ namespace whiteice
     {
       math::matrix<T> W;
       math::vertex<T> w, wxx;
+      math::vertex<T> b;
       
       if(nnet.getWeights(W, l) == false)
+	return false;
+      
+      if(nnet.getBias(b, l) == false)
 	return false;
       
       std::vector< math::vertex<T> > samples;
@@ -429,7 +433,7 @@ namespace whiteice
       
       // calculates ICA of layer's input
       math::matrix<T> Wxx;
-      // math::vertex<T> m_wxx;
+      math::vertex<T> m_wxx;
       
       {
 	math::vertex<T> m;
@@ -438,12 +442,12 @@ namespace whiteice
 	if(mean_covariance_estimate(m, Cxx, samples) == false)
 	  return false;
 	
-	math::matrix<T> V, Vt, invD, D(Cxx);
+	math::matrix<T> V, D(Cxx);
 	
 	if(symmetric_eig(D, V) == false)
 	  return false;
 	
-	invD = D;
+	math::matrix<T>& invD = D;
 	
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
@@ -457,29 +461,48 @@ namespace whiteice
 	  
 	}
 	
-	Vt = V;
-	Vt.transpose();
+	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
 	
-	Wxx = V * invD * Vt; // for ICA use: ICA * invD * Vt;
+	m_wxx = -Wxx*m;
+      }
+     
+#if 1
+      // we calculate MEAN length of vertexes in Wxx and set lenghts according to that
+      // in order to stabilize variance in the network? [BAD IDEA???]
+      {
 	
-	
-	// next we calculate ICA vectors: we process data with PCA first
-	for(unsigned int i=0;i<samples.size();i++){
-	  samples[i] -= m;
-	  samples[i] = Wxx*samples[i];
+	for(unsigned int j=0;j<W.ysize();j++){
+	  W.rowcopyto(w, j);
+	  w.normalize();
+	  
+	  T best_dot = T(0.0f);
+	  unsigned int best_index = 0;
+	  
+	  for(unsigned int k=0;k<Wxx.ysize();k++){
+	    Wxx.rowcopyto(wxx, k);
+	    wxx.normalize();
+	    
+	    T dot = (wxx*w)[0];
+	    
+	    if(dot > best_dot){
+	      dot = best_dot;
+	      best_index = k;
+	    }
+	  }
+	  
+	  Wxx.rowcopyto(wxx, best_index);
+	  
+	  w *= wxx.norm();
+	  
+	  W.rowcopyfrom(w, j);
 	}
 	
-	
-	math::matrix<T> ICA;
-	if(math::ica(samples, ICA))
-	  Wxx = ICA * invD * Vt;
-	else
-	  return false;
-	
-	// m_wxx = -Wxx*m;
+	b.zero();
       }
+#endif
+ 
       
-      
+#if 0
       // next we match each row of Wxx to row in W (largest inner product found)
       // and we move W's row towards Wxx as with gram-schmidt orthonormalization
       {
@@ -511,24 +534,33 @@ namespace whiteice
 	  // moves the closest weight vector towards wxx
 	  W.rowcopyto(w, best_index);
 	  
-	  T len = w.norm();
+	  T len1 = w.norm();
 	  
 	  w.normalize();
 	  w = (T(1.0f) - alpha)*w + alpha*wxx;
+	  
+	  T len2 = w.norm();
 	  w.normalize();
 	  
-	  w *= len;
+	  w *= len1;
 	  
-	  W.rowcopyfrom(w, j);
-	  
+	  W.rowcopyfrom(w, best_index);
+
+	  b[best_index] /= len1;
+	  b[best_index] = (T(1.0f) - alpha)*b[best_index] + alpha*m_wxx[j];
+	  b[best_index] /= len2;
+	  b[best_index] *= len1;
+
 	}
       }
-      
+ #endif     
       
       if(nnet.setWeights(W, l) == false)
 	return false;
       
-      // do not do anything to bias terms
+      if(nnet.setBias(b, l) == false)
+	return false;
+      
     }
 
     return true;

@@ -230,10 +230,13 @@ int main(int argc, char** argv)
 		  << std::endl;
 	return -1;
       }
-      
+
       // also sets initial weights to be "orthogonal" against each other
       math::blas_real<float> alpha = 0.5f;
       negative_feedback_between_neurons(*nn, alpha);
+
+#if 0  
+      // DO NOT WORK
       
       // then use ica to set directions towards independenct components of 
       // the inputs of each layer
@@ -253,8 +256,10 @@ int main(int argc, char** argv)
 	
 	nn->clearSamples();
       }
-      
+#endif
+
 #if 0
+      
       // analyzes nnetwork architecture of deep ica priming
       unsigned int dimension = arch[0];
       unsigned int counter = 0;

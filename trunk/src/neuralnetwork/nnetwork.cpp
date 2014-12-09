@@ -314,9 +314,6 @@ namespace whiteice
   bool nnetwork<T>::gradient(const math::vertex<T>& error,
 			     math::vertex<T>& grad) const
   {
-    // const T af = T(1.7159f);
-    // const T bf = T(0.6666f);
-        
     if(!hasValidBPData)
       return false;
     
@@ -463,6 +460,7 @@ namespace whiteice
   
   template <typename T> // non-linearity used in neural network
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw(){
+
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
     //const T af = T(1.0f);
