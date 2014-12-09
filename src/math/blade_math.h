@@ -648,8 +648,54 @@ namespace whiteice
     inline blas_complex<double> cos(const blas_complex<double>& x){
       return blas_complex<double>(std::cos<double>(std::complex<double>(x.c[0],x.c[1])));
     }
-
-
+    
+    //////////////////////////////////////////////////////////////////////
+    // tanh
+    
+    float tanh(float x) PURE_FUNCTION;
+    double tanh(double x) PURE_FUNCTION;
+    int tanh(int x) PURE_FUNCTION;
+    unsigned int tanh(unsigned int x) PURE_FUNCTION;
+    char tanh(char x) PURE_FUNCTION;
+    unsigned char tanh(unsigned char x) PURE_FUNCTION;
+    
+    realnumber tanh(const realnumber& x);
+    
+    blas_real<float> tanh(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> tanh(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> tanh(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> tanh(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    //////////////////////////////////////////////////////////////////////
+    
+    inline float tanh(float x){ return ::tanhf(x); }
+    inline double tanh(double x){ return ::tanh(x); }
+    inline int tanh(int x){ return (int)::tanhf((float)x); }
+    inline unsigned int tanh(unsigned int x){ return (unsigned int)::tanhf((float)x); }
+    inline char tanh(char x){ return (char)::tanhf((float)x); }
+    inline unsigned char tanh(unsigned char x){ return (unsigned char)::tanhf((float)x); }
+    
+    inline realnumber tanh(const realnumber& x){
+      assert(0);
+      return realnumber(0.0);
+    }
+    
+    inline blas_real<float> tanh(const blas_real<float>& x){
+      return blas_real<float>(::tanhf(x.c[0]));
+    }
+    
+    inline blas_real<double> tanh(const blas_real<double>& x){
+      return blas_real<double>(::tanh(x.c[0]));
+    }
+    
+    inline blas_complex<float> tanh(const blas_complex<float>& x){
+      return blas_complex<float>(std::tanh<float>(std::complex<float>(x.c[0],x.c[1])));
+    }
+    
+    inline blas_complex<double> tanh(const blas_complex<double>& x){
+      return blas_complex<double>(std::tanh<double>(std::complex<double>(x.c[0],x.c[1])));
+    }
+    
     //////////////////////////////////////////////////////////////////////
     // sinh
     
