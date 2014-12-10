@@ -235,9 +235,9 @@ int main(int argc, char** argv)
       math::blas_real<float> alpha = 0.5f;
       negative_feedback_between_neurons(*nn, alpha);
 
-#if 1  
+
       // then use ica to set directions towards independenct components of 
-      // the inputs of each layer
+      // the inputs of each layer, also sets data variance of network to 2.0
       for(unsigned int l=0;l<(nn->getLayers()-1);l++)
       {
 	// goes through the data and collects samples per layer
@@ -254,44 +254,6 @@ int main(int argc, char** argv)
 	
 	nn->clearSamples();
       }
-#endif
-
-#if 0
-      
-      // analyzes nnetwork architecture of deep ica priming
-      unsigned int dimension = arch[0];
-      unsigned int counter = 0;
-      
-      while(arch[counter] == dimension)
-	counter++;
-      
-      if(counter > 2){
-	unsigned int deepness = (counter-1)/2;
-	
-	if(verbose)
-	  std::cout << "Heuristics: deep ICA initialization ("
-		    << 2*deepness << " layers) of NN weights"
-		    << std::endl;
-	
-
-	std::vector< math::vertex<> > D;
-
-	for(dataset<>::iterator i=data.begin();i!=data.end();i++){
-	  D.push_back(*i);
-	}
-	
-	std::vector<deep_ica_parameters> p;
-	
-	bool ok = false;
-	
-	if(deep_nonlin_ica(D, p, deepness) == true)
-	  if(initialize_nnetwork(p, *nn) == true)
-	    ok = true;
-	
-	if(!ok)
-	  std::cout << "WARNING: calculating deep ICA failed." << std::endl;
-      }
-#endif
       
     }
     else if(load == true){
