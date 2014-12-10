@@ -450,11 +450,17 @@ namespace whiteice
 	
 	math::matrix<T> invD = D;
 	
+#define USE_ICA 1
+
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
 	  
 	  if(d > T(10e-8)){
-	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d)); // was 0.5 (to small)
+#ifdef USE_ICA
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d)); // was 0.5 (too small)
+#else
+	    invD(i,i) = whiteice::math::sqrt(T(2.0)/whiteice::math::abs(d));
+#endif
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
@@ -465,13 +471,13 @@ namespace whiteice
 	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
 
 	sinh_x = m; // we assume E{g(x)} = E{g(x)} (so we force E{g(x)} to be "linear"!)
-	
+
+#ifdef USE_ICA
 	for(unsigned int i=0;i<samples.size();i++){
 	  samples[i] -= m;
 	  samples[i] = Wxx*samples[i]; // whitens data for the ICA step
 	}
 	
-#if 1
 	math::matrix<T> ICA;
 	
 	if(math::ica(samples, ICA) == false)
@@ -498,7 +504,7 @@ namespace whiteice
      
       
       {
-	for(unsigned int j=0;j<W.ysize();j++){
+	for(unsigned int j=0;j<W.ysize() && j<Wxx.ysize();j++){
 	  Wxx.rowcopyto(wxx, j);
 	  W.rowcopyfrom(wxx, j);
 	  
@@ -506,94 +512,6 @@ namespace whiteice
 	}
       }
       
-#if 0
-      // we calculate MEAN length of vertexes in Wxx and set lenghts according to that
-      // in order to stabilize variance in the network? [BAD IDEA???]
-      {
-	
-	for(unsigned int j=0;j<W.ysize();j++){
-	  W.rowcopyto(w, j);
-	  w.normalize();
-	  
-	  T best_dot = T(0.0f);
-	  unsigned int best_index = 0;
-	  
-	  for(unsigned int k=0;k<Wxx.ysize();k++){
-	    Wxx.rowcopyto(wxx, k);
-	    wxx.normalize();
-	    
-	    T dot = (wxx*w)[0];
-	    
-	    if(dot > best_dot){
-	      dot = best_dot;
-	      best_index = k;
-	    }
-	  }
-	  
-	  Wxx.rowcopyto(wxx, best_index);
-	  
-	  w *= wxx.norm();
-	  
-	  W.rowcopyfrom(w, j);
-	}
-	
-	b.zero();
-      }
-#endif
- 
-      
-#if 0
-      // next we match each row of Wxx to row in W (largest inner product found)
-      // and we move W's row towards Wxx as with gram-schmidt orthonormalization
-      {
-	std::set<unsigned int> S;
-	
-	for(unsigned int s=0;s<W.ysize();s++)
-	  S.insert(s); // list of still available weight vectors
-	
-	for(unsigned int j=0;j<W.ysize() && S.size() > 0;j++){
-	  Wxx.rowcopyto(wxx, j);
-	  wxx.normalize();
-	  
-	  T best_value = T(0.0f);
-	  unsigned int best_index = 0;
-	  
-	  for(auto& s : S){
-	    W.rowcopyto(w, s);
-	    w.normalize();
-	    T dot = (wxx*w)[0];
-	    
-	    if(dot > best_value){
-	      best_value = dot;
-	      best_index = s;
-	    }
-	  }
-	  
-	  S.erase(best_index);
-	  
-	  // moves the closest weight vector towards wxx
-	  W.rowcopyto(w, best_index);
-	  
-	  T len1 = w.norm();
-	  
-	  w.normalize();
-	  w = (T(1.0f) - alpha)*w + alpha*wxx;
-	  
-	  T len2 = w.norm();
-	  w.normalize();
-	  
-	  w *= len1;
-	  
-	  W.rowcopyfrom(w, best_index);
-
-	  b[best_index] /= len1;
-	  b[best_index] = (T(1.0f) - alpha)*b[best_index] + alpha*m_wxx[j];
-	  b[best_index] /= len2;
-	  b[best_index] *= len1;
-
-	}
-      }
- #endif     
       
       if(nnet.setWeights(W, l) == false)
 	return false;
