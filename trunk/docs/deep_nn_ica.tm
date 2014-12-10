@@ -64,7 +64,7 @@
   then insert <math|\<b-x\><rsub|n+1>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\><rsub|n>-E<around*|{|\<b-x\><rsub|n>|}>|)>+E<around*|{|g<around*|(|\<b-x\><rsub|n+1>|)>|}>|)>>
   and from it follows <math|E<around*|{|g<around*|(|\<b-x\><rsub|n+1>|)>|}>=E<around*|{|\<b-W\><around*|(|\<b-x\><rsub|n>-\<b-E\><around*|{|\<b-x\><rsub|n>|}>|)>+\<b-y\>|}>=\<b-W\>*E<around*|{|\<b-x\><rsub|n>-E<around*|{|\<b-x\><rsub|n>|}>|}>+\<b-y\>=\<b-y\>>.
   So <math|E<around*|{|sinh<around*|(|\<b-x\><rsub|n+1>|)>|}>=\<b-y\>> is
-  solution to the equation and we can pick any <math|\<b-y\>> and choose
+  solution to the equation and we can pick any <math|\<b-y\>> and can choose
   <math|\<b-y\>=0>, and we get
 
   <\with|par-mode|center>
@@ -82,20 +82,29 @@
   that <math|g<around*|(|\<b-x\>|)>> is now statistically speaking <em|linear
   function>, and so should be also its inverse
   <math|E<around*|{|g<rsup|-1><around*|(|\<b-x\>|)>|}>\<thickapprox\>\<b-x\>>.
-  This then leads into equation:
+  This then leads into pseudo-equation:
 
   <\with|par-mode|center>
     <math|\<b-x\><rsub|n+1>\<thickapprox\>E<around*|{|\<b-W\><around*|(|\<b-x\><rsub|n>-E<around*|{|\<b-x\><rsub|n>|}>|)>|}>+E<around*|{|\<b-x\><rsub|n+1>|}>>
   </with>
 
   which is of course <em|linear ICA solution> (so we get a ``non-linear''
-  solution that are close to the linear solutions. Or, selecting
+  solution that is close to the linear solutions. Or, selecting
   <math|E<around*|{|g<around*|(|\<b-x\>|)>|}>=E<around*|{|\<b-x\>|}>> can
   also mean that the underlying distribution is modified to be
   <math|p<around*|(|x|)>\<sim\><frac|x|g<around*|(|x|)>>p<around*|(|x|)>=<frac|x|sinh<around*|(|x|)>>p<around*|(|x|)>>.
   And now, <math|<frac|x|sinh<around*|(|x|)>>> has a interesting, gaussian,
-  bell function like shape meaning that distribution is modified to be
-  concentrated around zero with a quick\ 
+  bell function like shape meaning that distributions are ``regularized'' to
+  be concentrated around zero with a quick decay to zero. (Another lead:
+  Laplace distributed could be a good target so this can be basis of choosing
+  <math|g<around*|(|x|)>> non-linearity very wisely.) We select
+  <math|g<around*|(|x|)>=sinh<around*|(|x|)><rsup|1.1>> which transforms
+  distribution drastically towards Laplace distribution. This means inverse
+  function is now <math|g<rsup|-1><around*|(|x|)>=asinh<around*|(|x<rsup|1/1.2>|)>>
+  and its derivate is <math|<frac|d|dx>asinh<around*|(|x<rsup|\<alpha\>>|)>=<frac|\<alpha\>x<rsup|\<alpha\>-1>|<sqrt|1+x<rsup|2\<alpha\>>>>>.
+  [<strong|TEST THIS IN PRACTICE>]
+
+  \;
 
   Another way to see it, is to <with|font-shape|italic|choose non-linearity>
   so that <math|E<around*|{|g<around*|(|\<b-x\>|)>|}>\<thickapprox\>\<b-0\>>
@@ -119,17 +128,9 @@
 
   <em|NOTE: PCA/ICA solutions should have variance of 2.0 or something as
   <math|asinh<around*|(|x|)>> has different scaling than, for example,
-  sinh(x)>.
+  tanh(x)>.
 
-  <strong|Further work>
-
-  Test how this actually works with different <math|g<around*|(|x|)>>
-  non-linearities.
-
-  NOTE: because <math|g<around*|(|x|)>=tanh<around*|(|x|)>> is another useful
-  non-linearity when calculating ICA. It might make sense to try to use
-  <math|atanh<around*|(|x|)>> non-linearity for neural networks. DOES NOT
-  WORK
+  \;
 
   \;
 </body>
