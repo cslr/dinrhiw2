@@ -6,7 +6,4 @@ LIST:
   * increase version numbers
   * merge nntool and datatool
   * create statically linked nntool (compress using upx) and distribute it
-  * IMPLEMENT ica-based basis regularization of neural network training
-  * take realnumber implementation out of dinrhiw make a new library *libvilya* - unlimited precision integer and floating point math (unlimited power) - experiment heavily with perfect forwarding of rvalues here and write *FAST* operator overloading library for real (and complex) numbers
-  * write sin/cos and other numerical functions for libvilya
   * implement perfect forwarding of rvalues in linear algebra (matrix/vertex operators) in dinrhiw
