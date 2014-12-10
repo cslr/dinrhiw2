@@ -695,6 +695,53 @@ namespace whiteice
     inline blas_complex<double> tanh(const blas_complex<double>& x){
       return blas_complex<double>(std::tanh<double>(std::complex<double>(x.c[0],x.c[1])));
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // atanh
+    
+    float atanh(float x) PURE_FUNCTION;
+    double atanh(double x) PURE_FUNCTION;
+    int atanh(int x) PURE_FUNCTION;
+    unsigned int atanh(unsigned int x) PURE_FUNCTION;
+    char atanh(char x) PURE_FUNCTION;
+    unsigned char atanh(unsigned char x) PURE_FUNCTION;
+    
+    realnumber atanh(const realnumber& x);
+    
+    blas_real<float> atanh(const blas_real<float>& x) PURE_FUNCTION;
+    blas_real<double> atanh(const blas_real<double>& x) PURE_FUNCTION;
+    blas_complex<float> atanh(const blas_complex<float>& x) PURE_FUNCTION;
+    blas_complex<double> atanh(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    //////////////////////////////////////////////////////////////////////
+    
+    inline float atanh(float x){ return ::atanhf(x); }
+    inline double atanh(double x){ return ::atanh(x); }
+    inline int atanh(int x){ return (int)::atanhf((float)x); }
+    inline unsigned int atanh(unsigned int x){ return (unsigned int)::atanhf((float)x); }
+    inline char atanh(char x){ return (char)::atanhf((float)x); }
+    inline unsigned char atanh(unsigned char x){ return (unsigned char)::atanhf((float)x); }
+    
+    inline realnumber atanh(const realnumber& x){
+      assert(0);
+      return realnumber(0.0);
+    }
+    
+    inline blas_real<float> atanh(const blas_real<float>& x){
+      return blas_real<float>(::atanhf(x.c[0]));
+    }
+    
+    inline blas_real<double> atanh(const blas_real<double>& x){
+      return blas_real<double>(::atanh(x.c[0]));
+    }
+    
+    inline blas_complex<float> atanh(const blas_complex<float>& x){
+      return blas_complex<float>(std::atanh<float>(std::complex<float>(x.c[0],x.c[1])));
+    }
+    
+    inline blas_complex<double> atanh(const blas_complex<double>& x){
+      return blas_complex<double>(std::atanh<double>(std::complex<double>(x.c[0],x.c[1])));
+    }
     
     //////////////////////////////////////////////////////////////////////
     // sinh

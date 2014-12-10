@@ -460,20 +460,27 @@ namespace whiteice
   
   template <typename T> // non-linearity used in neural network
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw(){
-
+#if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
-    //const T af = T(1.0f);
-    //const T bf = T(1.0f);
     
     T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
     T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
-
+#endif
+#if 0        
+    T output = input;
+    if(output > T(0.999f)) output = T(0.999f);
+    else if(output < T(-0.999f)) output = T(-0.999f);
+    output = math::atanh(output);
+#endif
+    T output = math::asinh(input);
+    
     return output;
   }
   
   template <typename T> // derivat of non-linearity used in neural network
   inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const throw(){
+#if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
     //const T af = T(1.0f);
@@ -481,6 +488,30 @@ namespace whiteice
     
     T fxa = input/af;
     T output = (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
+#endif
+#if 0    
+    T output = input;
+    if(output > T(0.999f)) output = T(0.999f);
+    else if(output < T(-0.999f)) output = T(-0.999f);
+    output = T(1.0f)/(T(1.0f) - output*output);
+#endif
+    T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
+    
+    return output;
+  }
+  
+  template <typename T>
+  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer) const throw(){ // inverse of non-linearity used
+#if 0
+    const T af = T(1.7159f);
+    const T bf = T(0.6666f);
+    
+    T output = T(2.0f)*af/(input + T(1.0f)) - T(1.0f);
+    if(output < T(0.001)) output = T(0.001);
+    output = -math::log(output)/bf;
+    
+#endif
+    T output = math::sinh(input);
     
     return output;
   }

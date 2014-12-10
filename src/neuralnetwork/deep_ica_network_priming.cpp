@@ -434,6 +434,7 @@ namespace whiteice
       // calculates ICA of layer's input
       math::matrix<T> Wxx;
       math::vertex<T> m_wxx;
+      math::vertex<T> sinh_x;
       
       {
 	math::vertex<T> m;
@@ -447,13 +448,13 @@ namespace whiteice
 	if(symmetric_eig(D, V) == false)
 	  return false;
 	
-	math::matrix<T>& invD = D;
+	math::matrix<T> invD = D;
 	
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
 	  
 	  if(d > T(10e-8)){
-	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d)); // was 0.5 (to small)
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
@@ -462,11 +463,50 @@ namespace whiteice
 	}
 	
 	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
+
+	sinh_x = m; // we assume E{g(x)} = E{g(x)} (so we force E{g(x)} to be "linear"!)
 	
-	m_wxx = -Wxx*m;
+	for(unsigned int i=0;i<samples.size();i++){
+	  samples[i] -= m;
+	  samples[i] = Wxx*samples[i]; // whitens data for the ICA step
+	}
+	
+#if 1
+	math::matrix<T> ICA;
+	
+	if(math::ica(samples, ICA) == false)
+	  return false;
+
+	for(unsigned int i=0;i<invD.ysize();i++){
+	  T d = invD(i,i);
+	  
+	  if(d > T(10e-8)){
+	    // we set variance to be LARGER [was 0.5]
+	    invD(i,i) = whiteice::math::sqrt(T(2.0)/whiteice::math::abs(d)); 
+	  }
+	  else{
+	    invD(i,i) = T(0.0f);
+	  }
+	  
+	}
+	
+	Wxx = ICA * invD * V.transpose();
+#endif
+
+	m_wxx = - Wxx*m;
       }
      
-#if 1
+      
+      {
+	for(unsigned int j=0;j<W.ysize();j++){
+	  Wxx.rowcopyto(wxx, j);
+	  W.rowcopyfrom(wxx, j);
+	  
+	  b[j] = m_wxx[j] + sinh_x[j];
+	}
+      }
+      
+#if 0
       // we calculate MEAN length of vertexes in Wxx and set lenghts according to that
       // in order to stabilize variance in the network? [BAD IDEA???]
       {
