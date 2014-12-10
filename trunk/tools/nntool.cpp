@@ -235,12 +235,10 @@ int main(int argc, char** argv)
       math::blas_real<float> alpha = 0.5f;
       negative_feedback_between_neurons(*nn, alpha);
 
-#if 0  
-      // DO NOT WORK
-      
+#if 1  
       // then use ica to set directions towards independenct components of 
       // the inputs of each layer
-      for(unsigned int l=0;l<nn->getLayers();l++)
+      for(unsigned int l=0;l<(nn->getLayers()-1);l++)
       {
 	// goes through the data and collects samples per layer
 	for(unsigned int i=0;i<data.size(0);i++){
