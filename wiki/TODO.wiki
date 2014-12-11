@@ -2,8 +2,9 @@
 
 LIST:
 
-  * make all initialization codes (LBFGS, BFGS, NNGradDescent) to use ICA-prepriming
+  * make all initialization codes (LBFGS, BFGS, NNGradDescent) to use PCA-prepriming, THEORY: should we calculate E[g(x)] term differently?
   * improve overfit-detection (asinh non-linearity optimization causes easily temporal increases in error function) to allow temporal increases (calculate minimum found and do not stop unless we increase more than 10% from it or something): LBFGS, BFGS, grad, parallelgrad
+  * SCALABILITY: conffile.load() cannot load large networks
   * write job application(s)
   * increase version numbers
   * merge nntool and datatool
