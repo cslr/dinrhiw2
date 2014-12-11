@@ -221,6 +221,7 @@ int main(int argc, char** argv)
      */
     if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
     {
+#if 0
       if(verbose)
 	std::cout << "Heuristics: NN weights normalization initialization."
 		  << std::endl;
@@ -230,10 +231,10 @@ int main(int argc, char** argv)
 		  << std::endl;
 	return -1;
       }
-
+#endif
       // also sets initial weights to be "orthogonal" against each other
-      math::blas_real<float> alpha = 0.5f;
-      negative_feedback_between_neurons(*nn, alpha);
+      //math::blas_real<float> alpha = 0.5f;
+      //negative_feedback_between_neurons(*nn, alpha);
 
 #if 0
       // then use ica to set directions towards independenct components of 
@@ -262,7 +263,7 @@ int main(int argc, char** argv)
 	  nn->input() = data.access(0, i);
 	  nn->calculate(false, true);
 	}
-	
+
 	const unsigned int l = nn->getLayers()-1;
 	
 	if(neuronlast_layer_mse(*nn, data, l) == false){
@@ -782,13 +783,14 @@ int main(int argc, char** argv)
 	  
 	  unsigned int counter = 0;
 	  math::blas_real<float> prev_error, error, ratio;
-	  math::blas_real<float> lrate =
-	    math::blas_real<float>(0.05f);
+	  math::blas_real<float> lrate = math::blas_real<float>(0.05f);
 	  math::blas_real<float> delta_error = 0.0f;
+	  math::blas_real<float> minimum_error = 10000000000.0f;
 	  
-	  error = math::blas_real<float>(1000.0f);
-	  prev_error = math::blas_real<float>(1000.0f);
-	  ratio = math::blas_real<float>(1000.0f);
+	  error = 1000.0f;
+	  prev_error = 1000.0f;
+	  ratio = 1.0f;
+	  
 
 	  math::vertex<> prev_sumgrad;
 
@@ -796,29 +798,32 @@ int main(int argc, char** argv)
 	  if(samples > 0)
 	    eta.start(0.0f, (float)samples);
 	  
+	  const unsigned int BATCH_SIZE = 500;
+	  
 	  while(counter < samples && !stopsignal)
 	  {
 	    if(overfit == false){
-	      if(error < math::blas_real<float>(0.001f) || ratio < math::blas_real<float>(0.000001f))
-		 break;
+	      if(error < 0.001f || ratio > 1.20f)
+		if(counter > 10) break; // do not stop immediately
 	    }
 	    
 
 	    prev_error = error;
-	    error = math::blas_real<float>(0.0f);
+	    error = 0.0f;
 
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
 
 	    math::vertex<> sumgrad;
-	    math::blas_real<float> ninv =
-	      math::blas_real<float>(1.0f/dtrain.size(0));
+	    math::blas_real<float> ninv = 1.0f/BATCH_SIZE;
 
-	    for(unsigned int i=0;i<dtrain.size(0);i++){
-	      nn->input() = dtrain.access(0, i);
+	    for(unsigned int i=0;i<BATCH_SIZE;i++){
+	      const unsigned index = rand() % dtrain.size(0);
+	      
+	      nn->input() = dtrain.access(0, index);
 	      nn->calculate(true);
-	      err = dtrain.access(1,i) - nn->output();
+	      err = dtrain.access(1, index) - nn->output();
 
 	      if(nn->gradient(err, grad) == false)
 		std::cout << "gradient failed." << std::endl;
@@ -832,44 +837,64 @@ int main(int argc, char** argv)
 	    
 	    if(nn->exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
+	    
+	    lrate = 0.15f;
+	    math::vertex<> w;
 
-	    
-	    if(prev_sumgrad.size() <= 1){
-	      weights -= lrate * sumgrad;
-	      prev_sumgrad = lrate * sumgrad;
-	    }
-	    else{
-	      math::blas_real<float> momentum =
-		math::blas_real<float>(0.8f);
-	      weights -= lrate * sumgrad + momentum*prev_sumgrad;
-	      prev_sumgrad = lrate * sumgrad;
-	    }
-
-	     nn->importdata(weights);
-	    
-	    if(negfeedback){
-	      // using negative feedback heuristic
-	      math::blas_real<float> alpha = 0.5f;
-	      negative_feedback_between_neurons(*nn, alpha);
-	    }
-	    
-	    // calculates error from the testing dataset
-	    for(unsigned int i=0;i<dtest.size(0);i++){
-	      nn->input() = dtest.access(0, i);
-	      nn->calculate(false);
-	      err = dtest.access(1,i) - nn->output();
+	    do{	      
+	      lrate = 0.5f*lrate;
+	      w = weights;
 	      
-	      for(unsigned int i=0;i<err.size();i++)
-		error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	      w -= lrate * sumgrad;
+	      
+#if 0
+	      if(prev_sumgrad.size() <= 1){
+		w -= lrate * sumgrad;
+		prev_sumgrad = lrate * sumgrad;
+	      }
+	      else{
+		math::blas_real<float> momentum = 0.8f;
+		w -= lrate * sumgrad + momentum*prev_sumgrad;
+		prev_sumgrad = lrate * sumgrad;
+	      }
+#endif
+	      
+	      nn->importdata(w);
+	      
+	      if(negfeedback){
+		// using negative feedback heuristic
+		math::blas_real<float> alpha = 0.5f;
+		negative_feedback_between_neurons(*nn, alpha);
+	      }
+	      
+	      error = 0.0f;
+	      
+	      // calculates error from the testing dataset
+	      for(unsigned int i=0;i<BATCH_SIZE;i++){
+		const unsigned int index = rand() % dtest.size(0);
+		
+		nn->input() = dtest.access(0, index);
+		nn->calculate(false);
+		err = dtest.access(1, index) - nn->output();
+		
+		for(unsigned int i=0;i<err.size();i++)
+		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	      }
+	      
+	      error /= BATCH_SIZE;
+	      error *= math::blas_real<float>(0.5f); // missing scaling constant
+	      
+	      if(error < minimum_error)
+		minimum_error = error;
+	      
+	      delta_error = (prev_error - error); // if the error is negative we stop
+	      ratio = error / minimum_error;	      
 	    }
+	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
-	    error /= math::blas_real<float>((float)dtest.size());
-	    error *= math::blas_real<float>(0.5F); // missing scaling constant
+	    // std::cout << "delta_error = " << delta_error << " lrate = " << lrate << std::endl;
 	    
-	    delta_error = (prev_error - error); // if the error is negative we stop
-	    ratio = delta_error / error;
-	    
-	    printf("\r%d/%d iterations: %f (%f) [%f minutes]                  ", counter, samples, error.c[0], ratio.c[0], eta.estimate()/60.0);
+	    printf("\r%d/%d iterations: %f [%f minutes]                  ", counter, samples, error.c[0], eta.estimate()/60.0);
 		   
 	    fflush(stdout);
 	    
@@ -877,7 +902,7 @@ int main(int argc, char** argv)
 	    eta.update((float)counter);
 	  }
 	
-	  printf("\r%d/%d : %f (%f) [%f minutes]                 \n", counter, samples, error.c[0], ratio.c[0], eta.estimate()/60.0);
+	  printf("\r%d/%d : %f [%f minutes]                 \n", counter, samples, error.c[0], eta.estimate()/60.0);
 	  fflush(stdout);
 	}
 
