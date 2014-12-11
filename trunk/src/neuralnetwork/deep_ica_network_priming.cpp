@@ -450,17 +450,14 @@ namespace whiteice
 	
 	math::matrix<T> invD = D;
 	
-#define USE_ICA 1
-
+	T scaling = T(0.0f);
+	
 	for(unsigned int i=0;i<invD.ysize();i++){
-	  T d = invD(i,i);
+	  T d = whiteice::math::abs(invD(i,i));
+	  scaling += d;
 	  
 	  if(d > T(10e-8)){
-#ifdef USE_ICA
-	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d)); // was 0.5 (too small)
-#else
-	    invD(i,i) = whiteice::math::sqrt(T(2.0)/whiteice::math::abs(d));
-#endif
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
@@ -468,37 +465,40 @@ namespace whiteice
 	  
 	}
 	
-	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
-
-	sinh_x = m; // we assume E{g(x)} = E{g(x)} (so we force E{g(x)} to be "linear"!)
-
-#ifdef USE_ICA
+	scaling /= T(invD.ysize());
+	
+	std::cout << "scaling = " << scaling << std::endl;
+	scaling = T(2.0f);
+	
+	// Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
+	Wxx = V.transpose(); // for ICA use: ICA * invD * Vt;
+	
+	sinh_x = m; 
+	sinh_x.zero();
+	
 	for(unsigned int i=0;i<samples.size();i++){
+	  for(unsigned int d=0;d<sinh_x.size();d++)
+	    sinh_x[d] += nnet.inv_nonlin(samples[i][d], l);
+	  
 	  samples[i] -= m;
 	  samples[i] = Wxx*samples[i]; // whitens data for the ICA step
 	}
 	
+	sinh_x /= T((float)samples.size());
+	
+	Wxx = scaling*Wxx;
+	
+#if 0
 	math::matrix<T> ICA;
 	
 	if(math::ica(samples, ICA) == false)
 	  return false;
-
-	for(unsigned int i=0;i<invD.ysize();i++){
-	  T d = invD(i,i);
-	  
-	  if(d > T(10e-8)){
-	    // we set variance to be LARGER [was 0.5]
-	    invD(i,i) = whiteice::math::sqrt(T(2.0)/whiteice::math::abs(d)); 
-	  }
-	  else{
-	    invD(i,i) = T(0.0f);
-	  }
-	  
-	}
 	
-	Wxx = ICA * invD * V.transpose();
-#endif
-
+	// we assume E{g(y)} = E{x} (so we force E{g(x)} to be "linear"!)
+	// should be: E{g(y)} = E{y}
+	
+	Wxx = scaling*(ICA * invD * V.transpose());
+#endif	
 	m_wxx = - Wxx*m;
       }
      
@@ -522,6 +522,86 @@ namespace whiteice
     }
 
     return true;
+  }
+  
+
+  template <typename T>
+  bool neuronlast_layer_mse(nnetwork<T>& nnet, const whiteice::dataset<T>& ds, unsigned int layer)
+  {
+    try{
+      std::vector< whiteice::math::vertex<T> > output;
+      
+      if(ds.getData(1, output) == false)
+	return false;
+      
+      math::matrix<T> W;
+      math::vertex<T> b;
+      
+      if(nnet.getWeights(W, layer) == false)
+	return false;
+      
+      if(nnet.getBias(b, layer) == false)
+	return false;
+      
+      std::vector< math::vertex<T> > input;
+      if(nnet.getSamples(input, layer) == false)
+	return false;
+      
+      if(input.size() != output.size())
+	return false;
+      
+      const unsigned int N = input.size();
+      
+      if(N <= 0) return false;
+      
+      {
+	math::matrix<T> Cxx, Cxy;
+	math::vertex<T> mx, my;
+	
+	Cxx.resize(input[0].size(),input[0].size());
+	Cxy.resize(input[0].size(),output[0].size());
+	mx.resize(input[0].size());
+	my.resize(output[0].size());
+	
+	Cxx.zero();
+	Cxy.zero();
+	mx.zero();
+	my.zero();
+	
+	for(unsigned int i=0;i<N;i++){
+	  Cxx += input[i].outerproduct();
+	  Cxy += input[i].outerproduct(output[i]);
+	  mx  += input[i];
+	  my  += output[i];
+	}
+	
+	Cxx /= T((float)N);
+	Cxy /= T((float)N);
+	mx  /= T((float)N);
+	my  /= T((float)N);
+      
+	Cxx -= mx.outerproduct();
+	Cxy -= mx.outerproduct(my);
+	
+	Cxx.inv();
+	
+	W = Cxy.transpose() * Cxx;
+	b = my - W*mx;      
+      }    
+      
+      
+      if(nnet.setWeights(W, layer) == false)
+	return false;
+      
+      if(nnet.setBias(b, layer) == false)
+	return false;
+    
+      return true;
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception: " << e.what() << std::endl;
+      return false;
+    }
   }
   
   
@@ -579,6 +659,11 @@ namespace whiteice
     return true;
   }
   
+  
+  template bool neuronlast_layer_mse<float>(nnetwork<float>& nnet, const dataset<float>& data, unsigned int layer);
+  template bool neuronlast_layer_mse<double>(nnetwork<double>& nnet, const dataset<double>& data, unsigned int layer);
+  template bool neuronlast_layer_mse< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const dataset< math::blas_real<float> >& data, unsigned int layer);
+  template bool neuronlast_layer_mse< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const dataset< math::blas_real<double> >& data, unsigned int layer);
   
   template bool neuronlayerwise_ica<float>(nnetwork<float>& nnet, const float& alpha, unsigned int layer);
   template bool neuronlayerwise_ica<double>(nnetwork<double>& nnet, const double& alpha, unsigned int layer);

@@ -82,6 +82,9 @@ namespace whiteice
       // so ith element of cluster A match to ith element of cluster B
       bool downsampleAll(unsigned int samples) throw();
       
+      // returns data in cluster "index"
+      bool getData(unsigned int index, std::vector< math::vertex<T> >& data) const throw(std::out_of_range);
+      
       /* defines dataset<T>::iterator */
       typedef typename std::vector< math::vertex<T> >::iterator iterator;
       typedef typename std::vector< math::vertex<T> >::const_iterator const_iterator;
