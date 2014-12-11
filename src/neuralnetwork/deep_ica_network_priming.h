@@ -18,7 +18,7 @@
 #include "vertex.h"
 #include "matrix.h"
 #include "nnetwork.h"
-
+#include "dataset.h"
 
 namespace whiteice
 {
@@ -93,6 +93,12 @@ namespace whiteice
    */
   template <typename T>
     bool neuronlayerwise_ica(nnetwork<T>& nnet, const T& alpha, unsigned int layer);
+  
+  /**
+   * calculates linear MSE error solution from last layer to dataset data (cluster 1)
+   */
+  template <typename T>
+    bool neuronlast_layer_mse(nnetwork<T>& nnet, const dataset<T>& data, unsigned int layer);
 
 
   /**
@@ -111,6 +117,12 @@ namespace whiteice
    */
   template <typename T>
     bool normalize_weights_to_unity(nnetwork<T>& nnet, bool normalizeLastLayer = false);
+  
+  
+  extern template bool neuronlast_layer_mse<float>(nnetwork<float>& nnet, const dataset<float>& data, unsigned int layer);
+  extern template bool neuronlast_layer_mse<double>(nnetwork<double>& nnet, const dataset<double>& data, unsigned int layer);
+  extern template bool neuronlast_layer_mse< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet,  const dataset< math::blas_real<float> >& data, unsigned int layer);
+  extern template bool neuronlast_layer_mse< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const dataset< math::blas_real<double> >& data, unsigned int layer);
   
   
   extern template bool neuronlayerwise_ica<float>(nnetwork<float>& nnet, const float& alpha, unsigned int layer);

@@ -474,6 +474,7 @@ namespace whiteice
     output = math::atanh(output);
 #endif
     T output = math::asinh(input);
+    //T output = math::tanh(input);
     
     return output;
   }
@@ -495,7 +496,10 @@ namespace whiteice
     else if(output < T(-0.999f)) output = T(-0.999f);
     output = T(1.0f)/(T(1.0f) - output*output);
 #endif
-    T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
+   T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
+    
+    // T t = math::tanh(input);
+    // T output = T(1.0f) - t*t;
     
     return output;
   }
@@ -512,6 +516,16 @@ namespace whiteice
     
 #endif
     T output = math::sinh(input);
+    
+    // T output;
+    //
+    //if(input > T(+0.999f))
+    //  output = math::atanh(T(+0.999));
+    //else if(input < T(-0.999f))
+    //  output = math::atanh(T(-0.999));
+    //else
+    //  output = math::atanh(input);
+      
     
     return output;
   }

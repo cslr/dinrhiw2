@@ -432,6 +432,18 @@ namespace whiteice
   }
   
   
+  template <typename T>
+  bool dataset<T>::getData(unsigned int index, std::vector< math::vertex<T> >& data) const throw(std::out_of_range)
+  {
+    if(index >= clusters.size())
+      throw std::out_of_range("cluster index too big");
+    
+    data = clusters[index].data;
+    
+    return true;
+  }
+  
+  
   // iterators for dataset
   template <typename T>
   typename dataset<T>::iterator dataset<T>::begin(unsigned int index) throw(std::out_of_range)

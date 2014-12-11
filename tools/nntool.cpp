@@ -235,7 +235,7 @@ int main(int argc, char** argv)
       math::blas_real<float> alpha = 0.5f;
       negative_feedback_between_neurons(*nn, alpha);
 
-
+#if 0
       // then use ica to set directions towards independenct components of 
       // the inputs of each layer, also sets data variance of network to 2.0
       for(unsigned int l=0;l<(nn->getLayers()-1);l++)
@@ -254,6 +254,23 @@ int main(int argc, char** argv)
 	
 	nn->clearSamples();
       }
+      
+      // optimizes last layer using linear least squares MSE
+      {
+	// goes through the data and collects samples per layer
+	for(unsigned int i=0;i<data.size(0);i++){
+	  nn->input() = data.access(0, i);
+	  nn->calculate(false, true);
+	}
+	
+	const unsigned int l = nn->getLayers()-1;
+	
+	if(neuronlast_layer_mse(*nn, data, l) == false){
+	  std::cout << "Warning: calculating MSE optimization for the last layer failed (layer: " 
+		    << l << ")" << std::endl;
+	}
+      }
+#endif
       
     }
     else if(load == true){
