@@ -43,7 +43,10 @@
   interesting that inverse of <math|sinh<around*|(|x|)>> is
   <math|asinh<around*|(|x|)>> a function that is close to
   <math|tanh<around*|(|x|)>> or sigmoidal functions that have been proposed
-  as non-linearities for neural networks.
+  as non-linearities for neural networks. (Additionally,
+  <math|sinh<around*|(|x|)>> has only positive coefficients in taylor
+  expansion having only odd terms: <math|x<rsup|2k+1>> meaning that it is
+  ``super-odd'' function as each term of polynomial form is a odd function).
 
   <with|font-shape|italic|NOTE: general solution to the diagonalization
   problem is <math|\<b-y\>=g<rsup|-1><around*|(|\<b-V\>*f<around*|(|\<b-x\>|)>|)>>>,
@@ -149,7 +152,7 @@
 
   min <math|<around*|\<\|\|\>|\<b-y\>-\<b-A\>\<b-x\>-\<b-b\>|\<\|\|\>>> is\ 
 
-  <math|\<b-A\>=\<b-C\><rsup|T><rsub|\<b-x\>*\<b-y\>>*\<b-C\><rsup|-T><rsub|\<b-x\>*\<b-x\>>>
+  <math|\<b-A\>=\<b-C\><rsup|T><rsub|\<b-x\>*\<b-y\>>*\<b-C\><rsup|-1><rsub|\<b-x\>*\<b-x\>>>
 
   <math|\<b-b\>=\<b-mu\><rsup|><rsub|\<b-y\>>-\<b-A\>\<b-mu\><rsub|\<b-x\>>>
 
