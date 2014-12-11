@@ -59,8 +59,8 @@ namespace whiteice
       // [10 char per item]
       
       ifstream file;
-      const unsigned int BUFLEN=20*1024*1024;
-      char* buffer = new char[BUFLEN];
+      //const unsigned int BUFLEN=20*1024*1024;
+      //char* buffer = new char[BUFLEN];
       string line;
       
       std::vector<int> i;
@@ -76,8 +76,7 @@ namespace whiteice
       strings.clear();
       floats.clear();
 
-      file.getline(buffer, BUFLEN);
-      line = buffer;
+      std::getline(file, line);
       
       do{
 	i.clear();
@@ -97,19 +96,18 @@ namespace whiteice
 	  }
 	}
 	
-	file.getline(buffer, BUFLEN);
-	line = buffer;
+	std::getline(file, line);
       }
       while(!file.eof() && file.good());
       
       file.close();
 
-      delete[] buffer;
+      // delete[] buffer;
       
       return true;
     }
     catch(std::exception& e){
-      // most probably out of memory error
+      std::cout << "Unexpected exception: " << e.what() << std::endl;
       return false;
     }
   }

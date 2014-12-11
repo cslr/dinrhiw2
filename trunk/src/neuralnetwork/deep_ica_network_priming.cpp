@@ -586,7 +586,7 @@ namespace whiteice
 	Cxx.inv();
 	
 	W = Cxy.transpose() * Cxx;
-	b = my - W*mx;      
+	b = my - W*mx;
       }    
       
       
