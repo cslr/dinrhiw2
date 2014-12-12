@@ -1,8 +1,14 @@
 #summary step by step examples
 
+Step by step example how to build the source code (debian environment).
+
 {{{
 svn checkout source code
 cd dinrhiw
 ./build.sh
 apt-get install libgmp-dev
+apt-get install libopenblas-dev
+apt-get install libz-dev
+./configure
+make
 }}}
