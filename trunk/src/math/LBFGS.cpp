@@ -180,9 +180,9 @@ namespace whiteice
     
 
     template <typename T>
-    bool LBFGS<T>::linesearch(vertex<T>& xn,
-			     const vertex<T>& x,
-			     const vertex<T>& d) const
+    bool LBFGS<T>::linesearch(vertex<T>& xn,	
+			      const vertex<T>& x,
+			      const vertex<T>& d) const
     {
       // finds the correct scale first
       // (exponential search)
@@ -191,20 +191,18 @@ namespace whiteice
       T localbest  = T(1000000000.0f);
       // T best_alpha = T(1.0f);
       unsigned int found = 0;
-
+      
       // best_alpha = 0.0f;
       localbestx = x;
       localbest = U(localbestx);
       
-
-      unsigned int k = 0;
+      int k = 0;
+      T alpha = T(1.0f);
 
       while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
-	T alpha = T(0.0f);
-	T tvalue;
 	
-	alpha  = T(powf(2.0f, (float)k));
-	tvalue = U(x + alpha*d);
+	alpha  = T(::pow(2.0f, k));
+	T tvalue = U(x + alpha*d);
 
 	if(tvalue < localbest){
 	  if(wolfe_conditions(x, alpha, d)){
@@ -213,10 +211,12 @@ namespace whiteice
 	    localbestx = x + alpha*d;
 	    // best_alpha = alpha;
 	    found++;
+	    break;
 	  }
 	}
 
 	alpha  = T(1.0f)/alpha;
+
 	tvalue = U(x + alpha*d);
 
 	if(tvalue < localbest){
@@ -226,6 +226,7 @@ namespace whiteice
 	    localbestx = x + alpha*d;
 	    // best_alpha = alpha;
 	    found++;
+	    break;
 	  }
 	}
 	
@@ -234,15 +235,15 @@ namespace whiteice
       
       
       xn = localbestx;
-
+      
       return (found > 0);
     }
     
     
     template <typename T>
     bool LBFGS<T>::wolfe_conditions(const vertex<T>& x0,
-				   const T& alpha,
-				   const vertex<T>& p) const
+				    const T& alpha,
+				    const vertex<T>& p) const
     {
       T c1 = T(0.0001f);
       T c2 = T(0.9f);
@@ -263,10 +264,10 @@ namespace whiteice
       vertex<T> s, q;
       T y;
       
-      T prev_error = T(1000.0f);
       T error      = T(1000.0f);
-      T ratio      = T(1000.0f);
-
+      T ratio      = T(1.0f);
+      T minimum_error = T(10000000000000.0f);
+      
       
       unsigned int M = 35; // history size
       std::list< vertex<T> > yk;
@@ -282,11 +283,14 @@ namespace whiteice
 	  // we keep iterating until we converge (later) or
 	  // the real error starts to increase
 	  if(overfit == false){
-	    prev_error = error;
 	    error = getError(x);
-	    ratio = (prev_error - error)/prev_error;
 	    
-	    if(ratio < T(0.0f)){
+	    if(error <= minimum_error)
+	      minimum_error = error;
+	    
+	    ratio = error/minimum_error;
+	    
+	    if(ratio > T(1.10f)){ // 10% increase from the minimum found
 	      break;
 	    }
 	  }
