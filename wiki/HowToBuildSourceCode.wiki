@@ -1,0 +1,8 @@
+#summary step by step examples
+
+{{{
+svn checkout source code
+cd dinrhiw
+./build.sh
+apt-get install libgmp-dev
+}}}
