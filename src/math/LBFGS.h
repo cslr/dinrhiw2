@@ -71,6 +71,7 @@ namespace whiteice
         bool linesearch(vertex<T>& xn,
 			const vertex<T>& x,
 			const vertex<T>& d) const;
+            
 
         bool wolfe_conditions(const vertex<T>& x0,
 			      const T& alpha,

@@ -263,9 +263,9 @@ namespace whiteice
       H.resize(bestx.size(), bestx.size());
       H.identity();
 
-      T prev_error = T(1000.0f);
+      T minimum_error = T(1000000000.0f);
       T error      = T(1000.0f);
-      T ratio      = T(1000.0f);
+      T ratio      = T(1.0f);
       
       thread_is_running++;
       thread_is_running_cond.notify_all();
@@ -275,11 +275,14 @@ namespace whiteice
 	  // we keep iterating until we converge (later) or
 	  // the real error starts to increase
 	  if(overfit == false){
-	    prev_error = error;
 	    error = getError(x);
-	    ratio = (prev_error - error)/prev_error;
 	    
-	    if(ratio < T(0.0f)){
+	    if(error < minimum_error)
+	      minimum_error = error;
+	    
+	    ratio = error/minimum_error;
+	    
+	    if(ratio > T(1.10f)){ // max 10% increase from the minimum
 	      break;
 	    }
 	  }

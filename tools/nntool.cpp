@@ -781,15 +781,21 @@ int main(int argc, char** argv)
 	{
 	  math::vertex<> grad, err, weights;
 	  
+	  math::vertex<> best_weights;
+	  
 	  unsigned int counter = 0;
-	  math::blas_real<float> prev_error, error, ratio;
+	  math::blas_real<float> error, mean_ratio;
+	  math::blas_real<float> prev_error;
 	  math::blas_real<float> lrate = math::blas_real<float>(0.05f);
-	  math::blas_real<float> delta_error = 0.0f;
+	  math::blas_real<float> delta_error = 0.0f;	  
+
 	  math::blas_real<float> minimum_error = 10000000000.0f;
+	  
+	  std::list< math::blas_real<float> > ratios;
 	  
 	  error = 1000.0f;
 	  prev_error = 1000.0f;
-	  ratio = 1.0f;
+	  mean_ratio = 1.0f;
 	  
 
 	  math::vertex<> prev_sumgrad;
@@ -803,11 +809,20 @@ int main(int argc, char** argv)
 	  while(counter < samples && !stopsignal)
 	  {
 	    if(overfit == false){
-	      if(error < 0.001f || ratio > 1.20f)
-		if(counter > 10) break; // do not stop immediately
+	      while(ratios.size() > 10)
+		ratios.pop_front();
+	      
+	      math::blas_real<float> inv = 1.0f/ratios.size();
+	      
+	      for(auto& r : ratios)
+		mean_ratio *= r;
+	      
+	      mean_ratio = math::pow(mean_ratio, inv);
+	      
+	      if(mean_ratio > 1.80f)
+	      if(counter > 10) break; // do not stop immediately
 	    }
 	    
-
 	    prev_error = error;
 	    error = 0.0f;
 
@@ -840,24 +855,20 @@ int main(int argc, char** argv)
 	    
 	    lrate = 0.15f;
 	    math::vertex<> w;
-
+	    
 	    do{	      
 	      lrate = 0.5f*lrate;
 	      w = weights;
 	      
 	      w -= lrate * sumgrad;
 	      
-#if 0
 	      if(prev_sumgrad.size() <= 1){
 		w -= lrate * sumgrad;
-		prev_sumgrad = lrate * sumgrad;
 	      }
 	      else{
 		math::blas_real<float> momentum = 0.8f;
 		w -= lrate * sumgrad + momentum*prev_sumgrad;
-		prev_sumgrad = lrate * sumgrad;
 	      }
-#endif
 	      
 	      nn->importdata(w);
 	      
@@ -884,30 +895,38 @@ int main(int argc, char** argv)
 	      error /= BATCH_SIZE;
 	      error *= math::blas_real<float>(0.5f); // missing scaling constant
 	      
-	      if(error < minimum_error)
-		minimum_error = error;
-	      
-	      delta_error = (prev_error - error); // if the error is negative we stop
-	      ratio = error / minimum_error;	      
+	      delta_error = (prev_error - error); // if the error is negative we try again	      
 	    }
 	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
-	    // std::cout << "delta_error = " << delta_error << " lrate = " << lrate << std::endl;
+	    if(error < minimum_error){
+	      best_weights = w;
+	      minimum_error = error;
+	    }
 	    
-	    printf("\r%d/%d iterations: %f [%f minutes]                  ", counter, samples, error.c[0], eta.estimate()/60.0);
-		   
+	    math::blas_real<float> ratio = error / minimum_error;
+	    ratios.push_back(ratio);
+	    
+	    prev_sumgrad = lrate * sumgrad;
+
+	    
+	    printf("\r%d/%d iterations: %f (%f) [%f minutes]                  ", counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	    
 	    fflush(stdout);
 	    
 	    counter++;
 	    eta.update((float)counter);
 	  }
-	
-	  printf("\r%d/%d : %f [%f minutes]                 \n", counter, samples, error.c[0], eta.estimate()/60.0);
+	  
+	  if(best_weights.size() > 1)
+	    nn->importdata(best_weights);
+	  
+	  printf("\r%d/%d : %f (%f) [%f minutes]                 \n", counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
 	  fflush(stdout);
 	}
-
+	
       }
-
+      
       bnn->importNetwork(*nn);
       
     }
