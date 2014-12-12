@@ -1,6 +1,6 @@
 #summary read me first
 
-Developed between 1999-2004, 2013-.
+Developed between 2002-2004, 2013-.
 
 Machine learning component contains: 
 
