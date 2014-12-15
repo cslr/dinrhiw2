@@ -63,7 +63,7 @@ namespace whiteice
 	heuristics(x0);
 	
 	this->bestx = x0;
-	this->besty = U(x0);
+	this->besty = getError(x0);
 	
 	iterations  = 0;
       }
@@ -204,8 +204,10 @@ namespace whiteice
 	alpha  = T(::pow(2.0f, k));
 	T tvalue = U(x + alpha*d);
 
+#if 0
 	if(tvalue < localbest){
-	  if(wolfe_conditions(x, alpha, d)){
+	  // if(wolfe_conditions(x, alpha, d)){
+	  {
 	    // std::cout << "NEW SOLUTION FOUND" << std::endl;
 	    localbest = tvalue;
 	    localbestx = x + alpha*d;
@@ -214,13 +216,15 @@ namespace whiteice
 	    break;
 	  }
 	}
+#endif
 
 	alpha  = T(1.0f)/alpha;
 
 	tvalue = U(x + alpha*d);
 
 	if(tvalue < localbest){
-	  if(wolfe_conditions(x, alpha, d)){
+	  // if(wolfe_conditions(x, alpha, d)){
+	  {
 	    // std::cout << "NEW SOLUTION FOUND" << std::endl;
 	    localbest = tvalue;
 	    localbestx = x + alpha*d;
@@ -232,7 +236,6 @@ namespace whiteice
 	
 	k++;
       }
-      
       
       xn = localbestx;
       
@@ -262,11 +265,11 @@ namespace whiteice
       vertex<T> d, g; // gradient
       vertex<T> x(bestx), xn;
       vertex<T> s, q;
-      T y;
       
-      T error      = T(1000.0f);
+      T y          = besty;
       T ratio      = T(1.0f);
-      T minimum_error = T(10000000000000.0f);
+      
+      std::list<T> ratios;
       
       
       unsigned int M = 35; // history size
@@ -283,14 +286,22 @@ namespace whiteice
 	  // we keep iterating until we converge (later) or
 	  // the real error starts to increase
 	  if(overfit == false){
-	    error = getError(x);
+	    ratio = y/besty;
 	    
-	    if(error <= minimum_error)
-	      minimum_error = error;
+	    ratios.push_back(ratio);
+	    while(ratios.size() > 10)
+	      ratios.pop_front();
 	    
-	    ratio = error/minimum_error;
+	    T mean_ratio = 1.0f;
+	    T inv = 1.0f/ratios.size();
 	    
-	    if(ratio > T(1.10f)){ // 10% increase from the minimum found
+	    for(auto& r : ratios)
+	      mean_ratio *= r;
+	    
+	    mean_ratio = math::pow(mean_ratio, inv);
+	    
+	    // 20% increase from the minimum found
+	    if(mean_ratio > T(1.20f) && iterations > 10){ 
 	      break;
 	    }
 	  }
@@ -388,12 +399,9 @@ namespace whiteice
 	  }
 
 	  
-	  y = U(xn);
-	  
-	  // std::cout << "xn = " << xn << std::endl;
-	  // std::cout << "H = " << H << std::endl;
-	  // std::cout << "y = " << y << std::endl;
-	  
+	  // y = U(xn);
+	  y = getError(xn);
+	    
 	  if(y < besty){
 	    std::lock_guard<std::mutex> lock(solution_mutex);
 	    bestx = xn;

@@ -16,7 +16,8 @@ rm -f commviol-test.ds
 
 # DO NOT WORK CURRENTLY (SOME PROBLEMS): ./nntool -v --samples 1000 commviol-test.ds 141-1000-4 commviol-nn.cfg grad
 
-./nntool -v --negfb --samples 1000 commviol-test.ds 141-141-4 commviol-nn.cfg grad
+./nntool -v --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg lbfgs
+# ./nntool -v --negfb --samples 1000 commviol-test.ds 141-141-4 commviol-nn.cfg lbfgs
 
 # ./nntool -v --samples 500 --load  commviol-test.ds 141-141-4-4 commviol-nn.cfg lbfgs
 
@@ -26,7 +27,7 @@ rm -f commviol-test.ds
 ##################################################
 # testing
 
- ./nntool -v commviol-test.ds 141-1000-4 commviol-nn.cfg use
+ ./nntool -v commviol-test.ds 141-141-141-141-4 commviol-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]

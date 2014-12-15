@@ -233,47 +233,10 @@ int main(int argc, char** argv)
       }
 
       // also sets initial weights to be "orthogonal" against each other
-      math::blas_real<float> alpha = 0.5f;
-      negative_feedback_between_neurons(*nn, data, alpha);
-
-#if 0
-      // then use ica to set directions towards independenct components of 
-      // the inputs of each layer, also sets data variance of network to 2.0
-      for(unsigned int l=0;l<(nn->getLayers()-1);l++)
-      {
-	// goes through the data and collects samples per layer
-	for(unsigned int i=0;i<data.size(0);i++){
-	  nn->input() = data.access(0, i);
-	  nn->calculate(false, true);
-	}
-	
-	const math::blas_real<float> alpha = 1.0f;
-	if(neuronlayerwise_ica(*nn, alpha, l) == false){
-	  std::cout << "Warning: calculating ICA for input data failed (layer: " 
-		    << l << ")" << std::endl;
-	}
-	
-	nn->clearSamples();
+      if(negfeedback){
+	math::blas_real<float> alpha = 0.5f;
+	negative_feedback_between_neurons(*nn, data, alpha);
       }
-#endif
-
-#if 0      
-      // optimizes last layer using linear least squares MSE
-      {
-	// goes through the data and collects samples per layer
-	for(unsigned int i=0;i<data.size(0);i++){
-	  nn->input() = data.access(0, i);
-	  nn->calculate(false, true);
-	}
-
-	const unsigned int l = nn->getLayers()-1;
-	
-	if(neuronlast_layer_mse(*nn, data, l) == false){
-	  std::cout << "Warning: calculating MSE optimization for the last layer failed (layer: " 
-		    << l << ")" << std::endl;
-	}
-      }
-#endif
       
     }
     else if(load == true){
@@ -368,7 +331,6 @@ int main(int argc, char** argv)
 	  sleep(5);
 	  
 	  bfgs.getSolution(w, error, iterations);
-	  error = bfgs.getError(w);
 	  
 	  eta.update(iterations);
 
