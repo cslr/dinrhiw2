@@ -470,6 +470,7 @@ namespace whiteice
 	  return false;
 	
 	T TOLERANCE = T(0.000001);
+	T EPSILON   = T(0.000001);
 	unsigned int N = A.xsize();
 	
 	// special cases for small matrices
@@ -514,14 +515,14 @@ namespace whiteice
 	  // finds submatrix
 	  
 	  for(unsigned int k=0;k<e2;k++){
-	    if(whiteice::math::abs(A(k+1,k)) > TOLERANCE){
+	    if(whiteice::math::abs(A(k+1,k)) > EPSILON){
 	      e1 = k;
 	      break;
 	    }
 	  }
 	  
 	  for(unsigned int k=(N-2);k>=e1;k--){
-	    if(whiteice::math::abs(A(k+1,k)) > TOLERANCE){
+	    if(whiteice::math::abs(A(k+1,k)) > EPSILON){
 	      e2 = k+1;
 	      break;
 	    }
@@ -543,8 +544,9 @@ namespace whiteice
 	  if(f1 == e1 && f2 == e2){
 	    iter++;
 	    
-	    if(iter > 50){
+	    if(iter > 5){ // was 50 iterations
 	      TOLERANCE *= 2.0f; // increases TOLERANCE
+	      EPSILON   *= 2.0f;
 	      
 	      iter = 0;
 	      f1 = e1;

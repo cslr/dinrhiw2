@@ -78,23 +78,24 @@
   optimization method so that it is at the same time calculates PCA from
   data. Now, given input data <math|<around*|{|\<b-x\><rsub|i>|}>> for each
   layer, the PCA solution for the whitening matrix is
-  <math|\<b-W\><rprime|'>=\<b-Z\>*\<b-W\>=\<b-Z\>*\<b-Lambda\><rsup|-0.5>\<b-X\><rsup|T>>,
+  <math|\<b-W\><rprime|'>=\<b-D\>*\<b-Z\>*\<b-W\>=\<b-D\>*\<b-Z\>*\<b-Lambda\><rsup|-0.5>\<b-X\><rsup|T>>,
   where <math|\<b-Sigma\><rsub|\<b-x\>*\<b-x\>>=\<b-X\>*\<b-Lambda\>*\<b-X\><rsup|T>>
-  and <math|\<b-Z\>> is a freely decided rotation matrix and we have a linear
-  problem:
+  , <math|\<b-Z\>> is a freely chosen rotation matrix and <math|\<b-D\>> is
+  diagonal scaling matrix. We now have a linear problem:
 
   <\with|par-mode|center>
-    <math|\<b-W\><rsub|g>=\<b-Z\>*\<b-W\>>
+    <math|\<b-W\><rsub|g>=\<b-D\>*\<b-Z\>*\<b-W\>>
   </with>
 
-  \ which is trivially solved by <math|\<b-Z\><rprime|'><rsup|>=\<b-W\><rsub|g>*\<b-W\><rsup|-1>>
+  \ which is trivially solved by <math|\<b-D\>*\<b-Z\><rprime|'><rsup|>=\<b-W\><rsub|g>*\<b-W\><rsup|-1>>
   but this is not a rotation and breaks PCA property. We want to solve for a
-  optimal rotation <math|\<b-Z\>>, <math|\<b-Z\><rsup|T>\<b-Z\>=\<b-I\>>
-  which is as close as possible to <math|\<b-Z\><rprime|'>> matrix, which is
-  a variant of <with|font-shape|italic|orthogonal procrustes problem>:
+  optimal rotation <math|\<b-Z\>> and scaling <math|\<b-D\>>,
+  <math|\<b-Z\><rsup|T>\<b-Z\>=\<b-I\>> which is as close as possible to
+  <math|\<b-Z\><rprime|'>> matrix, which is a variant of
+  <with|font-shape|italic|orthogonal procrustes problem>:
 
   <\with|par-mode|center>
-    <math|min<rsub|\<b-Z\>><around*|\<\|\|\>|\<b-W\><rsub|g>*-\<b-Z\>*\<b-W\>|\<\|\|\>><rsup|2><rsub|F>>
+    <math|min<rsub|\<b-Z\>><around*|\<\|\|\>|\<b-W\><rsub|g>*-\<b-D\>*\<b-Z\>*\<b-W\>|\<\|\|\>><rsup|2><rsub|F>>
   </with>
 
   for <math|\<b-Z\>> which will solve PCA solution which keeps weights as
@@ -103,27 +104,28 @@
   computing SVD as described in [1]:
 
   <\with|par-mode|center>
-    <math|<around*|\<\|\|\>|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|\<\|\|\>><rsub|F><rsup|2>=trace<around*|(|<around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)><rsup|H><around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)>|)>>
+    <math|<around*|\<\|\|\>|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|\<\|\|\>><rsub|F><rsup|2>=trace<around*|(|<around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|)><rsup|H><around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|)>|)>>
 
     <\math>
-      trace<around*|(|\<b-W\><rsup|H><rsub|g>\<b-W\><rsup|-1>\<b-W\><rsup|-H>*\<b-W\><rsub|g>|)>+dim<around*|(|\<b-Z\>|)>-2*trace<around*|(|\<b-Z\><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>
+      trace<around*|(|\<b-W\><rsup|H><rsub|g>\<b-W\><rsup|-1>\<b-W\><rsup|-H>*\<b-W\><rsub|g>|)>+trace<around*|(|\<b-D\><rsup|2>|)>-2*trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)>*<rsup|H>\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>
     </math>
   </with>
 
-  So we need to maximize for <math|trace<around*|(|\<b-Z\><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>=trace<around*|(|\<b-Z\><rsup|H>*\<b-U\>*\<b-S\>*\<b-V\><rsup|H>|)>>
+  So we need to maximize for <math|trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>=trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)><rsup|H>*\<b-U\>*\<b-S\>*\<b-V\><rsup|H>|)>>
   when <math|\<b-W\><rsub|g>*\<b-W\><rsup|-1>=\<b-U\>\<b-S\>\<b-V\><rsup|H>>
   and we have\ 
 
   <\with|par-mode|center>
-    <math|trace<around*|(|\<b-V\><rsup|H>\<b-Z\><rsup|H>*\<b-U\>*\<b-S\>*|)>=trace<around*|(|\<b-Y\>*\<b-S\>|)>>
+    <math|trace<around*|(|\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-D\>*<rsup|H>\<b-U\>*\<b-S\>*|)>=trace<around*|(|\<b-Y\>*\<b-S\>|)>>
   </with>
 
-  where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-I\>> and we have orthogonal rotation
-  matrix. Now, <math|\<b-S\>> is diagonal matrix meaning that all of its
-  ``mass'' is on the diagonal and any further rotations will only move
-  ``variance'' away from the diagonal meaning that optimum
-  <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>> and
-  <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
+  where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-U\><rsup|H>\<b-D\><rsup|2>*\<b-U\>>,
+  <math|\<b-Y\>*\<b-Y\><rsup|H>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-D\><rsup|2>*\<b-Z\>*\<b-V\>>
+  and we have <math|trace<around*|(|\<b-Y\><rsup|H>\<b-Y\>|)>=trace<around*|(|\<b-Y\>*\<b-Y\><rsup|H>|)>=trace<around*|(|\<b-D\><rsup|2>|)>>.
+  Now, <math|\<b-S\>> is diagonal matrix meaning that all of its ``mass'' is
+  on the diagonal and any further rotations will only move ``variance'' away
+  from the diagonal meaning that optimum <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>>
+  and <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
   Furthermore, <math|\<b-Z\>> is real because
   <math|\<b-W\><rsub|g>\<b-W\><rsup|-1>> is real and SVD decomposition is
   real for real valued matrixes.

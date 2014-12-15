@@ -359,9 +359,14 @@ namespace whiteice
   {
     // use pca to set directions towards independenct components of 
     // the inputs of each layer, also sets data variance of network to 1.0
+
+    unsigned int L = nnet.getLayers()-1;
+    if(L > 0) L--; // we leave one regular layer there to be optimized normally
     
-    for(unsigned int l=0;l<(nnet.getLayers()-1);l++)
+    for(unsigned int l=0;l<L;l++)
     {
+      std::cout << "LAYER: " << l << " / " << L << std::endl;
+      
       // goes through the data and collects samples per layer
       for(unsigned int i=0;i<data.size(0);i++){
 	nnet.input() = data.access(0, i);

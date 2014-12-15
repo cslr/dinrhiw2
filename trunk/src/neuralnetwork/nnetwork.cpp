@@ -496,7 +496,7 @@ namespace whiteice
     else if(output < T(-0.999f)) output = T(-0.999f);
     output = T(1.0f)/(T(1.0f) - output*output);
 #endif
-   T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
+    T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
     
     // T t = math::tanh(input);
     // T output = T(1.0f) - t*t;
