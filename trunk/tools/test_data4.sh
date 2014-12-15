@@ -18,7 +18,7 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset (deep learning mode)
 
-./nntool -v --overfit --samples 20000 iris-test.ds 4-4-4-4-4-4-4-1 iris-nn.cfg grad
+./nntool -v --negfb --samples 20000 iris-test.ds 4-4-4-4-4-4-4-1 iris-nn.cfg lbfgs
 
 ##################################################
 # testing

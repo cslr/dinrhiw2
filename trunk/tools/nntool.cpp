@@ -221,7 +221,7 @@ int main(int argc, char** argv)
      */
     if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
     {
-#if 0
+
       if(verbose)
 	std::cout << "Heuristics: NN weights normalization initialization."
 		  << std::endl;
@@ -231,10 +231,10 @@ int main(int argc, char** argv)
 		  << std::endl;
 	return -1;
       }
-#endif
+
       // also sets initial weights to be "orthogonal" against each other
-      //math::blas_real<float> alpha = 0.5f;
-      //negative_feedback_between_neurons(*nn, alpha);
+      math::blas_real<float> alpha = 0.5f;
+      negative_feedback_between_neurons(*nn, data, alpha);
 
 #if 0
       // then use ica to set directions towards independenct components of 
@@ -255,7 +255,9 @@ int main(int argc, char** argv)
 	
 	nn->clearSamples();
       }
-      
+#endif
+
+#if 0      
       // optimizes last layer using linear least squares MSE
       {
 	// goes through the data and collects samples per layer
@@ -804,7 +806,7 @@ int main(int argc, char** argv)
 	  if(samples > 0)
 	    eta.start(0.0f, (float)samples);
 	  
-	  const unsigned int BATCH_SIZE = 500;
+	  const unsigned int SAMPLE_SIZE = 500;
 	  
 	  while(counter < samples && !stopsignal)
 	  {
@@ -814,13 +816,15 @@ int main(int argc, char** argv)
 	      
 	      math::blas_real<float> inv = 1.0f/ratios.size();
 	      
+	      mean_ratio = 1.0f;
+	      
 	      for(auto& r : ratios)
 		mean_ratio *= r;
 	      
 	      mean_ratio = math::pow(mean_ratio, inv);
 	      
-	      if(mean_ratio > 1.80f)
-	      if(counter > 10) break; // do not stop immediately
+	      if(mean_ratio > 1.20f)
+		if(counter > 10) break; // do not stop immediately
 	    }
 	    
 	    prev_error = error;
@@ -831,9 +835,9 @@ int main(int argc, char** argv)
 	    // imports weights back
 
 	    math::vertex<> sumgrad;
-	    math::blas_real<float> ninv = 1.0f/BATCH_SIZE;
+	    math::blas_real<float> ninv = 1.0f/SAMPLE_SIZE;
 
-	    for(unsigned int i=0;i<BATCH_SIZE;i++){
+	    for(unsigned int i=0;i<SAMPLE_SIZE;i++){
 	      const unsigned index = rand() % dtrain.size(0);
 	      
 	      nn->input() = dtrain.access(0, index);
@@ -875,13 +879,13 @@ int main(int argc, char** argv)
 	      if(negfeedback){
 		// using negative feedback heuristic
 		math::blas_real<float> alpha = 0.5f;
-		negative_feedback_between_neurons(*nn, alpha);
+		negative_feedback_between_neurons(*nn, dtrain, alpha);
 	      }
 	      
 	      error = 0.0f;
 	      
 	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<BATCH_SIZE;i++){
+	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
 		const unsigned int index = rand() % dtest.size(0);
 		
 		nn->input() = dtest.access(0, index);
@@ -892,7 +896,7 @@ int main(int argc, char** argv)
 		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	      }
 	      
-	      error /= BATCH_SIZE;
+	      error /= SAMPLE_SIZE;
 	      error *= math::blas_real<float>(0.5f); // missing scaling constant
 	      
 	      delta_error = (prev_error - error); // if the error is negative we try again	      

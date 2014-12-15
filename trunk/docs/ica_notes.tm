@@ -1,11 +1,11 @@
-<TeXmacs|1.0.7.15>
+<TeXmacs|1.0.7.18>
 
 <style|generic>
 
 <\body>
-  <\doc-data|<doc-title|Neural network principal component analysis
-  pre-training algorithm>|<doc-author-data|<author-name|Tomas Ukkonen,
-  tomas.ukonen@iki.fi, 2014>>>
+  <\doc-data|<doc-title|Neural network PCA/ICA subspace training
+  algorithm>|<doc-author|<author-data|<author-name|Tomas Ukkonen,
+  tomas.ukonen@iki.fi, 2014>>>>
     \;
 
     \;
@@ -15,10 +15,10 @@
 
   <\with|par-mode|center>
     <math|\<b-G\><rsub|\<b-x\>\<b-x\>>=E<around*|{|<around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)><around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)><rsup|H>|}>>,
-    </with>
+  </with>
 
-  where <math|g<around*|(|x|)>> function has been shown to create interesting
-  higher order moments. Diagonalization of the matrix means that
+  where <math|g<around*|(|x|)>> function has been chosen to create
+  interesting higher order moments. Diagonalization of the matrix means that
   <math|E<around*|{|g<around*|(|x<rsub|i>|)>*g<around*|(|x<rsub|j>|)>|}>=E<around*|{|g<around*|(|x<rsub|i>|}>*E<around*|{||\<nobracket\>>g<around*|(|x<rsub|j>|)>|}>>,
   one consequence of the independence of the <math|x<rsub|i>> and
   <math|x<rsub|j>>.
@@ -34,18 +34,18 @@
   to this question is almost trivial. Solution\ 
 
   <\with|par-mode|center>
-    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+E<around*|{|g<around*|(|\<b-x\>|)>|}>|)>>
-    </with>
+    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>|)>>
+  </with>
 
   diagonalizes <math|\<b-G\><rsub|\<b-x\>\<b-x\>>> matrix when <math|\<b-W\>>
   diagonalizes the <math|E<around*|{|<around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><rsup|H>|}>>
-  matrix. That is, it is solution to linear ICA (or PCA). Additionally, it is
+  matrix. That is, it is solution to linear PCA. Additionally, it is
   interesting that inverse of <math|sinh<around*|(|x|)>> is
-  <math|asinh<around*|(|x|)>> a function that is close to
+  <math|asinh<around*|(|x|)>> - a function that is close to
   <math|tanh<around*|(|x|)>> or sigmoidal functions that have been proposed
   as non-linearities for neural networks. (Additionally,
   <math|sinh<around*|(|x|)>> has only positive coefficients in taylor
-  expansion having only odd terms: <math|x<rsup|2k+1>> meaning that it is
+  expansion and \ only odd terms: <math|x<rsup|2k+1>> meaning that it is
   ``super-odd'' function as each term of polynomial form is a odd function).
 
   <with|font-shape|italic|NOTE: general solution to the diagonalization
@@ -53,9 +53,9 @@
   where <math|\<b-V\>> diagonalizes <math|E<around*|{|f<around*|(|\<b-x\>|)>*f<around*|(|\<b-x\>|)><rsup|H>|}>>
   matrix and we can choose <math|f<around*|(|x|)>=g<around*|(|x|)>>.
 
-  The whole algorithm for pre-training neural networks is then to stimulate
+  The whole algorithm for training neural networks is then to stimulate
   neural network, collect input samples for each layer and sequentially
-  calculate ICA solution for the inputs and use <math|asinh<around*|(|x|)>>
+  calculate PCA solution for the inputs and use <math|asinh<around*|(|x|)>>
   non-linearity instead of more standard ones.\ 
 
   The beauty of the solution comes from that it fits to the previous neural
@@ -65,15 +65,86 @@
   matrixes and tells how to integrate ICA solutions into non-linear neural
   networks.
 
-  After the pretraining step to initialize neural network weight and bias
-  terms. Traditional optimization methods can be then used to solve for the
-  problem <math|\<b-y\>=f<around*|(|\<b-x\>|)>> where out network now a a
-  default extracts non-linear independent components from the data.
-
   <em|NOTE: PCA/ICA solutions should have variance of 2.0 or something as
-  <math|asinh<around*|(|x|)>> has different scaling then>.
+  <math|asinh<around*|(|x|)>> has scaling that makes values between 2.0-4.0
+  work the best.>
 
   <strong|Additions>
+
+  Now in order to diagonalize <math|\<b-G\><rsub|\<b-x\>\<b-x\>>> we then
+  need to solve for <math|\<b-W\>> matrix that computes PCA from the data. In
+  practice, when we are learning data (optimizing neural network), we want to
+  update <math|\<b-W\><rsub|g>> matrix according to gradient descent or other
+  optimization method so that it is at the same time calculates PCA from
+  data. Now, given input data <math|<around*|{|\<b-x\><rsub|i>|}>> for each
+  layer, the PCA solution for the whitening matrix is
+  <math|\<b-W\><rprime|'>=\<b-Z\>*\<b-W\>=\<b-Z\>*\<b-Lambda\><rsup|-0.5>\<b-X\><rsup|T>>,
+  where <math|\<b-Sigma\><rsub|\<b-x\>*\<b-x\>>=\<b-X\>*\<b-Lambda\>*\<b-X\><rsup|T>>
+  and <math|\<b-Z\>> is a freely decided rotation matrix and we have a linear
+  problem:
+
+  <\with|par-mode|center>
+    <math|\<b-W\><rsub|g>=\<b-Z\>*\<b-W\>>
+  </with>
+
+  \ which is trivially solved by <math|\<b-Z\><rprime|'><rsup|>=\<b-W\><rsub|g>*\<b-W\><rsup|-1>>
+  but this is not a rotation and breaks PCA property. We want to solve for a
+  optimal rotation <math|\<b-Z\>>, <math|\<b-Z\><rsup|T>\<b-Z\>=\<b-I\>>
+  which is as close as possible to <math|\<b-Z\><rprime|'>> matrix, which is
+  a variant of <with|font-shape|italic|orthogonal procrustes problem>:
+
+  <\with|par-mode|center>
+    <math|min<rsub|\<b-Z\>><around*|\<\|\|\>|\<b-W\><rsub|g>*-\<b-Z\>*\<b-W\>|\<\|\|\>><rsup|2><rsub|F>>
+  </with>
+
+  for <math|\<b-Z\>> which will solve PCA solution which keeps weights as
+  close as possible towards gradient descent solution (moving towards minimum
+  error) of the matrix for each optimization step. This can be solved by
+  computing SVD as described in [1]:
+
+  <\with|par-mode|center>
+    <math|<around*|\<\|\|\>|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|\<\|\|\>><rsub|F><rsup|2>=trace<around*|(|<around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)><rsup|H><around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)>|)>>
+
+    <\math>
+      trace<around*|(|\<b-W\><rsup|H><rsub|g>\<b-W\><rsup|-1>\<b-W\><rsup|-H>*\<b-W\><rsub|g>|)>+dim<around*|(|\<b-Z\>|)>-2*trace<around*|(|\<b-Z\><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>
+    </math>
+  </with>
+
+  So we need to maximize for <math|trace<around*|(|\<b-Z\><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>=trace<around*|(|\<b-Z\><rsup|H>*\<b-U\>*\<b-S\>*\<b-V\><rsup|H>|)>>
+  when <math|\<b-W\><rsub|g>*\<b-W\><rsup|-1>=\<b-U\>\<b-S\>\<b-V\><rsup|H>>
+  and we have\ 
+
+  <\with|par-mode|center>
+    <math|trace<around*|(|\<b-V\><rsup|H>\<b-Z\><rsup|H>*\<b-U\>*\<b-S\>*|)>=trace<around*|(|\<b-Y\>*\<b-S\>|)>>
+  </with>
+
+  where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-I\>> and we have orthogonal rotation
+  matrix. Now, <math|\<b-S\>> is diagonal matrix meaning that all of its
+  ``mass'' is on the diagonal and any further rotations will only move
+  ``variance'' away from the diagonal meaning that optimum
+  <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>> and
+  <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
+  Furthermore, <math|\<b-Z\>> is real because
+  <math|\<b-W\><rsub|g>\<b-W\><rsup|-1>> is real and SVD decomposition is
+  real for real valued matrixes.
+
+  For each iteration <math|n>, the algorithm then first calculates
+  <math|\<b-W\><rsub|g><around*|(|n|)>> matrix which is ``raw'' update for
+  the next approximation of the <strong|W> but instead calculates the closest
+  <math|\<b-W\><rsub|>> that also computes PCA of the data meaning that
+  optimization now optimizes/rotates neural network weights in ``a PCA
+  subspace'' which additionally diagonalizes non-linear ICA matrix.
+
+  \;
+
+  [1] A Flexible New Technique for Camera Calibration. Zhengyou Zhang. 1998.
+  Technical Report
+
+  MSR-TR-98-71.
+
+  \;
+
+  <emdash>-
 
   Consider another case where we have output vectors <math|\<b-y\>> and lets
   define mutual joint non-linear correlation matrix\ 

@@ -222,7 +222,7 @@ namespace whiteice
 	nn.randomize();
 	normalize_weights_to_unity(nn); 
 	T alpha = T(0.5f);
-	negative_feedback_between_neurons(nn, alpha);
+	negative_feedback_between_neurons(nn, dtrain, alpha);
 	
 	// 2. normal gradient descent
 	///////////////////////////////////////
@@ -295,7 +295,7 @@ namespace whiteice
 	    if(negativefeedback){
 	      // using negative feedback heuristic 
 	      T alpha = T(0.5f); // lrate;
-	      negative_feedback_between_neurons(nn, alpha);
+	      negative_feedback_between_neurons(nn, dtrain, alpha);
 	    }
 	    
 	    // calculates error from the testing dataset
