@@ -18,7 +18,7 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --overfit wine-test.ds 13-13-1 winenn.cfg grad
+./nntool -v --negfb wine-test.ds 13-20-1 winenn.cfg grad
 
 # testing
 

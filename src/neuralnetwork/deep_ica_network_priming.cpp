@@ -353,8 +353,56 @@ namespace whiteice
    * during learning.
    */
   template <typename T>
-    bool negative_feedback_between_neurons(nnetwork<T>& nnet, const T& alpha, bool processLastLayer)
+  bool negative_feedback_between_neurons(nnetwork<T>& nnet, 
+					 const dataset<T>& data,
+					 const T& alpha, bool processLastLayer)
   {
+    // use pca to set directions towards independenct components of 
+    // the inputs of each layer, also sets data variance of network to 1.0
+    
+    for(unsigned int l=0;l<(nnet.getLayers()-1);l++)
+    {
+      // goes through the data and collects samples per layer
+      for(unsigned int i=0;i<data.size(0);i++){
+	nnet.input() = data.access(0, i);
+	nnet.calculate(false, true);
+      }
+	
+      if(neuronlayerwise_ica(nnet, alpha, l) == false){
+	std::cout << "Warning: calculating ICA for input data failed (layer: " 
+		  << l << ")" << std::endl;
+	return false;
+      }
+	
+      nnet.clearSamples();
+    }
+    
+#if 1
+    // optimizes last layer using linear least squares MSE
+    if(processLastLayer)
+    {
+      // goes through the data and collects samples per layer
+      for(unsigned int i=0;i<data.size(0);i++){
+	nnet.input() = data.access(0, i);
+	nnet.calculate(false, true);
+      }
+      
+      const unsigned int l = nnet.getLayers()-1;
+      
+      if(neuronlast_layer_mse(nnet, data, l) == false){
+	std::cout << "Warning: calculating MSE optimization for the last layer failed (layer: " 
+		  << l << ")" << std::endl;
+	return false;
+      }
+
+      nnet.clearSamples();
+    }
+#endif
+    
+    return true;
+    
+    
+#if 0
     std::vector<unsigned int> arch;
     nnet.getArchitecture(arch);
     
@@ -404,6 +452,7 @@ namespace whiteice
     }
 
     return true;
+#endif
   }
   
   
@@ -435,9 +484,9 @@ namespace whiteice
       math::matrix<T> Wxx;
       math::vertex<T> m_wxx;
       math::vertex<T> sinh_x;
+      math::vertex<T> m;
       
       {
-	math::vertex<T> m;
 	math::matrix<T> Cxx;
 	
 	if(mean_covariance_estimate(m, Cxx, samples) == false)
@@ -467,11 +516,12 @@ namespace whiteice
 	
 	scaling /= T(invD.ysize());
 	
-	std::cout << "scaling = " << scaling << std::endl;
-	scaling = T(2.0f);
+	// std::cout << "scaling = " << scaling << std::endl;
+	// scaling = T(2.0f);
+	scaling = T(1.0f);
 	
-	// Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
-	Wxx = V.transpose(); // for ICA use: ICA * invD * Vt;
+	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
+	// Wxx = V.transpose(); // for ICA use: ICA * invD * Vt;
 	
 	sinh_x = m; 
 	sinh_x.zero();
@@ -499,16 +549,37 @@ namespace whiteice
 	
 	Wxx = scaling*(ICA * invD * V.transpose());
 #endif	
-	m_wxx = - Wxx*m;
+	// m_wxx = - Wxx*m;
       }
      
       
       {
+	// calculates additional rotation Z that optimizes Wxx towards W
+	// min ||W - Z*Wxx||
+	
+	math::matrix<T> INV = Wxx;
+	INV.inv();
+	math::matrix<T> S = W*INV;
+	math::matrix<T> U, V;
+	
+	// std::cout << "START SVD" << std::endl;
+	// std::cout << "SVD SIZE: " << S.xsize() << " x " << S.ysize() << std::endl;
+	if(svd(S, U, V) == false)
+	  return false;
+	// std::cout << "END SVD" << std::endl;
+	
+	S = U*V.transpose();
+
+	Wxx = S*Wxx;
+	
+	m_wxx = -(Wxx*m);
+	
 	for(unsigned int j=0;j<W.ysize() && j<Wxx.ysize();j++){
 	  Wxx.rowcopyto(wxx, j);
 	  W.rowcopyfrom(wxx, j);
 	  
-	  b[j] = m_wxx[j] + sinh_x[j];
+	  // b[j] = m_wxx[j] + sinh_x[j];
+	  b[j] = m_wxx[j];
 	}
       }
       
@@ -670,10 +741,10 @@ namespace whiteice
   template bool neuronlayerwise_ica< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, unsigned int layer);
   template bool neuronlayerwise_ica< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, unsigned int layer);
 
-  template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const float& alpha, bool processLastLayer);
-  template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const double& alpha, bool processLastLayer);
-  template bool negative_feedback_between_neurons< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, bool processLastLayer);
-  template bool negative_feedback_between_neurons< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const dataset<float>& data, const float& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const dataset<double>& data, const double& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const dataset< math::blas_real<float> >& data, const math::blas_real<float>& alpha, bool processLastLayer);
+  template bool negative_feedback_between_neurons< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const dataset< math::blas_real<double> >& data, const math::blas_real<double>& alpha, bool processLastLayer);
 
   template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet, bool normalizeLastLayer);
   template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet, bool normalizeLastLayer);

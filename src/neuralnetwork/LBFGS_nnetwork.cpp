@@ -155,7 +155,7 @@ namespace whiteice
       nnet.importdata(x);
       
       T alpha = T(0.5f);
-      negative_feedback_between_neurons(nnet, alpha);
+      negative_feedback_between_neurons(nnet, dtrain, alpha);
       
       nnet.exportdata(x);
     }

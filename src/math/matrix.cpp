@@ -271,7 +271,7 @@ namespace whiteice
     matrix<T> matrix<T>::operator-() const
       throw(illegal_operation)
     {
-      matrix<T> M(xsize(), ysize());
+      matrix<T> M(ysize(), xsize());
       
       for(unsigned int i=0;i<numRows*numCols;i++)
 	M.data[i] = -data[i];
@@ -721,7 +721,7 @@ namespace whiteice
     vertex<T> matrix<T>::operator*(const vertex<T>& v) const
       throw(std::invalid_argument)
     {
-      if(!v.size())
+      if(v.size() == 0)
 	throw std::invalid_argument("multiply: incompatible vertex/matrix sizes");
       if(numCols != v.size())
 	throw std::invalid_argument("multiply: incompatible vertex/matrix sizes");
