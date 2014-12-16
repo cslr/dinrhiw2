@@ -191,6 +191,8 @@ namespace whiteice
       T localbest  = T(1000000000.0f);
       // T best_alpha = T(1.0f);
       unsigned int found = 0;
+
+      vertex<T> t;
       
       // best_alpha = 0.0f;
       localbestx = x;
@@ -219,15 +221,18 @@ namespace whiteice
 #endif
 
 	alpha  = T(1.0f)/alpha;
+	
+	t = x + alpha*d;
+	heuristics(t);
 
-	tvalue = U(x + alpha*d);
+	tvalue = U(t);
 
 	if(tvalue < localbest){
 	  // if(wolfe_conditions(x, alpha, d)){
 	  {
 	    // std::cout << "NEW SOLUTION FOUND" << std::endl;
 	    localbest = tvalue;
-	    localbestx = x + alpha*d;
+	    localbestx = t;
 	    // best_alpha = alpha;
 	    found++;
 	    break;
@@ -270,7 +275,7 @@ namespace whiteice
       T ratio      = T(1.0f);
       
       std::list<T> ratios;
-      
+      bool reset = false;
       
       unsigned int M = 35; // history size
       std::list< vertex<T> > yk;
@@ -383,11 +388,27 @@ namespace whiteice
 	  // linear search finds xn = x + alpha*d
 	  // so that U(xn) is minimized
 	  if(linesearch(xn, x, d) == false){
-	    solution_converged = true;
-	    break; // we stop computation as we cannot find better solution
+	    // reset
+	    sk.clear();
+	    yk.clear();
+	    rk.clear();
+	    
+	    if(reset == false){
+	      reset = true;
+	      // continue;
+	    }
+	    else{
+	      // there was reset during the last iteration and 
+	      // we still cannot improve the result
+	      solution_converged = true;
+	      break; // we stop computation as we cannot find better solution
+	    }
+	  }
+	  else{
+	    reset = false;
 	  }
 	  
-	  heuristics(xn); // heuristically improve xn
+	  // heuristics(xn); // heuristically improve xn
 	  
 	  // cancellation point
 	  if(thread_running == false){

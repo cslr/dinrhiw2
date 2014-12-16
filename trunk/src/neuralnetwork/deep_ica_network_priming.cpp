@@ -365,8 +365,6 @@ namespace whiteice
     
     for(unsigned int l=0;l<L;l++)
     {
-      std::cout << "LAYER: " << l << " / " << L << std::endl;
-      
       // goes through the data and collects samples per layer
       for(unsigned int i=0;i<data.size(0);i++){
 	nnet.input() = data.access(0, i);

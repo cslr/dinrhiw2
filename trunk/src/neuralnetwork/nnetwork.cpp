@@ -938,7 +938,23 @@ namespace whiteice
       
       memcpy(y, &(temp[0]), yd*sizeof(T));
     }
+    else
 #endif
+    {
+      // uses temporary space to handle correctly
+      // the case when x and y vectors overlap (or are same)
+      // T temp[yd]; [we have global temp to store results]
+      
+      for(unsigned int j=0;j<yd;j++){
+	T sum = b[j];
+	for(unsigned int i=0;i<xd;i++)
+	  sum += W[i + j*xd]*x[i];
+	
+	temp[j] -= sum;
+      }
+      
+      memcpy(y, &(temp[0]), yd*sizeof(T));
+    }
 
     {
       // uses temporary space to handle correctly
@@ -955,6 +971,7 @@ namespace whiteice
       
       memcpy(y, &(temp[0]), yd*sizeof(T));
     }
+
   }
   
   
