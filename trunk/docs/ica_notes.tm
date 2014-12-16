@@ -3,7 +3,7 @@
 <style|generic>
 
 <\body>
-  <\doc-data|<doc-title|Neural network PCA/ICA subspace training
+  <\doc-data|<doc-title|Neural network independent component space training
   algorithm>|<doc-author|<author-data|<author-name|Tomas Ukkonen,
   tomas.ukonen@iki.fi, 2014>>>>
     \;
@@ -34,19 +34,43 @@
   to this question is almost trivial. Solution\ 
 
   <\with|par-mode|center>
-    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>|)>>
+    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>|)>>
   </with>
 
   diagonalizes <math|\<b-G\><rsub|\<b-x\>\<b-x\>>> matrix when <math|\<b-W\>>
   diagonalizes the <math|E<around*|{|<around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><rsup|H>|}>>
-  matrix. That is, it is solution to linear PCA. Additionally, it is
-  interesting that inverse of <math|sinh<around*|(|x|)>> is
-  <math|asinh<around*|(|x|)>> - a function that is close to
-  <math|tanh<around*|(|x|)>> or sigmoidal functions that have been proposed
-  as non-linearities for neural networks. (Additionally,
+  matrix.\ 
+
+  <\with|par-mode|center>
+    <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>=E<around*|{|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>|}>=\<b-b\>>
+  </with>
+
+  <\with|par-mode|center>
+    <math|\<b-G\><rsub|\<b-y\>*\<b-y\>>=><math|E<around*|{|<around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|g<around*|(|\<b-y\>|)>|}>|)><around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|g<around*|(|\<b-y\>|)>|}>|)><rsup|H>|}>>
+
+    <\math>
+      =E<around*|{|<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>-\<b-b\>|)>*<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>-\<b-b\>|)><rsup|H>|}>
+
+      =\<b-W\>*E<around*|{|<around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><rsup|H>|}>*\<b-W\><rsup|H>=\<b-D\>
+    </math>
+  </with>
+
+  Now, we can see parallel between diagonalizing
+  <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>> matrix and a single layer of a neural
+  network. Inverse <math|g<rsup|-1><around*|(|x|)>> of
+  <math|sinh<around*|(|x|)>> is <math|asinh<around*|(|x|)>> - a function that
+  is close to <math|tanh<around*|(|x|)>> or sigmoidal functions that have
+  been proposed as non-linearities for neural networks. (Additionally,
   <math|sinh<around*|(|x|)>> has only positive coefficients in taylor
   expansion and \ only odd terms: <math|x<rsup|2k+1>> meaning that it is
   ``super-odd'' function as each term of polynomial form is a odd function).
+  One the other hand, <math|\<b-b\>> is free parameter of the function fixing
+  expectation <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>> to any wanted
+  val.ue. How <math|\<b-b\>> should be chosen then? It is clear that
+  selection of the be <math|\<b-b\>> controls distribution of
+  <math|p<around*|(|\<b-y\>|)>> and therefore value of
+  <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>>. Here we have decided that
+  <math|\<b-b\>> is free parameter of optimization.
 
   <with|font-shape|italic|NOTE: general solution to the diagonalization
   problem is <math|\<b-y\>=g<rsup|-1><around*|(|\<b-V\>*f<around*|(|\<b-x\>|)>|)>>>,
@@ -80,7 +104,7 @@
   layer, the PCA solution for the whitening matrix is
   <math|\<b-W\><rprime|'>=\<b-D\>*\<b-Z\>*\<b-W\>=\<b-D\>*\<b-Z\>*\<b-Lambda\><rsup|-0.5>\<b-X\><rsup|T>>,
   where <math|\<b-Sigma\><rsub|\<b-x\>*\<b-x\>>=\<b-X\>*\<b-Lambda\>*\<b-X\><rsup|T>>
-  , <math|\<b-Z\>> is a freely chosen rotation matrix and <math|\<b-D\>> is
+  , <math|\<b-Z\>> is a freely chosen rotation matrix and <math|\<b-D\>> is a
   diagonal scaling matrix. We now have a linear problem:
 
   <\with|par-mode|center>
@@ -90,12 +114,15 @@
   \ which is trivially solved by <math|\<b-D\>*\<b-Z\><rprime|'><rsup|>=\<b-W\><rsub|g>*\<b-W\><rsup|-1>>
   but this is not a rotation and breaks PCA property. We want to solve for a
   optimal rotation <math|\<b-Z\>> and scaling <math|\<b-D\>>,
-  <math|\<b-Z\><rsup|T>\<b-Z\>=\<b-I\>> which is as close as possible to
-  <math|\<b-Z\><rprime|'>> matrix, which is a variant of
+  <math|\<b-Z\><rsup|T>\<b-Z\>=\<b-I\>>. However, this seems to be
+  computationally very difficult to do so we instead try to solve
+  <math|\<b-Z\>> and <math|\<b-D\>> separatedly. So we initially solve for
+  <math|\<b-Z\>> which is as close as possible to <math|\<b-Z\><rprime|'>>
+  matrix and assume <math|\<b-D\>=\<b-I\>>. This is a variant of
   <with|font-shape|italic|orthogonal procrustes problem>:
 
   <\with|par-mode|center>
-    <math|min<rsub|\<b-Z\>><around*|\<\|\|\>|\<b-W\><rsub|g>*-\<b-D\>*\<b-Z\>*\<b-W\>|\<\|\|\>><rsup|2><rsub|F>>
+    <math|min<rsub|\<b-Z\>><around*|\<\|\|\>|\<b-W\><rsub|g>*-\<b-Z\>*\<b-W\>|\<\|\|\>><rsup|2><rsub|F>>
   </with>
 
   for <math|\<b-Z\>> which will solve PCA solution which keeps weights as
@@ -104,34 +131,49 @@
   computing SVD as described in [1]:
 
   <\with|par-mode|center>
-    <math|<around*|\<\|\|\>|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|\<\|\|\>><rsub|F><rsup|2>=trace<around*|(|<around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|)><rsup|H><around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-D\>*\<b-Z\>|)>|)>>
+    <math|<around*|\<\|\|\>|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|\<\|\|\>><rsub|F><rsup|2>=trace<around*|(|<around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)><rsup|H><around*|(|\<b-W\><rsub|g>\<b-W\><rsup|-1>-\<b-Z\>|)>|)>>
 
     <\math>
-      trace<around*|(|\<b-W\><rsup|H><rsub|g>\<b-W\><rsup|-1>\<b-W\><rsup|-H>*\<b-W\><rsub|g>|)>+trace<around*|(|\<b-D\><rsup|2>|)>-2*trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)>*<rsup|H>\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>
+      trace<around*|(|\<b-W\><rsup|H><rsub|g>\<b-W\><rsup|-1>\<b-W\><rsup|-H>*\<b-W\><rsub|g>|)>+trace<around*|(|\<b-I\>|)>-2*trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)>*<rsup|H>\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>
     </math>
   </with>
 
-  So we need to maximize for <math|trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>=trace<around*|(|<around*|(|\<b-D\>*\<b-Z\>|)><rsup|H>*\<b-U\>*\<b-S\>*\<b-V\><rsup|H>|)>>
+  So we need to maximize for <math|trace<around*|(|\<b-Z\><rsup|H>*\<b-W\><rsub|g>*\<b-W\><rsup|-1>|)>=trace<around*|(|\<b-Z\><rsup|H>*\<b-U\>*\<b-S\>*\<b-V\><rsup|H>|)>>
   when <math|\<b-W\><rsub|g>*\<b-W\><rsup|-1>=\<b-U\>\<b-S\>\<b-V\><rsup|H>>
   and we have\ 
 
   <\with|par-mode|center>
-    <math|trace<around*|(|\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-D\>*<rsup|H>\<b-U\>*\<b-S\>*|)>=trace<around*|(|\<b-Y\>*\<b-S\>|)>>
+    <math|trace<around*|(|\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>*\<b-S\>*|)>=trace<around*|(|\<b-Y\>*\<b-S\>|)>>
   </with>
 
-  where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-U\><rsup|H>\<b-D\><rsup|2>*\<b-U\>>,
-  <math|\<b-Y\>*\<b-Y\><rsup|H>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-D\><rsup|2>*\<b-Z\>*\<b-V\>>
-  and we have <math|trace<around*|(|\<b-Y\><rsup|H>\<b-Y\>|)>=trace<around*|(|\<b-Y\>*\<b-Y\><rsup|H>|)>=trace<around*|(|\<b-D\><rsup|2>|)>>.
-  And we cannot solve the equation, unless <math|\<b-D\>=\<b-I\>> after which
-  solution is simple.
-
-  Now, <math|\<b-S\>> is diagonal matrix meaning that all of its ``mass'' is
-  on the diagonal and any further rotations will only move ``variance'' away
-  from the diagonal meaning that optimum <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>>
-  and <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
+  where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-I\>> and <math|\<b-Y\>> is
+  orthonormal rotation matrix. Now, <math|\<b-S\>> is diagonal matrix meaning
+  that all of its ``mass'' is on the diagonal and any further rotations will
+  only move ``variance'' away from the diagonal meaning that optimum
+  <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>> and
+  <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
   Furthermore, <math|\<b-Z\>> is real because
   <math|\<b-W\><rsub|g>\<b-W\><rsup|-1>> is real and SVD decomposition is
   real for real valued matrixes.
+
+  Next, after solving for the optimally rotated matrix
+  <math|\<b-Q\>=\<b-Z\>*\<b-W\>>, we solve for <math|\<b-D\>> separatedly as
+  this step can only improve value of the Frobenius norm:\ 
+
+  <\with|par-mode|center>
+    <math|min<rsub|\<b-D\>><around*|\<\|\|\>|\<b-W\><rsub|g>-\<b-D\>*\<b-Q\>|\<\|\|\>>=min<rsub|d<rsub|1>\<ldots\>d<rsub|dim<around*|(|\<b-D\>|)>>><big|sum><rsup|i=dim<around*|(|\<b-D\>|)>><rsub|i=1><around*|\<\|\|\>|\<b-w\><rsup|T><rsub|g,i>-d<rsub|i>*\<b-q\><rsub|i><rsup|T>|\<\|\|\>><rsup|2>>
+  </with>
+
+  where each vector is a row vector from <math|\<b-W\><rsub|g>> and
+  <strong|Q> matrixes. It is easy to minimize these terms:
+
+  <\with|par-mode|center>
+    <em|<math|<rsub|>\<xi\><rsub|i><around*|(|d<rsub|i>|)>=>><math|<around*|\<\|\|\>|\<b-w\><rsub|g,i>-d<rsub|i>*\<b-q\><rsub|i>|\<\|\|\>><rsup|2>=<around*|\<\|\|\>|\<b-w\><rsub|g,i>|\<\|\|\>><rsup|2>-2*d<rsub|i>\<b-q\><rsup|T><rsub|i>\<b-w\><rsub|g.i>+d<rsup|2><rsub|i><around*|\<\|\|\>|\<b-q\><rsub|i>|\<\|\|\>><rsup|2>>
+
+    <math|d\<xi\><rsub|i><around*|(|d<rsub|i>|)>/d*d<rsub|i>=-><math|2*\<b-q\><rsup|T><rsub|i>\<b-w\><rsub|g,i>+2*d<rsub|i><around*|\<\|\|\>|\<b-q\><rsub|i>|\<\|\|\>><rsup|2>=0>
+
+    <math|d<rsub|i>=<frac|\<b-q\><rsup|T><rsub|i>\<b-w\><rsub|g,i>|<around*|\<\|\|\>|\<b-q\><rsub|i>|\<\|\|\>><rsup|2>>>
+  </with>
 
   For each iteration <math|n>, the algorithm then first calculates
   <math|\<b-W\><rsub|g><around*|(|n|)>> matrix which is ``raw'' update for
