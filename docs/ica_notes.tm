@@ -122,6 +122,9 @@
   where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-U\><rsup|H>\<b-D\><rsup|2>*\<b-U\>>,
   <math|\<b-Y\>*\<b-Y\><rsup|H>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-D\><rsup|2>*\<b-Z\>*\<b-V\>>
   and we have <math|trace<around*|(|\<b-Y\><rsup|H>\<b-Y\>|)>=trace<around*|(|\<b-Y\>*\<b-Y\><rsup|H>|)>=trace<around*|(|\<b-D\><rsup|2>|)>>.
+  And we cannot solve the equation, unless <math|\<b-D\>=\<b-I\>> after which
+  solution is simple.
+
   Now, <math|\<b-S\>> is diagonal matrix meaning that all of its ``mass'' is
   on the diagonal and any further rotations will only move ``variance'' away
   from the diagonal meaning that optimum <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>>
@@ -136,6 +139,15 @@
   <math|\<b-W\><rsub|>> that also computes PCA of the data meaning that
   optimization now optimizes/rotates neural network weights in ``a PCA
   subspace'' which additionally diagonalizes non-linear ICA matrix.
+
+  <strong|Problems>
+
+  However, in practice this <em|do not work> very well, gradient descent
+  cannot converge anywhere and more complicated methods that use gradient DO
+  NOT work when <math|\<b-W\>> is approximated after the update with
+  ``PCArization''. Now we have <math|\<b-W\><rsub|g><around*|(|n+1|)>=\<b-W\><rsub|g><around*|(|n|)>+d*\<b-W\><rsub|g>>
+  and we want to directly calculate <em|gradient> that rotates matrix
+  optimally.
 
   \;
 
