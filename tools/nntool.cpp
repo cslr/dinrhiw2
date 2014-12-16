@@ -836,6 +836,13 @@ int main(int argc, char** argv)
 	      
 	      nn->importdata(w);
 	      
+	      if(negfeedback){
+		// using negative feedback heuristic
+		math::blas_real<float> alpha = 0.5f;
+		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
+	      }
+	      
+	      
 	      error = 0.0f;
 	      
 	      // calculates error from the testing dataset
@@ -855,32 +862,8 @@ int main(int argc, char** argv)
 	      
 	      delta_error = (prev_error - error); // if the error is negative we try again	      
 	    }
-	    while(delta_error < 0.0f && lrate > 10e-10);
+	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
-	    
-	    if(negfeedback){
-	      // using negative feedback heuristic
-	      math::blas_real<float> alpha = 0.5f;
-	      negative_feedback_between_neurons(*nn, dtrain, alpha);
-	      
-	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-		const unsigned int index = rand() % dtest.size(0);
-		
-		nn->input() = dtest.access(0, index);
-		nn->calculate(false);
-		err = dtest.access(1, index) - nn->output();
-		
-		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
-	      }
-	      
-	      error /= SAMPLE_SIZE;
-	      error *= math::blas_real<float>(0.5f); // missing scaling constant
-	      
-	    }
-	      
-
 	    
 	    if(error < minimum_error){
 	      best_weights = w;

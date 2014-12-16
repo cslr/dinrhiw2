@@ -16,7 +16,7 @@ rm -f commviol-test.ds
 
 # DO NOT WORK CURRENTLY (SOME PROBLEMS): ./nntool -v --samples 1000 commviol-test.ds 141-1000-4 commviol-nn.cfg grad
 
-./nntool -v --negfb --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad
+./nntool -v --negfb --overfit --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad
 #./nntool -v --load  --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg lbfgs
 #./nntool -v --load  --negfb --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad
 #./nntool -v --load  --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg lbfgs

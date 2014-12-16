@@ -158,7 +158,7 @@
 
   Next, after solving for the optimally rotated matrix
   <math|\<b-Q\>=\<b-Z\>*\<b-W\>>, we solve for <math|\<b-D\>> separatedly as
-  this step can only improve value of the Frobenius norm:\ 
+  this step can only improve value of the frobenius norm:\ 
 
   <\with|par-mode|center>
     <math|min<rsub|\<b-D\>><around*|\<\|\|\>|\<b-W\><rsub|g>-\<b-D\>*\<b-Q\>|\<\|\|\>>=min<rsub|d<rsub|1>\<ldots\>d<rsub|dim<around*|(|\<b-D\>|)>>><big|sum><rsup|i=dim<around*|(|\<b-D\>|)>><rsub|i=1><around*|\<\|\|\>|\<b-w\><rsup|T><rsub|g,i>-d<rsub|i>*\<b-q\><rsub|i><rsup|T>|\<\|\|\>><rsup|2>>
