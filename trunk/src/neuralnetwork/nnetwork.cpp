@@ -929,6 +929,7 @@ namespace whiteice
     // calculates y = b + W*x (y == x)
     
 #if 0
+    
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
       memcpy(&(temp[0]), b, yd*sizeof(T));
       
@@ -940,22 +941,6 @@ namespace whiteice
     }
     else
 #endif
-    {
-      // uses temporary space to handle correctly
-      // the case when x and y vectors overlap (or are same)
-      // T temp[yd]; [we have global temp to store results]
-      
-      for(unsigned int j=0;j<yd;j++){
-	T sum = b[j];
-	for(unsigned int i=0;i<xd;i++)
-	  sum += W[i + j*xd]*x[i];
-	
-	temp[j] -= sum;
-      }
-      
-      memcpy(y, &(temp[0]), yd*sizeof(T));
-    }
-
     {
       // uses temporary space to handle correctly
       // the case when x and y vectors overlap (or are same)

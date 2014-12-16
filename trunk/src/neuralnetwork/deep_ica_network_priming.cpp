@@ -574,6 +574,23 @@ namespace whiteice
 	S = U*V.transpose();
 
 	Wxx = S*Wxx;
+
+	// calculates diagonal scaling matrix D and then D*Wxx
+	math::vertex<T> d;
+	d.resize(Wxx.ysize());
+	
+	for(unsigned int i=0;i<d.size();i++){
+	  math::vertex<T> q;
+	  math::vertex<T> w;
+	  
+	  Wxx.rowcopyto(q, i);
+	  W.rowcopyto(w, i);
+
+	  d[i] = (q*w)[0] / (q*q)[0];
+
+	  q = d[i]*q;
+	  Wxx.rowcopyfrom(q, i);
+	}
 	
 	m_wxx = -(Wxx*m);
 	
@@ -582,7 +599,7 @@ namespace whiteice
 	  W.rowcopyfrom(wxx, j);
 	  
 	  // b[j] = m_wxx[j] + sinh_x[j];
-	  b[j] = m_wxx[j];
+	  // b[j] = m_wxx[j];
 	}
       }
       
