@@ -9,6 +9,8 @@
 #include "matrix_rotations.h"
 #include "dinrhiw_blas.h"
 
+#include <map>
+
 
 namespace whiteice
 {
@@ -567,6 +569,32 @@ namespace whiteice
 	for(unsigned int k=e1;k<e2;k++){
 	  if(whiteice::math::abs(A(k+1,k)) > error)
 	    error = whiteice::math::abs(A(k+1,k));
+	}
+	
+	// sorts eigenvectors according to their variances
+	{
+	  std::multimap<T, int> var;
+	  
+	  for(unsigned int j=0;j<A.xsize();j++)
+	    var.insert(std::pair<T, int>(A(j,j), j));
+	  
+	  int index = A.xsize() - 1;
+	  math::vertex<T> t;
+	  
+	  // this is slow [write faster code]
+	  math::matrix<T> XX(X);
+	  
+	  for(auto& v : var){ // from smallest to the largest eigenvalue
+	    
+	    if(v.second != index){ // we need to move v.second index to index
+	      A(index,index) = v.first;
+	      
+	      XX.colcopyto(t, v.second);
+	      X.colcopyfrom(t, index);
+	    }
+	    
+	    index--;
+	  }
 	}
 	
 	

@@ -20,7 +20,7 @@ namespace whiteice
   };
 
 
-  bool ultradeep(std::vector< math::vertex<> > input,
+  bool ultradeep(const std::vector< math::vertex<> >& input,
 		 std::vector< ultradeep_parameters >& params,
 		 const std::vector< math::vertex<> >& output);
   

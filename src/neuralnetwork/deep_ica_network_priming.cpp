@@ -17,6 +17,7 @@
 #include "eig.h"
 #include "correlation.h"
 #include "linear_algebra.h"
+#include "linear_equations.h"
 #include "ica.h"
 
 #include <math.h>
@@ -83,8 +84,11 @@ namespace whiteice
 	  D(i,i) =s/sqrt(d);
 	}
       }
-
-      p.W_pca = V * D * V.transpose();
+      
+      auto Vt = V;
+      Vt.transpose();
+      
+      p.W_pca = V * D * Vt;
       p.b_pca = - p.W_pca*mean;
 
       // actual processes the data (PCA)
@@ -130,7 +134,10 @@ namespace whiteice
       if(math::symmetric_eig<>(Rxx, V) == false)
 	return false;
       
-      p.W_ica = V.transpose();
+      auto Vt = V;
+      Vt.transpose();
+      
+      p.W_ica = Vt;
 
       Rxx.identity();
       Rxx = Rxx - p.W_ica;
@@ -224,8 +231,11 @@ namespace whiteice
 	  D(i,i) =s/sqrt(d);
 	}
       }
-
-      p.W_pca = V * D * V.transpose();
+      
+      auto Vt = V;
+      Vt.transpose();
+      
+      p.W_pca = V * D * Vt;
       p.b_pca = - p.W_pca*mean;
 
       // actual processes the data (PCA)
@@ -271,7 +281,10 @@ namespace whiteice
       if(math::symmetric_eig<>(Rxx, V) == false)
 	return false;
       
-      p.W_ica = V.transpose();
+      auto Vt = V;
+      Vt.transpose();
+      
+      p.W_ica = Vt;
 
       Rxx.identity();
       Rxx = Rxx - p.W_ica;
@@ -508,14 +521,17 @@ namespace whiteice
 	  D(i,i) = whiteice::math::sqrt(d);
 	  
 	  if(d > T(10e-8)){
-	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
+	    invD(i,i) = T(1.0f)/whiteice::math::sqrt(d);
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
 	  }
 	}
 	
-	Wxx = invD * V.transpose();
+	auto Vt = V;
+	Vt.transpose();
+	
+	Wxx = invD * Vt;
 
 	// calculates additional rotation Z that optimizes Wxx towards W
 	// min ||W - Z*Wxx||
@@ -606,6 +622,7 @@ namespace whiteice
       
       if(N <= 0) return false;
       
+
       {
 	math::matrix<T> Cxx, Cxy;
 	math::vertex<T> mx, my;
@@ -635,11 +652,29 @@ namespace whiteice
 	Cxx -= mx.outerproduct();
 	Cxy -= mx.outerproduct(my);
 	
-	Cxx.inv();
+	math::matrix<T> INV;
+	T l = T(10e-3);
 	
-	W = Cxy.transpose() * Cxx;
+	do{
+	  INV = Cxx;
+	  
+	  T trace = T(0.0f);
+	  
+	  for(unsigned int i=0;i<Cxx.xsize();i++){
+	    trace += Cxx(i,i);
+	    INV(i,i) += l; // regularizes Cxx (if needed)
+	  }
+	  
+	  trace /= Cxx.xsize();
+	  
+	  l += trace + T(2.0f)*l; // keeps "scale" of the matrix same
+	}
+	while(whiteice::math::symmetric_inverse(INV) == false);
+	
+	
+	W = Cxy.transpose() * INV;
 	b = my - W*mx;
-      }    
+      }
       
       
       if(nnet.setWeights(W, layer) == false)

@@ -39,6 +39,7 @@
 #include "modular.h"
 #include "norms.h"
 #include "real.h"
+#include "eig.h"
 
 #include "gmatrix.h"
 #include "gvertex.h"
@@ -486,16 +487,63 @@ void linear_equations_test()
   //////////////////////////////////////////////////
   // LEAST SQUARES SOLUTION TESTS
   
-  // CASE0. Cholesky factorization test
-  A.resize(4,4);
-  
-  for(unsigned int j=0;j<A.ysize();j++)
-    for(unsigned int i=0;i<A.xsize();i++)
-      A(j,i) = rand() / (double)RAND_MAX;
-  
-  B = A;
-  B.transpose();
-  B = B * A; // B = A^t * A
+  // CASE0. Symmetric matrix inverse test
+  for(unsigned iters=0;iters<100;iters++){
+    const unsigned int DIM = 20;
+    
+    A.resize(DIM,DIM);
+    
+    for(unsigned int j=0;j<A.ysize();j++)
+      for(unsigned int i=0;i<A.xsize();i++)
+	A(j,i) = rand() / (double)RAND_MAX;
+    
+    B = A;
+    B.transpose();
+    B = B * A; // B = A^t * A
+    
+    {
+      A = B;
+      
+      if(symmetric_inverse(B) == false)
+	std::cout << "ERROR: symmetric_inverse failed for symmetric (positive definite) matrix" << std::endl;
+      
+      auto I = A*B; // B should be inverse of A
+      
+      float error = 0.0f;
+      
+      for(unsigned int j=0;j<I.ysize();j++){
+	for(unsigned int i=0;i<I.xsize();i++){
+	  auto e = I(j,i);
+	  if(i == j) e -= 1.0f;
+	  error +=  whiteice::math::sqrt(e*e);
+	}
+      }
+      
+      error /= (I.ysize()*I.xsize());
+      
+      if(error > 10e-3){
+	std::cout << "ERROR: symmetric_inverse is incorrect." << std::endl;
+	std::cout << "ERROR: error = " << error << std::endl;
+	
+	matrix<float> D, X;
+	D = A;
+	
+	if(whiteice::math::symmetric_eig(D, X) == false)
+	  std::cout << "Cannot compute eigenvalues" << std::endl;
+	else{
+	  auto min = D(0,0);
+	  
+	  for(unsigned int i=1;i<D.xsize();i++){
+	    if(D(i,i) < min) min = D(i,i);
+	  }
+	  
+	  std::cout << "Minimum eigenvalue: " << min << std::endl;
+	  
+	}
+	
+      }
+    }
+  }
   
   
   A.resize(4,3);

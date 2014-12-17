@@ -31,7 +31,7 @@
 #include "conffile.h"
 #include "eig.h"
 #include "ica.h"
-
+#include "fastpca.h"
 
 
 using namespace whiteice;
@@ -42,6 +42,7 @@ void test_matrix_rotations();
 void test_basic_linear();
 void test_rotations();
 void test_eigenproblem_tests();
+void test_pca_tests();
 void test_ica();
 
 
@@ -59,12 +60,65 @@ int main(int argc, char **argv, char **envp)
   test_eigenproblem_tests();
   std::cout << std::endl;
   
+  test_pca_tests();
+  std::cout << std::endl;
+  
   test_ica();
   std::cout << std::endl;
   
   return 0;
 }
 
+
+void test_pca_tests()
+{
+  std::cout << "FASTPCA TESTS" << std::endl;
+  
+  try{
+    // generates random data and calculates PCA via EVD and 
+    // through FastPCA and compares the results
+    
+    const unsigned int DIMENSIONS =  3; // initial testing case
+    
+    std::vector< math::vertex<> > data;
+    
+    for(unsigned int j=0;j<1000;j++){
+      math::vertex<> v;
+      v.resize(DIMENSIONS);
+      
+      for(unsigned int i=0;i<DIMENSIONS;i++)
+	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+      
+      data.push_back(v);
+    }
+    
+    math::vertex<> m;
+    math::matrix<> Cxx;
+    
+    mean_covariance_estimate(m, Cxx, data);
+    
+    math::matrix<> X;
+    symmetric_eig(Cxx, X);
+    X.transpose();
+    math::matrix<>& D = Cxx;
+    
+    math::matrix<> PCA;
+    fastpca(data, DIMENSIONS, PCA);
+    
+    std::cout << "X   = " << X << std::endl;
+    std::cout << "D   = " << D << std::endl;
+    std::cout << "PCA = " << PCA << std::endl;
+    
+    std::cout << "Results should be the same." << std::endl;
+    
+  }
+  catch(std::exception& e){
+    std::cout << "Error fastpca tests" << std::endl;
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+    return;  
+  }
+  
+}
 
 
 void test_matrix_rotations()
