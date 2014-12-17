@@ -24,6 +24,7 @@
 #ifndef lib_dinrhiw_h
 #define lib_dinrhiw_h
 
+#include "fastpca.h"
 #include "ultradeep.h"
 
 #include "BFGS.h"
