@@ -86,6 +86,12 @@ namespace whiteice
       (matrix<float>& C, vertex<float>& x) throw();
     template bool solvegg<double>
       (matrix<double>& C, vertex<double>& x) throw();
+
+    
+    template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) throw();
+    template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) throw();
+    template bool symmetric_inverse< float >(matrix< float >& A) throw();
+    template bool symmetric_inverse< double >(matrix< double >& A) throw();
     
     
     template void solve_sylvester< blas_real<float> >
@@ -294,10 +300,13 @@ namespace whiteice
 	T scale;
 	
 	// processes first column
+	
+	if(A(0,0) <= T(0.0))
+	  return false;
+	
 	scale = T(1.0) / sqrt(A(0,0));
 	for(unsigned int k=0;k<N;k++)
 	  A(k,0) *= scale;
-	
 	
 	for(unsigned int i=1;i<N;i++){
 	  for(unsigned int j=0;j<=(i - 1);j++){
@@ -306,7 +315,7 @@ namespace whiteice
 	    }
 	  }
 	  
-	  if(A(i,i) <= 0) // not positive definite
+	  if(A(i,i) <= T(0.0))
 	    return false;
 	  
 	  // normalizes then length of A[j..N][j]
@@ -371,6 +380,64 @@ namespace whiteice
     
     
     /**************************************************/
+    
+    
+    template <typename T>
+    bool symmetric_inverse(matrix<T>& A) throw()
+    {
+      if(A.ysize() != A.xsize()) return false;  // only square matrixes
+      
+      if(cholesky_factorization(A) == false) // Cxx = L*L^t
+	return false;
+      
+      math::matrix<T>& L = A;
+
+      // zeroes upper triangular part of L (for testing purposes)
+      for(unsigned int j=0;j<L.ysize();j++)
+	for(unsigned int i=j+1;i<L.xsize();i++)
+	  L(j,i) = T(0.0f);
+      
+      // inverse is (L^-1)^t * (L^-1)
+      // so we only need to calculate inverse of L
+      math::matrix<T>  INV;
+      INV.resize(A.ysize(), A.xsize());
+      INV.identity();
+      
+      for(unsigned int j=0;j<L.ysize();j++){
+	auto t = L(j,j);
+	
+	for(unsigned int i=0;i<=j;i++){
+	  // L(j,i) /= t;
+	  INV(j, i) /= t;
+	}
+
+	for(unsigned int i=j+1;i<L.ysize();i++){
+	  auto k = L(i,j);
+	  
+	  for(unsigned int r=0;(r<=j);r++){
+	    // L(i, r)   -= k * L(j, r);
+	    INV(i, r) -= k * INV(j, r);
+	  }
+	}
+      }
+      
+      auto& LLINV = A;
+      LLINV.zero();
+      
+      // we compute: (L^-1)^t * (L^-1) = UPPER_TRIANGULAR * LOWER_TRIANGULAR
+      for(unsigned int j=0;j<LLINV.ysize();j++){
+	for(unsigned int i=0;i<LLINV.xsize();i++){
+	  unsigned int min_ij = i;
+	  if(min_ij < j) min_ij = j;
+	  
+	  for(unsigned int k=min_ij;k<LLINV.ysize();k++){
+	    LLINV(j,i) += INV(k,j)*INV(k,i);
+	  }
+	}
+      }
+      
+      return true;
+    }
     
     
     // FIXME: SYLVESTER EQUATION SOLVER IS CURRENT BROKEN

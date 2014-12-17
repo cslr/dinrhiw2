@@ -1235,6 +1235,7 @@ namespace whiteice
 	
 	new_area = (T*)realloc(data, sizeof(T)*d*numRows);
 	if(new_area) data = new_area;
+	else return false;
 	
 	numCols = d;
 	

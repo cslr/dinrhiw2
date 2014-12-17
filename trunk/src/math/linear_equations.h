@@ -73,6 +73,12 @@ namespace whiteice
     template <typename T>
       bool solvegg(matrix<T>& C, vertex<T>& x) throw();
     
+    /*
+     * solves symmetric matrix inverse problem through cholesky factorization
+     */
+    template <typename T>
+      bool symmetric_inverse(matrix<T>& A) throw();
+    
     
     
     // FIXME: SYLVESTER EQUATION SOLVER IS CURRENTLY BROKEN
@@ -125,6 +131,11 @@ namespace whiteice
       (matrix<float>& C, vertex<float>& x) throw();
     extern template bool solvegg<double>
       (matrix<double>& C, vertex<double>& x) throw();
+    
+    extern template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) throw();
+    extern template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) throw();
+    extern template bool symmetric_inverse< float >(matrix< float >& A) throw();
+    extern template bool symmetric_inverse< double >(matrix< double >& A) throw();
     
     
     extern template void solve_sylvester< blas_real<float> >

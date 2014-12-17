@@ -408,8 +408,8 @@ namespace whiteice
 	    reset = false;
 	  }
 	  
-	  if(iterations % 10 == 0)
-	    heuristics(xn); // heuristically improve xn
+	  
+	  heuristics(xn); // heuristically improve xn
 	  
 	  
 	  // cancellation point

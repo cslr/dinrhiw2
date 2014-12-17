@@ -1,5 +1,7 @@
 
 #include "fastpca.h"
+#include "correlation.h"
+
 
 namespace whiteice
 {
@@ -17,10 +19,58 @@ namespace whiteice
     {
       if(data.size() == 0) return false;
       if(data[0].size() < dimensions) return false;
+      if(dimensions == 0) return false;
       
-      // IMPLEMENT ME
+      math::vertex<T> m;
+      math::matrix<T> Cxx;
       
-      assert(0);
+      if(mean_covariance_estimate(m, Cxx, data) == false)
+	return false;
+      
+      std::vector< math::vertex<T> > pca; // pca vectors
+      
+      while(pca.size() < dimensions){
+	math::vertex<T> gprev;
+	math::vertex<T> g;
+	g.resize(m.size());
+	gprev.resize(m.size());
+	
+	for(unsigned int i=0;i<g.size();i++){
+	  gprev[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
+	  g[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
+	}
+	
+	T convergence = T(1.0);
+	T epsilon = T(10e-6);
+	
+	do{
+	  g = Cxx*g;
+	  
+	  // orthonormalizes g
+	  {
+	    auto t = g;
+	    
+	    for(unsigned int i=0;i<pca.size();i++)
+	      g -= (t*pca[i])*pca[i];
+	    
+	    g.normalize();
+	  }
+	  
+	  convergence = whiteice::math::abs(T(1.0f) - (g*gprev)[0]);
+	  
+	  gprev = g;
+	}
+	while(convergence > epsilon);
+	
+	pca.push_back(g);
+      }
+      
+      PCA.resize(pca.size(), data[0].size());
+      
+      for(unsigned int j=0;j<pca.size();j++)
+	PCA.rowcopyfrom(pca[j], j);
+      
+      return true;
     }
     
 
