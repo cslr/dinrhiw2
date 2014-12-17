@@ -34,7 +34,7 @@
   to this question is almost trivial. Solution\ 
 
   <\with|par-mode|center>
-    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>|)>>
+    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\><rprime|'>|)>>
   </with>
 
   diagonalizes <math|\<b-G\><rsub|\<b-x\>\<b-x\>>> matrix when <math|\<b-W\>>
@@ -42,14 +42,14 @@
   matrix.\ 
 
   <\with|par-mode|center>
-    <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>=E<around*|{|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>|}>=\<b-b\>>
+    <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>=E<around*|{|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\><rprime|'>|}>=\<b-b\><rprime|'>>
   </with>
 
   <\with|par-mode|center>
     <math|\<b-G\><rsub|\<b-y\>*\<b-y\>>=><math|E<around*|{|<around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|g<around*|(|\<b-y\>|)>|}>|)><around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|g<around*|(|\<b-y\>|)>|}>|)><rsup|H>|}>>
 
     <\math>
-      =E<around*|{|<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>-\<b-b\>|)>*<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\>-\<b-b\>|)><rsup|H>|}>
+      =E<around*|{|<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\><rprime|'>-\<b-b\><rprime|'>|)>*<around*|(|\<b-W\><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)>+\<b-b\><rprime|'>-\<b-b\><rprime|'>|)><rsup|H>|}>
 
       =\<b-W\>*E<around*|{|<around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><around*|(|\<b-x\>-E<around*|{|\<b-x\>|}>|)><rsup|H>|}>*\<b-W\><rsup|H>=\<b-D\>
     </math>
@@ -57,20 +57,32 @@
 
   Now, we can see parallel between diagonalizing
   <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>> matrix and a single layer of a neural
-  network. Inverse <math|g<rsup|-1><around*|(|x|)>> of
-  <math|sinh<around*|(|x|)>> is <math|asinh<around*|(|x|)>> - a function that
-  is close to <math|tanh<around*|(|x|)>> or sigmoidal functions that have
-  been proposed as non-linearities for neural networks. (Additionally,
+  network <math|\<b-y\>=f<around*|(|\<b-x\>|)>>. Inverse
+  <math|g<rsup|-1><around*|(|x|)>> of <math|sinh<around*|(|x|)>> is
+  <math|asinh<around*|(|x|)>> - a function that is close to
+  <math|tanh<around*|(|x|)>> or sigmoidal functions that have been proposed
+  as non-linearities for neural networks. (Additionally,
   <math|sinh<around*|(|x|)>> has only positive coefficients in taylor
   expansion and \ only odd terms: <math|x<rsup|2k+1>> meaning that it is
-  ``super-odd'' function as each term of polynomial form is a odd function).
+  ``super-odd'' function as each term of polynomial form is a odd function).\ 
+
+  <\with|par-mode|center>
+    <math|\<b-y\>=f<around*|(|\<b-V\>*\<b-x\>+\<b-b\>|)>>
+
+    <\math>
+      \<b-V\>=\<b-W\>\<nocomma\>\<nocomma\>,\<b-b\>=\<b-b\><rprime|'>-\<b-W\>*E<around*|{|\<b-x\>|}>
+    </math>
+  </with>
+
   One the other hand, <math|\<b-b\>> is free parameter of the function fixing
   expectation <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>> to any wanted
   val.ue. How <math|\<b-b\>> should be chosen then? It is clear that
   selection of the be <math|\<b-b\>> controls distribution of
-  <math|p<around*|(|\<b-y\>|)>> and therefore value of
-  <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>>. Here we have decided that
-  <math|\<b-b\>> is free parameter of optimization.
+  <math|p<around*|(|\<b-y\>|)>> and therefore directly the value of
+  <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>>. We have decided that
+  <math|\<b-b\>> is free parameter of optimization but <math|\<b-b\>=0> might
+  make sense too since <math|g<around*|(|\<b-x\>|)>> is odd function and data
+  is distributed around mean zero.
 
   <with|font-shape|italic|NOTE: general solution to the diagonalization
   problem is <math|\<b-y\>=g<rsup|-1><around*|(|\<b-V\>*f<around*|(|\<b-x\>|)>|)>>>,
@@ -154,7 +166,13 @@
   <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
   Furthermore, <math|\<b-Z\>> is real because
   <math|\<b-W\><rsub|g>\<b-W\><rsup|-1>> is real and SVD decomposition is
-  real for real valued matrixes.
+  real for real valued matrixes. Additionally because:\ 
+
+  <\with|par-mode|center>
+    <math|\<b-W\><rsub|g>*\<b-W\><rsup|-1>=\<b-W\><rsub|g>*\<b-X\>*\<b-Lambda\><rsup|0.5>>
+  </with>
+
+  So we don't even have to calculate inverse matrix.
 
   Next, after solving for the optimally rotated matrix
   <math|\<b-Q\>=\<b-Z\>*\<b-W\>>, we solve for <math|\<b-D\>> separatedly as
@@ -182,7 +200,7 @@
   optimization now optimizes/rotates neural network weights in ``a PCA
   subspace'' which additionally diagonalizes non-linear ICA matrix.
 
-  <strong|Problems>
+  <strong|PROBLEMS>
 
   However, in practice this <em|do not work> very well, gradient descent
   cannot converge anywhere and more complicated methods that use gradient DO
@@ -191,51 +209,72 @@
   and we want to directly calculate <em|gradient> that rotates matrix
   optimally.
 
+  However, this regularizes neural network to work with ``independent
+  components''. Instead of freely chosen <math|\<b-W\>> we now have rotation
+  <math|\<b-Z\>> and bias terms <math|\<b-b\>> which directly controls next
+  layers input <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>>. Additionally, if
+  we force <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>> to be zero, we have
+  <math|\<b-b\>=0> and networks only free parameters are rotations and
+  scalings <math|\<b-Z\><rsub|i>> and <math|\<b-D\><rsub|i>> per layer.
+
+  <strong|ULTRA-DEEP RANDOM SEARCH METHOD>
+
+  One approach to the optimization problem
+  <math|\<b-p\>=<around*|{|\<b-Z\><rsub|i>,\<b-D\><rsub|i>,\<b-b\><rsub|i>|}><rsub|i>>
+  could be to directly construct neural network by choosing parameters
+  <math|\<b-p\>> randomly (very high parallelization) and then adding final
+  layer which optimizes parameters to zero. However, if we do not use
+  <math|\<b-Z\><rsub|i>>, either by using ICA to fix the rotation or just use
+  PCA without rotation, then the number of parameters is further reduced to
+  <math|\<b-p\>=<around*|{|\<b-d\><rsub|i>,\<b-b\><rsub|i>|}><rsub|i>> which
+  mean that number of optimized parameters in search space grows now only
+  linearly to the number of neurons <math|O<around*|(|n|)>> and we can create
+  ultra deep neuronal networks by always starting from input data, adding new
+  layers and immediately forgetting matrix parameters and only keeping
+  vectors <math|\<b-p\>=<around*|{|\<b-d\><rsub|i>,\<b-b\><rsub|i>|}><rsub|i>>,
+  because it is always possible to reconstruct PCA matrixes (from the exactly
+  same training data which must be stored together with parameters).
+
+  The <math|O<around*|(|n|)>> property means that we can use full memory of
+  the computer for a single layer computation and create at the same time
+  ultra-wide networks (as long as PCA can be computed from the data - for
+  this we might want to use fast approximate methods).
+
+  With direct method, one tries different combinations of <math|\<b-p\>>
+  until solution improves and then adds extra layer and stores the
+  parameters. With random generation of parameters one collects goodness
+  values for each parameter <math|<around*|(|\<b-p\>,goodness|)>>. It can
+  then make sense to try to do meta learning and with for a linear model
+  looking for the better solutions:
+
+  <\with|par-mode|center>
+    <math|min<rsub|\<b-w\>>E<around*|{|<around*|\<\|\|\>|g-<around*|(|\<b-a\><rsup|T>\<b-p\>+b|)>|\<\|\|\>>|}>>
+  </with>
+
+  \ and use the solution to find for more parameters that might improve
+  solution.
+
   \;
 
-  [1] A Flexible New Technique for Camera Calibration. Zhengyou Zhang. 1998.
-  Technical Report
-
-  MSR-TR-98-71.
+  \;
 
   \;
 
-  <emdash>-
+  <strong|Final layer linear optimization>
 
-  Consider another case where we have output vectors <math|\<b-y\>> and lets
-  define mutual joint non-linear correlation matrix\ 
+  \;
 
-  <\with|par-mode|center>
-    <math|\<b-G\><rsub|\<b-x\>*\<b-y\>>=E<around*|{|<around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)><around*|(|\<b-y\>-E<around*|{|\<b-y\>|}>|)><rsup|T>|}>>
-    .
-  </with>
+  Solution to a linear optimization problem \ <math|min
+  <around*|\<\|\|\>|\<b-y\>-<around*|(|\<b-A\>\<b-x\>+\<b-b\>|)>|\<\|\|\>>>
+  is:
 
   <\with|par-mode|center>
-    <strong|<math|C<rsub|\<b-x\>*\<b-y\>>=U*S*V<rsup|T>>>
+    <math|\<b-A\>=\<b-C\><rsup|T><rsub|\<b-x\>*\<b-y\>>*\<b-C\><rsup|-1><rsub|\<b-x\>*\<b-x\>>>
+
+    <math|\<b-b\>=\<b-mu\><rsup|><rsub|\<b-y\>>-\<b-A\>\<b-mu\><rsub|\<b-x\>>>
   </with>
 
-  We can diagnonalize this matrix using non-linearities,
-
-  <\with|par-mode|center>
-    <math|\<b-x\><rprime|'>=g<rsup|-1><around*|(|\<b-U\><rsup|T>
-    \<b-x\>+E<around*|{|g<around*|(|\<b-x\>|)>|}>*|)>>
-
-    <math|\<b-y\><rprime|'>=\<b-V\><rsup|T>\<b-y\>+E<around*|{|\<b-y\>|}>*>
-  </with>
-
-  After this we can set <math|\<b-x\><rprime|'>=\<b-y\><rprime|'>> and solve
-  for \ 
-
-  <\with|par-mode|center>
-    <\with|par-left|>
-      <math|\<b-y\>=\<b-V\>*<around*|(|g<rsup|-1><around*|(|\<b-U\><rsup|T>
-      \<b-x\>+E<around*|{|g<around*|(|\<b-x\>|)>|}>*|)>-E<around*|{|\<b-y\>|}>|)>>
-    </with>
-  </with>
-
-  <emdash>
-
-  Solution to\ 
+  Proof:
 
   min <math|e<around*|(|\<b-a\>,b|)>=E<rsub|x*y><around*|{|0.5*<around*|(|y-\<b-a\><rsup|T>\<b-x\>-b|)><rsup|2>|}>>
 
@@ -271,17 +310,16 @@
     \<b-mu\><rsup|T><rsub|\<b-y\>>=\<b-mu\><rsup|T><rsub|\<b-x\>>\<b-A\>+\<b-b\><rsup|T>
 
     \<b-b\>=\<b-mu\><rsup|><rsub|\<b-y\>>-\<b-A\><rsup|T>\<b-mu\><rsub|\<b-x\>>
-
-    \;
   </math>
 
-  So the overall solution to the problem
+  \;
 
-  min <math|<around*|\<\|\|\>|\<b-y\>-\<b-A\>\<b-x\>-\<b-b\>|\<\|\|\>>> is\ 
+  \;
 
-  <math|\<b-A\>=\<b-C\><rsup|T><rsub|\<b-x\>*\<b-y\>>*\<b-C\><rsup|-1><rsub|\<b-x\>*\<b-x\>>>
+  [1] A Flexible New Technique for Camera Calibration. Zhengyou Zhang. 1998.
+  Technical Report
 
-  <math|\<b-b\>=\<b-mu\><rsup|><rsub|\<b-y\>>-\<b-A\>\<b-mu\><rsub|\<b-x\>>>
+  MSR-TR-98-71.
 
   \;
 </body>

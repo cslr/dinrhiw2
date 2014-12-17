@@ -98,7 +98,7 @@ namespace whiteice
     
     // e /= T( (float)data.size(0) ); // per N
 
-#if 0
+#if 1
     {
       T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
       err = alpha*(x*x);
@@ -137,7 +137,7 @@ namespace whiteice
 	sumgrad += ninv*grad;
     }
 
-#if 0
+#if 1
     {
       T alpha = T(0.01f);
       sumgrad += alpha*x;

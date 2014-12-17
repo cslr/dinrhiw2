@@ -359,9 +359,9 @@ namespace whiteice
   {
     // use pca to set directions towards independenct components of 
     // the inputs of each layer, also sets data variance of network to 1.0
-
+    
     unsigned int L = nnet.getLayers()-1;
-    if(L > 0) L--; // we leave one regular layer there to be optimized normally
+    // if(L > 0) L--; // we leave one regular layer there to be optimized normally
     
     for(unsigned int l=0;l<L;l++)
     {
@@ -379,10 +379,11 @@ namespace whiteice
 	
       nnet.clearSamples();
     }
+
     
-#if 1
     // optimizes last layer using linear least squares MSE
-    if(processLastLayer)
+    // if(processLastLayer)
+    if(true)
     {
       // goes through the data and collects samples per layer
       for(unsigned int i=0;i<data.size(0);i++){
@@ -400,7 +401,7 @@ namespace whiteice
 
       nnet.clearSamples();
     }
-#endif
+
     
     return true;
     
@@ -499,14 +500,12 @@ namespace whiteice
 	
 	if(symmetric_eig(D, V) == false)
 	  return false;
-	
+
 	math::matrix<T> invD = D;
 	
-	T scaling = T(0.0f);
-	
-	for(unsigned int i=0;i<invD.ysize();i++){
-	  T d = whiteice::math::abs(invD(i,i));
-	  scaling += d;
+	for(unsigned int i=0;i<D.ysize();i++){
+	  T d = whiteice::math::abs(D(i,i));
+	  D(i,i) = whiteice::math::sqrt(d);
 	  
 	  if(d > T(10e-8)){
 	    invD(i,i) = whiteice::math::sqrt(T(1.0)/whiteice::math::abs(d));
@@ -514,56 +513,15 @@ namespace whiteice
 	  else{
 	    invD(i,i) = T(0.0f);
 	  }
-	  
 	}
 	
-	scaling /= T(invD.ysize());
-	
-	// std::cout << "scaling = " << scaling << std::endl;
-	// scaling = T(2.0f);
-	scaling = T(1.0f);
-	
-	Wxx = invD * V.transpose(); // for ICA use: ICA * invD * Vt;
-	// Wxx = V.transpose(); // for ICA use: ICA * invD * Vt;
-	
-	sinh_x = m; 
-	sinh_x.zero();
-	
-	for(unsigned int i=0;i<samples.size();i++){
-	  for(unsigned int d=0;d<sinh_x.size();d++)
-	    sinh_x[d] += nnet.inv_nonlin(samples[i][d], l);
-	  
-	  samples[i] -= m;
-	  samples[i] = Wxx*samples[i]; // whitens data for the ICA step
-	}
-	
-	sinh_x /= T((float)samples.size());
-	
-	Wxx = scaling*Wxx;
-	
-#if 0
-	math::matrix<T> ICA;
-	
-	if(math::ica(samples, ICA) == false)
-	  return false;
-	
-	// we assume E{g(y)} = E{x} (so we force E{g(x)} to be "linear"!)
-	// should be: E{g(y)} = E{y}
-	
-	Wxx = scaling*(ICA * invD * V.transpose());
-#endif	
-	// m_wxx = - Wxx*m;
-      }
-     
-      
-      {
+	Wxx = invD * V.transpose();
+
 	// calculates additional rotation Z that optimizes Wxx towards W
 	// min ||W - Z*Wxx||
 	
-	math::matrix<T> INV = Wxx;
-	INV.inv();
-	math::matrix<T> S = W*INV;
-	math::matrix<T> U, V;
+	math::matrix<T> S = W*V*D;
+	math::matrix<T> U;
 	
 	// std::cout << "START SVD" << std::endl;
 	// std::cout << "SVD SIZE: " << S.xsize() << " x " << S.ysize() << std::endl;
@@ -575,32 +533,35 @@ namespace whiteice
 
 	Wxx = S*Wxx;
 
+#if 1
 	// calculates diagonal scaling matrix D and then D*Wxx
-	math::vertex<T> d;
-	d.resize(Wxx.ysize());
+	math::vertex<T> q;
+	math::vertex<T> w;
 	
-	for(unsigned int i=0;i<d.size();i++){
-	  math::vertex<T> q;
-	  math::vertex<T> w;
-	  
+	for(unsigned int i=0;i<Wxx.ysize();i++){
 	  Wxx.rowcopyto(q, i);
 	  W.rowcopyto(w, i);
-
-	  d[i] = (q*w)[0] / (q*q)[0];
-
-	  q = d[i]*q;
+	  
+	  T d;
+	  T q2 = (q*q)[0];
+	  
+	  if(q2 >= T(10e-8)){
+	    d = (q*w)[0] / q2;
+	    q = d*q;
+	  }
+	  else{
+	    d = T(1.0f);
+	    q = d*q;
+	  }
+	  
 	  Wxx.rowcopyfrom(q, i);
 	}
+#endif
 	
 	m_wxx = -(Wxx*m);
 	
-	for(unsigned int j=0;j<W.ysize() && j<Wxx.ysize();j++){
-	  Wxx.rowcopyto(wxx, j);
-	  W.rowcopyfrom(wxx, j);
-	  
-	  // b[j] = m_wxx[j] + sinh_x[j];
-	  // b[j] = m_wxx[j];
-	}
+	W = Wxx;
+	// b = m_wxx;
       }
       
       

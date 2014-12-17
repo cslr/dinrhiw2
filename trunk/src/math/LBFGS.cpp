@@ -204,16 +204,17 @@ namespace whiteice
       while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
 	
 	alpha  = T(::pow(2.0f, k));
-	T tvalue = U(x + alpha*d);
+	T tvalue;
 
 #if 0
+	t = x + alpha*d;
+	tvalue = U(t);
+	
 	if(tvalue < localbest){
-	  // if(wolfe_conditions(x, alpha, d)){
+	  // if(wolfe_conditions(x, alpha, d))
 	  {
-	    // std::cout << "NEW SOLUTION FOUND" << std::endl;
 	    localbest = tvalue;
-	    localbestx = x + alpha*d;
-	    // best_alpha = alpha;
+	    localbestx = t;
 	    found++;
 	    break;
 	  }
@@ -223,17 +224,13 @@ namespace whiteice
 	alpha  = T(1.0f)/alpha;
 	
 	t = x + alpha*d;
-	heuristics(t);
-
 	tvalue = U(t);
 
 	if(tvalue < localbest){
-	  // if(wolfe_conditions(x, alpha, d)){
+	  // if(wolfe_conditions(x, alpha, d))
 	  {
-	    // std::cout << "NEW SOLUTION FOUND" << std::endl;
 	    localbest = tvalue;
 	    localbestx = t;
-	    // best_alpha = alpha;
 	    found++;
 	    break;
 	  }
@@ -297,16 +294,19 @@ namespace whiteice
 	    while(ratios.size() > 10)
 	      ratios.pop_front();
 	    
-	    T mean_ratio = 1.0f;
-	    T inv = 1.0f/ratios.size();
+	    T mean_ratio = 1000.0f;
+	    // T inv = 1.0f/ratios.size();
 	    
 	    for(auto& r : ratios)
-	      mean_ratio *= r;
+	      if(r < mean_ratio) 
+		mean_ratio = r; // min
 	    
-	    mean_ratio = math::pow(mean_ratio, inv);
+	    // mean_ratio = math::pow(mean_ratio, inv);
 	    
-	    // 20% increase from the minimum found
-	    if(mean_ratio > T(1.20f) && iterations > 10){ 
+	    // std::cout << "ratio = " << mean_ratio << std::endl;
+	    
+	    // 10% increase from the minimum found
+	    if(mean_ratio > T(1.10f) && iterations > 10){ 
 	      break;
 	    }
 	  }
@@ -408,7 +408,9 @@ namespace whiteice
 	    reset = false;
 	  }
 	  
-	  // heuristics(xn); // heuristically improve xn
+	  if(iterations % 10 == 0)
+	    heuristics(xn); // heuristically improve xn
+	  
 	  
 	  // cancellation point
 	  if(thread_running == false){

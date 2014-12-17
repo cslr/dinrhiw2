@@ -26,6 +26,7 @@ namespace whiteice
       NTHREADS = 0;
 
       running = false;
+      thread_is_running = 0;
 
       pthread_mutex_init(&solution_lock, 0);
       pthread_mutex_init(&start_lock, 0);
@@ -43,6 +44,8 @@ namespace whiteice
 	}
 
       running = false;
+      while(thread_is_running > 0)
+	sleep(1);
 
       pthread_mutex_unlock( &start_lock );
 
@@ -90,6 +93,7 @@ namespace whiteice
       best_error = T(1000.0f);
       converged_solutions = 0;
       running = true;
+      thread_is_running = 0;
 
       optimizer_thread.resize(NTHREADS);
 
@@ -143,7 +147,6 @@ namespace whiteice
     template <typename T>
     bool NNRandomSearch<T>::stopComputation()
     {
-      pthread_mutex_lock( &solution_lock );
       pthread_mutex_lock( &start_lock );
 
       running = false;
@@ -152,9 +155,11 @@ namespace whiteice
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	pthread_cancel( optimizer_thread[i] );
       }
+      
+      while(thread_is_running > 0)
+	sleep(1); // bad approach
 
       pthread_mutex_unlock( &start_lock );
-      pthread_mutex_unlock( &solution_lock );
 
       return true;
     }
@@ -166,66 +171,24 @@ namespace whiteice
       if(data == NULL)
 	return; // silent failure if there is bad data
 
-      std::vector< nn_solution<T> > top_solutions;
-      top_solutions.resize(10); // keeps 10 best results (local mode)
-
-      // FIXME: can throw bad_alloc exception (do try{}catch();)
-      nnetwork<T>* __test_nn = new nnetwork<T>(nn_arch);
+      // normalize_weights_to_unity(nn);
+      math::vertex<T> err, weights;
       
-      normalize_weights_to_unity(*__test_nn);
-
-      for(unsigned int i=0;i<top_solutions.size();i++){
-	__test_nn->exportdata(top_solutions[i].solution);
-	top_solutions[i].error = T(1000000000.0f); // nearly infinite
-      }
-
-      delete __test_nn;
-
+      thread_is_running++;
       
+      // keep looking for solution forever
       while(running){
-	// keep looking for solution forever
-
 	// creates random neural network
 	nnetwork<T> nn(nn_arch);
-
-	normalize_weights_to_unity(nn);
 	
-	math::vertex<T> err, weights;
+	// calculates PCA-rization solution
+	T alpha = 0.5f;
+	negative_feedback_between_neurons(nn, *data, alpha, true);
+
+	
 	T error = T(0.0f);
-	
-	// 50% chance we select a new vector within
-	// the "space" created from randomly weighted N best
-	// solutions found so far
-	// NOTE: because of high dimensions, we basically search
-	// the base around "edges" (close to current ones)
-	// NOTE2: top_solutions[i] should converge to MODE of
-	// the distribution
-	if((rand() & 1) == 1){
-	  nn.exportdata(weights);
-	  weights.zero();
-
-	  T sum = T(0.0f);
-
-	  for(unsigned int i=0;i<top_solutions.size();i++){
-	    // alpha = random([0, 1])
-	    T alpha = T( ((float)rand())/((float)RAND_MAX) );
-	    weights += alpha*top_solutions[i].solution;
-	    sum += alpha;
-	  }
-
-	  weights *= T(1.0f)/sum;
-	  nn.importdata(weights);
-
-	  normalize_weights_to_unity(nn);
-	  nn.exportdata(weights);
-	}
-	// otherwise we use randomly generated weights
-	// [pure random search]
-	
-	
 	{
-	  
-	  // 1. calculates error from the testing dataset
+	  // 1. calculates error
 	  for(unsigned int i=0;i<data->size(0);i++){
 	    nn.input() = data->access(0, i);
 	    nn.calculate(false);
@@ -236,52 +199,25 @@ namespace whiteice
 	  }
 	    
 	  error /= T((float)data->size());
+	  error *= T(0.5f);
 	}
 	
 	// 2. checks if the result is better than the best one
-	pthread_mutex_lock( &solution_lock );
-	
 	if(error < best_error){
+	  pthread_mutex_lock( &solution_lock );
+
 	  // improvement (smaller error with early stopping)
 	  best_error = error;
 	  nn.exportdata(bestx);
+	  
+	  pthread_mutex_unlock( &solution_lock);
 	}
 	
-		
 	converged_solutions++;
-	
-	pthread_mutex_unlock( &solution_lock);
-	
-	
-	// 3. stores the best results to top_solutions[i]
-	{
-	  unsigned int index = top_solutions.size() + 1;
-	  T best_index_error = T(0.0f);
-	  
-	  for(unsigned int i=0;i<top_solutions.size();i++){
-	    // if there is improvement the best N solutions
-	    if(error < top_solutions[i].error){
-	      // if the found solution is worse than
-	      // the currently found best one
-	      // (we replace the worst smaller error from
-	      //  the N best solutions)
-	      
-	      if(best_index_error < error){ 
-		best_index_error = error;
-		index = i;
-	      }
-	    }
-	  }
-	  
-	  
-	  if(index < top_solutions.size()){
-	    nn.exportdata(top_solutions[index].solution);
-	    top_solutions[index].error = best_index_error;
-	  }
-	    
-	}
 		
       }
+      
+      thread_is_running--;
       
     }
 

@@ -24,6 +24,8 @@
 #ifndef lib_dinrhiw_h
 #define lib_dinrhiw_h
 
+#include "ultradeep.h"
+
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"
 #include "pBFGS_nnetwork.h"
