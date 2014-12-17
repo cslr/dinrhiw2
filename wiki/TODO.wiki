@@ -3,7 +3,8 @@
 LIST:
 
   * make all initialization codes (LBFGS, BFGS, NNGradDescent) to use PCA-prepriming, THEORY: should we calculate E[g(x)] term differently?
-  * improve overfit-detection (asinh non-linearity optimization causes easily temporal increases in error function) to allow temporal increases (calculate minimum found and do not stop unless we increase more than 10% from it or something): LBFGS, BFGS, grad, parallelgrad
+  * *implement FastPCA*: https://maxwell.ict.griffith.edu.au/spl/publications/papers/prl07_alok_pca.pdf - this is needed for ultradeep algorithm (if does make sense)
+  * move improvements from LBFGS and "grad" to parallel versions and BFGS
   * SCALABILITY: conffile.load() cannot load large networks
   * SCALABILITY: "grad" should scale to VERY LARGE dimensions and datasets
   * write job application(s)
