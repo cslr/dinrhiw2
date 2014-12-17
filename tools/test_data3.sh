@@ -16,7 +16,10 @@ rm -f commviol-test.ds
 
 # DO NOT WORK CURRENTLY (SOME PROBLEMS): ./nntool -v --samples 1000 commviol-test.ds 141-1000-4 commviol-nn.cfg grad
 
-./nntool -v --negfb --overfit --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad
+./nntool -v --negfb --overfit --time 400 --samples 1000 --threads 4 commviol-test.ds 141-4 commviol-nn.cfg random
+
+# ./nntool -v  --load --samples 1000 commviol-test.ds 141-20-20-4 commviol-nn.cfg grad
+
 #./nntool -v --load  --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg lbfgs
 #./nntool -v --load  --negfb --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad
 #./nntool -v --load  --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg lbfgs
@@ -29,16 +32,16 @@ rm -f commviol-test.ds
 ##################################################
 # testing
 
- ./nntool -v commviol-test.ds 141-141-141-141-4 commviol-nn.cfg use
+ ./nntool -v commviol-test.ds 141-20-20-4 commviol-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
 
-# cp -f commviol-test.ds commviol-pred.ds
-# ./dstool -clear:1 commviol-pred.ds
-# ./dstool -remove:1 wine-pred.ds
-#
-# ./nntool -v commviol-pred.ds 141-100000-4 commviol-nn.cfg use
-#
-# ./dstool -print:1:2204:2214 commviol-pred.ds
-# tail commviol.out
+cp -f commviol-test.ds commviol-pred.ds
+./dstool -clear:1 commviol-pred.ds
+./dstool -remove:1 wine-pred.ds
+
+./nntool -v commviol-pred.ds 141-100000-4 commviol-nn.cfg use
+
+./dstool -print:1:2204:2214 commviol-pred.ds
+tail commviol.out

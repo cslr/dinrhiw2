@@ -328,7 +328,7 @@ int main(int argc, char** argv)
 	      bfgs.solutionConverged() == false && bfgs.isRunning() == true && // or until solution converged.. (or exit due error)
 	      !stopsignal) 
 	{
-	  sleep(5);
+	  sleep(1);
 	  
 	  bfgs.getSolution(w, error, iterations);
 	  
@@ -608,6 +608,22 @@ int main(int argc, char** argv)
 	fprintf(stderr, "Random search requires --time TIME command line switch.\n");
 	return -1;
       }
+
+      // hack to test ultradeep
+      {
+	std::vector< math::vertex<> > orig;
+	std::vector< math::vertex<> > input;
+	std::vector< math::vertex<> > output;
+	std::vector< ultradeep_parameters > params;
+	
+	data.getData(0, input);
+	data.getData(1, output);
+	
+	orig = input;
+	
+	ultradeep(input, params, output);
+	return 0;
+      }
       
       math::NNRandomSearch<> search;
       search.startOptimize(data, arch, threads);
@@ -626,7 +642,7 @@ int main(int argc, char** argv)
 	{
 	  search.getSolution(*nn, error, solutions);
 
-	  sleepms(5000);
+	  sleep(1);
 	  
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
@@ -639,10 +655,10 @@ int main(int argc, char** argv)
 	fflush(stdout);
 
 	search.stopComputation();
-
+	
 	// gets the final (optimum) solution
 	search.getSolution(*nn, error, solutions);
-
+	
 	bnn->importNetwork(*nn);
       }
       
@@ -772,19 +788,21 @@ int main(int argc, char** argv)
 	  
 	  while(counter < samples && !stopsignal)
 	  {
+	    
+	    while(ratios.size() > 10)
+	      ratios.pop_front();
+	    
+	    math::blas_real<float> inv = 1.0f/ratios.size();
+	    
+	    mean_ratio = 1000.0f;
+	    
+	    for(auto& r : ratios) // min ratio of the past 10 iters
+	      if(r < mean_ratio)
+		mean_ratio = r;
+	    
+	    // mean_ratio = math::pow(mean_ratio, inv);
+	    
 	    if(overfit == false){
-	      while(ratios.size() > 10)
-		ratios.pop_front();
-	      
-	      math::blas_real<float> inv = 1.0f/ratios.size();
-	      
-	      mean_ratio = 1.0f;
-	      
-	      for(auto& r : ratios)
-		mean_ratio *= r;
-	      
-	      mean_ratio = math::pow(mean_ratio, inv);
-	      
 	      if(mean_ratio > 1.20f)
 		if(counter > 10) break; // do not stop immediately
 	    }
@@ -830,18 +848,11 @@ int main(int argc, char** argv)
 		w -= lrate * sumgrad;
 	      }
 	      else{
-		math::blas_real<float> momentum = 0.8f;
+		math::blas_real<float> momentum = 0.0f; // 0.8f
 		w -= lrate * sumgrad + momentum*prev_sumgrad;
 	      }
 	      
 	      nn->importdata(w);
-	      
-	      if(negfeedback){
-		// using negative feedback heuristic
-		math::blas_real<float> alpha = 0.5f;
-		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
-	      }
-	      
 	      
 	      error = 0.0f;
 	      
@@ -864,6 +875,35 @@ int main(int argc, char** argv)
 	    }
 	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
+	    
+	    if(counter % 10 == 0)
+	    {
+	      if(negfeedback){
+		// using negative feedback heuristic
+		math::blas_real<float> alpha = 0.5f;
+		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
+	      }
+	    }
+	    
+	    if(0)
+	    {
+	      error = 0.0f;
+	      
+	      // calculates error from the testing dataset
+	      for(unsigned int i=0;i<dtest.size();i++){
+		const unsigned int index = i;
+		
+		nn->input() = dtest.access(0, index);
+		nn->calculate(false);
+		err = dtest.access(1, index) - nn->output();
+		
+		for(unsigned int i=0;i<err.size();i++)
+		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	      }
+	      
+	      error /= dtest.size();
+	      error *= math::blas_real<float>(0.5f); // missing scaling consta
+	    }
 	    
 	    if(error < minimum_error){
 	      best_weights = w;

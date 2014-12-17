@@ -356,8 +356,8 @@ namespace whiteice
     while(counter > 1){
       // updates W and b in this layer
       
-      // W += lrate * (lgrad * input^T)
-      // b += lrate * lgrad;
+      // delta W = (lgrad * input^T)
+      // delta b =  lgrad;
       
       const unsigned int rows = *a;
       const unsigned int cols = *(a - 1);
@@ -367,24 +367,28 @@ namespace whiteice
       gindex -= (*a) * (*(a - 1)) + *a;
       const T* dptr = _data;
       
-      for(unsigned int y=0;y<rows;y++){
-	const T* bptr = _bpdata;
-	for(unsigned int x=0;x<cols;x++,gindex++){
-	  // dptr[x + y*cols] += rate * lgrad[y] * (*bptr);
-	  grad[gindex] = -lgrad[y] * (*bptr);
-	  bptr++;
+      {
+	for(unsigned int y=0;y<rows;y++){
+	  const T* bptr = _bpdata;
+	  for(unsigned int x=0;x<cols;x++,gindex++){
+	    // dptr[x + y*cols] += rate * lgrad[y] * (*bptr);
+	    grad[gindex] = -lgrad[y] * (*bptr);
+	    bptr++;
+	  }
 	}
+	
+	dptr += rows*cols;
+	
+	
+	for(unsigned int y=0;y<rows;y++,gindex++){
+	  grad[gindex] = -lgrad[y];
+	  // dptr[y] += rate * lgrad[y];
+	}
+	
+	gindex -= rows*cols + rows;
       }
       
-      dptr += rows*cols;
-      
-      
-      for(unsigned int y=0;y<rows;y++,gindex++){
-	grad[gindex] = -lgrad[y];
-	// dptr[y] += rate * lgrad[y];
-      }
-      
-      gindex -= rows*cols + rows;
+
       
       // calculates next lgrad
       
@@ -394,15 +398,43 @@ namespace whiteice
       // FIXME: THERE IS A BUG IN BPTR handling???
       const T* bptr = _bpdata;
     
-      for(unsigned int x=0;x<cols;x++){
-	T sum = T(0.0f);
-	for(unsigned int y=0;y<rows;y++)
-	  sum += lgrad[y]*_data[x + y*cols];
+      if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
 	
-	sum *= Dnonlin(*bptr, counter - 1);
+	cblas_sgemv(CblasRowMajor, CblasTrans,
+		    rows, cols,
+		    1.0f, (float*)_data, cols, (float*)lgrad, 1,
+		    0.0f, (float*)temp, 1);
 	
-	temp[x] = sum;
-	bptr++; // BUG HERE???
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, counter - 1);
+	  bptr++;
+	}
+	
+      }
+      else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
+	
+	cblas_dgemv(CblasRowMajor, CblasTrans,
+		    rows, cols,
+		    1.0f, (double*)_data, cols, (double*)lgrad, 1,
+		    0.0f, (double*)temp, 1);
+	
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, counter - 1);
+	  bptr++;
+	}
+	
+      }
+      else{
+	for(unsigned int x=0;x<cols;x++){
+	  T sum = T(0.0f);
+	  for(unsigned int y=0;y<rows;y++)
+	    sum += lgrad[y]*_data[x + y*cols];
+	  
+	  sum *= Dnonlin(*bptr, counter - 1);
+	  
+	  temp[x] = sum;
+	  bptr++;
+	}
       }
       
       // swaps memory pointers
@@ -418,10 +450,10 @@ namespace whiteice
     
     
     {
-      // updates the first layer's W and b 
+      // calculates the first layer's delta W and delta b 
       // 
-      // W += rate * (lgrad * input^T)
-      // b += rate * lgrad;
+      // delta W += (lgrad * input^T)
+      // delta b += lgrad;
       
       const unsigned int rows = *a;
       const unsigned int cols = *(a - 1);
@@ -928,20 +960,30 @@ namespace whiteice
   {
     // calculates y = b + W*x (y == x)
     
-#if 0
+#if 1
     
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
-      memcpy(&(temp[0]), b, yd*sizeof(T));
+      memcpy(temp.data(), b, yd*sizeof(T));
       
       cblas_sgemv(CblasRowMajor, CblasNoTrans, yd, xd,
 		  1.0f, (float*)W, xd, (float*)x, 1, 
-		  1.0f, (float*)&(temp[0]), 1);
+		  1.0f, (float*)temp.data(), 1);
       
-      memcpy(y, &(temp[0]), yd*sizeof(T));
+      memcpy(y, temp.data(), yd*sizeof(T));
+    }
+    else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
+      memcpy(temp.data(), b, yd*sizeof(T));
+      
+      cblas_dgemv(CblasRowMajor, CblasNoTrans, yd, xd,
+		  1.0f, (double*)W, xd, (double*)x, 1, 
+		  1.0f, (double*)temp.data(), 1);
+      
+      memcpy(y, temp.data(), yd*sizeof(T));
     }
     else
 #endif
     {
+#if 0
       // uses temporary space to handle correctly
       // the case when x and y vectors overlap (or are same)
       // T temp[yd]; [we have global temp to store results]
@@ -951,10 +993,21 @@ namespace whiteice
 	for(unsigned int i=0;i<xd;i++)
 	  sum += W[i + j*xd]*x[i];
 	
+	temp[j] -= sum;
+	
+	std::cout << temp[j] << std::endl;
+      }
+#endif         
+      
+      for(unsigned int j=0;j<yd;j++){
+	T sum = b[j];
+	for(unsigned int i=0;i<xd;i++)
+	  sum += W[i + j*xd]*x[i];
+	
 	temp[j] = sum;
       }
       
-      memcpy(y, &(temp[0]), yd*sizeof(T));
+      memcpy(y, temp.data(), yd*sizeof(T));
     }
 
   }

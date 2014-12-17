@@ -18,7 +18,8 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset (deep learning mode)
 
-./nntool -v --negfb --samples 20000 iris-test.ds 4-4-4-4-4-4-4-1 iris-nn.cfg lbfgs
+# ./nntool -v --samples 20000 iris-test.ds 4-4-4-4-4-4-4-1 iris-nn.cfg lbfgs
+./nntool -v --time 100 iris-test.ds 4-1 iris-nn.cfg random
 
 ##################################################
 # testing
@@ -34,11 +35,11 @@ cp -f iris-test.ds iris-pred.ds
 
 ./nntool -v iris-pred.ds 4-4-4-4-4-4-4-1 iris-nn.cfg use
 
-./dstool -list iris-test.ds
-./dstool -list iris-pred.ds
-
-./dstool -print:1 iris-pred.ds
-tail iris.out
+# ./dstool -list iris-test.ds
+# ./dstool -list iris-pred.ds
+# 
+# ./dstool -print:1 iris-pred.ds
+# tail iris.out
 
 
 

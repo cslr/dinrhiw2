@@ -1303,6 +1303,7 @@ namespace whiteice
     {
       if(x2 < x1 || x1 >= numCols || y >= numRows)
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
+      
       if(x2 >= numCols) x2 = numCols - 1;
       
       if(typeid(T) == typeid(blas_real<float>)){
@@ -1368,6 +1369,7 @@ namespace whiteice
     {
       if(x2 < x1 || x1 >= numCols || y >= numRows)
 	throw std::out_of_range("rowcopyto(): bad indeces to matrix");
+      
       if(x2 >= numCols) x2 = numCols - 1;
       
       if(v.resize(x2 - x1 + 1) != x2 - x1 + 1)
@@ -1399,7 +1401,8 @@ namespace whiteice
       const throw(std::out_of_range)
     {
       if(y2 < y1 || y1 >= numRows || x >= numCols)
-	throw std::out_of_range("colnorm(): bad indeces to matrix");      
+	throw std::out_of_range("colnorm(): bad indeces to matrix");
+      
       if(y2 >= numRows) y2 = numRows - 1;
       
       if(v.resize(y2 - y1 + 1) != y2 - y1 + 1)
