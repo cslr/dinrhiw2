@@ -261,7 +261,7 @@ namespace whiteice
     template <typename T>
     T vertex<T>::norm(unsigned int i, unsigned int j) const throw()
     {
-      T len = T(0); // cblas_Xnrm2 optimizated functions
+      T len = T(0.0f); // cblas_Xnrm2 optimizated functions
       
       if(i >= j || i > dataSize || j > dataSize)
 	return len;
@@ -305,8 +305,8 @@ namespace whiteice
       // uses optimized cblas_Xscal() routines
       
       T len = norm();
-      if(len == T(0)) return false;
-      len = T(1) / len;
+      if(len == T(0.0f)) return false;
+      len = T(1.0f) / len;
     
       if(typeid(T) == typeid(blas_real<float>)){
 	
@@ -579,10 +579,19 @@ namespace whiteice
       if(v.dataSize != dataSize)
 	throw illegal_operation("vector op: vector dim. mismatch");
       
-      // *NO* CBLAS
+      if(typeid(T) == typeid(blas_real<float>)){
+	float alpha = +1.0;
+	
+	cblas_saxpy(dataSize, alpha, (float*)v.data, 1, (float*)(this->data), 1);
+	
+      }
+      else{
+	// *NO* CBLAS
+	
+	for(unsigned int i=0;i<dataSize;i++)
+	  data[i] += v.data[i];
+      }
       
-      for(unsigned int i=0;i<v.dataSize;i++)
-	data[i] += v.data[i];
       
       return *this;
     }
@@ -595,10 +604,18 @@ namespace whiteice
       if(dataSize != dataSize)
 	throw illegal_operation("vector op: vector dim. mismatch");
       
-      // *NO* CBLAS
-      
-      for(unsigned int i=0;i<dataSize;i++)
-	data[i] -= v.data[i];
+      if(typeid(T) == typeid(blas_real<float>)){
+	float alpha = -1.0;
+	
+	cblas_saxpy(dataSize, alpha, (float*)v.data, 1, (float*)(this->data), 1);
+	
+      }
+      else{
+	// *NO* CBLAS
+	
+	for(unsigned int i=0;i<dataSize;i++)
+	  data[i] -= v.data[i];
+      }
       
       return *this;
     }

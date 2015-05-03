@@ -18,7 +18,8 @@ rm -f wdbc-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --negfb wdbc-test.ds 30-30-30-30-30-1 wdbcnn.cfg lbfgs
+./nntool -v --negfb --time 400 wdbc-test.ds 30-30-30-30-30-1 wdbcnn.cfg random
+" ./nntool -v --negfb wdbc-test.ds 30-30-30-30-30-1 wdbcnn.cfg lbfgs
 
 ##################################################
 # testing

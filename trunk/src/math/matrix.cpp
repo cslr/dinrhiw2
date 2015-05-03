@@ -327,8 +327,13 @@ namespace whiteice
 		    (float*)M.data, M.numCols,
 		    0.0f, (float*)R.data, R.numCols);
 	
-	if(!resize_x(R.numCols)) throw bad_alloc();
-	memcpy(data, R.data, numRows*numCols*sizeof(T));
+	// if(!resize_x(R.numCols)) throw bad_alloc();
+	// memcpy(data, R.data, numRows*numCols*sizeof(T));
+	
+	this->numCols = M.numCols;
+	free(data);
+	data = R.data;
+	R.data = nullptr;
 	
 	return (*this);
       }
@@ -391,7 +396,8 @@ namespace whiteice
 	memcpy(data, R.data, numRows*numCols*sizeof(T));
 	
 	return (*this);
-      }      	   
+      }
+      
     }
     
     

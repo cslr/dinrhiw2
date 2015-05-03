@@ -3,15 +3,15 @@
 <style|generic>
 
 <\body>
-  <\doc-data|<doc-title|Neural network independent component space training
-  algorithm>|<doc-author|<author-data|<author-name|Tomas Ukkonen,
+  <\doc-data|<doc-title|Non-linear principal component
+  analysis>|<doc-author|<author-data|<author-name|Tomas Ukkonen,
   tomas.ukonen@iki.fi, 2014>>>>
     \;
 
     \;
   </doc-data|>
 
-  One approach in ICA is to try to diagonalize non-linear matrix\ 
+  One approach in non-linear PCA is to try to diagonalize non-linear matrix\ 
 
   <\with|par-mode|center>
     <math|\<b-G\><rsub|\<b-x\>\<b-x\>>=E<around*|{|<around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)><around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)><rsup|H>|}>>,
@@ -19,9 +19,149 @@
 
   where <math|g<around*|(|x|)>> function has been chosen to create
   interesting higher order moments. Diagonalization of the matrix means that
-  <math|E<around*|{|g<around*|(|x<rsub|i>|)>*g<around*|(|x<rsub|j>|)>|}>=E<around*|{|g<around*|(|x<rsub|i>|}>*E<around*|{||\<nobracket\>>g<around*|(|x<rsub|j>|)>|}>>,
+  <math|E<around*|{|g<around*|(|x|)>*<rsub|i>g<around*|(|x|)><rsub|j>|}>=E<around*|{|g<around*|(|x|}><rsub|i>*E<around*|{||\<nobracket\>>g<around*|(|x|)><rsub|j>|}>>,
   one consequence of the independence of the <math|x<rsub|i>> and
   <math|x<rsub|j>>.
+
+  Here <math|g<around*|(|\<b-x\>|)>> can be mapping from low dimensions into
+  extremely high dimensions <math|g<around*|(|\<b-x\>|)>:\<frak-R\><rsup|D<rsub|1>>\<rightarrow\>\<frak-R\><rsup|D<rsub|2>>>
+  where <math|D<rsub|2>\<gg\>D<rsub|1>> where we want to have property that
+  our data components are independent. One example of such mapping could be
+  <math|g<around*|(|x,y|)>=<around*|[|x,x<rsup|2>,x<rsup|3>,x<rsup|4>,x<rsup|5>\<ldots\>x<rsup|N><rsup|>,y,y<rsup|2>\<ldots\>y<rsup|N>|]>>
+  for a two dimensional variable. Now the function
+  <math|g<around*|(|\<b-x\>|)>> should have inverse from high dimensional
+  space into low dimensional space which can be used for a dimensional
+  reduction.
+
+  <\with|par-mode|center>
+    <math|\<b-y\>=g<rsup|-1><around*|(|\<b-W\><around*|(|g<around*|(|\<b-x\>|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)>+\<b-b\>|)>>
+  </with>
+
+  where <math|\<b-W\>> matrix diagonalizes <math|G<rsub|\<b-x\>*\<b-x\>>>
+  matrix. We can use PCA for this, however, the solution is still not unique
+  as there are <math|D<rsub|2>>! different ordering of the variables.
+
+  For simplicity, lets first concentrate at the basic case where we have only
+  a single variable <math|x> and <math|g<around*|(|x|)>=<around*|[|x,x<rsup|2>,x<rsup|3>\<ldots\>x<rsup|N>|]>>.
+  This means vector <math|\<b-y\>=\<b-W\>*g<around*|(|x|)>> is now a series
+  of Taylor polynomials,
+
+  <\with|par-mode|center>
+    <math|y<around*|(|n|)>=\<b-w\><rsub|n><rsup|T><around*|(|\<b-g\><around*|(|x|)>-E<around*|{|\<b-g\><around*|(|x|)>|}>|)>=<big|sum><rsub|k>w<rsub|n,k>*x<rsup|k>-<big|sum><rsub|k>w<rsub|n,k>*E<around*|{|x<rsup|k>|}>>
+  </with>
+
+  NOTE: Interestingly, the top PCA vector weight vector values have
+  distinctive smooth shapes meaning that they define ``regular'' functions
+  that alter the data <math|\<b-x\>> into decorrelated (independent?)
+  signals. On ther other hand, the lowest variance PCA vectors contain
+  irregular weights (noise) meaning which seem to imply that these weight
+  vectors do not define distinctive functions that arises from the data
+  somehow.
+
+  This basically means that if we are about to maximize (remaining) variance
+  of <math|y<around*|(|n|)>>, then the algorithm should put most of its
+  weight to weigh <math|w<rsub|n,D<rsub|2>>> as
+  <math|Var<around*|{|x<rsup|k>|}>> has the maximum variance when <math|k> is
+  a large (positive) number. Therefore, to regularize our problem, we need to
+  normalize our data to have maximum value of <math|\<pm\>1>,
+  <math|x<rprime|'>=x/max<around*|(|<around*|\||x|\|>|)>> which prevents
+  variance terms from exploding. This also means most of the time
+  <math|Var<around*|{|x<rsup|k>|}>\<geqslant\>Var<around*|{|x<rsup|k+1>|}>>
+  for larger <math|k>:s meaning that PCA solution which gives the highest
+  variance solutions to top vectors is likely to be good diagonalization of
+  <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>> as it preserves ordering of
+  <math|\<b-g\><around*|(|x|)>> vectors (?).
+
+  How to compute <math|g<rsup|-1><around*|(|\<b-y\>|)>> vector then. Well it
+  is clear that there are <with|font-shape|italic|multiple possible>
+  inversion functions to <math|\<b-g\><around*|(|x|)>> function. The (all
+  possible?) solutions have the form <math|f<around*|(|\<b-a\><rsup|T>\<b-y\>|)>>
+  where <math|\<b-a\>> vector sets up a Taylor polynomial
+  <math|t<around*|(|x|)>=<big|sum>a<rsub|k>x<rsup|k>> and
+  <math|f<around*|(|x|)>> is inverse of <math|t<around*|(|x|)>>. This means
+  that solution vector <math|\<b-a\>> must be chosen so that
+  <math|t<around*|(|x|)>> always has an inverse. Additionally, the solution
+  vector should have be probably chosen so that it is relatively simple (to
+  avoid overfitting to data) and maximizes some desirable property of
+  <math|y>, for example, maybe by maximizing its kurtosis value. Overall
+  formula to remove higher order correlations from variable <math|x>
+  (self-independence). Is therefore
+
+  <\with|par-mode|center>
+    <math|y=f<around*|(|\<b-a\><rsup|T><around*|(|\<b-W\><around*|(|*\<b-g\><around*|(|x|)>-E<around*|{|g<around*|(|\<b-x\>|)>|}>|)>+\<b-b\>|\<nobracket\>>|\<nobracket\>>>))
+  </with>
+
+  \ where <math|\<b-a\>> and <math|\<b-b\>> are parameters of the model and
+  <math|\<b-W\>> should be chosen so that it ``preserves'' ordering of the
+  variables somehow. Here we want (initially) the simplest possible model so
+  we choose <math|\<b-a\>=<around*|[|1,0,0,0,\<ldots\>|]>> meaning that
+  <math|t<around*|(|x|)>=x> and inverse of <math|f<around*|(|x|)>> is simply
+  <math|x> and the model simplifies to:
+
+  <\with|par-mode|center>
+    <math|y=\<b-w\><rsup|T><rsub|1><around*|(|*\<b-g\><around*|(|x|)>-E<around*|{|\<b-g\><around*|(|x|)>|}>|)>+b<rsub|1>>
+  </with>
+
+  Here <math|\<b-w\><rsub|1>> is the first eigenvector of the data (or we
+  could choose any! one because ordering of the variables (and in diagonal
+  terms of <math|D>) in <strong|W> vector can change freely. Here
+  <math|b<rsub|1>> on affects mean of the data and can be chosen to set mean
+  of the <math|y> to zero. This means that we only have to solve for
+  diagonlization matrix <math|\<b-W\>> and try different eigenvectors.
+
+  \;
+
+  Where we now assume we have extremly high dimensional data which has been
+  whitened using some approximative PCA method (for example we use block-wise
+  FastPCA, maybe just using a single iteration) after which number of
+  dimensions are reduced using non-linear transform. Now, this non-linearity
+  has a property that it also, at the same time, diagonalizes
+  <math|G<rsub|\<b-x\>*\<b-x\>>> without explicitely calculating
+  <math|g<around*|(|\<b-x\>|)>> function. Our two-dimensional function is
+  easy to invert as one just have to take every <math|N>:th elements from the
+  input vector as rest are higher moments. However, this linear mapping is
+  not necessarily proper as out example shows.
+
+  <strong|CONTINUE FROM HERE, WHAT PROPERTIES MUST FUNCTION
+  <math|g<around*|(|\<b-x\>|)>> HAVE IN ORDER FOR THIS TO WORK?>
+
+  \;
+
+  Assume we have two different datasets <math|\<b-x\>> and <math|\<b-y\>>.
+  Then we want to similarize these two datasets so that they have same higher
+  order correlations <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>=\<b-G\><rsub|\<b-y\>*\<b-y\>>>.
+
+  <\with|par-mode|center>
+    <math|\<b-G\><rsub|\<b-x\>\<b-x\>>=E<around*|{|<around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><rsup|H>|}>>
+  </with>
+
+  Then the solution to this is:
+
+  <\with|par-mode|center>
+    <math|\<b-z\>=\<b-g\><rsup|-1><around*|(|\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*\<b-W\><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)>|)>>
+  </with>
+
+  where <math|\<b-W\>> diagonalizes <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>>,
+  because:
+
+  <\with|par-mode|center>
+    <math|<with|math-font-series|bold|G<rsub|z*z>>=E<around*|{|\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*\<b-W\><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><rsup|H>\<b-W\><rsup|H>\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*|}>>
+
+    <math|\<b-G\><rsub|\<b-z\>*\<b-z\>>=\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>\<b-W\>*\<b-G\><rsub|\<b-x\>*\<b-x\>>\<b-W\><rsup|\<b-H\>>\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>>
+  </with>
+
+  Now we can choose <math|\<b-W\>=\<b-Lambda\><rsub|\<b-x\>><rsup|-1/2>*\<b-X\><rsup|H>>
+  where <math|\<b-G\><rsub|\<b-x\>*\<b-x\>>=\<b-X\>\<b-Lambda\><rsub|\<b-x\>>*\<b-X\><rsup|\<b-H\>>>.
+  Now the <math|\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>=\<b-Y\>\<b-Lambda\><rsup|1/2><rsub|\<b-y\>>\<b-Y\><rsup|H>>
+  and is hermitian too. So we have <math|\<b-G\><rsub|\<b-z\>*\<b-z\>>=\<b-G\><rsub|\<b-y\>*\<b-y\>>>.
+
+  <\with|par-mode|center>
+    \;
+  </with>
+
+  \;
+
+  \;
 
   Now what is good non-linearity for <math|g<around*|(|x|)>>? It seems that
   <math|g<around*|(|x|)>=sinh<around*|(|x|)>> is rather good giving that it
@@ -265,7 +405,7 @@
   \;
 
   Solution to a linear optimization problem \ <math|min
-  <around*|\<\|\|\>|\<b-y\>-<around*|(|\<b-A\>\<b-x\>+\<b-b\>|)>|\<\|\|\>>>
+  E<around*|{|<frac|1|2><around*|\<\|\|\>|\<b-y\>-<around*|(|\<b-A\>\<b-x\>+\<b-b\>|)>|\<\|\|\>><rsup|2>|}>>
   is:
 
   <\with|par-mode|center>
@@ -313,6 +453,49 @@
   </math>
 
   \;
+
+  But for robust optimization we want to add regularizer to restrict elements
+  of <math|\<b-a\>> vector when the problem is ill-defined.
+
+  <\with|par-mode|center>
+    <math|min<rsub|\<b-a\>> E<around*|{|<frac|1|2><around*|\<\|\|\>|y-<around*|(|\<b-a\><rsup|T>\<b-x\>+b|)>|\<\|\|\>><rsup|2>|}>+\<lambda\><frac|1|2><around*|\<\|\|\>|\<b-a\>|\<\|\|\>><rsup|2>>
+  </with>
+
+  \;
+
+  <\math>
+    \<nabla\><rsub|\<b-a\>>e<around*|(|\<b-a\>,b|)>=E<rsub|x*y><around*|{|<around*|(|y-\<b-a\><rsup|T>\<b-x\>-b|)>\<b-x\>|}>+\<lambda\>*\<b-a\>=0
+
+    \<nabla\><rsub|b>e<around*|(|\<b-a\>,b|)>=E<rsub|x*y><around*|{|-<around*|(|y-\<b-a\><rsup|T>\<b-x\>-b|)>|}>=0
+
+    \;
+
+    E<rsub|x*y><around*|{|\<b-x\>*\<b-x\><rsup|T>+\<lambda\>\<b-I\>|}>\<b-a\>=E<rsub|x*y><around*|{|\<b-x\>*<around*|(|y-b|)>|}>
+
+    \<b-mu\><rsub|\<b-x\>>\<mu\><rsub|y>=\<b-mu\><rsub|\<b-x\>>\<b-mu\><rsup|T><rsub|\<b-x\>>\<b-a\>+b*\<b-mu\><rsub|\<b-x\>>
+
+    \;
+
+    \<b-C\><rsub|\<b-x\>*\<b-x\>>\<b-a\>=E<rsub|x*y><around*|{|\<b-x\>*y|}>-\<b-mu\><rsub|\<b-x\>>\<mu\><rsub|y>
+
+    \;
+
+    \<b-C\><rsub|\<b-x\>*\<b-x\>>*\<b-a\>=\<b-r\><rsub|\<b-x\>y>-*\<b-mu\><rsub|\<b-x\>>\<mu\><rsub|y>
+
+    <around*|[|\<b-R\><rsub|\<b-x\>*\<b-x\>>\<b-a\><rsub|1>,\<b-R\><rsub|\<b-x\>*\<b-x\>>\<b-a\><rsub|2>\<ldots\>\<b-R\><rsub|\<b-x\>*\<b-x\>>\<b-a\><rsub|N>|]>=<around*|[|\<b-r\><rsub|\<b-x\>y<rsub|1>>,\<b-r\><rsub|\<b-x\>y<rsub|2>>\<ldots\>\<b-r\><rsub|\<b-x\>y<rsub|N>>|]>
+
+    \<b-A\>=\<b-C\><rsub|\<b-x\>*\<b-x\>><rsup|-1>*E<around*|{|<around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><around*|(|\<b-y\>-\<b-mu\><rsub|\<b-y\>>|)><rsup|T>|}>
+
+    \<b-A\>=\<b-C\><rsup|-1><rsub|\<b-x\>*\<b-x\>>*\<b-C\><rsub|\<b-x\>*\<b-y\>>
+
+    \;
+
+    \<mu\><rsub|y>=\<b-mu\><rsup|T><rsub|\<b-x\>>\<b-a\>+b
+
+    \<b-mu\><rsup|T><rsub|\<b-y\>>=\<b-mu\><rsup|T><rsub|\<b-x\>>\<b-A\>+\<b-b\><rsup|T>
+
+    \<b-b\>=\<b-mu\><rsup|><rsub|\<b-y\>>-\<b-A\><rsup|T>\<b-mu\><rsub|\<b-x\>>
+  </math>
 
   \;
 
