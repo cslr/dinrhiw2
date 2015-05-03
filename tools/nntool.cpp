@@ -609,21 +609,24 @@ int main(int argc, char** argv)
 	return -1;
       }
 
+#if 0
       // hack to test ultradeep
+      // NOTE: brute-forcing does not really work..
       {
-	std::vector< math::vertex<> > orig;
 	std::vector< math::vertex<> > input;
 	std::vector< math::vertex<> > output;
-	std::vector< ultradeep_parameters > params;
 	
 	data.getData(0, input);
 	data.getData(1, output);
 	
-	orig = input;
+	UltraDeep ud;
 	
-	ultradeep(input, params, output);
+	while(1){
+	  ud.calculate(input, output);
+	}
 	return 0;
       }
+#endif
       
       math::NNRandomSearch<> search;
       search.startOptimize(data, arch, threads);
@@ -854,6 +857,12 @@ int main(int argc, char** argv)
 	      
 	      nn->importdata(w);
 	      
+	      if(negfeedback){
+		// using negative feedback heuristic
+		math::blas_real<float> alpha = 0.5f;
+		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
+	      }
+	      
 	      error = 0.0f;
 	      
 	      // calculates error from the testing dataset
@@ -876,22 +885,16 @@ int main(int argc, char** argv)
 	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
 	    
-	    if(counter % 10 == 0)
-	    {
-	      if(negfeedback){
-		// using negative feedback heuristic
-		math::blas_real<float> alpha = 0.5f;
-		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
-	      }
-	    }
 	    
-	    if(0)
+
+	    
+#if 0
 	    {
 	      error = 0.0f;
 	      
 	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<dtest.size();i++){
-		const unsigned int index = i;
+	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
+		const unsigned int index = rand() % dtest.size();
 		
 		nn->input() = dtest.access(0, index);
 		nn->calculate(false);
@@ -901,9 +904,10 @@ int main(int argc, char** argv)
 		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	      }
 	      
-	      error /= dtest.size();
-	      error *= math::blas_real<float>(0.5f); // missing scaling consta
+	      error /= SAMPLE_SIZE;
+	      error *= math::blas_real<float>(0.5f); // missing scaling constant
 	    }
+#endif
 	    
 	    if(error < minimum_error){
 	      best_weights = w;

@@ -12,6 +12,7 @@
 #include <string>
 #include <cmath>
 #include <new>
+#include <chrono>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,20 +75,23 @@ void test_pca_tests()
 {
   std::cout << "FASTPCA TESTS" << std::endl;
   
+
   try{
     // generates random data and calculates PCA via EVD and 
     // through FastPCA and compares the results
     
-    const unsigned int DIMENSIONS =  3; // initial testing case
+    const unsigned int DIMENSIONS =  1000; // initial testing case
     
     std::vector< math::vertex<> > data;
     
-    for(unsigned int j=0;j<1000;j++){
+    for(unsigned int j=0;j<(2*DIMENSIONS)+1000;j++){
       math::vertex<> v;
       v.resize(DIMENSIONS);
       
-      for(unsigned int i=0;i<DIMENSIONS;i++)
+      for(unsigned int i=0;i<DIMENSIONS;i++){
 	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	if(i == 0) v[i] *= 2.0f;
+      }
       
       data.push_back(v);
     }
@@ -96,20 +100,105 @@ void test_pca_tests()
     math::matrix<> Cxx;
     
     mean_covariance_estimate(m, Cxx, data);
+    auto D = Cxx;
+    
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+
+    std::cout << "SYMMETRIC EIG" << std::endl;
     
     math::matrix<> X;
-    symmetric_eig(Cxx, X);
-    X.transpose();
-    math::matrix<>& D = Cxx;
+    start = std::chrono::system_clock::now();
+    symmetric_eig(D, X);
+    end = std::chrono::system_clock::now();
+    auto Xt = X;
+    Xt.transpose();
+    
+    std::chrono::duration<double> secs = end - start;
+    
+    std::cout << "evd: milliseconds: " << 1000.0*secs.count() << std::endl;
+    
+    // tests that X diagonalizes Cxx matrix
+    auto eigD = Xt*Cxx*X;
+    // std::cout << "D = " << eigD << std::endl;
+    blas_real<float> eig_error = 0.0f;
+    for(unsigned int j=0;j<eigD.ysize();j++)
+      for(unsigned int i=0;i<eigD.xsize();i++)
+	if(i != j) eig_error += math::abs(eigD(j,i));
+    std::cout << "error = " << eig_error/eigD.size() << std::endl;
+    
+    std::cout << "FASTPCA" << std::endl;
     
     math::matrix<> PCA;
+    
+    start = std::chrono::system_clock::now();
     fastpca(data, DIMENSIONS, PCA);
+    end   = std::chrono::system_clock::now();
     
-    std::cout << "X   = " << X << std::endl;
-    std::cout << "D   = " << D << std::endl;
-    std::cout << "PCA = " << PCA << std::endl;
+    secs = end - start;
     
-    std::cout << "Results should be the same." << std::endl;
+    std::cout << "fastpca: milliseconds: " << 1000.0*secs.count() << std::endl;
+    
+    auto PCAt = PCA;
+    PCAt.transpose();
+    
+    auto pcaD = PCA*Cxx*PCAt;
+    // std::cout << "D = " << pcaD << std::endl;
+    blas_real<float> pca_error = 0.0f;
+    for(unsigned int j=0;j<pcaD.ysize();j++)
+      for(unsigned int i=0;i<pcaD.xsize();i++)
+	if(i != j) pca_error += math::abs(pcaD(j,i));
+    std::cout << "error = " << pca_error/(pcaD.size()) << std::endl;
+    
+    
+    // compares the first (largest) eigenvectors
+    {
+      math::vertex<> evd_e1;
+      math::vertex<> pca_e1;
+      
+      unsigned int best_index_evd = 0;
+      unsigned int best_index_pca = 0;
+      auto evd_d = eigD(0,0);
+      auto pca_d = pcaD(0,0);
+      
+      for(unsigned int j=0;j<Xt.ysize();j++){
+	if(eigD(j,j) > evd_d){
+	  evd_d = eigD(j,j);
+	  best_index_evd = j;
+	}
+	
+	if(pcaD(j,j) > pca_d){
+	  pca_d = pcaD(j,j);
+	  best_index_pca = j;
+	}
+      }
+      
+      Xt.rowcopyto(evd_e1, best_index_evd);
+      PCA.rowcopyto(pca_e1, best_index_pca);
+      
+      auto err1 = evd_e1 - pca_e1;
+      auto err2 = evd_e1 + pca_e1; // signs of the vectors might change
+      
+      auto err  = err1;
+      if(err1.norm() > err2.norm())
+	err = err2;
+      
+      if(err.norm() > 0.01f){
+	std::cout << "ERROR: results mismatch between PCA and EVD" 
+		  << std::endl;
+	std::cout << "error = " << err.norm() << std::endl;
+	
+	
+	std::cout << "D(eig) = " << eigD << std::endl;
+	std::cout << "D(pca) = " << pcaD << std::endl;
+    
+    
+	std::cout << "Xt  = " << Xt << std::endl;
+	std::cout << "PCA = " << PCA << std::endl;
+    
+	std::cout << "Results should be the same." << std::endl;
+      }
+    }
     
   }
   catch(std::exception& e){
@@ -117,6 +206,7 @@ void test_pca_tests()
     std::cout << "Unexpected exception: " << e.what() << std::endl;
     return;  
   }
+
   
 }
 

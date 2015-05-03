@@ -542,6 +542,9 @@ namespace whiteice
 	      error = whiteice::math::abs(A(k+1,k));
 	  }
 	  
+	  // std::cout << "error =" << error << std::endl;
+	  // std::cout << "e2-e1 = " << (e2-e1) << std::endl;
+	  
 	  
 	  if(f1 == e1 && f2 == e2){
 	    iter++;
@@ -571,6 +574,7 @@ namespace whiteice
 	    error = whiteice::math::abs(A(k+1,k));
 	}
 	
+#if 0
 	// sorts eigenvectors according to their variances
 	{
 	  std::multimap<T, int> var;
@@ -596,6 +600,7 @@ namespace whiteice
 	    index--;
 	  }
 	}
+#endif
 	
 	
 	return true;

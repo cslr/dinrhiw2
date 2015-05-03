@@ -21,6 +21,8 @@ namespace whiteice
       if(data[0].size() < dimensions) return false;
       if(dimensions == 0) return false;
       
+      // TODO: compute eigenvectors directly into PCA matrix
+      
       math::vertex<T> m;
       math::matrix<T> Cxx;
       
@@ -40,8 +42,14 @@ namespace whiteice
 	  g[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
 	}
 	
+	g.normalize();
+	gprev.normalize();
+	
 	T convergence = T(1.0);
-	T epsilon = T(10e-6);
+	T epsilon = T(10e-4);
+	
+	unsigned int iters = 0;
+	
 	
 	do{
 	  g = Cxx*g;
@@ -50,8 +58,10 @@ namespace whiteice
 	  {
 	    auto t = g;
 	    
-	    for(unsigned int i=0;i<pca.size();i++)
-	      g -= (t*pca[i])*pca[i];
+	    for(auto& p : pca){
+	      T s = (t*p)[0];
+	      g -= p*s;
+	    }
 	    
 	    g.normalize();
 	  }
@@ -59,16 +69,24 @@ namespace whiteice
 	  convergence = whiteice::math::abs(T(1.0f) - (g*gprev)[0]);
 	  
 	  gprev = g;
+	  
+	  iters++;
 	}
-	while(convergence > epsilon);
+	while(convergence > epsilon || iters >= 100);
+	
+	if(iters >= 100)
+	  std::cout << "WARN: fastpca maximum number of iterations reached without convergence." << std::endl;
 	
 	pca.push_back(g);
       }
       
       PCA.resize(pca.size(), data[0].size());
       
-      for(unsigned int j=0;j<pca.size();j++)
-	PCA.rowcopyfrom(pca[j], j);
+      auto j = 0;
+      for(auto& p : pca){
+	PCA.rowcopyfrom(p, j);
+	j++;
+      }
       
       return true;
     }
