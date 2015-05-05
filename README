@@ -11,10 +11,6 @@ network codes. Currently, the neural network code only supports:
 
 .. as well as naive experimental PSO optimizer. 
 
-What is missing then? 
-
-* NO deep learning codes but I hope they could be implemented in the distant future.
-
 BUILDING IT
 -----------
 
