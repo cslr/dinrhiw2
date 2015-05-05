@@ -1,10 +1,19 @@
 WHAT DINRHIW2 IS?
 -----------------
 
-Primary aim of the dinrhiw is to be linear algebra library and machine 
-learning library. For this reason dinrhiw implements PCA and neural
-network codes. Currently, the neural network code only supports hamiltonian
-monte carlo sampling (HMC) and gradient descent.
+Primary aim of the dinrhiw is to be linear algebra library and machine learning 
+library. For this reason dinrhiw implements PCA and neural
+network codes. Currently, the neural network code only supports:
+
+* hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
+* second order L-BFGS search
+* gradient descent (backpropagation)
+
+.. as well as naive experimental PSO optimizer. 
+
+What is missing then? 
+
+* NO deep learning codes but I hope they could be implemented in the distant future.
 
 BUILDING IT
 -----------
@@ -74,3 +83,6 @@ ADDITIONAL NOTES
 The library contains needless implementation of various algorithms
 that DO NOT belong to this library. They will be removed slowly
 before 1.0 release. (cleanup the code)
+
+
+Tomas Ukkonen <tomas.ukkonen@iki.fi>
