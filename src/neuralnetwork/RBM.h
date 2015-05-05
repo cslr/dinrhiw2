@@ -56,6 +56,8 @@ namespace whiteice
     
     private:
     
+    T randomValue(); // random values for initialization of data structures
+    
     // visible units
     math::vertex<T> v;
     
