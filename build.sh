@@ -4,3 +4,4 @@ autoheader
 autoconf
 ./configure
 make all
+

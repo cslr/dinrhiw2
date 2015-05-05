@@ -1,9 +1,8 @@
 /*
- * initial implementation of RBM - Restricted Boltzmann Machines
+ * initial implementation of RBM - Restricted Boltzmann Machine
  * 
  * TODO: 
- * * initially with no bias term
- * * implement the algorithm
+ * * initially with no bias terms
  * * RBM save and load from a disk
  * 
  */
@@ -54,17 +53,24 @@ namespace whiteice
     
     ////////////////////////////////////////////////////////////
     
+    // load & saves RBM data from/to file
+    
+    bool load(const std::string& filename) throw();
+    bool save(const std::string& filename) const throw();
+    
+    ////////////////////////////////////////////////////////////
+    
     private:
     
     T randomValue(); // random values for initialization of data structures
     
-    // visible units
+    // visible units [+ one fixed to 1 bias unit]
     math::vertex<T> v;
     
     // W(size(h),size(v)) connection matrix W between visible and hidden neurons/units
     math::matrix<T> W; 
     
-    // hidden units
+    // hidden units [+ one fixed to 1 bias unit]
     math::vertex<T> h;
       
     };

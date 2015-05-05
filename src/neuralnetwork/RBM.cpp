@@ -189,6 +189,155 @@ namespace whiteice
     return math::frobenius_norm(originalW);
   }
   
+  ////////////////////////////////////////////////////////////
+  
+#define RBM_VERSION_CFGSTR          "RBM_CONFIG_VERSION"
+#define RBM_ARCH_CFGSTR             "RBM_ARCH"
+#define RBM_WEIGHTS_CFGSTR          "RBM_WEIGHTS"
+  
+  template <typename T>
+  bool RBM<T>::load(const std::string& filename) throw()
+  {
+    try{
+      whiteice::conffile configuration;
+      
+      std::vector<std::string> strings;
+      std::vector<float> floats;
+      std::vector<int> ints;
+      
+      if(!configuration.load(filename))
+	return false;
+      
+      // checks version
+      {
+	int versionid = 0;
+	
+	if(!configuration.get(RBM_VERSION_CFGSTR, ints))
+	  return false;
+	
+	if(ints.size() != 1)
+	  return false;
+	
+	versionid = ints[0];
+	
+	ints.clear();
+	
+	if(versionid != 1000) // v1.0 datafile
+	  return false;
+      }
+      
+      // loads architecture
+      std::vector<int> arch;
+      {
+	if(!configuration.get(RBM_ARCH_CFGSTR,ints))
+	  return false;
+	
+	if(ints.size() < 2)
+	  return false;
+	
+	for(unsigned int i=0;i<ints.size();i++)
+	  if(ints[i] <= 0) return false;
+	
+	arch = ints;
+      }
+      
+      // tries to load weight matrix V
+      math::matrix<T> V;
+      {
+	if(!configuration.get(RBM_WEIGHTS_CFGSTR, floats))
+	  return false;
+	
+	if(floats.size() != (unsigned int)(arch[0]*arch[1]))
+	  return false;
+	
+	V.resize(arch[1], arch[0]);
+	
+	for(unsigned int i=0;i<(unsigned int)(arch[1]*arch[0]);i++)
+	  V[i] = T(floats[i]);
+      }
+      
+      
+      // if everything went ok then activate the changes
+      v.resize(arch[0]);
+      h.resize(arch[1]);
+      W = V;
+      
+      return true;
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception: "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      return false;
+    }
+  }
+  
+  template <typename T>
+  bool RBM<T>::save(const std::string& filename) const throw()
+  {
+    try{
+      whiteice::conffile configuration;
+      
+      std::vector<std::string> strings;
+      std::vector<float> floats;
+      std::vector<int> ints;
+      
+      // sets version
+      {
+	int versionid = 1000; // v1.0 datafile
+	
+	ints.clear();
+	ints.push_back(versionid);
+	
+	if(!configuration.set(RBM_VERSION_CFGSTR, ints))
+	  return false;
+	
+	ints.clear();
+      }
+      
+      // sets architecture
+      {
+	ints.clear();
+	ints.push_back(v.size());
+	ints.push_back(h.size());
+	
+	if(!configuration.set(RBM_ARCH_CFGSTR,ints))
+	  return false;
+	
+	ints.clear();
+      }
+      
+      // sets weight matrix W
+      {
+	floats.clear();
+	floats.resize(v.size()*h.size());
+
+	for(unsigned int i=0;i<(unsigned int)(v.size()*h.size());i++){
+	  float f;
+	  if(math::convert(f, W[i]) == false)
+	    return false; // cannot convert to floats meaningfully => failure in save
+	  floats[i] = f;
+	}
+	
+	if(!configuration.set(RBM_WEIGHTS_CFGSTR, floats))
+	  return false;
+      }
+      
+      // if everything went ok saves the conf file to disk
+      if(!configuration.save(filename))
+	return false;
+      
+      return true;
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception: "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      return false;
+    }
+  }
   
   
   template <typename T>

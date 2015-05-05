@@ -47,6 +47,8 @@ void neuralnetwork_test();
 void nnetwork_test();
 void sinh_nnetwork_test();
 
+void rbm_test();
+
 void bayesian_nnetwork_test();
 void backprop_test(const unsigned int size);
 void neuralnetwork_saveload_test();
@@ -76,10 +78,14 @@ int main()
     bayesian_nnetwork_test();
 
     hmc_test();
+    
+    rbm_test();
 
+#if 0 
     activation_test();  
     
     gda_clustering_test(); // DO NOT WORK
+#endif
 
 
 #if 0
@@ -219,6 +225,35 @@ void hmc_test()
   std::cout << "HMC sampling test DONE." << std::endl;
   
   
+}
+
+
+/************************************************************/
+/* restricted boltzmann machines tests */
+
+void rbm_test()
+{
+  std::cout << "RBM TESTS" << std::endl;
+  
+  // generate test dataset
+  {
+    whiteice::RBM<> machine(100,50);
+    std::vector< math::vertex<> > samples;
+    
+    whiteice::RBM<> machine2 = machine;
+    
+    // TODO: saves and loads machine to and from disk and checks configuration is correct
+    
+    // TODO: create a toy problem and check that results seem to make sense
+    
+    // TODO: after RBM seems to work correctly, 
+    //       1) implement stacked RBMs and 
+    //       2) from there write nnetwork creation code 
+    //          for sigmoidal activation functions (non tanh/asinh non-linearities)
+  }
+  
+  
+  std::cout << "RBM TESTS DONE." << std::endl;
 }
 
 
