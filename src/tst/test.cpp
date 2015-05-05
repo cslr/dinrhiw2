@@ -1870,7 +1870,7 @@ void test_dataset()
     }
     
     // checks params are ok
-    // tests: size(), dimension(), getCluster(), getClusters()
+    // tests: size(), dimension(), getCluster(), getClusterNames()
     
     for(unsigned int i=0;i<data.getNumberOfClusters();i++){
       if(data.size(i) != 0){
@@ -1901,14 +1901,14 @@ void test_dataset()
     std::vector<std::string> snames;
     
     {
-      if(data.getClusters(snames) == false){
-	std::cout << "dataset error: getClusters() call failed."
+      if(data.getClusterNames(snames) == false){
+	std::cout << "dataset error: getClusterNames() call failed."
 		  << std::endl;
 	return;
       }
       
       if(snames.size() != names.size()){
-	std::cout << "dataset error: number of names returned by getClusters() is incorrect"
+	std::cout << "dataset error: number of names returned by getClusterNames() is incorrect"
 		  << std::endl;
 	return;
       }
@@ -2045,14 +2045,14 @@ void test_dataset()
 
     {
       std::vector<std::string> cnames;
-      if(data.getClusters(cnames) == false){
-	std::cout << "dataset error: getClusters() call failed."
+      if(data.getClusterNames(cnames) == false){
+	std::cout << "dataset error: getClusterNames() call failed."
 		  << std::endl;
 	return;
       }
       
       if(cnames.size() != snames.size()){
-	std::cout << "dataset error: number of names returned by getClusters()"
+	std::cout << "dataset error: number of names returned by getClusterNames()"
 		  << " is incorrect."
 		  << std::endl;
 	return;

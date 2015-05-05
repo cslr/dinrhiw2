@@ -1166,22 +1166,51 @@ int main(int argc, char** argv)
 	if(data.getNumberOfClusters() == 2 && data.size(0) > 0){
 	  
 	  data.clearData(1);
+	  
+	  data.setName(0, "input");
+	  data.setName(1, "output");
 	
 	  for(unsigned int i=0;i<data.size(0);i++){
 	    math::vertex<> out;
+	    math::vertex<> var;
 	    math::matrix<> cov;
 	    
 	    bnn->calculate(data.access(0, i),  out, cov);
+	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
-	  }
-	  
-	  if(data.save(datafn) == true)
-	    std::cout << "Storing results to dataset file: " 
-		      << datafn << std::endl;
-	  else
-	    std::cout << "Storing results to dataset file FAILED." << std::endl;
+	  }	  
 	}
+	else if(data.getNumberOfClusters() == 3 && data.size(0) > 0){
+	  
+	  data.clearData(1);
+	  data.clearData(2);
+	  
+	  data.setName(0, "input");
+	  data.setName(1, "output");
+	  data.setName(2, "output_stddev");
+	  
+	  for(unsigned int i=0;i<data.size(0);i++){
+	    math::vertex<> out;
+	    math::vertex<> var;
+	    math::matrix<> cov;
+	    
+	    bnn->calculate(data.access(0, i), out, cov);
+	    
+	    var.resize(cov.xsize());	    
+	    for(unsigned int j=0;j<cov.xsize();j++)
+	      var[j] = math::sqrt(cov(j,j)); // st.dev.
+	    
+	    data.add(1, out, true);
+	    data.add(2, var, true);
+	  }	  
+	}
+	
+	if(data.save(datafn) == true)
+	  std::cout << "Storing results to dataset file: " 
+		    << datafn << std::endl;
+	else
+	  std::cout << "Storing results to dataset file FAILED." << std::endl;
       }
     }
     

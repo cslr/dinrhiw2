@@ -107,7 +107,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::getClusters(std::vector<std::string>& names) const
+  bool dataset<T>::getClusterNames(std::vector<std::string>& names) const
   {
     names.clear();
     
@@ -141,6 +141,19 @@ namespace whiteice
     if(index >= clusters.size()) return "";
     
     return clusters[index].cname;
+  }
+
+
+  template <typename T>
+  bool dataset<T>::setName(const unsigned int index, const std::string& name) {
+    if(index >= clusters.size()) return false;
+    
+    if(name.size() > 0)
+      clusters[index].cname = name;
+    else
+      return false;
+    
+    return true;
   }
   
   

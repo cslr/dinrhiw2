@@ -130,7 +130,8 @@ namespace whiteice
     mean.zero();
     covariance.zero();
 
-    T ninv = T(1.0f/nnets.size());
+    T ninv  = T(1.0f/nnets.size());
+    T ninv2 = T(1.0f/(nnets.size() - 1));
 
     if(nnets.size() <= D)
       covariance.identity(); // regularizer term for small datasize
@@ -141,7 +142,7 @@ namespace whiteice
       math::vertex<T> out = nnets[i]->output();
 
       mean += ninv*out;
-      covariance += ninv*out.outerproduct();
+      covariance += ninv2*out.outerproduct();
     }
 
     covariance -= mean.outerproduct();
