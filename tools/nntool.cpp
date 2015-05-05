@@ -1112,8 +1112,8 @@ int main(int argc, char** argv)
 	std::cout << "Neural network input dimension mismatch for input dataset ("
 		  << bnn->inputSize() << " != " << data.dimension(0) << ")"
 		  << std::endl;
-	delete nn;
 	delete bnn;
+	delete nn;
 	nn = NULL;
 	return -1;
       }
@@ -1125,15 +1125,47 @@ int main(int argc, char** argv)
 	if(data.size(0) > 0 && data.size(1) > 0 && 
 	   data.size(0) == data.size(1)){
 	  compare_clusters = true;
-	  
-	  if(bnn->outputSize() != data.dimension(1)){
-	    std::cout << "Neural network output dimension mismatch for dataset ("
-		      << bnn->outputSize() << " != " << data.dimension(1) << ")"
-		      << std::endl;
-	    delete nn;
-	    return -1;	    
-	  }
 	}
+	  
+	if(bnn->outputSize() != data.dimension(1)){
+	  std::cout << "Neural network output dimension mismatch for dataset ("
+		    << bnn->outputSize() << " != " << data.dimension(1) << ")"
+		    << std::endl;
+	  delete bnn;
+	  delete nn;
+	  return -1;	    
+	}
+      }
+      else if(data.getNumberOfClusters() == 3){
+	if(data.size(0) > 0 && data.size(1) > 0 && 
+	   data.size(0) == data.size(1)){
+	  compare_clusters = true;
+	}
+	
+	if(bnn->outputSize() != data.dimension(1)){
+	  std::cout << "Neural network output dimension mismatch for dataset ("
+		    << bnn->outputSize() << " != " << data.dimension(1) << ")"
+		    << std::endl;
+	  delete bnn;
+	  delete nn;
+	  return -1;	    
+	}
+
+	if(bnn->outputSize() != data.dimension(2)){
+	  std::cout << "Neural network output dimension mismatch for dataset ("
+		    << bnn->outputSize() << " != " << data.dimension(2) << ")"
+		    << std::endl;
+	  delete bnn;
+	  delete nn;
+	  return -1;	    
+	}
+      }
+      else{
+	std::cout << "Unsupported number of data clusters in dataset: "
+		  << data.getNumberOfClusters() << std::endl;
+	delete bnn;
+	delete nn;
+	return -1;	    
       }
 	
       
@@ -1197,11 +1229,13 @@ int main(int argc, char** argv)
 	    
 	    bnn->calculate(data.access(0, i), out, cov);
 	    
+	    // we do NOT preprocess the output but inject it directly into dataset
+	    data.add(1, out, true);
+
 	    var.resize(cov.xsize());	    
 	    for(unsigned int j=0;j<cov.xsize();j++)
 	      var[j] = math::sqrt(cov(j,j)); // st.dev.
 	    
-	    data.add(1, out, true);
 	    data.add(2, var, true);
 	  }	  
 	}
@@ -1230,16 +1264,8 @@ int main(int argc, char** argv)
     }
     
     
-    if(nn){
-      delete nn;
-      nn = 0;
-    }
-    
-    
-    if(bnn){
-      delete bnn;
-      bnn = 0;
-    }
+    if(bnn){ delete bnn; bnn = 0; }
+    if(nn){ delete nn; nn = 0; }
     
     
     return 0;
