@@ -24,6 +24,9 @@
 #include "HMC_gaussian.h"
 #include "deep_ica_network_priming.h"
 
+#include "RBM.h"
+#include "CRBM.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -327,13 +330,83 @@ void rbm_test()
     std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;
     
   }
+  
+  
+  // test continuous RBM
+  {
+    std::cout << "CONTINUOUS RBM TOY PROBLEM TESTING" << std::endl;
     
     
+    // creates a toy problem: creates randomly data from three 2d clusters with given 
+    std::cout << "GENERATING CONTINUOUS DATA FOR C-RBM..." << std::endl;
     
-  // TODO: after RBM seems to work correctly, 
-  //       1) implement stacked RBMs and 
-  //       2) from there write nnetwork creation code 
-  //          for sigmoidal activation functions (non tanh/asinh non-linearities)
+    std::vector< math::vertex<> > samples;
+    {
+      math::vertex<> m1, m2, m3;         // mean probabilities of data (same probability for each cluster)
+      math::blas_real<float> dev = 0.2f; // "standard deviation of cluster data"
+      
+      m1.resize(2); m1[0] = 0.5f; m1[1] = 0.5f;
+      m2.resize(2); m2[0] = 0.1f; m2[1] = 0.1f;
+      m3.resize(2); m3[0] = 0.1f; m3[1] = 0.9f;
+      
+      for(unsigned int i=0;i<1000;){
+	unsigned int r = rand()%4;
+	if(r>=3) continue;
+	
+	math::vertex<> d;
+	
+	if(r == 0)      d = m1;
+	else if(r == 1) d = m2;
+	else if(r == 2) d = m3;
+	
+	math::vertex<> var;
+	var.resize(2);
+	var[0] = dev*(((float)rand()/(float)RAND_MAX) - 0.5f);
+	var[1] = dev*(((float)rand()/(float)RAND_MAX) - 0.5f);
+	
+	d += var;
+	
+	samples.push_back(d); // adds a single data point from cluster
+	  
+	i++;
+      }
+    }
+    
+    std::cout << "GENERATING CONTINUOUS DATA FOR C-RBM... OK." << std::endl;
+    
+    
+    // now trains 
+    std::cout << "CRBM TRAINING: TOY PROBLEM 2" << std::endl;
+    
+    whiteice::CRBM<> machine(2, 8);
+    {
+            
+      math::blas_real<float> delta;
+      math::blas_real<float> elimit = 0.005;
+      unsigned int epochs = 0;
+      
+      do{
+	delta = machine.learnWeights(samples);
+	epochs++;
+	
+	std::cout << "CRBM learning epoch " << epochs 
+		  << " deltaW = " << delta << std::endl;
+      }
+      while(delta > elimit && epochs < 10000);
+      
+      std::cout << "CRBM LEARNING TOY PROBLEM 2.. DONE." << std::endl;
+      
+      std::cout << "W  = " << machine.getWeights() << std::endl;
+      std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;      
+    }
+    
+    // TODO: test recontruction of random datapoints using CD-10 to the target
+    {
+      
+    }
+    
+  }
+  
   
   
   std::cout << "RBM TESTS DONE." << std::endl;

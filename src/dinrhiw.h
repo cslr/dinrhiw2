@@ -28,6 +28,7 @@
 #include "ultradeep.h"
 
 #include "RBM.h"
+#include "CRBM.h"
 
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"

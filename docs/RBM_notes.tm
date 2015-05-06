@@ -96,10 +96,25 @@
 
   \;
 
-  <with|font-series|bold|Continuous RBM>
+  <with|font-series|bold|Continuous RBM (CRBM)>
 
-  TODO: implement <with|font-series|bold|continuous RBM> similarly to what is
-  described in the <verbatim|CRBM_iee2003.pdf> paper.
+  The continuous RBM is more complicated to implement and understand.
+
+  TODO\ 
+
+  <\itemize>
+    <item>implement <with|font-series|bold|continuous RBM> similarly to what
+    is described in the <verbatim|CRBM_iee2003.pdf> paper and test it using
+    similar two dimensional dataplots
+
+    <item>implement stacked RBM codes both for RBM and CRBM
+
+    <item>write code to generate <strong|deep feedforward neural network>
+    structure and weights from the stacked RBM and CRBM which can be then
+    passed normally to the optimization algorithms
+  </itemize>
+
+  \;
 </body>
 
 <\references>

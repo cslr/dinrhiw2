@@ -1,11 +1,11 @@
 /*
- * Restricted Boltzmann Machine
+ * Continuous Restricted Boltzmann Machine
  * 
- * data is stored as in binary form 0 or 1
+ * data is stored between range of [-1, 1]
  */
 
-#ifndef RBM_H
-#define RBM_H
+#ifndef CRBM_H
+#define CRBM_H
 
 #include "dinrhiw_blas.h"
 #include "vertex.h"
@@ -20,20 +20,20 @@
 namespace whiteice
 {
   template <typename T = math::blas_real<float> >
-    class RBM
+    class CRBM
     {
     public:
     
     // creates 1x1 network, used to load some useful network
-    RBM();
-    RBM(const RBM<T>& rbm);
+    CRBM();
+    CRBM(const CRBM<T>& rbm);
     
     // creates 2-layer: V * H network
-    RBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
+    CRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
     
-    virtual ~RBM();
+    virtual ~CRBM();
     
-    RBM<T>& operator=(const RBM<T>& rbm);
+    CRBM<T>& operator=(const CRBM<T>& rbm);
     
     ////////////////////////////////////////////////////////////
     
@@ -47,14 +47,14 @@ namespace whiteice
     
     bool initializeWeights(); // initialize weights to small values
     
-    // calculates single epoch for updating weights using CD-1 and returns |dW|
+    // calculates single epoch for updating weights using CD-10 and returns |dW|
     // (keep calculating until returned value is close enough to zero) or 
     //  the number of epochs is reached)
     T learnWeights(const std::vector< math::vertex<T> >& samples);
     
     ////////////////////////////////////////////////////////////
     
-    // load & saves RBM data from/to file
+    // load & saves CRBM data from/to file
     
     bool load(const std::string& filename) throw();
     bool save(const std::string& filename) const throw();
@@ -76,10 +76,10 @@ namespace whiteice
       
     };
 
-  extern template class RBM< float >;
-  extern template class RBM< double >;  
-  extern template class RBM< math::blas_real<float> >;
-  extern template class RBM< math::blas_real<double> >;
+  extern template class CRBM< float >;
+  extern template class CRBM< double >;  
+  extern template class CRBM< math::blas_real<float> >;
+  extern template class CRBM< math::blas_real<double> >;
   
 };
 

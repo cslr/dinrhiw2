@@ -1,5 +1,5 @@
 
-#include "RBM.h"
+#include "CRBM.h"
 #include "norms.h"
 
 namespace whiteice
@@ -7,7 +7,7 @@ namespace whiteice
   
   // creates 1x1 network, used to load some useful network later
   template <typename T>
-  RBM<T>::RBM()
+  CRBM<T>::CRBM()
   {
     v.resize(2);
     h.resize(2);
@@ -17,7 +17,7 @@ namespace whiteice
   }
   
   template <typename T>
-  RBM<T>::RBM(const RBM<T>& rbm)
+  CRBM<T>::CRBM(const CRBM<T>& rbm)
   {
     this->v = rbm.v;
     this->h = rbm.h;
@@ -27,7 +27,7 @@ namespace whiteice
   
   // creates 2-layer: V * H network
   template <typename T>
-  RBM<T>::RBM(unsigned int visible, unsigned int hidden)
+  CRBM<T>::CRBM(unsigned int visible, unsigned int hidden)
     throw(std::invalid_argument)
   {
     if(visible == 0 || hidden == 0)
@@ -42,13 +42,13 @@ namespace whiteice
   }
   
   template <typename T>
-  RBM<T>::~RBM()
+  CRBM<T>::~CRBM()
   {
     // nothing to do
   }
   
   template <typename T>  
-  RBM<T>& RBM<T>::operator=(const RBM<T>& rbm)
+  CRBM<T>& CRBM<T>::operator=(const CRBM<T>& rbm)
   {
     this->v = rbm.v;
     this->h = rbm.h;
@@ -58,7 +58,7 @@ namespace whiteice
   }
   
   template <typename T>
-  math::vertex<T> RBM<T>::getVisible() const
+  math::vertex<T> CRBM<T>::getVisible() const
   {
     math::vertex<T> t = v;
     t.resize(v.size() - 1);
@@ -67,7 +67,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool RBM<T>::setVisible(const math::vertex<T>& v)
+  bool CRBM<T>::setVisible(const math::vertex<T>& v)
   {
     if(this->v.size() != (v.size() + 1))
       return false;
@@ -81,7 +81,7 @@ namespace whiteice
   }
   
   template <typename T>
-  math::vertex<T> RBM<T>::getHidden() const
+  math::vertex<T> CRBM<T>::getHidden() const
   {
     math::vertex<T> t = h;
     t.resize(h.size() - 1);
@@ -91,7 +91,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool RBM<T>::setHidden(const math::vertex<T>& h)
+  bool CRBM<T>::setHidden(const math::vertex<T>& h)
   {
     if(this->h.size() != (h.size() + 1))
       return false;
@@ -106,13 +106,13 @@ namespace whiteice
   
   
   template <typename T>
-  math::matrix<T> RBM<T>::getWeights() const
+  math::matrix<T> CRBM<T>::getWeights() const
   {
     return W;
   }
   
   template <typename T>
-  bool RBM<T>::initializeWeights(){ // initialize weights to small values
+  bool CRBM<T>::initializeWeights(){ // initialize weights to small values
     
     for(unsigned int j=0;j<W.ysize();j++)
       for(unsigned int i=0;i<W.xsize();i++)
@@ -126,7 +126,7 @@ namespace whiteice
   
   
   template <typename T>
-  T RBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples)
+  T CRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples)
   {
     const unsigned int L = 10; // CD-10 algorithm
     const T lambda = T(0.01);
@@ -154,11 +154,15 @@ namespace whiteice
 	
 	// 1. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
-	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	  T r = T(rand())/T(RAND_MAX);
+	  T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0); // [-1, 1]
 	  
+#if 0
+	  T r = T(rand())/T(RAND_MAX);
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
+#else
+	  h[j] = aj;
+#endif
 	}
 	
 	for(unsigned int y=0;y<h.size();y++)
@@ -171,11 +175,15 @@ namespace whiteice
 	  
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(v.size()-0);j++){
-	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	    T r = T(rand())/T(RAND_MAX);
-	    
+	    T aj = T(2.0)/(T(1.0) + math::exp(-v[j])) - T(1.0); // [-1, 1]
+
+#if 0
+	    T r = T(rand())/T(RAND_MAX);	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
 	    else       v[j] = T(0.0);
+#else
+	    v[j] = aj;
+#endif
 	  }
 	  
 	  // v[v.size()-1] = T(1.0); // DO NOT FORCE THE HIDDEN INPUT TO ONE DURING STIM
@@ -185,11 +193,15 @@ namespace whiteice
 	  
 	  // 2. hidden units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(h.size()-0);j++){
-	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	    T r = T(rand())/T(RAND_MAX);
+	    T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0); // [-1, 1]
 	    
+#if 0
+	    T r = T(rand())/T(RAND_MAX);
 	    if(aj > r) h[j] = T(1.0); // discretization step
 	    else       h[j] = T(0.0);
+#else
+	    h[j] = aj;
+#endif
 	  }
 	  
 	}
@@ -214,12 +226,12 @@ namespace whiteice
   
   ////////////////////////////////////////////////////////////
   
-#define RBM_VERSION_CFGSTR          "RBM_CONFIG_VERSION"
-#define RBM_ARCH_CFGSTR             "RBM_ARCH"
-#define RBM_WEIGHTS_CFGSTR          "RBM_WEIGHTS"
+#define CRBM_VERSION_CFGSTR          "CRBM_CONFIG_VERSION"
+#define CRBM_ARCH_CFGSTR             "CRBM_ARCH"
+#define CRBM_WEIGHTS_CFGSTR          "CRBM_WEIGHTS"
   
   template <typename T>
-  bool RBM<T>::load(const std::string& filename) throw()
+  bool CRBM<T>::load(const std::string& filename) throw()
   {
     try{
       whiteice::conffile configuration;
@@ -235,7 +247,7 @@ namespace whiteice
       {
 	int versionid = 0;
 	
-	if(!configuration.get(RBM_VERSION_CFGSTR, ints))
+	if(!configuration.get(CRBM_VERSION_CFGSTR, ints))
 	  return false;
 	
 	if(ints.size() != 1)
@@ -252,7 +264,7 @@ namespace whiteice
       // loads architecture
       std::vector<int> arch;
       {
-	if(!configuration.get(RBM_ARCH_CFGSTR,ints))
+	if(!configuration.get(CRBM_ARCH_CFGSTR,ints))
 	  return false;
 	
 	if(ints.size() < 2)
@@ -267,7 +279,7 @@ namespace whiteice
       // tries to load weight matrix V
       math::matrix<T> V;
       {
-	if(!configuration.get(RBM_WEIGHTS_CFGSTR, floats))
+	if(!configuration.get(CRBM_WEIGHTS_CFGSTR, floats))
 	  return false;
 	
 	if(floats.size() != (unsigned int)(arch[0]*arch[1]))
@@ -297,7 +309,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool RBM<T>::save(const std::string& filename) const throw()
+  bool CRBM<T>::save(const std::string& filename) const throw()
   {
     try{
       whiteice::conffile configuration;
@@ -313,7 +325,7 @@ namespace whiteice
 	ints.clear();
 	ints.push_back(versionid);
 	
-	if(!configuration.set(RBM_VERSION_CFGSTR, ints))
+	if(!configuration.set(CRBM_VERSION_CFGSTR, ints))
 	  return false;
 	
 	ints.clear();
@@ -325,7 +337,7 @@ namespace whiteice
 	ints.push_back(v.size());
 	ints.push_back(h.size());
 	
-	if(!configuration.set(RBM_ARCH_CFGSTR,ints))
+	if(!configuration.set(CRBM_ARCH_CFGSTR,ints))
 	  return false;
 	
 	ints.clear();
@@ -343,7 +355,7 @@ namespace whiteice
 	  floats[i] = f;
 	}
 	
-	if(!configuration.set(RBM_WEIGHTS_CFGSTR, floats))
+	if(!configuration.set(CRBM_WEIGHTS_CFGSTR, floats))
 	  return false;
       }
       
@@ -364,7 +376,7 @@ namespace whiteice
   
   
   template <typename T>
-  T RBM<T>::randomValue()
+  T CRBM<T>::randomValue()
   {
     T r = T(rand())/T(RAND_MAX);
     
@@ -376,9 +388,9 @@ namespace whiteice
   
   
   
-  template class RBM< float >;
-  template class RBM< double >;  
-  template class RBM< math::blas_real<float> >;
-  template class RBM< math::blas_real<double> >;
+  template class CRBM< float >;
+  template class CRBM< double >;  
+  template class CRBM< math::blas_real<float> >;
+  template class CRBM< math::blas_real<double> >;
   
 };
