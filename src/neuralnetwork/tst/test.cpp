@@ -276,7 +276,6 @@ void rbm_test()
     const unsigned int H = 2;
     const unsigned int V = 2*H;
     
-    whiteice::RBM<> machine(V, H);
     std::vector< math::vertex<> > samples;
     
     for(unsigned int i=0;i<1000;i++){
@@ -307,8 +306,10 @@ void rbm_test()
     
     std::cout << "RBM LEARNING TOY PROBLEM.." << std::endl;
     
+    whiteice::RBM<> machine(V, H);
+    
     math::blas_real<float> delta;
-    math::blas_real<float> elimit = 0.01;
+    math::blas_real<float> elimit = 0.005;
     unsigned int epochs = 0;
     
     do{

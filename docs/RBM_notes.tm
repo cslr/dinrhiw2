@@ -3,7 +3,7 @@
 <style|generic>
 
 <\body>
-  <strong|Some notes about my RBM implementation>
+  <strong|Some notes about my RBM implementation (binary RBM)>\ 
 
   Tomas Ukkonen, 2015
 
@@ -29,45 +29,12 @@
   </itemize-dot>
 
   This then makes the calculations relatively simple as you will only have to
-  care about the weight matrix <math|\<b-W\>> and can ignore other terms.
-  However, this approach has one theoretical/practical problem. In practice,
-  the final hidden state should be always equal to <math|1> but in practice
-  it is not because of our calculations set another values to the last hidden
-  state.
-
-  Because of this, another, alternative approach was/will be tried. Only
-  visible terms are extended to have <math|1> and the hidden layer DOES NOT
-  have extra variables. This should be also compatible with the stacking of
-  RBMs.
-
-  Stacking of RBMs:
-
-  <\itemize-dot>
-    <item>the next layer (hidden layer) is not extended to have extra
-    variables but the input layer (visible) is always extended to have extra
-    <math|1> meaning that the last weight matrix terms are the bias-terms
-    like in ``normal'' neural network
-
-    <item>after learning a single layer RBM, hidden layer variables are again
-    calculated and <em|again extended> with ones. This means that there is
-    NEVER backward bias-terms but only forward bias-terms like in normal
-    feedforward neural networks
-
-    <item>after calculating <math|k> layers of RBMs using a special function,
-    they are combined to form a <strong|<em|deep belief network> - DBN>.
-  </itemize-dot>
-
-  Calculating deep neural network (TODO):
-
-  <\itemize-dot>
-    <item>write code to calculate <with|font-series|bold|DBN> using
-    discretized 0/1-input data and restricted boltzmann machines, if possible
-    extend RBM to work with continuous data if possible?
-
-    <item>write code that generates neural network with a logistic
-    non-linearity similarly to RBMs and uses bias terms introduced into RBMs
-    through artificial all <math|1> inputs in the visible nodes.
-  </itemize-dot>
+  care about the weight matrix <math|\<b-W\>> and can ignore other terms. How
+  to handle these equal to <math|1> states during the stimulation phase of
+  RBM in CD? The correct approach seems to handle them similarly to all other
+  variables, in other words we just simulate and simulate their states
+  normally. This then leads to situation where the bias terms automatically
+  find rules that always set those values to <math|1>.
 
   \;
 
@@ -97,42 +64,42 @@
   values to <math|0> and <math|1> are always the same, the weight matrix for
   hidden to visible layers have the form:
 
-  <center|<math|\<b-W\><rsup|T>=><center|<block|<tformat|<table|<row|<cell|+5.3>|<cell|+0.1>>|<row|<cell|+5.3>|<cell|+0.1>>|<row|<cell|-0.3>|<cell|-2.5>>|<row|<cell|-0.3>|<cell|-2.5>>|<row|<cell|-9.0/0.0>|<cell|+2.6>>>>>>>
+  <center|<math|\<b-W\>=><block|<tformat|<table|<row|<cell|4.6>|<cell|4.4>|<cell|4.3>|<cell|4.5>|<cell|5.6>>|<row|<cell|0.0>|<cell|-0.1>|<cell|-9.7>|<cell|-9.8>|<cell|8.9>>|<row|<cell|-9.7>|<cell|-9.7>|<cell|0.09>|<cell|0.2>|<cell|8.7>>>>>>
 
-  From this we can see that the first two terms are exactly same as the first
-  term of the hidden layer and that the 3rd and 4th term are inverse of the
-  second term in hidden layer. So if the hidden layer term is <math|1> then
-  the visible layer term is zero (large negative value) but if the term is
-  zero, then it is maybe ALSO zero because the value of the sigmoid function
-  is close zero and the probability of selecting either state is close to 50%
-  (with some negative correlation to the statistically independent first
-  term!). Finally, if the bias term weights seem to chosen randomly for the
-  first term, the value is negative of the first term or positive of the
-  second term but is not certainly close to <math|1> which is should always
-  be thereby generating spurious results.
+  This weight matrix clearly generates three hidden states where the first
+  one is equal to the state <math|1> which is always on. Because binary
+  values only take values <math|0> and <math|1> the sigmoid function only
+  gets positive values (the last term is <math|5.6> meaning that the all
+  <math|1> term in input layer sets value to be extremely likely to be
+  <math|1> even when other terms are <math|0>). After this, the second term
+  sets the term to be <math|0> when the second part of the inputs are
+  <math|1> and <math|0> when the inputs are <math|1> because in this case the
+  sigmoidal value will be negative. And similarly for the last term.
 
-  It is also possible to look at the weight matrix <math|\<b-W\>> that
-  generates hidden RBM states:
+  Given this intepretation, the reversed weight matrix <math|\<b-W\><rsup|T>>
+  makes now also sense:
 
-  <center|<math|\<b-W\>=><block|<tformat|<table|<row|<cell|-5.5>|<cell|-5.5>|<cell|0.7>|<cell|0.7>|<cell|-0.2>>|<row|<cell|-0.3>|<cell|-0.3>|<cell|-2.4>|<cell|-2.4>|<cell|2.57>>>>>>
+  <center|<math|\<b-W\><rsup|T>=><center|<block|<tformat|<table|<row|<cell|4.6>|<cell|+0.1>|<cell|-9.7>>|<row|<cell|4.4>|<cell|-0.1>|<cell|-9.7>>|<row|<cell|4.3>|<cell|-9.7>|<cell|0.0>>|<row|<cell|4.5>|<cell|-9.7>|<cell|0.2>>|<row|<cell|5.6>|<cell|8.9>|<cell|8.7>>>>>>>
 
-  Here we can see that the first hidden state is <math|1> if the first state
-  <math|X> is zero and the second term is <math|X> is
-  <math|<wide|X|\<bar\>>>. Again, the second state is <math|1>, if <math|Y=0>
-  and <math|0> is <math|Y=1>.
+  If we keep in mind that the first term is always <math|1> in our reversed.
+  Then the first two terms are <math|1> only when the third term is zero and
+  zero only when the third term is one (negative sigmoid value). Similar is
+  true for the second set of variables and finally the 5th variable is always
+  one due to fact that state values are always non-negative meaning that
+  sigmoidal value will be always be positive.
 
-  <em|These results do not look that good..> Thereby another, slightly
-  altered algorithm was again used that DO NOT set extended values of
-  <math|X> always to <math|1> during stimulation step. THIS LEAD TO EVEN
-  WORSE RESULTS. The algorithm just CANNOT FIND 2 CLEAR HIDDEN STATES IT
-  SHOULD.
-
-  SO INSTEAD, I THEN TRIED TO INCREASE NUMBER OF HIDDEN STATES TO 8 STATES.
+  <em|This then proofs and shows that the toy problem is properly solved by
+  <strong|<em|the binary RBM with the CD-10>> learning rule. It can find
+  proper two states and the one artificial always one state using the simple
+  contrastive divergence algorithm.> This shows RBM is capable of data
+  reduction.
 
   \;
 
-  TODO: implement <with|font-series|bold|continuous RBM> as described in the
-  <verbatim|CRBM_iee2003.pdf> paper.
+  <with|font-series|bold|Continuous RBM>
+
+  TODO: implement <with|font-series|bold|continuous RBM> similarly to what is
+  described in the <verbatim|CRBM_iee2003.pdf> paper.
 </body>
 
 <\references>

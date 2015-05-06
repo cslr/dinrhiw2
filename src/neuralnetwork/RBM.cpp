@@ -10,8 +10,8 @@ namespace whiteice
   RBM<T>::RBM()
   {
     v.resize(2);
-    h.resize(1);
-    W.resize(1,2);
+    h.resize(2);
+    W.resize(2,2);
     
     initializeWeights();
   }
@@ -35,8 +35,8 @@ namespace whiteice
     
     // the last term is always constant: 1 (one)
     v.resize(visible + 1);
-    h.resize(hidden);
-    W.resize(hidden, visible + 1);
+    h.resize(hidden + 1);
+    W.resize(hidden + 1, visible + 1);
     
     initializeWeights();    
   }
@@ -83,17 +83,23 @@ namespace whiteice
   template <typename T>
   math::vertex<T> RBM<T>::getHidden() const
   {
-    return h;
+    math::vertex<T> t = h;
+    t.resize(h.size() - 1);
+    
+    return t;
   }
   
   
   template <typename T>
   bool RBM<T>::setHidden(const math::vertex<T>& h)
   {
-    if(this->h.size() != h.size())
+    if(this->h.size() != (h.size() + 1))
       return false;
     
-    this->h = h;
+    for(unsigned int j=0;j<h.size();j++)
+      this->h[j] = h[j];
+    
+    this->h[h.size()] = T(1.0);
     
     return true;
   }
@@ -113,6 +119,7 @@ namespace whiteice
 	W(j,i) = randomValue();
     
     v[v.size()-1] = T(1.0);
+    h[h.size()-1] = T(1.0);
 
     return true;
   }
