@@ -40,9 +40,7 @@ namespace whiteice
     h.resize(hidden + 1);
     W.resize(hidden + 1, visible + 1);
     
-    for(unsigned int j=0;j<hidden;j++)
-      for(unsigned int i=0;i<visible;i++)
-	W(j,i) = randomValue();
+    initializeWeights();    
   }
   
   template <typename T>
@@ -110,19 +108,48 @@ namespace whiteice
   
   
   template <typename T>
+  math::matrix<T> RBM<T>::getWeights() const
+  {
+    return W;
+  }
+  
+  template <typename T>
+  bool RBM<T>::initializeWeights(){ // initialize weights to small values
+    
+    for(unsigned int j=0;j<W.ysize();j++)
+      for(unsigned int i=0;i<W.xsize();i++)
+	W(j,i) = randomValue();
+    
+    v[v.size()-1] = T(1.0);
+    h[h.size()-1] = T(1.0);
+
+    return true;
+  }
+  
+  
+  template <typename T>
   T RBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples)
   {
-    const unsigned int L = 1; // CD-1 algorithm
+    const unsigned int L = 10; // CD-1 algorithm
     const T lambda = T(0.01);
     
     math::matrix<T> P(W);
     math::matrix<T> N(W);
     math::matrix<T> originalW = W;
+    math::matrix<T> Wt = W;
+    Wt.transpose();
+    
     
     for(unsigned int i=0;i<samples.size();i++){
       const unsigned int index = rand() % samples.size();
       
-      v = samples[index];
+      if(samples[index].size() + 1 != v.size())
+	continue; // silently ignores bad data.. (throw exception instead?)
+
+      // v = samples[index];
+      v.importData(&(samples[index][0]), samples[index].size());
+      v[v.size()-1] = T(1.0);
+      
       
       {
 	h = W*v;
@@ -141,9 +168,7 @@ namespace whiteice
 	for(unsigned int y=0;y<h.size();y++)
 	  for(unsigned int x=0;x<v.size();x++)
 	    P(y,x) = h[y]*v[x];
-	
-	math::matrix<T> Wt = W.transpose();
-	
+
 	
 	for(unsigned int l=0;l<L;l++){
 	  v = Wt*h;
@@ -159,6 +184,7 @@ namespace whiteice
 	  
 	  v[v.size()-1] = T(1.0);
 	  
+	  
 	  h = W*v;
 	  
 	  // 2. hidden units: calculates sigma(a_j)
@@ -171,8 +197,8 @@ namespace whiteice
 	  }
 	  
 	  h[h.size()-1] = T(1.0);
-	  
 	}
+	
 	
 	for(unsigned int y=0;y<h.size();y++)
 	  for(unsigned int x=0;x<v.size();x++)
@@ -180,13 +206,15 @@ namespace whiteice
       }
       
       // updates weights according to CD rule
-      W = W * lambda*(P - N);
+      W += lambda*(P - N);
+      Wt = W;
+      Wt.transpose();
     }
     
     
     originalW -= W;
     
-    return math::frobenius_norm(originalW);
+    return (math::frobenius_norm(originalW)/originalW.size());
   }
   
   ////////////////////////////////////////////////////////////

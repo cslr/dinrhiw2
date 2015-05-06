@@ -283,6 +283,7 @@ namespace whiteice
 #include "backpropagation.h"
 #include "neuronlayer.h"  
 #include "vertex.h"
+#include "norms.h"
 
 
 namespace whiteice

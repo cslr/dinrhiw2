@@ -71,6 +71,10 @@ int main()
   
 
   try{
+    rbm_test();
+    return 0;
+    
+    
     nnetwork_test();
     
     sinh_nnetwork_test();
@@ -79,13 +83,9 @@ int main()
 
     hmc_test();
     
-    rbm_test();
-
-#if 0 
     activation_test();  
     
     gda_clustering_test(); // DO NOT WORK
-#endif
 
 
 #if 0
@@ -235,22 +235,104 @@ void rbm_test()
 {
   std::cout << "RBM TESTS" << std::endl;
   
-  // generate test dataset
+  // saves and loads machine to and from disk and checks configuration is correct
   {
     whiteice::RBM<> machine(100,50);
-    std::vector< math::vertex<> > samples;
-    
     whiteice::RBM<> machine2 = machine;
     
-    // TODO: saves and loads machine to and from disk and checks configuration is correct
+    std::cout << "RBM LOAD/SAVE TEST" << std::endl;
+      
+        if(machine.save("rbmtest.cfg") == false){
+      std::cout << "ERROR: saving RBM failed." << std::endl;
+      return;
+    }
     
-    // TODO: create a toy problem and check that results seem to make sense
+    if(machine.load("rbmtest.cfg") == false){
+      std::cout << "ERROR: loading RBM failed." << std::endl;
+      return;
+    }
     
-    // TODO: after RBM seems to work correctly, 
-    //       1) implement stacked RBMs and 
-    //       2) from there write nnetwork creation code 
-    //          for sigmoidal activation functions (non tanh/asinh non-linearities)
+    // compares machine and machine2
+    math::matrix<> W1, W2;
+    W1 = machine.getWeights();
+    W2 = machine2.getWeights();
+    W1 = W2 - W1;
+    
+    math::blas_real<float> e = 0.0001;
+    
+    if(frobenius_norm(W1) > e){
+      std::cout << "ERROR: loaded RBM machine have different weights." 
+		<< std::endl;
+      return;
+    }
+    
+    std::cout << "RBM LOAD/SAVE TEST OK." << std::endl;
   }
+
+  // creates a toy problems and check that results seem to make sense
+  {
+    std::cout << "RBM TOY PROBLEM TEST" << std::endl;
+    
+    const unsigned int H = 2;
+    const unsigned int V = 2*H;
+    
+    whiteice::RBM<> machine(V, H);
+    std::vector< math::vertex<> > samples;
+    
+    for(unsigned int i=0;i<1000;i++){
+      math::vertex<> h;
+      math::vertex<> v;
+      h.resize(H);
+      v.resize(V);
+      
+      for(unsigned int j=0;j<H;j++){
+	float f = (float)(rand() & 1); 
+	h[j] = f; // 0, 1 valued vector
+      }
+      
+      // calculates visible vector v from h
+      for(unsigned int j=0;j<V;j++){
+	float f = (float)(rand() & 1);
+	f = 1.0f; // no noise mask..
+	v[j] = f * h[j/2]; // 0, 1 valued vector [noise masking]
+      }
+      
+      samples.push_back(v);
+      
+      // std::cout << "h = " << h << std::endl;
+      // std::cout << "v = " << v << std::endl;
+    }
+    
+    std::cout << "RBM TOY PROBLEM GENERATION OK." << std::endl;
+    
+    std::cout << "RBM LEARNING TOY PROBLEM.." << std::endl;
+    
+    math::blas_real<float> delta;
+    math::blas_real<float> elimit = 0.01;
+    unsigned int epochs = 0;
+    
+    do{
+      delta = machine.learnWeights(samples);
+      epochs++;
+      
+      std::cout << "RBM learning epoch " << epochs 
+		<< " deltaW = " << delta << std::endl;
+    }
+    while(delta > elimit && epochs < 10000);
+
+    std::cout << "RBM LEARNING TOY PROBLEM.. DONE." << std::endl;
+    
+    std::cout << "W  = " << machine.getWeights() << std::endl;
+    std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;
+    
+  }
+    
+    
+    
+  // TODO: after RBM seems to work correctly, 
+  //       1) implement stacked RBMs and 
+  //       2) from there write nnetwork creation code 
+  //          for sigmoidal activation functions (non tanh/asinh non-linearities)
   
   
   std::cout << "RBM TESTS DONE." << std::endl;

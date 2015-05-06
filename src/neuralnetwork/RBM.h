@@ -46,6 +46,10 @@ namespace whiteice
     math::vertex<T> getHidden() const;
     bool setHidden(const math::vertex<T>& h);
     
+    math::matrix<T> getWeights() const;
+    
+    bool initializeWeights(); // initialize weights to small values
+    
     // calculates single epoch for updating weights using CD-1 and returns |dW|
     // (keep calculating until returned value is close enough to zero) or 
     //  the number of epochs is reached)
