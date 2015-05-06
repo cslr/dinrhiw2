@@ -9,13 +9,11 @@ namespace whiteice
   template <typename T>
   RBM<T>::RBM()
   {
-    v.resize(1);
+    v.resize(2);
     h.resize(1);
-    W.resize(1,1);
+    W.resize(1,2);
     
-    v[0]   = randomValue();
-    h[0]   = randomValue();
-    W(0,0) = randomValue();
+    initializeWeights();
   }
   
   template <typename T>
@@ -37,8 +35,8 @@ namespace whiteice
     
     // the last term is always constant: 1 (one)
     v.resize(visible + 1);
-    h.resize(hidden + 1);
-    W.resize(hidden + 1, visible + 1);
+    h.resize(hidden);
+    W.resize(hidden, visible + 1);
     
     initializeWeights();    
   }
@@ -85,23 +83,17 @@ namespace whiteice
   template <typename T>
   math::vertex<T> RBM<T>::getHidden() const
   {
-    math::vertex<T> t = h;
-    t.resize(h.size() - 1);
-    
-    return t;
+    return h;
   }
   
   
   template <typename T>
   bool RBM<T>::setHidden(const math::vertex<T>& h)
   {
-    if(this->h.size() != (h.size() + 1))
+    if(this->h.size() != h.size())
       return false;
     
-    for(unsigned int j=0;j<h.size();j++)
-      this->h[j] = h[j];
-    
-    this->h[h.size()] = T(1.0);
+    this->h = h;
     
     return true;
   }
@@ -121,7 +113,6 @@ namespace whiteice
 	W(j,i) = randomValue();
     
     v[v.size()-1] = T(1.0);
-    h[h.size()-1] = T(1.0);
 
     return true;
   }
@@ -155,15 +146,13 @@ namespace whiteice
 	h = W*v;
 	
 	// 1. hidden units: calculates sigma(a_j)
-	for(unsigned int j=0;j<(h.size()-1);j++){
+	for(unsigned int j=0;j<(h.size()-0);j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
 	  T r = T(rand())/T(RAND_MAX);
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
 	}
-	
-	h[h.size()-1] = T(1.0);
 	
 	for(unsigned int y=0;y<h.size();y++)
 	  for(unsigned int x=0;x<v.size();x++)
@@ -174,7 +163,7 @@ namespace whiteice
 	  v = Wt*h;
 	  
 	  // 1. visible units: calculates sigma(a_j)
-	  for(unsigned int j=0;j<(v.size()-1);j++){
+	  for(unsigned int j=0;j<(v.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
 	    T r = T(rand())/T(RAND_MAX);
 	    
@@ -182,13 +171,13 @@ namespace whiteice
 	    else       v[j] = T(0.0);
 	  }
 	  
-	  v[v.size()-1] = T(1.0);
+	  // v[v.size()-1] = T(1.0); // DO NOT FORCE THE HIDDEN INPUT TO ONE DURING STIM
 	  
 	  
 	  h = W*v;
 	  
 	  // 2. hidden units: calculates sigma(a_j)
-	  for(unsigned int j=0;j<(h.size()-1);j++){
+	  for(unsigned int j=0;j<(h.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
 	    T r = T(rand())/T(RAND_MAX);
 	    
@@ -196,7 +185,6 @@ namespace whiteice
 	    else       h[j] = T(0.0);
 	  }
 	  
-	  h[h.size()-1] = T(1.0);
 	}
 	
 	
