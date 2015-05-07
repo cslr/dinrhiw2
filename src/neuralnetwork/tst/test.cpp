@@ -245,7 +245,7 @@ void rbm_test()
     
     std::cout << "RBM LOAD/SAVE TEST" << std::endl;
       
-        if(machine.save("rbmtest.cfg") == false){
+    if(machine.save("rbmtest.cfg") == false){
       std::cout << "ERROR: saving RBM failed." << std::endl;
       return;
     }
@@ -342,22 +342,23 @@ void rbm_test()
     
     std::vector< math::vertex<> > samples;
     {
-      math::vertex<> m1, m2, m3;         // mean probabilities of data (same probability for each cluster)
+      math::vertex<> m1, m2, m3, m4;     // mean probabilities of data (same probability for each cluster)
       math::blas_real<float> dev = 0.2f; // "standard deviation of cluster data"
       
       m1.resize(2); m1[0] = 0.5f; m1[1] = 0.5f;
       m2.resize(2); m2[0] = 0.1f; m2[1] = 0.1f;
       m3.resize(2); m3[0] = 0.1f; m3[1] = 0.9f;
+      m4.resize(2); m4[0] = 0.9f; m4[1] = 0.9f;
       
       for(unsigned int i=0;i<1000;){
 	unsigned int r = rand()%4;
-	if(r>=3) continue;
 	
 	math::vertex<> d;
 	
 	if(r == 0)      d = m1;
 	else if(r == 1) d = m2;
 	else if(r == 2) d = m3;
+	else if(r == 3) d = m4;
 	
 	math::vertex<> var;
 	var.resize(2);
@@ -373,7 +374,7 @@ void rbm_test()
     }
     
     std::cout << "GENERATING CONTINUOUS DATA FOR C-RBM... OK." << std::endl;
-    
+
     
     // now trains 
     std::cout << "CRBM TRAINING: TOY PROBLEM 2" << std::endl;
@@ -399,13 +400,49 @@ void rbm_test()
       std::cout << "W  = " << machine.getWeights() << std::endl;
       std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;      
     }
+
     
     // TODO: test recontruction of random datapoints using CD-10 to the target
+    std::cout << "CRBM RECONSTRUCT AND STORING RESULTS TO CSV FILES" << std::endl;
+    
+    std::vector< math::vertex<> > reconstruct;
     {
+      // 1. write reconstruction code using CD-10
+      // 2. reconstruct data points
+
       
+      // saves training data to CSV file for analysis and plotting purposes
+      FILE* handle = fopen("rbm_inputdata.csv", "wt"); // no error checking here
+      
+      for(unsigned int i=0;i<samples.size();i++){
+	math::vertex<>& v = samples[i];
+	
+	fprintf(handle, "%f", v[0].c[0]);
+	for(unsigned int j=1;j<v.size();j++)
+	  fprintf(handle, ",%f", v[j].c[0]);
+	fprintf(handle, "\n");
+      }
+      
+      fclose(handle);
+
+      
+      // saves reconstructed C-RBM CD-10 data to CSV file for analysis and plotting purposes
+      handle = fopen("rbm_reconstruct.csv", "wt"); // no error checking here
+      
+      for(unsigned int i=0;i<reconstruct.size();i++){
+	math::vertex<>& v = reconstruct[i];
+	
+	fprintf(handle, "%f", v[0].c[0]);
+	for(unsigned int j=1;j<v.size();j++)
+	  fprintf(handle, ",%f", v[j].c[0]);
+	fprintf(handle, "\n");
+      }
+      
+      fclose(handle);
     }
     
   }
+  std::cout << "CRBM RECONSTRUCT AND STORING RESULTS TO CSV FILES.. DONE." << std::endl;
   
   
   

@@ -106,6 +106,17 @@ namespace whiteice
   
   
   template <typename T>
+  bool RBM<T>::reconstructData(unsigned int iters)
+  {
+    // number of iterations to day dream, 
+    // 2 = single step from visible to hidden and back
+    // from hidden to visible (CD-1)
+    
+    return false; // NOT IMPLEMENTED YET
+  }
+  
+  
+  template <typename T>
   math::matrix<T> RBM<T>::getWeights() const
   {
     return W;
