@@ -37,10 +37,9 @@ namespace whiteice
     }
 
     data.resize(size);
-    
-    for(unsigned int i=0;i<data.size();i++)
-      data[i] = T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
 
+    randomize();
+    
     state.resize(maxwidth);
     temp.resize(maxwidth);
     lgrad.resize(maxwidth);
@@ -101,9 +100,7 @@ namespace whiteice
     data.resize(size);
     
     // intializes all layers (randomly)
-    
-    for(unsigned int i=0;i<memuse;i++)
-      data[i] = T( 1.0*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+    randomize();
 
     state.resize(maxwidth);
     temp.resize(maxwidth);
@@ -296,10 +293,30 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnetwork<T>::randomize(){
+  bool nnetwork<T>::randomize()
+  {
+    // random initialization [-0.5, +0,5] interval
+    // for(unsigned int i=0;i<data.size();i++)
+    //   data[i] = T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+
+    unsigned int start = 0;
+    unsigned int end   = 0;
     
-    for(unsigned int i=0;i<data.size();i++)
-      data[i] = T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+    for(unsigned int i=1;i<arch.size();i++){
+      end   += (arch[i-1] + 1)*arch[i];
+      
+      // this initialization is as described in the paper of Xavier Glorot
+      // Understanding the difficulty of training deep neural networks
+      
+      T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
+      
+      for(unsigned int j=start;j<end;j++){
+	T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
+	data[j] = T(4.0f)*var*r; // asinh(x) requires aprox 4x bigger values before reaching saturation
+      }
+      
+      start += (arch[i-1] + 1)*arch[i];
+    }
     
     return true;
   }
