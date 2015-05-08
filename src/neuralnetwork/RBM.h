@@ -43,16 +43,21 @@ namespace whiteice
     math::vertex<T> getHidden() const;
     bool setHidden(const math::vertex<T>& h);
     
-    // number of iterations to daydream, 
+    // number of iterations to simulate the system 
     // 2 = single step from visible to hidden and back
     // from hidden to visible (CD-1)
     bool reconstructData(unsigned int iters = 2);
+    
+    // number of iterations to simulate the system
+    // 2 = single step from hidden to visible and back
+    // from visible to hidden
+    bool reconstructDataHidden(unsigned int iters = 2);
     
     math::matrix<T> getWeights() const;
     
     bool initializeWeights(); // initialize weights to small values
     
-    // calculates single epoch for updating weights using CD-1 and returns |dW|
+    // calculates single epoch for updating weights using CD-10 and returns |dW|
     // (keep calculating until returned value is close enough to zero) or 
     //  the number of epochs is reached)
     T learnWeights(const std::vector< math::vertex<T> >& samples);
