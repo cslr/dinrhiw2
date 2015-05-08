@@ -152,7 +152,7 @@ if [[ $? -eq 0 ]]; then
    OPENBLAS="yes"
    BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
    BLAS_LIBS="-lopenblas -L/usr/local/lib/"
-   AC_MSG_RESULT([yes, headers in /usr/local/include(?)])
+   AC_MSG_RESULT([yes, headers in /usr/local/include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    OPENBLAS="no"
@@ -165,7 +165,33 @@ if [[ $? -eq 0 ]]; then
    OPENBLAS="yes"
    BLAS_CFLAGS="-DOPENBLAS -I/include/"
    BLAS_LIBS="-L/lib/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /include(?)])
+   AC_MSG_RESULT([yes, headers in /include/])
+else
+   AC_MSG_RESULT([no OpenBLAS detected])
+   OPENBLAS="no"
+fi
+
+AC_MSG_CHECKING([for OpenBLAS library (3)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/usr/include/openblas/"
+   BLAS_LIBS="-L/lib/ -lopenblas"
+   AC_MSG_RESULT([yes, headers in /usr/include/openblas/])
+else
+   AC_MSG_RESULT([no OpenBLAS detected])
+   OPENBLAS="no"
+fi
+
+AC_MSG_CHECKING([for OpenBLAS library (4)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
+   BLAS_LIBS="-L/lib/ -lopenblas"
+   AC_MSG_RESULT([yes, headers in /usr/local/include/openblas/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    OPENBLAS="no"
