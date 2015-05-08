@@ -106,6 +106,52 @@ namespace whiteice
   
   
   template <typename T>
+  bool CRBM<T>::reconstructData(unsigned int iters)
+  {
+    if(iters == 0) return false;
+    
+    math::matrix<T> Wt = W;
+    Wt.transpose();
+    
+    while(iters > 0){
+      h = W*v;
+      
+      // 1. hidden units: calculates sigma(a_j)
+      for(unsigned int j=0;j<(h.size()-0);j++){
+	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	// T r = T(rand())/T(RAND_MAX);
+	
+	//if(aj > r) h[j] = T(1.0); // discretization step
+	//else       h[j] = T(0.0);
+	
+	h[j] = aj;
+      }
+      
+      iters--;
+      if(iters <= 0) return true;
+    
+      v = Wt*h;
+      
+      // 1. visible units: calculates sigma(a_j)
+      for(unsigned int j=0;j<(v.size()-0);j++){
+	T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	// T r = T(rand())/T(RAND_MAX);
+	
+	//if(aj > r) v[j] = T(1.0); // discretization step
+	//else       v[j] = T(0.0);
+	
+	v[j] = aj;
+      }
+      
+      iters--;
+      if(iters <= 0) return true;
+    }
+    
+    return true;
+  }
+  
+  
+  template <typename T>
   math::matrix<T> CRBM<T>::getWeights() const
   {
     return W;

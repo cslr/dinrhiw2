@@ -11,6 +11,10 @@
     \;
   </doc-data|>
 
+  <em|NOTE: This does not work very well..>
+
+  \;
+
   One approach in non-linear PCA is to try to diagonalize non-linear matrix\ 
 
   <\with|par-mode|center>
@@ -503,6 +507,149 @@
   Technical Report
 
   MSR-TR-98-71.
+
+  \;
+
+  <doc-data|<doc-title|Stacked Non-Linear ICA>>
+
+  Because my previous work about non-linear ICA seemed to generate some
+  interesting results I'm trying to document and redo that work from C++
+  source code that I still have. I think those results might be interesting
+  to generate higher order features as it sometimes seemed to generate on/off
+  higher order features that can be useful.
+
+  Non-linear ICA layer:
+
+  <\enumerate-numeric>
+    <item>Calculate PCA of the input data and whiten it, set variance to be
+    correct for the non-linearity used (1 for tanh, 2-4 for sinh?)
+
+    <item>Diagonalize non-linear <math|\<b-G\>=E<around*|{|g<around*|(|\<b-x\>|)>*g<around*|(|\<b-x\>|)><rsup|T>|}>>
+    matrix by using transformation <math|g<rsup|-1><around*|(|\<b-W\>*g<around*|(|\<b-x\>|)>|)>>
+    where <math|\<b-W\>> diagonalizes <math|\<b-G\>>
+
+    <item>Go again to step 1 to extract more independent non-linear ICA
+    solutions
+  </enumerate-numeric>
+
+  The problem is that non-linear ICA solutions are NOT unique. There are
+  endless number of non-linear ICA solutions all which depend on
+  non-linearity or other calculation technique used.
+
+  \;
+
+  Another technique that could be used to try to cause
+  <math|E<around*|{|\<b-x\>*g<around*|(|\<b-W\>*\<b-x\>|)><rsup|T>|}>> matrix
+  to be zero as this will then cause FastICA algorithm to converge meaning
+  that <math|\<b-W\>> matrix now causes data to be in the form of ICA
+  solutions. Additionally, we can interprete
+  <math|\<b-y\>=g<around*|(|\<b-W\>\<b-x\>|)>> to be a single layer of neural
+  network meaning that the next layer is now decorrelated from the inputs of
+  the previous layer.
+
+  <strong|ICA DERIVATION>
+
+  \;
+
+  <\math>
+    \<b-w\><rsub|n+1>=E<around*|{|\<b-x\>g<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>-E<around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}><with|font-series|bold|\<b-w\><rsub|n>>
+
+    \<b-w\><rsub|n+1>=E<around*|{|\<b-x\>g<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>-E<around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}><with|font-series|bold|\<b-w\><rsub|n>>
+  </math>
+
+  <math|g<rprime|'><around*|(|u|)>=exp<around*|(|-u<rsup|2>/2|)>-u<rsup|2>*exp<around*|(|-u<rsup|2>/2|)>*=<around*|(|1-u<rsup|2>|)>*exp<around*|(|-u<rsup|2>/2|)>>
+
+  \;
+
+  Assume our optimized function is (we have used Lagrange multiplication
+  method)
+
+  <math|f<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>><around*|{|G<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>+\<lambda\><around*|(|<around*|\<\|\|\>|\<b-w\>|\<\|\|\>><rsup|2>-1|)>>
+
+  <math|\<nabla\>f<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>><around*|{|\<b-x\>*g<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>+\<lambda\>\<b-w\>=0>
+
+  It is also possible to solve for the Lagrange multiplicator here. If we
+  multiply both sides with optimum <math|\<b-w\><rsub|0><rsup|T>> we have:\ 
+
+  <math|\<lambda\>=-E<rsub|\<b-x\>><around*|{|\<b-w\><rsub|0><rsup|T>\<b-x\>*g<around*|(|\<b-w\><rsub|0><rsup|T>\<b-x\>|)>|}>>
+
+  Furthermore we can also calculate Hessian matrix for the equation:
+
+  <math|H*f<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>><around*|{|\<b-x\>*\<b-x\>*<rsup|T>g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>+\<lambda\>*\<b-I\>>
+  and this IF data is independent and sphered approximation has been made
+  that \ <math|H*f<around*|(|\<b-w\>|)>=E*<rsub|\<b-x\>><around*|{|\<b-x\>*\<b-x\><rsup|T>|}>E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>+\<lambda\>*\<b-I\>=><math|E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>\<b-I\>+\<lambda\>*\<b-I\>>
+
+  Now if we make second order approximation we have equation
+
+  <math|f<around*|(|\<b-w\>+\<Delta\>\<b-w\>|)>=f<around*|(|\<b-w\>|)>+\<nabla\>f<around*|(|\<b-w\>|)><rsup|T>\<Delta\>\<b-w\>+<frac|1|2>\<Delta\>\<b-w\><rsup|T>*H*f<around*|(|\<b-w\>|)>*\<Delta\>\<b-w\>*>
+
+  Now if we derivate this function with respect to <math|\<Delta\>\<b-w\>> we
+  can find direction that maximizes the approximated function this gives
+
+  <math|H*f<around*|(|\<b-w\>|)>*\<Delta\>*\<b-w\>=-\<nabla\>f<around*|(|\<b-w\>|)>>
+
+  Injecting previous equations into this gives
+
+  <math|\<b-w\><rsub|n+1>=\<b-w\><rsub|n>-<around*|(|E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+\<lambda\>*|)><rsup|-1><around*|(|E<rsub|\<b-x\>><around*|{|\<b-x\>*g<around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+\<lambda\>\<b-w\><rsub|n>|)>*>
+
+  Now if we multiply both sides with a scalar
+  <math|<around*|(|E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+\<lambda\>*|)>>
+  we get
+
+  <\math>
+    \<b-w\><rsup|*+><rsub|n+1>=\<b-w\><rsub|n><around*|(|E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+\<lambda\>*|)>-<around*|(|E<rsub|\<b-x\>><around*|{|\<b-x\>*g<around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+\<lambda\>\<b-w\><rsub|n>|)>*
+
+    \<b-w\><rsup|+><rsub|n+1>=E<rsub|\<b-x\>><around*|{|\<b-x\>*g<around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>-E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>\<b-w\><rsub|n>\<noplus\>
+  </math>
+
+  And normalize <math|<around*|\<\|\|\>||\<nobracket\>>\<b-w\><rsup|+><rsub|n+1><around*|\<\|\|\>|=1|\<nobracket\>>
+  for each iteration then we get the FastICA update formula.>
+
+  However, the update formula works considerably BETTER if we choose to use
+  plus signs in the update formula. Reason for this is unknown\ 
+
+  <math|\<b-w\><rsup|+><rsub|n+1>=E<rsub|\<b-x\>><around*|{|\<b-x\>*g<around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>+E<rsub|\<b-x\>><around*|{|g<rprime|'><around*|(|\<b-w\><rsub|n><rsup|T>\<b-x\>|)>|}>\<b-w\><rsub|n>\<noplus\>>
+
+  Additionally, notice that direction of the vector do NOT change when we
+  have <math|E<around*|{|\<b-x\>*g<around*|(|\<b-y\>|)><rsup|T>|}>=\<b-0\>>,
+  which happens when <math|\<b-x\>> and <math|\<b-y\>=\<b-W\><rsup|T>\<b-x\>>
+  are independent because then <math|E<around*|{|\<b-x\>*g<around*|(|\<b-y\>|)>|}>=E<around*|{|\<b-x\>|}>*E<around*|{|g<around*|(|\<b-y\>|)><rsup|T>|}>=\<b-0\>>
+  and because we have zero mean data. Therefore, we could try to instead
+  diagonalize matrix
+
+  <\math>
+    \<b-G\><rsub|\<b-x\>*\<b-x\>>=E<around*|{|<around*|(|\<b-x\>+g<around*|(|\<b-y\>|)>-E<around*|{|\<b-g\><around*|(|\<b-y\>|)>|}>|)><around*|(|\<b-x\>+g<around*|(|\<b-y\>|)>-E<around*|{|\<b-g\><around*|(|\<b-y\>|)>|}>|)><rsup|T>|}>=E<around*|{|\<b-x\>*\<b-x\><rsup|T>|}>+E<around*|{|*\<b-x\>*g<around*|(|\<b-y\>|)><rsup|T>+\<b-g\><around*|(|\<b-y\>|)>\<b-x\><rsup|T>|}>+E<around*|{|g<around*|(|\<b-y\>|)>*g<around*|(|\<b-y\>|)><rsup|T>|}>
+
+    =\<b-I\>+E<around*|{|<around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|\<b-g\><around*|(|\<b-y\>|)>|}>|)><around*|(|g<around*|(|\<b-y\>|)>-E<around*|{|\<b-g\><around*|(|\<b-y\>|)>|}>|)><rsup|T>|}>
+  </math>
+
+  But now when <math|\<b-y\>=\<b-W\><rsup|T>\<b-x\>> are independent we have
+  <math|E<around*|{|g<around*|(|y<rsub|i>|)>g<around*|(|y<rsub|j>|)>|}>=E<around*|{|g<around*|(|y<rsub|i>|)>|}>E<around*|{|g<around*|(|y<rsub|j>|)>|}>>
+  meaning that the second term is also diagonal.
+
+  <with|font-series|bold|What non-linearity to use for the independence
+  then?>
+
+  Inverted pseudo-normal distribution probably measures non-gaussianity
+  rather well:\ 
+
+  <center|<math|G<around*|(|x|)>=-e<rsup|-<frac|1|2>x<rsup|2>>>>
+
+  And it has rather interesting derivate which we maybe want to use
+
+  <\center>
+    <math|g<around*|(|x|)>=x*e<rsup|-<frac|1|2>x<rsup|2>>>
+
+    <math|g<rprime|'><around*|(|x|)>=<around*|(|1-x<rsup|2>|)>*exp<around*|(|-x<rsup|2>/2|)>>
+  </center>
+
+  This term has interesting properties that it is close to linear within the
+  range of <math|<around*|[|-1,1|]>> and then rapidly goes back to zero
+  between <math|<around*|[|1,3|]>> range. This means that the activation
+  function ignores too large inputs and wants to keep data within [-2,2]
+  range or something.
+
+  \;
 
   \;
 </body>

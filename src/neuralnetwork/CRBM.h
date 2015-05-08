@@ -43,6 +43,11 @@ namespace whiteice
     math::vertex<T> getHidden() const;
     bool setHidden(const math::vertex<T>& h);
     
+    // number of iterations to daydream, 
+    // 2 = single step from visible to hidden and back
+    // from hidden to visible (CD-1)
+    bool reconstructData(unsigned int iters = 2);
+    
     math::matrix<T> getWeights() const;
     
     bool initializeWeights(); // initialize weights to small values

@@ -407,8 +407,24 @@ void rbm_test()
     
     std::vector< math::vertex<> > reconstruct;
     {
-      // 1. write reconstruction code using CD-10
-      // 2. reconstruct data points
+      // reconstruct data points
+      for(unsigned int i=0;i<samples.size();i++){
+	math::vertex<>& v = samples[i];
+	
+	// randomly generated point [0,1]x[0,1] interval to be reconstructed
+	v[0] = ((float)rand()/(float)RAND_MAX);
+	v[1] = ((float)rand()/(float)RAND_MAX);
+	
+	if(machine.setVisible(v) == false)
+	  std::cout << "WARN: setVisible() failed." << std::endl;
+	
+	if(machine.reconstructData(20) == false) // CD-10
+	  std::cout << "WARN: reconstructData() failed." << std::endl;
+	
+	v = machine.getVisible();
+	
+	reconstruct.push_back(v);
+      }
 
       
       // saves training data to CSV file for analysis and plotting purposes

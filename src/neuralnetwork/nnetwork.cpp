@@ -506,7 +506,8 @@ namespace whiteice
     output = math::atanh(output);
 #endif
     T output = math::asinh(input);
-    //T output = math::tanh(input);
+    // T output = math::tanh(input);
+    // T output = -math::exp(T(-0.5)*input*input);
     
     return output;
   }
@@ -530,6 +531,8 @@ namespace whiteice
 #endif
     T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
     
+    // T output = input*math::exp(T(-0.5)*input*input);
+    
     // T t = math::tanh(input);
     // T output = T(1.0f) - t*t;
     
@@ -548,6 +551,9 @@ namespace whiteice
     
 #endif
     T output = math::sinh(input);
+    
+    // T output = 0.0f; assert(0); // there is NO inverse function
+    
     
     // T output;
     //
