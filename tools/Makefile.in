@@ -31,11 +31,11 @@ MMAP_LIBS =
 
 NNTOOLS_OBJECTS = nntool.o argparser.tab.o cpuid_threads.o
 NNTOOLS_TARGET  = nntool
-NNTOOLS_LIBS    = -static `pkg-config dinrhiw --libs` -lpthread
+NNTOOLS_LIBS    = `pkg-config dinrhiw --libs` -lpthread
 
 DATATOOL_OBJECTS = datatool.o
 DATATOOL_TARGET  = dstool
-DATATOOL_LIBS    = -static `pkg-config dinrhiw --libs` -lpthread
+DATATOOL_LIBS    = `pkg-config dinrhiw --libs` -lpthread
 
 ##################################################
 
