@@ -479,9 +479,9 @@ namespace whiteice
       _data -= (*a) * (*(a - 1)) + *a;
       gindex -= (*a) * (*(a - 1)) + *a;
       
-      assert(_bpdata == &(bpdata[0]));
-      assert(_data == &(data[0]));
-      assert(gindex == 0);
+      // assert(_bpdata == &(bpdata[0]));
+      // assert(_data == &(data[0]));
+      // assert(gindex == 0);
       
       for(unsigned int y=0;y<rows;y++){
 	const T* bptr = _bpdata;

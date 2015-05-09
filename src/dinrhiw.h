@@ -39,7 +39,7 @@
 #include "LBFGS_nnetwork.h"
 #include "pLBFGS_nnetwork.h"
 
-#include "sinh_nnetwork.h"
+#include "lreg_nnetwork.h"
 #include "nnetwork_function.h"
 
 #include "array.h"

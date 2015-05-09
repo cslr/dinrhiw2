@@ -13,8 +13,8 @@ SOURCES = neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp ide
 	GeneticAlgorithm.cpp GeneticAlgorithm2.cpp test_function2.cpp \
 	NNGradDescent.cpp NNRandomSearch.cpp HMC.cpp bayesian_nnetwork.cpp HMC_abstract.cpp HMC_gaussian.cpp \
 	GA3.cpp ga3_test_function.cpp deep_ica_network_priming.cpp BFGS_nnetwork.cpp pBFGS_nnetwork.cpp \
-	LBFGS_nnetwork.cpp pLBFGS_nnetwork.cpp sinh_nnetwork.cpp nnetwork_function.cpp ultradeep.cpp \
-	RBM.cpp CRBM.cpp DBN.cpp
+	LBFGS_nnetwork.cpp pLBFGS_nnetwork.cpp lreg_nnetwork.cpp nnetwork_function.cpp ultradeep.cpp \
+	RBM.cpp CRBM.cpp DBN.cpp construct_nnetwork.cpp
 
 OBJECTS= neuron.o neuronlayer.o \
 	activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
@@ -25,8 +25,8 @@ OBJECTS= neuron.o neuronlayer.o \
 	GeneticAlgorithm.o GeneticAlgorithm2.o test_function2.o \
 	NNGradDescent.o NNRandomSearch.o HMC.o bayesian_nnetwork.o HMC_abstract.o HMC_gaussian.o \
 	GA3.o ga3_test_function.o deep_ica_network_priming.o BFGS_nnetwork.o pBFGS_nnetwork.o \
-	LBFGS_nnetwork.o pLBFGS_nnetwork.o sinh_nnetwork.o nnetwork_function.o ultradeep.o \
-	RBM.o CRBM.o DBN.o
+	LBFGS_nnetwork.o pLBFGS_nnetwork.o lreg_nnetwork.o nnetwork_function.o ultradeep.o \
+	RBM.o CRBM.o DBN.o construct_nnetwork.o
 
 EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math/integer.o \
 	../math/matrix_rotations.o ../math/eig.o ../math/correlation.o ../math/blade_math.o \

@@ -8,6 +8,7 @@
 
 #include "DBN.h"
 #include "nnetwork.h"
+#include "lreg_nnetwork.h"
 
 namespace whiteice
 {
@@ -23,9 +24,12 @@ namespace whiteice
    * 
    */
   template <typename T>
-    bool construct_nnetwork(const DBN<T>& dbn, nnetwork<T>& nnetwork, const unsigned int outputDimension);
+    bool construct_nnetwork(const DBN<T>& dbn, 
+			    nnetwork<T>* lreg_nnetwork, 
+			    const unsigned int outputDimension);
+  
 };
-			    
+
 
 #endif
 

@@ -12,7 +12,7 @@
 #include "odd_sigmoid.h"
 
 #include "nnetwork.h"
-#include "sinh_nnetwork.h"
+#include "lreg_nnetwork.h"
 #include "GDALogic.h"
 
 #include "dataset.h"
@@ -48,7 +48,7 @@ void neuronlayer_test2();
 void neuralnetwork_test();
 
 void nnetwork_test();
-void sinh_nnetwork_test();
+void lreg_nnetwork_test();
 
 void rbm_test();
 
@@ -80,7 +80,7 @@ int main()
     
     nnetwork_test();
     
-    sinh_nnetwork_test();
+    lreg_nnetwork_test();
     
     bayesian_nnetwork_test();
 
@@ -2271,7 +2271,11 @@ void nnetwork_test()
 
 /******************************************************************/
 
-void sinh_nnetwork_test()
+#if 0
+
+// FIXME!!! we need logistic regression test for DBN
+
+void lreg_nnetwork_test()
 {
   try{
     std::cout << "SINH NNETWORK TEST -2: GET/SET DEEP ICA PARAMETERS"
@@ -2654,7 +2658,7 @@ void sinh_nnetwork_test()
   }
 
 }
-
+#endif
 
 /********************************************************************/
 

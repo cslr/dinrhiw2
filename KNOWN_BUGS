@@ -16,7 +16,9 @@ It currently does NOT work on MinGW32/win32 platform, maybe because of compiler 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.
 
-* ICA code probably has some bugs (with bad data)
+* ICA code probably has some bugs (with bad/singular data)
+
+* static linking of nntool causes problems due to gcc compiler bug
 
 * nntool requires intel or amd (IA32, AMD64) cpu platforms as
   some parts of the code uses native CPUID or other instructions.
