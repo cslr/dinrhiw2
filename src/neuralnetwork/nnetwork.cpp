@@ -312,7 +312,7 @@ namespace whiteice
       
       for(unsigned int j=start;j<end;j++){
 	T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
-	data[j] = T(4.0f)*var*r; // asinh(x) requires aprox 4x bigger values before reaching saturation
+	data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
       }
       
       start += (arch[i-1] + 1)*arch[i];
