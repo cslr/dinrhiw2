@@ -8,6 +8,7 @@
 
 #include <vector>
 #include "RBM.h"
+#include "vertex.h"
 
 
 namespace whiteice
@@ -17,13 +18,14 @@ namespace whiteice
     {
     public:
     
-    
     DBN();
     
-    // constructs RBM with the given network architecture
+    // constructs stacked RBM netwrok with the given architecture
     DBN(std::vector<unsigned int>& arch);
     
     DBN(const DBN<T>& dbn);
+    
+    bool resize(std::vector<unsigned int>& arch);
     
     ////////////////////////////////////////////////////////////
     
@@ -42,7 +44,7 @@ namespace whiteice
     
     // learns stacked RBM layer by layer, each RBM is trained one by one
     // until deltaW < dW and then algorithm moves to the next layer
-    bool learnWeights(const std::vector< math::vertex<T> >& samples, T& dW);
+    bool learnWeights(const std::vector< math::vertex<T> >& samples, const T& dW);
     
     private:
     
@@ -51,7 +53,11 @@ namespace whiteice
     
     };
   
-  
+
+  extern template class DBN< float >;
+  extern template class DBN< double >;  
+  extern template class DBN< math::blas_real<float> >;
+  extern template class DBN< math::blas_real<double> >;
 
 };
 

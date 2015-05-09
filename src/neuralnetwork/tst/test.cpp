@@ -329,6 +329,26 @@ void rbm_test()
     std::cout << "W  = " << machine.getWeights() << std::endl;
     std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;
     
+    
+    std::cout << "DBN LEARNING TOY PROBLEM.." << std::endl;
+
+    std::vector<unsigned int> arch;
+    whiteice::DBN<> dbn;
+    
+    arch.push_back(V);
+    arch.push_back(2*V);
+    arch.push_back(4*V);
+    arch.push_back(H);
+    
+    dbn.resize(arch);
+    
+    if(dbn.learnWeights(samples, elimit) == false)
+      std::cout << "Training DBN failed." << std::endl;
+
+    std::cout << "DBN LEARNING TOY PROBLEM.. DONE." << std::endl;
+    
+
+    
   }
   
   

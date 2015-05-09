@@ -57,6 +57,24 @@ namespace whiteice
     return (*this);
   }
   
+  
+  template <typename T>
+  bool RBM<T>::resize(unsigned int visible, unsigned int hidden)
+  {
+    if(visible == 0 || hidden == 0)
+      return false;
+    
+    // the last term is always constant: 1 (one)
+    v.resize(visible + 1);
+    h.resize(hidden + 1);
+    W.resize(hidden + 1, visible + 1);
+    
+    initializeWeights();    
+    
+    return true;
+  }
+  
+  
   template <typename T>
   math::vertex<T> RBM<T>::getVisible() const
   {

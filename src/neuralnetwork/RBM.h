@@ -35,6 +35,8 @@ namespace whiteice
     
     RBM<T>& operator=(const RBM<T>& rbm);
     
+    bool resize(unsigned int visible, unsigned int hidden);
+    
     ////////////////////////////////////////////////////////////
     
     math::vertex<T> getVisible() const;
