@@ -1,6 +1,11 @@
 
 #include "cpuid_threads.h"
 
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 
 void cpuID(unsigned i, unsigned regs[4]) {
 #ifdef _WIN32
@@ -15,10 +20,58 @@ void cpuID(unsigned i, unsigned regs[4]) {
 }
 
 
+int cpuinfoThreads(){
+  // calculates number of cpu cores from /proc/cpuinfo
+  
+  FILE* f = fopen("/proc/cpuinfo", "rt");
+  if(f == NULL) return 0;
+  else if(ferror(f) != 0){ fclose(f); return 0; }
+  
+  unsigned int cpus = 0;
+  unsigned int cores = 0;
+  
+  char buffer[256];
+  while(!feof(f)){
+    fgets(buffer, 256, f);
+    buffer[255] = '\0';
+    
+    if(strncmp(buffer, "processor", 9) == 0)
+      cpus++;
+    
+    if(strncmp(buffer, "cpu cores", 9) == 0){
+      char *ptr = buffer;
+      while(*ptr != ':' && *ptr != '\0') ptr++;
+      
+      if(*ptr == ':'){
+	ptr++;
+	int c = atoi(ptr);
+	if(c > 0)
+	  cores += c;
+      }
+    }
+  }
+  
+  fclose(f);
+  
+  return cores;
+}
+
+
 
 
 int numberOfCPUThreads()
 {
+  // first tries to detect number of 
+  // good threads based on /proc/cpuinfo
+  
+  int cpuinfo = cpuinfoThreads();
+  
+  if(cpuinfo > 0)
+    return cpuinfo;
+
+  
+  // if it fails.. uses CPUID instruction
+
   unsigned int regs[4];
 
 #if 0
