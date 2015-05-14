@@ -1,4 +1,4 @@
-<TeXmacs|1.0.7.18>
+<TeXmacs|1.0.7.2>
 
 <style|generic>
 
@@ -98,21 +98,52 @@
 
   <with|font-series|bold|Continuous RBM (CRBM)>
 
-  The continuous RBM is more complicated to implement and understand.
+  The continuous RBM is more complicated to implement and understand. It
+  seems that Gaussian-Bernoulli RBM could be the right choice (or maybe
+  Beta-Bernoulli RBM) to model continuous input values. Because of this, I
+  try to derive the whole BB-RBM and then continuous GB-RBM theory from
+  energy based models (EBMs). It is important(?) to remember that
+  Bernoulli-Bernoulli RBM model is related to Ising models and statistical
+  physics but hidden variable models in general are not.
 
-  TODO\ 
+  The energy of the restricted boltzman machine is:\ 
 
-  <\itemize>
-    <item>implement <with|font-series|bold|continuous RBM> similarly to what
-    is described in the <verbatim|CRBM_iee2003.pdf> paper and test it using
-    similar two dimensional dataplots
+  <\math>
+    E<rsub|B*B>(v,b)=-v<rsup|T>W*h-a<rsup|T>v-b<rsup|T>h
 
-    <item>implement stacked RBM codes both for RBM and CRBM
+    E<rsub|G*B>(v,h)=-v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>-b<rsup|T>h
+  </math>
 
-    <item>write code to generate <strong|deep feedforward neural network>
-    structure and weights from the stacked RBM and CRBM which can be then
-    passed normally to the optimization algorithms
-  </itemize>
+  Now the probability of the <math|(v,h)> and only observed variables
+  <math|v> is:
+
+  <math|P(v,h)=<frac|1|Z>*e<rsup|-E(v,h)>>,
+  <math|Z=<big|sum><rsub|v,h>e<rsup|-E(v,h)>>
+
+  <math|P(v)=<frac|1|Z><big|sum><rsub|h>e<rsup|-E(v,h)>>
+
+  Now the observed variables are Bernoulli distributed, that is, they take
+  only values <math|0> and <math|1> which is a strong regularizer fro the
+  system (Gaussian-Gaussian RBM is unlikely to work equally well).
+
+  Now we want to calculate probabilities of hidden <math|h> and visible
+  <math|v> neurons given probabilities:\ 
+
+  <math|P<rsub|B*B>(h\|v)=<frac|P(v,h)|P(v)>=<frac|<frac|1|Z>e<rsup|-E(v,h)>|<frac|1|Z>*<big|sum><rsub|h>e<rsup|-E(v,h)>>=<frac|e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>|<big|sum><rsub|h>e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>x>>
+
+  <math|P<rsub|B*B>(h<rsub|i>=1\|v)=<frac|e<rsup|+v<rsup|T>w<rsub|i>1+a<rsup|T>v+b<rsub|i>1>|e<rsup|+v<rsup|T>w<rsub|i>0+a<rsup|T>v+b<rsub|i>0>+e<rsup|+v<rsup|T>w<rsub|i>1+a<rsup|T>v+b<rsub|i>1>>=<frac|e<rsup|+v<rsup|T>w<rsub|i>+b<rsub|i>>|1+e<rsup|+v<rsup|T>w<rsub|i>+b<rsub|i>>>=<frac|1|1+e<rsup|-v<rsup|T>w<rsub|i>-b<rsub|i>>>=sigmoid(w<rsup|T><rsub|i>v+b<rsub|i>)>
+
+  And due to symmetry, a similar calculation can be used to calculate
+  <math|P<rsub|B*B>(v<rsub|i>=1\|h)> (for Bernoulli-Bernoulli RBMs).
+
+  <strong|Free Energy>
+
+  Next we use the definition of free energy and calculate its derivates on
+  parameters <math|W>, <math| a> and <math|b>. Free energy is defined to be:
+
+  <math|F(v)=-log<big|sum><rsub|h>e<rsup|-E(v,h)>>
+
+  \;
 
   \;
 </body>
