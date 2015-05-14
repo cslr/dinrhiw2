@@ -114,6 +114,10 @@
     E<rsub|G*B>(v,h)=-v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>-b<rsup|T>h
   </math>
 
+  Note that we could have added additional constant <math|c> term to these
+  equations but it is not needed because probability distributions are
+  normalized to have unit probability mass.
+
   Now the probability of the <math|(v,h)> and only observed variables
   <math|v> is:
 
@@ -143,9 +147,69 @@
 
   <math|F(v)=-log<big|sum><rsub|h>e<rsup|-E(v,h)>>
 
+  And the related probability distribution of data (visible states) is
+
+  <math|P(v)=<frac|1|Z>e<rsup|-F(v)>=<frac|1|Z><big|sum><rsub|h>e<rsup|-E(v,h)>>,
+  <math|Z=<big|int>e<rsup|-F(v)>*d*v>
+
+  Now we want to calculate gradient with respect to parameters of the
+  distribution in order to maximize likelihood of the data <math|P(v)>:
+
+  <math|<frac|\<partial\>-logp(v)|\<partial\>\<theta\>>=-<frac|\<partial\>p(v)/\<partial\>\<theta\>|p(v)>=-<frac|p(v)(-\<partial\>F(v)/\<partial\>\<theta\>)-p(v)(\<partial\>Z/\<partial\>\<theta\>)/Z|p(v)>=<frac|\<partial\>F(v)|\<partial\>\<theta\>>+<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>>
+
+  We calculate the term <math|<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>>
+  separatedly:
+
+  <math|><math|<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>=<big|int>-<frac|\<partial\>F(v)|\<partial\>\<theta\>><frac|1|Z>e<rsup|-F(v)>d*v=-<big|int>p(v)*<frac|\<partial\>F(v)|\<partial\>\<theta\>>d*v>
+
+  The general form of the derivate is then:
+
+  <with|mode|math|<frac|\<partial\>-logp(v)|\<partial\>\<theta\>>=<frac|\<partial\>F(v)|\<partial\>\<theta\>>-<big|int>p(v)*<frac|\<partial\>F(v)|\<partial\>\<theta\>>*d*v=<frac|\<partial\>F(v)|\<partial\>\<theta\>>-E<rsub|v>[<frac|\<partial\>F(v)|\<partial\>\<theta\>>]>
+
+  And the latter term can be approximated using contrastive divergence
+  algorithm. We use the training data to produce <math|p(h\|v)> and then
+  sample <math|p(v\|h)> and repeat the procedure to get sample
+  <math|(v<rsub|i>,h<rsub|i>)> and only keep <math|v<rsub|i>> to get the
+  approximate sample from distribution <math|p(v)>. This <em|maybe> special
+  case of Gibbs sampling.
+
+  <strong|Gradient descent>
+
+  Parameters of the distribution are optimized using gradient descent
+  algorithm so it is important to calculate actual derivates of <math|p(v)>
+  for Bernoulli-Bernoulli RBM.
+
+  First we further simplify the <math|F(v)> term
+
+  <math|F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|B*B>(v,h)>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|(W<rsup|T>v*+b)<rsup|T>h>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<big|sum><rsub|i,j>h<rsub|i>(v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>>
+
+  <math|F(v)=-a<rsup|T>v-log<big|sum><rsub|h><big|prod><rsub|i>e<rsup|*h<rsub|i>(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>=-a<rsup|T>v-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|*h<rsub|i>(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>>
+
+  If we decide <math|h={0,1}> then the equation simplies further into
+
+  <math|F(v)=-a<rsup|T>v-<big|sum><rsub|i>log(1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>)>
+
+  Calculating gradients leads into eqs:
+
+  <math|<frac|\<partial\>F(v)|\<partial\>a>=-v>
+
+  <math|<frac|\<partial\>F(v)|\<partial\>b<rsub|i>>=-<frac|e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*><rsup|*>*|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-sigmoid(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)>
+
+  <math|<frac|\<partial\>*F(v)|\<partial\>*w<rsub|i*j>>=-<frac|e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>*v<rsub|j>|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-v<rsub|j>*sigmoid(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>
+
   \;
 
   \;
+
+  <strong|Gaussian distribution (Gaussian-Bernoulli RBM)>
+
+  So far we have only discussed about Bernoulli-Bernoulli RBM. But what we
+  really want is to process continuous valued input data (and then maybe use
+  BB-RBM to further process its hidden variables). The possible models to use
+  are Gaussian-Bernoulli and Beta-Bernoulli (note that Beta and Bernoulli
+  distributions are conjugate distributions, this might be useful..). It
+  seems that gaussian distribution is far more popular so I try to calculate
+  Gaussian-Bernoulli RBM instead.
 </body>
 
 <\references>
