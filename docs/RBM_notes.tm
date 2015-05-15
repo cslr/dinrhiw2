@@ -3,9 +3,9 @@
 <style|generic>
 
 <\body>
-  <strong|Some notes about my RBM implementation (binary RBM)>\ 
+  <strong|Some notes about my RBM implementation (binary RBM)>
 
-  Tomas Ukkonen, 2015
+  Tomas Ukkonen, 2015 <verbatim|tomas.ukkonen@iki.fi>
 
   <strong|Restricted Boltzmann machines> are tricky to implement as there
   doesn't seem to be very good reference material around describing all the
@@ -96,7 +96,7 @@
 
   \;
 
-  <with|font-series|bold|Continuous RBM (CRBM)>
+  <with|font-series|bold|Energy based model of RBM and Continuous RBM (CRBM)>
 
   The continuous RBM is more complicated to implement and understand. It
   seems that Gaussian-Bernoulli RBM could be the right choice (or maybe
@@ -185,7 +185,7 @@
 
   <math|F(v)=-a<rsup|T>v-log<big|sum><rsub|h><big|prod><rsub|i>e<rsup|*h<rsub|i>(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>=-a<rsup|T>v-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|*h<rsub|i>(<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>)*>>
 
-  If we decide <math|h={0,1}> then the equation simplies further into
+  If we decide <math|h={0,1}> then the equation simplifies further into
 
   <math|F(v)=-a<rsup|T>v-<big|sum><rsub|i>log(1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>)>
 
@@ -199,17 +199,53 @@
 
   \;
 
-  \;
-
-  <strong|Gaussian distribution (Gaussian-Bernoulli RBM)>
+  <strong|Gaussian distribution (Gaussian-Bernoulli RBM) - Continuous RBM>
 
   So far we have only discussed about Bernoulli-Bernoulli RBM. But what we
   really want is to process continuous valued input data (and then maybe use
   BB-RBM to further process its hidden variables). The possible models to use
-  are Gaussian-Bernoulli and Beta-Bernoulli (note that Beta and Bernoulli
-  distributions are conjugate distributions, this might be useful..). It
+  are Gaussian-Bernoulli and Beta-Bernoulli (<em|note that Beta and Bernoulli
+  distributions are conjugate distributions, this might be useful..>). It
   seems that gaussian distribution is far more popular so I try to calculate
   Gaussian-Bernoulli RBM instead.
+
+  If we ignore (or fix it to unit value) the variance term of normal
+  distribution, the logical energy function seem to be:\ 
+
+  <\with|mode|math>
+    E<rsub|G*B>(v,h)=<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>-v<rsup|T>W*h-b<rsup|T>h
+  </with>
+
+  To further justify this model, let's calculate marginalized distributions
+  <math|p(v\|h)> and <math|p(h\|v)> for this model.
+
+  <math|P(v\|h)=<frac|P(v,h)|P(h)>=<frac|e<rsup|-E<rsub|G*B>(v,h)><rsup|>|<big|int><rsub|v>e<rsup|-E<rsub|G*B>(v,h)><rsup|>d*v>=<frac|e<rsup|v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>><rsup|>|<big|int><rsub|v>e<rsup|v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>>d*v>>
+
+  \;
+
+  <\with|mode|math>
+    <big|int><rsub|v>e<rsup|v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>+b<rsup|T>h>d*v=e<rsup|b<rsup|T>h>*<big|int>e<rsup|v<rsup|T>W*h-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>>*d*v=<big|int>e<rsup|-<frac|1|2>\<\|\|\>v\<\|\|\><rsup|2>+*v<rsup|T>(W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v
+  </with>
+
+  <math|<big|int>e<rsup|-<frac|1|2>\<\|\|\>v\<\|\|\><rsup|2>+*v<rsup|T>(W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v=e<rsup|<frac|1|2>\<\|\|\>W*h+a\<\|\|\><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>><big|int>e<rsup|-<frac|1|2>\<\|\|\>v-(W*h+a)\<\|\|\><rsup|2>>*d*v>
+
+  <math|P(v\|h)=<frac|e<rsup|<frac|1|2>\<\|\|\>W*h+a\<\|\|\><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>e<rsup|-<frac|1|2>\<\|\|\>v-(W*h+a)\<\|\|\><rsup|2>>|e<rsup|<frac|1|2>\<\|\|\>W*h+a\<\|\|\><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>><big|int>e<rsup|-<frac|1|2>\<\|\|\>v-(W*h+a)\<\|\|\><rsup|2>>*d*v>=<frac|1|Z>*e<rsup|-<frac|1|2>\<\|\|\>v-(W*h+a)\<\|\|\><rsup|2>>\<sim\>Normal(W*h+a,I)>
+
+  And similar calculations can be done to calculate:
+  <math|P(h\|v)=sigmoid(v<rsup|T>W+b)>.
+
+  The related free energy model is:
+
+  <with|mode|math|F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>+v<rsup|T>W*h+b<rsup|T>h>=<frac|1|2>\<\|\|\>v-a\<\|\|\><rsup|2>-log<big|sum><rsub|h>e<rsup|(W<rsup|T>v*+b)<rsup|T>h>>
+
+  And the related gradient of normal distribution parameter <math|a> is:
+
+  <math|<frac|\<partial\>F|\<partial\>a>=a-v>
+
+  And the other gradients should be the same as in the Bernoulli-Bernoulli
+  model.
+
+  \;
 </body>
 
 <\references>
