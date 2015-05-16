@@ -316,20 +316,23 @@
     F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsub|\<Sigma\>><rsup|2>+(\<Sigma\>*<rsup|-0.5>v)<rsup|T>W*h+b<rsup|T>h>
 
     =<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)-log<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>
+
+    =<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*h<rsub|i>>
+
+    =<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)-<big|sum><rsub|i>log(1+e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>)
   </with>
 
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
 
-  <math|<frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|z<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|z<rsup|T>h>>>,
-  where
+  <\math>
+    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<big|sum><rsub|i><frac|e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>|1+e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>>(<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>)
 
-  <math|z=W<rsup|T>\<Sigma\><rsup|-0.5>v*+b>
+    =-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>-2*v<rsub|k>/\<sigma\><rsup|3><rsub|k><big|sum><rsub|i>w<rsub|k*i>*sigmoid(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>**
+  </math>
 
-  This doesn't look very nice. The fundamental problem is that it does not
-  scale to very large number of <math|dim(h)> as the number of states one
-  must iterate through grows exponentially <math|2<rsup|dim(h)>>. So in
-  practice <math|dim(h)\<leqslant\>20> is maybe reasonable as one must then
-  <em|only> iterate through 1,000,000 states.
+  \;
+
+  \;
 
   Other derivates of the free energy are:
 
@@ -358,6 +361,75 @@
 
   <math|<frac|\<partial\>F|\<partial\>\<sigma\>>=-\<\|\|\>v-a\<\|\|\><rsup|2>/\<sigma\><rsup|3>+<frac|1|\<sigma\><rsup|2>>*<frac|v<rsup|T><big|sum><rsub|h>[e<rsup|z<rsup|T>h>*W*h]|<big|sum><rsub|h>e<rsup|z<rsup|T>h>>>,
   <math|z=W<rsup|T>v/\<sigma\>+b>
+
+  \;
+
+  \;
+
+  <strong|ALTERNATIVE GAUSSIAN MODEL>
+
+  Because the basic approach to introduce variances into model seem to cause
+  problems I now try another slightly modified model introduced by Aalto
+  university researchers (Cho et al. 2011).
+
+  The energy of the system is defined to be\ 
+
+  <\math>
+    E<rsub|G*B>(v,h)
+
+    =<frac|1|2><big|sum><rsub|i>(v<rsub|i>-a<rsub|i>)<rsup|2>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+
+    =<frac|1|2>(v-a)D<rsup|-2>(v-a)-v<rsup|T>D<rsup|-2>W*h-b<rsup|T>h
+
+    =<big|sum><rsub|i><frac|1|2>*v<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>+<frac|1|2>a<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>)v<rsub|i>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+
+    =<frac|1|2><big|sum><rsub|i>(v<rsub|i>-(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>))<rsup|2>/\<sigma\><rsup|2><rsub|i>+<frac|1|2><big|sum><rsub|i>a<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>-<frac|1|2><big|sum>(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>)<rsup|2>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+
+    =<frac|1|2>(v-(a+W*h))<rsup|T>D<rsup|-2>(v-(a+W*h))+<frac|1|2>a<rsup|T>D<rsup|-2>a-<frac|1|2>\<\|\|\>a+W*h\<\|\|\><rsup|2>-b<rsup|T>h
+  </math>
+
+  After this it is again quite straightforward to calculate the conditional
+  probabilities given hidden or visible neurons.
+
+  <math|P(v\|h)=<frac|e<rsup|-<frac|1|2><big|sum><rsub|i>(v<rsub|i>-(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>))<rsup|2>/\<sigma\><rsup|2><rsub|i>><rsup|>|<big|int>e<rsup|-<frac|1|2><big|sum><rsub|i>(v<rsub|i>-(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>))<rsup|2>/\<sigma\><rsup|2><rsub|i>*>*d*v>\<propto\>><with|mode|math|e<rsup|-<frac|1|2><big|sum><rsub|i>(v<rsub|i>-(a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>))<rsup|2>/\<sigma\><rsup|2><rsub|i>>\<sim\><big|prod><rsub|i>N(><with|mode|math|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>,\<sigma\><rsup|2><rsub|i>)>
+
+  <strong|><strong|<math|P(v\|h)\<sim\>Normal(a+W*h,D<rsup|2>)>>,
+  <strong|<strong|<strong|<math|D<rsup|2>=diag[\<sigma\><rsup|2><rsub|1>\<ldots\>\<sigma\><rsup|2><rsub|D>]>>>>
+
+  <strong|<strong|>><strong|>
+
+  <math|P(h<rsub|j>\|v)=<frac|e<rsup|<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>+<big|sum><rsub|j>b<rsub|j>h<rsub|j>><rsup|><rsup|>|<big|sum><rsub|h<rsub|j>>e<rsup|<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>+<big|sum><rsub|j>b<rsub|j>h<rsub|j>>>=<frac|e<rsup|(<big|sum><rsub|i><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>+b<rsub|j>)h<rsub|j>><rsup|><rsup|>|<big|sum><rsub|h<rsub|j>>e<rsup|(<big|sum><rsub|i><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>+b<rsub|j>)h<rsub|j>><rsup|>>=sigmoid(><with|mode|math|<big|sum><rsub|i><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>+b<rsub|j>>)
+
+  <strong|<math|P(h\|v)=sigmoid(b+v<rsup|T>D<rsup|-2>W)>>
+
+  \;
+
+  After calculating the conditional probabilities, we again calculate free
+  energy of the energy function and then calculate its partial derivates.
+
+  <\with|mode|math>
+    F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>(v-a)<rsup|T>D<rsup|-2>(v-a)+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>
+
+    =<rsup|><frac|1|2>(v-a)D<rsup|-2>(v-a)-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>h<rsub|i>>
+
+    =<frac|1|2>(v-a)D<rsup|-2>(v-a)-<big|sum><rsub|i>log(1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>)
+  </with>
+
+  From this formulation we can calculate
+
+  <\math>
+    <frac|\<partial\>F|\<partial\>a>=D<rsup|-2>(v-a)
+  </math>
+
+  <math|<frac|\<partial\>F|\<partial\>b<rsub|i>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>=-sigmoid((W<rsup|T>D<rsup|-2>v+b)<rsub|i>)>
+
+  <math|<frac|\<partial\>F|\<partial\>b>=sigmoid(W<rsup|T>D<rsup|-2>v+b)>
+
+  <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid((W<rsup|T>D<rsup|-2>v+b)<rsub|i>)>
+
+  \;
+
+  \;
 </body>
 
 <\references>
