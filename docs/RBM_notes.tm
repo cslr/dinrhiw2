@@ -246,6 +246,88 @@
   model.
 
   \;
+
+  <strong|Non-unit variance>
+
+  Unit variance assumption of Gaussian-Bernoulli RBM can be a problem when
+  the input data is not properly preprocessed (in practice we assume
+  <math|Var[f(x)+e]=Var[f(x)]+N(0,1)>). For example, maximum variance of
+  Bernoulli distributed hidden variables is 0.25 which means that the noise
+  in input data should be modelled to be much smaller.
+
+  The energy model for the non-unit variance that can make sense is:
+
+  <math|E<rsub|G*B>(v,h)=<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)-(\<Sigma\><rsup|-0.5>v*)<rsup|T>W*h-b<rsup|T>h>
+
+  which can be further justified by calculating <math|p(v\|h)> and
+  <math|p(h\|v)> distributions:
+
+  <math|P(v\|h)=<frac|P(v,h)|P(h)>=<frac|e<rsup|-E<rsub|G*B>(v,h)><rsup|>|<big|int><rsub|v>e<rsup|-E<rsub|G*B>(v,h)><rsup|>d*v>=<frac|e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h-<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)><rsup|>|<big|int><rsub|v>e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h-<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)>d*v>>
+
+  \;
+
+  <\with|mode|math>
+    <big|int><rsub|v>e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h-<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)>d*v=*<big|int>e<rsup|-<frac|1|2>v<rsup|T>\<Sigma\><rsup|-1>v+*v<rsup|T>\<Sigma\><rsup|-1>(\<Sigma\><rsup|0.5>W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v
+  </with>
+
+  <math|<big|int>e<rsup|-<frac|1|2>v<rsup|T>\<Sigma\><rsup|-1>v+*v<rsup|T>\<Sigma\><rsup|-1>(\<Sigma\><rsup|0.5>W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v=e<rsup|<frac|1|2>\<\|\|\>\<Sigma\><rsup|-0.5>W*h+a\<\|\|\><rsub|\<Sigma\><rsup|>><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>><big|int>e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>*d*v>
+
+  <math|P(v\|h)==<frac|1|Z(\<Sigma\>)>*e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal(\<Sigma\><rsup|0.5>*W*h+a,\<Sigma\>)>
+
+  <strong|=\<gtr\> CHECK THIS RESULT FROM THE LITERATURE>
+
+  And similarly we calculate
+
+  <math|P(h\|v)=<frac|P(v,h)|P(v)>=<frac|e<rsup|-E<rsub|G*B>(v,h)>|<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>>=<with|mode|text|<math|<frac|e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h+b<rsup|T>h><rsup|>|<rsub|><big|sum><rsub|h>e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h+b<rsup|T>h>>>>=<with|mode|text|<math|<frac|e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h+b<rsup|T>h><rsup|>|<rsub|><big|sum><rsub|h>e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h+b<rsup|T>h>>>>>
+
+  The term can be further rewritten as:
+
+  <with|mode|math|e<rsup|(\<Sigma\><rsup|-0.5>*v)<rsup|T>W*h+b<rsup|T>h><rsup|>=e<rsup|<big|sum><rsub|d>((\<Sigma\><rsup|-0.5>*v)<rsup|T>w<rsub|d>**+b*<rsub|d>)*h<rsub|d>>=<big|prod><rsub|d><rsup|>e<rsup|((\<Sigma\><rsup|-0.5>*v)<rsup|T>w<rsub|d>**+b*<rsub|d>)*h<rsub|d>><rsup|>>
+
+  And if we only restrict to a single variable we have
+
+  <math|P(h<rsub|d>\|v)=<frac|e<rsup|((\<Sigma\><rsup|-0.5>*v)<rsup|T>w<rsub|d>**+b*<rsub|d>)*h<rsub|d>>|<big|sum><rsub|h<rsub|d>>e<rsup|((\<Sigma\><rsup|-0.5>*v)<rsup|T>w<rsub|d>**+b*<rsub|d>)*h<rsub|d>>>=sigmoid((\<Sigma\><rsup|-0.5>*v)<rsup|T>w<rsub|d>**+b*<rsub|d>)>.
+
+  <math|P(h\|v)=sigmoid((\<Sigma\><rsup|-0.5>*v)<rsup|T>W**+b*)>
+
+  \;
+
+  <strong|Free Energy gradient of <math|\<Sigma\>>>
+
+  Next we want to calculate gradient to <math|\<Sigma\>> which can be very
+  tricky. In the continuous RBM paper I managed to find, the authors didn't
+  use matrix form and only calculated gradient of <math|\<sigma\>> and then
+  <em|approximated> it. This result further shows that calculation of gradent
+  of full covariance matrix <math|\<Sigma\>> in this case is probably
+  analytically extremely difficult or impossible.
+
+  Initially, we notice that <math|\<Sigma\>> is a symmetric matrix. This mean
+  that if we do a change of basis we can always find a space where
+  <math|\<Sigma\>> is a diagonal matrix, <strong|<math|\<Sigma\>=diag(\<sigma\><rsub|1>\<ldots\>\<sigma\><rsub|D>)>.>
+  Additionally, the RBM model implicitly assumes that variables are
+  independent when given hidden or visible variables. Therefore, to continue
+  to make this independence assumption (note: RBM can be seen as a special
+  case of ICA??), we assume there is no correlations between elements of the
+  visible units given hidden units.
+
+  \;
+
+  <\with|mode|math>
+    F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>\<\|\|\>v-a\<\|\|\><rsub|\<Sigma\>><rsup|2>+(\<Sigma\>*<rsup|-0.5>v)<rsup|T>W*h+b<rsup|T>h>
+
+    =<frac|1|2>(v-a)<rsup|T>\<Sigma\><rsup|-1>(v-a)-log<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>
+  </with>
+
+  Its derivate, assuming the covariance matrix is diagonal, is:\ 
+
+  <math|<frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>>>
+
+  This doesn't look very nice or the calculations are not that easy but they
+  are reasonably straightforward to implement.
+
+  \;
+
+  \;
 </body>
 
 <\references>
