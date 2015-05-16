@@ -320,14 +320,44 @@
 
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
 
-  <math|<frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>>>
+  <math|<frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsup|T>h>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>*<frac|<big|sum><rsub|h>[e<rsup|z<rsup|T>h>*<big|sum><rsub|j>w<rsub|k*j>h<rsub|j>]|<big|sum><rsub|h>e<rsup|z<rsup|T>h>>>,
+  where
 
-  This doesn't look very nice or the calculations are not that easy but they
-  are reasonably straightforward to implement.
+  <math|z=W<rsup|T>\<Sigma\><rsup|-0.5>v*+b>
+
+  This doesn't look very nice. The fundamental problem is that it does not
+  scale to very large number of <math|dim(h)> as the number of states one
+  must iterate through grows exponentially <math|2<rsup|dim(h)>>. So in
+  practice <math|dim(h)\<leqslant\>20> is maybe reasonable as one must then
+  <em|only> iterate through 1,000,000 states.
+
+  Other derivates of the free energy are:
+
+  <math|<frac|\<partial\>F|\<partial\>a>=\<Sigma\><rsup|-1>(a-v)>
+
+  <em|TODO>
+
+  <strong|Assuming single variance for all data
+  <math|\<sigma\><rsub|k>=\<sigma\>>>
+
+  To further simplify our model and to allow the use of large number of
+  hidden states we assume that covariance matrix has a form
+  <math|\<Sigma\>=\<sigma\>*I>. In this case the relevant results are:
+
+  <math|P(v\|h)\<sim\>Normal(\<sigma\>*W*h+a,\<sigma\><rsup|2>I)>
+
+  <math|P(h\|v)=sigmoid(v<rsup|T>W/\<sigma\>**+b*)>
 
   \;
 
-  \;
+  The derivate of free energy is now:
+
+  <\with|mode|math>
+    F(v)=<frac|1|2>(v-a)<rsup|T>(v-a)/\<sigma\><rsup|2>-log<big|sum><rsub|h>e<rsup|(W<rsup|T>v/\<sigma\>*+b)<rsup|T>h>
+  </with>
+
+  <math|<frac|\<partial\>F|\<partial\>\<sigma\>>=-\<\|\|\>v-a\<\|\|\><rsup|2>/\<sigma\><rsup|3>+<frac|1|\<sigma\><rsup|2>>*<frac|v<rsup|T><big|sum><rsub|h>[e<rsup|z<rsup|T>h>*W*h]|<big|sum><rsub|h>e<rsup|z<rsup|T>h>>>,
+  <math|z=W<rsup|T>v/\<sigma\>+b>
 </body>
 
 <\references>
