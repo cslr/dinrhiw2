@@ -2,8 +2,6 @@
 
 function H = stackedRBM_generate_hidden_states(X, stack)
 
-alpha = 5;
-
 DEEPNESS = length(stack);
 [NUMDATA, INPUTDIM] = size(X);
 
@@ -15,7 +13,7 @@ for n=1:NUMDATA
 		rbm = stack{d}.rbm;
 		h = rbm.W' * v' + rbm.b;
 		h = rand(size(h)) < h; % discretization
-		v = alpha*h'; % next layers visible state is this layer's hidden state + scaling
+		v = h';
 	end
 
 	H(n,:) = h;

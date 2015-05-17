@@ -1,8 +1,6 @@
 % calculates stacked Gaussian-Bernoulli RBMs deep network
 function stack = stackedRBM(X, arch)
 
-alpha = 5;
-
 if(length(arch) < 2)
 	stack = [];
 	return;
@@ -13,7 +11,12 @@ for i=1:(length(arch)-1)
 	fflush(stdout);
 	
 	% trains new RBM (for this layer)
-	rbm = calculate_gbrbm(X, arch(i+1), 1, 20);
+	if(i == 1)
+		rbm = calculate_gbrbm(X, arch(i+1), 1, 50);
+	else
+		rbm = calculate_rbm(X, arch(i+1), 1, 50);
+	end
+
 	stack{i}.rbm = rbm;
 	
 	% recalculates hidden states from the input for the next layer
@@ -26,7 +29,7 @@ for i=1:(length(arch)-1)
 		v = Y(k,:);
 		h = sigmoid((v * rbm.W)' + rbm.b);
 		h = rand(size(h)) < h; % discretizes next layer's data.
-		Z(k,:) = alpha*h; % rescales hidden layer data for the input layer
+		Z(k,:) = h; % rescales hidden layer data for the input layer
 	end
 	
 	X = Z;
