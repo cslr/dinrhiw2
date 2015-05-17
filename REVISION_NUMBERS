@@ -1,0 +1,6 @@
+Interesting revision numbers:
+
+140 - src/neuralnetwork/octave/  - stacked RBM code now "kind of works"... very BADLY. 
+                                   The fix is to use Gaussian-Bernoulli RBM at the first layer and 
+				   then use Bernoulli-Bernoulli RBMs at the following layers.
+
