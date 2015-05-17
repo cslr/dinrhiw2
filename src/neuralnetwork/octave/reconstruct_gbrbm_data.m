@@ -1,4 +1,4 @@
-function Y = reconstruct_rbm_data(X, W, a, b, CDk)
+function Y = reconstruct_gbrbm_data(X, W, a, b, CDk)
   Y = zeros(size(X));
   
   for k=1:size(X,1)
@@ -7,8 +7,9 @@ function Y = reconstruct_rbm_data(X, W, a, b, CDk)
     for l=1:CDk
       h = sigmoid((v * W)' + b);
       h = rand(size(h)) < h; % discretizes
-      v = sigmoid(W * h + a)';
-      v = rand(size(v)) < v; % DISCRETIZES VISIBLE STATES
+
+      m = (W * h + a)';
+      v = randn(size(m)) + m;
     end
     
     Y(k,:) = v;

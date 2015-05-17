@@ -1,14 +1,19 @@
 % function to generate test data for RBM
-% generates continous data (circle) between [0,1] interval
-% this can be later discretized if wanted
+% generates continous data (sphere) between [-1,1] interval
+% this can be then discretized
 
-X = zeros(1000, 2);
+X = zeros(1000, 3);
 
 for i=1:length(X)
   angle = rand*2*pi;
-  X(i,1) = 5*cos(angle);
-  X(i,2) = 5*sin(angle);
+  angle2 = rand*2*pi;
+  X(i,1) = sin(angle2)*cos(angle);
+  X(i,2) = sin(angle2)*sin(angle);
+  X(i,3) = sin(angle2);
 end
 
-X = X + randn(size(X));
+% now we discretize data to get interesting correlations
+X = double((X < -0.5) | (X > +0.5));
+
+% X = X + randn(size(X));
 
