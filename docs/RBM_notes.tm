@@ -419,15 +419,19 @@
   \;
 
   After calculating the conditional probabilities, we again calculate free
-  energy of the energy function and then calculate its partial derivates.
+  energy of the energy function (vand then calculate its partial derivates.
 
   <\with|mode|math>
     F(v)=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B>(v,h)>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>(v-a)<rsup|T>D<rsup|-2>(v-a)+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>
 
-    =<rsup|><frac|1|2>(v-a)D<rsup|-2>(v-a)-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>h<rsub|i>>
+    =<rsup|><frac|1|2>(v-a)<rsup|T>D<rsup|-2>(v-a)-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>h<rsub|i>>
 
-    =<frac|1|2>(v-a)D<rsup|-2>(v-a)-<big|sum><rsub|i>log(1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>)
+    =<frac|1|2>(v-a)<rsup|T>D<rsup|-2>(v-a)-<big|sum><rsub|i>log(1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>)
+
+    =<frac|1|2><big|sum><rsub|i><frac|(v<rsub|i>-a<rsub|i>)<rsup|2>|\<sigma\><rsup|2><rsub|i>>-<big|sum><rsub|i>log(1+exp(<big|sum><rsub|j>w<rsub|j*i>v<rsub|j>/\<sigma\><rsup|2><rsub|j>+b<rsub|i>))
   </with>
+
+  \;
 
   From this formulation we can calculate
 
@@ -439,11 +443,38 @@
 
   <math|<frac|\<partial\>F|\<partial\>b>=sigmoid(W<rsup|T>D<rsup|-2>v+b)>
 
-  <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid((W<rsup|T>D<rsup|-2>v+b)<rsub|i>)>
+  <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|i>>
 
   \;
 
-  But the crucial derivate is the derivate of <math|\<sigma\><rsub|i>> terms.
+  But the crucial derivate is the derivate of <math|\<sigma\><rsub|i>> terms,
+  we alter energy function by the change of terms:
+  <math|1/\<sigma\><rsup|2><rsub|i>=e<rsup|-z<rsub|i>>> leading into formula:
+
+  <with|mode|math|F(v)=<frac|1|2><big|sum><rsub|i>(v<rsub|i>-a<rsub|i>)<rsup|2>*e<rsup|-z<rsub|i>>-<big|sum><rsub|j>log(1+exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>))>
+
+  And then derivate with respect to <math|z<rsub|i>>:
+
+  <\math>
+    <frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>(v<rsub|i>-a<rsub|i>)<rsup|2>*e<rsup|-z<rsub|i>>+<big|sum><rsub|j><frac|exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>)|1+exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>)>*w<rsub|i*j>*v<rsub|i>*e<rsup|-z<rsub|i>>
+
+    =e<rsup|-z<rsub|i>>*[-<frac|1|2>(v<rsub|i>-a<rsub|i>)<rsup|2>*+v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|j>]
+  </math>
+
+  This is the exactly same formula as the one given in the paper of Aalto uni
+  people (<em|Improved Learning of Gaussian-Bernoulli Restricted Boltzmann
+  Machines. ICANN 2011.>)
+
+  \;
+
+  <strong|Implementation of alternative Gaussian model>
+
+  As previously, for prototyping purposes, only Octave code in
+  src/neuralnetworks/octave/ was developed initially.
+
+  <strong|<strong|<strong|>>TODO>
+
+  \;
 </body>
 
 <\references>
