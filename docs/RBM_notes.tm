@@ -436,12 +436,12 @@
   From this formulation we can calculate
 
   <\math>
-    <frac|\<partial\>F|\<partial\>a>=D<rsup|-2>(v-a)
+    <frac|\<partial\>F|\<partial\>a>=-D<rsup|-2>(a-v)
   </math>
 
-  <math|<frac|\<partial\>F|\<partial\>b<rsub|i>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>=-sigmoid((W<rsup|T>D<rsup|-2>v+b)<rsub|i>)>
+  <math|<frac|\<partial\>F|\<partial\>b<rsub|i>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>=-sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|i>>
 
-  <math|<frac|\<partial\>F|\<partial\>b>=sigmoid(W<rsup|T>D<rsup|-2>v+b)>
+  <math|<frac|\<partial\>F|\<partial\>b>=-sigmoid(W<rsup|T>D<rsup|-2>v+b)>
 
   <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>|1+e<rsup|(W<rsup|T>*D<rsup|-2>**v+b)<rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|i>>
 
@@ -449,7 +449,8 @@
 
   But the crucial derivate is the derivate of <math|\<sigma\><rsub|i>> terms,
   we alter energy function by the change of terms:
-  <math|1/\<sigma\><rsup|2><rsub|i>=e<rsup|-z<rsub|i>>> leading into formula:
+  <math|1/\<sigma\><rsup|2><rsub|i>=e<rsup|-z<rsub|i>>=\<alpha\>> leading
+  into formula:
 
   <with|mode|math|F(v)=<frac|1|2><big|sum><rsub|i>(v<rsub|i>-a<rsub|i>)<rsup|2>*e<rsup|-z<rsub|i>>-<big|sum><rsub|j>log(1+exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>))>
 
@@ -458,8 +459,10 @@
   <\math>
     <frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>(v<rsub|i>-a<rsub|i>)<rsup|2>*e<rsup|-z<rsub|i>>+<big|sum><rsub|j><frac|exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>)|1+exp(<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>)>*w<rsub|i*j>*v<rsub|i>*e<rsup|-z<rsub|i>>
 
-    =e<rsup|-z<rsub|i>>*[-<frac|1|2>(v<rsub|i>-a<rsub|i>)<rsup|2>*+v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|j>]
+    =-e<rsup|-z<rsub|i>>*[<frac|1|2>(v<rsub|i>-a<rsub|i>)<rsup|2>*-v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid(W<rsup|T>D<rsup|-2>v+b)<rsub|j>]
   </math>
+
+  \;
 
   This is the exactly same formula as the one given in the paper of Aalto uni
   people (<em|Improved Learning of Gaussian-Bernoulli Restricted Boltzmann
@@ -472,9 +475,19 @@
   As previously, for prototyping purposes, only Octave code in
   src/neuralnetworks/octave/ was developed initially.
 
-  <strong|<strong|<strong|>>TODO>
+  THERE SEEMS TO BE PROBLEMS WITH THIS IMPLEMENTATION AND MY CIRCLE TEST
+  DATA. IT SIMPLY ESTIMATES ONLY MEAN VALUE AND VARIANCE (SINGLE CLUSTER) OF
+  THE DATA INSTEAD OF MULTIPLE CLUSTERS TO COVER THE CIRCLE WITH PROPER
+  VARIANCE.
 
-  \;
+  <strong|TODO:>
+
+  - download test pictures (MNIST) and test methods with grayscale picture
+  data.. TEST IF THE AALTO PEOPLE METHOD WORKS WITH PIXEL DATA WHERE THERE IS
+  TYPICALLY ONLY A SINGLE MEAN THAT MAKES SENSE (and you reproduce their
+  paper's results otherwise)
+
+  - download some other grayscale pictures and test if the methods work
 </body>
 
 <\references>
