@@ -2,13 +2,13 @@
 
 generate_test_data2
 
-cov(X)
-X = 10*X;
-cov(X)
+% cov(X)
+% X = 2*X;
+% cov(X)
 
-rbm = calculate_gbrbm(X, 10, 1, 200);
+rbm = calculate_gbrbm(X, 10, 1, 20);
 
-Y = reconstruct_gbrbm_data(X, rbm.W, rbm.a, rbm.b, rbm.C, rbm.CDk);
+Y = reconstruct_gbrbm_data(X, rbm.W, rbm.a, rbm.b, rbm.z, rbm.CDk);
 
 figure(1);
 hold off;

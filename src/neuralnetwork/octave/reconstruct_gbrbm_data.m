@@ -1,18 +1,18 @@
-function Y = reconstruct_gbrbm_data(X, W, a, b, C, CDk)
+function Y = reconstruct_gbrbm_data(X, W, a, b, z, CDk)
   Y = zeros(size(X));
+  
+  d = exp(-z)'; % D^-1 matrix diagonal
+  dd = exp(0.5*z); % D^0.5 matrix diagonal
   
   for k=1:size(X,1)
     v = X(k,:);
     
     for l=1:CDk
-      cv = ((C**-0.5) * v')';
-      h = sigmoid((cv * W)' + b);
+      h = sigmoid(( (d .* v) * W)' + b);
       h = rand(size(h)) < h; % discretizes
 
-      m = ((C**-0.5) * W * h + a)';
-      [V, L] = eig(C);
-      A = V*(L**0.5);
-      v = (A*randn(size(m))')' + m;
+      m = (W * h + a)';
+      v = (dd .* randn(size(m))')' + m;
     end
     
     Y(k,:) = v;
