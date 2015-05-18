@@ -3,7 +3,7 @@
 <style|generic>
 
 <\body>
-  <strong|Some notes about my RBM implementation (binary RBM)>
+  <strong|Some notes RBM implementation>
 
   Tomas Ukkonen, 2015 <verbatim|tomas.ukkonen@iki.fi>
 
@@ -272,7 +272,7 @@
 
   <math|<big|int>e<rsup|-<frac|1|2>v<rsup|T>\<Sigma\><rsup|-1>v+*v<rsup|T>\<Sigma\><rsup|-1>(\<Sigma\><rsup|0.5>W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v=e<rsup|<frac|1|2>\<\|\|\>\<Sigma\><rsup|-0.5>W*h+a\<\|\|\><rsub|\<Sigma\><rsup|>><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>><big|int>e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>*d*v>
 
-  <math|P(v\|h)==<frac|1|Z(\<Sigma\>)>*e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal(\<Sigma\><rsup|0.5>*W*h+a,\<Sigma\>)>
+  <math|P(v\|h)==<frac|1|Z(\<Sigma\>)>*e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal(v\|\<Sigma\><rsup|0.5>*W*h+a,\<Sigma\>)>
 
   <strong|=\<gtr\> CHECK THIS RESULT FROM THE LITERATURE>
 
@@ -306,9 +306,10 @@
   <math|\<Sigma\>> is a diagonal matrix, <strong|<math|\<Sigma\>=diag(\<sigma\><rsub|1>\<ldots\>\<sigma\><rsub|D>)>.>
   Additionally, the RBM model implicitly assumes that variables are
   independent when given hidden or visible variables. Therefore, to continue
-  to make this independence assumption (note: RBM can be seen as a special
-  case of ICA??), we assume there is no correlations between elements of the
-  visible units given hidden units.
+  to make this independence assumption (note: RBM can be seen as somewhat
+  similar to ICA where we estimate ``independent'' or ``semi-independent''
+  components from the data), we assume there is no correlations between
+  elements of the visible units given hidden units.
 
   \;
 
@@ -325,12 +326,12 @@
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
 
   <\math>
-    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+<big|sum><rsub|i><frac|e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>|1+e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>>(<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsup|2><rsub|k>>)
+    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>-<big|sum><rsub|i><frac|e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>|1+e<rsup|(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>>(<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>)
 
-    =-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>-2*v<rsub|k>/\<sigma\><rsup|3><rsub|k><big|sum><rsub|i>w<rsub|k*i>*sigmoid(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>**
+    =-<frac|(v<rsub|k>-a<rsub|k>)<rsup|2>|\<sigma\><rsup|3><rsub|k>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k><big|sum><rsub|i>w<rsub|k*i>*sigmoid(W<rsup|T>\<Sigma\><rsup|-0.5>v*+b)<rsub|i>**
   </math>
 
-  \;
+  <math|<rsup|<with|font-base-size|11|<with|font-base-size|12|>>>diag[<frac|\<partial\>*F|\<partial\>*\<Sigma\>>]=diag[-\<Sigma\><rsup|-3/2>(v-a)*(v-a)<rsup|T>+*(\<Sigma\><rsup|-1>v)*(W*sigmoid(W<rsup|T>\<Sigma\><rsup|-0.5>v+b))<rsup|T>]>
 
   \;
 
@@ -338,7 +339,19 @@
 
   <math|<frac|\<partial\>F|\<partial\>a>=\<Sigma\><rsup|-1>(a-v)>
 
-  <em|TODO>
+  <math|<frac|\<partial\>F(v)|\<partial\>b<rsub|i>>=-sigmoid(<big|sum><rsub|j>w<rsub|i*j>v<rsub|j>*/\<sigma\><rsub|j>*+b<rsub|i>)>,
+  <math|<frac|\<partial\>*F|\<partial\>b>=-sigmoid(W<rsup|T>\<Sigma\><rsup|-1/2>v+b)>
+
+  <math|<frac|\<partial\>*F(v)|\<partial\>*w<rsub|i*j>>=-<frac|v<rsub|j>|\<sigma\><rsub|j>>*sigmoid(<big|sum><rsub|j>w<rsub|i*j>**v<rsub|j>/\<sigma\><rsub|j>+b<rsub|i>)>,<with|mode|math|<frac|\<partial\>*F|\<partial\>*W>=-sigmoid(W<rsup|T>\<Sigma\><rsup|-1/2>v+b)*(\<Sigma\><rsup|-1/2><rsup|>*v)<rsup|T>>
+
+  \;
+
+  Now the open question is whether these derivates are valid for
+  <em|<strong|any>> covariance matrix <math|\<Sigma\>> as it would mean that
+  we could then estimate correlations between visible layer inputs and not
+  expect them to be statistically independent given hidden variables.
+
+  \;
 
   <strong|Assuming single variance for all data
   <math|\<sigma\><rsub|k>=\<sigma\>>>
