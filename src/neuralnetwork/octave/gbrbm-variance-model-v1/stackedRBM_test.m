@@ -4,7 +4,7 @@ clear;
 
 generate_test_data2
 
-arch = [2 20 8];
+arch = [2 20 4];
 stack = stackedRBM(X, arch);
 
 Z = reconstruct_stackedRBM_data(X, stack);

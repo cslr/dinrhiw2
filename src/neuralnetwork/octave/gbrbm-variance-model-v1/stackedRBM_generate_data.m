@@ -20,12 +20,16 @@ for n=1:NUMDATA
 	% the visible layer from the top layer
 	for d=DEEPNESS:-1:1
 		rbm = stack{d}.rbm;
-		v = (rbm.W*h + rbm.a);
-				
+		
 		if(rbm.type == 'GB')
-			v = v + randn(size(v)); % adds N(0,I) noise term to G-B network
+		  v = ((rbm.C**-0.5)*rbm.W*h + rbm.a);
+		  nn = randn(size(v));
+		  [V, L] = eig(rbm.C);
+		  nn = V*(L**0.5)*nn;
+		  v = v + nn; % adds N(0,C) noise term to G-B network
 		else
-			v = rand(size(v)) < v; % discretizes B-B network
+		  v = (rbm.W*h + rbm.a);
+		  v = rand(size(v)) < v; % discretizes B-B network
 		end
 			
 		h = v; % visible state is the previous layer's hidden state 

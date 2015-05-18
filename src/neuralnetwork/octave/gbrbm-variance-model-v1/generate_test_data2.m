@@ -5,9 +5,9 @@ X = zeros(1000, 2);
 
 for i=1:length(X)
   angle = rand*2*pi;
-  X(i,1) = 5*cos(angle);
-  X(i,2) = 5*sin(angle);
+  X(i,1) = 10*cos(angle);
+  X(i,2) = 10*sin(angle);
 end
 
-X = X + randn(size(X));
+X = X + 2*randn(size(X));
 

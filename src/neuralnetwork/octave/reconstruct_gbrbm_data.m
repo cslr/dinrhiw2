@@ -1,8 +1,8 @@
 function Y = reconstruct_gbrbm_data(X, W, a, b, z, CDk)
   Y = zeros(size(X));
   
-  d = exp(-z)'; % D^-1 matrix diagonal
-  dd = exp(0.5*z); % D^0.5 matrix diagonal
+  d = exp(-z)'; % D^-2 matrix diagonal
+  dd = sqrt(exp(z)); % D matrix diagonal
   
   for k=1:size(X,1)
     v = X(k,:);

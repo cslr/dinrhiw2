@@ -13,9 +13,8 @@ b = zeros(NHID,1);
 W = 0.1*randn(NVIS,NHID);
 z = zeros(NVIS,1); % diagonal covariance matrix initially
 
-% marks diagonal variances as 1 initially
 for i=1:length(z)
-  z(i) = -log(1);
+  z(i) = log(4);
 end
 
 Y = reconstruct_gbrbm_data(X, W, a, b, z, CDk);
@@ -42,7 +41,7 @@ for e=1:EPOCHS
       v = X(index,:);
       v = reconstruct_gbrbm_data(v, W, a, b, z, CDk); % gets p(v) from the model
       
-      d = exp(-z)'; % D^-1 matrix diagonal
+      d = exp(-z)'; % D^-2 matrix diagonal
       
       h = sigmoid(((d .* v) * W)' + b);
       
@@ -52,7 +51,7 @@ for e=1:EPOCHS
       
       wh = W*h;
       for i=1:length(z)
-	g_pz(i) = g_pz(i) + exp(-z(i))*(0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i));
+	g_pz(i) = g_pz(i) + (0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i));
       end
       
       N = N + 1;
@@ -72,7 +71,7 @@ for e=1:EPOCHS
 
     wh = W*h;
     for i=1:length(z)
-      z(i) = z(i) + lrate*(exp(-z(i))*(0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
+      z(i) = z(i) + lrate*exp(-z(i))*((0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
     end
     
   end
@@ -83,10 +82,10 @@ for e=1:EPOCHS
   err = norm(X - Y, 'fro')/prod(size(X));
   
   my = mean(mean(Y));
-  dv = mean(exp(-z));
+  dv = sqrt( mean(exp(z)) );
   
   printf("EPOCH %d/%d. Reconstruction error: %f ", e, EPOCHS, err);
-  printf("mean: %f mean-var: %f\n", my, dv);
+  printf("mean: %f mean-stdev: %f\n", my, dv);
   fflush(stdout);
   
 end

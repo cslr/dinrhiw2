@@ -3,8 +3,8 @@
 generate_test_data2
 
 cov(X)
-X = 10*X;
-cov(X)
+% X = 10*X;
+% cov(X)
 
 rbm = calculate_gbrbm(X, 10, 1, 200);
 
