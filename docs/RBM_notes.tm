@@ -272,9 +272,16 @@
 
   <math|<big|int>e<rsup|-<frac|1|2>v<rsup|T>\<Sigma\><rsup|-1>v+*v<rsup|T>\<Sigma\><rsup|-1>(\<Sigma\><rsup|0.5>W*h*+a)-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>>*d*v=e<rsup|<frac|1|2>\<\|\|\>\<Sigma\><rsup|-0.5>W*h+a\<\|\|\><rsub|\<Sigma\><rsup|>><rsup|2>-<frac|1|2>\<\|\|\>a\<\|\|\><rsup|2>><big|int>e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>*d*v>
 
-  <math|P(v\|h)==<frac|1|Z(\<Sigma\>)>*e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal(v\|\<Sigma\><rsup|0.5>*W*h+a,\<Sigma\>)>
+  <math|P(v\|h)==<frac|1|Z(\<Sigma\>)>*e<rsup|-<frac|1|2>\<\|\|\>v-(\<Sigma\><rsup|0.5>W*h+a)\<\|\|\><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal(v\|\<Sigma\><rsup|1/2>*W*h+a,\<Sigma\>)>
 
-  <strong|=\<gtr\> CHECK THIS RESULT FROM THE LITERATURE>
+  \;
+
+  To generate normally distributed variables with wanted covariance matrix we
+  notice that for <math|x\<sim\>N(0,I)> data we have:
+
+  <math|\<Sigma\><rsub|x>=Cov[A*x]=E[A*x*x<rsup|T>*A<rsup|T>]=A*I*A<rsup|T>=A*A<rsup|T>=X\<Lambda\>*X<rsup|T>\<Rightarrow\>A=X*\<Lambda\><rsup|1/2>>
+
+  \;
 
   And similarly we calculate
 
@@ -351,31 +358,20 @@
   we could then estimate correlations between visible layer inputs and not
   expect them to be statistically independent given hidden variables.
 
-  \;
+  <em|RESULTS: This does not seem to work for any <math|\<Sigma\>> matrix,
+  but it is uncertain as the primary problem here is that variances can
+  become negative meaning that the method is not robust or a complex method
+  is needed to dynamically adjust learning rates so that <math|\<Sigma\>>
+  matrix (eigenvalues) can never become negative.>
 
-  <strong|Assuming single variance for all data
-  <math|\<sigma\><rsub|k>=\<sigma\>>>
-
-  To further simplify our model and to allow the use of large number of
-  hidden states we assume that covariance matrix has a form
-  <math|\<Sigma\>=\<sigma\>*I>. In this case the relevant results are:
-
-  <math|P(v\|h)\<sim\>Normal(\<sigma\>*W*h+a,\<sigma\><rsup|2>I)>
-
-  <math|P(h\|v)=sigmoid(v<rsup|T>W/\<sigma\>**+b*)>
-
-  \;
-
-  The derivate of free energy is now:
-
-  <\with|mode|math>
-    F(v)=<frac|1|2>(v-a)<rsup|T>(v-a)/\<sigma\><rsup|2>-log<big|sum><rsub|h>e<rsup|(W<rsup|T>v/\<sigma\>*+b)<rsup|T>h>
-  </with>
-
-  <math|<frac|\<partial\>F|\<partial\>\<sigma\>>=-\<\|\|\>v-a\<\|\|\><rsup|2>/\<sigma\><rsup|3>+<frac|1|\<sigma\><rsup|2>>*<frac|v<rsup|T><big|sum><rsub|h>[e<rsup|z<rsup|T>h>*W*h]|<big|sum><rsub|h>e<rsup|z<rsup|T>h>>>,
-  <math|z=W<rsup|T>v/\<sigma\>+b>
-
-  \;
+  It is possible to get this working but it seems that the convergence is
+  really slow. The primary idea is to check if updated covariance matrix has
+  positive diagonal and is otherwise good looking (non complex numbers, NaNs,
+  Infs etc) and always drop the learning rate by 50% if it seems that the
+  update would make covariance matrix ``unhealthy''. But this is not robust
+  or a good solution as it ``filters out'' updates that would turn matrix
+  into bad one. Additionally, the update rule seem to be really SLOW here.
+  (<verbatim|gbrbm-variance-model-v1>)
 
   \;
 
@@ -385,7 +381,7 @@
   problems I now try another slightly modified model introduced by Aalto
   university researchers (Cho et al. 2011).
 
-  The energy of the system is defined to be\ 
+  Now the energy of the system is defined to be\ 
 
   <\math>
     E<rsub|G*B>(v,h)
@@ -417,6 +413,11 @@
 
   \;
 
+  Notice here that this time the mean is not related to variances which can
+  be useful.
+
+  \;
+
   After calculating the conditional probabilities, we again calculate free
   energy of the energy function and then calculate its partial derivates.
 
@@ -442,7 +443,7 @@
 
   \;
 
-  \;
+  But the crucial derivate is the derivate of <math|\<sigma\><rsub|i>> terms.
 </body>
 
 <\references>
