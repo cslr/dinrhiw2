@@ -9,5 +9,5 @@ for i=1:length(X)
   X(i,2) = 10*sin(angle);
 end
 
-X = X + 2*randn(size(X));
+X = X + 0.1*randn(size(X));
 

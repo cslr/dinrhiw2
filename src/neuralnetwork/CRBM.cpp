@@ -118,7 +118,7 @@ namespace whiteice
       
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
-	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0);
 	// T r = T(rand())/T(RAND_MAX);
 	
 	//if(aj > r) h[j] = T(1.0); // discretization step
@@ -134,7 +134,7 @@ namespace whiteice
       
       // 1. visible units: calculates sigma(a_j)
       for(unsigned int j=0;j<(v.size()-0);j++){
-	T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	T aj = T(2.0)/(T(1.0) + math::exp(-v[j])) - T(1.0);
 	// T r = T(rand())/T(RAND_MAX);
 	
 	//if(aj > r) v[j] = T(1.0); // discretization step
@@ -188,7 +188,7 @@ namespace whiteice
       const unsigned int index = rand() % samples.size();
       
       if(samples[index].size() + 1 != v.size())
-	continue; // silently ignores bad data.. (throw exception instead?)
+	throw std::invalid_argument("CRBM: Input data has incorrect dimension.");
 
       // v = samples[index];
       v.importData(&(samples[index][0]), samples[index].size());

@@ -377,8 +377,8 @@
   into bad one. Additionally, the update rule seem to be really SLOW here.
   (<verbatim|gbrbm-variance-model-v1>)
 
-  Because the direct variance update don't work, we instead try to fix the
-  situation with the change of variable <math|e<rsup|-z<rsub|i>>=1/\<sigma\><rsup|2><rsub|i>>
+  The direct variance update don't work, we instead try to fix the situation
+  with the change of variable <math|e<rsup|-z<rsub|i>>=1/\<sigma\><rsup|2><rsub|i>>
   (as recommended below), leading into the equation:
 
   <\math>
@@ -390,6 +390,13 @@
   <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>e<rsup|-z<rsub|i>>-><math|<big|sum><rsub|j>sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j><around*|(|-<frac|1|2>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>/2>|)>>
 
   <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>*e<rsup|-z<rsub|i>><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>+<frac|1|2>e<rsup|-z<rsub|i>/2>><math|*v<rsub|i><big|sum><rsub|j>*w<rsub|i*j>*sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j>>
+
+  \;
+
+  This works somewhat better but <with|font-series|bold|still> leads into
+  NaNs and other problems when the larger number of hidden nodes are used.
+  (This may be because of small covariance matrixes leading into eqs near
+  Infinities.)
 
   \;
 

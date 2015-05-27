@@ -1,7 +1,8 @@
+
 Interesting revision numbers:
 
 142 - src/neuralnetwork/octave/  - stacked RBM implementation (stackedRBM_test.m) kind of works now.
 				   it uses G-B RBM at the first layer and then B-B RBMs 
 				   to process hidden states
 
-
+152 - update rule for variance, octave GBRBM code still works but now I try to modify it

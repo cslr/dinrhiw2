@@ -6,7 +6,9 @@ cov(X)
 % X = 10*X;
 % cov(X)
 
-rbm = calculate_gbrbm(X, 10, 1, 200);
+% rbm = calculate_gbrbm(X, 10, 1, 50);
+rbm = calculate_gbrbm(X, 100, 1, 50);
+
 
 Y = reconstruct_gbrbm_data(X, rbm.W, rbm.a, rbm.b, rbm.C, rbm.CDk);
 
