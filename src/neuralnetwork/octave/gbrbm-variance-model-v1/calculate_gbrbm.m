@@ -19,24 +19,38 @@ err = norm(X - Y, 'fro')/prod(size(X));
 printf("EPOCH %d/%d. Reconstruction error: %f\n", 0, EPOCHS, err);
 fflush(stdout);
 
+prev_a = a;
+prev_b = b;
+prev_W = W;
+prev_z = z;
+prev_C = C;
+
 for e=1:EPOCHS
 
   for i=1:length(X)
   
     if(sum(sum(isnan(z))) > 1)
+      prev_z
       z
+      return;
     end
     
     if(sum(sum(isnan(z))) > 1)
+      prev_a
       a
+      return;
     end
     
     if(sum(sum(isnan(z))) > 1)
+      prev_b
       b
+      return;
     end
     
     if(sum(sum(isnan(W))) > 1)
+      prev_W
       W
+      return;
     end
   
       % goes through data points and calculates gradients
@@ -89,6 +103,12 @@ for e=1:EPOCHS
     for i=1:length(z)
       term(i) = +0.5*exp(-z(i)) * (v(i)-a(i))*(v(i)-a(i)) - 0.5*exp(-z(i)/2)*v(i)*Wh(i);
     end
+    
+    prev_a = a;
+    prev_b = b;
+    prev_W = W;
+    prev_z = z;
+    prev_C = C;
 
     a = a + lrate*((Cinv)*(v' - a)  - g_pa);
     b = b + lrate*(h     - g_pb);

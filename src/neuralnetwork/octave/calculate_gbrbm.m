@@ -5,7 +5,7 @@ function rbm = calculate_gbrbm(X, NHID, CDk, EPOCHS)
 NVIS = size(X, 2);
 % NHID = 10; % 10 hidden states 
 % CDk  = 1;
-lrate = 0.001;
+lrate = 0.01;
 % EPOCHS = 100;
 
 a = zeros(NVIS,1);
@@ -14,7 +14,7 @@ W = 0.1*randn(NVIS,NHID);
 z = zeros(NVIS,1); % diagonal covariance matrix initially
 
 for i=1:length(z)
-  z(i) = log(4);
+  z(i) = log(1); %  variance is one initially
 end
 
 Y = reconstruct_gbrbm_data(X, W, a, b, z, CDk);

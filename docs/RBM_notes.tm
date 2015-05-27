@@ -444,7 +444,7 @@
   \;
 
   After calculating the conditional probabilities, we again calculate free
-  energy of the energy function (vand then calculate its partial derivates.
+  energy of the energy function (and then calculate its partial derivates).
 
   <\math>
     F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>

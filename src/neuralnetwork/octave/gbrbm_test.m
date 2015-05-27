@@ -6,7 +6,7 @@ generate_test_data2
 % X = 2*X;
 % cov(X)
 
-rbm = calculate_gbrbm(X, 100, 10, 500);
+rbm = calculate_gbrbm(X, 100, 1, 10);
 
 Y = reconstruct_gbrbm_data(X, rbm.W, rbm.a, rbm.b, rbm.z, rbm.CDk);
 
