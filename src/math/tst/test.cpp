@@ -20,7 +20,7 @@
 #include <time.h>
 #include <signal.h>
 
-#ifdef WINNT
+#ifdef WINOS
 #include <windows.h>
 #endif
 
@@ -753,7 +753,7 @@ void simplex_test()
     // waits for result (1sec)
     {
       for(unsigned int i=0;i<100;i++){
-#ifndef WINNT
+#ifndef WINOS
     struct timespec ts;
 	ts.tv_sec  = 0;
 	ts.tv_nsec = 10000000; // 10ms

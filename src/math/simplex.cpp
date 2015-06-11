@@ -42,7 +42,7 @@
 #include "blade_math.h"
 #include "dinrhiw_blas.h"
 
-#ifdef WINNT
+#ifdef WINOS
 #include <windows.h>
 #endif
 
@@ -235,7 +235,7 @@ namespace whiteice
 	return false;
       }
 	
-#ifndef WINNT
+#ifndef WINOS
       unsigned int counter = 0;
       struct timespec ts;
       

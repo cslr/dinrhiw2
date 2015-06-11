@@ -37,6 +37,19 @@ dnl not checked right now, just added
 AC_MSG_RESULT([yes (not checked, write real check)])
 EXTRA_LIBPATHS="-L/usr/local/lib"
 
+dnl check for Windows (WINNT)
+AC_MSG_CHECKING([Windows OS])
+EXTRA_DEFINES=""
+`g++ -o windowstest.exe windowstest.cpp > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+   EXTRA_DEFINES="-DWINOS"
+    AC_MSG_RESULT([yes, $conf_flags])
+else
+    AC_MSG_RESULT([no])
+fi
+
+
 dnl checks if isfinite() is defined
 AC_MSG_CHECKING([for isfinite()])
 has_isfinite="no"
@@ -84,20 +97,16 @@ AC_MSG_CHECKING([CPU family])
 AC_MSG_RESULT($cpufamily)
 
 dnl enables CPU specific optimization flags
-optimization_flags="-O3 -ffast-math -DBLAS_MEMALIGN"
+optimization_flags="-O3 -ffast-math"
 conf_flags=""
 
-if [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
-    optimization_flags="-O3 -g -DIA32 -ffast-math -DBLAS_MEMALIGN"
-    conf_flags="-DIA32"
-fi
-
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math -DBLAS_MEMALIGN"
+    optimization_flags="-O3 -g -DAMD64 -ffast-math"
     conf_flags="-DAMD64"
-fi
-
-if [test $conf_flags = "" ]; then
+elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
+    optimization_flags="-O3 -g -DIA32 -ffast-math"
+    conf_flags="-DIA32"
+else
     AC_MSG_ERROR($cpufamily [, unrecognized/unsupported machine architecture.])
 fi
 
@@ -129,20 +138,37 @@ fi
 
 
 dnl checking for CBLAS (BLAS) header files and (and library)
-AC_MSG_CHECKING([for BLAS C headers])
+AC_MSG_CHECKING([for BLAS C headers (1)])
 CBLAS_HEADERS="no"
 
 `gcc -c blastest.c -I/usr/local/include/ -L/usr/local/lib/ > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
     CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/usr/local/include/"
+    BLAS_LIBS="-lblas -L/usr/local/lib/"
     AC_MSG_RESULT([yes])
 else
-    AC_MSG_ERROR([no, install BLAS implementation with cblas.h])
+    AC_MSG_RESULT([no cblas.h detected])
 fi
 
-BLAS_CFLAGS="-I/usr/local/include/"
-BLAS_LIBS="-lblas -L/usr/local/lib/"
+
+AC_MSG_CHECKING([for BLAS C headers (2)])
+
+`gcc -c blastest.c -I/opt/OpenBLAS/include/ -L/usr/local/lib/ > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+    CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/opt/OpenBLAS/include/"
+    BLAS_LIBS="-lblas -L/usr/local/lib/"
+    AC_MSG_RESULT([yes])
+else
+    AC_MSG_RESULT([no cblas.h detected])
+fi
+
+if [[ "$CBLAS_HEADERS" = "no" ]]; then
+   AC_MSG_ERROR([Cannot find cblas.h])
+fi
 
  
 AC_MSG_CHECKING([for OpenBLAS library (1)])
@@ -192,6 +218,19 @@ if [[ $? -eq 0 ]]; then
    BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
    BLAS_LIBS="-L/lib/ -lopenblas"
    AC_MSG_RESULT([yes, headers in /usr/local/include/openblas/])
+else
+   AC_MSG_RESULT([no OpenBLAS detected])
+   OPENBLAS="no"
+fi
+
+AC_MSG_CHECKING([for OpenBLAS library (5)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/OpenBLAS/include/ -L/opt/OpenBLAS/bin/ -lopenblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
+   BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
+   AC_MSG_RESULT([yes, headers in /opt/OpenBLAS/include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    OPENBLAS="no"
@@ -264,7 +303,7 @@ elif [[ $cpu_sse = "yes" ]]; then
    optimization_flags="$optimization_flags -msse"
 fi
 
-EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS"
+EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"
 
 AC_SUBST([EXTRA_INCLUDEPATHS],[$EXTRA_INCLUDEPATHS])

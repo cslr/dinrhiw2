@@ -494,7 +494,7 @@ namespace whiteice
 	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x[0], x[1]) ) );
       }
     
-    
+
     //////////////////////////////////////////////////////////////////////
     // log(gamma(x))
     
@@ -507,7 +507,7 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     
     inline double lgamma(double x, int* signp){
-#ifdef WINNT
+#ifdef WINOS
       // TODO: use configure script to figure out 
       // which gamma functions are available
       // (and what their parameters are)
@@ -521,7 +521,7 @@ namespace whiteice
     }
     
     inline float lgamma(float x, int* signp){
-#ifdef WINNT
+#ifdef WINOS
       return lgamma(x, signp);
 #else
       return lgammaf_r(x, signp);
@@ -529,7 +529,7 @@ namespace whiteice
     }
     
     inline whiteice::math::blas_real<float> lgamma(whiteice::math::blas_real<float> x, int* signp){
-#ifdef WINNT
+#ifdef WINOS
       return whiteice::math::blas_real<float>(lgamma(x.c[0], signp));
 #else
       return whiteice::math::blas_real<float>(lgammaf_r(x.c[0], signp));
@@ -537,12 +537,14 @@ namespace whiteice
     }
     
     inline whiteice::math::blas_real<double> lgamma(whiteice::math::blas_real<double> x, int* signp){
-#ifdef WINNT
+#ifdef WINOS
       return whiteice::math::blas_real<double>(lgamma(x.c[0], signp));
 #else
       return whiteice::math::blas_real<double>(lgamma_r(x.c[0], signp));
 #endif
     }
+
+
     
     
     //////////////////////////////////////////////////////////////////////

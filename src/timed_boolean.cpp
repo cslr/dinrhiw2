@@ -25,7 +25,7 @@
 /********************************************************************************/
 
 #ifndef HAVE_GETTIMEOFDAY
-#ifdef WINNT
+#ifdef WINOS
 
 #include <windows.h>
 

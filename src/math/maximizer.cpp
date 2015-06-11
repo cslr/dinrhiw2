@@ -1,5 +1,5 @@
 
-#ifdef WINNT
+#ifdef WINOS
 #include <windows.h>
 #endif
 
@@ -42,7 +42,7 @@ namespace whiteice
     StochasticOptimizer<T>::StochasticOptimizer()
     {
       f = 0;
-#ifndef WINNT
+#ifndef WINOS
       CLOCKS_SEC = sysconf(_SC_CLK_TCK);
 #else
       CLOCKS_SEC = CLOCKS_PER_SEC;
@@ -336,7 +336,7 @@ namespace whiteice
     
     template <typename T>
     float StochasticOptimizer<T>::getTime() const throw(){
-#ifndef WINNT
+#ifndef WINOS
       struct tms t1;
       
       if(times(&t1) == -1)

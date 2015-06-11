@@ -2,7 +2,7 @@
 #include "NNGradDescent.h"
 #include <time.h>
 
-#ifdef WINNT
+#ifdef WINOS
 #include <windows.h>
 #endif
 

@@ -1,0 +1,14 @@
+AssociationRuleFinder.o: AssociationRuleFinder.cpp ../dynamic_bitset.h \
+ ../math/integer.h ../math/number.h ../math/ownexception.h \
+ /usr/local/include/gmp.h ../data_source.h ../fast_radixv.h \
+ AssociationRuleFinder.h ../timed_boolean.h
+tst.o: test/tst.cpp AssociationRuleFinder.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/number.h ../math/ownexception.h \
+ /usr/local/include/gmp.h ../data_source.h ../list_source.h \
+ ../data_source.h ../list_source.cpp ../list_source.h
+dynamic_bitset.o: ../dynamic_bitset.cpp ../dynamic_bitset.h \
+ ../math/integer.h ../math/number.h ../math/ownexception.h \
+ /usr/local/include/gmp.h
+ownexception.o: ../math/ownexception.cpp ../math/ownexception.h
+integer.o: ../math/integer.cpp /usr/local/include/gmp.h ../math/integer.h \
+ ../math/number.h ../math/ownexception.h

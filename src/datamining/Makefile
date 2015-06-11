@@ -4,8 +4,8 @@
 CC = gcc
 CXX= g++
 
-OPTIMIZE=-O3 -g -DIA32 -ffast-math -DBLAS_MEMALIGN -msse3
-CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include -DOPENBLAS -I/include/
+OPTIMIZE=-O3 -g -DAMD64 -ffast-math -msse3
+CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include -DOPENBLAS -I/opt/OpenBLAS/include/ -DWINOS
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 
 
@@ -20,7 +20,7 @@ SOURCES = AssociationRuleFinder.cpp test/tst.cpp \
 
 TARGET  = tst
 
-LIBS= -L/usr/local/lib -lz -lgmp  -L/lib/ -lopenblas
+LIBS= -L/usr/local/lib -lz -lgmp  -L/opt/OpenBLAS/bin/ -lopenblas
 
 ##################################################
 

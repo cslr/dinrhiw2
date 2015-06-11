@@ -3864,6 +3864,21 @@ $as_echo_n "checking is -L/usr/local/lib command line parameter needed... " >&6;
 $as_echo "yes (not checked, write real check)" >&6; }
 EXTRA_LIBPATHS="-L/usr/local/lib"
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Windows OS" >&5
+$as_echo_n "checking Windows OS... " >&6; }
+EXTRA_DEFINES=""
+`g++ -o windowstest.exe windowstest.cpp > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+   EXTRA_DEFINES="-DWINOS"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, $conf_flags" >&5
+$as_echo "yes, $conf_flags" >&6; }
+else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isfinite()" >&5
 $as_echo_n "checking for isfinite()... " >&6; }
 has_isfinite="no"
@@ -3947,20 +3962,16 @@ $as_echo_n "checking CPU family... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpufamily" >&5
 $as_echo "$cpufamily" >&6; }
 
-optimization_flags="-O3 -ffast-math -DBLAS_MEMALIGN"
+optimization_flags="-O3 -ffast-math"
 conf_flags=""
 
-if [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]; then
-    optimization_flags="-O3 -g -DIA32 -ffast-math -DBLAS_MEMALIGN"
-    conf_flags="-DIA32"
-fi
-
 if [ $cpufamily = "x86_64" ]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math -DBLAS_MEMALIGN"
+    optimization_flags="-O3 -g -DAMD64 -ffast-math"
     conf_flags="-DAMD64"
-fi
-
-if test $conf_flags = "" ; then
+elif [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]; then
+    optimization_flags="-O3 -g -DIA32 -ffast-math"
+    conf_flags="-DIA32"
+else
     as_fn_error $? "$cpufamily , unrecognized/unsupported machine architecture." "$LINENO" 5
 fi
 
@@ -3995,22 +4006,43 @@ else
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers" >&5
-$as_echo_n "checking for BLAS C headers... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers (1)" >&5
+$as_echo_n "checking for BLAS C headers (1)... " >&6; }
 CBLAS_HEADERS="no"
 
 `gcc -c blastest.c -I/usr/local/include/ -L/usr/local/lib/ > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
     CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/usr/local/include/"
+    BLAS_LIBS="-lblas -L/usr/local/lib/"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
-    as_fn_error $? "no, install BLAS implementation with cblas.h" "$LINENO" 5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no cblas.h detected" >&5
+$as_echo "no cblas.h detected" >&6; }
 fi
 
-BLAS_CFLAGS="-I/usr/local/include/"
-BLAS_LIBS="-lblas -L/usr/local/lib/"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers (2)" >&5
+$as_echo_n "checking for BLAS C headers (2)... " >&6; }
+
+`gcc -c blastest.c -I/opt/OpenBLAS/include/ -L/usr/local/lib/ > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+    CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/opt/OpenBLAS/include/"
+    BLAS_LIBS="-lblas -L/usr/local/lib/"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no cblas.h detected" >&5
+$as_echo "no cblas.h detected" >&6; }
+fi
+
+if [ "$CBLAS_HEADERS" = "no" ]; then
+   as_fn_error $? "Cannot find cblas.h" "$LINENO" 5
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (1)" >&5
@@ -4071,6 +4103,22 @@ if [ $? -eq 0 ]; then
    BLAS_LIBS="-L/lib/ -lopenblas"
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include/openblas/" >&5
 $as_echo "yes, headers in /usr/local/include/openblas/" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
+$as_echo "no OpenBLAS detected" >&6; }
+   OPENBLAS="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (5)" >&5
+$as_echo_n "checking for OpenBLAS library (5)... " >&6; }
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/OpenBLAS/include/ -L/opt/OpenBLAS/bin/ -lopenblas > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
+   BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/OpenBLAS/include/" >&5
+$as_echo "yes, headers in /opt/OpenBLAS/include/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4144,7 +4192,7 @@ elif [ $cpu_sse = "yes" ]; then
    optimization_flags="$optimization_flags -msse"
 fi
 
-EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS"
+EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"
 
 EXTRA_INCLUDEPATHS=$EXTRA_INCLUDEPATHS
