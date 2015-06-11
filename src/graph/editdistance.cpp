@@ -5,6 +5,7 @@
 #include <new>
 #include <string>
 #include <iostream>
+#include <cstring>
 
 template <typename T> // T = string, T = vector are ok.
 int editdistance(const T& s1, const T& s2);

@@ -7,6 +7,8 @@
 #define avltree_cpp
 
 #include "avltree.h"
+#include <iostream>
+#include <vector>
 #include <exception>
 #include <stdexcept>
 

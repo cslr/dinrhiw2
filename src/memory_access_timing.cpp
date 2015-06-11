@@ -1,7 +1,9 @@
 
 #include <iostream>
 #include <cstdlib>
+#ifndef WINOS
 #include <sys/times.h>
+#endif
 #include <unistd.h>
 #include <ctime>
 #include <math.h>

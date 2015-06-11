@@ -2,8 +2,10 @@
 #ifndef rbtree_cpp
 #define rbtree_cpp
 
+#include <iostream>
 #include <string>
 #include <exception>
+#include <vector>
 #include "rbtree.h"
 
 namespace whiteice

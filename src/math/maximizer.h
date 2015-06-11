@@ -17,7 +17,7 @@
 #include "optimized_function.h"
 #include "vertex.h"
 
-#ifndef WINNT
+#ifndef WINOS
 #include <sys/times.h>
 #endif
 
