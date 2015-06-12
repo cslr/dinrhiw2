@@ -19,6 +19,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <assert.h>
 
 
 #include <dinrhiw/dinrhiw.h>
@@ -1287,6 +1288,7 @@ void sigint_signal_handler(int s)
 
 void install_signal_handler()
 {
+#ifndef WINOS
   struct sigaction sih;
   
   sih.sa_handler = sigint_signal_handler;
@@ -1294,6 +1296,7 @@ void install_signal_handler()
   sih.sa_flags = 0;
 
   sigaction(SIGINT, &sih, NULL);
+#endif
 }
 
 

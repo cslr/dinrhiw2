@@ -60,7 +60,8 @@
 #include "point.h"
 #include "ownexception.h"
 
-#include "function_access_control.h"
+// FIXME fix function_access_control compilation
+// #include "function_access_control.h"
 #include "dynamic_ctor_protection.h"
 #include "singleton.h"
 #include "singleton_list.h"
