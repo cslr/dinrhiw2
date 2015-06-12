@@ -11,7 +11,7 @@ rm -f wine-test.ds
 ./dstool -import:0 wine-test.ds wine_measurements.in
 ./dstool -import:1 wine-test.ds wine_measurements.out
 ./dstool -padd:0:meanvar wine-test.ds
-./dstool -padd:0:pca wine-test.ds
+# ./dstool -padd:0:pca wine-test.ds
 ./dstool -padd:1:meanvar wine-test.ds
 
 ./dstool -list wine-test.ds

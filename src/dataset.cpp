@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "dinrhiw_blas.h"
 #include "vertex.h"
@@ -56,6 +57,7 @@ namespace whiteice
     clusters.resize(1);
     clusters[0].cname  = std::string("default");
     clusters[0].cindex = 0;
+    clusters[0].preprocessings.clear();
     clusters[0].data_dimension = dimension;
     namemapping["default"] = 0;
   }
@@ -524,7 +526,7 @@ namespace whiteice
     if(filename.length() <= 0)
       return false;
     
-    FILE* fp = (FILE*)fopen(filename.c_str(), "r");
+    FILE* fp = (FILE*)fopen(filename.c_str(), "rb");
     
     if(fp == 0) return false;
     if(feof(fp) || ferror(fp))
@@ -553,7 +555,7 @@ namespace whiteice
 	return false;
       }
     }
-    
+
     // printf("L: %d\n", (int)ftell(fp));
     
     if(fread(&version, 4, 1, fp) != 1){
@@ -573,7 +575,7 @@ namespace whiteice
     
     
     clusters.resize(cnum);
-    
+
     // reads names
     if(cnum > 0){
       // gets names section length
@@ -630,7 +632,6 @@ namespace whiteice
       
     }
     
-    
     //////////////////////////////////////////////////////////////////////
     // reads in each cluster
     
@@ -653,7 +654,7 @@ namespace whiteice
 	fclose(fp);
 	return false;	
       }
-      
+
       if(fread(&flags, 4, 1, fp) != 1){
 	clusters.resize(0);
 	fclose(fp);
@@ -795,8 +796,7 @@ namespace whiteice
 	if(clusters[i].invICA.inv() == false)
 	  return false; // calculating inverse of ICA failed.
       }      
-      
-      
+
       //////////////////////////////////////////////////////////////////////
       // reads cluster data
       
@@ -877,7 +877,7 @@ namespace whiteice
     if(filename.length() <= 0)
       return false;
     
-    FILE* fp = (FILE*)fopen(filename.c_str(), "w");
+    FILE* fp = (FILE*)fopen(filename.c_str(), "wb");
      
     if(fp == 0) return false;
     if(ferror(fp)){ fclose(fp); return false; }

@@ -19,7 +19,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="a" artifactName="dinrhiw" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="win 64bit debug build" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520" name="Debug64-lib" parent="cdt.managedbuild.config.gnu.mingw.lib.debug" postannouncebuildStep="copies library headers and archive file to system-wide install directory" postbuildStep="library_post_install.bat">
+				<configuration artifactExtension="a" artifactName="dinrhiw" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="win 64bit debug build" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520" name="Debug64-lib" parent="cdt.managedbuild.config.gnu.mingw.lib.debug" postannouncebuildStep="copies library headers and archive file to system-wide install directory" postbuildStep="..\library_post_install.bat">
 					<folderInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.lib.debug.1940696785" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.lib.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.mingw.lib.debug.28701257" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.mingw.lib.debug"/>
@@ -83,14 +83,14 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1529126066" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.786935500" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.213980262" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1893852460" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.786935500" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1018604836" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -138,7 +138,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="tst/sizetest.cpp|tst/conv_test.cpp|mat_test.cpp|tst/test.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -212,10 +212,10 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
@@ -241,7 +241,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="datatool" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Builds datatool used by nntool" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914" name="datatool-bin" parent="cdt.managedbuild.config.gnu.mingw.lib.debug">
+				<configuration artifactName="dstool" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Builds datatool used by nntool" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914" name="datatool-bin" parent="cdt.managedbuild.config.gnu.mingw.lib.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.lib.debug.1524514527" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.lib.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.mingw.lib.debug.745288046" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.mingw.lib.debug"/>
@@ -292,13 +292,94 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242" moduleId="org.eclipse.cdt.core.settings" name="dataset-and-related-testcases">
+				<externalSettings>
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/dinrhiw2-library"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/dinrhiw2-library/nntool-bin"/>
+						<entry flags="RESOLVED" kind="libraryFile" name="dinrhiw2-library" srcPrefixMapping="" srcRootPath=""/>
+					</externalSetting>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.PE" point="org.eclipse.cdt.core.BinaryParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="dataset_test" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Testsuite for dataset and other similar classes" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242" name="dataset-and-related-testcases" parent="cdt.managedbuild.config.gnu.mingw.lib.debug">
+					<folderInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.lib.debug.1473679794" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.lib.debug">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.mingw.lib.debug.55920296" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.mingw.lib.debug"/>
+							<builder buildPath="${workspace_loc:/dinrhiw2-library}/Debug" id="org.eclipse.cdt.build.core.internal.builder.1481492560" keepEnvironmentInBuildfile="false" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.mingw.lib.debug.1875032644" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.mingw.lib.debug">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.359185780" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.mingw.lib.debug.278519034" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.lib.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.lib.debug.1447903640" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.lib.debug">
+								<option id="gnu.cpp.compiler.mingw.lib.debug.option.optimization.level.1347983126" name="Optimization Level" superClass="gnu.cpp.compiler.mingw.lib.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.mingw.lib.debug.option.debugging.level.908403163" name="Debug Level" superClass="gnu.cpp.compiler.mingw.lib.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.540250893" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\install\include&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.256890534" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.dialect.flags.1054078350" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true" value="-std=c++11" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1735381244" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="AMD64"/>
+									<listOptionValue builtIn="false" value="WINOS"/>
+									<listOptionValue builtIn="false" value="OPENBLAS"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.warnings.allwarn.788078922" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.other.other.21704375" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.undef.626083852" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1019278499" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.lib.debug.340921200" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.lib.debug">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.mingw.lib.debug.option.optimization.level.648262749" name="Optimization Level" superClass="gnu.c.compiler.mingw.lib.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.mingw.lib.debug.option.debugging.level.1126276462" name="Debug Level" superClass="gnu.c.compiler.mingw.lib.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.949221202" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.110355183" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.448232546" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base">
+								<option id="gnu.cpp.link.option.paths.462560348" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;C:\install\lib&quot;"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.720761054" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="dinrhiw"/>
+									<listOptionValue builtIn="false" value="z"/>
+									<listOptionValue builtIn="false" value="gmp"/>
+									<listOptionValue builtIn="false" value="openblas"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.29504698" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
+					<sourceEntries>
+						<entry excluding="tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="sizetest.cpp|conv_test.cpp|modtest.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/tst"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

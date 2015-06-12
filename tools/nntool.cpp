@@ -3,7 +3,7 @@
  * a feedforward neural network
  * optimizer command line tool.
  * 
- * (C) copyright Tomas Ukkonen 2004, 2005, 2014-
+ * (C) copyright Tomas Ukkonen 2004, 2005, 2014-2015
  *
  *************************************************************
  * 
@@ -102,7 +102,8 @@ int main(int argc, char** argv)
 
     if(threads <= 0)
       threads = // for multithread-enabled code
-	(unsigned int)numberOfCPUThreads();
+	        // only uses half of the resources as the default
+	(unsigned int)numberOfCPUThreads()/2;
     
     if(threads <= 0)
       threads = 1;

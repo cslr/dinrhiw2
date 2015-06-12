@@ -38,7 +38,7 @@ int cpuinfoThreads(){
   while(!feof(f)){
     fgets(buffer, 256, f);
     buffer[255] = '\0';
-    
+
     if(strncmp(buffer, "processor", 9) == 0)
       cpus++;
     
@@ -56,8 +56,13 @@ int cpuinfoThreads(){
   }
   
   fclose(f);
-  
-  return cores;
+
+#ifdef WINOS
+  // TODO write code to get number cpus/cores from Windows (OS)
+#endif
+
+  if(cores > 0) return cores;
+  else return cpus;
 }
 
 
@@ -65,20 +70,10 @@ int cpuinfoThreads(){
 
 int numberOfCPUThreads()
 {
-  // first tries to detect number of 
-  // good threads based on /proc/cpuinfo
-  
-  int cpuinfo = cpuinfoThreads();
-  
-  if(cpuinfo > 0)
-    return cpuinfo;
-
-  
-  // if it fails.. uses CPUID instruction
+  // uses CPUID instruction
 
   unsigned int regs[4];
 
-#if 0
   // Get vendor
   char vendor[12];
   cpuID(0, regs);
@@ -86,7 +81,6 @@ int numberOfCPUThreads()
   ((unsigned *)vendor)[1] = regs[3]; // EDX
   ((unsigned *)vendor)[2] = regs[2]; // ECX
   std::string cpuVendor = std::string(vendor, 12);
-#endif
   
   // Get CPU features
   // cpuID(1, regs);
@@ -96,26 +90,24 @@ int numberOfCPUThreads()
   cpuID(1, regs);
   unsigned int logical = (regs[1] >> 16) & 0xff; // EBX[23:16]
   // std::cout << " logical cpus: " << logical << std::endl;
-  // unsigned int cores = logical;
+  unsigned int cores = logical;
 
-#if 0
   if (cpuVendor == "GenuineIntel") {
     // Get DCP cache info
     cpuID(4, regs);
-    // cores = ((regs[0] >> 26) & 0x3f) + 1; // EAX[31:26] + 1
-    
-  } else if (cpuVendor == "AuthenticAMD") {
+    cores = ((regs[0] >> 26) & 0x3f) + 1; // EAX[31:26] + 1
+  }
+  else if (cpuVendor == "AuthenticAMD") {
     // Get NC: Number of CPU cores - 1
     cpuID(0x80000008, regs);
-    // cores = ((unsigned)(regs[2] & 0xff)) + 1; // ECX[7:0] + 1
+    cores = ((unsigned)(regs[2] & 0xff)) + 1; // ECX[7:0] + 1
   }
-#endif  
   // std::cout << "    cpu cores: " << cores << std::endl;
   
   // Detect hyper-threads
   // bool hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
 
-  return (int)logical;
+  return (int)cores;
 }
 
 
