@@ -83,10 +83,10 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1529126066" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.786935500" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.213980262" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1893852460" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.786935500" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1018604836" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
@@ -464,4 +464,5 @@
 			<resource resourceType="PROJECT" workspacePath="/dinrhiw2-library"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
