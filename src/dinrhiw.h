@@ -27,9 +27,9 @@
 #include "fastpca.h"
 #include "ultradeep.h"
 
-#include "RBM.h"
-#include "CRBM.h"
-#include "DBN.h"
+//#include "RBM.h"
+//#include "CRBM.h"
+//#include "DBN.h"
 
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"
@@ -160,6 +160,8 @@
 #include "gaussian.h"
 
 #include "HMC.h"
+#include "PTHMC.h"
+#include "HMCconvergencecheck.h"
 #include "bayesian_nnetwork.h"
 #include "GA3.h"
 

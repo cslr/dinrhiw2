@@ -10,7 +10,6 @@
 #define HMC_h
 
 #include <vector>
-// #include <pthread.h>
 #include <unistd.h>
 
 #include <thread>
@@ -31,17 +30,23 @@ namespace whiteice
 	{
     	public:
 
-		HMC(const whiteice::nnetwork<T>& net, const whiteice::dataset<T>& ds, bool adaptive=false);
+		HMC(const whiteice::nnetwork<T>& net, const whiteice::dataset<T>& ds, bool adaptive=false, T alpha = T(0.5), bool store = true);
 		~HMC();
+
+		bool setTemperature(const T t); // set "temperature" for probability distribution [default T = 1 => no temperature]
+		T getTemperature();             // get "temperature" of probability distribution
 
 		// probability functions for hamiltonian MC sampling
 		T U(const math::vertex<T>& q, bool useRegulizer = true) const;
-		math::vertex<T> Ugrad(const math::vertex<T>& q);
+		math::vertex<T> Ugrad(const math::vertex<T>& q) const;
 
-		bool startSampler(unsigned int NUMTHREADS=1);
+		bool startSampler();
 		bool pauseSampler();
 		bool continueSampler();
 		bool stopSampler();
+
+		bool getCurrentSample(math::vertex<T>& s) const;
+		bool setCurrentSample(const math::vertex<T>& s);
 
 		unsigned int getSamples(std::vector< math::vertex<T> >& samples) const;
 		unsigned int getNumberOfSamples() const;
@@ -61,9 +66,15 @@ namespace whiteice
 		whiteice::nnetwork<T> nnet;
 		const whiteice::dataset<T>& data;
 
+		math::vertex<T> q;
+		mutable std::mutex updating_sample;
+
 		std::vector< math::vertex<T> > samples;
 
+		T alpha; // prior distribution parameter for neural networks (gaussian prior)
+		T temperature; // temperature parameter for the probability function
 		bool adaptive;
+		bool store;
 
 		// used to calculate statistics when needed
 		math::vertex<T> sum_mean;

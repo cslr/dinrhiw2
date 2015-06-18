@@ -15,9 +15,12 @@ namespace whiteice
 	template <typename T>
 	HMC<T>::HMC(const whiteice::nnetwork<T>& net,
 			const whiteice::dataset<T>& ds,
-			bool adaptive) : nnet(net), data(ds)
+			bool adaptive, T alpha, bool store) : nnet(net), data(ds)
 	{
 		this->adaptive = adaptive;
+		this->alpha = alpha;
+		this->temperature = T(1.0);
+		this->store = store;
 
 		sum_N = 0;
 		sum_mean.zero();
@@ -44,6 +47,21 @@ namespace whiteice
 			sampling_thread.clear();
 		}
 	}
+
+
+	// set "temperature" for probability distribution [default T = 1 => no temperature]
+	template <typename T>
+	bool HMC<T>::setTemperature(const T t){
+		if(t <= T(0.0)) return false;
+		else temperature = t;
+		return true;
+	}
+
+	// get "temperature" of probability distribution
+	template <typename T>
+	T HMC<T>::getTemperature(){
+		return temperature;
+	}
   
 
 	template <typename T>
@@ -68,12 +86,14 @@ namespace whiteice
 
 		// e /= T( (float)data.size(0) ); // per N
 
-		if(useRegulizer){
-			T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
-			err = alpha*(q*q);
-			e += q[0];
-		}
+		e /= temperature;
 
+		if(useRegulizer){
+			// regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
+			err = alpha*T(0.5f)*(q*q);
+			e += err[0];
+			// e += q[0];
+		}
 
 		// TODO: is this really correct squared error term to use?
 
@@ -82,7 +102,7 @@ namespace whiteice
   
   
 	template <typename T>
-	math::vertex<T> HMC<T>::Ugrad(const math::vertex<T>& q)
+	math::vertex<T> HMC<T>::Ugrad(const math::vertex<T>& q) const
 	{
 		whiteice::nnetwork<T> nnet(this->nnet);
 
@@ -107,7 +127,8 @@ namespace whiteice
 				sumgrad += ninv*grad;
 		}
 
-		T alpha = T(0.01f);
+		sumgrad /= temperature; // scales gradient with temperature
+
 
 		sumgrad += alpha*q;
 
@@ -119,9 +140,9 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::startSampler(unsigned int NUM_THREADS)
+	bool HMC<T>::startSampler()
 	{
-		if(NUM_THREADS <= 0) return false;
+		const unsigned int NUM_THREADS = 1; // only one thread is supported
 
 		std::lock_guard<std::mutex> lock(start_lock);
 
@@ -134,10 +155,14 @@ namespace whiteice
 		if(data.size(0) <= 0)
 			return false;
 
-		// nnet.randomize(); // initally random
+		nnet.randomize(); // initally random
+		nnet.exportdata(q); // initial position q
     
 		running = true;
 		paused = false;
+
+		sum_N = 0;
+		sum_mean.zero();
 
 		sampling_thread.clear();
 
@@ -208,6 +233,23 @@ namespace whiteice
 		}
 
 		sampling_thread.clear();
+		return true;
+	}
+
+
+	template <typename T>
+	bool HMC<T>::getCurrentSample(math::vertex<T>& s) const
+	{
+		std::lock_guard<std::mutex> lock(updating_sample);
+		s = q;
+		return true;
+	}
+
+
+	template <typename T>
+	bool HMC<T>::setCurrentSample(const math::vertex<T>& s){
+		std::lock_guard<std::mutex> lock(updating_sample);
+		q = s;
 		return true;
 	}
   
@@ -324,7 +366,7 @@ namespace whiteice
     void HMC<T>::sampler_loop()
 	{
     	// q = location, p = momentum, H(q,p) = hamiltonian
-    	math::vertex<T> q, p;
+    	math::vertex<T> p; // q is global and defined in HMC class
 
     	nnet.exportdata(q); // initial position q
     	                    // (from the input nnetwork weights)
@@ -350,9 +392,7 @@ namespace whiteice
 
     	while(running) // keep sampling forever or until stopped
     	{
-    		// [we don't have normal distribution
-    		//  random number generator RNG -
-    		//  use and test ziggurat method]
+    		updating_sample.lock();
 
     		// p = N(0,I)
     		for(unsigned int i=0;i<p.size();i++)
@@ -404,7 +444,8 @@ namespace whiteice
     				sum_N++;
     			}
 	
-    			samples.push_back(q);
+    			if(store)
+    				samples.push_back(q);
 
     			solution_lock.unlock();
 
@@ -433,7 +474,8 @@ namespace whiteice
     				sum_N++;
     			}
 
-    			samples.push_back(q);
+    			if(store)
+    				samples.push_back(q);
 
     			solution_lock.unlock();
 
@@ -442,6 +484,8 @@ namespace whiteice
     				accept_rate_samples++;
     			}
     		}
+
+    		updating_sample.unlock();
 
 
     		if(adaptive){

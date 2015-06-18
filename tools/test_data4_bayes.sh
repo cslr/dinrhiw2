@@ -18,7 +18,7 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --threads 1 --samples 20000 iris-test.ds 4-10-1 iris-nn.cfg bayes
+./nntool -v --threads 1 --adaptive --samples 20000 iris-test.ds 4-10-1 iris-nn.cfg bayes
 
 ##################################################
 # testing

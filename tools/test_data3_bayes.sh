@@ -11,7 +11,7 @@ rm -f commviol-test.ds
 ./dstool -import:0 commviol-test.ds commviol.in
 ./dstool -import:1 commviol-test.ds commviol.out
 ./dstool -padd:0:meanvar commviol-test.ds
-./dstool -padd:0:pca commviol-test.ds
+# ./dstool -padd:0:pca commviol-test.ds
 ./dstool -padd:1:meanvar commviol-test.ds
 
 ./dstool -list commviol-test.ds

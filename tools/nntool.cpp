@@ -943,6 +943,8 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "bayes"){
+    	threads = 1;
+
       if(verbose){
 	if(secs > 0){
 	  std::cout << "Starting neural network bayesian inference (T=" << secs << " secs, "
@@ -957,6 +959,8 @@ int main(int argc, char** argv)
 
       
       whiteice::HMC<> hmc(*nn, data, adaptive);
+      // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
+      // whiteice::PTHMC<> hmc(20, *nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
       
       time_t t0 = time(0);
@@ -965,12 +969,15 @@ int main(int argc, char** argv)
       if(samples > 0)
 	eta.start(0.0f, (float)samples);
       
-      hmc.startSampler(threads);
+      hmc.startSampler();
       
       while(((hmc.getNumberOfSamples() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
+      // while(!hmc.hasConverged() && !stopsignal){
 
 	eta.update((float)hmc.getNumberOfSamples());
 	
+	// printf("accept-rate: %f\n", hmc.getAcceptRate().c[0]);
+
 	if(hmc.getNumberOfSamples() > 0){
 	  if(secs > 0)
 	    printf("\r%d samples: %f [%f minutes]                 ",
@@ -1001,11 +1008,11 @@ int main(int argc, char** argv)
 	printf("\r%d/%d samples : %f                        \n", hmc.getNumberOfSamples(), samples, hmc.getMeanError(100).c[0]);
       
       fflush(stdout);
-      
+
       // nn->importdata(hmc.getMean());
       delete nn;
       nn = NULL;
-      
+
       bnn = new bayesian_nnetwork<>();
       assert(hmc.getNetwork(*bnn) == true);
 
@@ -1173,25 +1180,49 @@ int main(int argc, char** argv)
       
       
       if(compare_clusters == true){
-	math::blas_real<float> error = math::blas_real<float>(0.0f);
+	math::blas_real<float> error1 = math::blas_real<float>(0.0f);
+	math::blas_real<float> error2 = math::blas_real<float>(0.0f);
 	math::blas_real<float> c = math::blas_real<float>(0.5f);
 	math::vertex<> err;
 	
+	whiteice::nnetwork<> single_nn(*nn);
+	std::vector< math::vertex<> > weights;
+	std::vector< unsigned int> arch;
+	bnn->exportSamples(arch, weights);
+	math::vertex<> w = weights[0];
+	w.zero();
+
+	for(auto& wi : weights)
+		w += wi;
+
+	w /= weights.size(); // E[w]
+
+	single_nn.importdata(w);
+
+
 	for(unsigned int i=0;i<data.size(0);i++){
-	  math::vertex<> out;
+	  math::vertex<> out1;
 	  math::matrix<> cov;
 
-	  bnn->calculate(data.access(0, i), out, cov);
-	  err = data.access(1,i) - out;
+	  bnn->calculate(data.access(0, i), out1, cov);
+	  err = data.access(1,i) - out1;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
-	    error += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	    error1 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	  
+	  single_nn.input() = data.access(0, i);
+	  single_nn.calculate(false, false);
+	  err = data.access(1, i) - single_nn.output();
+
+	  for(unsigned int i=0;i<err.size();i++)
+	    error2 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	}
 	
-	error /= math::blas_real<float>((float)data.size());
+	error1 /= math::blas_real<float>((float)data.size());
+	error2 /= math::blas_real<float>((float)data.size());
 	
-	std::cout << "Average error in dataset: " << error << std::endl;
+	std::cout << "Average error in dataset (E[f(x|w)]): " << error1 << std::endl;
+	std::cout << "Average error in dataset (f(x|E[w])): " << error2 << std::endl;
       }
       
       else{
