@@ -38,6 +38,13 @@ namespace whiteice
     nnets.clear();
   }
 
+
+  // number of samples in BNN
+  template <typename T>
+  unsigned int bayesian_nnetwork<T>::getNumberOfSamples() const throw(){
+	  return nnets.size();
+  }
+
   
   /*
    * imports and exports samples of p(w) to and from nnetwork
@@ -97,15 +104,17 @@ namespace whiteice
 
   template <typename T>
   bool bayesian_nnetwork<T>::exportSamples(std::vector<unsigned int>& arch,
-					   std::vector< math::vertex<T> >& weights)
+					   std::vector< math::vertex<T> >& weights, int latestN)
   {
     if(nnets.size() <= 0) return false;
+    if(latestN > nnets.size()) return false;
+    if(latestN <= 0) latestN = nnets.size();
 
     nnets[0]->getArchitecture(arch);
 
-    weights.resize(nnets.size());
+    weights.resize(latestN);
 
-    for(unsigned int i=0;i<nnets.size();i++)
+    for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++)
       if(nnets[i]->exportdata(weights[i]) == false){
 	weights.clear();
 	return false;
@@ -119,9 +128,12 @@ namespace whiteice
   template <typename T>
   bool bayesian_nnetwork<T>::calculate(const math::vertex<T>& input,
 				       math::vertex<T>& mean,
-				       math::matrix<T>& covariance)
+				       math::matrix<T>& covariance,
+					   int latestN)
   {
     if(nnets.size() <= 0) return false;
+    if(latestN > nnets.size()) return false;
+    if(latestN <= 0) latestN = nnets.size();
 
     const unsigned int D = nnets[0]->output_size();
     mean.resize(D);
@@ -130,13 +142,13 @@ namespace whiteice
     mean.zero();
     covariance.zero();
 
-    T ninv  = T(1.0f/nnets.size());
-    T ninv2 = T(1.0f/(nnets.size() - 1));
+    T ninv  = T(1.0f/latestN);
+    T ninv2 = T(1.0f/(latestN - 1));
 
-    if(nnets.size() <= D)
+    if(latestN <= D)
       covariance.identity(); // regularizer term for small datasize
 
-    for(unsigned int i=0;i<nnets.size();i++){
+    for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
       nnets[i]->input() = input;
       nnets[i]->calculate();
       math::vertex<T> out = nnets[i]->output();

@@ -24,18 +24,22 @@ namespace whiteice
     /*
      * imports and exports samples of p(w) to and from nnetwork
      */
+    unsigned int getNumberOfSamples() const throw(); // number of samples in BNN
+
     bool importSamples(const std::vector<unsigned int>& arch,
 		       const std::vector< math::vertex<T> >& weights);
     bool importNetwork(const nnetwork<T>& net);
 
     bool exportSamples(std::vector<unsigned int>& arch,
-		       std::vector< math::vertex<T> >& weights);
+		       std::vector< math::vertex<T> >& weights,
+			   int latestN = 0);
     
 
     // calculates E[f(input,w)] = E[y|x] and Var[f(x,w)] = Var[y|x] for given input
     bool calculate(const math::vertex<T>& input,
 		   math::vertex<T>& mean,
-		   math::matrix<T>& covariance);
+		   math::matrix<T>& covariance,
+		   int latestN = 0);
 
     unsigned int outputSize() const throw();
     unsigned int inputSize() const throw();

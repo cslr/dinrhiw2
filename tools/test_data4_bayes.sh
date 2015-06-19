@@ -18,12 +18,12 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --threads 1 --adaptive --samples 20000 iris-test.ds 4-10-1 iris-nn.cfg bayes
+./nntool -v --threads 1 --adaptive --samples 20000 iris-test.ds 4-10-10-10-10-1 iris-nn.cfg bayes
 
 ##################################################
 # testing
 
-./nntool -v iris-test.ds 4-10-1 iris-nn.cfg use
+./nntool -v iris-test.ds 4-10-10-10-10-1 iris-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
@@ -32,7 +32,7 @@ cp -f iris-test.ds iris-pred.ds
 ./dstool -clear:1 iris-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v iris-pred.ds 4-10-1 iris-nn.cfg use
+./nntool -v iris-pred.ds 4-10-10-10-10-1 iris-nn.cfg use
 
 ./dstool -list iris-test.ds
 ./dstool -list iris-pred.ds
