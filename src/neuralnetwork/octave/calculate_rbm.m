@@ -6,7 +6,7 @@ function rbm = calculate_rbm(X, NHID, CDk, EPOCHS)
 NVIS = size(X, 2);
 % NHID = 10; % 100 hidden states 
 % CDk  = 1;
-lrate = 0.001;
+lrate = 0.1;
 % EPOCHS = 100;
 
 a = zeros(NVIS,1);

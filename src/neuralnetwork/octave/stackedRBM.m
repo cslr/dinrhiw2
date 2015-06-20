@@ -12,7 +12,7 @@ for i=1:(length(arch)-1)
 	
 	% trains new RBM (for this layer)
 	if(i == 1)
-		rbm = calculate_gbrbm(X, arch(i+1), 1, 50);
+		rbm = calculate_gbrbm(X, arch(i+1), 1, 10);
 	else
 		rbm = calculate_rbm(X, arch(i+1), 1, 50);
 	end
@@ -28,7 +28,7 @@ for i=1:(length(arch)-1)
 	for k=1:size(Y, 1)
 		v = Y(k,:);
 		h = sigmoid((v * rbm.W)' + rbm.b);
-		h = rand(size(h)) < h; % discretizes next layer's data.
+h = rand(size(h)) < h; % discretizes next layer's data.
 		Z(k,:) = h; % rescales hidden layer data for the input layer
 	end
 	

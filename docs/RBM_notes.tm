@@ -126,12 +126,11 @@
 
   <math|P<around|(|v|)>=<frac|1|Z><big|sum><rsub|h>e<rsup|-E<around|(|v,h|)>>>
 
-  Now the observed variables are Bernoulli distributed, that is, they take
-  only values <math|0> and <math|1> which is a strong regularizer fro the
-  system (Gaussian-Gaussian RBM is unlikely to work equally well).
+  Now the hidden variables are Bernoulli distributed, that is, they take only
+  values <math|0> and <math|1> which is a strong regularizer for the system.
 
-  Now we want to calculate probabilities of hidden <math|h> and visible
-  <math|v> neurons given probabilities:\ 
+  We want to calculate probabilities of hidden <math|h> and visible <math|v>
+  neurons:\ 
 
   <math|P<rsub|B*B><around|(|h\|v|)>=<frac|P<around|(|v,h|)>|P<around|(|v|)>>=<frac|<frac|1|Z>e<rsup|-E<around|(|v,h|)>>|<frac|1|Z>*<big|sum><rsub|h>e<rsup|-E<around|(|v,h|)>>>=<frac|e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>|<big|sum><rsub|h>e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>x>>
 
@@ -162,7 +161,7 @@
   We calculate the term <math|<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>>
   separatedly:
 
-  <math|<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>=<big|int>-<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>><frac|1|Z>e<rsup|-F<around|(|v|)>>d*v=-<big|int>p<around|(|v|)>*<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>d*v>
+  <math|<frac|1|Z>*<frac|\<partial\>Z|\<partial\>\<theta\>>=<big|int>-<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>><frac|1|Z>e<rsup|-F<around|(|v|)>>d*v=-<big|int>p<around|(|v|)>*<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>*d*v>
 
   The general form of the derivate is then:
 
@@ -493,26 +492,93 @@
   people (<em|Improved Learning of Gaussian-Bernoulli Restricted Boltzmann
   Machines. ICANN 2011.>)
 
+  In practice this alternative method works rather well - when there is
+  enough hidden nodes as otherwise the method will approximate the
+  distribution as a single cluster instead of multiple different clusters.
+
   \;
 
-  <strong|Implementation of alternative Gaussian model>
+  <strong|Building Neural Network from Stacked RBM>
 
-  As previously, for prototyping purposes, only Octave code in
-  src/neuralnetworks/octave/ was developed initially.
+  After the problem of learning GB-RBM and BB-RBM has been solved it is
+  naturally interesting to try to use it to construct
+  <with|font-shape|italic|feedforward neural network>. This is rather
+  straight forward as the probability functions always has sigmoidal
+  probability function (even at the top layer) and we can directly insert
+  weights and biases from the RBM. The only problem is that our RBM is a
+  stochastic/probabilistic meaning that we will now make significant error
+  when approximating hidden neurons to have continuos values.
 
-  THERE SEEMS TO BE PROBLEMS WITH THIS IMPLEMENTATION AND MY CIRCLE TEST
-  DATA. IT SIMPLY ESTIMATES ONLY MEAN VALUE AND VARIANCE (SINGLE CLUSTER) OF
-  THE DATA INSTEAD OF MULTIPLE CLUSTERS TO COVER THE CIRCLE WITH PROPER
-  VARIANCE.
+  <with|font-series|bold|TODO>
 
-  <strong|TODO:>
+  \;
 
-  - download test pictures (MNIST) and test methods with grayscale picture
-  data.. TEST IF THE AALTO PEOPLE METHOD WORKS WITH PIXEL DATA WHERE THERE IS
-  TYPICALLY ONLY A SINGLE MEAN THAT MAKES SENSE (and you reproduce their
-  paper's results otherwise)
+  <strong|Hamiltonian Monte Carlo sampler based approach>
 
-  - download some other grayscale pictures and test if the methods work
+  Because the direct optimization method doesn't seem to work very well. It
+  seems that an interesting approach could be try to use Monte Carlo sampling
+  as seen in many papers as the given probability model readily fits into
+  MCMC sampling approach and (easy) calculation of derivates seems to point
+  towards samplers that use gradient information.
+
+  For hamiltonian we will use
+
+  <\center>
+    <math|H<around*|(|\<b-q\>,\<b-p\>|)>=U<around*|(|\<b-q\>|)>+K<around*|(|\<b-q\>|)>>,\ 
+
+    <math|U<around*|(|\<b-q\>|)>=<big|sum><rsub|i>-log<around*|(|p<around*|(|\<b-q\>,\<b-v\><rsub|i>|)>|)>>,
+    <math|K<around*|(|\<b-p\>|)>=\<b-p\><rsup|T>\<b-M\><rsup|<rsup|-1>>\<b-p\>/2>
+  </center>
+
+  Now notice that:\ 
+
+  <center|<math|<frac|\<partial\>U<around*|(|\<b-theta\>,\<b-v\>|)>|\<partial\>*\<b-theta\>>=<frac|\<partial\>F<around|(|\<b-theta\>,\<b-v\>|)>|\<partial\>\<b-theta\>>-E<rsub|\<b-v\>><around|[|<frac|\<partial\>F<around|(|\<b-theta\>,\<b-v\>|)>|\<partial\>\<b-theta\>>|]>>>
+
+  \;
+
+  This means that gradient descent results from the previous chapters almost
+  directly fit into HMC theory! Only thing that we need additionally compute
+  are values of <math|U<around*|(|\<b-theta\>,\<b-v\>|)>> which were not
+  needed when computing gradient descent algorithm.
+
+  <center|<math|U<around*|(|\<b-theta\>,\<b-v\>|)>=<big|sum><rsub|i>-log<around*|(|<big|sum><rsub|\<b-h\>>e<rsup|-E<around*|(|\<b-theta\>,\<b-v\><rsub|i>,\<b-h\>|)>>|)>+log<around*|(|Z|)>>>
+
+  But unfortunately this is rather difficult computation. <strong|It seems
+  that it is NOT possible to easily use HMC method when optimizing the
+  probability of RBM.>
+
+  \;
+
+  <with|font-series|bold|Latent variable model>\ 
+
+  In general, the RBM method works by first defining probability function
+  <math|p<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\>|)>|\<nobracket\>>>
+  and then maximizing visible states (visible data) probability
+
+  <center|<math|max<rsub|\<b-theta\>>*p<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>=<big|int>p<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\>|\<nobracket\>>|)>*d\<b-h\>>>
+
+  But instead of calculating maximum likelihood solution, one could also
+  calculate bayesian samples and estimate distribution or sample from\ 
+
+  <center|<math|p<around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>\<propto\>p<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\>|)>>>
+
+  After which hidden states are sampled or calculated using a formula
+
+  <center|<math|p<around*|(|\<b-h\><around*|\||\<b-v\>|\<nobracket\>>|)>=<big|int>p<around*|(|\<b-h\><around*|\||\<b-theta\>,\<b-v\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>*d\<b-theta\>\<thickapprox\><frac|1|N><big|sum><rsub|i>p<around*|(|\<b-h\><around*|\||\<b-theta\><rsub|i>,\<b-v\>|\<nobracket\>>|)>>>
+
+  Now for multivariate probability distribution
+  <math|\<b-x\>=<around*|[|\<b-v\>,\<b-h\>|]><rsup|T>>,
+  <math|p<around*|(|\<b-x\>|)>\<sim\>N<around*|(|\<b-mu\><rsub|\<b-x\>>,\<b-Sigma\><rsub|\<b-x\>>|)>>
+  it is trivially easy to compute <math|p<around*|(|\<b-v\><around*|\||\<b-mu\><rsub|\<b-v\>>,\<b-Sigma\><rsub|\<b-v\>>|\<nobracket\>>|)>>
+  as the solution is yet another normal distribution. But now because
+  marginal distribution do not have dependency to
+  <math|\<b-mu\><rsub|\<b-h\>>> or <math|\<b-Sigma\><rsub|\<b-h\>>> or other
+  variables given known variable, it is not possible to calculate relatioship
+  between <math|\<b-h\>> and <strong|v>.
+
+  Because of this one needs something more complicated model.
+
+  \;
 </body>
 
 <\initial>

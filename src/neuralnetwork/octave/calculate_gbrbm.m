@@ -63,15 +63,75 @@ for e=1:EPOCHS
     
 				% updates parameters
     v = X(index,:);
-    h = sigmoid(((d .* v) * W)' + b);
+    h = sigmoid(((d .* v) * W)' + b); 
+ 
+    a1 = a + 1.0*lrate*((d' .* (v' - a))  - g_pa);
+    b1 = b + 1.0*lrate*(h     - g_pb);
+    W1 = W + 1.0*lrate*((d .* v)'*h' - g_pW);
 
-    a = a + lrate*((d' .* (v' - a))  - g_pa);
-    b = b + lrate*(h     - g_pb);
-    W = W + lrate*((d .* v)'*h' - g_pW);
-
-    wh = W*h;
+    wh = W1*h;
     for i=1:length(z)
-      z(i) = z(i) + lrate*exp(-z(i))*((0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
+      z1(i) = z(i) + lrate*exp(-z(i))*((0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
+    end
+    
+    a2 = a + 1.1*lrate*((d' .* (v' - a))  - g_pa);
+    b2 = b + 1.1*lrate*(h     - g_pb);
+    W2 = W + 1.1*lrate*((d .* v)'*h' - g_pW);
+
+    wh = W2*h;
+    for i=1:length(z)
+      z2(i) = z(i) + 1.1*lrate*exp(-z(i))*((0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
+    end
+    
+    a3 = a + 0.9*lrate*((d' .* (v' - a))  - g_pa);
+    b3 = b + 0.9*lrate*(h     - g_pb);
+    W3 = W + 0.9*lrate*((d .* v)'*h' - g_pW);
+
+    wh = W3*h;
+    for i=1:length(z)
+      z3(i) = z(i) + 0.9*lrate*exp(-z(i))*((0.5*(v(i)-a(i))*(v(i)-a(i)) - v(i)*wh(i)) - g_pz(i));
+    end
+    
+%    z1 = z1';
+%    z2 = z2';
+%    z3 = z3';
+
+  if(size(z) != size(z1))
+    z1 = z1';
+  end
+
+  if(size(z) != size(z2))
+    z2 = z2';
+  end
+
+  if(size(z) != size(z3))
+    z3 = z3';
+  end
+  
+    L = 100;
+
+    err1 = norm(X(1:L,:) - reconstruct_gbrbm_data(X(1:L,:), W1, a1, b1, z1, CDk), 'fro')/prod(size(X(1:L,:)));
+    err2 = norm(X(1:L,:) - reconstruct_gbrbm_data(X(1:L,:), W2, a2, b2, z2, CDk), 'fro')/prod(size(X(1:L,:)));
+    err3 = norm(X(1:L,:) - reconstruct_gbrbm_data(X(1:L,:), W3, a3, b3, z3, CDk), 'fro')/prod(size(X(1:L,:)));
+    
+    if(err1 <= err2 && err1 <= err3)
+      a = a1;
+      b = b1;
+      z = z1;
+      W = W1;
+      lrate = 1.0*lrate;
+    elseif(err2 <= err1 && err2 <= err3)
+      a = a2;
+      b = b2;
+      z = z2;
+      W = W2;
+      lrate = 1.1*lrate;
+    else
+      a = a3;
+      b = b3;
+      z = z3;
+      W = W3;
+      lrate = 0.9*lrate;
     end
     
   end

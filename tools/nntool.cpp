@@ -960,7 +960,7 @@ int main(int argc, char** argv)
       
       // whiteice::HMC<> hmc(*nn, data, adaptive);
       // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
-      unsigned int ptlayers = (unsigned int)(math::log(100.0*data.size())/math::log(1.25));
+      unsigned int ptlayers = (unsigned int)(math::log(10.0*data.size())/math::log(1.25));
       if(ptlayers <= 10) ptlayers = 10;
       else if(ptlayers > 100) ptlayers = 100;
 

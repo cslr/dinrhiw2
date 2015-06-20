@@ -83,14 +83,14 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1529126066" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.213980262" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1893852460" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.786935500" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1822989926" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.213980262" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1893852460" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1018604836" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="neuralnetwork/GBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -164,13 +164,13 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/multiplication_problem.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -244,13 +244,13 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.2024474914.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/multiplication_problem.cpp|tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -324,13 +324,13 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1652029610.1173297242.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="tools/multiplication_problem.cpp|tools/argparser.tab.cpp|tools/nntool.cpp|tools/cputest.cpp|tools/cryptoanalysis.cpp|tools/datatool.cpp|tools/MMAP.cpp|tools/FileSource.cpp|tools/mapping.cpp|tools/CryptoFileSource.cpp|tools/aescipher.cpp|tools/dataplot.cpp|zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="sizetest.cpp|conv_test.cpp|modtest.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/tst"/>
 					</sourceEntries>
 				</configuration>
@@ -417,14 +417,14 @@
 						</toolChain>
 					</folderInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="neuralnetwork/GBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
