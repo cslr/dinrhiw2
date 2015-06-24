@@ -326,6 +326,13 @@ bool GBRBM<T>::setLogVariance(const math::vertex<T>& z)
 }
 
 
+template <typename T>
+bool GBRBM<T>::getLogVariance(math::vertex<T>& z) const
+{
+	z = this->z;
+	return true;
+}
+
 
 template <typename T>
 bool GBRBM<T>::initializeWeights() // initialize weights to small values
@@ -440,12 +447,12 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 		for(unsigned int i=0;i<1000;i++){
 			// goes through data and calculates gradient
-			const unsigned int NUM_SAMPLES = 10;
+			const unsigned int NUM_SAMPLES = 100;
 
 			// negative phase Emodel[gradient]
 			std::vector< math::vertex<T> > vs;
 
-			// randomly chooses negative samples either usin AIS or CD-1
+			// randomly chooses negative samples either using AIS or CD-1
 			if((rand() & 1) == 1){
 				ais_sampling(vs, NUM_SAMPLES, data_mean, data_var); // gets (v) from the model
 			}
@@ -632,7 +639,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			// check for convergence
 			if(errors.size() > 2){
-				while(errors.size() > 10)
+				while(errors.size() > 15)
 					errors.pop_front(); // only keeps 10 last epoch samples
 
 				auto me = T(0.0);
@@ -649,7 +656,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				auto statistic = sqrt(ve)/me;
 
-				if(statistic <= T(0.10)) // st.dev. is 10% of the mean
+				if(statistic <= T(0.05)) // st.dev. is 5% of the mean
 					convergence = true;
 			}
 
@@ -754,8 +761,300 @@ bool GBRBM<T>::sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >
 	ais_sampling(samples, SAMPLES, data_mean, data_var);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+// set data points parameters for U(q) and Ugrad(q) calculations
+template <typename T>
+bool GBRBM<T>::setUData(const std::vector< math::vertex<T> >& samples)
+{
+	if(samples.size() < 2) return false;
+
+	Usamples = samples;
+
+	// calculates mean and variance of the samples
+	Umean.resize(Usamples[0].size());
+	Uvariance.resize(Usamples[0].size());
+
+	Umean.zero();
+	Uvariance.zero();
+
+	for(auto& s : samples){
+		Umean += s;
+		for(unsigned int i=0;i<s.size();i++)
+			Uvariance[i] += s[i]*s[i];
+	}
+
+	Umean /= T(samples.size());
+	Uvariance /= T(samples.size());
+
+	for(unsigned int i=0;i<Uvariance.size();i++){
+		Uvariance[i] -= Umean[i]*Umean[i];
+	}
+
+	// converts to sample variance from the theoretical one (divide by (N-1))
+	Uvariance *= T(samples.size())/T(samples.size() - 1);
+
+	return true;
+}
+
+template <typename T>
+bool GBRBM<T>::setUTemperature(const T temperature){ // sets temperature of the U(q) distribution.. As described in Cho et. al (2011) paper
+	this->temperature = temperature;
+}
+
+template <typename T>
+unsigned int GBRBM<T>::qsize() const throw() // size of q vector q = [a, b, z, vec(W)]
+{
+	return (a.size() + b.size() + z.size() + W.ysize()*W.xsize());
+}
+
+
+template <typename T>
+bool GBRBM<T>::convertUParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
+    		const math::vertex<T>& z, math::vertex<T>& q) const
+{
+	q.resize(a.size()+b.size()+z.size()+W.ysize()*W.xsize());
+
+	q.write_subvertex(a, 0);
+	q.write_subvertex(b, a.size());
+	q.write_subvertex(z, a.size()+b.size());
+	W.save_to_vertex(q, a.size()+b.size()+z.size());
+
+	return true;
+}
+
+
+
+
+
+template <typename T>
+T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
+{
+	T u = T(INFINITY); // error: zero probability: P = exp(-u) = exp(-INFINITY)
+
+	try{
+		// converts q to parameters [a, b, z, W]
+		auto qa = a;
+		auto qb = b;
+		auto qz = z;
+		auto qW = W;
+
+		{
+			q.subvertex(qa, 0, qa.size());
+			q.subvertex(qb, qa.size(), qb.size());
+			q.subvertex(qz, (qa.size()+qb.size()), qz.size());
+			math::vertex<T> qw(qW.ysize()*qW.xsize());
+			q.subvertex(qw, (qa.size()+qb.size()+qz.size()), qw.size());
+			qW.load_from_vertex(qw);
+		}
+
+		// converts parameters to "temperized versions of themselves" (temperature E [0,1])
+		qW = temperature*qW;
+		qb = temperature*qb;
+
+		for(unsigned int i=0;i<a.size();i++){
+			qa[i] = temperature*qa[i] + (T(1.0) - temperature)*Umean[i];
+			T v   = math::exp(qz[i]);
+			v     = temperature*v + (T(1.0) - temperature)*Uvariance[i];
+			qz[i] = math::log(v);
+		}
+
+		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
+		u = T(0.0);
+
+		for(auto& s : Usamples)
+			u += -unscaled_log_probability(s, qW, qa, qb, qz);
+
+		// TODO: add some smart priors for the parameters:
+		// 1. for qW we could use somekind of generalized Wishart matrix (not xx^t but xy^t)
+		// 2. for qa gaussian zero mean may make sense if data is assumed always be preprocessed to have zero mean and variance
+		// 3. for qb study binomial distributions and conjugates with p=0 and p=1 equally probable (beta?)
+		// 4. for qz use e(qz) ~ chi-squared distribution?
+
+		return u;
+	}
+	catch(std::exception& e){
+		std::cout << "ERROR: GBRBM::U: unexpected exception: " << e.what() << std::endl;
+		return u;
+	}
+}
+
+
+template <typename T>
+whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
+{
+	whiteice::math::vertex<T> grad(this->qsize());
+	grad.zero();
+
+	try{
+		// converts q to parameters [a, b, z, W]
+		auto qa = a;
+		auto qb = b;
+		auto qz = z;
+		auto qW = W;
+
+		{
+			q.subvertex(qa, 0, qa.size());
+			q.subvertex(qb, qa.size(), qb.size());
+			q.subvertex(qz, (qa.size()+qb.size()), qz.size());
+			math::vertex<T> qw(qW.ysize()*qW.xsize());
+			q.subvertex(qw, (qa.size()+qb.size()+qz.size()), qw.size());
+			qW.load_from_vertex(qw);
+		}
+
+		// converts parameters to "temperized versions of themselves" (temperature E [0,1])
+		qW = temperature*qW;
+		qb = temperature*qb;
+
+		for(unsigned int i=0;i<a.size();i++){
+			qa[i] = temperature*qa[i] + (T(1.0) - temperature)*Umean[i];
+			T v   = math::exp(qz[i]);
+			v     = temperature*v + (T(1.0) - temperature)*Uvariance[i];
+			qz[i] = math::log(v);
+		}
+
+		// calculates gradients for the data
+		math::vertex<T> ga(a.size());
+		math::vertex<T> gb(b.size());
+		math::vertex<T> gz(z.size());
+		math::matrix<T> gW(W.ysize(), W.xsize());
+
+		ga.zero();
+		gb.zero();
+		gz.zero();
+		gW.zero();
+
+		// grad(U)    = SUM(gradF) - N*Emodel[gradF]
+		// grad_a(F)  = -S^-1 (v-a)
+		// grad_b(F)  = -h
+		// grad_W(F)  = -h(S^-0.5 * v)^T
+		// grad_zi(F) = -e(-z[i])*[ 0.5*(v_i - a_i)^2 - 0.5*e(+z[i]/2)*v[i]*(W*h)[i] ]
+		// h          = sigmoid(W^t * S^-0.5 * v + b)
+
+		math::vertex<T> invS(qa.size()); // S^-1
+		math::vertex<T> invShalf(qa.size()); // S^-0.5
+		for(unsigned int i=0;i<qa.size();i++){
+			invS[i] = math::exp(-qz[i]);
+			invShalf[i] = math::exp(-qz[i]/2);
+		}
+
+		for(auto& v : Usamples){
+			// calculates positive phase SUM(gradF)
+
+			math::vertex<T> grad_a = (v-qa);
+			math::vertex<T> sv(v.size());
+
+			for(unsigned int i=0;i<qa.size();i++){
+				grad_a[i] *= invS[i];          // S^-1 (v-a);
+				sv[i]      = invShalf[i]*v[i]; // S^-0.5*v
+			}
+
+			math::vertex<T> h(qb.size());
+			sigmoid(sv*qW + qb, h);            // calculates h
+
+			math::vertex<T> grad_b = h;
+
+			math::matrix<T> grad_W = sv.outerproduct(h);
+
+			math::vertex<T> grad_z(qz.size());
+
+			auto qWh = qW*h;
+
+			for(unsigned int i=0;i<qz.size();i++){
+				grad_z[i] = math::exp(-z[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-z[i]/2)*v[i]*qWh[i];
+			}
+
+			ga += grad_a;
+			gb += grad_b;
+			gz += grad_z;
+			gW += grad_W;
+		}
+
+
+		// calculates negative phase N*Emodel[gradF], N = Usamples.size()
+
+		// FIXME actually calculate mean and variance of the estimate Emodel[gradF] and get new samples until sample variance is "small"
+		const unsigned int SAMPLES = 10;
+		{
+			std::vector< math::vertex<T> > vs; // negative particles [samples from Pmodel(v)]
+
+			// TODO use AIS to get samples from the model
+			// ais_sampling(vs, SAMPLES, Umean, Uvariance, qa, qb, qz, qW);
+
+			// uses CD-1 to get samples [fast]
+			for(unsigned int s=0;s<SAMPLES;s++){
+				const unsigned int index = rand() % Usamples.size();
+				const math::vertex<T>& v = Usamples[index]; // x = visible state
+
+				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 1); // gets x ~ p(v) from the model
+				vs.push_back(xx);
+			}
+
+			const T scaling = T((double)Usamples.size())/T((double)SAMPLES);
+
+			for(auto& v : vs){
+				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )
+
+				math::vertex<T> grad_a = (v-qa);
+				math::vertex<T> sv(v.size());
+
+				for(unsigned int i=0;i<qa.size();i++){
+					grad_a[i] *= invS[i];          // S^-1 (v-a);
+					sv[i]      = invShalf[i]*v[i]; // S^-0.5*v
+				}
+
+				math::vertex<T> h(qb.size());
+				sigmoid(sv*qW + qb, h);            // calculates h
+
+				math::vertex<T> grad_b = h;
+
+				math::matrix<T> grad_W = sv.outerproduct(h);
+
+				math::vertex<T> grad_z(qz.size());
+
+				auto qWh = qW*h;
+
+				for(unsigned int i=0;i<qz.size();i++){
+					grad_z[i] = math::exp(-z[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-z[i]/2)*v[i]*qWh[i];
+				}
+
+				// scales the values according to the number of samples
+
+				grad_a *= scaling;
+				grad_b *= scaling;
+				grad_z *= scaling;
+				grad_W *= scaling;
+
+				// this is negative phase so we minus point-wise gradients from the sum variables
+				ga -= grad_a;
+				gb -= grad_b;
+				gz -= grad_z;
+				gW -= grad_W;
+			}
+		}
+
+
+		// converts component gradients [ga,gb,gz,gW] to back to q gradient vector grad(q)
+
+		{
+			grad.resize(ga.size()+gb.size()+gz.size()+gW.ysize()*gW.xsize());
+
+			grad.write_subvertex(ga, 0);
+			grad.write_subvertex(gb, ga.size());
+			grad.write_subvertex(gz, ga.size()+gb.size());
+			gW.save_to_vertex(grad, ga.size()+gb.size()+gz.size());
+		}
+
+		return grad;
+	}
+	catch(std::exception& e){
+		std::cout << "ERROR: GBRBM::Ugrad: unexpected exception: " << e.what() << std::endl;
+		return grad; // zero gradient
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 // load & saves RBM data from/to file
 template <typename T>

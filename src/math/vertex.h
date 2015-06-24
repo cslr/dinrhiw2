@@ -159,7 +159,7 @@ namespace whiteice
       
       
       bool subvertex(vertex<T>& v, unsigned int x0, unsigned int len) const throw();
-      bool write_subvertex(vertex<T>& v, unsigned int x0) throw();
+      bool write_subvertex(const vertex<T>& v, unsigned int x0) throw();
       
 #if 0
       iterator begin() throw(); // iterators

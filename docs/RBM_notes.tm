@@ -556,7 +556,7 @@
 
   <\center>
     <math|\<b-W\><rsup|<around*|(|\<beta\>|)>>=\<beta\>*\<b-W\>> ,
-    <math|a<rsub|i>=\<beta\>*a<rsub|i>-<around*|(|1-\<beta\>|)>*m<rsub|i>>
+    <math|a<rsub|i>=\<beta\>*a<rsub|i>+<around*|(|1-\<beta\>|)>*m<rsub|i>>
 
     <math|\<b-b\><rsup|<around*|(|\<beta\>|)>>=*\<beta\>*\<b-b\>>,
     <math|\<sigma\><rsub|i><rsup|<around*|(|\<beta\>|)>>=<sqrt|\<beta\>*\<sigma\><rsup|2><rsub|i>+<around*|(|1-\<beta\>|)>*s<rsup|2><rsub|i>>>
@@ -618,7 +618,7 @@
   Therefore, the unscaled log probability is:
 
   <\center>
-    <math|log<around*|(|P<rprime|'><around*|(|\<b-v\>|)>|)>=-<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>+<big|sum><rsub|i>log<around*|(|1+e<rsup|\<alpha\><rsub|i>>|)>>,
+    <math|log<around*|(|P<rprime|'><around*|(|\<b-v\>|)>|)>=-<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>+<big|sum><rsub|i>log<around*|(|1+e<rsup|\<alpha\><rsub|i><around*|(|\<b-v\>,\<b-W\>,\<b-Sigma\>,\<b-b\>|)>>|)>>,
 
     <math|\<b-alpha\>=\<b-W\><rsup|T>\<b-Sigma\><rsup|-0.5>*\<b-v\>+\<b-b\>>.
   </center>
@@ -644,35 +644,30 @@
 
   Because the direct optimization method doesn't seem to work very well. It
   seems that an interesting approach could be try to use Monte Carlo sampling
-  as seen in many papers as the given probability model readily fits into
-  MCMC sampling approach and (easy) calculation of derivates seems to point
-  towards samplers that use gradient information.
+  as seen in many papers as the given probability model fits into HMC
+  approach:
 
   For hamiltonian we will use
 
   <\center>
     <math|H<around*|(|\<b-q\>,\<b-p\>|)>=U<around*|(|\<b-q\>|)>+K<around*|(|\<b-q\>|)>>,\ 
 
-    <math|U<around*|(|\<b-q\>|)>=<big|sum><rsub|i>-log<around*|(|p<around*|(|\<b-q\>,\<b-v\><rsub|i>|)>|)>>,
+    <math|U<around*|(|\<b-q\>|)>=<big|sum><rsub|i>-log<around*|(|P<around*|(|\<b-v\><rsub|i><around*|\|||\<nobracket\>>\<b-q\>|)>|)>>,
     <math|K<around*|(|\<b-p\>|)>=\<b-p\><rsup|T>\<b-M\><rsup|<rsup|-1>>\<b-p\>/2>
   </center>
 
-  Now notice that:\ 
+  In the previous chapter we have computed
+  <math|P<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>> and
+  showed it has the<center|> form:
 
-  <center|<math|<frac|\<partial\>U<around*|(|\<b-theta\>,\<b-v\>|)>|\<partial\>*\<b-theta\>>=<frac|\<partial\>F<around|(|\<b-theta\>,\<b-v\>|)>|\<partial\>\<b-theta\>>-E<rsub|\<b-v\>><around|[|<frac|\<partial\>F<around|(|\<b-theta\>,\<b-v\>|)>|\<partial\>\<b-theta\>>|]>>>
+  <center|<math|-log<around*|(|P<rprime|'><around*|(|\<b-v\>|)>|)>=<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>-<big|sum><rsub|i>log<around*|(|1+e<rsup|\<alpha\><rsub|i><around*|(|\<b-v\>,\<b-W\>,\<b-Sigma\>,\<b-b\>|)>>|)>>>
 
-  \;
-
-  This means that gradient descent results from the previous chapters almost
-  directly fit into HMC theory! Only thing that we need additionally compute
-  are values of <math|U<around*|(|\<b-theta\>,\<b-v\>|)>> which were not
-  needed when computing gradient descent algorithm.
-
-  <center|<math|U<around*|(|\<b-theta\>,\<b-v\>|)>=<big|sum><rsub|i>-log<around*|(|<big|sum><rsub|\<b-h\>>e<rsup|-E<around*|(|\<b-theta\>,\<b-v\><rsub|i>,\<b-h\>|)>>|)>+log<around*|(|Z|)>>>
-
-  But unfortunately this is rather difficult computation. <strong|It seems
-  that it is NOT possible to easily use HMC method when optimizing the
-  probability of RBM.>
+  Which can be easily calculated. Furthermore, in the previous chapters we
+  have calculated gradients of <math|-log<around*|(|P<around*|(|v|)>|)>>
+  using free energy and it is straightforward to plug these equations into
+  HMC theory. The bayesian prior <math|p<around*|(|\<b-theta\>|)>> `needed
+  for parameters can be initially flat (to test if it works) or... just
+  gaussian ball to regularize values to be small.
 
   \;
 

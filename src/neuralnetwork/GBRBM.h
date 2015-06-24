@@ -59,6 +59,7 @@ public:
     bool setVariance(const math::vertex<T>& var) throw();
 
     bool setLogVariance(const math::vertex<T>& z);
+    bool getLogVariance(math::vertex<T>& z) const;
 
     bool initializeWeights(); // initialize weights to small values
 
@@ -77,7 +78,25 @@ public:
     bool sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples);
 
     ////////////////////////////////////////////////////////////
+    // for HMC sampler (and parallel tempering): calculates energy U(q) and Ugrad(q)
 
+    // set data points parameters for U(q) and Ugrad(q) calculations
+    bool setUData(const std::vector< math::vertex<T> >& samples);
+
+    bool setUTemperature(const T temperature); // sets temperature of the U(q) distribution.. As described in Cho et. al paper
+
+    unsigned int qsize() const throw(); // size of q vector q = [a, b, z, vec(W)]
+
+    // converts (W, a, b, z) parameters into q vector
+    bool convertUParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
+    		const math::vertex<T>& z, math::vertex<T>& q) const;
+
+    T U(const math::vertex<T>& q) const throw(); // calculates U(q) = -log(P(data|q))
+
+    math::vertex<T> Ugrad(const math::vertex<T>& q) throw(); // calculates grad(U(q))
+
+
+    ////////////////////////////////////////////////////////////
     // load & saves RBM data from/to file
 
     bool load(const std::string& filename) throw();
@@ -139,8 +158,15 @@ private:
 	std::vector< GBRBM<T> > ais_rbm; // need to use pointer in order to prevent calling of ctor until we really want... [not really]
 	const unsigned int NTemp = 100; // number of different temperatures (values below <100, or below 10 do not work very well)..
 
+	// used by learnWeights()
 	math::vertex<T> data_mean;
 	math::vertex<T> data_var;
+
+
+	// for U(q) and Ugrad(q) calculations (for PT-HMC sampling)
+	std::vector< math::vertex<T> > Usamples;
+	math::vertex<T> Umean, Uvariance;
+	T temperature;
 
 
     mutable std::default_random_engine* generator;

@@ -26,6 +26,7 @@
 
 #include "RBM.h"
 #include "GBRBM.h"
+#include "HMCGBRBM.h"
 #include "CRBM.h"
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
@@ -35,6 +36,7 @@
 #include <ctime>
 #include <new>
 #include <random>
+#include <chrono>
 
 #include <assert.h>
 #include <string.h>
@@ -304,6 +306,41 @@ void rbm_test()
 
 		std::cout << "Learning RBM parameters (variance).." << std::endl;
 		math::vertex< math::blas_real<double> > best_variance;
+
+		// tests HMC sampling
+		{
+			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50);
+
+			hmc.setTemperature(1.0);
+
+			auto start = std::chrono::system_clock::now();
+			hmc.startSampler();
+
+			while(1){
+				sleep(1);
+				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
+				if(hmc.getNumberOfSamples() > 0){
+					std::vector< math::vertex< math::blas_real<double> > > samples;
+
+					hmc.getSamples(samples);
+
+					// calculate something using the samples..
+					// [get the most recent sample and try to calculate log probability]
+				}
+
+				auto end = std::chrono::system_clock::now();
+				auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+				if(elapsed.count() >= 60000){ // 60 seconds
+					break;
+				}
+			}
+
+			hmc.stopSampler();
+
+			return;
+		}
+
 #if 1
 		{
 			whiteice::GBRBM< math::blas_real<double> > rbm;

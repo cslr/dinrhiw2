@@ -1180,7 +1180,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool vertex<T>::write_subvertex(vertex<T>& v, unsigned int x0) throw()
+    bool vertex<T>::write_subvertex(const vertex<T>& v, unsigned int x0) throw()
     {
       const unsigned int len = v.size();
       
