@@ -9,5 +9,5 @@ for i=1:length(X)
   X(i,2) = 5*sin(angle);
 end
 
-X = X + randn(size(X)); % adds N(0,I) noise
+X = X + sqrt(2)*randn(size(X)); % adds N(0,2*I) noise
 

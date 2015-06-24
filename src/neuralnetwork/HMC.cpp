@@ -67,75 +67,97 @@ namespace whiteice
 	template <typename T>
 	T HMC<T>::U(const math::vertex<T>& q, bool useRegulizer) const
 	{
-		whiteice::nnetwork<T> nnet(this->nnet);
-
-		nnet.importdata(q);
-    
-		math::vertex<T> err;
-		T e = T(0.0f);
+		T E = T(0.0f);
 
 		// E = SUM 0.5*e(i)^2
-		for(unsigned int i=0;i<data.size(0);i++){
-			nnet.input() = data.access(0, i);
-			nnet.calculate(false);
-			err = data.access(1, i) - nnet.output();
-			// T inv = T(1.0f/err.size());
-			err = (err*err);
-			e += T(0.5f)*err[0];
+#pragma omp parallel shared(E)
+		{
+			whiteice::nnetwork<T> nnet(this->nnet);
+			nnet.importdata(q);
+
+			math::vertex<T> err;
+			T e = T(0.0f);
+
+#pragma omp for nowait
+			for(unsigned int i=0;i<data.size(0);i++){
+				nnet.input() = data.access(0, i);
+				nnet.calculate(false);
+				err = data.access(1, i) - nnet.output();
+				// T inv = T(1.0f/err.size());
+				err = (err*err);
+				e = e  + T(0.5f)*err[0];
+			}
+
+#pragma omp critical
+			{
+				E = E + e;
+			}
 		}
 
 		// e /= T( (float)data.size(0) ); // per N
 
-		e /= temperature;
+		E /= temperature;
 
 		if(useRegulizer){
+			math::vertex<T> err;
 			// regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
 			err = alpha*T(0.5f)*(q*q);
-			e += err[0];
+			E += err[0];
 			// e += q[0];
 		}
 
 		// TODO: is this really correct squared error term to use?
 
-		return (e);
+		return (E);
 	}
   
   
 	template <typename T>
 	math::vertex<T> HMC<T>::Ugrad(const math::vertex<T>& q) const
 	{
-		whiteice::nnetwork<T> nnet(this->nnet);
+		math::vertex<T> sum;
+		sum.resize(q.size());
+		sum.zero();
 
-		T ninv = T(1.0f); // T(1.0f/data.size(0));
-		math::vertex<T> sumgrad, grad, err;
+#pragma omp parallel shared(sum)
+		{
+			// const T ninv = T(1.0f); // T(1.0f/data.size(0));
+			math::vertex<T> sumgrad, grad, err;
+			sumgrad.resize(q.size());
+			sumgrad.zero();
 
-		nnet.importdata(q);
+			whiteice::nnetwork<T> nnet(this->nnet);
+			nnet.importdata(q);
 
-		for(unsigned int i=0;i<data.size(0);i++){
-			nnet.input() = data.access(0, i);
-			nnet.calculate(true);
-			err = data.access(1,i) - nnet.output();
+#pragma omp for nowait
+			for(unsigned int i=0;i<data.size(0);i++){
+				nnet.input() = data.access(0, i);
+				nnet.calculate(true);
+				err = data.access(1,i) - nnet.output();
 
-			if(nnet.gradient(err, grad) == false){
-				std::cout << "gradient failed." << std::endl;
-				assert(0); // FIXME
+				if(nnet.gradient(err, grad) == false){
+					std::cout << "gradient failed." << std::endl;
+					assert(0); // FIXME
+				}
+
+				sumgrad += grad;
 			}
 
-			if(i == 0)
-				sumgrad = ninv*grad;
-			else
-				sumgrad += ninv*grad;
+#pragma omp critical
+			{
+				sum += sumgrad;
+			}
 		}
 
-		sumgrad /= temperature; // scales gradient with temperature
+		sum /= temperature; // scales gradient with temperature
 
 
-		sumgrad += alpha*q;
+		sum += alpha*q;
 
 		// TODO: is this really correct gradient to use
 		// (we want to use: 0,5*SUM e(i)^2 + alpha*w^2
 
-		return (sumgrad);
+		return (sum);
 	}
   
   
@@ -491,7 +513,7 @@ namespace whiteice
     		if(adaptive){
     			// use accept rate to adapt epsilon
     			// adapt sampling rate every N iteration (sample)
-    			if(accept_rate_samples >= 50)
+    			if(accept_rate_samples >= 20)
     			{
     				accept_rate /= accept_rate_samples;
 

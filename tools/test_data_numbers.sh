@@ -5,7 +5,7 @@ rm -f numbers.ds
 # creates training dataset for nntool
 
 ./dstool -create          numbers.ds
-./dstool -create:2:input  numbers.ds
+./dstool -create:3:input  numbers.ds
 ./dstool -create:1:output numbers.ds
 ./dstool -list            numbers.ds
 ./dstool -import:0        numbers.ds numbers.in
@@ -18,9 +18,11 @@ rm -f numbers.ds
 
 # uses nntool trying to learn from dataset
 
-ARCH="2-10-10-1"
+# 2-10-10-1 works
+ARCH="3-20-1"
 
-./nntool -v --samples 5000 --overfit numbers.ds $ARCH numbers-nn.cfg parallellbfgs
+# ./nntool -v --samples 5000 --overfit numbers.ds $ARCH numbers-nn.cfg parallellbfgs
+./nntool -v --adaptive numbers.ds $ARCH numbers-nn.cfg bayes
 
 ##################################################
 # testing

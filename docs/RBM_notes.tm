@@ -3,7 +3,7 @@
 <style|generic>
 
 <\body>
-  <strong|Some notes RBM implementation>
+  <strong|Some notes about BB- and GB-RBM implementation>
 
   Tomas Ukkonen, 2015 <verbatim|tomas.ukkonen@iki.fi>
 
@@ -96,7 +96,7 @@
 
   \;
 
-  <with|font-series|bold|Energy based model of RBM and Continuous RBM (CRBM)>
+  <with|font-series|bold|Energy based model of RBM>
 
   The continuous RBM is more complicated to implement and understand. It
   seems that Gaussian-Bernoulli RBM could be the right choice (or maybe
@@ -109,9 +109,9 @@
   The energy of the restricted boltzman machine is:\ 
 
   <\math>
-    E<rsub|B*B><around|(|v,b|)>=-v<rsup|T>W*h-a<rsup|T>v-b<rsup|T>h
+    E<rsub|B*B><around|(|v,h|)>=-a<rsup|T>v-v<rsup|T>W*h-b<rsup|T>h
 
-    E<rsub|G*B><around|(|v,h|)>=-v<rsup|T>W*h-<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>-b<rsup|T>h
+    E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>-v<rsup|T>W*h-b<rsup|T>h
   </math>
 
   Note that we could have added additional constant <math|c> term to these
@@ -132,13 +132,17 @@
   We want to calculate probabilities of hidden <math|h> and visible <math|v>
   neurons:\ 
 
-  <math|P<rsub|B*B><around|(|h\|v|)>=<frac|P<around|(|v,h|)>|P<around|(|v|)>>=<frac|<frac|1|Z>e<rsup|-E<around|(|v,h|)>>|<frac|1|Z>*<big|sum><rsub|h>e<rsup|-E<around|(|v,h|)>>>=<frac|e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>|<big|sum><rsub|h>e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>x>>
+  <math|P<rsub|B*B><around|(|h\|v|)>=<frac|P<around|(|v,h|)>|P<around|(|v|)>>=<frac|<frac|1|Z>e<rsup|-E<around|(|v,h|)>>|<frac|1|Z>*<big|sum><rsub|h>e<rsup|-E<around|(|v,h|)>>>=<frac|e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>|<big|sum><rsub|h>e<rsup|v<rsup|T>W*h+a<rsup|T>v+b<rsup|T>h>>>
 
   <math|P<rsub|B*B><around|(|h<rsub|i>=1\|v|)>=<frac|e<rsup|+v<rsup|T>w<rsub|i>1+a<rsup|T>v+b<rsub|i>1>|e<rsup|+v<rsup|T>w<rsub|i>0+a<rsup|T>v+b<rsub|i>0>+e<rsup|+v<rsup|T>w<rsub|i>1+a<rsup|T>v+b<rsub|i>1>>=<frac|e<rsup|+v<rsup|T>w<rsub|i>+b<rsub|i>>|1+e<rsup|+v<rsup|T>w<rsub|i>+b<rsub|i>>>=<frac|1|1+e<rsup|-v<rsup|T>w<rsub|i>-b<rsub|i>>>=sigmoid<around|(|w<rsup|T><rsub|i>v+b<rsub|i>|)>>
 
-  And due to symmetry, a similar calculation can be used to calculate
-  <math|P<rsub|B*B><around|(|v<rsub|i>=1\|h|)>> (for Bernoulli-Bernoulli
-  RBMs).
+  <math|P<rsub|B*B><around*|(|\<b-h\>=\<b-1\><around*|\||\<b-v\>|)>=sigmoid<around*|(|\<b-W\>*\<b-v\>+\<b-b\>|)>|\<nobracket\>>>
+
+  <\math>
+    P<rsub|B*B><around*|(|v<rsub|i>=1<around*|\||h|\<nobracket\>>|)>=<frac|e<rsup|+1*w<rsup|<around*|(|T|)>><rsub|i>h+a<rsub|i>1+b<rsup|T>h>|e<rsup|+0*w<rsup|<around*|(|T|)>><rsub|i>h+a<rsub|i>0+b<rsup|T>h>+e<rsup|+1*w<rsup|<around*|(|T|)>><rsub|i>h+a<rsub|i>1+b<rsup|T>h>>=<frac|1|1+e<rsup|-w<rsup|<around*|(|T|)>><rsub|i>h-a<rsub|i>>>=sigmoid<around|(|w<rsup|<around*|(|T|)>><rsub|i>h+a<rsub|i>|)>
+  </math>
+
+  <math|P<rsub|B*B><around*|(|\<b-v\>=\<b-1\><around*|\||\<b-h\>|\<nobracket\>>|)>=sigmoid<around*|(|\<b-W\><rsup|T>\<b-h\>+\<b-a\>|)>>
 
   <strong|Free Energy>
 
@@ -165,7 +169,7 @@
 
   The general form of the derivate is then:
 
-  <math|<frac|\<partial\>-logp<around|(|v|)>|\<partial\>\<theta\>>=<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>-<big|int>p<around|(|v|)>*<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>*d*v=<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>-E<rsub|v><around|[|<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>|]>>
+  <math|<frac|\<partial\>logp<around|(|v|)>|\<partial\>\<theta\>>=-<around*|(|<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>-<big|int>p<around|(|v|)>*<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>*d*v|)>=-<around*|(|<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>-E<rsub|v><around|[|<frac|\<partial\>F<around|(|v|)>|\<partial\>\<theta\>>|]>|)>>
 
   And the latter term can be approximated using contrastive divergence
   algorithm. We use the training data to produce <math|p<around|(|h\|v|)>>
@@ -173,6 +177,9 @@
   sample <math|<around|(|v<rsub|i>,h<rsub|i>|)>> and only keep
   <math|v<rsub|i>> to get the approximate sample from distribution
   <math|p<around|(|v|)>>. This <em|maybe> special case of Gibbs sampling.
+  Altenatively, it is possible to use MCMC, AIS, PT-MCMC or some other
+  sampling technique to sample directly from <math|P<around*|(|v|)>> instead
+  using CD-k Gibbs sampling.\ 
 
   <strong|Gradient descent>
 
@@ -275,7 +282,9 @@
 
   <math|<big|int>e<rsup|-<frac|1|2>v<rsup|T>\<Sigma\><rsup|-1>v+*v<rsup|T>\<Sigma\><rsup|-1><around|(|\<Sigma\><rsup|0.5>W*h*+a|)>-<frac|1|2><around|\<\|\|\>|a|\<\|\|\>><rsup|2>>*d*v=e<rsup|<frac|1|2><around|\<\|\|\>|\<Sigma\><rsup|-0.5>W*h+a|\<\|\|\>><rsub|\<Sigma\><rsup|>><rsup|2>-<frac|1|2><around|\<\|\|\>|a|\<\|\|\>><rsup|2>><big|int>e<rsup|-<frac|1|2><around|\<\|\|\>|v-<around|(|\<Sigma\><rsup|0.5>W*h+a|)>|\<\|\|\>><rsub|\<Sigma\>><rsup|2>>*d*v>
 
-  <math|P<around|(|v\|h|)>==<frac|1|Z<around|(|\<Sigma\>|)>>*e<rsup|-<frac|1|2><around|\<\|\|\>|v-<around|(|\<Sigma\><rsup|0.5>W*h+a|)>|\<\|\|\>><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal<around|(|v\|\<Sigma\><rsup|1/2>*W*h+a,\<Sigma\>|)>>
+  <math|P<around|(|v\|h|)>=<frac|1|Z<around|(|\<Sigma\>|)>>*e<rsup|-<frac|1|2><around|\<\|\|\>|v-<around|(|\<Sigma\><rsup|0.5>W*h+a|)>|\<\|\|\>><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal<around|(|v\|\<Sigma\><rsup|1/2>*W*h+a,\<Sigma\>|)>>
+
+  <math|P<around*|(|\<b-v\><around*|\||\<b-h\>|\<nobracket\>>|)>\<sim\>Normal<around*|(|v<around*|\||\<b-Sigma\><rsup|1/2>*\<b-W\>*\<b-h\>+\<b-a\>,\<b-Sigma\>|\<nobracket\>>|)>>
 
   \;
 
@@ -298,7 +307,9 @@
 
   <math|P<around|(|h<rsub|d>\|v|)>=<frac|e<rsup|<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>*h<rsub|d>>|<big|sum><rsub|h<rsub|d>>e<rsup|<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>*h<rsub|d>>>=sigmoid<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>>.
 
-  <math|P<around|(|h\|v|)>=sigmoid<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>W**+b*|)>>
+  <math|P<around|(|\<b-h\>\|\<b-v\>|)>=sigmoid<around|(|<around|(|\<b-Sigma\><rsup|-0.5>*\<b-v\>|)><rsup|T>\<b-W\>**+\<b-b\>*|)>>
+
+  \;
 
   \;
 
@@ -338,7 +349,7 @@
   <\math>
     <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>-<big|sum><rsub|i><frac|e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>><around|(|<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>|)>
 
-    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k><big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
+    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k>*<big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
   </math>
 
   <math|<rsup|>diag<around|[|<frac|\<partial\>*F|\<partial\>*\<Sigma\>>|]>=diag[-\<Sigma\><rsup|-3/2><around|(|v-a|)>*<around|(|v-a|)><rsup|T>+*<around|(|\<Sigma\><rsup|-1>v|)>*<around|(|W*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v+b|)>|)><rsup|T>]>
@@ -347,7 +358,7 @@
 
   Other derivates of the free energy are:
 
-  <math|<frac|\<partial\>F|\<partial\>a>=\<Sigma\><rsup|-1><around|(|a-v|)>>
+  <math|<frac|\<partial\>F|\<partial\>a>=-\<Sigma\><rsup|-1><around|(|v-a|)>>
 
   <math|<frac|\<partial\>F<around|(|v|)>|\<partial\>b<rsub|i>>=-sigmoid<around|(|<big|sum><rsub|j>w<rsub|i*j>v<rsub|j>*/\<sigma\><rsub|j>*+b<rsub|i>|)>>,
   <math|<frac|\<partial\>*F|\<partial\>b>=-sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-1/2>v+b|)>>
@@ -401,32 +412,36 @@
 
   <strong|ALTERNATIVE GAUSSIAN MODEL>
 
-  Because the basic approach to introduce variances into model seem to cause
-  problems I now try another slightly modified model introduced by Aalto
-  university researchers (Cho et al. 2011).
+  Because their basic approach to introduce variances into model seem to
+  cause problems I now try another slightly modified model introduced by
+  Aalto university researchers (Cho et al. 2011).
 
   Now the energy of the system is defined to be\ 
 
   <\math>
     E<rsub|G*B><around|(|v,h|)>
 
-    =<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+    =<frac|1|2>\<alpha\><big|sum><rsub|i><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
 
-    =<frac|1|2><around|(|v-a|)>D<rsup|-2><around|(|v-a|)>-v<rsup|T>D<rsup|-2>W*h-b<rsup|T>h
+    =<frac|1|2><around|(|v-a|)><around*|(|\<alpha\>D<rsup|-2>|)><around|(|v-a|)>-v<rsup|T>D<rsup|-2>W*h-b<rsup|T>h
 
-    =<big|sum><rsub|i><frac|1|2>*v<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>+<frac|1|2>a<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i><around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)>v<rsub|i>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+    =<big|sum><rsub|i><frac|1|2>*v<rsup|2><rsub|i>*\<alpha\>/\<sigma\><rsup|2><rsub|i>+<frac|1|2>a<rsup|2><rsub|i>*\<alpha\>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i><around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)>v<rsub|i>*\<alpha\>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
 
-    =<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>+<frac|1|2><big|sum><rsub|i>a<rsup|2><rsub|i>/\<sigma\><rsup|2><rsub|i>-<frac|1|2><big|sum><around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)><rsup|2>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
+    =<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)>|)><rsup|2>\<alpha\>/\<sigma\><rsup|2><rsub|i>+<frac|1|2><big|sum><rsub|i>a<rsup|2><rsub|i>\<alpha\>/\<sigma\><rsup|2><rsub|i>-<frac|1|2><big|sum><rsub|i><around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)><rsup|2>*\<alpha\>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>
 
-    =<frac|1|2><around|(|v-<around|(|a+W*h|)>|)><rsup|T>D<rsup|-2><around|(|v-<around|(|a+W*h|)>|)>+<frac|1|2>a<rsup|T>D<rsup|-2>a-<frac|1|2><around|\<\|\|\>|a+W*h|\<\|\|\>><rsup|2>-b<rsup|T>h
+    =<frac|1|2><around|(|v-<around|(|a+W*h/\<alpha\>|)>|)><rsup|T><around*|(|\<alpha\>*D<rsup|-2>|)><around|(|v-<around|(|a+W*h/\<alpha\>|)>|)>+<frac|1|2>a<rsup|T><around*|(|\<alpha\>*D<rsup|-2>|)>a-<frac|1|2><around|\<\|\|\>|a+W*h/\<alpha\>|\<\|\|\>><rsub|<around*|(|D<rsup|2>/\<alpha\>|)>><rsup|2>-b<rsup|T>h
   </math>
 
   After this it is again quite straightforward to calculate the conditional
   probabilities given hidden or visible neurons.
 
-  <math|P<around|(|v\|h|)>=<frac|e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>><rsup|>|<big|int>e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>*>*d*v>\<propto\>e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>|)>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>>\<sim\><big|prod><rsub|i>N<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>,\<sigma\><rsup|2><rsub|i>|)>>
+  <\math>
+    P<around|(|v\|h|)>=<frac|e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)>|)><rsup|2>\<alpha\>/\<sigma\><rsup|2><rsub|i>><rsup|>|<big|int>e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)>|)><rsup|2>\<alpha\>/\<sigma\><rsup|2><rsub|i>*+\<ldots\>.>*d*v>\<propto\>e<rsup|-<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>|)>|)><rsup|2>\<alpha\>/\<sigma\><rsup|2><rsub|i>>
 
-  <strong|><strong|<math|P<around|(|v\|h|)>\<sim\>Normal<around|(|a+W*h,D<rsup|2>|)>>>,
+    \<sim\><big|prod><rsub|i>N<around|(|a<rsub|i>+<big|sum><rsub|j>w<rsub|i*j>h<rsub|j>/\<alpha\>,\<sigma\><rsup|2><rsub|i>/\<alpha\>|)>
+  </math>
+
+  <strong|><strong|<math|P<around|(|v\|h|)>\<sim\>Normal<around|(|a+W*h/\<alpha\>,D<rsup|2>/\<alpha\>|)>>>,
   <strong|<strong|<strong|<math|D<rsup|2>=diag<around|[|\<sigma\><rsup|2><rsub|1>\<ldots\>\<sigma\><rsup|2><rsub|D>|]>>>>>
 
   <strong|<strong|>><strong|>
@@ -446,13 +461,13 @@
   energy of the energy function (and then calculate its partial derivates).
 
   <\math>
-    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>
+    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2>*\<alpha\>*<around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>
 
-    =<rsup|><frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>h<rsub|i>>
+    =<rsup|><frac|1|2>\<alpha\>*<around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>h<rsub|i>>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|)>
+    =<frac|1|2>\<alpha\>*<around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|)>
 
-    =<frac|1|2><big|sum><rsub|i><frac|<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>|\<sigma\><rsup|2><rsub|i>>-<big|sum><rsub|i>log<around|(|1+exp<around|(|<big|sum><rsub|j>w<rsub|j*i>v<rsub|j>/\<sigma\><rsup|2><rsub|j>+b<rsub|i>|)>|)>
+    =<frac|1|2><big|sum><rsub|i>\<alpha\>*<frac|<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>|\<sigma\><rsup|2><rsub|i>>-<big|sum><rsub|i>log<around|(|1+exp<around|(|<big|sum><rsub|j>w<rsub|j*i>v<rsub|j>/\<sigma\><rsup|2><rsub|j>+b<rsub|i>|)>|)>
   </math>
 
   \;
@@ -460,31 +475,39 @@
   From this formulation we can calculate
 
   <\math>
-    <frac|\<partial\>F|\<partial\>a>=-D<rsup|-2><around|(|a-v|)>
+    <frac|\<partial\>F|\<partial\>a>=-\<alpha\>*D<rsup|-2><around|(|a-v|)>
   </math>
 
   <math|<frac|\<partial\>F|\<partial\>b<rsub|i>>=-<frac|e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>>=-sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|i>>
 
-  <math|<frac|\<partial\>F|\<partial\>b>=-sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)>>
+  <math|<frac|\<partial\>F|\<partial\>b>=-sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)>=-h>
 
-  <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|i>>
+  <math|<frac|\<partial\>F|\<partial\>w<rsub|i*j>>=-<frac|e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>>*(*v<rsub|j>/\<sigma\><rsup|2><rsub|j>)=-<frac|v<rsub|j>|\<sigma\><rsub|j><rsup|2>>*sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|i>=-D<rsup|<rsup|-2>>v*h<rsup|<rsup|T>>>
+
+  \;
 
   \;
 
   But the crucial derivate is the derivate of <math|\<sigma\><rsub|i>> terms,
   we alter energy function by the change of terms:
-  <math|1/\<sigma\><rsup|2><rsub|i>=e<rsup|-z<rsub|i>>=\<alpha\>> leading
-  into formula:
+  <math|1/\<sigma\><rsup|2><rsub|i>=e<rsup|-z<rsub|i>>> leading into formula:
 
-  <math|F<around|(|v|)>=<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-z<rsub|i>>-<big|sum><rsub|j>log<around|(|1+exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>|)>>
+  <math|F<around|(|v|)>=<frac|1|2><big|sum><rsub|i>\<alpha\>*<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-z<rsub|i>>-<big|sum><rsub|j>log<around|(|1+exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>|)>>
 
   And then derivate with respect to <math|z<rsub|i>>:
 
   <\math>
-    <frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-z<rsub|i>>+<big|sum><rsub|j><frac|exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>|1+exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>>*w<rsub|i*j>*v<rsub|i>*e<rsup|-z<rsub|i>>
+    <frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>\<alpha\>*<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-z<rsub|i>>+<big|sum><rsub|j><frac|exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>|1+exp<around|(|<big|sum><rsub|i>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>>+b<rsub|j>|)>>*w<rsub|i*j>*v<rsub|i>*e<rsup|-z<rsub|i>>
 
-    =-e<rsup|-z<rsub|i>>*<around|[|<frac|1|2><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*-v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|j>|]>
+    =-e<rsup|-z<rsub|i>>*<around|[|<frac|1|2>\<alpha\>*<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*-v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|j>|]>=e<rsup|-z<rsub|i>>*S<around*|(|a,b,D|)>
   </math>
+
+  \;
+
+  But because variance is difficult parameter to optimize for, we want to
+  calculate its Hessian matrix and use second order derivation
+
+  \;
 
   \;
 
@@ -492,9 +515,113 @@
   people (<em|Improved Learning of Gaussian-Bernoulli Restricted Boltzmann
   Machines. ICANN 2011.>)
 
-  In practice this alternative method works rather well - when there is
-  enough hidden nodes as otherwise the method will approximate the
-  distribution as a single cluster instead of multiple different clusters.
+  <with|font-series|bold|Important>: The analysis of results seem to imply to
+  following result. Aalto university people model performance with data
+  having multiple modes (circle data etc) have <with|font-series|bold|bad
+  performance> if gradient descent method is used and variance should be
+  learned - cannot learn the variance (Parallel Tempering MCMC may be
+  possible to learn the model variance correctly). However, it has
+  <with|font-series|bold|BETTER> performance if correct variance is known and
+  gradient descent method is used.
+
+  <\enumerate>
+    <item>This seem to imply to following approach: first optimize
+    ``original'' GB-RBM so that you can learn the variances (correctly)
+
+    <item>After learning the variances switch to ``Aalto-university'' GB-RBM
+    model which can give better reconstruction error. With correct variances
+    known it is now possible to learn multiple modes of the distribution
+    easily.
+
+    <item>Alternatively try to use more sophisticated methods.
+  </enumerate>
+
+  \;
+
+  <strong|Parallel Tempering Annihilated Importance Sampling (AIS)>
+
+  Parallel tempering is a powerful approach that was uused by Aalto
+  university people in 2011 (also see <with|font-shape|italic|On the
+  Quantitative Analysis of Deep Belief Networks>.
+  <with|font-shape|italic|Salakhutdinov.> about AIS). I will try to use same
+  method to generate intermediate distributions from which to estimate
+  partition function <math|<with|font-series|bold|Z>> which is needed to
+  estimate exact probabilities.
+
+  <center|<math|P<around*|(|v|)>=<with|font-series|bold|<frac|1|Z>><big|sum><rsub|h>e<rsup|-E<around*|(|v,h|)>>>>
+
+  We generate series of temperatures <math|\<beta\>=<around*|[|0\<ldots\>1|]>>
+  and define intermediate models as (<with|font-shape|italic|Cho et al.
+  2011>):
+
+  <\center>
+    <math|\<b-W\><rsup|<around*|(|\<beta\>|)>>=\<beta\>*\<b-W\>> ,
+    <math|a<rsub|i>=\<beta\>*a<rsub|i>-<around*|(|1-\<beta\>|)>*m<rsub|i>>
+
+    <math|\<b-b\><rsup|<around*|(|\<beta\>|)>>=*\<beta\>*\<b-b\>>,
+    <math|\<sigma\><rsub|i><rsup|<around*|(|\<beta\>|)>>=<sqrt|\<beta\>*\<sigma\><rsup|2><rsub|i>+<around*|(|1-\<beta\>|)>*s<rsup|2><rsub|i>>>
+  </center>
+
+  \;
+
+  So with <math|\<beta\>=0> we simply sample from unscaled normal probability
+  distribution <math|v<rsub|i>\<sim\>\<cal-N\><around*|(|m<rsub|i>,s<rsup|2><rsub|i>|)>>
+  and then define <with|font-series|bold|stochastic> transition operation as\ 
+
+  <center|<math|T<rsub|\<beta\>><around*|(|v<rprime|'>,v|)>=p<rsub|\<beta\>><around*|(|v<rprime|'><around*|\||h|\<nobracket\>>|)>*p<rsub|\<beta\>><around*|(|h<around*|\||v|\<nobracket\>>|)>>>
+
+  Because we know (<with|font-series|bold|proof?>) that iterative Gibbs
+  sampling <math|T<around*|(|v<rprime|'>,v|)>> from distribution will lead to
+  distribution <math|p<around*|(|v|)>> given any distribution
+  <math|p<around*|(|v|)>> for any <math|v> (assuming all
+  <math|p<around*|(|v|)> \<gtr\> 0>) then the transition from probability
+  distribution <math|p<around*|(|v|)>> of values will lead to limiting
+  distribution of <math|p<around*|(|v|)>> of values?? (Convergence point of
+  markov chain).
+
+  After this we use AIS to estimate <math|Z<rsub|>>-ratios (which mean is
+  used as an estimate) using un-scaled distributions by using samples:
+
+  <center|<math|<frac|Z<rsub|\<beta\><rsub|K>>|Z<rsub|\<beta\><rsub|0>>>=<frac|p<rprime|'><rsub|\<beta\><rsub|1>><around*|(|\<b-v\><rsub|1>|)>|p<rprime|'><rsub|\<beta\><rsub|0>><around*|(|\<b-v\><rsub|1>|)>>*<frac|p<rprime|'><rsub|\<beta\><rsub|2>><around*|(|\<b-v\><rsub|2>|)>|p<rprime|'><rsub|\<beta\><rsub|1>><around*|(|\<b-v\><rsub|2>|)>>\<ldots\><frac|p<rprime|'><rsub|\<beta\><rsub|K>><around*|(|\<b-v\><rsub|K>|)>|p<rprime|'><rsub|\<beta\><rsub|k-1>><around*|(|\<b-v\><rsub|K>|)>>**>.>
+
+  (NOTE: is <math|\<b-v\><rsub|K>> generated this way also distributed as
+  <math|p<rsub|K><around*|(|\<b-v\>|)>> ?)
+
+  But because we know <math|p<rsub|\<beta\><rsub|0>><around*|(|\<b-v\>|)>> to
+  be exactly normal it is trival to sample from and its normalizing constant
+  <math|Z> can be computed directly.
+
+  <center|<math|Z<rsub|\<beta\><rsub|0>>=<around*|(|2*\<pi\>|)><rsup|D/2>*\<sigma\><rsub|1>\<ldots\>\<sigma\><rsub|D>>>
+
+  What is still needed to estimate <math|Z> is the calculation of un-scaled
+  probability distribution values <math|p<rprime|'><around*|(|\<b-v\>|)>>
+  given parameters of GB-RBM. This needs summation over all values of
+  <math|\<b-h\>>:
+
+  <center|<\math>
+    P<rprime|'><around*|(|\<b-v\>|)>=<with|font-series|bold|>e<rsup|-<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>>*<big|sum><rsub|\<b-h\>>e<rsup|\<b-v\><rsup|T>\<b-Sigma\><rsup|-0.5>\<b-W\>*h+\<b-b\><rsup|T>\<b-h\>>
+  </math>>
+
+  For <math|\<b-h\>> this simplifies further into summation:
+
+  <center|<math|S=<big|sum><rsub|\<b-h\>>e<rsup|\<b-alpha\><rsup|T>\<b-h\>>=<big|sum><rsub|\<b-h\>><big|prod><rsub|i>e<rsup|\<alpha\><rsub|i>*h<rsub|i>>>>
+
+  The next comes the tricky/smart step, because <em|<strong|h>> takes only
+  values <math|0> and <math|1> this summation can be simplified without going
+  through all the <math|2<rsup|dim<around*|(|\<b-h\>|)>>> possible values by
+  using property of multiplication <math|<around*|(|\<alpha\>+\<beta\>|)><around*|(|\<varsigma\>+\<delta\>|)>\<ldots\>.>
+  ``generates''/''goes through'' all possible <math|2<rsup|D>> states
+  <with|font-series|bold|in linear time><with|font-series|bold|!>
+
+  <center|<math|S=<big|sum><rsub|\<b-h\>><big|prod><rsub|i>e<rsup|\<alpha\><rsub|i>*h<rsub|i>>=<big|prod><rsub|i><around*|(|e<rsup|\<alpha\><rsub|i>*<around*|(|h<rsub|i>=0|)>>+e<rsup|\<alpha\><rsub|i>*<around*|(|h<rsub|i>=1|)>>|)>=<big|prod><rsub|i><around*|(|1+e<rsup|\<alpha\><rsub|i>*>|)>>>
+
+  Therefore, the unscaled log probability is:
+
+  <\center>
+    <math|log<around*|(|P<rprime|'><around*|(|\<b-v\>|)>|)>=-<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>+<big|sum><rsub|i>log<around*|(|1+e<rsup|\<alpha\><rsub|i>>|)>>,
+
+    <math|\<b-alpha\>=\<b-W\><rsup|T>\<b-Sigma\><rsup|-0.5>*\<b-v\>+\<b-b\>>.
+  </center>
 
   \;
 
@@ -562,6 +689,20 @@
 
   <center|<math|p<around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>\<propto\>p<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\>|)>>>
 
+  But sampling from this distribution can be difficult but one can maybe use
+  MCMC sampling which is only interested in relative probabilities
+
+  <center|<math|r=<frac|p<around*|(|\<b-theta\><rsub|<rsub|n+1>><around*|\||\<b-v\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\>|)>|p<around*|(|\<b-theta\><rsub|n><around*|\||\<b-v\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\>|)>>=<frac|<big|sum><rsub|\<b-h\>>p<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>|<big|sum><rsub|\<b-h\>>p<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>>>>
+
+  If we furthermore assume that <math|Z<around*|(|\<b-theta\><rsub|n+1>|)>\<thickapprox\>Z<around*|(|\<b-theta\><rsub|n>|)>>
+  then we get a formula:
+
+  <center|<math|r<around*|(|v|)>\<thickapprox\><frac|<big|sum><rsub|\<b-h\>>e<rsup|-E<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>>|<big|sum><rsub|\<b-h\>>e<rsup|-E<around*|(|\<b-v\>,\<b-h\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>>>\<thickapprox\>>>
+
+  \;
+
+  \;
+
   After which hidden states are sampled or calculated using a formula
 
   <center|<math|p<around*|(|\<b-h\><around*|\||\<b-v\>|\<nobracket\>>|)>=<big|int>p<around*|(|\<b-h\><around*|\||\<b-theta\>,\<b-v\>|\<nobracket\>>|)>*p<around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>*d\<b-theta\>\<thickapprox\><frac|1|N><big|sum><rsub|i>p<around*|(|\<b-h\><around*|\||\<b-theta\><rsub|i>,\<b-v\>|\<nobracket\>>|)>>>
@@ -576,7 +717,63 @@
   variables given known variable, it is not possible to calculate relatioship
   between <math|\<b-h\>> and <strong|v>.
 
-  Because of this one needs something more complicated model.
+  If one does not want to use bayesian approach when maximizing probability
+  of visible states given parameters, another approach could be still use
+  gradient descent but now giving the gradient to L-BFGS optimizer method
+  (conjugate gradient) method which should then be able to do higher quality
+  maximization of visible states probability by using only gradient
+  information.
+
+  \;
+
+  Solving variance model with bayesian prior distribution
+
+  We add inverse scaled chi-squared distribution as prior/regularizer
+  distribution for <math|\<sigma\><rsup|2><rsub|i>> terms in order to keep
+  variance as low as possible
+
+  \;
+
+  <\math>
+    E<rsub|G*B><around|(|v,h|)>+ScaledInv\<chi\><rsup|2><around*|(|\<b-sigma\><rsup|2>|)>
+
+    =<frac|1|2><big|sum><rsub|i><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>/\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i,j><frac|v<rsub|i>|\<sigma\><rsup|2><rsub|i>>w<rsub|i*j>h<rsub|j>-<big|sum><rsub|i>b<rsub|i>h<rsub|i>+<frac|1|2><around*|(|\<alpha\>-1|)>*<big|sum><rsub|i><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>/\<sigma\><rsup|2><rsub|i>
+
+    \;
+
+    =<frac|1|2>\<alpha\>*<around|(|v-<around|(|a+W*h|)>|)><rsup|T>D<rsup|-2><around|(|v-<around|(|a+W*h|)>|)>+<frac|1|2>a<rsup|T>D<rsup|-2>a-<frac|1|2><around|\<\|\|\>|a+W*h|\<\|\|\>><rsup|2>-b<rsup|T>h
+  </math>
+
+  After this It is possible to calculate free energy derivate of
+  <math|\<sigma\><rsub|i><rsup|2>>.
+
+  <\math>
+    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>-\<alpha\><frac|1|2>s<rsup|T>*D*s+v<rsup|T>D<rsup|-2>W*h+b<rsup|T>h>
+
+    =<rsup|><frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>+<frac|1|2>s<rsup|T>D<rsup|2>s-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>h<rsub|i>>
+
+    =<frac|1|2><around|(|v-a|)><rsup|T>D<rsup|-2><around|(|v-a|)>+<frac|1|2>s<rsup|T>D<rsup|-2>s-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>*D<rsup|-2>**v+b|)><rsub|i>>|)>
+
+    =<frac|1|2><big|sum><rsub|i><frac|<around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>|\<sigma\><rsup|2><rsub|i>>+<frac|1|2><big|sum><rsub|i>s<rsup|2><rsub|i>\<sigma\><rsup|2><rsub|i>-<big|sum><rsub|i>log<around|(|1+exp<around|(|<big|sum><rsub|j>w<rsub|j*i>v<rsub|j>/\<sigma\><rsup|2><rsub|j>+b<rsub|i>|)>|)>
+  </math>
+
+  \;
+
+  And the derivate with respect to <math|z<rsub|i>> is:
+
+  <\math>
+    <frac|\<partial\>F|\<partial\>z<rsub|i>>=-e<rsup|-z<rsub|i>>*<around|[|<frac|1|2><around|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*-v<rsub|i><big|sum><rsub|j>w*<rsub|i*j>sigmoid<around|(|W<rsup|T>D<rsup|-2>v+b|)><rsub|j>|]>+<frac|1|2>s<rsup|2><rsub|i>e<rsup|z<rsub|i>>
+  </math>
+
+  And <math|s<rsub|i>> is a sample square statistic
+  <math|s<rsup|2><rsub|i>=<big|sum><rsup|N><rsub|j=1><around*|(|v<rsub|i><around*|(|j|)>-<wide|v<rsub|i>|\<bar\>><around*|(|j|)>|)><rsup|2>>
+  where <math|j>:s are indexes for individual observations from the data. Now
+  from the data it is easy to calculate <math|s<rsup|2><rsub|i>> but from the
+  model this is a different thing. If we approximate
+  <math|s<rsup|2><rsub|i>=\<alpha\>*<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|2>>
+  we get regularized gradients.
+
+  \;
 
   \;
 </body>

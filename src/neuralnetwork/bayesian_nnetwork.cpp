@@ -142,19 +142,38 @@ namespace whiteice
     mean.zero();
     covariance.zero();
 
-    T ninv  = T(1.0f/latestN);
-    T ninv2 = T(1.0f/(latestN - 1));
+   	if(latestN <= D)
+    	covariance.identity(); // regularizer term for small datasize
 
-    if(latestN <= D)
-      covariance.identity(); // regularizer term for small datasize
+#pragma omp parallel shared(mean, covariance)
+    {
+    	math::matrix<T> cov;
+    	math::vertex<T> m;
 
-    for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
-      nnets[i]->input() = input;
-      nnets[i]->calculate();
-      math::vertex<T> out = nnets[i]->output();
+    	m.resize(D);
+    	cov.resize(D,D);
+    	m.zero();
+    	cov.zero();
 
-      mean += ninv*out;
-      covariance += ninv2*out.outerproduct();
+    	T ninv  = T(1.0f/latestN);
+    	T ninv2 = T(1.0f/(latestN - 1));
+
+#pragma omp for nowait
+    	for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
+    		nnets[i]->input() = input;
+    		nnets[i]->calculate();
+    		math::vertex<T> out = nnets[i]->output();
+
+    		m += ninv*out;
+    		cov += ninv2*out.outerproduct();
+    	}
+
+#pragma omp critical
+    	{
+    		mean += m;
+    		covariance += cov;
+    	}
+
     }
 
     covariance -= mean.outerproduct();

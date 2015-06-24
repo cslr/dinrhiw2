@@ -1,7 +1,7 @@
 // simple file to generate multiplication problem for the neural network
-// the problem is has two inputs and one output f(x,y) = x*y = z
+// the problem is has three inputs and one output f(x,y,z) = x*y*z
 // and the task of the neural network is to learn to multiply
-// two different numbers it has been given
+// three different numbers it has been given
 
 
 #include <iostream>
@@ -29,10 +29,10 @@ int main(int argc, char** argv)
   for(unsigned int n=0;n<N;n++){
     double a = distribution(generator);
     double b = distribution(generator);
-    double c = a*b;
+    double c = distribution(generator);
 
-    input  << a << " " << b << std::endl;
-    output << c << std::endl;
+    input  << a << " " << b << " " << c << std::endl;
+    output << (a*b*c) << std::endl;
   }
 
   input.close();

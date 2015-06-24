@@ -958,12 +958,14 @@ int main(int argc, char** argv)
       }
 
       
-      // whiteice::HMC<> hmc(*nn, data, adaptive);
       // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
-      unsigned int ptlayers = (unsigned int)(math::log(10.0*data.size())/math::log(1.25));
+      unsigned int ptlayers = (unsigned int)(math::log(data.size())/math::log(1.25));
       if(ptlayers <= 10) ptlayers = 10;
       else if(ptlayers > 100) ptlayers = 100;
 
+      std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
+
+      // whiteice::HMC<> hmc(*nn, data, adaptive);
       whiteice::PTHMC<> hmc(ptlayers, *nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
       
@@ -982,18 +984,16 @@ int main(int argc, char** argv)
 	
 	if(hmc.getNumberOfSamples() > 0){
 	  if(secs > 0)
-	    printf("\r%d samples: %f [%f minutes] [PT %.0f%%]                ",
+	    printf("\r%d samples: %f [%.2f minutes]                ",
 		   hmc.getNumberOfSamples(),
 		   hmc.getMeanError(100).c[0],
-		   (secs - counter)/60.0,
-		   100.0*hmc.getAcceptRate().c[0]);
+		   (secs - counter)/60.0);
 	  else{
-	    printf("\r%d/%d samples : %f [%f minutes] [PT %.0f%%]             ",
+	    printf("\r%d/%d samples : %f [%.2f minutes]             ",
 		   hmc.getNumberOfSamples(),
 		   samples,
 		   hmc.getMeanError(100).c[0],
-		   eta.estimate()/60.0,
-		   100.0*hmc.getAcceptRate().c[0]);
+		   eta.estimate()/60.0);
 	  }
 	  fflush(stdout);
 	}

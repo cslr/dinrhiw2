@@ -52,7 +52,7 @@
 									<listOptionValue builtIn="false" value="OPENBLAS"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.1791218134" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.other.other.1449691940" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1449691940" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.undef.716298988" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1370110532" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -90,7 +90,7 @@
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.1018604836" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="neuralnetwork/GBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="neuralnetwork/BBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -136,7 +136,7 @@
 									<listOptionValue builtIn="false" value="OPENBLAS"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.773296985" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.other.other.1157813607" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1157813607" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.undef.775691692" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.886015041" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -156,6 +156,7 @@
 									<listOptionValue builtIn="false" value="gmp"/>
 									<listOptionValue builtIn="false" value="openblas"/>
 								</option>
+								<option id="gnu.cpp.link.option.flags.964633374" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1836655695" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -216,7 +217,7 @@
 									<listOptionValue builtIn="false" value="OPENBLAS"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.2080775840" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.other.other.2130438566" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.2130438566" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.undef.648654670" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1790436129" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -386,7 +387,7 @@
 									<listOptionValue builtIn="false" value="OPENBLAS"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.warnings.allwarn.2050317225" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.other.other.1158950462" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1158950462" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.preprocessor.undef.2116946890" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1912781641" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -424,7 +425,102 @@
 					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="neuralnetwork/GBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="neuralnetwork/BBRBM.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507" moduleId="org.eclipse.cdt.core.settings" name="neuralnetwork-testcases">
+				<externalSettings>
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/dinrhiw2-library"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/dinrhiw2-library/neuralnetwork-testcases"/>
+						<entry flags="RESOLVED" kind="libraryFile" name="dinrhiw" srcPrefixMapping="" srcRootPath=""/>
+					</externalSetting>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.PE" point="org.eclipse.cdt.core.BinaryParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="neuralnetwork_testcase" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Testsuite for dataset" id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507" name="neuralnetwork-testcases" parent="cdt.managedbuild.config.gnu.mingw.lib.debug" postannouncebuildStep="" postbuildStep="">
+					<folderInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.mingw.lib.debug.542838731" name="MinGW GCC" superClass="cdt.managedbuild.toolchain.gnu.mingw.lib.debug">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.mingw.lib.debug.437209728" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.mingw.lib.debug"/>
+							<builder buildPath="${workspace_loc:/dinrhiw2-library}/Debug" id="org.eclipse.cdt.build.core.internal.builder.278833709" keepEnvironmentInBuildfile="false" name="CDT Internal Builder" superClass="org.eclipse.cdt.build.core.internal.builder"/>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.mingw.lib.debug.227997525" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.mingw.lib.debug">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.691422830" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.mingw.lib.debug.1634130" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.mingw.lib.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.lib.debug.623285748" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.lib.debug">
+								<option id="gnu.cpp.compiler.mingw.lib.debug.option.optimization.level.1832229597" name="Optimization Level" superClass="gnu.cpp.compiler.mingw.lib.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.mingw.lib.debug.option.debugging.level.2010584767" name="Debug Level" superClass="gnu.cpp.compiler.mingw.lib.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1719846026" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/math}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/neuralnetwork}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/automata}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/crypto}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/datamining}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/exceptions}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/generic}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/graph}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\install\include&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.591354009" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.dialect.flags.872755844" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true" value="-std=c++11" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.534509677" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="AMD64"/>
+									<listOptionValue builtIn="false" value="WINOS"/>
+									<listOptionValue builtIn="false" value="OPENBLAS"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.warnings.allwarn.338276814" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.other.other.1403064318" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -Wno-attributes -fopenmp -D_GLIBCXX_DEBUG" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.undef.298631187" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.163280061" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.mingw.lib.debug.854937399" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.mingw.lib.debug">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.mingw.lib.debug.option.optimization.level.2026919022" name="Optimization Level" superClass="gnu.c.compiler.mingw.lib.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.mingw.lib.debug.option.debugging.level.2062180279" name="Debug Level" superClass="gnu.c.compiler.mingw.lib.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1700099517" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.mingw.base.2115419983" name="MinGW C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.mingw.base">
+								<option defaultValue="true" id="gnu.c.link.option.shared.1524042253" name="Shared (-shared)" superClass="gnu.c.link.option.shared" valueType="boolean"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base.1450369510" name="MinGW C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.base">
+								<option defaultValue="true" id="gnu.cpp.link.option.shared.1583318080" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.link.option.libs.1107005913" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="openblas"/>
+									<listOptionValue builtIn="false" value="z"/>
+									<listOptionValue builtIn="false" value="gmp"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.409726135" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;C:\install\lib&quot;"/>
+								</option>
+								<option id="gnu.cpp.link.option.flags.1612043291" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.72525662" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+								<outputType id="cdt.managedbuild.tool.gnu.cpp.linker.mingw.so.output.base.955470040" outputPrefix="" superClass="cdt.managedbuild.tool.gnu.cpp.linker.mingw.so.output.base"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/math/FactoryImpl.h" name="FactoryImpl.h" rcbsApplicability="disable" resourcePath="src/math/FactoryImpl.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/neuralnetwork/threshold.h" name="threshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/threshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/neuralnetwork/gaussian.h" name="gaussian.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/gaussian.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/neuralnetwork/treshold.h" name="treshold.h" rcbsApplicability="disable" resourcePath="src/neuralnetwork/treshold.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/chainhash.h" name="chainhash.h" rcbsApplicability="disable" resourcePath="src/chainhash.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.mingw.lib.debug.637547520.478483578.230734507.src/memory_access_timing.h" name="memory_access_timing.h" rcbsApplicability="disable" resourcePath="src/memory_access_timing.h" toolsToInvoke=""/>
+					<sourceEntries>
+						<entry excluding="zlibtest.c|windowstest.cpp|openblastest.c|gmptest.c|cputest.c|blastest.c|tools|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="neuralnetwork/BBRBM.cpp|neuralnetwork/tst/gene_main.cpp|neuralnetwork/tst/pso_main.cpp|neuralnetwork/tst/somtest.cpp|crypto/test|datamining/test|mat_test.cpp|chainhash.h|chainhash.cpp|neuralnetwork/treshold.h|neuralnetwork/threshold.h|neuralnetwork/threshold.cpp|graph|math/FactoryImpl.cpp|math/FactoryImpl.h|math/test_factory.cpp|memory_access_timing.h|memory_access_timing.cpp|neuralnetwork/gaussian.h|neuralnetwork/gaussian.cpp|exceptions|neuralnetwork/hypemain.cpp|neuralnetwork/pca|math/tst|tst|neuralnetwork/SOM/old" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -460,9 +556,14 @@
 		<configuration configurationName="Debug64-lib">
 			<resource resourceType="PROJECT" workspacePath="/dinrhiw2-library"/>
 		</configuration>
+		<configuration configurationName="neuralnetwork-testcases"/>
+		<configuration configurationName="Release64-lib"/>
+		<configuration configurationName="dataset-and-related-testcases"/>
+		<configuration configurationName="datatool-bin"/>
 		<configuration configurationName="Debug">
 			<resource resourceType="PROJECT" workspacePath="/dinrhiw2-library"/>
 		</configuration>
+		<configuration configurationName="nntool-bin"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

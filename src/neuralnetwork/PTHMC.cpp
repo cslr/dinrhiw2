@@ -183,7 +183,7 @@ void PTHMC<T>::parallel_tempering()
 	// on average we try to jump between every 10 samples so we measure
 	// how long it seems take to get 10 samples
 	unsigned int delay = 0;
-	while(hmc[0]->getNumberOfSamples() < 10){
+	while(hmc[0]->getNumberOfSamples() < 10 && running){
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // waits for 100ms
 		delay += 100;
 	}
@@ -230,7 +230,7 @@ void PTHMC<T>::parallel_tempering()
 		// for(auto h : hmc) h->continueSampler();
 
 		if(paused){
-			while(paused){
+			while(paused && running){
 				std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 			}
 		}

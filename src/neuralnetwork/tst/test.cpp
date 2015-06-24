@@ -25,16 +25,22 @@
 #include "deep_ica_network_priming.h"
 
 #include "RBM.h"
+#include "GBRBM.h"
 #include "CRBM.h"
+#include "PSO.h"
+#include "RBMvarianceerrorfunction.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <new>
-
+#include <random>
 
 #include <assert.h>
 #include <string.h>
+
+#undef __STRICT_ANSI__
+#include <float.h>
 
 
 using namespace whiteice;
@@ -236,6 +242,141 @@ void hmc_test()
 
 void rbm_test()
 {
+	std::cout << "GB-RBM UNIT TEST" << std::endl;
+#if 1
+	{
+		_clearfp();
+		unsigned unused_current_word = 0;
+		// clearing the bits unmasks (throws) the exception
+		_controlfp_s(&unused_current_word, 0, _EM_INVALID | _EM_OVERFLOW | _EM_ZERODIVIDE);  // _controlfp_s is the secure version of _controlfp
+	}
+#endif
+
+	// generates test data: a 2d circle with gaussian noise and tests that GB-RBM can correctly learn it
+	{
+		std::cout << "Generating data.." << std::endl;
+
+		std::vector< math::vertex< math::blas_real<double> > > samples;
+		math::vertex< math::blas_real<double> > var;
+
+		var.resize(2);
+		var[0] = 1.0;
+		var[1] = 2.0;
+//		var[2] = 1.0;
+//		var[3] = 2.0;
+//		var[4] = 1.0;
+
+
+		std::default_random_engine generator(time(0));
+		std::uniform_real_distribution<double> unif(0.0,1.0); // Unif [0,1]
+		std::normal_distribution<double> nrm1(0.0,1.0); // N(0,1)
+		std::normal_distribution<double> nrm2(0.0,2.0); // N(0,2)
+
+		{
+			math::vertex< math::blas_real<double> > m, v;
+			m.resize(2);
+			v.resize(2);
+
+			for(unsigned int i=0;i<10000;i++){
+				math::vertex< math::blas_real<double> > s;
+				s.resize(2);
+				double angle = 2.0*M_PI*unif(generator);
+				s[0] = 10.0*cos(angle) + nrm1(generator);
+				s[1] = 10.0*sin(angle) + nrm2(generator);
+//				s[2] = 10.0*cos(angle) + nrm1(generator);
+//				s[3] = 10.0*sin(angle) + nrm2(generator);
+//				s[4] = 10.0*cos(angle) + nrm1(generator);
+
+				samples.push_back(s);
+
+				m += s;
+				for(unsigned int j=0;j<s.size();j++)
+					v[j] += s[j]*s[j];
+			}
+
+			m /= (double)samples.size();
+			v /= (double)samples.size();
+
+			for(unsigned int j=0;j<v.size();j++)
+				v[j] -= m[j]*m[j];
+
+		}
+
+		std::cout << "Learning RBM parameters (variance).." << std::endl;
+		math::vertex< math::blas_real<double> > best_variance;
+#if 1
+		{
+			whiteice::GBRBM< math::blas_real<double> > rbm;
+			rbm.resize(2, 50);
+			rbm.setVariance(var);
+			best_variance = var;
+
+			// rbm.learnWeights(samples, 10, true, false);
+		}
+#endif
+#if 0
+		{
+			whiteice::GBRBM_variance_error_function< math::blas_real<double> > variance_reconstruction_error(samples, 50);
+
+			std::vector<PSO< math::blas_real<double> >::range> r;
+			r.resize(2);
+			r[0].min = -5.0;
+			r[0].max = +5.0;
+			r[1].min = -5.0;
+			r[1].max = +5.0;
+			PSO< math::blas_real<double> > pso(variance_reconstruction_error, r);
+			pso.verbosity(true);
+			pso.minimize(20, 50);
+
+			for(unsigned int i=1;i<10;i++){
+				pso.getBest(best_variance);
+				variance_reconstruction_error.getRealVariance(best_variance);
+
+				std::cout << "Current best variance: " << best_variance << std::endl;
+				pso.improve(20);
+			}
+
+			pso.getBest(best_variance);
+			variance_reconstruction_error.getRealVariance(best_variance);
+
+			std::cout << "Best GBRBM variance: " << best_variance << std::endl;
+		}
+#endif
+
+		whiteice::GBRBM< math::blas_real<double> > rbm;
+		rbm.resize(2, 50);
+		rbm.setVariance(best_variance);
+
+		auto rdata = samples;
+
+		rbm.learnWeights(samples, 100, true, true);
+		rbm.reconstructData(rdata);
+
+		std::cout << "Storing reconstruct results to disk.." << std::endl;
+
+		// stores the results into file for inspection
+		FILE* fp = fopen("gbrbm_input.txt", "wt");
+		for(unsigned int i=0;i<samples.size();i++){
+			for(unsigned int n=0;n<samples[i].size();n++)
+				fprintf(fp, "%f ", samples[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+
+		fp = fopen("gbrbm_output.txt", "wt");
+		for(unsigned int i=0;i<rdata.size();i++){
+			for(unsigned int n=0;n<rdata[i].size();n++)
+				fprintf(fp, "%f ", rdata[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+
+	}
+
+	return;
+
+
+
   std::cout << "RBM TESTS" << std::endl;
   
   // saves and loads machine to and from disk and checks configuration is correct
@@ -329,7 +470,7 @@ void rbm_test()
     std::cout << "W  = " << machine.getWeights() << std::endl;
     std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;
     
-    
+#if 0
     std::cout << "DBN LEARNING TOY PROBLEM.." << std::endl;
 
     std::vector<unsigned int> arch;
@@ -346,7 +487,7 @@ void rbm_test()
       std::cout << "Training DBN failed." << std::endl;
 
     std::cout << "DBN LEARNING TOY PROBLEM.. DONE." << std::endl;
-    
+#endif
 
     
   }
@@ -2230,7 +2371,7 @@ void nnetwork_test()
     {
       whiteice::HMC<> hmc(*nn, data);
 
-      hmc.startSampler(20); // 20 threads (extreme testcase)
+      hmc.startSampler(); // DISABLED: 20 threads (extreme testcase) [HMC currently only supports a single thread]
 
       while(hmc.getNumberOfSamples() < 200){
 	if(hmc.getNumberOfSamples() > 0){
