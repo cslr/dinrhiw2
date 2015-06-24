@@ -28,6 +28,8 @@ GBRBM<T>::GBRBM()
 	h.zero();
 	v.zero();
 
+	ais_rbm.clear();
+
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	generator = new std::default_random_engine (seed);
 	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
@@ -45,6 +47,8 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
+
+	ais_rbm.clear();
 }
 
 // creates 2-layer: V * H network
@@ -63,14 +67,22 @@ GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_ar
     z.resize(visible);
     W.resize(visible, hidden);
 
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	generator = new std::default_random_engine (seed);
+	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
+
+	ais_rbm.clear();
+
     initializeWeights();
 }
 
 template <typename T>
 GBRBM<T>::~GBRBM()
 {
-	delete generator;
-	delete rng;
+	// very careful here.. the child GBRBMs must have zero-sized ais_rbm or this will lead to recursion
+	// if(ais_rbm.size() > 0) ais_rbm.clear();
+	if(generator) delete generator;
+	if(rng) delete rng;
 }
 
 template <typename T>
@@ -83,6 +95,8 @@ GBRBM<T>& GBRBM<T>::operator=(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
+
+	ais_rbm.clear();
 
 	return (*this);
 }
@@ -101,6 +115,8 @@ bool GBRBM<T>::resize(unsigned int visible, unsigned int hidden)
     b.resize(hidden);
     z.resize(visible);
     W.resize(visible, hidden);
+
+    ais_rbm.clear();
 
     initializeWeights();
 
@@ -343,9 +359,10 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	if(samples.size() <= 0)
 		return T(100000.0); // nothing to do
 
-	math::vertex<T> data_mean(z.size());
-	math::vertex<T> data_var(z.size());
 	std::vector< math::vertex<T> > random_samples; // generates random N(data_mean, datavar*I) data to test against
+
+	data_mean.resize(z.size());
+	data_var.resize(z.size());
 
 	// if(verbose)
 	{
@@ -377,15 +394,14 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	std::list<T> errors;
 
 	T error = reconstruct_gbrbm_data_error(samples, 1000, W, a, b, z, CDk);
-
-	errors.push_back(error);
+	auto pratio         = p_ratio(samples, random_samples);
+	errors.push_back(math::exp(pratio));
 
 	if(verbose){
 		math::vertex<T> var;
 
 		T rerror = reconstruct_gbrbm_data_error(random_samples, 1000, W, a, b, z, CDk);
 		auto r_ratio        = (error/rerror);
-		auto pratio         = p_ratio(samples, random_samples);
 		//auto logp           = logProbability(samples);
 
 
@@ -424,18 +440,25 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 		for(unsigned int i=0;i<1000;i++){
 			// goes through data and calculates gradient
-			const unsigned int index = rand() % samples.size();
+			const unsigned int NUM_SAMPLES = 10;
 
-			math::vertex<T> x = samples[index]; // x = visible state
-
+			// negative phase Emodel[gradient]
 			std::vector< math::vertex<T> > vs;
-#if 1
-			pt_sampling(vs, a.size() > b.size() ? a.size() : b.size(),
-					data_mean, data_var); // gets (v) from the model
-#else
-			auto xx = reconstruct_gbrbm_data(x, W, a, b, z, CDk); // gets x ~ p(v) from the model
-			vs.push_back(xx);
-#endif
+
+			// randomly chooses negative samples either usin AIS or CD-1
+			if((rand() & 1) == 1){
+				ais_sampling(vs, NUM_SAMPLES, data_mean, data_var); // gets (v) from the model
+			}
+			else{
+				for(unsigned int j=1;j<NUM_SAMPLES;j++){
+					const unsigned int index = rand() % samples.size();
+					math::vertex<T> x = samples[index]; // x = visible state
+
+					auto xx = reconstruct_gbrbm_data(x, W, a, b, z, CDk); // gets x ~ p(v) from the model
+					vs.push_back(xx);
+				}
+			}
+
 			math::vertex<T> da(a.size());
 			math::vertex<T> db(b.size());
 			math::vertex<T> dz(z.size());
@@ -490,71 +513,65 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			dz /= T(vs.size());
 			dW /= T(vs.size());
 
-#if 0
-			x = reconstruct_gbrbm_data(x, W, a, b, z, CDk); // gets x ~ p(v) from the model
+			// calculates gradients [positive phase]: Edata[gradient]
+			math::vertex<T> ta(a.size());
+			math::vertex<T> tb(b.size());
+			math::vertex<T> tz(z.size());
+			math::matrix<T> tW(W.ysize(), W.xsize());
 
-			math::vertex<T> var(z.size());
-			math::vertex<T> varx(z.size());
+			// needed?
+			ta.zero();
+			tb.zero();
+			tz.zero();
+			tW.zero();
 
-			for(unsigned int j=0;j<z.size();j++){
-				var[j] = math::exp(-z[j]);
-				varx[j] = var[j]*x[j];
+
+			for(unsigned int j=0;j<NUM_SAMPLES;j++)
+			{
+				const unsigned int index = rand() % samples.size();
+				math::vertex<T> x = samples[index]; // x = visible state
+
+				auto xa = (x - a);
+
+				for(unsigned int j=0;j<var.size();j++)
+					varx[j] = math::exp(-z[j]/T(2.0))*x[j];
+
+				math::vertex<T> y; // y = hidden state
+				sigmoid( (varx * W) + b, y);
+
+				for(unsigned int j=0;j<x.size();j++)
+					ta[j] += var[j]*xa[j];
+
+				tb += y;
+				tW += varx.outerproduct(y);
+
+				auto wy = W*y;
+				for(unsigned int j=0;j<z.size();j++){
+					tz[j] += math::exp(-z[j])*T(0.5)*xa[j]*xa[j] - math::exp(-z[j]/T(2.0))*T(0.5)*x[j]*wy[j];
+				}
 			}
 
-			math::vertex<T> y; // y = hidden state
-			sigmoid( (varx * W) + b, y);
+			ta /= T(NUM_SAMPLES);
+			tb /= T(NUM_SAMPLES);
+			tz /= T(NUM_SAMPLES);
+			tW /= T(NUM_SAMPLES);
 
-			// calculates gradients [negative phase]
-			math::vertex<T> xa(x - a);
-			math::vertex<T> ga(xa); // gradient of a
 
-			for(unsigned int j=0;j<ga.size();j++)
-				ga[j] = var[j]*ga[j];
-
-			math::vertex<T> gb(y); // gradient of b
-			math::matrix<T> gW = varx.outerproduct(y); // gradient of W
-
-			math::vertex<T> gz(z.size()); // gradient of z
-
-			math::vertex<T> wy = W*y;
-
-			for(unsigned int j=0;j<z.size();j++)
-				gz[j] = var[j]*(T(0.5)*xa[j]*xa[j] - x[j]*wy[j]);
-#endif
-
-			// calculates gradients [positive phase]
-			x = samples[index];
-			auto xa = (x - a);
-
-			for(unsigned int j=0;j<var.size();j++)
-				varx[j] = math::exp(-z[j]/T(2.0))*x[j];
-
-			math::vertex<T> y; // y = hidden state
-			sigmoid( (varx * W) + b, y);
-
-			for(unsigned int j=0;j<x.size();j++)
-				da[j] = var[j]*xa[j] - da[j];
-
-			db = y - db;
-			dW = varx.outerproduct(y) - dW;
-
-			auto wy = W*y;
-			for(unsigned int j=0;j<z.size();j++){
-				dz[j] = math::exp(-z[j])*T(0.5)*xa[j]*xa[j] - math::exp(-z[j]/T(2.0))*T(0.5)*x[j]*wy[j] - dz[j];
-				// dz[j] = var[j]*(T(0.5)*xa[j]*xa[j] - x[j]*wy[j]) - dz[j];
-			}
+			auto ga = ta - da;
+			auto gb = tb - db;
+			auto gz = tz - dz;
+			auto gW = tW - dW;
 
 			if(learnVariance == false)
-				dz.zero();
-
+				gz.zero();
 
 			// now we have gradients
 			{
 #if 1
-				a = a + lrate*da;
-				b = b + lrate*db;
-				z = z + lrate*dz;
-				W = W + lrate*dW;
+				a = a + lrate*ga;
+				b = b + lrate*gb;
+				z = z + lrate*gz;
+				W = W + lrate*gW;
 #else
 				// we test different learning rates and pick the one that gives smallest error
 				math::vertex<T> a1 = a + T(1.0)*lrate*da;
@@ -615,6 +632,9 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			// check for convergence
 			if(errors.size() > 2){
+				while(errors.size() > 10)
+					errors.pop_front(); // only keeps 10 last epoch samples
+
 				auto me = T(0.0);
 				auto ve = T(0.0);
 
@@ -629,9 +649,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				auto statistic = sqrt(ve)/me;
 
-				std::cout << "CONVERGENCE: " << statistic << std::endl;
-
-				if(statistic <= T(0.5)) // st.dev. is 5% of the mean
+				if(statistic <= T(0.10)) // st.dev. is 10% of the mean
 					convergence = true;
 			}
 
@@ -724,6 +742,19 @@ T GBRBM<T>::logProbability(const std::vector< math::vertex<T> >& samples)
 }
 
 
+template <typename T>
+bool GBRBM<T>::sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples)
+{
+	if(data_mean.size() != data_var.size())
+		return false;
+
+	if(data_mean.size() != z.size())
+		return false;
+
+	ais_sampling(samples, SAMPLES, data_mean, data_var);
+}
+
+
 ////////////////////////////////////////////////////////////
 
 // load & saves RBM data from/to file
@@ -774,24 +805,24 @@ void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) co
 
 // generates SAMPLES {v,h}-samples from p(v,h|params) using AIS
 template <typename T>
-void GBRBM<T>::pt_sampling(std::vector< math::vertex<T> >& vs, const unsigned int SAMPLES,
+void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned int SAMPLES,
 		const math::vertex<T>& m, const math::vertex<T>& s)
 {
-	// parallel tempering RBM stack
-	std::vector< GBRBM<T> > rbm;
 	std::vector< math::vertex<T> > v, h;
-
-	const unsigned int NTemp = 100; // number of different temperatures
 
 	math::vertex<T> vz(z.size());
 	for(unsigned int i=0;i<vz.size();i++)
 		vz[i] = math::exp(z[i]); // sigma^2
 
-	rbm.resize(NTemp);
+	if(ais_rbm.size() != NTemp){
+		ais_rbm.resize(NTemp);
+		for(unsigned int i=0;i<NTemp;i++)
+			ais_rbm[i].resize(this->getVisibleNodes(), this->getHiddenNodes());
+	}
+
 	for(unsigned int i=0;i<NTemp;i++){
 		const T beta = T(i/((double)(NTemp - 1)));
-		rbm[i].resize(this->getVisibleNodes(), this->getHiddenNodes());
-		rbm[i].setParameters(beta*W,  beta*a + (T(1.0)-beta)*m, beta*b, beta*vz + (T(1.0)-beta)*s);
+		ais_rbm[i].setParameters(beta*W,  beta*a + (T(1.0)-beta)*m, beta*b, beta*vz + (T(1.0)-beta)*s);
 	}
 
 
@@ -806,11 +837,13 @@ void GBRBM<T>::pt_sampling(std::vector< math::vertex<T> >& vs, const unsigned in
 
 			for(unsigned int j=1;j<(NTemp-1);j++){
 				// T(v,v') transition operation
-				rbm[j].sampleHidden(hh, vv);
-				rbm[j].sampleVisible(vv, hh);
+				ais_rbm[j].sampleHidden(hh, vv);
+				ais_rbm[j].sampleVisible(vv, hh);
 			}
 
-			vs.push_back(vv);
+			{
+				vs.push_back(vv);
+			}
 		}
 
 	}

@@ -73,6 +73,9 @@ public:
     // estimates log(P(samples|params)) of the RBM
     T logProbability(const std::vector< math::vertex<T> >& samples);
 
+    // samples given number of samples from P(v|params) [GBRBM must have been trained or the call fails!]
+    bool sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples);
+
     ////////////////////////////////////////////////////////////
 
     // load & saves RBM data from/to file
@@ -82,7 +85,7 @@ public:
 
 protected:
     // generates SAMPLES {v,h}-samples from p(v,h|params) using Gibbs sampling (CD) and parallel tempering
-    void pt_sampling(std::vector< math::vertex<T> >& vs, const unsigned int SAMPLES,
+    void ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned int SAMPLES,
     		const math::vertex<T>& m, const math::vertex<T>& s);
 
     // parallel tempering annealed importance sampling estimation of logZ and samples v from distribution p(v)
@@ -130,6 +133,14 @@ private:
     // input/output vectors of GB-RBM network
     math::vertex<T> h;
     math::vertex<T> v;
+
+
+	// AIS RBM stack
+	std::vector< GBRBM<T> > ais_rbm; // need to use pointer in order to prevent calling of ctor until we really want... [not really]
+	const unsigned int NTemp = 100; // number of different temperatures (values below <100, or below 10 do not work very well)..
+
+	math::vertex<T> data_mean;
+	math::vertex<T> data_var;
 
 
     mutable std::default_random_engine* generator;

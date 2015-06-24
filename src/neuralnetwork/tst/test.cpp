@@ -350,7 +350,9 @@ void rbm_test()
 		auto rdata = samples;
 
 		rbm.learnWeights(samples, 100, true, true);
-		rbm.reconstructData(rdata);
+		rdata.clear();
+		rbm.sample(1000, rdata); // samples directly from P(v) ..
+		// rbm.reconstructData(rdata);
 
 		std::cout << "Storing reconstruct results to disk.." << std::endl;
 
