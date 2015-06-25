@@ -390,8 +390,11 @@ namespace whiteice
     	// q = location, p = momentum, H(q,p) = hamiltonian
     	math::vertex<T> p; // q is global and defined in HMC class
 
-    	nnet.exportdata(q); // initial position q
-    	                    // (from the input nnetwork weights)
+    	{
+    		std::lock_guard<std::mutex> lock(updating_sample);
+    		nnet.exportdata(q); // initial position q
+    		                    // (from the input nnetwork weights)
+    	}
 
     	p.resize(q.size()); // momentum is initially zero
     	p.zero();

@@ -10,14 +10,14 @@
 namespace whiteice {
 
 template <typename T>
-HMC_GBRBM<T>::HMC_GBRBM(const std::vector< math::vertex<T> >& samples_, unsigned int numHiddenNodes, bool adaptive) :
-	HMC_abstract<T>(adaptive), samples(samples_)
+HMC_GBRBM<T>::HMC_GBRBM(const std::vector< math::vertex<T> >& data_, unsigned int numHiddenNodes, bool storeSamples, bool adaptive) :
+	HMC_abstract<T>(storeSamples, adaptive), data(data_)
 {
-	if(samples.size() > 0 && numHiddenNodes > 0){
-		rbm.resize(samples[0].size(), numHiddenNodes);
+	if(data.size() > 0 && numHiddenNodes > 0){
+		rbm.resize(data[0].size(), numHiddenNodes);
 	}
 
-	rbm.setUData(samples);
+	rbm.setUData(data);
 	this->setTemperature(T(1.0));
 }
 
@@ -46,24 +46,38 @@ bool HMC_GBRBM<T>::setTemperature(T temperature) // temperature must be in [0,1]
 	}
 }
 
+
+template <typename T>
+T HMC_GBRBM<T>::getTemperature()
+{
+	return rbm.getUTemperature();
+}
+
+
 // probability functions for hamiltonian MC sampling of
 // P ~ exp(-U(q)) distribution
 template <typename T>
 T HMC_GBRBM<T>::U(const math::vertex<T>& q) const
 {
-	if(samples.size() > 0)
+	if(data.size() > 0){
 		return rbm.U(q);
-	else
+	}
+	else{
+		std::cout << "HMC_GBRBM:U() error: data.size() == 0" << std::endl;
 		return T(INFINITY); // P = 0
+	}
 }
 
 
 template <typename T>
 math::vertex<T> HMC_GBRBM<T>::Ugrad(const math::vertex<T>& q)
 {
-	if(samples.size() > 0)
+	if(data.size() > 0){
 		return rbm.Ugrad(q);
+	}
 	else{
+		std::cout << "HMC_GBRBM:U() error: data.size() == 0" << std::endl;
+
 		math::vertex<T> g(rbm.qsize());
 		g.zero();
 		return g;

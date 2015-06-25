@@ -10,13 +10,14 @@
 
 #include "HMC_abstract.h"
 #include "GBRBM.h"
+#include "vertex.h"
 
 namespace whiteice {
 
-template <typename T = math::blas_real<float> >
-class HMC_GBRBM: public HMC_abstract<T> {
+template <typename T = whiteice::math::blas_real<float> >
+class HMC_GBRBM: public whiteice::HMC_abstract<T> {
 public:
-	HMC_GBRBM(const std::vector< math::vertex<T> >& samples, unsigned int numHiddenNodes, bool adaptive=false);
+	HMC_GBRBM(const std::vector< math::vertex<T> >& data_, unsigned int numHiddenNodes, bool storeSamples, bool adaptive=false);
 	virtual ~HMC_GBRBM();
 
 	GBRBM<T>& getRBM() throw();
@@ -25,6 +26,8 @@ public:
 	// 0 = means most freely changing parameters and RBM is just N(m, S) machine
 	// 1 = means to fit into data as well as possible and RBM is non-linear P(v) estimator
 	bool setTemperature(T temperature);
+
+	T getTemperature();
 
     // probability functions for hamiltonian MC sampling of
     // P ~ exp(-U(q)) distribution
@@ -35,7 +38,7 @@ public:
     virtual void starting_position(math::vertex<T>& q) const;
 
 protected:
-    const std::vector< math::vertex<T> >& samples;
+    const std::vector< math::vertex<T> >& data;
 
     GBRBM<T> rbm;
 

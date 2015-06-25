@@ -27,6 +27,7 @@
 #include "RBM.h"
 #include "GBRBM.h"
 #include "HMCGBRBM.h"
+#include "PTHMCGBRBM.h"
 #include "CRBM.h"
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
@@ -245,7 +246,7 @@ void hmc_test()
 void rbm_test()
 {
 	std::cout << "GB-RBM UNIT TEST" << std::endl;
-#if 1
+#if 0
 	{
 		_clearfp();
 		unsigned unused_current_word = 0;
@@ -309,19 +310,26 @@ void rbm_test()
 
 		// tests HMC sampling
 		{
-			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true); // adaptive step length
+			// adaptive step length
+			std::cout << "data size: " << samples.size() << std::endl;
 
-			hmc.setTemperature(1.0);
+			// whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
+			// hmc.setTemperature(1.0);
+
+			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(100, samples, 50, true);
 
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();
 
 			std::vector< math::vertex< math::blas_real<double> > > starting_data;
 			std::vector< math::vertex< math::blas_real<double> > > current_data;
-			math::blas_real<double> logP0;
+			math::blas_real<double> min_error = INFINITY;
+			int last_checked_index = 0;
+
+			// detect NaNs !!!
 
 			while(1){
-				sleep(5);
+				sleep(1);
 				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
 				if(hmc.getNumberOfSamples() > 0){
 					std::vector< math::vertex< math::blas_real<double> > > qsamples;
@@ -331,20 +339,34 @@ void rbm_test()
 					// calculate something using the samples..
 					// [get the most recent sample and try to calculate log probability]
 
-					if(starting_data.size() <= 0 && qsamples.size() > 0){
-						// hmc.getRBM().setParametersQ(qsamples[0]);
-						// error0 =  GBRBM<T>::reconstructError(samples);
-						// hmc.getRBM().sample(1000, starting_data, samples);
-						// logP0 = hmc.getRBM().logProbability(starting_data);
-					}
-
 					if(qsamples.size() > 1){
-						hmc.getRBM().setParametersQ(qsamples[qsamples.size()-1]);
 						// hmc.getRBM().sample(1000, current_data, samples);
-						// math::blas_real<double> logP = hmc.getRBM().logProbability(current_data);
-						math::blas_real<double> error = hmc.getRBM().reconstructError(samples);
+						math::blas_real<double> mean = 0.0;
 
-						std::cout << "HMC-GBRBM R: " << error << std::endl;
+						last_checked_index = qsamples.size() - 100;
+						if(last_checked_index < 0) last_checked_index = 0;
+
+#pragma omp parallel for
+						for(int s=last_checked_index;s < (signed)qsamples.size();s++){
+							GBRBM< math::blas_real<double> > rbm = hmc.getRBM();
+							rbm.setParametersQ(qsamples[s]);
+							auto e = rbm.reconstructError(samples);
+#pragma omp critical
+							{
+#if 0
+								if(e < min_error)
+									min_error = e;
+#else
+								mean += e;
+#endif
+							}
+						}
+
+						mean /= (qsamples.size() - last_checked_index);
+
+						last_checked_index = qsamples.size();
+
+						std::cout << "HMC-GBRBM E[error]: " << mean << std::endl;
 					}
 				}
 

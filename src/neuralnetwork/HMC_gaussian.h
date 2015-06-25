@@ -29,6 +29,10 @@ namespace whiteice
     HMC_gaussian(unsigned int dimension);
     ~HMC_gaussian();
     
+    virtual bool setTemperature(const T t);
+    virtual T getTemperature();
+
+
     // probability functions for hamiltonian MC sampling of
     // P ~ exp(-U(q)) distribution
     T U(const math::vertex<T>& q) const;

@@ -6,11 +6,10 @@ namespace whiteice
 {
 
   template <typename T>
-  HMC_gaussian<T>::HMC_gaussian(unsigned int dimension)
+  HMC_gaussian<T>::HMC_gaussian(unsigned int dimension) :
+  	  HMC_abstract<T>(true, true) // store samples, adaptive
   {    
     this->dimension = dimension;
-
-    this->adaptive = true; // we test gaussian adaptive criteria here
   }
 
   template <typename T>
@@ -18,6 +17,18 @@ namespace whiteice
   {
   }
   
+  template <typename T>
+  bool HMC_gaussian<T>::setTemperature(const T t)
+  {
+	  return false; // temperature is not supported
+  }
+
+  template <typename T>
+  T HMC_gaussian<T>::getTemperature()
+  {
+	  return T(1.0); // maximum value (minimum degress of freedom, minimum temperature)
+  }
+
   // probability functions for hamiltonian MC sampling of
   // P ~ exp(-U(q)) distribution
   template <typename T>

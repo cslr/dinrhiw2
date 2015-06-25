@@ -1,61 +1,51 @@
 /*
- * PTHMC.cpp
+ * PTHMCabstract.cpp
  *
- *  Created on: 18.6.2015
+ *  Created on: 25.6.2015
  *      Author: Tomas
  */
 
-#include "PTHMC.h"
-#include <mutex>
-
-#include <exception>
-#include <stdexcept>
-
-#include <thread>
-#include <chrono>
-
-
+#include "PTHMCabstract.h"
+#include "vertex.h"
 
 namespace whiteice {
 
 template <typename T>
-PTHMC<T>::PTHMC(unsigned int deepness, const whiteice::nnetwork<T>& net_, const whiteice::dataset<T>& ds_,
-		bool adaptive_, T alpha_) : net(net_), ds(ds_), adaptive(adaptive_), alpha(alpha_)
+PTHMC_abstract<T>::PTHMC_abstract(unsigned int deepness_, bool adaptive_) :
+	deepness(deepness_), adaptive(adaptive_)
 {
-	// sets used temperatures according to deepness T(k) = 2**k
-
-	for(unsigned int k=0;k<deepness;k++)
-		temperature.push_back(math::pow(T(1.25), T(k)));
-
-	// 1.10 gives accept rate of 70% with a testcase
-	// 1.25 gives accept rate of 45% with a testcase
-	// 1.50 gives accept rate of <30%
-
+	parallel_tempering_thread = nullptr;
 	running = false;
 	paused  = false;
-	parallel_tempering_thread = nullptr;
+
+	accepts = 0.0;
+	total_tries = 0.0;
 }
 
+
 template <typename T>
-PTHMC<T>::~PTHMC(){
+PTHMC_abstract<T>::~PTHMC_abstract()
+{
 	stopSampler(); // if needed
 }
 
+
 template <typename T>
-bool PTHMC<T>::startSampler()
+bool PTHMC_abstract<T>::startSampler()
 {
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(running) return false; // already running
 
-	for(auto h : hmc)
-		delete h;
 	hmc.clear();
 
 	try{
 
-		for(unsigned int i=0;i<temperature.size();i++){
-			HMC<T>* h = new HMC<T>(net, ds, adaptive, alpha, i == 0); // only store samples of the "bottom" sampler [no temperature]
-			h->setTemperature(temperature[i]);
+		for(unsigned int i=0;i<deepness;i++){
+			T temperature = T(((double)i)/((double)(deepness-1)));
+			bool storeSamples = (i==0);
+			// only store samples of the "bottom" sampler [no temperature]
+			auto h = newHMC(storeSamples, adaptive);
+			h->setTemperature(temperature);
 			hmc.push_back(h);
 		}
 
@@ -64,11 +54,6 @@ bool PTHMC<T>::startSampler()
 				throw std::runtime_error("Cannot start sampler");
 	}
 	catch(std::exception& e){
-		for(auto h : hmc){
-			h->stopSampler();
-			delete h;
-		}
-
 		hmc.clear();
 
 		return false;
@@ -81,19 +66,17 @@ bool PTHMC<T>::startSampler()
 		parallel_tempering_thread = new std::thread(parallel_tempering, this);
 	}
 	catch(std::exception& e){
-		for(auto h : hmc){
-			h->stopSampler();
-			delete h;
-		}
-
 		hmc.clear();
+		parallel_tempering_thread = nullptr;
 	}
 
 	return true;
 }
 
+
 template <typename T>
-bool PTHMC<T>::pauseSampler(){
+bool PTHMC_abstract<T>::pauseSampler()
+{
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(hmc.size() <= 0) return false; // not running
 
@@ -108,8 +91,10 @@ bool PTHMC<T>::pauseSampler(){
 	return ok;
 }
 
+
 template <typename T>
-bool PTHMC<T>::continueSampler(){
+bool PTHMC_abstract<T>::continueSampler()
+{
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(hmc.size() <= 0) return false; // not running
 
@@ -124,8 +109,10 @@ bool PTHMC<T>::continueSampler(){
 	return ok;
 }
 
+
 template <typename T>
-bool PTHMC<T>::stopSampler(){
+bool PTHMC_abstract<T>::stopSampler()
+{
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(hmc.size() <= 0) return false; // not running
 
@@ -134,7 +121,6 @@ bool PTHMC<T>::stopSampler(){
 
 	for(auto h : hmc){
 		h->stopSampler();
-		delete h;
 	}
 
 	hmc.clear();
@@ -146,36 +132,52 @@ bool PTHMC<T>::stopSampler(){
 	return true;
 }
 
+
 template <typename T>
-unsigned int PTHMC<T>::getSamples(std::vector< math::vertex<T> >& samples) const{
+unsigned int PTHMC_abstract<T>::getSamples(std::vector< math::vertex<T> >& samples) const
+{
+	std::lock_guard<std::mutex> lock(sampler_lock);
+	if(hmc.size() <= 0) return 0; // not running
+
 	return hmc[0]->getSamples(samples);
 }
 
+
 template <typename T>
-unsigned int PTHMC<T>::getNumberOfSamples() const{
+unsigned int PTHMC_abstract<T>::getNumberOfSamples() const
+{
+	std::lock_guard<std::mutex> lock(sampler_lock);
+	if(hmc.size() <= 0) return 0; // not running
+
 	return hmc[0]->getNumberOfSamples();
 }
 
+
+// returns lowest level sampler (real sampler with no temperature)
 template <typename T>
-bool PTHMC<T>::getNetwork(bayesian_nnetwork<T>& bnn){
-	return hmc[0]->getNetwork(bnn);
+const HMC_abstract<T>& PTHMC_abstract<T>::getHMC() const
+{
+	std::lock_guard<std::mutex> lock(sampler_lock);
+	if(hmc.size() <= 0)
+		throw std::logic_error("No root level HMC");
+
+	return *(hmc[0]);
 }
 
+
 template <typename T>
-math::vertex<T> PTHMC<T>::getMean() const{
+math::vertex<T> PTHMC_abstract<T>::getMean() const
+{
+	std::lock_guard<std::mutex> lock(sampler_lock);
+	if(hmc.size() <= 0)
+		throw std::logic_error("No root level HMC");
+
 	return hmc[0]->getMean();
 }
 
 
 template <typename T>
-T PTHMC<T>::getMeanError(unsigned int latestN) const
-{
-	return hmc[0]->getMeanError(latestN);
-}
-
-
-template <typename T>
-void PTHMC<T>::parallel_tempering()
+void PTHMC_abstract<T>::parallel_tempering()
 {
 	double hz = 1.0;
 	unsigned int ms = (unsigned int)(1000.0/hz);
@@ -206,13 +208,13 @@ void PTHMC<T>::parallel_tempering()
 			hmc[i]->getCurrentSample(w1);
 			hmc[i-1]->getCurrentSample(w2);
 
-			const T T1 = temperature[i];
-			const T T2 = temperature[i-1];
+			T E11 = (hmc[i]->U(w1));
+			T E22 = (hmc[i-1]->U(w2));
+			T E12 = (hmc[i]->U(w2));
+			T E21 = (hmc[i-1]->U(w1));
 
-			T E1 = T1 * (hmc[i]->U(w1, false));
-			T E2 = T2 * (hmc[i-1]->U(w2, false));
 
-			T p = math::exp( (E1 - E2)*(T(1.0)/T1 - T(1.0)/T2) );
+			T p = math::exp( (E11 + E22) - (E12 - E21) );
 
 			if(T(rand()/(double)RAND_MAX) < p){
 				accepts++;
@@ -241,16 +243,14 @@ void PTHMC<T>::parallel_tempering()
 			std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 		}
 	}
+
 }
 
 
+template class PTHMC_abstract< float >;
+template class PTHMC_abstract< double >;
+template class PTHMC_abstract< math::blas_real<float> >;
+template class PTHMC_abstract< math::blas_real<double> >;
+
+
 } /* namespace whiteice */
-
-
-namespace whiteice
-{
-	template class PTHMC< float >;
-	template class PTHMC< double >;
-	template class PTHMC< math::blas_real<float> >;
-	template class PTHMC< math::blas_real<double> >;
-};

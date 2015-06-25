@@ -81,4 +81,31 @@ that DO NOT belong to this library. They will be removed slowly
 before 1.0 release. (cleanup the code)
 
 
-Tomas Ukkonen <tomas.ukkonen@iki.fi>
+
+PLAN / TECHNOLOGY ROADMAP
+-------------------------
+
+Version 1
+
+L-BFGS code for feedforward network and bayesian neural network with sampling
+OpenBLAS
+
+Version 2
+
+Stacked RBMs (GB-RBM + BB-RBMs) using PT-HMC sampling and L-BFGS finetuning + 
+HMC bayesian neural network for local mode uncertainty estimation (variance).
+OpenCL BLAS (GPU accelerated)
+
+Version 3
+
+Recurrent neural networks (stateful networks) and differential equations 
+(a kind of recurrent structure). Causal bayesian networks solver. 
+Variational bayesian inference stuff.
+FPGA, Cloud computing (Google)
+
+Version 4
+
+BIG DATA and scaling to real world size picures etc.
+Rewrite using highly parallel functional programming language (Haskell)
+Web user interface?
+

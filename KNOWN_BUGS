@@ -1,7 +1,6 @@
 
-Code is only tested and known to compile on Debian/Linux (amd64).
-It has been reported to work on Cygwin32 bit platform.
-It currently does NOT work on MinGW32/win32 platform, maybe because of compiler bugs(?).
+Code is only tested and known to compile on Debian/Linux (amd64) and 
+Windows 64bit platform. Minimal testing has been done on Intel 32bit plaforms.
 
 * neural network code: nnetwork has some bugs(?),
   valgrind everything (testcases) and RECHECK/REREAD nnetwork code carefully.
@@ -22,11 +21,6 @@ It currently does NOT work on MinGW32/win32 platform, maybe because of compiler 
 
 * nntool requires intel or amd (IA32, AMD64) cpu platforms as
   some parts of the code uses native CPUID or other instructions.
-
-* IMPORTANT: reading (and writing) dataset files FAILs on MinGW/Win32 platform:
-    - does not happen on Cygwin32 so it seems this is a compiler bug (gcc)?
-    - or a strange data access error. run valgrind on 32bit linux platform
-      (create a VM machine)
 
 * realnumber (arbitrary precision math): sin() and cos() function calls fail
   as they are not implemented.

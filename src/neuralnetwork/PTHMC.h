@@ -15,7 +15,7 @@
 namespace whiteice {
 
 /**
- * Parallel Tempering HMC
+ * Parallel Tempering HMC for feedforward neural networks (HMC)
  */
 template < typename T=whiteice::math::blas_real<float> >
 class PTHMC {

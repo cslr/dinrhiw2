@@ -49,6 +49,10 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 	this->h = rbm.h;
 
 	ais_rbm.clear();
+
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	generator = new std::default_random_engine (seed);
+	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
 }
 
 // creates 2-layer: V * H network
@@ -831,6 +835,13 @@ bool GBRBM<T>::setUTemperature(const T temperature){ // sets temperature of the 
 	this->temperature = temperature;
 }
 
+
+template <typename T>
+T GBRBM<T>::getUTemperature()
+{
+	return temperature;
+}
+
 template <typename T>
 unsigned int GBRBM<T>::qsize() const throw() // size of q vector q = [a, b, z, vec(W)]
 {
@@ -878,7 +889,7 @@ bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 template <typename T>
 T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
 {
-	const unsigned int NUMUSAMPLES = 100;
+	const unsigned int NUMUSAMPLES = 1;
 	T u = T(INFINITY); // error: zero probability: P = exp(-u) = exp(-INFINITY)
 
 	try{
@@ -939,7 +950,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 template <typename T>
 whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
 {
-	const unsigned int NUMUSAMPLES = 100;
+	const unsigned int NUMUSAMPLES = 1;
 	whiteice::math::vertex<T> grad(this->qsize());
 	grad.zero();
 
@@ -1105,7 +1116,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			gW.save_to_vertex(grad, ga.size()+gb.size()+gz.size());
 		}
 
-		return grad;
+		return (-grad);
 	}
 	catch(std::exception& e){
 		std::cout << "ERROR: GBRBM::Ugrad: unexpected exception: " << e.what() << std::endl;

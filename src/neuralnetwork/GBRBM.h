@@ -90,7 +90,10 @@ public:
     // set data points parameters for U(q) and Ugrad(q) calculations
     bool setUData(const std::vector< math::vertex<T> >& samples);
 
-    bool setUTemperature(const T temperature); // sets temperature of the U(q) distribution.. As described in Cho et. al paper
+    // sets temperature of the GB-RBM U(q) distribution.. As described in Cho et. al (2011) paper
+    // 1 means we use RBM and 0 means most degrees of freedom [do not follow RBM parameters]
+    bool setUTemperature(const T temperature);
+    T getUTemperature();
 
     unsigned int qsize() const throw(); // size of q vector q = [a, b, z, vec(W)]
 

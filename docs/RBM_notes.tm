@@ -186,8 +186,10 @@
   Parameters of the distribution are optimized using gradient descent
   algorithm (maximum likelihood method) so it is important to calculate
   actual derivates of <math|p<around|(|v|)>> for Bernoulli-Bernoulli RBM.
+  (Also note that gradients are needed by approximative second order methods
+  like L-BFGS).
 
-  First we further simplify the <math|F<around|(|v|)>> term
+  First we further simplify the <math|F<around|(|v|)>> terms
 
   <math|F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|B*B><around|(|v,h|)>>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>v*+b|)><rsup|T>h>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<big|sum><rsub|i,j>h<rsub|i><around|(|v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>>
 
@@ -769,6 +771,42 @@
   we get regularized gradients.
 
   \;
+
+  \;
+
+  <with|font-series|bold|Abrasax Predictions>
+
+  Product: Accura Deepnet (software)
+
+  Version 1
+
+  L-BFGS code for feedforward network and bayesian neural network with
+  sampling
+
+  Hardware/Software: OpenBLAS.
+
+  Version 2
+
+  Stacked RBMs (GB-RBM + BB-RBM) using PT-HMC sampling and L-BFGS finetuning
+  optimization + HMC bayesian neural network for local mode uncertainty
+  estimation.
+
+  Hardware/Software: OpenCL BLAS, R/Octave/RapidMiner integration.
+
+  Version 3
+
+  Recurrent neural networks (stateful networks) and differential equations
+  (kind of recurrent structure) solver. Causal bayesian network solver.
+  Variational bayesian inference stuff.
+
+  Hardware/Software: FPGA, Cloud computing (Google).
+
+  Version 4
+
+  BIG DATA and scaling to real world size pictures..
+
+  Hardware/Software: rewrite using highly parallel functional programming
+  language Haskell? Web user interface.
 
   \;
 </body>

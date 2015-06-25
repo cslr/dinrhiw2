@@ -9,81 +9,95 @@
 #define HMC_abstract_h
 
 #include <vector>
-#include <pthread.h>
 #include <unistd.h>
 
 #include "vertex.h"
 #include "matrix.h"
 #include "dinrhiw_blas.h"
 
+#include <thread>
+#include <mutex>
+#include <chrono>
+
 
 namespace whiteice
 {
+	template <typename T = math::blas_real<float> >
+	class HMC_abstract
+	{
+    	public:
+		HMC_abstract(bool storeSamples, bool adaptive=false);
+		~HMC_abstract();
 
-  template <typename T = math::blas_real<float> >
-  class HMC_abstract
-  {
-    public:
-    HMC_abstract(bool adaptive=false);
-    ~HMC_abstract();
-    
-    // probability functions for hamiltonian MC sampling of
-    // P ~ exp(-U(q)) distribution
-    virtual T U(const math::vertex<T>& q) const = 0;
-    virtual math::vertex<T> Ugrad(const math::vertex<T>& q) = 0;
+		// set "temperature" for probability distribution [used in sampling/training]
+		// [t = 1 => no (low) temperature]
+		// [t = 0 => high temperature (high degrees of freedom)]
+		virtual bool setTemperature(const T t) = 0;
 
-    // a starting point q for the sampler (may not be random)
-    virtual void starting_position(math::vertex<T>& q) const = 0;
-    
-    bool startSampler();
-    bool pauseSampler();
-    bool continueSampler();
-    bool stopSampler();
-    
-    unsigned int getSamples(std::vector< math::vertex<T> >& samples) const;
-    unsigned int getNumberOfSamples() const;
-    
-    math::vertex<T> getMean() const;
-    // math::matrix<T> getCovariance() const;
+		// get "temperature" of probability distribution
+		virtual T getTemperature() = 0;
 
-    // calculates mean error for the latest N samples, 0 = all samples
-    T getMeanError(unsigned int latestN = 0) const;
+		// probability functions for hamiltonian MC sampling of
+		// P ~ exp(-U(q)) distribution
+		virtual T U(const math::vertex<T>& q) const = 0;
+		virtual math::vertex<T> Ugrad(const math::vertex<T>& q) = 0;
 
-    bool getAdaptive() const throw(){ return adaptive; }
+		// a starting point q for the sampler (may not be random)
+		virtual void starting_position(math::vertex<T>& q) const = 0;
 
-  protected:
+		bool startSampler();
+		bool pauseSampler();
+		bool continueSampler();
+		bool stopSampler();
 
-    bool adaptive;
+		unsigned int getSamples(std::vector< math::vertex<T> >& samples) const;
+		unsigned int getNumberOfSamples() const;
+
+		// gets the latest sample or sets the next sample of the sampling process [sampling point]
+		bool getCurrentSample(math::vertex<T>& q);
+		bool setCurrentSample(const math::vertex<T>& q);
+
+		math::vertex<T> getMean() const;
+		// math::matrix<T> getCovariance() const;
+
+		// calculates mean error for the latest N samples, 0 = all samples
+		T getMeanError(unsigned int latestN = 0) const;
+
+		bool getAdaptive() const throw(){ return adaptive; }
+
+    	private:
+
+		bool adaptive;
+
+		bool storeSamples;
+		std::vector< math::vertex<T> > samples;
+
+		math::vertex<T> q;
+		mutable std::mutex updating_sample;
     
-  private:
-    std::vector< math::vertex<T> > samples;
-    
-    // used to calculate statistics when needed
-    math::vertex<T> sum_mean;
-    // math::matrix<T> sum_covariance;
-    unsigned int sum_N;
+		// used to calculate statistics when needed
+		math::vertex<T> sum_mean;
+		// math::matrix<T> sum_covariance;
+		unsigned int sum_N;
 
-    bool running, paused;
-    
-    mutable pthread_t sampling_thread;
-    mutable pthread_mutex_t solution_lock, start_lock;
+		bool running, paused;
 
-    bool threadIsRunning;
-    
-  public:
-    void __sampler_loop();
-  };
-  
-  
+		mutable std::vector<std::thread*> sampling_thread;
+		mutable std::mutex solution_lock, start_lock;
+
+		void sampler_loop(); // worker thread loop
+	};
+
+
 };
 
 
 namespace whiteice
 {
-  extern template class HMC_abstract< float >;
-  extern template class HMC_abstract< double >;
-  extern template class HMC_abstract< math::blas_real<float> >;
-  extern template class HMC_abstract< math::blas_real<double> >;    
+	extern template class HMC_abstract< float >;
+	extern template class HMC_abstract< double >;
+	extern template class HMC_abstract< math::blas_real<float> >;
+	extern template class HMC_abstract< math::blas_real<double> >;
 };
 
 
