@@ -750,15 +750,43 @@ T GBRBM<T>::logProbability(const std::vector< math::vertex<T> >& samples)
 
 
 template <typename T>
-bool GBRBM<T>::sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples)
+bool GBRBM<T>::sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples,
+		const std::vector< math::vertex<T> >& statistics_training_data)
 {
-	if(data_mean.size() != data_var.size())
+	const auto& stats = statistics_training_data;
+
+	if(stats.size() < 2)
 		return false;
 
-	if(data_mean.size() != z.size())
-		return false;
+	math::vertex<T> m(stats[0].size()), s(stats[0].size());
+	{
+		m.zero();
+		s.zero();
 
-	ais_sampling(samples, SAMPLES, data_mean, data_var);
+		for(auto& x : stats){
+			m += x;
+			for(unsigned int i=0;i<s.size();i++)
+				s[i] += x[i]*x[i];
+		}
+
+		m /= T(stats.size());
+		s /= T(stats.size());
+
+		for(unsigned int i=0;i<s.size();i++)
+			s[i] -= m[i]*m[i];
+
+		s *= T(stats.size())/T(stats.size() - 1); // sample variance and not direct variance (divide by N-1 !!)
+	}
+
+	ais_sampling(samples, SAMPLES, m, s);
+}
+
+
+template <typename T>
+T GBRBM<T>::reconstructError(const std::vector< math::vertex<T> >& samples)
+{
+	T error = reconstruct_gbrbm_data_error(samples, samples.size(), W, a, b, z, 1);
+	return error;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,12 +853,32 @@ bool GBRBM<T>::convertUParametersToQ(const math::matrix<T>& W, const math::verte
 }
 
 
+// sets RBM machine's (W, a, b, z) parameters according to q vector
+template <typename T>
+bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
+{
+	try{
+		q.subvertex(a, 0, a.size());
+		q.subvertex(b, a.size(), b.size());
+		q.subvertex(z, (a.size()+b.size()), z.size());
+		math::vertex<T> w(W.ysize()*W.xsize());
+		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+		W.load_from_vertex(w);
+
+		return true;
+	}
+	catch(std::exception& e){
+		return false;
+	}
+}
+
 
 
 
 template <typename T>
 T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
 {
+	const unsigned int NUMUSAMPLES = 100;
 	T u = T(INFINITY); // error: zero probability: P = exp(-u) = exp(-INFINITY)
 
 	try{
@@ -863,8 +911,15 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
 		u = T(0.0);
 
+		/*
 		for(auto& s : Usamples)
 			u += -unscaled_log_probability(s, qW, qa, qb, qz);
+		*/
+
+		for(unsigned int i=0;i<NUMUSAMPLES;i++){
+			auto& s = Usamples[rand()%Usamples.size()];
+			u += -unscaled_log_probability(s, qW, qa, qb, qz);
+		}
 
 		// TODO: add some smart priors for the parameters:
 		// 1. for qW we could use somekind of generalized Wishart matrix (not xx^t but xy^t)
@@ -884,6 +939,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 template <typename T>
 whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
 {
+	const unsigned int NUMUSAMPLES = 100;
 	whiteice::math::vertex<T> grad(this->qsize());
 	grad.zero();
 
@@ -939,7 +995,10 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			invShalf[i] = math::exp(-qz[i]/2);
 		}
 
-		for(auto& v : Usamples){
+		// for(auto& v : Usamples){
+		for(unsigned int ui=0;ui<NUMUSAMPLES;ui++)
+		{
+			auto& v = Usamples[rand()%Usamples.size()];
 			// calculates positive phase SUM(gradF)
 
 			math::vertex<T> grad_a = (v-qa);
@@ -975,15 +1034,15 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 		// calculates negative phase N*Emodel[gradF], N = Usamples.size()
 
 		// FIXME actually calculate mean and variance of the estimate Emodel[gradF] and get new samples until sample variance is "small"
-		const unsigned int SAMPLES = 10;
+		const unsigned int NEGSAMPLES = 10;
 		{
 			std::vector< math::vertex<T> > vs; // negative particles [samples from Pmodel(v)]
 
 			// TODO use AIS to get samples from the model
-			// ais_sampling(vs, SAMPLES, Umean, Uvariance, qa, qb, qz, qW);
+			// ais_sampling(vs, NEGSAMPLES, Umean, Uvariance, qa, qb, qz, qW);
 
 			// uses CD-1 to get samples [fast]
-			for(unsigned int s=0;s<SAMPLES;s++){
+			for(unsigned int s=0;s<NEGSAMPLES;s++){
 				const unsigned int index = rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
 
@@ -991,7 +1050,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				vs.push_back(xx);
 			}
 
-			const T scaling = T((double)Usamples.size())/T((double)SAMPLES);
+			const T scaling = T((double)NUMUSAMPLES)/T((double)NEGSAMPLES);
 
 			for(auto& v : vs){
 				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )

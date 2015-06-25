@@ -74,8 +74,15 @@ public:
     // estimates log(P(samples|params)) of the RBM
     T logProbability(const std::vector< math::vertex<T> >& samples);
 
-    // samples given number of samples from P(v|params) [GBRBM must have been trained or the call fails!]
-    bool sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples);
+    bool setDataStatistics(const std::vector< math::vertex<T> >& samples);
+
+    // samples given number of samples from P(v|params)
+    // [GBRBM must have training data (setDataStatistics() call) or the call fails!]
+    bool sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >& samples,
+    		const std::vector< math::vertex<T> >& statistics_training_data);
+
+    // calculates mean reconstruction error: E[||x - reconstructed(x)||^k], reconstruct(x) = P(x_new|h) <= P(h|x_old)
+    T reconstructError(const std::vector< math::vertex<T> >& samples);
 
     ////////////////////////////////////////////////////////////
     // for HMC sampler (and parallel tempering): calculates energy U(q) and Ugrad(q)
@@ -90,6 +97,9 @@ public:
     // converts (W, a, b, z) parameters into q vector
     bool convertUParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
     		const math::vertex<T>& z, math::vertex<T>& q) const;
+
+    // sets (W, a, b, z) parameters according to q vector
+    bool setParametersQ(const math::vertex<T>& q);
 
     T U(const math::vertex<T>& q) const throw(); // calculates U(q) = -log(P(data|q))
 

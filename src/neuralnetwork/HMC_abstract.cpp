@@ -19,7 +19,7 @@ namespace whiteice
     
     sum_N = 0;
     sum_mean.zero();
-    sum_covariance.zero();
+    // sum_covariance.zero();
     
     running = false;
     paused = false;
@@ -178,7 +178,7 @@ namespace whiteice
     }
   }
   
-  
+  /*
   template <typename T>
   math::matrix<T> HMC_abstract<T>::getCovariance() const
   {
@@ -204,6 +204,7 @@ namespace whiteice
       return C;
     }
   }
+  */
 
 
   template <typename T>
@@ -234,7 +235,7 @@ namespace whiteice
 
     samples.clear();
     sum_mean.zero();
-    sum_covariance.zero();
+    // sum_covariance.zero();
     sum_N = 0;
     
     // q = location, p = momentum, H(q,p) = hamiltonian
@@ -245,7 +246,8 @@ namespace whiteice
     p.resize(q.size()); // momentum is initially zero
     p.zero();
     
-    T epsilon = T(0.01f);
+    // epsilon = epsilon0/sqrt(D) in order to keep distance ||x(n+1) - x(n)|| = epsilon0 for all dimensions dim(x) = D
+    T epsilon = T(0.01f)/math::sqrt(q.size());
     unsigned int L = 20;
 
     std::random_device rd;
@@ -267,7 +269,7 @@ namespace whiteice
 
       math::vertex<T> old_q = q;
       math::vertex<T> current_p = p;
-      
+#if 1
       p -= T(0.5f) * epsilon * Ugrad(q);
 
       for(unsigned int i=0;i<L;i++){
@@ -278,10 +280,18 @@ namespace whiteice
       p -= T(0.5f) * epsilon * Ugrad(q);
 
       p = -p;
-      
+#else
+      // just gradient descent...
+      auto g = Ugrad(q);
+      q = epsilon * g;
+#endif
       T current_U  = U(old_q);
       T proposed_U = U(q);
       
+      //std::cout << "current_U  = " << U(old_q) << std::endl;
+      //std::cout << "proposed_U = " << U(q) << std::endl;
+      //std::cout << "epslon     = " << epsilon << std::endl;
+
       T current_K  = T(0.0f);
       T proposed_K = T(0.0f);
       
@@ -295,18 +305,18 @@ namespace whiteice
       if(r <= exp(current_U-proposed_U+current_K-proposed_K))
       {
 	// accept (q)
-	// printf("ACCEPT\n");
+	// printf("************************************************************ ACCEPT\n");
 	
 	pthread_mutex_lock( &solution_lock );
 	
 	if(sum_N > 0){
 	  sum_mean += q;
-	  sum_covariance += q.outerproduct();
+	  // sum_covariance += q.outerproduct();
 	  sum_N++;
 	}
 	else{
 	  sum_mean = q;
-	  sum_covariance = q.outerproduct();
+	  // sum_covariance = q.outerproduct();
 	  sum_N++;
 	}
 	
@@ -329,12 +339,12 @@ namespace whiteice
 	
 	if(sum_N > 0){
 	  sum_mean += q;
-	  sum_covariance += q.outerproduct();
+	  // sum_covariance += q.outerproduct();
 	  sum_N++;
 	}
 	else{
 	  sum_mean = q;
-	  sum_covariance = q.outerproduct();
+	  // sum_covariance = q.outerproduct();
 	  sum_N++;
 	}
 	

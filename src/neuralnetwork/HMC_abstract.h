@@ -44,7 +44,7 @@ namespace whiteice
     unsigned int getNumberOfSamples() const;
     
     math::vertex<T> getMean() const;
-    math::matrix<T> getCovariance() const;
+    // math::matrix<T> getCovariance() const;
 
     // calculates mean error for the latest N samples, 0 = all samples
     T getMeanError(unsigned int latestN = 0) const;
@@ -60,7 +60,7 @@ namespace whiteice
     
     // used to calculate statistics when needed
     math::vertex<T> sum_mean;
-    math::matrix<T> sum_covariance;
+    // math::matrix<T> sum_covariance;
     unsigned int sum_N;
 
     bool running, paused;

@@ -29,6 +29,12 @@ HMC_GBRBM<T>::~HMC_GBRBM()
 
 
 template <typename T>
+GBRBM<T>& HMC_GBRBM<T>::getRBM() throw(){
+	return this->rbm;
+}
+
+
+template <typename T>
 bool HMC_GBRBM<T>::setTemperature(T temperature) // temperature must be in [0,1] interval
 {
 	if(temperature >= T(0.0) && temperature <= T(1.0)){
@@ -70,6 +76,8 @@ template <typename T>
 void HMC_GBRBM<T>::starting_position(math::vertex<T>& q) const
 {
 	GBRBM<T> rbm;
+
+	rbm.resize(this->rbm.getVisibleNodes(), this->rbm.getHiddenNodes());
 
 	rbm.initializeWeights();
 

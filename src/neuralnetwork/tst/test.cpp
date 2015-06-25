@@ -212,7 +212,7 @@ void hmc_test()
 	      << " samples." << std::endl;
 
     std::cout << "mean = " << sampler.getMean() << std::endl;
-    std::cout << "cov  = " << sampler.getCovariance() << std::endl;
+    // std::cout << "cov  = " << sampler.getCovariance() << std::endl;
 
     std::cout << "Should be zero mean and unit I variance: N(0,I)"
 	      << std::endl;
@@ -309,31 +309,53 @@ void rbm_test()
 
 		// tests HMC sampling
 		{
-			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50);
+			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true); // adaptive step length
 
 			hmc.setTemperature(1.0);
 
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();
 
+			std::vector< math::vertex< math::blas_real<double> > > starting_data;
+			std::vector< math::vertex< math::blas_real<double> > > current_data;
+			math::blas_real<double> logP0;
+
 			while(1){
-				sleep(1);
+				sleep(5);
 				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
 				if(hmc.getNumberOfSamples() > 0){
-					std::vector< math::vertex< math::blas_real<double> > > samples;
+					std::vector< math::vertex< math::blas_real<double> > > qsamples;
 
-					hmc.getSamples(samples);
+					hmc.getSamples(qsamples);
 
 					// calculate something using the samples..
 					// [get the most recent sample and try to calculate log probability]
+
+					if(starting_data.size() <= 0 && qsamples.size() > 0){
+						// hmc.getRBM().setParametersQ(qsamples[0]);
+						// error0 =  GBRBM<T>::reconstructError(samples);
+						// hmc.getRBM().sample(1000, starting_data, samples);
+						// logP0 = hmc.getRBM().logProbability(starting_data);
+					}
+
+					if(qsamples.size() > 1){
+						hmc.getRBM().setParametersQ(qsamples[qsamples.size()-1]);
+						// hmc.getRBM().sample(1000, current_data, samples);
+						// math::blas_real<double> logP = hmc.getRBM().logProbability(current_data);
+						math::blas_real<double> error = hmc.getRBM().reconstructError(samples);
+
+						std::cout << "HMC-GBRBM R: " << error << std::endl;
+					}
 				}
 
 				auto end = std::chrono::system_clock::now();
 				auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-				if(elapsed.count() >= 60000){ // 60 seconds
+#if 0
+				if(elapsed.count() >= 120*1000){ // 120 seconds
 					break;
 				}
+#endif
 			}
 
 			hmc.stopSampler();
@@ -388,7 +410,7 @@ void rbm_test()
 
 		rbm.learnWeights(samples, 100, true, true);
 		rdata.clear();
-		rbm.sample(1000, rdata); // samples directly from P(v) ..
+		rbm.sample(1000, rdata, samples); // samples directly from P(v) ..
 		// rbm.reconstructData(rdata);
 
 		std::cout << "Storing reconstruct results to disk.." << std::endl;

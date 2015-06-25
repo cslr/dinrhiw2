@@ -184,8 +184,8 @@
   <strong|Gradient descent>
 
   Parameters of the distribution are optimized using gradient descent
-  algorithm so it is important to calculate actual derivates of
-  <math|p<around|(|v|)>> for Bernoulli-Bernoulli RBM.
+  algorithm (maximum likelihood method) so it is important to calculate
+  actual derivates of <math|p<around|(|v|)>> for Bernoulli-Bernoulli RBM.
 
   First we further simplify the <math|F<around|(|v|)>> term
 

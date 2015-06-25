@@ -19,6 +19,8 @@ public:
 	HMC_GBRBM(const std::vector< math::vertex<T> >& samples, unsigned int numHiddenNodes, bool adaptive=false);
 	virtual ~HMC_GBRBM();
 
+	GBRBM<T>& getRBM() throw();
+
 	// temperature must be in [0,1] interval
 	// 0 = means most freely changing parameters and RBM is just N(m, S) machine
 	// 1 = means to fit into data as well as possible and RBM is non-linear P(v) estimator
