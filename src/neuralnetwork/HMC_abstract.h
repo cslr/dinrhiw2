@@ -57,6 +57,11 @@ namespace whiteice
 		bool getCurrentSample(math::vertex<T>& q);
 		bool setCurrentSample(const math::vertex<T>& q);
 
+		// set that we have seen that latest sample
+		void setUpdated(bool updated);
+
+		bool getUpdated(); // are there new sample since last call to setUpdated(false) ??
+
 		math::vertex<T> getMean() const;
 		// math::matrix<T> getCovariance() const;
 
@@ -73,6 +78,7 @@ namespace whiteice
 		std::vector< math::vertex<T> > samples;
 
 		volatile bool q_overwritten;
+		volatile bool q_updated;
 		math::vertex<T> q;
 		mutable std::mutex updating_sample;
     

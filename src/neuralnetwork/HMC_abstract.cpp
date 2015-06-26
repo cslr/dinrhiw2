@@ -162,6 +162,19 @@ namespace whiteice
 
 	}
 
+	template <typename T>
+	void HMC_abstract<T>::setUpdated(bool updated)
+	{
+		std::lock_guard<std::mutex> lock(updating_sample);
+		q_updated = updated;
+	}
+
+	template <typename T>
+	bool HMC_abstract<T>::getUpdated() // are there new sample since last call to setUpdated(false) ??
+	{
+		std::lock_guard<std::mutex> lock(updating_sample);
+		return q_updated;
+	}
 
 	template <typename T>
 	math::vertex<T> HMC_abstract<T>::getMean() const
@@ -244,6 +257,7 @@ namespace whiteice
 		{
 			std::lock_guard<std::mutex> lock(updating_sample);
 			starting_position(q); // random starting position q
+			q_updated = true;
 
 			p.resize(q.size()); // momentum is initially zero
 		}
@@ -325,8 +339,11 @@ namespace whiteice
 				{
 					std::lock_guard<std::mutex> lock(updating_sample);
 
-					if(q_overwritten == false)
+					if(q_overwritten == false){
 						this->q = q; // writes the global q
+					}
+
+					q_updated = true;
 				}
 				// std::cout << "ACCEPT" << std::endl;
 
@@ -356,8 +373,11 @@ namespace whiteice
 				// printf("REJECT\n");
 				{
 					std::lock_guard<std::mutex> lock(updating_sample);
-					if(q_overwritten == false)
+					if(q_overwritten == false){
 						this->q = old_q; // writes the global q
+					}
+
+					q_updated = true;
 				}
 
 				std::lock_guard<std::mutex> lock(solution_lock);
