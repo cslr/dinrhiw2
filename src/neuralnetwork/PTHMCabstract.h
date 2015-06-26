@@ -64,7 +64,8 @@ protected:
 
 
 	mutable std::mutex sampler_lock;
-	std::vector < std::shared_ptr< whiteice::HMC_abstract<T> > > hmc;
+	std::list < std::shared_ptr< whiteice::HMC_abstract<T> > > hmc;
+	bool dynamic_pt; // does we add and remove new temperatures if accept rates are too high/low?
 
 	std::thread* parallel_tempering_thread; // FIXME uses raw pointers
 	volatile bool running;

@@ -116,8 +116,7 @@ bool BBRBM<T>::initializeWeights() // initialize weights to small values
 // but higher number of EPOCHS mean data calculations can take longer (higher quality)
 template <typename T>
 T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
-		const unsigned int EPOCHS=1,
-		bool verbose = false, bool learnVariance = false)
+		const unsigned int EPOCHS, bool verbose, bool learnVariance)
 {
 
 

@@ -60,6 +60,7 @@ namespace whiteice
 		sampling_thread.clear();
 
 		try{
+			starting_position(q); // initializes starting position before starting the thread here just to be sure..
 			std::thread* t = new std::thread(sampler_loop, this);
 			sampling_thread.push_back(t);
 
@@ -154,6 +155,7 @@ namespace whiteice
 	bool HMC_abstract<T>::setCurrentSample(const math::vertex<T>& s)
 	{
 		std::lock_guard<std::mutex> lock(updating_sample);
+		q_overwritten = true; // signals the sampler_loop that it should use updated q and not overwrite global q
 		q = s;
 		return true;
 
@@ -241,9 +243,10 @@ namespace whiteice
 		{
 			std::lock_guard<std::mutex> lock(updating_sample);
 			starting_position(q); // random starting position q
+
+			p.resize(q.size()); // momentum is initially zero
 		}
 
-		p.resize(q.size()); // momentum is initially zero
 		p.zero();
 
 		// epsilon = epsilon0/sqrt(D) in order to keep distance ||x(n+1) - x(n)|| = epsilon0 for all dimensions dim(x) = D
@@ -264,7 +267,12 @@ namespace whiteice
 
 		while(running) // keep sampling forever
 		{
-			updating_sample.lock();
+			math::vertex<T> q; // local copy of q during this iteration
+			{
+				updating_sample.lock();
+				q = this->q; // reads the global q
+				q_overwritten = false; // detect if somebody have changed q during computation
+			}
 
 			for(unsigned int i=0;i<p.size();i++)
 				p[i] = T(normalrnd()); // Normal distribution
@@ -313,7 +321,11 @@ namespace whiteice
 			if(r <= exp(current_U-proposed_U+current_K-proposed_K))
 			{
 				// accept (q)
-
+				{
+					updating_sample.lock();
+					if(q_overwritten == false)
+						this->q = q; // writes the global q
+				}
 				// std::cout << "ACCEPT" << std::endl;
 
 				std::lock_guard<std::mutex> lock(solution_lock);
@@ -340,8 +352,11 @@ namespace whiteice
 			else{
 				// reject (keep old_q)
 				// printf("REJECT\n");
-
-				q = old_q;
+				{
+					updating_sample.lock();
+					if(q_overwritten == false)
+						this->q = old_q; // writes the global q
+				}
 
 				std::lock_guard<std::mutex> lock(solution_lock);
 
@@ -379,6 +394,16 @@ namespace whiteice
 					// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
 					// std::cout << "EPSILON:     " << epsilon << std::endl;
 
+					// we target to 50% accept rate because it will give
+					// maximum amount of information max H(accept) which hopefully
+					// leads to faster convergence of estimates (to correct value,
+					// the variance of estimates should be higher though).
+					// Also: changing epsilon breaks MCMC sampling jump symmetry
+					// but if we have converged we hopefully are close to 50%
+					// all the time meaning that epsilon don't change that much +
+					// I'm currently using MCMC samplers a bit more like random search
+					// optimizer methods meaning that not reaching the true distribution
+					// is not that serious..
 					if(accept_rate < T(0.50f)){
 						epsilon = T(0.8)*epsilon;
 						// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;

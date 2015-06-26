@@ -7,6 +7,7 @@
 
 #include "PTHMCabstract.h"
 #include "vertex.h"
+#include <chrono>
 
 namespace whiteice {
 
@@ -140,7 +141,7 @@ unsigned int PTHMC_abstract<T>::getSamples(std::vector< math::vertex<T> >& sampl
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(hmc.size() <= 0) return 0; // not running
 
-	return hmc[0]->getSamples(samples);
+	return hmc.front()->getSamples(samples); // hmc[0]->getSamples(samples);
 }
 
 
@@ -150,7 +151,7 @@ unsigned int PTHMC_abstract<T>::getNumberOfSamples() const
 	std::lock_guard<std::mutex> lock(sampler_lock);
 	if(hmc.size() <= 0) return 0; // not running
 
-	return hmc[0]->getNumberOfSamples();
+	return hmc.front()->getNumberOfSamples();
 }
 
 
@@ -162,7 +163,7 @@ const HMC_abstract<T>& PTHMC_abstract<T>::getHMC() const
 	if(hmc.size() <= 0)
 		throw std::logic_error("No root level HMC");
 
-	return *(hmc[0]);
+	return *(hmc.front());
 }
 
 
@@ -173,7 +174,7 @@ math::vertex<T> PTHMC_abstract<T>::getMean() const
 	if(hmc.size() <= 0)
 		throw std::logic_error("No root level HMC");
 
-	return hmc[0]->getMean();
+	return hmc.front()->getMean();
 }
 
 
@@ -183,65 +184,200 @@ void PTHMC_abstract<T>::parallel_tempering()
 	double hz = 1.0;
 	unsigned int ms = (unsigned int)(1000.0/hz);
 
+	// global swap accept probability between all chains:
+	// easy way to see if the parallel tempering is working more or less correctly
 	accepts = 0;
 	total_tries = 0;
 
-	// on average we try to jump between every 10 samples so we measure
-	// how long it seems take to get 10 samples
+	// on average we want to jump between every 1 sample so we measure
+	// how long it seems take to get 1 sample
 	unsigned int delay = 0;
-	while(hmc[0]->getNumberOfSamples() < 10 && running){
+	while(hmc.front()->getNumberOfSamples() < 5 && running){
 		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // waits for 100ms
 		delay += 100;
 	}
 
+	delay /= 5;
+
 	ms = delay;
 	hz = 1000.0/ms;
+
+	// algorithm for keeping jump probabilities between HMC samplers good:
+	// we measure sample exchange probability between chain i and j, if Pij < 10%
+	// then new sampler with temperature = (temperature_i + temperature_j)/2 is added
+	// on the other and, if exchange probability Pij is over 50% (?) then j is removed
+	// from the chain and jumping will happen between states i and (j+1) from this point on.
+	// This is a bit tricky to implement but is rather simple way to keep temperature range
+	// healthy so that there is not too many or too small number of chains. Additionally, we
+	// always keep at least 2 different temperatures: 1 (bottom) and 0 (top level) and have
+	// maximum number of temperatures so that we cannot run out of resources.
+	this->dynamic_pt = true;
+
+	std::list< std::list<T> > acceptRate; // keeps track of accept rates between chains
+	acceptRate.resize(hmc.size()-1);
 
 
 	while(running){
 		// pauses sampling for each thread
 		// for(auto h : hmc) h->pauseSampler();
 
-		for(int i=hmc.size()-1;i>=1;i--){
+		math::vertex<T> w1, w2;
+
+		auto startTime = std::chrono::system_clock::now();
+		auto arate = acceptRate.begin();
+		auto h1 = hmc.begin();
+		auto h2 = hmc.begin();
+		h2++;
+
+		std::cout << "A" << std::endl;
+		std::cout << "SIZE: " << hmc.size() << std::endl;
+
+		for(int i=0;i<(hmc.size()-1);){
 			// tries to do MCMC swap between samples, starts from higher T samplers and moves to lower ones
-			math::vertex<T> w1, w2;
 
-			hmc[i]->getCurrentSample(w1);
-			hmc[i-1]->getCurrentSample(w2);
+			std::cout << "B" << std::endl;
+			std::cout << i << std::endl;
 
-			T E11 = (hmc[i]->U(w1));
-			T E22 = (hmc[i-1]->U(w2));
-			T E12 = (hmc[i]->U(w2));
-			T E21 = (hmc[i-1]->U(w1));
+			h1->get()->getCurrentSample(w1);
+			h2->get()->getCurrentSample(w2);
 
+			T E11 = h1->get()->U(w1);
+			T E22 = h2->get()->U(w2);
+			T E12 = h1->get()->U(w2);
+			T E21 = h2->get()->U(w1);
 
-			T p = math::exp( (E11 + E22) - (E12 - E21) );
+			T p = math::exp( (E11 + E22) - (E12 + E21) );
+
+			if(p >= T(1.0))
+				p = T(1.0);
+
+			if(i <= 1)
+				std::cout << "p(" << i << "," << (i-1) << ") = " << p << std::endl;
 
 			if(T(rand()/(double)RAND_MAX) < p){
 				accepts++;
 
-				if(i <= 10){
+				if(i <= 1){
 					std::cout << "SWAP! " << i << " p = " << p << std::endl;
 					fflush(stdout);
 				}
 
-				hmc[i-1]->setCurrentSample(w2);
-				hmc[i]->setCurrentSample(w1);
+				h2->get()->setCurrentSample(w1);
+				h1->get()->setCurrentSample(w2);
 			}
 
+			if(dynamic_pt){
+				std::cout << "C" << std::endl;
+
+				arate->push_back(p);
+				while(arate->size() > 10) // keeps only the last 10 accept probabilities
+					arate->pop_front();
+
+				// calculates average accept rate between (i-1) and (i) [geometric mean]
+				T avg_accept_rate = T(1.0);
+				for(auto& a : *arate){
+					avg_accept_rate *= a;
+				}
+				avg_accept_rate = math::pow(avg_accept_rate, T(1.0)/arate->size());
+
+				std::cout << "D" << std::endl;
+
+				if(avg_accept_rate <= T(0.10) && arate->size() >= 10){ // too low accept rate: insert new chain between (i-1) and i
+					std::cout << "Too low accept rate between chains " << i-1 << " and " << i << std::endl;
+					std::cout << "Accept rate = " << avg_accept_rate << std::endl;
+
+					std::lock_guard<std::mutex> lock(sampler_lock);
+
+					auto h = newHMC(false, adaptive);
+					const T temperature = (h1->get()->getTemperature() + h2->get()->getTemperature())/T(2.0);
+					h->setTemperature(temperature);
+
+					// randomly selects starting point between neighbouring chains
+					if(rand()%1 == 0)
+						h->setCurrentSample(w1);
+					else
+						h->setCurrentSample(w2);
+
+					// also generates new empty accept ratio list about accept p-values
+					std::list<T> new_aratios_list;
+
+					acceptRate.insert(arate, new_aratios_list);
+					hmc.insert(h2, h);
+
+					// tricky here: updates iterators and indexes for the for-loop
+					h2--;
+					arate->clear(); // also needs to clear the current accept rate list (invalid now)
+					arate--;
+					total_tries++;
+
+					continue;
+				}
+				else if(avg_accept_rate >= T(0.90) && arate->size() >= 10){ // too high accept: remove chain h2
+					std::cout << "Too high accept rate between chains " << i-1 << " and " << i << std::endl;
+					std::cout << "Accept rate = " << avg_accept_rate << std::endl;
+
+					std::lock_guard<std::mutex> lock(sampler_lock);
+
+					auto h = h2;
+					h++;
+
+					if(h != hmc.end()){ // h2 is not the last valid element (there is h3 after h2)
+						h2->get()->stopSampler();
+						h2 = hmc.erase(h2); // moves h2 to h3
+						arate->clear(); // invalidates accept rates from h1 to h2
+						arate++;
+						arate = acceptRate.erase(arate); // removes accept rates h2->h3 because h2 was deleted
+						arate--; // moves back to h1 accept rate (now h1->h3)
+
+						total_tries++;
+
+						continue; // rerun checks for h1->h3 jumps
+					}
+					else if(h1 != hmc.begin()){
+						// h2 is the last valid element (highest inverse temperature T=0), remove h1 instead
+						// but DO NOT remove h1 if it is the first element of the list [always keep T=0 and T=1]
+						arate = acceptRate.erase(arate); // remove h1->h2 accept rate table because there is no h1->h3
+						arate--;
+						arate->clear(); // invalidates h0->h1 accept rate table because h1 was deleted
+						arate++;
+						h1->get()->stopSampler();
+						h1 = hmc.erase(h1); // remove h1 and make it point to h2 (normal progress forward)
+
+						h2++; // moves h2 to theoretical h3 (end() iterator instead)
+						i++;  // does not really matter now but guarantees we stop processing
+
+						total_tries++;
+
+						continue;
+					}
+					// else [there is only two elements do not remove anything]
+
+				}
+			}
+
+			std::cout << "E" << std::endl;
+
+			i++;
+			h1++;
+			h2++;
+			arate++;
 			total_tries++;
 		}
+
+		auto endTime = std::chrono::system_clock::now();
+		auto loopDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
 		// continue sampling in each thread
 		// for(auto h : hmc) h->continueSampler();
 
 		if(paused){
 			while(paused && running){
-				std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			}
 		}
 		else{
-			std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+			if(ms > loopDuration.count())
+				std::this_thread::sleep_for(std::chrono::milliseconds(ms - loopDuration.count()));
 		}
 	}
 

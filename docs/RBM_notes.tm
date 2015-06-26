@@ -787,11 +787,12 @@
 
   Version 2
 
-  Stacked RBMs (GB-RBM + BB-RBM) using PT-HMC sampling and L-BFGS finetuning
+  Stacked RBMs (GB-RBM + BB-RBMs) using PT-HMC sampling and L-BFGS finetuning
   optimization + use HMC bayesian neural network for local mode uncertainty
   estimation.
 
-  Hardware/Software: OpenCL BLAS, R/Octave/MATLAB/RapidMiner integration.
+  Hardware/Software: OpenCL BLAS (GPU), R/Octave/MATLAB/RapidMiner
+  integration.
 
   Version 3
 

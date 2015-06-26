@@ -317,7 +317,7 @@ void rbm_test()
 			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
 			hmc.setTemperature(1.0);
 #else
-			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(100, samples, 50, true);
+			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(10, samples, 50, true);
 #endif
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();
@@ -363,12 +363,10 @@ void rbm_test()
 							auto e = local_rbm.reconstructError(samples);
 #pragma omp critical
 							{
-#if 0
 								if(e < min_error)
 									min_error = e;
-#else
+
 								mean += e;
-#endif
 							}
 						}
 
@@ -376,7 +374,8 @@ void rbm_test()
 
 						last_checked_index = qsamples.size();
 
-						std::cout << "HMC-GBRBM E[error]: " << mean << std::endl;
+						std::cout << "HMC-GBRBM E[error]:   " << mean << std::endl;
+						std::cout << "HMC-GBRBM min(error): " << min_error << std::endl;
 					}
 #endif
 				}

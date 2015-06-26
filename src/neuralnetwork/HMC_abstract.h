@@ -72,6 +72,7 @@ namespace whiteice
 		bool storeSamples;
 		std::vector< math::vertex<T> > samples;
 
+		volatile bool q_overwritten;
 		math::vertex<T> q;
 		mutable std::mutex updating_sample;
     

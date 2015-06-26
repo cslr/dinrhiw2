@@ -33,7 +33,7 @@ GBRBM<T> PTHMC_GBRBM<T>::getRBM()
 
 	if(this->hmc.size() > 0){
 		// TODO do C++ style smart casting
-		HMC_abstract<T>* ptr = (this->hmc[0].get());
+		HMC_abstract<T>* ptr = (this->hmc.front().get());
 		HMC_GBRBM<T>* ptr2   = (HMC_GBRBM<T>*)ptr;
 		return ptr2->getRBM();
 	}
