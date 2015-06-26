@@ -27,14 +27,19 @@ PTHMC_GBRBM<T>::~PTHMC_GBRBM() {
 
 
 template <typename T>
-GBRBM<T>& PTHMC_GBRBM<T>::getRBM()
+GBRBM<T> PTHMC_GBRBM<T>::getRBM()
 {
-	// FIXME should take a parent class mutex before accessing hmc which can be cleared by somebody..S
+	std::lock_guard<std::mutex> lock(this->sampler_lock);
 
-	if(this->hmc.size() > 0)
-		return *((GBRBM<T>*)this->hmc[0].get()); // TODO do C++ style smart casting
-	else
+	if(this->hmc.size() > 0){
+		// TODO do C++ style smart casting
+		HMC_abstract<T>* ptr = (this->hmc[0].get());
+		HMC_GBRBM<T>* ptr2   = (HMC_GBRBM<T>*)ptr;
+		return ptr2->getRBM();
+	}
+	else{
 		throw std::logic_error("getRBM(): Illegal operation");
+	}
 }
 
 

@@ -377,14 +377,15 @@ namespace whiteice
 					accept_rate /= accept_rate_samples;
 
 					// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
+					// std::cout << "EPSILON:     " << epsilon << std::endl;
 
-					if(accept_rate <= T(0.65f)){
+					if(accept_rate < T(0.50f)){
 						epsilon = T(0.8)*epsilon;
 						// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
 	    
 					}
-					else if(accept_rate >= T(0.85f)){
-						epsilon = T(1.1)*epsilon;
+					else if(accept_rate > T(0.50f)){
+						epsilon = T(1.0/0.8)*epsilon;
 						// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
 					}
 

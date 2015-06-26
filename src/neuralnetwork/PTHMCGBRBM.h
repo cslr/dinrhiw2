@@ -24,7 +24,7 @@ public:
 
 	virtual ~PTHMC_GBRBM();
 
-	GBRBM<T>& getRBM();
+	GBRBM<T> getRBM();
 
 	// creates HMC_abstract<T> class with a new (PTHMC_abstract deletes it)
 	// adaptive : should HMC use adaptive step length

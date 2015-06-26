@@ -889,7 +889,7 @@ bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 template <typename T>
 T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
 {
-	const unsigned int NUMUSAMPLES = 1;
+	const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well
 	T u = T(INFINITY); // error: zero probability: P = exp(-u) = exp(-INFINITY)
 
 	try{
@@ -932,13 +932,15 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 			u += -unscaled_log_probability(s, qW, qa, qb, qz);
 		}
 
+		u /= T(NUMUSAMPLES);
+
 		// TODO: add some smart priors for the parameters:
 		// 1. for qW we could use somekind of generalized Wishart matrix (not xx^t but xy^t)
 		// 2. for qa gaussian zero mean may make sense if data is assumed always be preprocessed to have zero mean and variance
 		// 3. for qb study binomial distributions and conjugates with p=0 and p=1 equally probable (beta?)
 		// 4. for qz use e(qz) ~ chi-squared distribution?
 
-		return u;
+		return (u);
 	}
 	catch(std::exception& e){
 		std::cout << "ERROR: GBRBM::U: unexpected exception: " << e.what() << std::endl;
@@ -950,7 +952,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 template <typename T>
 whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
 {
-	const unsigned int NUMUSAMPLES = 1;
+	const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well..
 	whiteice::math::vertex<T> grad(this->qsize());
 	grad.zero();
 
@@ -1041,6 +1043,11 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			gW += grad_W;
 		}
 
+		ga /= T(NUMUSAMPLES);
+		gb /= T(NUMUSAMPLES);
+		gz /= T(NUMUSAMPLES);
+		gW /= T(NUMUSAMPLES);
+
 
 		// calculates negative phase N*Emodel[gradF], N = Usamples.size()
 
@@ -1061,7 +1068,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				vs.push_back(xx);
 			}
 
-			const T scaling = T((double)NUMUSAMPLES)/T((double)NEGSAMPLES);
+			const T scaling = T((double)1.0)/T((double)NEGSAMPLES);
 
 			for(auto& v : vs){
 				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )
@@ -1120,7 +1127,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 	}
 	catch(std::exception& e){
 		std::cout << "ERROR: GBRBM::Ugrad: unexpected exception: " << e.what() << std::endl;
-		return grad; // zero gradient
+		return (-grad); // zero gradient
 	}
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////

@@ -313,11 +313,12 @@ void rbm_test()
 			// adaptive step length
 			std::cout << "data size: " << samples.size() << std::endl;
 
-			// whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
-			// hmc.setTemperature(1.0);
-
+#if 0
+			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
+			hmc.setTemperature(1.0);
+#else
 			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(100, samples, 50, true);
-
+#endif
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();
 
@@ -334,6 +335,7 @@ void rbm_test()
 				if(hmc.getNumberOfSamples() > 0){
 					std::vector< math::vertex< math::blas_real<double> > > qsamples;
 
+#if 1
 					hmc.getSamples(qsamples);
 
 					// calculate something using the samples..
@@ -346,11 +348,19 @@ void rbm_test()
 						last_checked_index = qsamples.size() - 100;
 						if(last_checked_index < 0) last_checked_index = 0;
 
+						GBRBM< math::blas_real<double > > rbm = hmc.getRBM();
+
+						math::vertex< math::blas_real<double> > var;
+						rbm.setParametersQ(qsamples[qsamples.size()-1]);
+						rbm.getVariance(var);
+
+						std::cout << "variance = " << var << std::endl;
+
 #pragma omp parallel for
 						for(int s=last_checked_index;s < (signed)qsamples.size();s++){
-							GBRBM< math::blas_real<double> > rbm = hmc.getRBM();
-							rbm.setParametersQ(qsamples[s]);
-							auto e = rbm.reconstructError(samples);
+							GBRBM< math::blas_real<double> > local_rbm = rbm;
+							local_rbm.setParametersQ(qsamples[s]);
+							auto e = local_rbm.reconstructError(samples);
 #pragma omp critical
 							{
 #if 0
@@ -368,6 +378,7 @@ void rbm_test()
 
 						std::cout << "HMC-GBRBM E[error]: " << mean << std::endl;
 					}
+#endif
 				}
 
 				auto end = std::chrono::system_clock::now();

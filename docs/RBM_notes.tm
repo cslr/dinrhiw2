@@ -774,11 +774,11 @@
 
   \;
 
-  <with|font-series|bold|Abrasax Predictions>
+  <with|font-series|bold|Abraxas Predictions>
 
   Product: Accura Deepnet (software)
 
-  Version 1
+  Version 1 [DONE]
 
   L-BFGS code for feedforward network and bayesian neural network with
   sampling
@@ -788,16 +788,18 @@
   Version 2
 
   Stacked RBMs (GB-RBM + BB-RBM) using PT-HMC sampling and L-BFGS finetuning
-  optimization + HMC bayesian neural network for local mode uncertainty
+  optimization + use HMC bayesian neural network for local mode uncertainty
   estimation.
 
-  Hardware/Software: OpenCL BLAS, R/Octave/RapidMiner integration.
+  Hardware/Software: OpenCL BLAS, R/Octave/MATLAB/RapidMiner integration.
 
   Version 3
 
-  Recurrent neural networks (stateful networks) and differential equations
-  (kind of recurrent structure) solver. Causal bayesian network solver.
-  Variational bayesian inference stuff.
+  Recurrent neural networks (stateful networks), turing machine neural
+  networks and ``linear'' differential equations (kind of recurrent
+  structure) solver. Causal bayesian network solver (use initially chord
+  analysis to get initially ``pre''-solution??). Variational bayesian
+  inference stuff (mixture of gaussians? etc.)
 
   Hardware/Software: FPGA, Cloud computing (Google).
 

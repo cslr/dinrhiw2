@@ -29,7 +29,7 @@ HMC_GBRBM<T>::~HMC_GBRBM()
 
 
 template <typename T>
-GBRBM<T>& HMC_GBRBM<T>::getRBM() throw(){
+GBRBM<T> HMC_GBRBM<T>::getRBM() throw(){
 	return this->rbm;
 }
 

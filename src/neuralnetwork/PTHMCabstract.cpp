@@ -42,6 +42,7 @@ bool PTHMC_abstract<T>::startSampler()
 
 		for(unsigned int i=0;i<deepness;i++){
 			T temperature = T(((double)i)/((double)(deepness-1)));
+			temperature = T(1.0) - temperature;
 			bool storeSamples = (i==0);
 			// only store samples of the "bottom" sampler [no temperature]
 			auto h = newHMC(storeSamples, adaptive);
@@ -218,12 +219,12 @@ void PTHMC_abstract<T>::parallel_tempering()
 
 			if(T(rand()/(double)RAND_MAX) < p){
 				accepts++;
-/*
-				if(i == 1){
-					std::cout << "SWAP p = " << p << std::endl;
+
+				if(i <= 10){
+					std::cout << "SWAP! " << i << " p = " << p << std::endl;
 					fflush(stdout);
 				}
-*/
+
 				hmc[i-1]->setCurrentSample(w2);
 				hmc[i]->setCurrentSample(w1);
 			}
