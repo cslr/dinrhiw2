@@ -313,7 +313,7 @@ void rbm_test()
 			// adaptive step length
 			std::cout << "data size: " << samples.size() << std::endl;
 
-#if 0
+#if 1
 			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
 			hmc.setTemperature(1.0);
 #else

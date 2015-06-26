@@ -233,7 +233,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 		std::cout << "SIZE: " << hmc.size() << std::endl;
 
 		for(int i=0;i<(hmc.size()-1);){
-			// tries to do MCMC swap between samples, starts from higher T samplers and moves to lower ones
+			// tries to do MCMC swap between samples..
 
 			std::cout << "B" << std::endl;
 			std::cout << i << std::endl;

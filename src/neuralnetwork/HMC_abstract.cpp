@@ -67,6 +67,7 @@ namespace whiteice
 			return true;
 		}
 		catch(std::exception& e){
+			std::cout << "ERROR: unexpected exception: " << e.what() << std::endl;
 			running = false;
 			paused = false;
 
@@ -269,7 +270,7 @@ namespace whiteice
 		{
 			math::vertex<T> q; // local copy of q during this iteration
 			{
-				updating_sample.lock();
+				std::lock_guard<std::mutex> lock(updating_sample);
 				q = this->q; // reads the global q
 				q_overwritten = false; // detect if somebody have changed q during computation
 			}
@@ -322,7 +323,8 @@ namespace whiteice
 			{
 				// accept (q)
 				{
-					updating_sample.lock();
+					std::lock_guard<std::mutex> lock(updating_sample);
+
 					if(q_overwritten == false)
 						this->q = q; // writes the global q
 				}
@@ -353,7 +355,7 @@ namespace whiteice
 				// reject (keep old_q)
 				// printf("REJECT\n");
 				{
-					updating_sample.lock();
+					std::lock_guard<std::mutex> lock(updating_sample);
 					if(q_overwritten == false)
 						this->q = old_q; // writes the global q
 				}
