@@ -106,6 +106,8 @@ public:
 
     T U(const math::vertex<T>& q) const throw(); // calculates U(q) = -log(P(data|q))
 
+    T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const;
+
     math::vertex<T> Ugrad(const math::vertex<T>& q) throw(); // calculates grad(U(q))
 
 
@@ -116,14 +118,22 @@ public:
     bool save(const std::string& filename) const throw();
 
 protected:
+    // estimates ratio of Z values of unscaled p(v|params) distributions: Z1/Z2 using AIS Monte Carlo sampling.
+    // this is needed by Udiff() which calculates difference of two P(params|v) distributions..
+    T zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler
+    		const math::matrix<T>& W1, const math::vertex<T>& a1, const math::vertex<T>& b1, math::vertex<T>& z1,
+			const math::matrix<T>& W2, const math::vertex<T>& a2, const math::vertex<T>& b2, math::vertex<T>& z2) const;
+
+
     // generates SAMPLES {v,h}-samples from p(v,h|params) using Gibbs sampling (CD) and parallel tempering
     void ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned int SAMPLES,
-    		const math::vertex<T>& m, const math::vertex<T>& s);
+    		const math::vertex<T>& m, const math::vertex<T>& s,
+			const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z) const;
 
     // parallel tempering annealed importance sampling estimation of logZ and samples v from distribution p(v)
     T ais(T& logZ,
     		const math::vertex<T>& m, const math::vertex<T>& s,
-    	    const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z);
+    	    const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z) const;
 
     T unscaled_log_probability(const math::vertex<T>& v) const;
 
@@ -140,14 +150,18 @@ protected:
     T E(const math::vertex<T>& v, const math::vertex<T>& h,
     		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z) const;
 
-    T normalrnd(); // N(0,1)
-    math::vertex<T> normalrnd(const math::vertex<T>& m, const math::vertex<T>& s); // N(m,s)
+    T normalrnd() const; // N(0,1)
+    math::vertex<T> normalrnd(const math::vertex<T>& m, const math::vertex<T>& v) const; // N(m,v)
 
     void sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const;
 
+    math::vertex<T> negative_phase_q(const unsigned int SAMPLES,
+    		const math::matrix<T>& qW, const math::vertex<T>& qa, const math::vertex<T>& qb, const math::vertex<T>& qz) const;
+
+
     math::vertex<T> reconstruct_gbrbm_data(const math::vertex<T>& v,
     		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
-			unsigned int CDk);
+			unsigned int CDk) const;
 
     math::vertex<T> reconstruct_gbrbm_hidden(const math::vertex<T>& v,
     		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
@@ -166,11 +180,6 @@ private:
     math::vertex<T> h;
     math::vertex<T> v;
 
-
-	// AIS RBM stack
-	std::vector< GBRBM<T> > ais_rbm; // need to use pointer in order to prevent calling of ctor until we really want... [not really]
-	const unsigned int NTemp = 100; // number of different temperatures (values below <100, or below 10 do not work very well)..
-
 	// used by learnWeights()
 	math::vertex<T> data_mean;
 	math::vertex<T> data_var;
@@ -181,7 +190,7 @@ private:
 	math::vertex<T> Umean, Uvariance;
 	T temperature;
 
-
+	// should protect against mutex..
     mutable std::default_random_engine* generator;
 	mutable std::normal_distribution<>* rng;
 

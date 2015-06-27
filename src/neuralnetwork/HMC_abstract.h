@@ -40,6 +40,10 @@ namespace whiteice
 		// probability functions for hamiltonian MC sampling of
 		// P ~ exp(-U(q)) distribution
 		virtual T U(const math::vertex<T>& q) const = 0;
+
+		// calculates difference: U(q1) - U(q2)
+		virtual T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const = 0;
+
 		virtual math::vertex<T> Ugrad(const math::vertex<T>& q) = 0;
 
 		// a starting point q for the sampler (may not be random)

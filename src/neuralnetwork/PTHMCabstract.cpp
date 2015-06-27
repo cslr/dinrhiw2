@@ -136,6 +136,15 @@ bool PTHMC_abstract<T>::stopSampler()
 
 
 template <typename T>
+unsigned int PTHMC_abstract<T>::getNumberOfTemperatures() const
+{
+	std::lock_guard<std::mutex> lock(sampler_lock);
+	return hmc.size();
+}
+
+
+
+template <typename T>
 unsigned int PTHMC_abstract<T>::getSamples(std::vector< math::vertex<T> >& samples) const
 {
 	std::lock_guard<std::mutex> lock(sampler_lock);
@@ -227,7 +236,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 		auto h2 = hmc.begin();
 		h2++;
 
-		std::cout << "Number of PT chains: " << hmc.size() << std::endl;
+		// std::cout << "Number of PT chains: " << hmc.size() << std::endl;
 
 		for(int i=0;i<(hmc.size()-1);){
 			// tries to do MCMC swap between samples..
@@ -235,18 +244,11 @@ void PTHMC_abstract<T>::parallel_tempering()
 			// not a bulletproof test but skips chains which didn't produce useful data since last check..
 			if((h1->get()->getUpdated() == false) && (h2->get()->getUpdated() == false)){
 				// no new samples since the last check, skip this one..
-
-				std::cout << "Skipping chains: " << i << " and " << (i+1) << "." << std::endl;
-
 				i++;
 				h1++;
 				h2++;
 				arate++;
-
 				continue;
-			}
-			else{
-				std::cout << "New data from chains : " << i << " and " << (i+1) << "." << std::endl;
 			}
 
 			h1->get()->getCurrentSample(w1);
@@ -265,17 +267,23 @@ void PTHMC_abstract<T>::parallel_tempering()
 			if(p >= T(1.0))
 				p = T(1.0);
 
-			if(i <= 0)
-				std::cout << "p(" << i << "," << (i+1) << ") = " << p << std::endl;
+#if 0
+			if(i <= 0){
+				std::cout << "p(" << i << "," << (i+1) << ") = " << p << " ";
+				std::cout << "E11 = " << E11 << " E22 = " << E22 << " ";
+				std::cout << "E21 = " << E21 << " E12 = " << E12 << std::endl;
+			}
+#endif
 
 			if(T(rand()/(double)RAND_MAX) < p){
 				accepts++;
 
+#if 0
 				if(i <= 0){
 					std::cout << "SWAP! " << i << " p = " << p << std::endl;
 					fflush(stdout);
 				}
-
+#endif
 				h2->get()->setCurrentSample(w1);
 				h1->get()->setCurrentSample(w2);
 			}
@@ -283,7 +291,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 			if(dynamic_pt){
 
 				arate->push_back(p);
-				while(arate->size() > 10) // keeps only the last 10 accept probabilities
+				while(arate->size() > 100) // keeps only the last 10 accept probabilities
 					arate->pop_front();
 
 				// calculates average accept rate between (i) and (i+1)
@@ -293,10 +301,13 @@ void PTHMC_abstract<T>::parallel_tempering()
 				}
 				avg_accept_rate /= T(arate->size());
 
-				if(avg_accept_rate <= T(0.10) && arate->size() >= 10){ // too low accept rate: insert new chain between (i-1) and i
-					std::cout << "Too low accept rate between chains " << i << " and " << i+1 << std::endl;
-					std::cout << "Temperatures: " << h1->get()->getTemperature() << " and " << h2->get()->getTemperature() << std::endl;
-					std::cout << "Accept rate = " << avg_accept_rate << std::endl;
+				// according to research article optimal swap accept rate is 23% but I have seen higher numbers
+				// so code here targets values between 10%-75%
+
+				if(avg_accept_rate <= T(0.10) && arate->size() >= 100){ // too low accept rate: insert new chain between (i-1) and i
+					// std::cout << "Too low accept rate between chains " << i << " and " << i+1 << std::endl;
+					// std::cout << "Temperatures: " << h1->get()->getTemperature() << " and " << h2->get()->getTemperature() << std::endl;
+					// std::cout << "Accept rate = " << avg_accept_rate << std::endl;
 
 					std::lock_guard<std::mutex> lock(sampler_lock);
 
@@ -304,11 +315,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 					const T temperature = (h1->get()->getTemperature() + h2->get()->getTemperature())/T(2.0);
 					h->setTemperature(temperature);
 
-					// randomly selects starting point between neighbouring chains
-					if(rand()%1 == 0)
-						h->setCurrentSample(w1);
-					else
-						h->setCurrentSample(w2);
+					h->startSampler();
 
 					// invalidates current accept rates h1->h2 (we will have h1->h->h2)
 					arate->clear();
@@ -321,8 +328,6 @@ void PTHMC_abstract<T>::parallel_tempering()
 					arate--; // h->h2 (new empty list)
 					arate--; // h1->h (invalid now)
 
-					h->startSampler();
-
 					hmc.insert(h2, h); // h1->h->h2
 
 					// tricky here: updates iterators and indexes for the for-loop
@@ -330,13 +335,19 @@ void PTHMC_abstract<T>::parallel_tempering()
 					total_tries++;
 					// retry at h1: h1->h->h3 now
 
+					// randomly selects starting point between neighbouring chains
+					if(rand()%1 == 0)
+						h->setCurrentSample(w1);
+					else
+						h->setCurrentSample(w2);
+
 					continue;
 				}
-#if 0
-				else if(avg_accept_rate >= T(0.90) && arate->size() >= 10){ // too high accept: remove chain h2
-					std::cout << "Too high accept rate between chains " << i << " and " << i+1 << std::endl;
-					std::cout << "Temperatures: " << h1->get()->getTemperature() << " and " << h2->get()->getTemperature() << std::endl;
-					std::cout << "Accept rate = " << avg_accept_rate << std::endl;
+#if 1
+				else if(avg_accept_rate >= T(0.75) && arate->size() >= 100){ // too high accept: remove chain h2
+					// std::cout << "Too high accept rate between chains " << i << " and " << i+1 << std::endl;
+					// std::cout << "Temperatures: " << h1->get()->getTemperature() << " and " << h2->get()->getTemperature() << std::endl;
+					// std::cout << "Accept rate = " << avg_accept_rate << std::endl;
 
 					std::lock_guard<std::mutex> lock(sampler_lock);
 

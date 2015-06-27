@@ -32,6 +32,9 @@ public:
     // probability functions for hamiltonian MC sampling of
     // P ~ exp(-U(q)) distribution
     virtual T U(const math::vertex<T>& q) const;
+
+    virtual T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const;
+
     virtual math::vertex<T> Ugrad(const math::vertex<T>& q);
 
     // a starting point q for the sampler (may not be random)

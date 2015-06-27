@@ -625,6 +625,16 @@
     <math|\<b-alpha\>=\<b-W\><rsup|T>\<b-Sigma\><rsup|-0.5>*\<b-v\>+\<b-b\>>.
   </center>
 
+  <with|font-series|bold|About numerical stability: >in practice, the
+  exponent of alpha can become too large. If <math|e<rsup|\<alpha\><rsub|i>>>
+  becomes floating point infinity and destroys numerical accuracy, we use
+  approximation\ 
+
+  <center|<math|log<around*|(|1+e<rsup|\<alpha\>>|)>\<thickapprox\>log<around*|(|e<rsup|\<alpha\>>|)>=\<alpha\>>>
+
+  which is good approaximation if <math|e<rsup|\<alpha\>>> is near infinity
+  (even at floating point accuracy).
+
   \;
 
   <strong|Building Neural Network from Stacked RBM>
@@ -647,29 +657,68 @@
   Because the direct optimization method doesn't seem to work very well. It
   seems that an interesting approach could be try to use Monte Carlo sampling
   as seen in many papers as the given probability model fits into HMC
-  approach:
-
-  For hamiltonian we will use
+  approach. For hamiltonian we will use function
 
   <\center>
-    <math|H<around*|(|\<b-q\>,\<b-p\>|)>=U<around*|(|\<b-q\>|)>+K<around*|(|\<b-q\>|)>>,\ 
-
-    <math|U<around*|(|\<b-q\>|)>=<big|sum><rsub|i>-log<around*|(|P<around*|(|\<b-v\><rsub|i><around*|\|||\<nobracket\>>\<b-q\>|)>|)>>,
+    <math|H<around*|(|\<b-q\>,\<b-p\>|)>=E<rsub|T><around*|(|\<b-q\>|)>+K<around*|(|\<b-q\>|)>>,
     <math|K<around*|(|\<b-p\>|)>=\<b-p\><rsup|T>\<b-M\><rsup|<rsup|-1>>\<b-p\>/2>
   </center>
 
-  In the previous chapter we have computed
-  <math|P<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>> and
-  showed it has the<center|> form:
+  And we want to use HMC to sample from distribution:
 
-  <center|<math|-log<around*|(|P<rprime|'><around*|(|\<b-v\>|)>|)>=<frac|1|2><around*|(|\<b-v\>-\<b-a\>|)><rsup|T>\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>-<big|sum><rsub|i>log<around*|(|1+e<rsup|\<alpha\><rsub|i><around*|(|\<b-v\>,\<b-W\>,\<b-Sigma\>,\<b-b\>|)>>|)>>>
+  <center|<math|p<around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>=<frac|1|Z<around*|(|\<b-v\>|)>>*exp<around*|(|-E<rsub|T><around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>|)>\<propto\>p<around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\>|)>*p<around*|(|\<b-theta\>|)>>>
 
-  Which can be easily calculated. Furthermore, in the previous chapters we
-  have calculated gradients of <math|-log<around*|(|P<around*|(|v|)>|)>>
-  using free energy and it is straightforward to plug these equations into
-  HMC theory. The bayesian prior <math|p<around*|(|\<b-theta\>|)>> `needed
-  for parameters can be initially flat (to test if it works) or... just
-  gaussian ball to regularize values to be small.
+  But in practice we have only know the data likelihood
+  <math|p<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>=<frac|1|Z<around*|(|\<b-theta\>|)>>e<rsup|-F<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>>>
+  term from the previous sections. This will lead to the following eqs (for
+  the gradient):
+
+  <\center>
+    <math|E<rsub|T><around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>=-log<around*|(|<frac|Z<around*|(|\<b-v\>|)>|Z<rsub|T><around*|(|\<b-theta\>|)>>|)>+F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>-log<around*|(|<frac|p<around*|(|\<b-theta\>|)>|p<around*|(|\<b-v\>|)>>|)>
+    >
+
+    <math|\<nabla\><rsub|\<b-theta\>>E<rsub|T><around*|(|\<b-theta\><around*|\||\<b-v\>|\<nobracket\>>|)>=\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>-*E<rsub|\<b-v\>><around*|[|\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>|]>-\<nabla\><rsub|\<b-theta\>>log<around*|(|p<around*|(|\<b-theta\>|)>|)>
+    >
+  </center>
+
+  We can decide for the flat priors meaning that
+  <math|p<around*|(|\<b-theta\>|)>\<propto\>1> and the last term will be
+  zero. This means that we can use directly gradient computed for the
+  <math|-log<around*|(|P<around*|(|\<b-v\>|)>|)>>. But HMC also calculates
+  difference between energy functions
+
+  <center|<math|E<rsub|T><around*|(|\<b-theta\><rsub|n+1><around*|\||\<b-v\>|\<nobracket\>>|)>-E<rsub|T><around*|(|\<b-theta\><rsub|n><around*|\||\<b-v\>|\<nobracket\>>|)>=F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>-F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>+log<around*|(|<frac|Z<rsub|T><around*|(|\<b-theta\><rsub|n+1>|)>|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>|)>-log<around*|(|<frac|p<around*|(|\<b-theta\><rsub|n+1>|)>|p<around*|(|\<b-theta\><rsub|n>|)>>|)>>>
+
+  The last term can be assumed to be zero but the problem is ratio of
+  partition functions. We know that ratio of partition functions will be
+  close to <math|1> if the change between parameters is not too large so it
+  can be initially approximated to be zero but in practice this seem to lead
+  to too small variances causing problems. But we can approximate by using
+  the previous results (by using first order derivate approximation from
+  <math|\<b-theta\><rsub|n+1>> to <math|\<b-theta\><rsub|n>> and from
+  <math|\<b-theta\><rsub|n>> to <math|\<b-theta\><rsub|n+1>> and calculating
+  the mean):
+
+  <center|<math|log<around*|(|<frac|Z<rsub|T><around*|(|\<b-theta\><rsub|n+1>|)>|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>|)>\<thickapprox\>-<frac|1|2><around*|(|\<b-theta\><rsub|n+1>-\<b-theta\><rsub|n>|)><rsup|T>*<around*|(|E<rsub|\<b-v\>><around*|[|\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>><rsub|n+1>|)>|]>+E<rsub|\<b-v\>><around*|[|\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>><rsub|n>|)>|]>|)>>>
+
+  NOTE: In practice this approximation <with|font-series|bold|DOES NOT SEEM
+  TO WORK WELL IN PRACTICE AND CANNOT BE USED>.\ 
+
+  You can calculate gradient quite easily but you cannot calculate difference
+  between energy functions as it requires estimating the ratio of partition
+  functions. For this case I will try to use <em|importance sampling> (as the
+  distributions should be close to each other and we want only the ratio and
+  not the actual <math|Z<rsub|T>>-values. Theory:
+
+  <center|<math|<frac|Z<rsub|T><around*|(|\<b-theta\><rsub|n+1>|)>|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>=<big|int><frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>d\<b-v\>=<big|int><frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|p<rsub|><rsub|n><rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>>*p<around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>d\<b-v\>=E<rsub|\<b-theta\><rsub|n>><around*|[|<frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|p<rsub|><rsub|n><rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>>|]>>>
+
+  So we need to sample <math|\<b-v\>>:s from the distribution using AIS and
+  ``parallel tempering'' approach described by Cho et. al. in 2011. This seem
+  to work rather well after which we calculate ratios of unscaled
+  distributions <math|p<rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\>|)>=e<rsup|-F<around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>>|)>>>
+  and calculate the mean value: \ 
+
+  <center|<math|E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|<frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|p<rsub|><rsub|n><rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>>|]>=E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|e<rsup|F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>-F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>>|]>>.>
 
   \;
 

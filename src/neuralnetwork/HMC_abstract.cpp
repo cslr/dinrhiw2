@@ -256,7 +256,7 @@ namespace whiteice
 
 		{
 			std::lock_guard<std::mutex> lock(updating_sample);
-			starting_position(q); // random starting position q
+			// starting_position(q); // random starting position q [ALREADY DONE WHEN THE THREAD STARTS!]
 			q_updated = true;
 
 			p.resize(q.size()); // momentum is initially zero
@@ -279,6 +279,8 @@ namespace whiteice
 		T accept_rate = T(0.0f);
 		unsigned int accept_rate_samples = 0;
 
+		const bool use_difference = true;
+
 
 		while(running) // keep sampling forever
 		{
@@ -295,7 +297,6 @@ namespace whiteice
 			math::vertex<T> old_q = q;
 			math::vertex<T> current_p = p;
 
-#if 1
 			p -= T(0.5f) * epsilon * Ugrad(q);
 
 			for(unsigned int i=0;i<L;i++){
@@ -304,20 +305,25 @@ namespace whiteice
 			}
 
 			p -= T(0.5f) * epsilon * Ugrad(q);
-#else
-			// just follows the gradient..
 
-			auto g = Ugrad(old_q);
-
-			// std::cout << "norm(Ugrad) = " << g.norm() << std::endl;
-			// std::cout << "norm(q)     = " << q.norm() << std::endl;
-
-			q += epsilon * g;
-#endif
 			p = -p;
 
-			T current_U  = U(old_q);
-			T proposed_U = U(q);
+			T deltaU = T(0.0);
+
+			if(use_difference == false){
+				T current_U  = U(old_q);
+				T proposed_U = U(q);
+				deltaU = current_U - proposed_U;
+			}
+			else{
+				deltaU = -Udiff(q, old_q);
+#if 0
+				// we approximate difference: deltaU = U(q) - U(q_old) ~ (q-q_old)*grad(U(q_old))
+				auto deltaq = q - old_q;
+				auto gU = Ugrad(old_q);
+				deltaU = (deltaq*gU)[0];
+#endif
+			}
 
 			// std::cout << "current_U  = " << current_U << std::endl;
 			// std::cout << "proposed_U = " << proposed_U << std::endl;
@@ -333,7 +339,7 @@ namespace whiteice
 
 			T r = T( (float)rand()/((float)RAND_MAX) );
 
-			if(r <= exp(current_U-proposed_U+current_K-proposed_K))
+			if(r <= exp(deltaU+current_K-proposed_K))
 			{
 				// accept (q)
 				{

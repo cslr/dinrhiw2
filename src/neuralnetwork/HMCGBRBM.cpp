@@ -68,6 +68,18 @@ T HMC_GBRBM<T>::U(const math::vertex<T>& q) const
 	}
 }
 
+template <typename T>
+T HMC_GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
+{
+	if(data.size() > 0){
+		return rbm.Udiff(q1, q2);
+	}
+	else{
+		std::cout << "HMC_GBRBM:U() error: data.size() == 0" << std::endl;
+		return T(0.0); // zero difference
+	}
+}
+
 
 template <typename T>
 math::vertex<T> HMC_GBRBM<T>::Ugrad(const math::vertex<T>& q)

@@ -255,40 +255,42 @@ void rbm_test()
 	}
 #endif
 
-	// generates test data: a 2d circle with gaussian noise and tests that GB-RBM can correctly learn it
+	// generates test data: a D dimensional sphere with gaussian noise and tests that GB-RBM can correctly learn it
 	{
 		std::cout << "Generating data.." << std::endl;
+
+		unsigned int DIMENSION = 2;
 
 		std::vector< math::vertex< math::blas_real<double> > > samples;
 		math::vertex< math::blas_real<double> > var;
 
-		var.resize(2);
-		var[0] = 1.0;
-		var[1] = 2.0;
-//		var[2] = 1.0;
-//		var[3] = 2.0;
-//		var[4] = 1.0;
+		var.resize(DIMENSION);
 
+		for(unsigned int i=0;i<DIMENSION;i++){
+			var[i] = 1.0 + log((double)(i+1));
+		}
 
 		std::default_random_engine generator(time(0));
 		std::uniform_real_distribution<double> unif(0.0,1.0); // Unif [0,1]
 		std::normal_distribution<double> nrm1(0.0,1.0); // N(0,1)
-		std::normal_distribution<double> nrm2(0.0,2.0); // N(0,2)
 
 		{
+			// generates data for D (D-1 area) dimensional hypersphere
+
 			math::vertex< math::blas_real<double> > m, v;
-			m.resize(2);
-			v.resize(2);
+			m.resize(DIMENSION);
+			v.resize(DIMENSION);
 
 			for(unsigned int i=0;i<10000;i++){
 				math::vertex< math::blas_real<double> > s;
-				s.resize(2);
-				double angle = 2.0*M_PI*unif(generator);
-				s[0] = 10.0*cos(angle) + nrm1(generator);
-				s[1] = 10.0*sin(angle) + nrm2(generator);
-//				s[2] = 10.0*cos(angle) + nrm1(generator);
-//				s[3] = 10.0*sin(angle) + nrm2(generator);
-//				s[4] = 10.0*cos(angle) + nrm1(generator);
+				s.resize(DIMENSION);
+				for(unsigned d=0;d<DIMENSION;d++)
+					s[d] = nrm1(generator);
+				s.normalize();
+
+				// adds variance
+				for(unsigned int d=0;d<DIMENSION;d++)
+					s[d] = s[d] + nrm1(generator)*math::sqrt(var[d]);
 
 				samples.push_back(s);
 
@@ -311,9 +313,8 @@ void rbm_test()
 		// tests HMC sampling
 		{
 			// adaptive step length
-			std::cout << "data size: " << samples.size() << std::endl;
 
-#if 0
+#if 1
 			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
 			hmc.setTemperature(1.0);
 #else
@@ -330,7 +331,7 @@ void rbm_test()
 			// detect NaNs !!!
 
 			while(1){
-				sleep(1);
+				sleep(5);
 				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
 				if(hmc.getNumberOfSamples() > 0){
 					std::vector< math::vertex< math::blas_real<double> > > qsamples;
@@ -376,6 +377,8 @@ void rbm_test()
 
 						std::cout << "HMC-GBRBM E[error]:   " << mean << std::endl;
 						std::cout << "HMC-GBRBM min(error): " << min_error << std::endl;
+						//std::cout << "PTHMC-GBRBM temps: " << hmc.getNumberOfTemperatures() << std::endl;
+						//std::cout << "PTHMC-GBRBM arate: " << 100.0*hmc.getAcceptRate() << "%" << std::endl;
 					}
 #endif
 				}

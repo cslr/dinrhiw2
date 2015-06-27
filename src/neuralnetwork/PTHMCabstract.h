@@ -41,6 +41,8 @@ public:
 	bool continueSampler();
 	bool stopSampler();
 
+	unsigned int getNumberOfTemperatures() const;
+
 	unsigned int getSamples(std::vector< math::vertex<T> >& samples) const;
 	unsigned int getNumberOfSamples() const;
 
