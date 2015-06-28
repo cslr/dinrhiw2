@@ -65,7 +65,7 @@ bool PTHMC_abstract<T>::startSampler()
 	try{
 		running = true;
 		paused = false;
-		parallel_tempering_thread = new std::thread(parallel_tempering, this);
+		parallel_tempering_thread = new std::thread(&PTHMC_abstract<T>::parallel_tempering, this);
 	}
 	catch(std::exception& e){
 		hmc.clear();

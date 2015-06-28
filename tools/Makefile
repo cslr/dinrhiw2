@@ -10,7 +10,7 @@ BISON = bison
 CP = cp
 RM = rm
 
-OPTIMIZE=-O3 -g -DAMD64 -ffast-math -msse3
+OPTIMIZE=-O3 -g -DAMD64 -ffast-math -march=native -fopenmp
 
 CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
 CXXFLAGS = -g -O2  $(CFLAGS)

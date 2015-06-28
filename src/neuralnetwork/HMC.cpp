@@ -191,7 +191,7 @@ namespace whiteice
 		for(unsigned int i=0;i<NUM_THREADS;i++){
 
 			try{
-				std::thread* t = new std::thread(sampler_loop, this);
+			        std::thread* t = new std::thread(&HMC<T>::sampler_loop, this);
 				// t->detach();
 				sampling_thread.push_back(t);
 			}

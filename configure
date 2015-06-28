@@ -3991,6 +3991,19 @@ $as_echo "failure" >&6; }
     `$FGREP flags /proc/cpuinfo > cpuinfo`
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GMP library" >&5
+$as_echo_n "checking for GMP library... " >&6; }
+GMP_LIBRARY="no"
+
+`gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+  GMP_LIBRARY="yes"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  as_fn_error $? "no" "$LINENO" 5
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers (1)" >&5
@@ -4173,45 +4186,8 @@ fi
 
 
 
+optimization_flags="$optimization_flags -march=native -fopenmp"
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking SSE intruction set extensions" >&5
-$as_echo_n "checking SSE intruction set extensions... " >&6; }
-cpu_sse=`$FGREP -c sse $CPUINFO_FILE`
-cpu_sse=`if test $cpu_sse -ge 1; then echo "yes"; else echo "no"; fi`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpu_sse" >&5
-$as_echo "$cpu_sse" >&6; }
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking SSE2 instruction set extensions" >&5
-$as_echo_n "checking SSE2 instruction set extensions... " >&6; }
-cpu_sse2=`$FGREP -c sse2 $CPUINFO_FILE`
-cpu_sse2=`if test $cpu_sse2 -ge 1; then echo "yes"; else echo "no"; fi`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpu_sse2" >&5
-$as_echo "$cpu_sse2" >&6; }
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking SSE3 instruction set extensions" >&5
-$as_echo_n "checking SSE3 instruction set extensions... " >&6; }
-cpu_sse3=`$FGREP -c sse3 $CPUINFO_FILE`
-cpu_sse3=`if test $cpu_sse3 -ge 1; then echo "yes"; else echo "no"; fi`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpu_sse3" >&5
-$as_echo "$cpu_sse3" >&6; }
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking 3dnow! instruction set extensions" >&5
-$as_echo_n "checking 3dnow! instruction set extensions... " >&6; }
-cpu_3dnow=`$FGREP -c 3dnow $CPUINFO_FILE`
-cpu_3dnow=`if test $cpu_3dnow -ge 1; then echo "yes"; else echo "no"; fi`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpu_3dnow" >&5
-$as_echo "$cpu_3dnow" >&6; }
-
-
-
-
-if [ $cpu_sse3 = "yes" ]; then
-   optimization_flags="$optimization_flags -msse3"
-elif [ $cpu_sse2 = "yes" ]; then
-   optimization_flags="$optimization_flags -msse2"
-elif [ $cpu_sse = "yes" ]; then
-   optimization_flags="$optimization_flags -msse"
-fi
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

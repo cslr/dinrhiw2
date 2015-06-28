@@ -61,7 +61,7 @@ namespace whiteice
 
 		try{
 			starting_position(q); // initializes starting position before starting the thread here just to be sure..
-			std::thread* t = new std::thread(sampler_loop, this);
+			std::thread* t = new std::thread(&HMC_abstract<T>::sampler_loop, this);
 			sampling_thread.push_back(t);
 
 			return true;

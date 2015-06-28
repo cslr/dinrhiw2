@@ -124,17 +124,17 @@ else
 fi
 
 dnl check for GMP integer library
-dnl AC_MSG_CHECKING([for GMP library])
-dnl GMP_LIBRARY="no"
-dnl 
-dnl `gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
-dnl 
-dnl if [[ $? -eq 0 ]]; then
-dnl   GMP_LIBRARY="yes"
-dnl   AC_MSG_RESULT([yes])
-dnl else
-dnl   AC_MSG_ERROR([no])
-dnl fi
+AC_MSG_CHECKING([for GMP library])
+GMP_LIBRARY="no"
+
+`gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+  GMP_LIBRARY="yes"
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_ERROR([no])
+fi
 
 
 dnl checking for CBLAS (BLAS) header files and (and library)
@@ -297,39 +297,8 @@ AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search p
 			  [if [[ -n $withval ]]; then ATLASLIBS_PATH=$withval; fi], [])
 
 
-dnl checking support for different instruction sets
+optimization_flags="$optimization_flags -march=native -fopenmp"
 
-AC_MSG_CHECKING([SSE intruction set extensions])
-cpu_sse=`$FGREP -c sse $CPUINFO_FILE`
-cpu_sse=`if test $cpu_sse -ge 1; then echo "yes"; else echo "no"; fi`
-AC_MSG_RESULT($cpu_sse)
-
-AC_MSG_CHECKING([SSE2 instruction set extensions])
-cpu_sse2=`$FGREP -c sse2 $CPUINFO_FILE`
-cpu_sse2=`if test $cpu_sse2 -ge 1; then echo "yes"; else echo "no"; fi`
-AC_MSG_RESULT($cpu_sse2)
-
-AC_MSG_CHECKING([SSE3 instruction set extensions])
-cpu_sse3=`$FGREP -c sse3 $CPUINFO_FILE`
-cpu_sse3=`if test $cpu_sse3 -ge 1; then echo "yes"; else echo "no"; fi`
-AC_MSG_RESULT($cpu_sse3)
-
-AC_MSG_CHECKING([3dnow! instruction set extensions])
-cpu_3dnow=`$FGREP -c 3dnow $CPUINFO_FILE`
-cpu_3dnow=`if test $cpu_3dnow -ge 1; then echo "yes"; else echo "no"; fi`
-AC_MSG_RESULT($cpu_3dnow)
-
-
-dnl activates CPU specific optimization flags
-
-
-if [[ $cpu_sse3 = "yes" ]]; then
-   optimization_flags="$optimization_flags -msse3"
-elif [[ $cpu_sse2 = "yes" ]]; then
-   optimization_flags="$optimization_flags -msse2"
-elif [[ $cpu_sse = "yes" ]]; then
-   optimization_flags="$optimization_flags -msse"
-fi
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"
