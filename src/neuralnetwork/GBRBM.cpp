@@ -1498,11 +1498,12 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 	{
 		vs.resize(SAMPLES);
 
-#pragma omp parallel for
+		// TODO parallelize this to use thread-safe random number generators..
+// #pragma omp parallel for
 		for(unsigned int i=0;i<SAMPLES;i++){
 			math::vertex<T> vv;
 
-#pragma omp critical
+// #pragma omp critical
 			{
 				vv = normalrnd(m, s); // generates N(m,s) distributed variable [level 0]
 			}
