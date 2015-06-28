@@ -400,6 +400,10 @@ namespace whiteice
     bool convert(double& B, const float&  A) throw(){ B = (double)A; return true; }
     bool convert(double& B, const double& A) throw(){ B = A; return true; }
     
+    bool convert(double& B, const char& A) throw(){ B = (double)A; return true; }
+    bool convert(double& B, const unsigned char A) throw(){ B = (double)A; return true; }
+    bool convert(double& B, const int& A) throw(){ B = (double)A; return true; }
+    bool convert(double& B, const unsigned int& A) throw(){ B = (double)A; return true; }
     
     bool convert(float& B,  const blas_real<float>& A) throw(){ B = (float)A.c[0]; return true; }
     bool convert(float& B,  const blas_real<double>& A) throw(){ B = (float)A.c[0]; return true; }

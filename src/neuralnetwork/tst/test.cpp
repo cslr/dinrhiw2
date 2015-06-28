@@ -32,6 +32,8 @@
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
 
+#include "RNG.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -259,7 +261,7 @@ void rbm_test()
 	{
 		std::cout << "Generating data.." << std::endl;
 
-		unsigned int DIMENSION = 16*16; // mini-image size
+		unsigned int DIMENSION = 100; // mini-image size (16x16 = 256)
 
 		std::vector< math::vertex< math::blas_real<double> > > samples;
 		math::vertex< math::blas_real<double> > var;
@@ -270,9 +272,7 @@ void rbm_test()
 			var[i] = 1.0 + log((double)(i+1));
 		}
 
-		std::default_random_engine generator(time(0));
-		std::uniform_real_distribution<double> unif(0.0,1.0); // Unif [0,1]
-		std::normal_distribution<double> nrm1(0.0,1.0); // N(0,1)
+		whiteice::RNG< math::blas_real<double> > rng;
 
 		{
 			// generates data for D (D-1 area) dimensional hypersphere
@@ -284,16 +284,15 @@ void rbm_test()
 			for(unsigned int i=0;i<10000;i++){
 				math::vertex< math::blas_real<double> > s;
 				s.resize(DIMENSION);
-				for(unsigned d=0;d<DIMENSION;d++)
-					s[d] = nrm1(generator);
-				s.normalize();
+				rng.normal(s);
+				s.normalize(); // sample from unit hypersphere surface
 
 				// 5x larger radius than the largest variance [to keep noise separated]
 				s *= 5.0*math::sqrt(var[var.size()-1]);
 
 				// adds variance
 				for(unsigned int d=0;d<DIMENSION;d++)
-					s[d] = s[d] + nrm1(generator)*math::sqrt(var[d]);
+					s[d] = s[d] + rng.normal()*math::sqrt(var[d]);
 
 				samples.push_back(s);
 
@@ -318,10 +317,10 @@ void rbm_test()
 			// adaptive step length
 
 #if 0
-			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
+			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, DIMENSION, true, true);
 			hmc.setTemperature(1.0);
 #else
-			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(10, samples, 50, true);
+			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(10, samples, DIMENSION, true);
 #endif
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();

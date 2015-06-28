@@ -170,6 +170,10 @@ namespace whiteice
       
       bool comparable() throw();
       
+      // stores vertex to comma separated ASCII file (.CSV) which can be
+      // often imported by data analysis software
+      bool saveAscii(const std::string& filename) const throw();
+
       
       //////////////////////////////////////////////////
       // vertex data compression

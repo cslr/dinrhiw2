@@ -12,6 +12,7 @@
 #include <random>
 #include "vertex.h"
 #include "matrix.h"
+#include "RNG.h"
 
 namespace whiteice {
 
@@ -190,10 +191,7 @@ private:
 	math::vertex<T> Umean, Uvariance;
 	T temperature;
 
-	// should protect against mutex..
-    mutable std::default_random_engine* generator;
-	mutable std::normal_distribution<>* rng;
-
+	RNG<T> rng;
 };
 
 

@@ -25,7 +25,7 @@
 #define lib_dinrhiw_h
 
 #include "fastpca.h"
-#include "ultradeep.h"
+// #include "ultradeep.h"
 
 //#include "RBM.h"
 //#include "CRBM.h"
@@ -38,6 +38,8 @@
 #include "LBFGS.h"
 #include "LBFGS_nnetwork.h"
 #include "pLBFGS_nnetwork.h"
+
+#include "RNG.h"
 
 #include "lreg_nnetwork.h"
 #include "nnetwork_function.h"

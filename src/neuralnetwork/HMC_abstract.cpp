@@ -1,6 +1,7 @@
 
 
 #include "HMC_abstract.h"
+#include "RNG.h"
 #include <random>
 #include <list>
 
@@ -268,10 +269,7 @@ namespace whiteice
 		T epsilon = T(0.01f); ///math::sqrt(q.size()); .. NOT!!
 		unsigned int L = 20;
 
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::normal_distribution<> rng(0, 1); // N(0,1) variables
-		auto normalrnd = std::bind(rng, std::ref(gen));
+		whiteice::RNG<T> rng;
 
 		// used to adaptively finetune step length epsilon based on accept rate
 		// the aim of the adaptation is to keep accept rate near optimal 70%
@@ -291,8 +289,7 @@ namespace whiteice
 				q_overwritten = false; // detect if somebody have changed q during computation
 			}
 
-			for(unsigned int i=0;i<p.size();i++)
-				p[i] = T(normalrnd()); // Normal distribution
+			rng.normal(p); // Normal distribution
 
 			math::vertex<T> old_q = q;
 			math::vertex<T> current_p = p;
@@ -337,7 +334,7 @@ namespace whiteice
 				proposed_K += T(0.5f)*p[i]*p[i];
 			}
 
-			T r = T( (float)rand()/((float)RAND_MAX) );
+			T r = rng.uniform();
 
 			if(r <= exp(deltaU+current_K-proposed_K))
 			{

@@ -10,6 +10,7 @@
 #include "number.h"
 
 #include <iostream>
+#include <stdio.h>
 #include <stdexcept>
 #include <exception>
 #include <typeinfo>
@@ -1221,6 +1222,37 @@ namespace whiteice
     }
     
     
+    template <typename T>
+    bool vertex<T>::saveAscii(const std::string& filename) const throw()
+	{
+    	FILE* fp = fopen(filename.c_str(), "wt");
+    	if(fp == NULL || ferror(fp)) return false;
+
+    	if(this->dataSize > 0){
+    		double f = 0.0;
+    		whiteice::math::convert(f, this->data[0]);
+    		fprintf(fp, "%f", f);
+    	}
+
+
+    	for(unsigned int i=1;i<this->dataSize;i++){
+    		double f = 0.0;
+    		whiteice::math::convert(f, this->data[i]);
+    		fprintf(fp, ",%f", f);
+    	}
+
+    	fprintf(fp, "\n");
+
+    	if(ferror(fp)){
+    		fclose(fp);
+    		return false;
+    	}
+
+    	fclose(fp);
+    	return true;
+	}
+
+
     ////////////////////////////////////////////////////////////
     // matrix data compression
     // note: compressor destroys possible memory

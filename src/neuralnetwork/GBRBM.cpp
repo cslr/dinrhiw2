@@ -29,10 +29,6 @@ GBRBM<T>::GBRBM()
 	h.zero();
 	v.zero();
 
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	generator = new std::default_random_engine (seed);
-	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
-
 	initializeWeights();
 }
 
@@ -46,10 +42,6 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
-
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	generator = new std::default_random_engine (seed);
-	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
 }
 
 // creates 2-layer: V * H network
@@ -68,20 +60,12 @@ GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_ar
     z.resize(visible);
     W.resize(visible, hidden);
 
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-	generator = new std::default_random_engine (seed);
-	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
-
     initializeWeights();
 }
 
 template <typename T>
 GBRBM<T>::~GBRBM()
 {
-	// very careful here.. the child GBRBMs must have zero-sized ais_rbm or this will lead to recursion
-	// if(ais_rbm.size() > 0) ais_rbm.clear();
-	if(generator) delete generator;
-	if(rng) delete rng;
 }
 
 template <typename T>
@@ -215,7 +199,7 @@ bool GBRBM<T>::sampleHidden(math::vertex<T>& h, const math::vertex<T>& v)
 	sigmoid(x, h);
 
 	for(unsigned int i=0;i<h.size();i++){
-		T r = T((double)rand())/T((double)RAND_MAX);
+		T r = rng.uniform();
 		if(r <= h[i]) h[i] = T(1.0);
 		else h[i] = T(0.0);
 	}
@@ -369,7 +353,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	// if(verbose)
 	{
 		for(unsigned int i=0;i<1000;i++){
-			auto& s = samples[rand() % samples.size()];
+			auto& s = samples[rng.rand() % samples.size()];
 			data_mean += s;
 			for(unsigned int i=0;i<s.size();i++)
 				data_var[i] += s[i]*s[i];
@@ -385,7 +369,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			auto x = data_mean;
 			for(unsigned int i=0;i<x.size();i++){
 				auto wide = T(2.0)*math::sqrt(data_var[i]);
-				x[i] = T(rand()/((double)RAND_MAX))*wide - wide/2 + data_mean[i];
+				x[i] = rng.uniform()*wide - wide/2 + data_mean[i];
 			}
 
 			random_samples.push_back(x);
@@ -448,12 +432,12 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			std::vector< math::vertex<T> > vs;
 
 			// randomly chooses negative samples either using AIS or CD-1
-			if((rand() & 1) == 1){
+			if((rng.rand() & 1) == 1){
 				ais_sampling(vs, NUM_SAMPLES, data_mean, data_var, W, a, b, z); // gets (v) from the model
 			}
 			else{
 				for(unsigned int j=1;j<NUM_SAMPLES;j++){
-					const unsigned int index = rand() % samples.size();
+					const unsigned int index = rng.rand() % samples.size();
 					math::vertex<T> x = samples[index]; // x = visible state
 
 					auto xx = reconstruct_gbrbm_data(x, W, a, b, z, CDk); // gets x ~ p(v) from the model
@@ -530,7 +514,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			for(unsigned int j=0;j<NUM_SAMPLES;j++)
 			{
-				const unsigned int index = rand() % samples.size();
+				const unsigned int index = rng.rand() % samples.size();
 				math::vertex<T> x = samples[index]; // x = visible state
 
 				auto xa = (x - a);
@@ -915,7 +899,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 		T u = T(0.0);
 
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
-			const unsigned int index = rand() % Usamples.size();
+			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
 			u += -unscaled_log_probability(s, qW, qa, qb, qz);
 
@@ -1034,7 +1018,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 		T u = T(0.0);
 
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
-			const unsigned int index = rand() % Usamples.size();
+			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
 
 			// free-energy
@@ -1125,7 +1109,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 		// for(auto& v : Usamples){
 		for(unsigned int ui=0;ui<NUMUSAMPLES;ui++)
 		{
-			auto& v = Usamples[rand()%Usamples.size()];
+			auto& v = Usamples[rng.rand()%Usamples.size()];
 			// calculates positive phase SUM(gradF)
 
 			math::vertex<T> grad_a = (v-qa);
@@ -1175,7 +1159,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 
 			// uses CD-1 to get samples [fast]
 			for(unsigned int s=0;s<NEGSAMPLES;s++){
-				const unsigned int index = rand() % Usamples.size();
+				const unsigned int index = rng.rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
 
 				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 1); // gets x ~ p(v) from the model
@@ -1271,19 +1255,17 @@ bool GBRBM<T>::save(const std::string& filename) const throw()
 template <typename T>
 T GBRBM<T>::normalrnd() const // N(0,1)
 {
-	// TODO should protect access using mutex
-	return T( (*rng)(*generator) );
+	return rng.normal();
 }
 
 
 template <typename T>
 math::vertex<T> GBRBM<T>::normalrnd(const math::vertex<T>& m, const math::vertex<T>& v) const
 {
-	// TODO should protect access using mutex
 	math::vertex<T> x(m);
 
 	for(unsigned int i=0;i<x.size();i++)
-		x[i] += normalrnd()*math::sqrt(v[i]);
+		x[i] += rng.normal()*math::sqrt(v[i]);
 
 	return x;
 }
@@ -1346,6 +1328,9 @@ T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data m
 	    vr -= mr*mr;
 	    vr *= T((double)r.size()/((double)r.size() - 1.0)); // changes division to 1/N-1 (sample variance)
 
+	    if(mr <= T(0.0))
+	    	return mr; // this is some kind wierd error..
+
 	    auto sv = math::sqrt(vr / T(r.size())); // st.dev. of the mean
 
 	    if(sv/mr <= T(1.0)){
@@ -1400,7 +1385,7 @@ math::vertex<T> GBRBM<T>::negative_phase_q(const unsigned int SAMPLES,
 
 		// uses CD-1 to get samples [fast]
 		for(unsigned int s=0;s<SAMPLES;s++){
-			const unsigned int index = rand() % Usamples.size();
+			const unsigned int index = rng.rand() % Usamples.size();
 			const math::vertex<T>& v = Usamples[index]; // x = visible state
 
 			auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 1); // gets x ~ p(v) from the model
@@ -1499,14 +1484,12 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 		vs.resize(SAMPLES);
 
 		// TODO parallelize this to use thread-safe random number generators..
-// #pragma omp parallel for
+#pragma omp parallel for
 		for(unsigned int i=0;i<SAMPLES;i++){
 			math::vertex<T> vv;
 
-// #pragma omp critical
-			{
-				vv = normalrnd(m, s); // generates N(m,s) distributed variable [level 0]
-			}
+			// generates N(m,s) distributed variable [level 0]
+			vv = normalrnd(m, s);
 
 			math::vertex<T> hh;
 
@@ -1785,7 +1768,7 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_data(const math::vertex<T>& v,
 		sigmoid(hx, h);
 
 		for(unsigned int i=0;i<h.size();i++){
-			T r = T( rand()/((double)RAND_MAX) );
+			T r = rng.uniform();
 			if(r <= h[i]) h[i] = T(1.0);
 			else h[i] = T(0.0);
 		}
@@ -1829,7 +1812,7 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_hidden(const math::vertex<T>& v,
 		sigmoid(hx, h);
 
 		for(unsigned int i=0;i<h.size();i++){
-			T r = T( rand()/((double)RAND_MAX) );
+			T r = rng.uniform();
 			if(r <= h[i]) h[i] = T(1.0);
 			else h[i] = T(0.0);
 		}
@@ -1856,7 +1839,7 @@ T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& s
 		return error;
 
 	for(unsigned int n=0;n<N;n++){
-		const unsigned int index = rand() % samples.size();
+		const unsigned int index = rng.rand() % samples.size();
 		auto& s = samples[index];
 
 		auto delta = s - reconstruct_gbrbm_data(s, W, a, b, z, CDk);

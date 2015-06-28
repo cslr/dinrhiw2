@@ -14,6 +14,9 @@
 #include <cmath>
 #include <new>
 
+#include <chrono>
+#include <random>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -44,6 +47,8 @@
 #include "gmatrix.h"
 #include "gvertex.h"
 
+#include "RNG.h"
+
 
 using namespace whiteice;
 using namespace whiteice::math;
@@ -51,6 +56,7 @@ using namespace whiteice::math;
 void own_terminate();
 void own_unexpected();
 
+void rng_test();
 
 void vertex_test();
 number <quaternion<double>, double, double, unsigned int> * quaternion_test();
@@ -132,6 +138,115 @@ int gaussiani(float mean, float var)
 
 //////////////////////////////////////////////////////////////////////
 
+void rng_test()
+{
+	RNG<> rng;
+
+	for(unsigned int i=0;i<10;i++)
+		std::cout << rng.uniform() << std::endl;
+
+	const unsigned int SAMPLES=10000000; // 10.000.000 random numbers
+
+	math::vertex<> v;
+	v.resize(SAMPLES);
+
+	auto t0=std::chrono::high_resolution_clock::now();
+	rng.uniform(v);
+	auto t1=std::chrono::high_resolution_clock::now();
+	auto own_uni_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+
+	math::blas_real<float> m, s;
+	m = 0.0;
+	s = 0.0;
+
+
+	for(unsigned int i=0;i<v.size();i++){
+		m += v[i];
+		s += v[i]*v[i];
+	}
+
+	m /= v.size();
+	s /= v.size();
+
+	s -= m*m;
+	s *= v.size()/((double)(v.size() - 1)); // sample variance..
+
+
+	std::cout << "uniform distributin mean: " << m << std::endl;
+	std::cout << "uniform distribution var: " << s << std::endl;
+
+	t0=std::chrono::high_resolution_clock::now();
+	rng.normal(v);
+	t1=std::chrono::high_resolution_clock::now();
+	auto own_nrm_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+
+	m = 0.0;
+	s = 0.0;
+
+	for(unsigned int i=0;i<v.size();i++){
+		m += v[i];
+		s += v[i]*v[i];
+	}
+
+	m /= v.size();
+	s /= v.size();
+
+	s -= m*m;
+	s *= v.size()/((double)(v.size() - 1)); // sample variance..
+
+	std::cout << "normal distributin mean: " << m << std::endl;
+	std::cout << "normal distribution var: " << s << std::endl;
+
+	v.resize(100000); // only saves 100.000 samples instead of 10.000.000
+	v.saveAscii("normal_rnd.txt");
+	v.resize(SAMPLES);
+
+	t0=std::chrono::high_resolution_clock::now();
+	rng.exp(v);
+	t1=std::chrono::high_resolution_clock::now();
+	auto own_exp_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+
+	m = 0.0;
+	s = 0.0;
+
+	for(unsigned int i=0;i<v.size();i++){
+		m += v[i];
+		s += v[i]*v[i];
+	}
+
+	m /= v.size();
+	s /= v.size();
+
+	s -= m*m;
+	s *= v.size()/((double)(v.size() - 1)); // sample variance..
+
+	std::cout << "exponential distributin mean: " << m << std::endl;
+	std::cout << "exponential distribution var: " << s << std::endl;
+
+	v.resize(100000); // only saves 100.000 samples instead of 10.000.000
+	v.saveAscii("exp_rnd.txt");
+	v.resize(SAMPLES);
+
+	std::default_random_engine generator;
+	std::normal_distribution<double> distribution(0.0,1.0);
+
+	t0=std::chrono::high_resolution_clock::now();
+
+	for(unsigned int i=0;i<v.size();i++)
+		v[i] = distribution(generator);
+
+	t1=std::chrono::high_resolution_clock::now();
+	auto cpp_nrm_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+
+	std::cout << "Uniform RNG     [samples/ms]: " << ((double)SAMPLES)/own_uni_time << std::endl;
+	std::cout << "Normal RNG      [samples/ms]: " << ((double)SAMPLES)/own_nrm_time << std::endl;
+	std::cout << "Exponential RNG [samples/ms]: " << ((double)SAMPLES)/own_exp_time << std::endl;
+	std::cout << "C++ Normal RNG  [samples/ms]: " << ((double)SAMPLES)/own_nrm_time << std::endl;
+
+}
+
+
+//////////////////////////////////////////////////////////////////////
 
 int main()
 {
@@ -159,6 +274,11 @@ int main()
       delete ptr; // should call ~quaternion and then ~number
     */
     
+    std::cout << "RNG TEST" << std::endl;
+    rng_test();
+
+    return 0; // temp disable rest of the tests
+
     std::cout << "MATRIX TEST" << std::endl;
     matrix_test();
     

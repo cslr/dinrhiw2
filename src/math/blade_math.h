@@ -115,6 +115,12 @@ namespace whiteice
     bool convert(double& B, const blas_real<double>& A) throw();
     bool convert(double& B, const blas_complex<double>& A) throw();
     
+    bool convert(double& B, const char& A) throw();
+    bool convert(double& B, const unsigned char A) throw();
+    bool convert(double& B, const int& A) throw();
+    bool convert(double& B, const unsigned int& A) throw();
+
+
     
     //////////////////////////////////////////////////////////////////////
     // square root

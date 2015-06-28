@@ -6,6 +6,7 @@
  */
 
 #include "PTHMCabstract.h"
+#include "RNG.h"
 #include "vertex.h"
 #include <chrono>
 
@@ -193,6 +194,8 @@ void PTHMC_abstract<T>::parallel_tempering()
 	double hz = 1.0;
 	unsigned int ms = (unsigned int)(1000.0/hz);
 
+	whiteice::RNG<T> rng; // random number generator
+
 	// global swap accept probability between all chains:
 	// easy way to see if the parallel tempering is working more or less correctly
 	accepts = 0;
@@ -282,7 +285,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 			}
 #endif
 
-			if(T(rand()/(double)RAND_MAX) < p){
+			if(rng.uniform() <= p){
 				accepts++;
 
 #if 0
@@ -343,7 +346,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 					// retry at h1: h1->h->h3 now
 
 					// randomly selects starting point between neighbouring chains
-					if(rand()%1 == 0)
+					if(rng.rand()%1 == 0)
 						h->setCurrentSample(w1);
 					else
 						h->setCurrentSample(w2);
