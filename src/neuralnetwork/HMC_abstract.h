@@ -42,7 +42,12 @@ namespace whiteice
 		virtual T U(const math::vertex<T>& q) const = 0;
 
 		// calculates difference: U(q1) - U(q2)
-		virtual T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const = 0;
+		// [inheritor may overload this operation as calculation of difference
+		// maybe faster/possible instead of calculation of U(q) separatedly
+		virtual T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
+		{
+			return (U(q1) - U(q2));
+		}
 
 		virtual math::vertex<T> Ugrad(const math::vertex<T>& q) = 0;
 

@@ -259,7 +259,7 @@ void rbm_test()
 	{
 		std::cout << "Generating data.." << std::endl;
 
-		unsigned int DIMENSION = 2;
+		unsigned int DIMENSION = 16*16; // mini-image size
 
 		std::vector< math::vertex< math::blas_real<double> > > samples;
 		math::vertex< math::blas_real<double> > var;
@@ -287,6 +287,9 @@ void rbm_test()
 				for(unsigned d=0;d<DIMENSION;d++)
 					s[d] = nrm1(generator);
 				s.normalize();
+
+				// 5x larger radius than the largest variance [to keep noise separated]
+				s *= 5.0*math::sqrt(var[var.size()-1]);
 
 				// adds variance
 				for(unsigned int d=0;d<DIMENSION;d++)
@@ -346,7 +349,7 @@ void rbm_test()
 						// hmc.getRBM().sample(1000, current_data, samples);
 						math::blas_real<double> mean = 0.0;
 
-						last_checked_index = qsamples.size() - 100;
+						last_checked_index = qsamples.size() - 10;
 						if(last_checked_index < 0) last_checked_index = 0;
 
 						GBRBM< math::blas_real<double > > rbm = hmc.getRBM();
@@ -355,14 +358,18 @@ void rbm_test()
 						rbm.setParametersQ(qsamples[qsamples.size()-1]);
 						rbm.getVariance(var);
 
-						std::cout << "variance = " << var << std::endl;
+						math::blas_real<double> meanvar = 0.0;
 
-#pragma omp parallel for
+						for(unsigned int i=0;i<var.size();i++)
+							meanvar += var[i];
+						meanvar /= var.size();
+
+						std::cout << "mean(var) = " << meanvar << std::endl;
+
 						for(int s=last_checked_index;s < (signed)qsamples.size();s++){
 							GBRBM< math::blas_real<double> > local_rbm = rbm;
 							local_rbm.setParametersQ(qsamples[s]);
 							auto e = local_rbm.reconstructError(samples);
-#pragma omp critical
 							{
 								if(e < min_error)
 									min_error = e;

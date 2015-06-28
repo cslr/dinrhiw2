@@ -29,8 +29,6 @@ GBRBM<T>::GBRBM()
 	h.zero();
 	v.zero();
 
-	ais_rbm.clear();
-
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	generator = new std::default_random_engine (seed);
 	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
@@ -48,8 +46,6 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
-
-	ais_rbm.clear();
 
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	generator = new std::default_random_engine (seed);
@@ -76,8 +72,6 @@ GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_ar
 	generator = new std::default_random_engine (seed);
 	rng = new std::normal_distribution<>(0, 1); // N(0,1) variables
 
-	ais_rbm.clear();
-
     initializeWeights();
 }
 
@@ -101,8 +95,6 @@ GBRBM<T>& GBRBM<T>::operator=(const GBRBM<T>& rbm)
 	this->v = rbm.v;
 	this->h = rbm.h;
 
-	ais_rbm.clear();
-
 	return (*this);
 }
 
@@ -120,8 +112,6 @@ bool GBRBM<T>::resize(unsigned int visible, unsigned int hidden)
     b.resize(hidden);
     z.resize(visible);
     W.resize(visible, hidden);
-
-    ais_rbm.clear();
 
     initializeWeights();
 
@@ -1323,15 +1313,21 @@ T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data m
 	while(1){ // repeat until estimate of ratio has converged to have small enough sample variance..
 		// uses AIS sampler to get samples from Z2 distribution
 		std::vector< math::vertex<T> > vs;
+		const unsigned int STEPSIZE=500;
 
-	    ais_sampling(vs, 1000, m, s, W2, a2, b2, z2);
+	    ais_sampling(vs, STEPSIZE, m, s, W2, a2, b2, z2);
 
-	    for(auto& v : vs){
-			// free-energy
+	    const unsigned int index0 = r.size();
+	    r.resize(r.size() + STEPSIZE);
+
+#pragma omp parallel for
+	    for(unsigned int index=0;index<STEPSIZE;index++){
+	    	auto& v = vs[index];
+	        // free-energy
 			auto F1 = -unscaled_log_probability(v, W1, a1, b1, z1);
 			auto F2 = -unscaled_log_probability(v, W2, a2, b2, z2);
 
-			r.push_back(math::exp(F2-F1)); // calculates ratio of unscaled probability functions
+			r[index+index0] = math::exp(F2-F1); // calculates ratio of unscaled probability functions
 	    }
 
 	    // calculates mean and estimates how big is it sample variance and waits until it is small enough
@@ -1352,14 +1348,12 @@ T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data m
 
 	    auto sv = math::sqrt(vr / T(r.size())); // st.dev. of the mean
 
-	    return mr; // DO NOT DO CONVERGENCE ESTIMATION
-
-	    if(sv/mr < T(0.1)){
-	    	// mean has maximum of 10% error (relative to mean value)
+	    if(sv/mr <= T(1.0)){
+	    	// mean has maximum of 100% error (relative to mean value)
 	    	return mr;
 	    }
 	    else{
-	    	std::cout << "mr = " << mr << std::endl;
+	    	std::cout << "mr = " << mr << " ";
 	    	std::cout << "zratio continuing sampling. iteration " << iter
 	    			<< " : " << (sv/mr) << std::endl;
 
@@ -1502,9 +1496,17 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 	unsigned int iter = 0;
 
 	{
+		vs.resize(SAMPLES);
 
+#pragma omp parallel for
 		for(unsigned int i=0;i<SAMPLES;i++){
-			auto vv = normalrnd(m, s); // generates N(m,s) distributed variable [level 0]
+			math::vertex<T> vv;
+
+#pragma omp critical
+			{
+				vv = normalrnd(m, s); // generates N(m,s) distributed variable [level 0]
+			}
+
 			math::vertex<T> hh;
 
 			for(unsigned int j=1;j<(NTemp-1);j++){
@@ -1514,7 +1516,7 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 			}
 
 			{
-				vs.push_back(vv);
+				vs[i] = vv;
 			}
 		}
 
