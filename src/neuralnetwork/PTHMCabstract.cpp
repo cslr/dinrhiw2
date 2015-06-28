@@ -257,12 +257,19 @@ void PTHMC_abstract<T>::parallel_tempering()
 			h1->get()->setUpdated(false);
 			// h2->get()->setUpdated(false);
 
+#if 0
 			T E11 = h1->get()->U(w1);
 			T E22 = h2->get()->U(w2);
 			T E12 = h1->get()->U(w2);
 			T E21 = h2->get()->U(w1);
 
 			T p = math::exp( (E11 + E22) - (E12 + E21) );
+#endif
+			T diffE1 = h1->get()->Udiff(w2, w1); // E12 - E11
+			T diffE2 = h2->get()->Udiff(w1, w2); // E21 - E22
+
+			T p = math::exp( (-diffE1) + (-diffE2) );
+
 
 			if(p >= T(1.0))
 				p = T(1.0);

@@ -701,8 +701,10 @@
 
   <center|<math|log<around*|(|<frac|Z<rsub|T><around*|(|\<b-theta\><rsub|n+1>|)>|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>|)>\<thickapprox\>-<frac|1|2><around*|(|\<b-theta\><rsub|n+1>-\<b-theta\><rsub|n>|)><rsup|T>*<around*|(|E<rsub|\<b-v\>><around*|[|\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>><rsub|n+1>|)>|]>+E<rsub|\<b-v\>><around*|[|\<nabla\><rsub|\<b-theta\>>F<rsub|T><around*|(|\<b-v\><around*|\||\<b-theta\>|\<nobracket\>><rsub|n>|)>|]>|)>>>
 
-  NOTE: In practice this approximation <with|font-series|bold|DOES NOT SEEM
-  TO WORK WELL IN PRACTICE AND CANNOT BE USED>.\ 
+  \;
+
+  <with|font-series|bold|This approximation does not seem to work well in
+  practice and cannot be used.>
 
   You can calculate gradient quite easily but you cannot calculate difference
   between energy functions as it requires estimating the ratio of partition
@@ -719,6 +721,10 @@
   and calculate the mean value: \ 
 
   <center|<math|E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|<frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|p<rsub|><rsub|n><rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>>|]>=E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|e<rsup|F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>-F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>>|]>>.>
+
+  This is easy to parallelize and seem to work with enough accuracy,
+  <with|font-series|bold|in low dimensions> (\<less\>256), but the problem is
+  high dimensions (128*128 = 16384).
 
   \;
 

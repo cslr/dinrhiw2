@@ -317,7 +317,7 @@ void rbm_test()
 		{
 			// adaptive step length
 
-#if 1
+#if 0
 			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
 			hmc.setTemperature(1.0);
 #else
