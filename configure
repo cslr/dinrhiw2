@@ -3991,19 +3991,6 @@ $as_echo "failure" >&6; }
     `$FGREP flags /proc/cpuinfo > cpuinfo`
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GMP library" >&5
-$as_echo_n "checking for GMP library... " >&6; }
-GMP_LIBRARY="no"
-
-`gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
-
-if [ $? -eq 0 ]; then
-   GMP_LIBRARY="yes"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-else
-   as_fn_error $? "no" "$LINENO" 5
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers (1)" >&5
@@ -4039,6 +4026,23 @@ else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no cblas.h detected" >&5
 $as_echo "no cblas.h detected" >&6; }
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BLAS C headers (3)" >&5
+$as_echo_n "checking for BLAS C headers (3)... " >&6; }
+
+`gcc -c blastest.c -I/opt/include/ -L/opt/lib/ > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+    CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/opt/include/"
+    BLAS_LIBS="-lblas -L/opt/lib/"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no cblas.h detected" >&5
+$as_echo "no cblas.h detected" >&6; }
+fi
+
 
 if [ "$CBLAS_HEADERS" = "no" ]; then
    as_fn_error $? "Cannot find cblas.h" "$LINENO" 5
@@ -4124,6 +4128,23 @@ else
 $as_echo "no OpenBLAS detected" >&6; }
    OPENBLAS="no"
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (6)" >&5
+$as_echo_n "checking for OpenBLAS library (6)... " >&6; }
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/include/ -L/opt/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
+   BLAS_LIBS="-L/opt/lib/ -lopenblas"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/include/" >&5
+$as_echo "yes, headers in /opt/include/" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
+$as_echo "no OpenBLAS detected" >&6; }
+   OPENBLAS="no"
+fi
+
 
 
 

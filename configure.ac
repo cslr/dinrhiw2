@@ -124,17 +124,17 @@ else
 fi
 
 dnl check for GMP integer library
-AC_MSG_CHECKING([for GMP library])
-GMP_LIBRARY="no"
-
-`gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
-
-if [[ $? -eq 0 ]]; then
-   GMP_LIBRARY="yes"
-   AC_MSG_RESULT([yes])
-else
-   AC_MSG_ERROR([no])
-fi
+dnl AC_MSG_CHECKING([for GMP library])
+dnl GMP_LIBRARY="no"
+dnl 
+dnl `gcc -o gmp gmptest.c -I/usr/local/include/ -L/usr/local/lib/ -lgmp > /dev/null 2> /dev/null`
+dnl 
+dnl if [[ $? -eq 0 ]]; then
+dnl   GMP_LIBRARY="yes"
+dnl   AC_MSG_RESULT([yes])
+dnl else
+dnl   AC_MSG_ERROR([no])
+dnl fi
 
 
 dnl checking for CBLAS (BLAS) header files and (and library)
@@ -165,6 +165,20 @@ if [[ $? -eq 0 ]]; then
 else
     AC_MSG_RESULT([no cblas.h detected])
 fi
+
+AC_MSG_CHECKING([for BLAS C headers (3)])
+
+`gcc -c blastest.c -I/opt/include/ -L/opt/lib/ > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+    CBLAS_HEADERS="yes"
+    BLAS_CFLAGS="-I/opt/include/"
+    BLAS_LIBS="-lblas -L/opt/lib/"
+    AC_MSG_RESULT([yes])
+else
+    AC_MSG_RESULT([no cblas.h detected])
+fi
+
 
 if [[ "$CBLAS_HEADERS" = "no" ]]; then
    AC_MSG_ERROR([Cannot find cblas.h])
@@ -235,6 +249,20 @@ else
    AC_MSG_RESULT([no OpenBLAS detected])
    OPENBLAS="no"
 fi
+
+AC_MSG_CHECKING([for OpenBLAS library (6)])
+`gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/include/ -L/opt/lib/ -lopenblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+   OPENBLAS="yes"
+   BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
+   BLAS_LIBS="-L/opt/lib/ -lopenblas"
+   AC_MSG_RESULT([yes, headers in /opt/include/])
+else
+   AC_MSG_RESULT([no OpenBLAS detected])
+   OPENBLAS="no"
+fi
+
 
 dnl AC_MSG_CHECKING([for NVIDIA CUDA cuBLAS library])
 dnl `gcc -o cublastest blastest.c -lcublas`
