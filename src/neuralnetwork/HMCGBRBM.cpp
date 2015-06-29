@@ -117,7 +117,7 @@ void HMC_GBRBM<T>::starting_position(math::vertex<T>& q) const
 	rbm.getParameters(W, a, b, var);
 	rbm.getLogVariance(z);
 
-	rbm.convertUParametersToQ(W, a, b, z, q);
+	rbm.convertParametersToQ(W, a, b, z, q);
 }
 
 

@@ -522,8 +522,11 @@ namespace whiteice
     else if(output < T(-0.999f)) output = T(-0.999f);
     output = math::atanh(output);
 #endif
-    T output = math::asinh(input);
-    // T output = math::tanh(input);
+    // T output = math::asinh(input);
+
+    // tanh(x) - 0.5x non-linearity as proposed by a research paper [statistically better gradients]
+    T output = math::tanh(input) - T(0.5)*input;
+
     // T output = -math::exp(T(-0.5)*input*input);
     
     return output;
@@ -546,12 +549,12 @@ namespace whiteice
     else if(output < T(-0.999f)) output = T(-0.999f);
     output = T(1.0f)/(T(1.0f) - output*output);
 #endif
-    T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
+    // T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
     
     // T output = input*math::exp(T(-0.5)*input*input);
     
-    // T t = math::tanh(input);
-    // T output = T(1.0f) - t*t;
+    T t = math::tanh(input);
+    T output = T(1.0f) - t*t - T(0.5);
     
     return output;
   }

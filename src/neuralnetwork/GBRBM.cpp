@@ -172,6 +172,37 @@ bool GBRBM<T>::reconstructData(std::vector< math::vertex<T> >& samples, unsigned
 }
 
 
+template <typename T>
+bool GBRBM<T>::reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
+		const std::vector< math::vertex<T> >& qparameters)
+{
+	// calculates reconstruction v -> h -> v'
+
+#pragma omp parallel for
+	for(unsigned int i=0;i<samples.size();i++){
+		auto& v = samples[i];
+
+		auto x = v;
+		x.zero();
+
+		for(auto& q : qparameters){
+			math::matrix<T> W;
+			math::vertex<T> a, b, z;
+
+			convertQToParameters(q, W, a, b, z);
+
+			x += reconstruct_gbrbm_data(v, W, a, b, z, 1);
+		}
+
+		x /= qparameters.size(); // E[reconstruct(v)]
+		v = x;
+	}
+
+	return true;
+}
+
+
+
 // number of iterations to simulate the system
 // 1 = single step from visible to hidden
 template <typename T>
@@ -432,7 +463,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			std::vector< math::vertex<T> > vs;
 
 			// randomly chooses negative samples either using AIS or CD-1
-			if((rng.rand() & 1) == 1){
+			if(false){
 				ais_sampling(vs, NUM_SAMPLES, data_mean, data_var, W, a, b, z); // gets (v) from the model
 			}
 			else{
@@ -553,30 +584,30 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			// now we have gradients
 			{
-#if 1
+#if 0
 				a = a + lrate*ga;
 				b = b + lrate*gb;
 				z = z + lrate*gz;
 				W = W + lrate*gW;
 #else
 				// we test different learning rates and pick the one that gives smallest error
-				math::vertex<T> a1 = a + T(1.0)*lrate*da;
-				math::vertex<T> b1 = b + T(1.0)*lrate*db;
-				math::vertex<T> z1 = z + T(1.0)*lrate*dz;
-				math::matrix<T> W1 = W + T(1.0)*lrate*dW;
-				T error1 = reconstruct_gbrbm_data_error(samples, 10, W1, a1, b1, z1, CDk);
+				math::vertex<T> a1 = a + T(1.0)*lrate*ga;
+				math::vertex<T> b1 = b + T(1.0)*lrate*gb;
+				math::vertex<T> z1 = z + T(1.0)*lrate*gz;
+				math::matrix<T> W1 = W + T(1.0)*lrate*gW;
+				T error1 = reconstruct_gbrbm_data_error(samples, 100, W1, a1, b1, z1, CDk);
 
-				math::vertex<T> a2 = a + T(1.0/0.9)*lrate*da;
-				math::vertex<T> b2 = b + T(1.0/0.9)*lrate*db;
-				math::vertex<T> z2 = z + T(1.0/0.9)*lrate*dz;
-				math::matrix<T> W2 = W + T(1.0/0.9)*lrate*dW;
-				T error2 = reconstruct_gbrbm_data_error(samples, 10, W2, a2, b2, z2, CDk);
+				math::vertex<T> a2 = a + T(1.0/0.9)*lrate*ga;
+				math::vertex<T> b2 = b + T(1.0/0.9)*lrate*gb;
+				math::vertex<T> z2 = z + T(1.0/0.9)*lrate*gz;
+				math::matrix<T> W2 = W + T(1.0/0.9)*lrate*gW;
+				T error2 = reconstruct_gbrbm_data_error(samples, 100, W2, a2, b2, z2, CDk);
 
-				math::vertex<T> a3 = a + T(0.9)*lrate*da;
-				math::vertex<T> b3 = b + T(0.9)*lrate*db;
-				math::vertex<T> z3 = z + T(0.9)*lrate*dz;
-				math::matrix<T> W3 = W + T(0.9)*lrate*dW;
-				T error3 = reconstruct_gbrbm_data_error(samples, 10, W3, a3, b3, z3, CDk);
+				math::vertex<T> a3 = a + T(0.9)*lrate*ga;
+				math::vertex<T> b3 = b + T(0.9)*lrate*gb;
+				math::vertex<T> z3 = z + T(0.9)*lrate*gz;
+				math::matrix<T> W3 = W + T(0.9)*lrate*gW;
+				T error3 = reconstruct_gbrbm_data_error(samples, 100, W3, a3, b3, z3, CDk);
 
 				if(error1 <= error2 && error1 <= error3){
 					a = a1;
@@ -617,9 +648,9 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			}
 
 			// check for convergence
-			if(errors.size() > 2){
-				while(errors.size() > 15)
-					errors.pop_front(); // only keeps 10 last epoch samples
+			if(errors.size() > 5){
+				while(errors.size() > 20)
+					errors.pop_front();
 
 				auto me = T(0.0);
 				auto ve = T(0.0);
@@ -635,7 +666,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				auto statistic = sqrt(ve)/me;
 
-				if(statistic <= T(0.05)) // st.dev. is 5% of the mean
+				if(statistic <= T(0.05)) // (real) st.dev. is 5% of the mean
 					convergence = true;
 			}
 
@@ -825,7 +856,7 @@ unsigned int GBRBM<T>::qsize() const throw() // size of q vector q = [a, b, z, v
 
 
 template <typename T>
-bool GBRBM<T>::convertUParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
+bool GBRBM<T>::convertParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
     		const math::vertex<T>& z, math::vertex<T>& q) const
 {
 	q.resize(a.size()+b.size()+z.size()+W.ysize()*W.xsize());
@@ -837,6 +868,36 @@ bool GBRBM<T>::convertUParametersToQ(const math::matrix<T>& W, const math::verte
 
 	return true;
 }
+
+
+template <typename T>
+bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b,
+		math::vertex<T>& z) const
+{
+	a.resize(this->getVisibleNodes());
+	z.resize(this->getVisibleNodes());
+	b.resize(this->getHiddenNodes());
+	W.resize(this->getVisibleNodes(), this->getHiddenNodes());
+
+	if(q.size() != (a.size()+b.size()+z.size()+W.ysize()*W.xsize()))
+		return false;
+
+	try{
+		q.subvertex(a, 0, a.size());
+		q.subvertex(b, a.size(), b.size());
+		q.subvertex(z, (a.size()+b.size()), z.size());
+		math::vertex<T> w(W.ysize()*W.xsize());
+		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+		W.load_from_vertex(w);
+
+		return true;
+	}
+	catch(std::exception& e){
+		return false;
+	}
+}
+
+
 
 
 // sets RBM machine's (W, a, b, z) parameters according to q vector
@@ -1011,8 +1072,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 		// aprox_logZratio = logZ1 - logZ2;
 		//
 
-		auto aprox_logZratio =
-				math::log(zratio(Umean, Uvariance, qW1, qa1, qb1, qz1, qW2, qa2, qb2, qz2));
+		auto aprox_logZratio = log_zratio(Umean, Uvariance, qW1, qa1, qb1, qz1, qW2, qa2, qb2, qz2);
 
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
 		T u = T(0.0);
@@ -1284,11 +1344,12 @@ void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) co
 // estimates ratio of Z values of unscaled p(v|params) distributions: Z1/Z2 using AIS Monte Carlo sampling.
 // this is needed by Udiff() which calculates difference of two P(params|v) distributions..
 template <typename T>
-T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler
+T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler
 		const math::matrix<T>& W1, const math::vertex<T>& a1, const math::vertex<T>& b1, math::vertex<T>& z1,
 		const math::matrix<T>& W2, const math::vertex<T>& a2, const math::vertex<T>& b2, math::vertex<T>& z2) const
 {
-	std::vector<T> r; // calculated ratios [used to estimate convergence by calculation mean st.dev.]
+	// calculated log(ratios) [used to estimate convergence by calculation mean st.dev.]
+	std::vector<T> r;
 
 	int iter = 0;
 
@@ -1309,11 +1370,12 @@ T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data m
 			auto F1 = -unscaled_log_probability(v, W1, a1, b1, z1);
 			auto F2 = -unscaled_log_probability(v, W2, a2, b2, z2);
 
-			r[index+index0] = math::exp(F2-F1); // calculates ratio of unscaled probability functions
+			r[index+index0] = (F2-F1); // calculates log(ratio) of unscaled probability functions
+
 	    }
 
-	    // calculates mean and estimates how big is it sample variance and waits until it is small enough
-	    // Var[1/N SUM(x_i)] = 1/N^2 N*Var[x_i] = Var[x]/N = S^2 / N, where S^2 is sample variance ~ E[X^2] - E[X]^2
+	    // calculates sample variance and waits until it is < k so that error is something like
+	    // log(2^k*correct_value) = k + correct_value
 
 	    T mr = T(0.0);
 	    T vr = T(0.0);
@@ -1328,25 +1390,26 @@ T GBRBM<T>::zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data m
 	    vr -= mr*mr;
 	    vr *= T((double)r.size()/((double)r.size() - 1.0)); // changes division to 1/N-1 (sample variance)
 
-	    if(mr <= T(0.0))
-	    	return mr; // this is some kind wierd error..
+	    vr /= T(r.size()); // calculates mean estimator's variance..
 
-	    auto sv = math::sqrt(vr / T(r.size())); // st.dev. of the mean
+	    if(vr < T(0.0)){ // this is some kind wierd error (just abort)
+	    	return mr;
+	    }
 
-	    if(sv/mr <= T(1.0)){
-	    	// mean has maximum of 100% error (relative to mean value)
+	    if(math::sqrt(vr) <= T(1.0)){
 	    	return mr;
 	    }
 	    else{
-	    	std::cout << "mr = " << mr << " ";
 	    	std::cout << "zratio continuing sampling. iteration " << iter
-	    			<< " : " << (sv/mr) << std::endl;
+	    			<< " : " << math::sqrt(vr) << std::endl;
 
-	    	if(iter >= 5)
-	    		return mr; // maximum of 5 iterations
+	    	if(iter >= 5){
+	    		return mr;
+	    	}
 	    }
 
 	    iter++;
+
 	}
 }
 

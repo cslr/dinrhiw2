@@ -272,7 +272,7 @@ namespace whiteice
        * frames = f[i+1] - f[i]
        */
       
-      S lpf = 0.25;
+      S lpf = S(0.25);
       
       int TOTAL_FRAMES = (int)(len/lpf);
       if(TOTAL_FRAMES < 2) TOTAL_FRAMES = 2;
@@ -289,9 +289,9 @@ namespace whiteice
 	p = pn;    
       
 	S s = (S)t / (S)TOTAL_FRAMES;
-	S h1 =  2*s*s*s - 3*s*s + 1;
-	S h2 = -2*s*s*s + 3*s*s;
-	S h3 =    s*s*s - 2*s*s + s;
+	S h1 =  S(2.0)*s*s*s - S(3.0)*s*s + S(1.0);
+	S h2 = S(-2.0)*s*s*s + S(3.0)*s*s;
+	S h3 =    s*s*s - S(2.0)*s*s + s;
 	S h4 =    s*s*s -   s*s;
 	
 	pn = h1*p0 + h2*p1 + h3*delta0 + h4*delta1;
@@ -333,9 +333,9 @@ namespace whiteice
 	p = pn;
 	
 	S s = (S)t / (S)TOTAL_FRAMES;
-	S h1 =  2*s*s*s - 3*s*s + 1;
-	S h2 = -2*s*s*s + 3*s*s;
-	S h3 =    s*s*s - 2*s*s + s;
+	S h1 =  S(2.0)*s*s*s - S(3.0)*s*s + S(1.0);
+	S h2 = S(-2.0)*s*s*s + S(3.0)*s*s;
+	S h3 =    s*s*s - S(2.0)*s*s + s;
 	S h4 =    s*s*s -   s*s;
 	
 	pn = h1*p0 + h2*p1 + h3*delta0 + h4*delta1;

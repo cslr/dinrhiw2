@@ -103,7 +103,7 @@ namespace whiteice
     
     T nonlin(const T& input, unsigned int layer) const throw(); // non-linearity used in neural network
     T Dnonlin(const T& input, unsigned int layer) const throw(); // derivate of non-linearity used in neural network
-    T inv_nonlin(const T& input, unsigned int layer) const throw(); // inverse of non-linearity used
+    T inv_nonlin(const T& input, unsigned int layer) const throw(); // inverse of non-linearity used [not really used]
     
     private:
     

@@ -48,6 +48,12 @@ public:
 
     bool reconstructData(unsigned int iters = 1);
     bool reconstructData(std::vector< math::vertex<T> >& samples, unsigned int iters = 1);
+
+    // reconstruct samples data using v->h->v transform using
+    // samples of RBM parameters q ~ p(q|data)
+    bool reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
+    		const std::vector< math::vertex<T> >& qparameters);
+
     bool reconstructDataHidden(unsigned int iters = 1);
 
     bool sampleHidden(math::vertex<T>& h, const math::vertex<T>& v); // sample from p(h|v)
@@ -99,8 +105,12 @@ public:
     unsigned int qsize() const throw(); // size of q vector q = [a, b, z, vec(W)]
 
     // converts (W, a, b, z) parameters into q vector
-    bool convertUParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
+    bool convertParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
     		const math::vertex<T>& z, math::vertex<T>& q) const;
+
+    // converts q vector into parameters (W, a, b, z)
+    bool convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b,
+    		math::vertex<T>& z) const;
 
     // sets (W, a, b, z) parameters according to q vector
     bool setParametersQ(const math::vertex<T>& q);
@@ -121,9 +131,9 @@ public:
 protected:
     // estimates ratio of Z values of unscaled p(v|params) distributions: Z1/Z2 using AIS Monte Carlo sampling.
     // this is needed by Udiff() which calculates difference of two P(params|v) distributions..
-    T zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler
-    		const math::matrix<T>& W1, const math::vertex<T>& a1, const math::vertex<T>& b1, math::vertex<T>& z1,
-			const math::matrix<T>& W2, const math::vertex<T>& a2, const math::vertex<T>& b2, math::vertex<T>& z2) const;
+    T log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler
+    			const math::matrix<T>& W1, const math::vertex<T>& a1, const math::vertex<T>& b1, math::vertex<T>& z1,
+				const math::matrix<T>& W2, const math::vertex<T>& a2, const math::vertex<T>& b2, math::vertex<T>& z2) const;
 
 
     // generates SAMPLES {v,h}-samples from p(v,h|params) using Gibbs sampling (CD) and parallel tempering

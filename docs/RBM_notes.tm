@@ -723,8 +723,10 @@
   <center|<math|E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|<frac|p<rprime|'><rsub|T><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n+1>|)>|p<rsub|><rsub|n><rprime|'><around*|(|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>|)>>|]>=E<rsub|\<b-v\><around*|\|||\<nobracket\>>\<b-theta\><rsub|n>><around*|[|e<rsup|F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n>|\<nobracket\>>|)>-F<around*|(|\<b-v\><around*|\||\<b-theta\><rsub|n+1>|\<nobracket\>>|)>>|]>>.>
 
   This is easy to parallelize and seem to work with enough accuracy,
-  <with|font-series|bold|in low dimensions> (\<less\>256), but the problem is
-  high dimensions (128*128 = 16384).
+  <with|font-series|bold|in low dimensions> (\<less\>256). TODO: Probably a
+  good way to estimate <math|Z<rsub|T><around*|(|\<b-theta\><rsub|n>|)>>
+  would be to use variational methods (variatioanl bayes but currently it is
+  too complicated for me).
 
   \;
 

@@ -34,6 +34,8 @@
 
 #include "RNG.h"
 
+#include "hermite.h"
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -257,11 +259,13 @@ void rbm_test()
 	}
 #endif
 
+#if 0
+
 	// generates test data: a D dimensional sphere with gaussian noise and tests that GB-RBM can correctly learn it
 	{
 		std::cout << "Generating data.." << std::endl;
 
-		unsigned int DIMENSION = 100; // mini-image size (16x16 = 256)
+		unsigned int DIMENSION = 2; // mini-image size (16x16 = 256)
 
 		std::vector< math::vertex< math::blas_real<double> > > samples;
 		math::vertex< math::blas_real<double> > var;
@@ -309,18 +313,21 @@ void rbm_test()
 
 		}
 
-		std::cout << "Learning RBM parameters (variance).." << std::endl;
+		std::cout << "Learning RBM parameters.." << std::endl;
 		math::vertex< math::blas_real<double> > best_variance;
+		math::vertex< math::blas_real<double> > best_q;
+		std::vector< math::vertex< math::blas_real<double> > > qsamples;
 
+#if 1
 		// tests HMC sampling
 		{
 			// adaptive step length
 
-#if 0
-			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, DIMENSION, true, true);
+#if 1
+			whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, 50, true, true);
 			hmc.setTemperature(1.0);
 #else
-			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(10, samples, DIMENSION, true);
+			whiteice::PTHMC_GBRBM< math::blas_real<double> > hmc(10, samples, 10*DIMENSION, true);
 #endif
 			auto start = std::chrono::system_clock::now();
 			hmc.startSampler();
@@ -330,10 +337,8 @@ void rbm_test()
 			math::blas_real<double> min_error = INFINITY;
 			int last_checked_index = 0;
 
-			// detect NaNs !!!
-
-			while(1){
-				sleep(5);
+			while(hmc.getNumberOfSamples() < 2000){
+				sleep(1);
 				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
 				if(hmc.getNumberOfSamples() > 0){
 					std::vector< math::vertex< math::blas_real<double> > > qsamples;
@@ -344,7 +349,7 @@ void rbm_test()
 					// calculate something using the samples..
 					// [get the most recent sample and try to calculate log probability]
 
-					if(qsamples.size() > 1){
+					if(qsamples.size()-last_checked_index > 5){
 						// hmc.getRBM().sample(1000, current_data, samples);
 						math::blas_real<double> mean = 0.0;
 
@@ -370,8 +375,10 @@ void rbm_test()
 							local_rbm.setParametersQ(qsamples[s]);
 							auto e = local_rbm.reconstructError(samples);
 							{
-								if(e < min_error)
+								if(e < min_error){
 									min_error = e;
+									best_q = qsamples[s];
+								}
 
 								mean += e;
 							}
@@ -391,68 +398,27 @@ void rbm_test()
 
 				auto end = std::chrono::system_clock::now();
 				auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-#if 0
-				if(elapsed.count() >= 120*1000){ // 120 seconds
-					break;
-				}
-#endif
 			}
 
 			hmc.stopSampler();
 
-			return;
-		}
+			qsamples.clear();
 
-#if 1
-		{
-			whiteice::GBRBM< math::blas_real<double> > rbm;
-			rbm.resize(2, 50);
-			rbm.setVariance(var);
-			best_variance = var;
-
-			// rbm.learnWeights(samples, 10, true, false);
+			hmc.getSamples(qsamples);
 		}
 #endif
-#if 0
-		{
-			whiteice::GBRBM_variance_error_function< math::blas_real<double> > variance_reconstruction_error(samples, 50);
 
-			std::vector<PSO< math::blas_real<double> >::range> r;
-			r.resize(2);
-			r[0].min = -5.0;
-			r[0].max = +5.0;
-			r[1].min = -5.0;
-			r[1].max = +5.0;
-			PSO< math::blas_real<double> > pso(variance_reconstruction_error, r);
-			pso.verbosity(true);
-			pso.minimize(20, 50);
-
-			for(unsigned int i=1;i<10;i++){
-				pso.getBest(best_variance);
-				variance_reconstruction_error.getRealVariance(best_variance);
-
-				std::cout << "Current best variance: " << best_variance << std::endl;
-				pso.improve(20);
-			}
-
-			pso.getBest(best_variance);
-			variance_reconstruction_error.getRealVariance(best_variance);
-
-			std::cout << "Best GBRBM variance: " << best_variance << std::endl;
-		}
-#endif
 
 		whiteice::GBRBM< math::blas_real<double> > rbm;
-		rbm.resize(2, 50);
-		rbm.setVariance(best_variance);
+		rbm.resize(DIMENSION, 50);
+		// rbm.setVariance(best_variance);
 
 		auto rdata = samples;
 
-		rbm.learnWeights(samples, 100, true, true);
+		// rbm.learnWeights(samples, 100, true, false);
+		rbm.setParametersQ(best_q);
 		rdata.clear();
-		rbm.sample(1000, rdata, samples); // samples directly from P(v) ..
-		// rbm.reconstructData(rdata);
+		rbm.sample(1000, rdata, samples); // samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
 
 		std::cout << "Storing reconstruct results to disk.." << std::endl;
 
@@ -473,6 +439,227 @@ void rbm_test()
 		}
 		fclose(fp);
 
+		rdata = samples;
+		rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
+
+
+		fp = fopen("gbrbm_output2.txt", "wt");
+		for(unsigned int i=0;i<rdata.size();i++){
+			for(unsigned int n=0;n<rdata[i].size();n++)
+				fprintf(fp, "%f ", rdata[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+
+	}
+#endif
+
+
+	// generates another test/learning example
+	std::vector< math::vertex<> > samples;
+
+	const unsigned int NPOINTS = 5;
+	const unsigned int DIMENSION = 2;
+	const unsigned int NSAMPLES = 10000; // 10.000 samples
+
+	{
+		std::cout << "Generating d-dimensional curve dataset for learning.." << std::endl;
+
+		// pick N random points from DIMENSION dimensional space [-10,10]^D (initially N=5, DIMENSION=2)
+		// calculate hermite curve interpolation between N points and generate data
+		// add random noise N(0,1) to the spline to generate distribution
+		// target is then to learn spline curve distribution
+
+		{
+			whiteice::math::hermite< math::vertex< math::blas_real<float> >, math::blas_real<float> > curve;
+
+			whiteice:RNG< math::blas_real<float> > rng;
+
+			std::vector< math::vertex< math::blas_real<float> > > points;
+			points.resize(NPOINTS);
+
+			for(auto& p : points){
+				p.resize(DIMENSION);
+				for(unsigned int d=0;d<DIMENSION;d++){
+					p[d] = rng.uniform()*20.0f - 10.0f; // [-10,10]
+				}
+
+			}
+
+			// hand-selected point data to create interesting looking "8" figure
+			double pdata[5][2] = { {  4.132230, -8.69549 },
+								 { -0.201683, -4.68169 },
+								 { -1.406790, +3.38615 },
+								 { +7.191170, +7.73804 },
+								 { -1.802390, -7.46397 }
+								};
+
+			for(unsigned int p=0;p<5;p++){
+				for(unsigned int d=0;d<2;d++){
+					points[p][d] = pdata[p][d];
+				}
+			}
+
+			curve.calculate(points, (int)NSAMPLES);
+
+			for(unsigned s=0;s<NSAMPLES;s++){
+				auto& m = curve[s];
+				auto  n = m;
+				rng.normal(n);
+				math::blas_real<float> stdev = 0.5;
+				n = m + n*stdev;
+
+				samples.push_back(n);
+			}
+		}
+
+
+		// once data has been generated saves it to disk for inspection that is has been generated correctly
+		// stores the results into file for inspection
+		FILE* fp = fopen("splinecurve.txt", "wt");
+		for(unsigned int i=0;i<samples.size();i++){
+			for(unsigned int n=0;n<samples[i].size();n++)
+				fprintf(fp, "%f ", samples[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
+
+
+	// after generating samples train it using HMC GBRBM sampler ~ p(gbrbm_params|data)
+	std::cout << "Learning RBM parameters.." << std::endl;
+	std::vector< math::vertex<> > qsamples;
+	math::vertex<> best_q; // minimum single reconstruction error case..
+
+	const unsigned int HIDDEN_NODES = 200;
+
+	{
+		math::vertex<> best_variance;
+
+		whiteice::HMC_GBRBM<> hmc(samples, HIDDEN_NODES, true, true);
+		hmc.setTemperature(1.0);
+
+		hmc.startSampler();
+
+		std::vector< math::vertex<> > starting_data;
+		std::vector< math::vertex<> > current_data;
+		math::blas_real<float> min_error = INFINITY;
+		int last_checked_index = 0;
+
+		while(hmc.getNumberOfSamples() < 2000){
+			sleep(1);
+			std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
+			if(hmc.getNumberOfSamples() > 0){
+				std::vector< math::vertex<> > qsamples;
+
+#if 1
+				hmc.getSamples(qsamples);
+
+				// calculate something using the samples..
+
+				if(qsamples.size()-last_checked_index > 5){
+					math::blas_real<float> mean = 0.0;
+
+					last_checked_index = qsamples.size() - 10;
+					if(last_checked_index < 0) last_checked_index = 0;
+
+					GBRBM<> rbm = hmc.getRBM();
+
+					math::vertex<> var;
+					rbm.setParametersQ(qsamples[qsamples.size()-1]);
+					rbm.getVariance(var);
+
+					math::blas_real<float> meanvar = 0.0;
+
+					for(unsigned int i=0;i<var.size();i++)
+						meanvar += var[i];
+					meanvar /= var.size();
+
+					std::cout << "mean(var) = " << meanvar << std::endl;
+
+					for(int s=last_checked_index;s < (signed)qsamples.size();s++){
+						GBRBM<> local_rbm = rbm;
+						local_rbm.setParametersQ(qsamples[s]);
+						auto e = local_rbm.reconstructError(samples);
+						{
+							if(e < min_error){
+								min_error = e;
+								best_q = qsamples[s];
+							}
+
+							mean += e;
+						}
+					}
+
+					mean /= (qsamples.size() - last_checked_index);
+
+					last_checked_index = qsamples.size();
+
+					std::cout << "HMC-GBRBM E[error]:   " << mean << std::endl;
+					std::cout << "HMC-GBRBM min(error): " << min_error << std::endl;
+				}
+#endif
+			}
+
+		}
+
+		hmc.stopSampler();
+
+		qsamples.clear();
+
+		auto temp_all_samples = qsamples;
+		hmc.getSamples(temp_all_samples);
+
+		for(unsigned int i=(temp_all_samples.size()/2);i<temp_all_samples.size();i++)
+			qsamples.push_back(temp_all_samples[i]);
+	}
+
+
+
+	// now we have training data samples and parameters q from the RBM sampling learning
+	{
+		whiteice::GBRBM<> rbm;
+
+		rbm.resize(DIMENSION, HIDDEN_NODES);
+		// rbm.setVariance(best_variance);
+
+		auto rdata = samples;
+
+		// rbm.learnWeights(samples, 100, true, false);
+		rbm.setParametersQ(best_q);
+		rdata.clear();
+		rbm.sample(1000, rdata, samples); // samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+
+		std::cout << "Storing reconstruct results to disk.." << std::endl;
+
+		// stores the results into file for inspection
+		FILE* fp = fopen("gbrbm_input.txt", "wt");
+		for(unsigned int i=0;i<samples.size();i++){
+			for(unsigned int n=0;n<samples[i].size();n++)
+				fprintf(fp, "%f ", samples[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+
+		fp = fopen("gbrbm_output.txt", "wt");
+		for(unsigned int i=0;i<rdata.size();i++){
+			for(unsigned int n=0;n<rdata[i].size();n++)
+				fprintf(fp, "%f ", rdata[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+
+		rdata = samples;
+		rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
+
+
+		fp = fopen("gbrbm_output2.txt", "wt");
+		for(unsigned int i=0;i<rdata.size();i++){
+			for(unsigned int n=0;n<rdata[i].size();n++)
+				fprintf(fp, "%f ", rdata[i][n].c[0]);
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
 	}
 
 	return;
