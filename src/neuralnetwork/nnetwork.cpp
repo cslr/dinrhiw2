@@ -175,117 +175,168 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::calculate(bool gradInfo, bool collectSamples)
   {
-    if(!inputValues.exportData(&(state[0])))
-      return false;
-    
-    if(collectSamples)
-      samples.resize(arch.size()-1);
-    
-    
-    // unsigned int* a = &(arch[0]);
-    unsigned int aindex = 0;
-    
-    if(gradInfo){ // saves bpdata
+	    if(!inputValues.exportData(&(state[0])))
+	      return false;
 
-      if(bpdata.size() <= 0){
-	unsigned int bpsize = 0;
+	    if(collectSamples)
+	      samples.resize(arch.size()-1);
 
-	for(unsigned int i=0;i<arch.size();i++)
-	  bpsize += arch[i];
 
-	bpdata.resize(bpsize);
-      }
-      
-      T* bpptr = &(bpdata[0]);
-      T* dptr = &(data[0]);
-      
-      
-      while(aindex+1 < arch.size()){
-	// copies layer input x to bpdata
-	memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
-	bpptr += arch[aindex];
-	
-	if(collectSamples){
-	  math::vertex<T> x;
-	  x.resize(arch[aindex]);
-	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
-	  samples[aindex].push_back(x);
-	}
+	    // unsigned int* a = &(arch[0]);
+	    unsigned int aindex = 0;
 
-	// gemv(a[1], a[0], dptr, state, state); // s = W*s
-	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+	    if(gradInfo){ // saves bpdata
 
-	// s = b + W*s
-	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
-	
-      	// s = g(v)
-	
-	if(aindex+2 < arch.size()){ // not the last layer
-	  // f(x) = b * ( (1 - Exp[-ax]) / (1 + Exp[-ax]) )
-	  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
-	  
-	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    state[i] = nonlin(state[i], aindex + 1);
-	  }
-	}
-	
-	
-	dptr += (arch[aindex] + 1)*arch[aindex+1];
+	      if(bpdata.size() <= 0){
+		unsigned int bpsize = 0;
 
-	aindex++; // next layer
-      }
-            
-    }
-    else{
-      T* dptr = &(data[0]);
-      
-      while(aindex+1 < arch.size()){
-	
-	if(collectSamples){
-	  math::vertex<T> x;
-	  x.resize(arch[aindex]);
-	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
-	  samples[aindex].push_back(x);
-	}
-	
-	// gemv(a[1], a[0], dptr, state, state); // s = W*s
-	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+		for(unsigned int i=0;i<arch.size();i++)
+		  bpsize += arch[i];
 
-	// s = b + W*s
-	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
-	
-	// s = g(v)
-	
-	if(aindex+2 < arch.size()){ // not the last layer
-	  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
-	  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
-	  
-	  for(unsigned int i=0;i<arch[aindex+1];i++){
-	    state[i] = nonlin(state[i], aindex + 1);
-	  }
-	}
-      
-	dptr += (arch[aindex] + 1)*arch[aindex+1];
-	aindex++; // next layer
-      }
-      
-    }
-    
-    
-    if(!outputValues.importData(&(state[0]))){
-      std::cout << "Failed to import data to vertex from memory." << std::endl;
-      return false;
-    }
-    
-    
-    hasValidBPData = gradInfo;
-    
-    return true;
+		bpdata.resize(bpsize);
+	      }
+
+	      T* bpptr = &(bpdata[0]);
+	      T* dptr = &(data[0]);
+
+
+	      while(aindex+1 < arch.size()){
+		// copies layer input x to bpdata
+		memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
+		bpptr += arch[aindex];
+
+		if(collectSamples){
+		  math::vertex<T> x;
+		  x.resize(arch[aindex]);
+		  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+		  samples[aindex].push_back(x);
+		}
+
+		// gemv(a[1], a[0], dptr, state, state); // s = W*s
+		// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+
+		// s = b + W*s
+		gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+			   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+
+	      	// s = g(v)
+
+		if(aindex+2 < arch.size()){ // not the last layer
+		  // f(x) = b * ( (1 - Exp[-ax]) / (1 + Exp[-ax]) )
+		  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
+
+		  for(unsigned int i=0;i<arch[aindex+1];i++){
+		    state[i] = nonlin(state[i], aindex + 1);
+		  }
+		}
+
+
+		dptr += (arch[aindex] + 1)*arch[aindex+1];
+
+		aindex++; // next layer
+	      }
+
+	    }
+	    else{
+	      T* dptr = &(data[0]);
+
+	      while(aindex+1 < arch.size()){
+
+		if(collectSamples){
+		  math::vertex<T> x;
+		  x.resize(arch[aindex]);
+		  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+		  samples[aindex].push_back(x);
+		}
+
+		// gemv(a[1], a[0], dptr, state, state); // s = W*s
+		// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+
+		// s = b + W*s
+		gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+			   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+
+		// s = g(v)
+
+		if(aindex+2 < arch.size()){ // not the last layer
+		  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
+		  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
+
+		  for(unsigned int i=0;i<arch[aindex+1];i++){
+		    state[i] = nonlin(state[i], aindex + 1);
+		  }
+		}
+
+		dptr += (arch[aindex] + 1)*arch[aindex+1];
+		aindex++; // next layer
+	      }
+
+	    }
+
+
+	    if(!outputValues.importData(&(state[0]))){
+	      std::cout << "Failed to import data to vertex from memory." << std::endl;
+	      return false;
+	    }
+
+
+	    hasValidBPData = gradInfo;
+
+	    return true;
   }
   
   
+  // simple thread-safe version [parallelizable version of calculate: don't calculate gradient nor collect samples]
+  template <typename T>
+  bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output) const
+  {
+	  std::vector<T> state;
+	  state.resize(maxwidth);
+
+	  if(!input.exportData(&(state[0])))
+		  return false;
+
+	  // unsigned int* a = &(arch[0]);
+	  unsigned int aindex = 0;
+
+	  {
+		  const T* dptr = &(data[0]);
+
+		  while(aindex+1 < arch.size()){
+			  // gemv(a[1], a[0], dptr, state, state); // s = W*s
+			  // gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+
+			  // s = b + W*s
+			  gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+					  arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+
+			  // s = g(v)
+
+			  if(aindex+2 < arch.size()){ // not the last layer
+				  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
+				  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
+
+				  for(unsigned int i=0;i<arch[aindex+1];i++){
+					  state[i] = nonlin(state[i], aindex + 1);
+				  }
+			  }
+
+			  dptr += (arch[aindex] + 1)*arch[aindex+1];
+			  aindex++; // next layer
+		  }
+	  }
+
+	  if(!output.importData(&(state[0]))){
+		  std::cout << "Failed to import data to vertex from memory." << std::endl;
+	      return false;
+	  }
+
+	  // hasValidBPData = false;
+
+	  return true;
+  }
+
+
   template <typename T> // number of layers
   unsigned int nnetwork<T>::length() const {
     return arch.size();
@@ -981,10 +1032,13 @@ namespace whiteice
 
   template <typename T>
   inline void nnetwork<T>::gemv_gvadd(unsigned int yd, unsigned int xd, 
-				      T* W, T* x, T* y,
-				      unsigned int dim, T* s, T* b)
+				      const T* W, T* x, T* y,
+				      unsigned int dim, T* s, const T* b) const
   {
     // calculates y = b + W*x (y == x)
+	  std::vector<T> temp;
+	  temp.resize(maxwidth);
+
     
 #if 1
     

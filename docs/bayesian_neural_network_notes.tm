@@ -79,7 +79,7 @@
   but in practice this is impossible in our model - unless we can calculate
   inverse of <math|f<around*|(|\<b-x\>,\<b-w\>|)>> in which case we would
   have impulse distribution at <math|f<rsup|-1><around*|(|\<b-y\>|)>> which
-  we should use.
+  should used.
 
   <with|font-series|bold|Deep network principle>
 
@@ -106,6 +106,12 @@
   gradient of both gradient descent algorithms. <with|font-shape|italic|This
   is interesting result because I haven't seen this kind of principle or idea
   in optimization literature anywhere else than in the context of RBMs>.
+  Moreo<strong|<em|w>>ver, we know that in practice <math|\<b-w\><rsub|1>>
+  and <math|\<b-omega\><rsub|2>> are not indepedent but related to each other
+  somehow so, ideally, this more detailed interaction between variables
+  should be taken into account when calculating datalikelyhood probability.
+
+  \;
 
   \;
 

@@ -60,6 +60,9 @@ namespace whiteice
       return calculate(gradInfo, collectSamples);
     }
     
+    // simple thread-safe version [parallelizable version of calculate: don't calculate gradient nor collect samples]
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output) const;
+
     unsigned int length() const; // number of layers
     
     bool randomize();
@@ -112,8 +115,8 @@ namespace whiteice
 
     
     inline void gemv_gvadd(unsigned int yd, unsigned int xd, 
-			   T* W, T* x, T* y,
-			   unsigned int dim, T* s, T* b);
+			   const T* W, T* x, T* y,
+			   unsigned int dim, T* s, const T* b) const;
     
     
     // data structures which are part of
