@@ -109,7 +109,7 @@ namespace whiteice
 #if 1
     {
       T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
-      err = alpha*(x*x);
+      err = T(0.5)*alpha*(x*x);
       e += err[0];
     }
 #endif
@@ -145,11 +145,12 @@ namespace whiteice
 		  sumgrad += ninv*grad;
 	  }
 
+#if 1
 	  {
 		  T alpha = T(0.01f);
 		  sumgrad += alpha*x;
 	  }
-
+#endif
 	  // TODO: is this really correct gradient to use
 	  // (we want to use: 0,5*SUM e(i)^2 + alpha*w^2
     

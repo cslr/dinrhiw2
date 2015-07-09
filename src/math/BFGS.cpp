@@ -282,7 +282,7 @@ namespace whiteice
 	    
 	    ratio = error/minimum_error;
 	    
-	    if(ratio > T(1.10f)){ // max 10% increase from the minimum
+	    if(ratio > T(1.25f)){ // max 25% increase from the minimum
 	      break;
 	    }
 	  }

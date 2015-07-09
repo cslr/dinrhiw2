@@ -37,8 +37,7 @@ namespace whiteice
       ~dataset() throw();
       
       
-      bool createCluster(std::string& name,
-			 unsigned int dimension);
+      bool createCluster(const std::string& name, const unsigned int dimension);
       
       bool getClusterNames(std::vector<std::string>& names) const;
       
@@ -109,12 +108,10 @@ namespace whiteice
       bool save(const std::string& filename) const throw();
       
       // accesses data from cluster zero
-      const math::vertex<T>& operator[](unsigned int index) 
-	const throw(std::out_of_range);
+      const math::vertex<T>& operator[](unsigned int index) const throw(std::out_of_range);
       
-      const math::vertex<T>& access
-	(unsigned int cluster, unsigned int data) 
-	const throw(std::out_of_range);
+      const math::vertex<T>& access(unsigned int cluster, unsigned int data) const throw(std::out_of_range);
+      const math::vertex<T>& accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range);
       
       // accesses random element from specified cluster
       const math::vertex<T>& random_access(unsigned int index = 0) const throw(std::out_of_range);

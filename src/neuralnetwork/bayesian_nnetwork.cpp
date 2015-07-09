@@ -11,6 +11,7 @@
 #include <typeinfo>
 
 #include "nnetwork.h"
+#include "dataset.h"
 #include "dinrhiw_blas.h"
 
 
@@ -156,7 +157,6 @@ namespace whiteice
     	cov.zero();
 
     	T ninv  = T(1.0f/latestN);
-    	T ninv2 = T(1.0f/(latestN - 1));
 
 #pragma omp for nowait
     	for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
@@ -165,7 +165,7 @@ namespace whiteice
     		math::vertex<T> out = nnets[i]->output();
 
     		m += ninv*out;
-    		cov += ninv2*out.outerproduct();
+    		cov += ninv*out.outerproduct();
     	}
 
 #pragma omp critical
@@ -176,7 +176,7 @@ namespace whiteice
 
     }
 
-    covariance -= mean.outerproduct();
+    covariance -= mean.outerproduct(); // should divide by N-1 but we ignore this in order to have a result for N = 1
 
     return true;
   }
@@ -211,20 +211,30 @@ namespace whiteice
   bool bayesian_nnetwork<T>::load(const std::string& filename) throw()
   {
     try{
-      whiteice::conffile configuration;
+      // whiteice::conffile configuration;
+    	whiteice::dataset<T> configuration;
+    	math::vertex<T> data;
+    	unsigned int cluster = 0;
+
       std::vector<int> ints;
       std::vector<float> floats;
       std::vector<std::string> strings;
 
       if(configuration.load(filename) == false)
-	return false;
+    	  return false;
 
       int versionid = 0;
       
       // checks version
       {
-	if(!configuration.get(FNN_VERSION_CFGSTR, ints))
-	  return false;
+	//if(!configuration.get(FNN_VERSION_CFGSTR, ints))
+	  //return false;
+     	 data = configuration.accessName(FNN_VERSION_CFGSTR, 0);
+     	 ints.resize(data.size());
+     	 for(unsigned int i=0;i<data.size();i++){
+     		 math::convert(ints[i], data[i]);
+     	 }
+
 	
 	if(ints.size() != 1)
 	  return false;
@@ -241,8 +251,13 @@ namespace whiteice
       
       // gets architecture
       {
-	if(!configuration.get(FNN_ARCH_CFGSTR,ints))
-	  return false;
+	//if(!configuration.get(FNN_ARCH_CFGSTR,ints))
+	  // return false;
+     	 data = configuration.accessName(FNN_ARCH_CFGSTR, 0);
+     	 ints.resize(data.size());
+     	 for(unsigned int i=0;i<data.size();i++){
+     		 math::convert(ints[i], data[i]);
+     	 }
 	  
 	if(ints.size() < 2)
 	  return false;
@@ -260,8 +275,12 @@ namespace whiteice
       int numberOfSamples = 0;
       
       {
-	if(!configuration.get(FNN_NUMWEIGHTS_CFGSTR, ints))
-	  return false;
+
+	 data = configuration.accessName(FNN_NUMWEIGHTS_CFGSTR, 0);
+	 ints.resize(data.size());
+	 for(unsigned int i=0;i<data.size();i++){
+		 math::convert(ints[i], data[i]);
+	 }
 
 	if(ints.size() != 1)
 	  return false;
@@ -283,9 +302,13 @@ namespace whiteice
       for(unsigned int index=0;index<nets.size();index++)
       {
 	nets[index] = new nnetwork<T>(arch);
-	
-	char buffer[80];
+
 	math::vertex<T> w;
+	
+	w = configuration.accessName(FNN_WEIGHTS_CFGSTR, 0);
+
+#if 0
+	char buffer[80];
 
 	sprintf(buffer, FNN_WEIGHTS_CFGSTR, index);
 
@@ -300,6 +323,7 @@ namespace whiteice
 	for(unsigned int i=0;i<w.size();i++){
 	  w[i] = T(floats[i]);
 	}
+#endif
 	
 	
 	if(nets[index]->importdata(w) == false){
@@ -328,6 +352,11 @@ namespace whiteice
     }
   }
 
+// #define FNN_VERSION_CFGSTR          "FNN_CONFIG_VERSION"
+// #define FNN_NUMWEIGHTS_CFGSTR       "FNN_NUM_WEIGHTS"
+// #define FNN_ARCH_CFGSTR             "FNN_ARCH"
+// #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"
+
   
   template <typename T>
   bool bayesian_nnetwork<T>::save(const std::string& filename) const throw()
@@ -335,18 +364,29 @@ namespace whiteice
     try{
       if(nnets.size() <= 0) return false;
       
-      whiteice::conffile configuration;
+      // whiteice::conffile configuration;
+      whiteice::dataset<T> configuration;
+      math::vertex<T> data;
 
       std::vector<int> ints;
       std::vector<float> floats;
       std::vector<std::string> strings;
       
+
       // writes version information
       {
 	// version number = integer/1000
 	ints.push_back(3500); // 3.500
-	if(!configuration.set(FNN_VERSION_CFGSTR, ints))
-	  return false;
+
+    configuration.createCluster(FNN_VERSION_CFGSTR, ints.size());
+    data.resize(ints.size());
+    for(unsigned int i=0;i<ints.size();i++){
+    	data[i] = ints[i];
+    }
+    configuration.add(configuration.getCluster(FNN_VERSION_CFGSTR), data);
+
+	//if(!configuration.set(FNN_VERSION_CFGSTR, ints))
+	//  return false;
 	
 	ints.clear();
       }
@@ -360,8 +400,15 @@ namespace whiteice
 	for(unsigned int i=0;i<arch.size();i++)
 	  ints.push_back(arch[i]);
 
-	if(!configuration.set(FNN_ARCH_CFGSTR, ints))
-	  return false;
+    configuration.createCluster(FNN_ARCH_CFGSTR, ints.size());
+    data.resize(ints.size());
+    for(unsigned int i=0;i<ints.size();i++){
+    	data[i] = ints[i];
+    }
+    configuration.add(configuration.getCluster(FNN_ARCH_CFGSTR), data);
+
+	//if(!configuration.set(FNN_ARCH_CFGSTR, ints))
+	//  return false;
 	
 	ints.clear();
       }
@@ -370,13 +417,23 @@ namespace whiteice
       {
 	ints.push_back(nnets.size());
 
-	if(!configuration.set(FNN_NUMWEIGHTS_CFGSTR, ints))
-	  return false;
-	
+    configuration.createCluster(FNN_NUMWEIGHTS_CFGSTR, ints.size());
+    data.resize(ints.size());
+    for(unsigned int i=0;i<ints.size();i++){
+    	data[i] = ints[i];
+    }
+    configuration.add(configuration.getCluster(FNN_NUMWEIGHTS_CFGSTR), data);
+
 	ints.clear();
       }
 
 // weights: we just convert everything to a big vertex vector and write it
+      math::vertex<T> w;
+      if(nnets[0]->exportdata(w) == false)
+    	  return false;
+
+      configuration.createCluster(FNN_WEIGHTS_CFGSTR, w.size());
+
       for(unsigned int index=0;index<nnets.size();index++)
       {
 	char buffer[80];
@@ -385,6 +442,8 @@ namespace whiteice
 	if(nnets[index]->exportdata(w) == false)
 	  return false;
 	
+
+#if 0
 	for(unsigned int i=0;i<w.size();i++){
 	  float f;
 	  math::convert(f, w[i]);
@@ -395,8 +454,14 @@ namespace whiteice
 	
 	if(!configuration.set(buffer, floats))
 	  return false;
-	
+
+
 	floats.clear();
+#endif
+
+
+    configuration.add(configuration.getCluster(FNN_WEIGHTS_CFGSTR), w);
+
       }      
       
       

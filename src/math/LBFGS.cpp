@@ -266,7 +266,7 @@ namespace whiteice
     	std::list<T> ratios;
     	bool reset = false;
 
-    	unsigned int M = 35; // history size
+    	unsigned int M = 15; // history size
     	std::list< vertex<T> > yk;
     	std::list< vertex<T> > sk;
     	std::list< T > rk;
@@ -296,9 +296,9 @@ namespace whiteice
     				// mean_ratio = math::pow(mean_ratio, inv);
     				// std::cout << "ratio = " << mean_ratio << std::endl;
 
-    				// 10% increase from the minimum found
+    				// 20% increase from the minimum found
 
-    				if(mean_ratio > T(1.10f) && iterations > 10){
+    				if(mean_ratio > T(1.20f) && iterations > 25){
     					break;
     				}
     			}

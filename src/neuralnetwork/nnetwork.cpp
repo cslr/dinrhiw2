@@ -293,6 +293,9 @@ namespace whiteice
 	  std::vector<T> state;
 	  state.resize(maxwidth);
 
+	  if(input.size() != arch[0])
+		  return false; // input vector has wrong dimension
+
 	  if(!input.exportData(&(state[0])))
 		  return false;
 
@@ -325,6 +328,8 @@ namespace whiteice
 			  aindex++; // next layer
 		  }
 	  }
+
+	  output.resize(arch[arch.size()-1]); // resizes output to have correct size
 
 	  if(!output.importData(&(state[0]))){
 		  std::cout << "Failed to import data to vertex from memory." << std::endl;

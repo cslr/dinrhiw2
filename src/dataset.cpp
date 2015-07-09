@@ -87,8 +87,7 @@ namespace whiteice
   // cluster code
   
   template <typename T>
-  bool dataset<T>::createCluster(std::string& name,
-				 unsigned int dimension)
+  bool dataset<T>::createCluster(const std::string& name, const unsigned int dimension)
   {
     if(name.length() <= 0)
       return false;
@@ -128,13 +127,13 @@ namespace whiteice
   template <typename T>
   unsigned int dataset<T>::getCluster(const std::string& name) const
   {
-    typename std::map<std::string, unsigned int>::const_iterator i;
-    i = namemapping.find(name);
-    
-    if(i == namemapping.end())
-      return (unsigned int)(-1);
-    
-    return (i->second);
+	    typename std::map<std::string, unsigned int>::const_iterator i;
+	    i = namemapping.find(name);
+
+	    if(i == namemapping.end())
+	      return (unsigned int)(-1);
+
+	    return (i->second);
   }
   
   
@@ -1124,23 +1123,37 @@ namespace whiteice
     return clusters[0].data[index];
   }
   
-  
-  
   template <typename T>
-  const math::vertex<T>& dataset<T>::access(unsigned int cluster,
-					    unsigned int data) const
-    throw(std::out_of_range)
+  const math::vertex<T>& dataset<T>::access(unsigned int cluster, unsigned int data) const throw(std::out_of_range)
   {
-    if(cluster >= clusters.size())
-      throw std::out_of_range("cluster index out of range");
-    
-    if(data >= clusters[cluster].data.size())
-      throw std::out_of_range("data index out of range");
-    
-    return clusters[cluster].data[data];
+	    if(cluster >= clusters.size())
+	      throw std::out_of_range("cluster index out of range");
+
+	    if(data >= clusters[cluster].data.size())
+	      throw std::out_of_range("data index out of range");
+
+	    return clusters[cluster].data[data];
   }
   
   
+  template <typename T>
+  const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range)
+  {
+	    typename std::map<std::string, unsigned int>::const_iterator i;
+	    i = namemapping.find(clusterName);
+
+	    if(i == namemapping.end())
+	      throw std::out_of_range("dataset: cannot find cluster name");
+
+	    const unsigned int cluster = i->second;
+
+	    if(dataElem >= clusters[cluster].data.size())
+	      throw std::out_of_range("data index out of range");
+
+	    return clusters[cluster].data[dataElem];
+  }
+
+
   template <typename T>
   unsigned int dataset<T>::size(unsigned int index) const throw()  // dataset size  
   {

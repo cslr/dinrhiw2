@@ -1,5 +1,21 @@
 TODO
 
+Neuromancer/Resonanz Requirements:
+* HMM, GB-RBM and BB-RBM
+
+  - implement discrete HMM and using arbitrary precision numbers
+    * study some Hidden Markov Model theory
+    * this will be used to learn and generate likely stimulation sequences
+      and tag stimulation elements into language (does make sense?)
+      
+   - implement BB-RBM as well from the theory as GB-RBM 
+   - implement stacked autoencoder GB-RBM (input) + BB-RBM for pictures
+   
+========================
+
+- bayesian neural network fixes 
+  (train both function and its inverse at the same time)
+
 - OPTIMIZE BFGS for speed:
   * implement L-BFGS for large neural networks
     (in practice we ALWAYS have rank(H) << dim(H)
