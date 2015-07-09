@@ -816,7 +816,7 @@ void rbm_test()
 	var[1] = dev*(((float)rand()/(float)RAND_MAX) - 0.5f);
 	
 	d += var;
-	
+
 	samples.push_back(d); // adds a single data point from cluster
 	  
 	i++;
@@ -833,7 +833,7 @@ void rbm_test()
     {
             
       math::blas_real<float> delta;
-      math::blas_real<float> elimit = 0.005;
+      math::blas_real<float> elimit = 0.0001;
       unsigned int epochs = 0;
       
       do{
@@ -843,7 +843,7 @@ void rbm_test()
 	std::cout << "CRBM learning epoch " << epochs 
 		  << " deltaW = " << delta << std::endl;
       }
-      while(delta > elimit && epochs < 10000);
+      while(delta > elimit && epochs < 1000);
       
       std::cout << "CRBM LEARNING TOY PROBLEM 2.. DONE." << std::endl;
       
@@ -859,7 +859,8 @@ void rbm_test()
     {
       // reconstruct data points
       for(unsigned int i=0;i<samples.size();i++){
-	math::vertex<>& v = samples[i];
+	math::vertex<> v;
+	v.resize(2);
 	
 	// randomly generated point [0,1]x[0,1] interval to be reconstructed
 	v[0] = ((float)rand()/(float)RAND_MAX);
@@ -875,13 +876,12 @@ void rbm_test()
 	
 	reconstruct.push_back(v);
       }
-
       
       // saves training data to CSV file for analysis and plotting purposes
       FILE* handle = fopen("rbm_inputdata.csv", "wt"); // no error checking here
       
       for(unsigned int i=0;i<samples.size();i++){
-	math::vertex<>& v = samples[i];
+	const math::vertex<>& v = samples[i];
 	
 	fprintf(handle, "%f", v[0].c[0]);
 	for(unsigned int j=1;j<v.size();j++)

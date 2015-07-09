@@ -1,6 +1,7 @@
 
 #include "CRBM.h"
 #include "norms.h"
+#include <random>
 
 namespace whiteice
 {
@@ -113,6 +114,9 @@ namespace whiteice
     math::matrix<T> Wt = W;
     Wt.transpose();
     
+    std::default_random_engine gen;
+    std::normal_distribution<double> normal_rng(0.0, 0.01); // N(0,1);
+    
     while(iters > 0){
       h = W*v;
       
@@ -121,11 +125,14 @@ namespace whiteice
 	T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0);
 	// T r = T(rand())/T(RAND_MAX);
 	
-	//if(aj > r) h[j] = T(1.0); // discretization step
-	//else       h[j] = T(0.0);
+	T r = T(rand())/T(RAND_MAX);
+	if(aj > r) h[j] = T(1.0); // discretization step
+	else       h[j] = T(0.0);
 	
 	h[j] = aj;
       }
+      
+      h[h.size()-1] = T(1.0); // bias term is always one
       
       iters--;
       if(iters <= 0) return true;
@@ -142,6 +149,8 @@ namespace whiteice
 	
 	v[j] = aj;
       }
+      
+      v[v.size()-1] = T(1.0); // bias term is always one
       
       iters--;
       if(iters <= 0) return true;
@@ -183,6 +192,9 @@ namespace whiteice
     math::matrix<T> Wt = W;
     Wt.transpose();
     
+    std::default_random_engine gen;
+    std::normal_distribution<double> normal_rng(0.0, 0.01); // N(0,0.01);
+    
     
     for(unsigned int i=0;i<samples.size();i++){
       const unsigned int index = rand() % samples.size();
@@ -200,9 +212,9 @@ namespace whiteice
 	
 	// 1. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
-	  T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0); // [-1, 1]
+	  T aj = T(2.0)/(T(1.0) + math::exp(-h[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
 	  
-#if 0
+#if 1
 	  T r = T(rand())/T(RAND_MAX);
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
@@ -210,6 +222,8 @@ namespace whiteice
 	  h[j] = aj;
 #endif
 	}
+	
+	h[h.size()-1] = T(1.0);
 	
 	for(unsigned int y=0;y<h.size();y++)
 	  for(unsigned int x=0;x<v.size();x++)
@@ -221,8 +235,8 @@ namespace whiteice
 	  
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(v.size()-0);j++){
-	    T aj = T(2.0)/(T(1.0) + math::exp(-v[j])) - T(1.0); // [-1, 1]
-
+	    T aj = T(2.0)/(T(1.0) + math::exp(-v[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
+	    
 #if 0
 	    T r = T(rand())/T(RAND_MAX);	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
@@ -232,16 +246,16 @@ namespace whiteice
 #endif
 	  }
 	  
-	  // v[v.size()-1] = T(1.0); // DO NOT FORCE THE HIDDEN INPUT TO ONE DURING STIM
+	  v[v.size()-1] = T(1.0);
 	  
 	  
 	  h = W*v;
 	  
 	  // 2. hidden units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(h.size()-0);j++){
-	    T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0); // [-1, 1]
+	    T aj = T(2.0)/(T(1.0) + math::exp(-h[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
 	    
-#if 0
+#if 1
 	    T r = T(rand())/T(RAND_MAX);
 	    if(aj > r) h[j] = T(1.0); // discretization step
 	    else       h[j] = T(0.0);
@@ -249,6 +263,8 @@ namespace whiteice
 	    h[j] = aj;
 #endif
 	  }
+	  
+	  h[h.size()-1] = T(1.0);
 	  
 	}
 	
