@@ -15,13 +15,14 @@
 namespace whiteice {
 
 /**
- * Implements F.A.S.T. **thread-safe** hardware random number generator
- * using Intel RDRAND.
+ * Implements **thread-safe** hardware random number generator
+ * using Intel RDRAND if it is available. Otherwise falls back to rand()
+ * which is NOT thread-safe (but faster with more than 10 threads)
  */
 template <typename T=math::blas_real<float> >
 class RNG {
 public:
-	RNG() throw(std::runtime_error); // throws runtime error if RDRAND is not supported
+	RNG(); // uses regular rand() if rdrand is not supported
 	virtual ~RNG(){ }
 
 	unsigned int rand() const; // 32bit
@@ -49,9 +50,19 @@ protected:
 	double unid() const;
 	float unif() const; // floating point uniform distribution [for ziggurat method]
 
-	// functions to access assembly level instruction
-	virtual unsigned int rdrand32() const;
-	virtual unsigned long long rdrand64() const;
+	// function pointers to generate random numbers (initialized appropriately by ctor)
+	unsigned int (RNG<T>::*rdrand32)() const = nullptr;
+	unsigned long long (RNG<T>::*rdrand64)() const = nullptr;
+
+	// functions to access assembly level instructionxs
+	virtual unsigned int _rdrand32() const;
+	virtual unsigned long long _rdrand64() const;
+
+	// rand() using instructions to use if RDRAND is not availablexs
+	virtual unsigned int _rand32() const;
+	virtual unsigned long long _rand64() const;
+
+	void cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4]);
 };
 
 } /* namespace whiteice */

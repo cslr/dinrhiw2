@@ -5,32 +5,64 @@
  *      Author: Tomas
  */
 
+#include "RNG.h"
+
 #ifndef RNG_CPP
 #define RNG_CPP
 
-#include "RNG.h"
+#include <string>
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 // Ziggurat code is almost directly from the paper of George Marsaglia:
 // "The Ziggurat Method for Generating Random Variableas" (2000)
 
 namespace whiteice {
 
-// throws runtime error if RDRAND is not supported
 template <typename T>
-RNG<T>::RNG() throw(std::runtime_error)
+RNG<T>::RNG()
 {
-	// FIXME check for RDRAND instruction
+	// uses CPUID to check for RDRAND instruction
+	bool has_rdrand = false;
+	{
+		  unsigned int regs[4];
+
+		  // get vendor
+		  char vendor[12];
+		  cpuid(0, 0, regs);
+		  ((unsigned *)vendor)[0] = regs[1]; // EBX
+		  ((unsigned *)vendor)[1] = regs[3]; // EDX
+		  ((unsigned *)vendor)[2] = regs[2]; // ECX
+		  std::string cpuvendor = std::string(vendor, 12);
+
+		  if(cpuvendor == "GenuineIntel"){
+			  cpuid(1, 0, regs);
+			  if((regs[2] & 0x40000000) == 0x40000000)
+				  has_rdrand = true;
+		  }
+	}
+
+	// setups function pointers to be used for rng
+	if(has_rdrand){
+		rdrand32 = &_rdrand32;
+		rdrand64 = &_rdrand64;
+	}
+	else{
+		srand(time(0));
+		rdrand32 = &_rand32; // uses rand() it is NOT thread-safe
+		rdrand64 = &_rand64; // uses rand() it is NOT thread-safe
+	}
 
 	// calculates ziggurat tables for normal and exponential distribution
 	calculate_ziggurat_tables();
 }
 
 template <typename T>
-unsigned int RNG<T>::rand() const{ return rdrand32(); }
+unsigned int RNG<T>::rand() const{ return (this->*rdrand32)(); }
 
 template <typename T>
-unsigned long long RNG<T>::rand64() const{ return rdrand64(); } // 64bit
+unsigned long long RNG<T>::rand64() const{ return (this->*rdrand64)(); } // 64bit
 
 
 template <typename T>
@@ -48,7 +80,7 @@ void RNG<T>::uniform(math::vertex<T>& u) const{
 
 	for(unsigned int i=0;i<u.size();i++){
 		// u[i] = T(rdrand64()/MAX);
-		u[i] = unid();
+		u[i] = T(unid());
 	}
 }
 
@@ -92,7 +124,7 @@ void RNG<T>::exp(math::vertex<T>& ev) const
 template <typename T>
 float RNG<T>::rnor() const
 {
-	int hz = rdrand32();
+	int hz = (this->*rdrand32)();
 	unsigned int iz = hz & 127;
 
 	if(abs(hz) < kn[iz]){
@@ -115,7 +147,7 @@ float RNG<T>::rnor() const
 			if( fn[iz]+unid()*(fn[iz-1]-fn[iz]) < math::exp(-.5*x*x) )
 				return x;
 
-			hz=rdrand32();
+			hz=(this->*rdrand32)();
 			iz=hz&127;
 
 			if(math::abs(hz)<kn[iz])
@@ -128,7 +160,7 @@ float RNG<T>::rnor() const
 template <typename T>
 float RNG<T>::rexp() const
 {
-	int jz = rdrand32();
+	int jz = (this->*rdrand32)();
 	unsigned int iz = jz & 255;
 
 	if( jz <ke[iz]){
@@ -146,7 +178,7 @@ float RNG<T>::rexp() const
 			if( fe[iz]+unid()*(fe[iz-1]-fe[iz]) < math::exp(-x) )
 				return (x);
 
-			jz=rdrand32();
+			jz=(this->*rdrand32)();
 			iz=(jz&255);
 
 			if(jz<ke[iz])
@@ -202,45 +234,62 @@ void RNG<T>::calculate_ziggurat_tables()
 template <typename T>
 float RNG<T>::unif() const
 {
-	// const float MAX = (float)((unsigned long long)(-1LL)); // 2**64 - 1
-	// return (float)(rdrand64()/MAX);
-
-	return (0.5 + (signed)rdrand32() * .2328306e-9);
+	return (0.5 + (signed)((this->*rdrand32)()) * .2328306e-9);
 }
 
 
 template <typename T>
 double RNG<T>::unid() const
 {
-	return (0.5 + (signed)rdrand32() * .2328306e-9);
+	return (0.5 + (signed)((this->*rdrand32)()) * .2328306e-9);
 }
 
 
 template <typename T>
-unsigned int RNG<T>::rdrand32() const
+unsigned int RNG<T>::_rdrand32() const
 {
 	unsigned int lvalue;
 	unsigned char ok = 0;
 
 	while(!ok)
-		asm volatile ("rdrand %0; setc %1"
-				: "=r" (lvalue), "=qm" (ok));
+		asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
 
 	return lvalue;
 }
 
 
 template <typename T>
-unsigned long long RNG<T>::rdrand64() const
+unsigned long long RNG<T>::_rdrand64() const
 {
 	unsigned long long lvalue;
 	unsigned char ok = 0;
 
 	while(!ok)
-		asm volatile ("rdrand %0; setc %1"
-				: "=r" (lvalue), "=qm" (ok));
+		asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
 
 	return lvalue;
+}
+
+template <typename T>
+unsigned int RNG<T>::_rand32() const
+{
+	return (unsigned int)rand();
+}
+
+template <typename T>
+unsigned long long RNG<T>::_rand64() const
+{
+	unsigned long long r1 = (unsigned long long)rand();
+	unsigned long long r2 = (unsigned long long)rand();
+
+	return ((r1) | (r2<<32));
+}
+
+template <typename T>
+void RNG<T>::cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4])
+{
+	asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
+	     : "a" (leaf), "c" (subleaf));
 }
 
 
