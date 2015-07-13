@@ -134,6 +134,12 @@ namespace whiteice
       bool getPreprocessings(unsigned int cluster,
 			     std::vector<data_normalization>& preprocessings) const  throw();
       
+      // is data normalized with given operation
+      bool hasPreprocess(unsigned int cluster, enum data_normalization norm) const throw(){
+    	  if(cluster >= clusters.size()) return false;
+    	  else return is_normalized(cluster, norm);
+      }
+
       // data preprocessing
       bool preprocess(unsigned int index,
 		      enum data_normalization norm = dnCorrelationRemoval) throw();

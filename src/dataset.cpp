@@ -1325,10 +1325,9 @@ namespace whiteice
 	    return false;
 	
 	// we can use autocorrelation because mean is already zero
-	if(autocorrelation(clusters[index].Rxx,
-			   clusters[index].data) == false){
-	  std::cout << "Calculating autocorrelation failed." << std::endl;
-	  return false;
+	if(autocorrelation(clusters[index].Rxx, clusters[index].data) == false){
+		clusters[index].Rxx.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+		clusters[index].Rxx.identity();
 	}
 	
 	// std::cout << "Rxx = " << clusters[index].Rxx << std::endl;

@@ -58,7 +58,7 @@ protected:
 	virtual unsigned int _rdrand32() const;
 	virtual unsigned long long _rdrand64() const;
 
-	// rand() using instructions to use if RDRAND is not availablexs
+	// rand() using instructions to use if RDRAND is not available
 	virtual unsigned int _rand32() const;
 	virtual unsigned long long _rand64() const;
 

@@ -108,10 +108,10 @@ namespace whiteice
   namespace math
   {
     
-    extern template class LBFGS< float >;
-    extern template class LBFGS< double >;
-    extern template class LBFGS< blas_real<float> >;
-    extern template class LBFGS< blas_real<double> >;
+  extern template class LBFGS< float >;
+  extern template class LBFGS< double >;
+  extern template class LBFGS< blas_real<float> >;
+  extern template class LBFGS< blas_real<double> >;
     
   };
 };

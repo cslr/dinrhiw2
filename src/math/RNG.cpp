@@ -31,9 +31,9 @@ RNG<T>::RNG()
 		  // get vendor
 		  char vendor[12];
 		  cpuid(0, 0, regs);
-		  ((unsigned *)vendor)[0] = regs[1]; // EBX
-		  ((unsigned *)vendor)[1] = regs[3]; // EDX
-		  ((unsigned *)vendor)[2] = regs[2]; // ECX
+		  ((unsigned int *)vendor)[0] = regs[1]; // EBX
+		  ((unsigned int *)vendor)[1] = regs[3]; // EDX
+		  ((unsigned int *)vendor)[2] = regs[2]; // ECX
 		  std::string cpuvendor = std::string(vendor, 12);
 
 		  if(cpuvendor == "GenuineIntel"){
