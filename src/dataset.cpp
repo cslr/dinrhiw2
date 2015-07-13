@@ -1199,8 +1199,7 @@ namespace whiteice
   
   // data preprocessing
   template <typename T>
-  bool dataset<T>::preprocess(unsigned int index,
-			      enum data_normalization norm) throw()
+  bool dataset<T>::preprocess(unsigned int index, enum data_normalization norm) throw()
   {
     if(index >= clusters.size())
       return false;
@@ -1215,10 +1214,8 @@ namespace whiteice
 	  clusters[index].mean.resize(clusters[index].data_dimension);
 	  clusters[index].variance.resize(clusters[index].data_dimension);
 	  
-	  for(unsigned int i=0;i<clusters[index].data_dimension;i++){
-	    clusters[index].mean[i] = T(0.0);
-	    clusters[index].variance[i] = T(0.0);
-	  }
+	  clusters[index].mean.zero();
+	  clusters[index].variance.zero();
 	}
 	
 	// calculates mean & variance
@@ -1335,8 +1332,10 @@ namespace whiteice
 	math::matrix<T> V, Vt, invD, D(clusters[index].Rxx);
 	
 	if(symmetric_eig(D, V) == false){
-	  std::cout << "Symmetric eigenvalue decomposition failed." << std::endl;
-	  return false;
+		D.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+		D.identity();
+		V.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+		V.identity();
 	}
 	
 	// std::cout << "typeinfo = " << typeid(T).name() << std::endl;
@@ -1474,25 +1473,23 @@ namespace whiteice
   
   // converts data with same preprocessing as with dataset vectors
   template <typename T>
-  bool dataset<T>::preprocess(unsigned int index,
-			      math::vertex<T>& vec) const throw()
+  bool dataset<T>::preprocess(unsigned int index, math::vertex<T>& vec) const throw()
   {
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
     
     typename std::vector<enum data_normalization>::const_iterator i;
     
-    for(i=clusters[index].preprocessings.begin();
-	i!=clusters[index].preprocessings.end();i++){
+    for(i=clusters[index].preprocessings.begin();i!=clusters[index].preprocessings.end();i++){
       
       if(*i == dnCorrelationRemoval){
-	whiten(index, vec);
+    	  whiten(index, vec);
       }
       else if(*i == dnMeanVarianceNormalization){
-	mean_variance_removal(index, vec);
+    	  mean_variance_removal(index, vec);
       }
       else if(*i == dnSoftMax){
-	soft_max(index, vec);
+    	  soft_max(index, vec);
       }
       else return false;
     }
@@ -1531,8 +1528,7 @@ namespace whiteice
   
   // inverse preprocess given data vector
   template <typename T>
-  bool dataset<T>::invpreprocess(unsigned int index,
-				 math::vertex<T>& vec) const throw()
+  bool dataset<T>::invpreprocess(unsigned int index, math::vertex<T>& vec) const throw()
   {
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
@@ -1709,8 +1705,7 @@ namespace whiteice
   
   // sets variance to be something like 0.25**2 -> good input/outputs for nn
   template <typename T>
-  void dataset<T>::mean_variance_removal(unsigned int index,
-					 math::vertex<T>& vec) const
+  void dataset<T>::mean_variance_removal(unsigned int index, math::vertex<T>& vec) const
   {
     // x = (x - mean)/sqrt(var) -> new var = 1.0
     
@@ -1763,10 +1758,9 @@ namespace whiteice
   
   
   template <typename T>
-  void dataset<T>::whiten(unsigned int index,
-			  math::vertex<T>& vec) const
+  void dataset<T>::whiten(unsigned int index, math::vertex<T>& vec) const
   {
-    vec = clusters[index].Wxx * vec;
+	  vec = clusters[index].Wxx * vec;
   }
   
   
@@ -1774,8 +1768,7 @@ namespace whiteice
   void dataset<T>::inv_whiten(unsigned int index,
 			      math::vertex<T>& vec) const
   {
-    
-    vec = clusters[index].invWxx * vec;
+	  vec = clusters[index].invWxx * vec;
   }
 
 
