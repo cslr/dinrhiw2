@@ -241,7 +241,7 @@ void PTHMC_abstract<T>::parallel_tempering()
 
 		// std::cout << "Number of PT chains: " << hmc.size() << std::endl;
 
-		for(int i=0;i<(hmc.size()-1);){
+		for(int i=0;i<(int)(hmc.size()-1);){
 			// tries to do MCMC swap between samples..
 
 			// not a bulletproof test but skips chains which didn't produce useful data since last check..

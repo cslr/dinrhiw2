@@ -4,7 +4,8 @@
 CC = @CC@
 CXX = @CXX@
 
-SOURCES = neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp identity_activation.cpp \
+SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
+	neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp identity_activation.cpp \
 	multidimensional_gaussian.cpp neuralnetwork.cpp backpropagation.cpp stretched_function.cpp \
 	optimized_nnetwork_function.cpp \
 	PSO.cpp test_function.cpp negative_function.cpp nnPSO.cpp dnnPSO.cpp \
@@ -15,7 +16,7 @@ SOURCES = neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp ide
 	GA3.cpp ga3_test_function.cpp deep_ica_network_priming.cpp BFGS_nnetwork.cpp pBFGS_nnetwork.cpp \
 	LBFGS_nnetwork.cpp pLBFGS_nnetwork.cpp lreg_nnetwork.cpp nnetwork_function.cpp ultradeep.cpp \
 	RBM.cpp CRBM.cpp DBN.cpp construct_nnetwork.cpp \
-	GBRBM.cpp HMCGBRBM.cpp PTHMCGBRBM.cpp PTHMCabstract.cpp
+	GBRBM.cpp HMCGBRBM.cpp PTHMCGBRBM.cpp PTHMCabstract.cpp  HMCconvergencecheck.cpp
 
 OBJECTS= neuron.o neuronlayer.o \
 	activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
@@ -28,7 +29,7 @@ OBJECTS= neuron.o neuronlayer.o \
 	GA3.o ga3_test_function.o deep_ica_network_priming.o BFGS_nnetwork.o pBFGS_nnetwork.o \
 	LBFGS_nnetwork.o pLBFGS_nnetwork.o lreg_nnetwork.o nnetwork_function.o ultradeep.o \
 	RBM.o CRBM.o DBN.o construct_nnetwork.o \
-	GBRBM.o HMCGBRBM.o PTHMCGBRBM.o PTHMCabstract.o
+	GBRBM.o HMCGBRBM.o PTHMCGBRBM.o PTHMCabstract.o  HMCconvergencecheck.o
 
 EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math/integer.o \
 	../math/matrix_rotations.o ../math/eig.o ../math/correlation.o ../math/blade_math.o \
@@ -47,7 +48,7 @@ TARGET3= testsuite3
 TARGET4= testsuite4
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++11 @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
 
 CXXFLAGS=-Wall $(CFLAGS) @CXXFLAGS@ -g -I. -I.. -I../.. -I../math -I../crypto $(OPTIMIZE)
 

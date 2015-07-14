@@ -405,10 +405,10 @@ namespace whiteice
     bool convert(double& B, const int& A) throw(){ B = (double)A; return true; }
     bool convert(double& B, const unsigned int& A) throw(){ B = (double)A; return true; }
     
-    bool convert(unsigned int& B, const float& A) throw()  { B = (unsigned int)A; }
-    bool convert(unsigned int& B, const double& A) throw() { B = (unsigned int)A; }
-    bool convert(int& B, const float& A) throw()           { B = (int)A; }
-    bool convert(int& B, const double& A) throw()          { B = (int)A; }
+    bool convert(unsigned int& B, const float& A) throw()  { B = (unsigned int)A; return true; }
+    bool convert(unsigned int& B, const double& A) throw() { B = (unsigned int)A; return true; }
+    bool convert(int& B, const float& A) throw()           { B = (int)A; return true; }
+    bool convert(int& B, const double& A) throw()          { B = (int)A; return true; }
 
     bool convert(unsigned int& B, const blas_real<float>& A) throw()     { B = (unsigned int)A.c[0]; return true; }
     bool convert(unsigned int& B, const blas_complex<float>& A) throw()  { B = (unsigned int)A.real(); return true; }

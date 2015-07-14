@@ -45,13 +45,13 @@ RNG<T>::RNG()
 
 	// setups function pointers to be used for rng
 	if(has_rdrand){
-		rdrand32 = &_rdrand32;
-		rdrand64 = &_rdrand64;
+	  rdrand32 = &whiteice::RNG<T>::_rdrand32;
+	  rdrand64 = &whiteice::RNG<T>::_rdrand64;
 	}
 	else{
-		srand(time(0));
-		rdrand32 = &_rand32; // uses rand() it is NOT thread-safe
-		rdrand64 = &_rand64; // uses rand() it is NOT thread-safe
+	  srand(time(0));
+	  rdrand32 = &whiteice::RNG<T>::_rand32; // uses rand() it is NOT thread-safe
+	  rdrand64 = &whiteice::RNG<T>::_rand64; // uses rand() it is NOT thread-safe
 	}
 
 	// calculates ziggurat tables for normal and exponential distribution
@@ -150,7 +150,7 @@ float RNG<T>::rnor() const
 			hz=(this->*rdrand32)();
 			iz=hz&127;
 
-			if(math::abs(hz)<kn[iz])
+			if((unsigned int)math::abs(hz)<kn[iz])
 				return (hz*wn[iz]);
 		}
 	}
@@ -273,14 +273,14 @@ unsigned long long RNG<T>::_rdrand64() const
 template <typename T>
 unsigned int RNG<T>::_rand32() const
 {
-	return (unsigned int)rand();
+        return (unsigned int)::rand();
 }
 
 template <typename T>
 unsigned long long RNG<T>::_rand64() const
 {
-	unsigned long long r1 = (unsigned long long)rand();
-	unsigned long long r2 = (unsigned long long)rand();
+        unsigned long long r1 = (unsigned long long)::rand();
+        unsigned long long r2 = (unsigned long long)::rand();
 
 	return ((r1) | (r2<<32));
 }

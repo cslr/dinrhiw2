@@ -450,7 +450,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 		dz.zero();
 		dW.zero();
 
-		T N = T(0.0);
+		// T N = T(0.0);
 
 		// auto pcd_x = samples[(rand() % samples.size())];
 
@@ -789,6 +789,7 @@ bool GBRBM<T>::sample(const unsigned int SAMPLES, std::vector< math::vertex<T> >
 	}
 
 	ais_sampling(samples, SAMPLES, m, s, W, a, b, z);
+	return true;
 }
 
 
@@ -839,6 +840,7 @@ bool GBRBM<T>::setUData(const std::vector< math::vertex<T> >& samples)
 template <typename T>
 bool GBRBM<T>::setUTemperature(const T temperature){ // sets temperature of the U(q) distribution.. As described in Cho et. al (2011) paper
 	this->temperature = temperature;
+	return true;
 }
 
 
@@ -1541,7 +1543,7 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 
 
 	std::vector<T> logRs;
-	unsigned int iter = 0;
+	// unsigned int iter = 0;
 
 	{
 		vs.resize(SAMPLES);
