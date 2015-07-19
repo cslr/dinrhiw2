@@ -108,7 +108,7 @@ namespace whiteice
 					   std::vector< math::vertex<T> >& weights, int latestN)
   {
     if(nnets.size() <= 0) return false;
-    if(latestN > nnets.size()) return false;
+    if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
 
     nnets[0]->getArchitecture(arch);
@@ -130,10 +130,10 @@ namespace whiteice
   bool bayesian_nnetwork<T>::calculate(const math::vertex<T>& input,
 				       math::vertex<T>& mean,
 				       math::matrix<T>& covariance,
-					   int latestN)
+				       int latestN)
   {
     if(nnets.size() <= 0) return false;
-    if(latestN > nnets.size()) return false;
+    if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
 
     const unsigned int D = nnets[0]->output_size();
@@ -143,7 +143,7 @@ namespace whiteice
     mean.zero();
     covariance.zero();
 
-   	if(latestN <= D)
+    if(latestN <= (signed)D)
     	covariance.identity(); // regularizer term for small datasize
 
 #pragma omp parallel shared(mean, covariance)
@@ -214,7 +214,7 @@ namespace whiteice
       // whiteice::conffile configuration;
     	whiteice::dataset<T> configuration;
     	math::vertex<T> data;
-    	unsigned int cluster = 0;
+    	// unsigned int cluster = 0;
 
       std::vector<int> ints;
       std::vector<float> floats;
@@ -305,7 +305,7 @@ namespace whiteice
 
 	math::vertex<T> w;
 	
-	w = configuration.accessName(FNN_WEIGHTS_CFGSTR, 0);
+	w = configuration.accessName(FNN_WEIGHTS_CFGSTR, index);
 
 #if 0
 	char buffer[80];
@@ -436,7 +436,7 @@ namespace whiteice
 
       for(unsigned int index=0;index<nnets.size();index++)
       {
-	char buffer[80];
+	// char buffer[80];
 	math::vertex<T> w;
 	
 	if(nnets[index]->exportdata(w) == false)

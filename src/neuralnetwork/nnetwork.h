@@ -67,9 +67,10 @@ namespace whiteice
     
     bool randomize();
     
-    // calculates gradient grad(error) = grad(right - output)
-    bool gradient(const math::vertex<T>& error,
-		  math::vertex<T>& grad) const;
+    // calculates gradient grad(0,5*error^2) = grad(right - output)
+    bool gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+    
+    bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
     
     ////////////////////////////////////////////////////////////
     

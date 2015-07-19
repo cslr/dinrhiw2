@@ -196,7 +196,7 @@ namespace whiteice
     	int k = 0;
     	T alpha = T(1.0f);
 
-    	while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
+    	while(found <= 0 && k <= 20){ // min 2**(-30) = 10e-9 step length
 
     		alpha  = T(::pow(2.0f, k));
     		T tvalue;

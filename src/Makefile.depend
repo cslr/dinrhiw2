@@ -156,7 +156,7 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/threshold.h neuralnetwork/treshold.h \
  neuralnetwork/multidimensional_gaussian.h neuralnetwork/gaussian.h \
  neuralnetwork/HMC.h neuralnetwork/bayesian_nnetwork.h \
- neuralnetwork/PTHMC.h neuralnetwork/HMC.h \
+ neuralnetwork/UHMC.h neuralnetwork/PTHMC.h neuralnetwork/HMC.h \
  neuralnetwork/HMCconvergencecheck.h neuralnetwork/bayesian_nnetwork.h \
  neuralnetwork/GA3.h neuralnetwork/rbf.h neuralnetwork/rbf.cpp \
  neuralnetwork/multidimensional_gaussian.h neuralnetwork/hypervolume.h \

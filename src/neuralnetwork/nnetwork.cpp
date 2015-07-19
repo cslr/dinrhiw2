@@ -644,6 +644,42 @@ namespace whiteice
     return output;
   }
   
+  
+  template <typename T>
+  bool nnetwork<T>::gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const
+  {
+    const unsigned int L = getLayers();
+    
+    grad.resize(input_size(), input_size());
+    grad.identity();
+    
+    math::vertex<T> x = input;
+
+    math::matrix<T> A;
+    math::vertex<T> a;
+    
+    for(unsigned int l=0;l<(L-1);l++){
+      getWeights(A, l);
+      getBias(a, l);
+      
+      grad = A*grad;
+      
+      x = A*x + a;
+      
+      for(unsigned int i=0;i<x.size();i++){
+	x[i] *= Dnonlin(x[i], l);
+      }
+    }
+    
+    getWeights(A, L-1);
+    getBias(a, L-1);
+    
+    grad = A*grad;
+    
+    return true;
+  }
+  
+  
   //////////////////////////////////////////////////////////////////////
   
 #define FNN_VERSION_CFGSTR          "FNN_CONFIG_VERSION"

@@ -17,7 +17,12 @@ namespace whiteice {
 /**
  * Implements **thread-safe** hardware random number generator
  * using Intel RDRAND if it is available. Otherwise falls back to rand()
- * which is NOT thread-safe (but faster with more than 10 threads)
+ * which is NOT thread-safe.
+ *
+ * NOTE: It seems that software C++ RNG is actually faster in generating
+ *       normally distributed variables than this when using software RNG.
+ *       => Currently only use this when thread-safety is an issue.
+ *       => Study C++ normal distribution random number generation in detail.
  */
 template <typename T=math::blas_real<float> >
 class RNG {
@@ -51,8 +56,8 @@ protected:
 	float unif() const; // floating point uniform distribution [for ziggurat method]
 
 	// function pointers to generate random numbers (initialized appropriately by ctor)
-	unsigned int (RNG<T>::*rdrand32)() const = nullptr;
-	unsigned long long (RNG<T>::*rdrand64)() const = nullptr;
+	unsigned int (RNG<T>::*rdrand32)() const = &whiteice::RNG<T>::_rand32;
+        unsigned long long (RNG<T>::*rdrand64)() const = &whiteice::RNG<T>::_rand64;
 
 	// functions to access assembly level instructionxs
 	virtual unsigned int _rdrand32() const;

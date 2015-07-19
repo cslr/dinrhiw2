@@ -18,7 +18,8 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 5000 commviol-test.ds 141-10-4 commviol-nn.cfg bayes
+./nntool -v --samples 1000 --adaptive --overfit commviol-test.ds 141-10-4 commviol-nn.cfg lbfgs
+./nntool -v --samples 5000 --adaptive --load    commviol-test.ds 141-10-4 commviol-nn.cfg bayes
 
 ##################################################
 # testing

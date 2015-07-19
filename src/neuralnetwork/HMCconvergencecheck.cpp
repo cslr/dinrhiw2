@@ -26,9 +26,8 @@ HMC_convergence_check<T>::~HMC_convergence_check() {
 
 template <typename T>
 bool HMC_convergence_check<T>::startSampler(){
-
 	// subhmc->startSampler();
-	return ((HMC<T>*)this)->startSampler();
+        return ((HMC<T>*)this)->startSampler();
 }
 
 

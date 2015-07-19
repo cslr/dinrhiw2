@@ -6,8 +6,8 @@
 // TODO: adaptive step lengths DO NOT work very well and
 //       are disabled as the default
 
-#ifndef HMC_h
-#define HMC_h
+#ifndef UHMC_h
+#define UHMC_h
 
 #include <vector>
 #include <unistd.h>
@@ -27,12 +27,12 @@
 namespace whiteice
 {
 	template <typename T = math::blas_real<float> >
-	class HMC
+	class UHMC
 	{
     	public:
 
-		HMC(const whiteice::nnetwork<T>& net, const whiteice::dataset<T>& ds, bool adaptive=false, T alpha = T(0.5), bool store = true);
-		~HMC();
+		UHMC(const whiteice::nnetwork<T>& net, const whiteice::dataset<T>& ds, bool adaptive=false, T alpha = T(0.5), bool store = true);
+		~UHMC();
 
 		bool setTemperature(const T t); // set "temperature" for probability distribution [default T = 1 => no temperature]
 		T getTemperature();             // get "temperature" of probability distribution
@@ -120,10 +120,10 @@ namespace whiteice
 
 namespace whiteice
 {
-	extern template class HMC< float >;
-	extern template class HMC< double >;
-	extern template class HMC< math::blas_real<float> >;
-	extern template class HMC< math::blas_real<double> >;
+	extern template class UHMC< float >;
+	extern template class UHMC< double >;
+	extern template class UHMC< math::blas_real<float> >;
+	extern template class UHMC< math::blas_real<double> >;
 };
 
 

@@ -9,6 +9,7 @@
 #define NEURALNETWORK_HMCCONVERGENCECHECK_H_
 
 #include "HMC.h"
+#include "matrix.h"
 #include <memory>
 
 namespace whiteice {
@@ -22,7 +23,7 @@ public:
 	HMC_convergence_check(const whiteice::nnetwork<T>& net, const whiteice::dataset<T>& ds, bool adaptive=false, T alpha = T(0.5));
 	virtual ~HMC_convergence_check();
 
-	bool startSampler();
+        bool startSampler();
 	bool pauseSampler();
 	bool continueSampler();
 	bool stopSampler();

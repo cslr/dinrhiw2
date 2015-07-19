@@ -3,8 +3,8 @@
 # the system (and have pkg-config installed)
 #
 
-CC = gcc
-CXX= g++
+CC = gcc-5
+CXX= g++-5
 BISON = bison
 
 CP = cp

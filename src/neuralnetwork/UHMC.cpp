@@ -2,7 +2,7 @@
  * hamiltonian MCMC sampling for neural networks
  */
 
-#include "HMC.h"
+#include "UHMC.h"
 #include "NNGradDescent.h"
 
 #include <random>
@@ -13,7 +13,7 @@
 namespace whiteice
 {
 	template <typename T>
-	HMC<T>::HMC(const whiteice::nnetwork<T>& net,
+	UHMC<T>::UHMC(const whiteice::nnetwork<T>& net,
 			const whiteice::dataset<T>& ds,
 			bool adaptive, T alpha, bool store) : nnet(net), data(ds)
 	{
@@ -32,7 +32,7 @@ namespace whiteice
 
 
 	template <typename T>
-	HMC<T>::~HMC()
+	UHMC<T>::~UHMC()
 	{
 		std::lock_guard<std::mutex> lock(start_lock);
 
@@ -51,7 +51,7 @@ namespace whiteice
 
 	// set "temperature" for probability distribution [default T = 1 => no temperature]
 	template <typename T>
-	bool HMC<T>::setTemperature(const T t){
+	bool UHMC<T>::setTemperature(const T t){
 		if(t <= T(0.0)) return false;
 		else temperature = t;
 		return true;
@@ -59,13 +59,13 @@ namespace whiteice
 
 	// get "temperature" of probability distribution
 	template <typename T>
-	T HMC<T>::getTemperature(){
+	T UHMC<T>::getTemperature(){
 		return temperature;
 	}
   
 
 	template <typename T>
-	T HMC<T>::U(const math::vertex<T>& q, bool useRegulizer) const
+	T UHMC<T>::U(const math::vertex<T>& q, bool useRegulizer) const
 	{
 		T E = T(0.0f);
 
@@ -98,14 +98,14 @@ namespace whiteice
 
 		E /= temperature;
 		
-		E += T(0.5)*alpha*(q*q)[0];
-		
+		// TODO: is this really correct squared error term to use?
+
 		return (E);
 	}
   
   
 	template <typename T>
-	math::vertex<T> HMC<T>::Ugrad(const math::vertex<T>& q) const
+	math::vertex<T> UHMC<T>::Ugrad(const math::vertex<T>& q) const
 	{
 		math::vertex<T> sum;
 		sum.resize(q.size());
@@ -142,47 +142,6 @@ namespace whiteice
 			}
 		}
 		
-		
-		// negative gradient
-#pragma omp parallel shared(sum)
-		{
-			// const T ninv = T(1.0f); // T(1.0f/data.size(0));
-			math::vertex<T> sumgrad, grad, err;
-			sumgrad.resize(q.size());
-			sumgrad.zero();
-
-			whiteice::nnetwork<T> nnet(this->nnet);
-			nnet.importdata(q);
-
-#pragma omp for nowait
-			for(unsigned int i=0;i<data.size(0);i++){
-			        // generates negative particle
-			        auto x = data.access(0, rng.rand() % data.size(0));
-				 
-				nnet.input() = x;
-				nnet.calculate(true);
-				auto y = nnet.output();
-				
-				math::vertex<T> n(y.size());
-				rng.normal(n);
-				y += n*math::sqrt(sigma2);
-				
-				err = y - nnet.output();
-
-				if(nnet.gradient(err, grad) == false){
-					std::cout << "gradient failed." << std::endl;
-					assert(0); // FIXME
-				}
-
-				sumgrad -= grad; // negative phase
-			}
-
-#pragma omp critical
-			{
-				sum += sumgrad;
-			}
-		}
-		
 		sum /= sigma2;
 
 		sum /= temperature; // scales gradient with temperature
@@ -199,7 +158,7 @@ namespace whiteice
   
         // calculates z-ratio between data likelihood distributions
         template <typename T>
-	T HMC<T>::zratio(const math::vertex<T>& q1, const math::vertex<T>& q2) const
+	T UHMC<T>::zratio(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 	{
 	  whiteice::nnetwork<T> nnet1(this->nnet);
 	  whiteice::nnetwork<T> nnet2(this->nnet);
@@ -293,7 +252,7 @@ namespace whiteice
   
   
         template <typename T>
-	bool HMC<T>::sample_covariance_matrix(const math::vertex<T>& q)
+	bool UHMC<T>::sample_covariance_matrix(const math::vertex<T>& q)
 	{
 	  const unsigned int DIM = nnet.output_size();
 	  
@@ -319,7 +278,6 @@ namespace whiteice
 	  
 	  S -= m.outerproduct();
 	  
-	  // minimum of sigma2 is better than other choices..
 	  sigma2 = S(0,0);
 	  
 	  for(unsigned int i=0;i<DIM;i++){
@@ -436,7 +394,7 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::startSampler()
+	bool UHMC<T>::startSampler()
 	{
 		const unsigned int NUM_THREADS = 1; // only one thread is supported
 
@@ -467,7 +425,7 @@ namespace whiteice
 		for(unsigned int i=0;i<NUM_THREADS;i++){
 
 			try{
-			        std::thread* t = new std::thread(&HMC<T>::sampler_loop, this);
+			        std::thread* t = new std::thread(&UHMC<T>::sampler_loop, this);
 				// t->detach();
 				sampling_thread.push_back(t);
 			}
@@ -497,7 +455,7 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::pauseSampler()
+	bool UHMC<T>::pauseSampler()
 	{
 		if(!running) return false;
 
@@ -507,7 +465,7 @@ namespace whiteice
 
 
 	template <typename T>
-	bool HMC<T>::continueSampler()
+	bool UHMC<T>::continueSampler()
 	{
 		paused = false;
 		return true;
@@ -515,7 +473,7 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::stopSampler()
+	bool UHMC<T>::stopSampler()
 	{
 		std::lock_guard<std::mutex> lock(start_lock);
 
@@ -536,7 +494,7 @@ namespace whiteice
 
 
 	template <typename T>
-	bool HMC<T>::getCurrentSample(math::vertex<T>& s) const
+	bool UHMC<T>::getCurrentSample(math::vertex<T>& s) const
 	{
 		std::lock_guard<std::mutex> lock(updating_sample);
 		s = q;
@@ -545,7 +503,7 @@ namespace whiteice
 
 
 	template <typename T>
-	bool HMC<T>::setCurrentSample(const math::vertex<T>& s){
+	bool UHMC<T>::setCurrentSample(const math::vertex<T>& s){
 		std::lock_guard<std::mutex> lock(updating_sample);
 		q = s;
 		return true;
@@ -553,7 +511,7 @@ namespace whiteice
   
     
 	template <typename T>
-	unsigned int HMC<T>::getSamples(std::vector< math::vertex<T> >& samples) const
+	unsigned int UHMC<T>::getSamples(std::vector< math::vertex<T> >& samples) const
 	{
 		std::lock_guard<std::mutex> lock(solution_lock);
 
@@ -565,7 +523,7 @@ namespace whiteice
 
 
 	template <typename T>
-	unsigned int HMC<T>::getNumberOfSamples() const
+	unsigned int UHMC<T>::getNumberOfSamples() const
 	{
 		std::lock_guard<std::mutex> lock(solution_lock);
 		unsigned int N = samples.size();
@@ -575,7 +533,7 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::getNetwork(bayesian_nnetwork<T>& bnn)
+	bool UHMC<T>::getNetwork(bayesian_nnetwork<T>& bnn)
 	{
 		std::lock_guard<std::mutex> lock(solution_lock);
 
@@ -593,7 +551,7 @@ namespace whiteice
 
 
 	template <typename T>
-	math::vertex<T> HMC<T>::getMean() const
+	math::vertex<T> UHMC<T>::getMean() const
 	{
 		std::lock_guard<std::mutex> lock(solution_lock);
 
@@ -613,7 +571,7 @@ namespace whiteice
   
 #if 0
   template <typename T>
-  math::matrix<T> HMC<T>::getCovariance() const
+  math::matrix<T> UHMC<T>::getCovariance() const
   {
     pthread_mutex_lock( &solution_lock );
     
@@ -641,7 +599,7 @@ namespace whiteice
 
 
     template <typename T>
-    T HMC<T>::getMeanError(unsigned int latestN) const
+    T UHMC<T>::getMeanError(unsigned int latestN) const
 	{
     	std::lock_guard<std::mutex> lock(solution_lock);
     
@@ -691,10 +649,10 @@ namespace whiteice
 
 
     template <typename T>
-    void HMC<T>::sampler_loop()
+    void UHMC<T>::sampler_loop()
 	{
     	// q = location, p = momentum, H(q,p) = hamiltonian
-    	math::vertex<T> p; // q is global and defined in HMC class
+    	math::vertex<T> p; // q is global and defined in UHMC class
 
     	{
     		std::lock_guard<std::mutex> lock(updating_sample);
@@ -751,8 +709,6 @@ namespace whiteice
     		T current_U  = U(old_q);
     		T proposed_U = U(q);
 
-		T logZratio  = math::log(zratio(q, old_q));
-
     		T current_K  = T(0.0f);
     		T proposed_K = T(0.0f);
 
@@ -763,7 +719,7 @@ namespace whiteice
 
 		T r = rng.uniform();
 
-    		if(r < exp(current_U-proposed_U-logZratio+current_K-proposed_K))
+    		if(r < exp(current_U-proposed_U+current_K-proposed_K))
     		{
     			// accept (q)
     			// printf("ACCEPT\n");
@@ -864,9 +820,9 @@ namespace whiteice
 
 namespace whiteice
 {  
-  template class HMC< float >;
-  template class HMC< double >;
-  template class HMC< math::blas_real<float> >;
-  template class HMC< math::blas_real<double> >;    
+  template class UHMC< float >;
+  template class UHMC< double >;
+  template class UHMC< math::blas_real<float> >;
+  template class UHMC< math::blas_real<double> >;    
 };
 

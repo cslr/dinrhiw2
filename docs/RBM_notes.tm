@@ -1,4 +1,4 @@
-<TeXmacs|1.99.2>
+<TeXmacs|1.0.7.18>
 
 <style|generic>
 
@@ -542,13 +542,13 @@
 
   <strong|Parallel Tempering Annihilated Importance Sampling (AIS)>
 
-  Parallel tempering is a powerful approach that was uused by Aalto
-  university people in 2011 (also see <with|font-shape|italic|On the
-  Quantitative Analysis of Deep Belief Networks>.
-  <with|font-shape|italic|Salakhutdinov.> about AIS). I will try to use same
-  method to generate intermediate distributions from which to estimate
-  partition function <math|<with|font-series|bold|Z>> which is needed to
-  estimate exact probabilities.
+  Parallel tempering is a powerful approach that was used by Aalto university
+  people in 2011 (also see <with|font-shape|italic|On the Quantitative
+  Analysis of Deep Belief Networks>. <with|font-shape|italic|Salakhutdinov.>
+  about AIS). I will try to use same method to generate intermediate
+  distributions from which to estimate partition function
+  <math|<with|font-series|bold|Z>> which is needed to estimate exact
+  probabilities.
 
   <center|<math|P<around*|(|v|)>=<with|font-series|bold|<frac|1|Z>><big|sum><rsub|h>e<rsup|-E<around*|(|v,h|)>>>>
 
@@ -831,42 +831,7 @@
 
   \;
 
-  <with|font-series|bold|Abraxas Predictions>
-
-  Product: Accura Deepnet (software)
-
-  Version 1 [DONE]
-
-  L-BFGS code for feedforward network and bayesian neural network with
-  sampling
-
-  Hardware/Software: OpenBLAS.
-
-  Version 2
-
-  Stacked RBMs (GB-RBM + BB-RBMs) using PT-HMC sampling and L-BFGS finetuning
-  optimization + use HMC bayesian neural network for local mode uncertainty
-  estimation.
-
-  Hardware/Software: OpenCL BLAS (GPU), R/Octave/MATLAB/RapidMiner
-  integration.
-
-  Version 3
-
-  Recurrent neural networks (stateful networks), turing machine neural
-  networks and ``linear'' differential equations (kind of recurrent
-  structure) solver. Causal bayesian network solver (use initially chord
-  analysis to get initially ``pre''-solution??). Variational bayesian
-  inference stuff (mixture of gaussians? etc.)
-
-  Hardware/Software: FPGA, Cloud computing (Google).
-
-  Version 4
-
-  BIG DATA and scaling to real world size pictures..
-
-  Hardware/Software: rewrite using highly parallel functional programming
-  language Haskell? Web user interface.
+  \;
 
   \;
 </body>

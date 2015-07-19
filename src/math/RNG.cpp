@@ -42,7 +42,7 @@ RNG<T>::RNG()
 				  has_rdrand = true;
 		  }
 	}
-
+	
 	// setups function pointers to be used for rng
 	if(has_rdrand){
 	  rdrand32 = &whiteice::RNG<T>::_rdrand32;
@@ -124,7 +124,7 @@ void RNG<T>::exp(math::vertex<T>& ev) const
 template <typename T>
 float RNG<T>::rnor() const
 {
-	int hz = (this->*rdrand32)();
+        int hz = (signed)(this->*rdrand32)();
 	unsigned int iz = hz & 127;
 
 	if(abs(hz) < kn[iz]){
@@ -147,7 +147,7 @@ float RNG<T>::rnor() const
 			if( fn[iz]+unid()*(fn[iz-1]-fn[iz]) < math::exp(-.5*x*x) )
 				return x;
 
-			hz=(this->*rdrand32)();
+			hz=(signed)(this->*rdrand32)();
 			iz=hz&127;
 
 			if((unsigned int)math::abs(hz)<kn[iz])
@@ -234,14 +234,14 @@ void RNG<T>::calculate_ziggurat_tables()
 template <typename T>
 float RNG<T>::unif() const
 {
-	return (0.5 + (signed)((this->*rdrand32)()) * .2328306e-9);
+  return (0.5 + ((signed)((this->*rdrand32)())) * .2328306e-9);
 }
 
 
 template <typename T>
 double RNG<T>::unid() const
 {
-	return (0.5 + (signed)((this->*rdrand32)()) * .2328306e-9);
+  return (0.5 + ((signed)((this->*rdrand32)())) * .2328306e-9);
 }
 
 
@@ -273,16 +273,22 @@ unsigned long long RNG<T>::_rdrand64() const
 template <typename T>
 unsigned int RNG<T>::_rand32() const
 {
-        return (unsigned int)::rand();
+  unsigned int r1 = (unsigned int)::rand();
+  unsigned int r2 = (unsigned int)::rand();
+  unsigned int r = (r1 << 16) ^ (r2);
+  
+  return r;
 }
 
 template <typename T>
 unsigned long long RNG<T>::_rand64() const
 {
-        unsigned long long r1 = (unsigned long long)::rand();
-        unsigned long long r2 = (unsigned long long)::rand();
+  unsigned long long r1 = (unsigned long long)::rand();
+  unsigned long long r2 = (unsigned long long)::rand();
+  unsigned long long r3 = (unsigned long long)::rand();
+  unsigned long long r4 = (unsigned long long)::rand();
 
-	return ((r1) | (r2<<32));
+  return ((r1) ^ (r2 << 16) ^ (r3 << 32) ^ (r4 << 48));
 }
 
 template <typename T>

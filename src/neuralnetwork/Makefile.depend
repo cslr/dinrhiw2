@@ -49,10 +49,10 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -410,10 +410,10 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -469,10 +469,10 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h
@@ -527,10 +527,10 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -643,10 +643,10 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -702,10 +702,10 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h PTHMC.h \
- HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -723,26 +723,25 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
  ../dataset.h ../math/ica.h nnetwork.h ../conffile.h bayesian_nnetwork.h \
- NNGradDescent.h ../dinrhiw.h ../math/fastpca.h ../math/BFGS.h \
- optimized_function.h BFGS_nnetwork.h nnetwork.h pBFGS_nnetwork.h \
- BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
- LBFGS_nnetwork.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
- lreg_nnetwork.h nnetwork_function.h optimized_function.h ../array.h \
- ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
- ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
- ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
- ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
- ../point.h ../point.cpp ../math/ownexception.h \
- ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
- ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
- ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
- ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
- ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
- ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
- ../math/real.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
- ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h NNGradDescent.h ../dinrhiw.h \
+ ../math/fastpca.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
+ nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
+ nnetwork_function.h optimized_function.h ../array.h ../container.h \
+ ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
+ ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
+ ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
+ ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
+ ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -761,10 +760,10 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
- multidimensional_gaussian.h gaussian.h HMC.h PTHMC.h HMC.h \
- HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h rbf.cpp \
- multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
- ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ multidimensional_gaussian.h gaussian.h HMC.h UHMC.h bayesian_nnetwork.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -1098,4 +1097,63 @@ HMCconvergencecheck.o: HMCconvergencecheck.cpp HMCconvergencecheck.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
- ../dataset.h ../math/ica.h nnetwork.h ../conffile.h bayesian_nnetwork.h
+ ../dataset.h ../math/ica.h nnetwork.h ../conffile.h bayesian_nnetwork.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
+UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
+ /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
+ ../math/ownexception.h ../math/number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h backpropagation.h \
+ ../math/dinrhiw_blas.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h ../math/norms.h activation_function.h function.h \
+ ../dataset.h ../math/ica.h nnetwork.h ../conffile.h bayesian_nnetwork.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h NNGradDescent.h ../dinrhiw.h \
+ ../math/fastpca.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
+ nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
+ nnetwork_function.h optimized_function.h ../array.h ../container.h \
+ ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
+ ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
+ ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
+ ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
+ ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ ../math/linear_algebra.h ../math/linear_equations.h \
+ ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
+ ../math/correlation.h ../math/bezier.h ../math/bezier.cpp \
+ ../math/bezier.h ../math/bezier_density.h ../math/bezier_surface.h \
+ ../math/bezier_surface.cpp ../math/bezier_surface.h ../math/hermite.h \
+ ../math/hermite.cpp ../math/hermite.h PSO.h GeneticAlgorithm.h \
+ GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
+ GeneticAlgorithm2.cpp ../crypto/Cryptosystem.h ../data_source.h \
+ ../crypto/DataConversion.h ../crypto/DataConversion.cpp \
+ ../crypto/DataConversion.h ../crypto/AES.h ../crypto/Cryptosystem.h \
+ ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h ../crypto/RSA.h \
+ ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
+ activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
+ optimized_nnetwork_function.h negative_function.h stretched_function.h \
+ identity_activation.h odd_sigmoid.h threshold.h treshold.h \
+ multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
+ rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
+ hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ ../math/superresolution.h ../math/superresolution.cpp \
+ ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
+ ../list_source.cpp test_function.h test_function2.h

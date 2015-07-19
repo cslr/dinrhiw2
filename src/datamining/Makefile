@@ -1,8 +1,8 @@
 # Datamining Makefile
 ###################################################
 
-CC = gcc
-CXX= g++
+CC = gcc-5
+CXX= g++-5
 
 OPTIMIZE=-O3 -g -DAMD64 -ffast-math -march=native -fopenmp
 CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include -DOPENBLAS -I/usr/include/openblas/ 

@@ -45,7 +45,6 @@
 
 #include <assert.h>
 #include <string.h>
-
 #undef __STRICT_ANSI__
 #include <float.h>
 
@@ -87,7 +86,10 @@ int main()
   
 
   try{
-    rbm_test();
+    bayesian_nnetwork_test();
+
+    // rbm_test();
+    
     return 0;
     
     
@@ -95,8 +97,6 @@ int main()
     
     lreg_nnetwork_test();
     
-    bayesian_nnetwork_test();
-
     hmc_test();
     
     activation_test();  
@@ -473,7 +473,7 @@ void rbm_test()
 		{
 			whiteice::math::hermite< math::vertex< math::blas_real<float> >, math::blas_real<float> > curve;
 
-			whiteice:RNG< math::blas_real<float> > rng;
+		        whiteice::RNG< math::blas_real<float> > rng;
 
 			std::vector< math::vertex< math::blas_real<float> > > points;
 			points.resize(NPOINTS);
@@ -2611,7 +2611,7 @@ void nnetwork_test()
   }
 
 
-
+#if 0
   try{
     std::cout << "NNETWORK TEST 4: SIMPLE PROBLEM + HMC sampler" << std::endl;
     
@@ -2697,6 +2697,9 @@ void nnetwork_test()
   catch(std::exception& e){
     std::cout << "Unexpected exception: " << e.what() << std::endl;
   }  
+#endif
+  
+  
 }
 
 /******************************************************************/
@@ -3187,5 +3190,21 @@ void bayesian_nnetwork_test()
   catch(std::exception& e){
     std::cout << "Unexpected exception: " << e.what() << std::endl;
   }  
+
+  
+  try{
+    std::cout << "BAYES NNETWORK TEST 1: HMC BAYESIAN NEURAL NETWORK TEST"
+	      << std::endl;
+    
+    std::cout << "ERROR: NOT DONE" << std::endl;
+    
+    
+    
+    
+    
+  }
+  catch(std::exception& e){
+    
+  }
 }
 

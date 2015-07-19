@@ -141,6 +141,8 @@ int gaussiani(float mean, float var)
 void rng_test()
 {
 	RNG<> rng;
+	
+	printf("RAND_MAX: %d\n", RAND_MAX);
 
 	for(unsigned int i=0;i<10;i++)
 		std::cout << rng.uniform() << std::endl;
@@ -241,7 +243,7 @@ void rng_test()
 	std::cout << "Uniform RNG     [samples/ms]: " << ((double)SAMPLES)/own_uni_time << std::endl;
 	std::cout << "Normal RNG      [samples/ms]: " << ((double)SAMPLES)/own_nrm_time << std::endl;
 	std::cout << "Exponential RNG [samples/ms]: " << ((double)SAMPLES)/own_exp_time << std::endl;
-	std::cout << "C++ Normal RNG  [samples/ms]: " << ((double)SAMPLES)/own_nrm_time << std::endl;
+	std::cout << "C++ Normal RNG  [samples/ms]: " << ((double)SAMPLES)/cpp_nrm_time << std::endl;
 
 }
 

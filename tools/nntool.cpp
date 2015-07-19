@@ -957,25 +957,56 @@ int main(int argc, char** argv)
 	}
       }
 
+#if 0
+      // calculates error covariance matrix using current 
+      // (random or loaded neural network configuration)
+      math::matrix<> covariance;
+      {
+	covariance.resize(data.dimension(1), data.dimension(1));
+	covariance.zero();
+	
+	math::vertex<> mean;
+	mean.resize(data.dimension(1));
+	mean.zero();
+	
+	for(unsigned int i=0;i<data.size(0);i++){
+	  math::vertex<> out1;
+	  math::matrix<> cov;
+	  
+	  bnn->calculate(data.access(0, i), out1, cov);
+	  auto err = data.access(1, i) - out1;
+	  
+	  mean += err;
+	  covariance += err.outerproduct();
+	}
+
+	mean /= whiteice::math::blas_real<float>(data.size(0));
+	covariance /= whiteice::math::blas_real<float>(data.size(0));
+	covariance -= mean.outerproduct();
+      }
+      
+      std::cout << "covariance = " << covariance << std::endl;
+#endif
       
       // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
       unsigned int ptlayers = (unsigned int)(math::log(data.size())/math::log(1.25));
       if(ptlayers <= 10) ptlayers = 10;
       else if(ptlayers > 100) ptlayers = 100;
 
-      std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
+      // std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
 
       // whiteice::HMC<> hmc(*nn, data, adaptive);
-      whiteice::PTHMC<> hmc(ptlayers, *nn, data, adaptive);
+      whiteice::UHMC<> hmc(*nn, data, adaptive);
+      // whiteice::PTHMC<> hmc(ptlayers, *nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
       
       time_t t0 = time(0);
       unsigned int counter = 0;
-
-      if(samples > 0)
-	eta.start(0.0f, (float)samples);
       
       hmc.startSampler();
+      
+      if(samples > 0)
+	eta.start(0.0f, (float)samples);
       
       while(((hmc.getNumberOfSamples() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
       // while(!hmc.hasConverged() && !stopsignal){

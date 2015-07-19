@@ -1377,7 +1377,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 	    }
 
 	    // calculates sample variance and waits until it is < k so that error is something like
-	    // log(2^k*correct_value) = k + correct_value
+	    // log(2^k*correct_value) = k + log_correct_value
 
 	    T mr = T(0.0);
 	    T vr = T(0.0);

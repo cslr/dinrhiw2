@@ -162,6 +162,7 @@
 #include "gaussian.h"
 
 #include "HMC.h"
+#include "UHMC.h"
 #include "PTHMC.h"
 #include "HMCconvergencecheck.h"
 #include "bayesian_nnetwork.h"
