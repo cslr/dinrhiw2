@@ -163,7 +163,7 @@ float RNG<T>::rexp() const
 	int jz = (this->*rdrand32)();
 	unsigned int iz = jz & 255;
 
-	if( jz <ke[iz]){
+	if( jz <(signed)ke[iz]){ // added (signed)
 		return jz*we[iz];
 	}
 	else{
@@ -181,7 +181,7 @@ float RNG<T>::rexp() const
 			jz=(this->*rdrand32)();
 			iz=(jz&255);
 
-			if(jz<ke[iz])
+			if(jz<(signed)ke[iz]) // added (signed)
 				return (jz*we[iz]);
 		}
 	}
@@ -227,7 +227,9 @@ void RNG<T>::calculate_ziggurat_tables()
 		ke[i+1]= (de/te)*m2; te=de;
 		fe[i]=math::exp(-de); we[i]=de/m2;
 	}
+	
 }
+
 
 
 // floating point uniform distribution [for ziggurat method]

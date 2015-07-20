@@ -1747,8 +1747,8 @@ void test_dataset()
     bresults.push_back(A->add(test_strs)); bwanted.push_back(true); // 3
     
     A->begin(); A->end();
-    (*A)[A->size()-1];
-    if(A->dimension() != 10) printf("ERROR: BAD DIMENSION\n");
+    (*A)[A->size(0)-1];
+    if(A->dimension(0) != 10) printf("ERROR: BAD DIMENSION\n");
     
     bresults.push_back(A->preprocess()); bwanted.push_back(true);   // 4
     bresults.push_back(A->repreprocess()); bwanted.push_back(true); // 5

@@ -461,36 +461,48 @@ namespace whiteice
     if(clusters.size() <= 0)
       return true; // nothing to do
     
-    // checks all cluster sizes are equal [calculates variance of cluster sizes]
-    float meanc = 0.0f;
-    float varc  = 0.0f;
-    
+    // checks all cluster sizes are equal
+    const unsigned int N = clusters[0].data.size();
+
     for(unsigned int i=0;i<clusters.size();i++){
-      meanc += clusters[i].data.size();
-      varc  += (clusters[i].data.size())*(clusters[i].data.size());
+      if(clusters[i].data.size() != N)
+	return false;
     }
     
-    meanc /= clusters.size();
-    varc  /= clusters.size();
-    varc  -= meanc*meanc;
-    
-    if(varc >= 0.0f) return false; // cluster sizes are not equal
-    
-    const unsigned int N = clusters[0].data.size();
     
     std::vector<dataset<T>::cluster> d;
-    d.resize(clusters.size());
+    d = clusters;
+    
+    for(unsigned int k=0;k<clusters.size();k++){
+      d[k].data.clear();
+    }
     
     for(unsigned int i=0;i<N;i++){
       bool bad_data = false;
       
       for(unsigned int k=0;k<clusters.size();k++){
-	auto& v = clusters[k].data[i];
+	const auto& v = clusters[k].data[i];
 	
-	for(unsigned int d=0;d<v.size();d++)
-	  if(math::isnan(v[d]) || math::isinf(v[d]))
+	// std::cout << "test:  " << v << std::endl;
+	// std::cout << "vsize: " << v.size() << std::endl;
+	
+	for(unsigned int d=0;d<v.size();d++){
+	  // std::cout << v[d] << std::endl;
+	  // std::cout << whiteice::math::tohex(v[d]) << std::endl;
+	  
+	  if(whiteice::math::isnan(v[d])){
+	    // printf("NaN detected\n");
 	    bad_data = true;
+	  }
+	  else if(whiteice::math::isinf(v[d])){
+	    bad_data = true;
+	  }
+	}
+	
+	// std::cout << "bad data status: " << bad_data << std::endl;
       }
+      
+      // if(bad_data) printf("BAD DATA DETECTED\n");
       
       
       if(bad_data == false){

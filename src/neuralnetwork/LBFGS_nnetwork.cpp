@@ -79,7 +79,7 @@ namespace whiteice
     }
     
     e /= T( (float)dtest.size(0) ); // per N
-
+    
     return e;
   }
   

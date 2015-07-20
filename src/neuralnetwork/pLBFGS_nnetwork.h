@@ -26,6 +26,10 @@ namespace whiteice
     ~pLBFGS_nnetwork();
 
     bool minimize(unsigned int NUMTHREADS);
+    
+    unsigned int getIterations() const {
+      math::vertex<T> x; T y; unsigned int iterations = 0; getSolution(x, y, iterations); return iterations; 
+    }
 
     bool getSolution(math::vertex<T>& x, T& y, unsigned int& iterations) const;
 

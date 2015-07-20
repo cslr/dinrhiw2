@@ -24,6 +24,7 @@
 
 #include <cmath>
 #include <complex>
+#include <string>
 
 #ifndef blade_math_h
 #define blade_math_h
@@ -140,19 +141,25 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     // isinf, isnan
     
-    inline int isinf(float v){ return std::isinf(v); }
-    inline int isinf(double v){ return std::isinf(v); }
-    inline int isinf(blas_real<float> v){ return std::isinf(v.c[0]); }
-    inline int isinf(blas_real<double> v){ return std::isinf(v.c[0]); }
-    inline int isinf(blas_complex<float> v){ return std::isinf(v.c[0]) || std::isinf(v.c[1]); }
-    inline int isinf(blas_complex<double> v){ return std::isinf(v.c[0]) || std::isinf(v.c[1]); }
+    inline bool isinf(float v){ return (std::fpclassify(v) == FP_INFINITE); }
+    inline bool isinf(double v){ return (std::fpclassify(v) == FP_INFINITE); }
+    inline bool isinf(blas_real<float> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE); }
+    inline bool isinf(blas_real<double> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE); }
+    inline bool isinf(blas_complex<float> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE) || (std::fpclassify(v.c[1]) == FP_INFINITE); }
+    inline bool isinf(blas_complex<double> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE) || (std::fpclassify(v.c[1]) == FP_INFINITE); }
 
-    inline int isnan(float v){ return std::isnan(v); }
-    inline int isnan(double v){ return std::isnan(v); }
-    inline int isnan(blas_real<float> v){ return std::isnan(v.c[0]); }
-    inline int isnan(blas_real<double> v){ return std::isnan(v.c[0]); }
-    inline int isnan(blas_complex<float> v){ return std::isnan(v.c[0]) || std::isnan(v.c[1]); }
-    inline int isnan(blas_complex<double> v){ return std::isnan(v.c[0]) || std::isnan(v.c[1]); }
+    // fpclassify() is buggy.. for some reason it does not detect NaNs correctly (sometimes) .. or it is a compiler bug
+    inline bool isnan(float v){ return (std::fpclassify(v) == FP_NAN) || (*((unsigned int*)&v) == 0xFFC00000); }
+    inline bool isnan(double v){ return (std::fpclassify(v) == FP_NAN) || (*((unsigned long long*)&v) == 0xFFF8000000000000); }
+    inline bool isnan(blas_real<float> v){ return whiteice::math::isnan(v.c[0]); };
+    inline bool isnan(blas_real<double> v){ return whiteice::math::isnan(v.c[0]); }
+    inline bool isnan(blas_complex<float> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
+    inline bool isnan(blas_complex<double> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
+    
+    inline std::string tohex(float v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v)); return std::string(buffer); }
+    inline std::string tohex(double v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v)); return std::string(buffer); }
+    inline std::string tohex(blas_real<float> v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0]))); return std::string(buffer); }
+    inline std::string tohex(blas_real<double> v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0]))); return std::string(buffer); }
     
     //////////////////////////////////////////////////////////////////////
     // square root

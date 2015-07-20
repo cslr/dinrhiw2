@@ -1968,7 +1968,7 @@ void backprop_test(const unsigned int size)
     std::cout << "pre abs maxs" << std::endl;
     math::blas_real<float> mm = 0.0, MM = 0.0;
     
-    for(unsigned int i=0;i<I0.size();i++){
+    for(unsigned int i=0;i<I0.size(0);i++){
       if(mm < whiteice::math::abs(I0[i][0]))
 	mm = whiteice::math::abs(I0[i][1]);	
       if(MM < whiteice::math::abs(I0[i][1]))
@@ -1983,7 +1983,7 @@ void backprop_test(const unsigned int size)
     
     std::cout << "post abs maxs" << std::endl;
     mm = 0, MM = 0;
-    for(unsigned int i=0;i<I0.size();i++){
+    for(unsigned int i=0;i<I0.size(0);i++){
       if(mm < whiteice::math::abs(I0[i][0]))
 	mm = whiteice::math::abs(I0[i][1]);	
       if(MM < whiteice::math::abs(I0[i][1]))
@@ -2026,8 +2026,8 @@ void backprop_test(const unsigned int size)
       
       sum_error = 0;
       
-      for(unsigned int i = 0;i<I0.size();i++){
-	unsigned int index = rand() % I0.size();
+      for(unsigned int i = 0;i<I0.size(0);i++){
+	unsigned int index = rand() % I0.size(0);
 	
 	nn_input[0] = I0[index][0];
 	nn_input[1] = I0[index][1];      
@@ -2058,7 +2058,7 @@ void backprop_test(const unsigned int size)
 	
       }
       
-      sum_error = sqrt(sum_error / ((math::blas_real<float>)I0.size()) );
+      sum_error = sqrt(sum_error / ((math::blas_real<float>)I0.size(0)) );
       
       cout << "MEAN SQUARED ERROR: " << sum_error << endl;
     }
@@ -2491,7 +2491,7 @@ void nnetwork_test()
 	  std::cout << "import failed." << std::endl;
       }
       
-      error /= math::blas_real<float>((float)data.size());
+      error /= math::blas_real<float>((float)data.size(0));
       
       std::cout << counter << " : " << error << std::endl;
       
@@ -2595,7 +2595,7 @@ void nnetwork_test()
 	std::cout << "import failed." << std::endl;
 
       
-      error /= math::blas_real<float>((float)data.size());
+      error /= math::blas_real<float>((float)data.size(0));
       
       std::cout << counter << " : " << error << std::endl;
       
