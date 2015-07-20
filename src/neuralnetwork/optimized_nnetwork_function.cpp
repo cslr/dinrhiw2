@@ -62,7 +62,7 @@ namespace whiteice
       
     }
     
-    error /= T((float)ds.size());
+    error /= T((float)ds.size(0));
     
     return error;
   }

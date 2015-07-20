@@ -3,5 +3,7 @@
 autoheader
 autoconf
 ./configure
+make depend
 make all
+
 

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <gmp.h>
 
+#include <cmath>
 #include <complex>
 
 #ifndef blade_math_h
@@ -136,6 +137,22 @@ namespace whiteice
     bool convert(double& B, const unsigned int& A) throw();
 
 
+    //////////////////////////////////////////////////////////////////////
+    // isinf, isnan
+    
+    inline int isinf(float v){ return std::isinf(v); }
+    inline int isinf(double v){ return std::isinf(v); }
+    inline int isinf(blas_real<float> v){ return std::isinf(v.c[0]); }
+    inline int isinf(blas_real<double> v){ return std::isinf(v.c[0]); }
+    inline int isinf(blas_complex<float> v){ return std::isinf(v.c[0]) || std::isinf(v.c[1]); }
+    inline int isinf(blas_complex<double> v){ return std::isinf(v.c[0]) || std::isinf(v.c[1]); }
+
+    inline int isnan(float v){ return std::isnan(v); }
+    inline int isnan(double v){ return std::isnan(v); }
+    inline int isnan(blas_real<float> v){ return std::isnan(v.c[0]); }
+    inline int isnan(blas_real<double> v){ return std::isnan(v.c[0]); }
+    inline int isnan(blas_complex<float> v){ return std::isnan(v.c[0]) || std::isnan(v.c[1]); }
+    inline int isnan(blas_complex<double> v){ return std::isnan(v.c[0]) || std::isnan(v.c[1]); }
     
     //////////////////////////////////////////////////////////////////////
     // square root

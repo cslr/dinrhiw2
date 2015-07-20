@@ -34,6 +34,12 @@ namespace whiteice
 		       std::vector< math::vertex<T> >& weights,
 			   int latestN = 0);
     
+    /*
+     * downsamples number of neural networks down to N neural networks
+     * or if N > number of neural networks/samples does nothing
+     */
+    bool downsample(unsigned int N);
+    
 
     // calculates E[f(input,w)] = E[y|x] and Var[f(x,w)] = Var[y|x] for given input
     bool calculate(const math::vertex<T>& input,
@@ -44,7 +50,7 @@ namespace whiteice
     unsigned int outputSize() const throw();
     unsigned int inputSize() const throw();
 
-    // stores and loads bayesian nnetwork to a text file
+    // stores and loads bayesian nnetwork to a dataset file
     // (saves all samples into files)
     bool load(const std::string& filename) throw();
     bool save(const std::string& filename) const throw();

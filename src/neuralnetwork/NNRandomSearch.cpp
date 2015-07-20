@@ -198,7 +198,7 @@ namespace whiteice
 	      error += (err[i]*err[i]) / T((float)err.size());
 	  }
 	    
-	  error /= T((float)data->size());
+	  error /= T((float)data->size(0));
 	  error *= T(0.5f);
 	}
 	

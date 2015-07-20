@@ -219,7 +219,7 @@ namespace whiteice
 	
     }
     
-    if(input->size() != output->size())
+    if(input->size(0) != output->size(0))
       throw std::invalid_argument("nnPSO: |input| != |output|");
   }
 
@@ -261,7 +261,7 @@ namespace whiteice
 	throw std::invalid_argument("nnPSO: |input| != |output|");
     }
     else{
-      if(input->size() != output->size())
+      if(input->size(0) != output->size(0))
 	throw std::invalid_argument("nnPSO: |input| != |output|");
     }
   }

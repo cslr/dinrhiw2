@@ -70,6 +70,8 @@ namespace whiteice
       bool add(unsigned int index, const std::vector<std::string>& inputs, 
 	       bool nopreprocess = false) throw();
       
+      // creates empty dataset
+      bool clear();
       
       // removes all data from dataset but no preprocessing
       // information
@@ -83,6 +85,11 @@ namespace whiteice
       // order of samples between different clusters the same
       // so ith element of cluster A match to ith element of cluster B
       bool downsampleAll(unsigned int samples) throw();
+      
+      // removes data elements from dataset which have Infinite or NaN values
+      // maintains pairing between cluster A and cluster B, 
+      // if i:th element of A is bad, removes also i:th element of B
+      bool removeBadData();
       
       // returns data in cluster "index"
       bool getData(unsigned int index, std::vector< math::vertex<T> >& data) const throw(std::out_of_range);
@@ -116,10 +123,10 @@ namespace whiteice
       // accesses random element from specified cluster
       const math::vertex<T>& random_access(unsigned int index = 0) const throw(std::out_of_range);
       
-      unsigned int size(unsigned int index = 0) const throw(); // dataset size  
-      bool clear(unsigned int index = 0) throw(); // data set clear  
+      unsigned int size(unsigned int index) const throw(); // dataset size  
+      bool clear(unsigned int index) throw(); // data set clear  
       bool resize(unsigned int index, unsigned int nsize) throw(); // reduces size of data
-      unsigned int dimension(unsigned int index = 0) const throw(); // dimension of data vectors
+      unsigned int dimension(unsigned int index) const throw(); // dimension of data vectors
       
       
       // data preprocessing methods

@@ -308,7 +308,7 @@ namespace whiteice
 		error += (err[i]*err[i]) / T((float)err.size());
 	    }
 	    
-	    error /= T((float)dtest.size());
+	    error /= T((float)dtest.size(0));
 	    
 	    delta_error = (prev_error - error);
 	    ratio = delta_error / error;

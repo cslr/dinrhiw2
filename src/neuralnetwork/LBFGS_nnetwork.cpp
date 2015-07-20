@@ -67,14 +67,14 @@ namespace whiteice
     
     math::vertex<T> err;
     T e = T(0.0f);
-
+    
     // E = SUM 0.5*e(i)^2
     for(unsigned int i=0;i<dtest.size(0);i++){
       nnet.input() = dtest.access(0, i);
       nnet.calculate(false);
       err = dtest.access(1, i) - nnet.output();
-      T inv = T(1.0f/err.size());
-      err = inv*(err*err);
+      
+      err = (err*err);
       e += T(0.5f)*err[0];
     }
     
@@ -99,21 +99,19 @@ namespace whiteice
       nnet.input() = dtrain.access(0, i);
       nnet.calculate(false);
       err = dtrain.access(1, i) - nnet.output();
-      // T inv = T(1.0f/err.size());
-      err = (err*err);
+      err = (err*err); // /T(dtrain.size(0));
       e += T(0.5f)*err[0];
     }
-    
-    // e /= T( (float)data.size(0) ); // per N
 
-#if 1
+#if 1    
     {
       T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
       err = T(0.5)*alpha*(x*x);
       e += err[0];
     }
 #endif
-    
+
+    e /= T(dtrain.size(0));
     
     return (e);    
   }
@@ -124,7 +122,6 @@ namespace whiteice
   {
 	  whiteice::nnetwork<T> nnet(this->net);
 
-	  T ninv = T(1.0f); // T(1.0f/data.size(0));
 	  math::vertex<T> sumgrad, grad, err;
 
 	  nnet.importdata(x);
@@ -142,7 +139,7 @@ namespace whiteice
 			  assert(0); // FIXME
 		  }
 
-		  sumgrad += ninv*grad;
+		  sumgrad += grad; // /T(dtrain.size(0));
 	  }
 
 #if 1
@@ -151,10 +148,11 @@ namespace whiteice
 		  sumgrad += alpha*x;
 	  }
 #endif
-	  // TODO: is this really correct gradient to use
-	  // (we want to use: 0,5*SUM e(i)^2 + alpha*w^2
-    
-
+	  
+	  sumgrad /= T(dtrain.size(0));
+	  
+	  // sumgrad.normalize();
+	  
 	  return (sumgrad);
   }
   

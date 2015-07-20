@@ -23,7 +23,7 @@ LIBNAME = libdinrhiw.a
 
 ############################################################
 
-all: check_conf_changes depend make_objects makelib
+all: check_conf_changes make_objects makelib
 
 depend:
 	$(CD) src && $(MAKE) depend

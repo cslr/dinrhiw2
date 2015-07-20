@@ -18,11 +18,11 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --samples 50 wine-test.ds 13-13-13-10-? winenn.cfg parallelbfgs
+./nntool -v --samples 50 wine-test.ds 13-10-? winenn.cfg lbfgs
 
 # testing
 
-./nntool -v wine-test.ds 13-13-13-10-? winenn.cfg use
+./nntool -v wine-test.ds 13-10-? winenn.cfg use
 
 # predicting [stores results to dataset]
 
@@ -30,7 +30,7 @@ cp -f wine-test.ds wine-pred.ds
 ./dstool -clear:1 wine-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v wine-pred.ds 13-13-13-10-1 winenn.cfg use
+./nntool -v wine-pred.ds 13-10-1 winenn.cfg use
 
 ./dstool -list wine-test.ds
 ./dstool -list wine-pred.ds

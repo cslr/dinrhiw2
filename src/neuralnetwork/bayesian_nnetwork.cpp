@@ -9,6 +9,7 @@
 #include <exception>
 #include <stdexcept>
 #include <typeinfo>
+#include <set>
 
 #include "nnetwork.h"
 #include "dataset.h"
@@ -120,6 +121,47 @@ namespace whiteice
 	weights.clear();
 	return false;
       }
+    
+    return true;
+  }
+  
+  
+  template <typename T>
+  bool bayesian_nnetwork<T>::downsample(unsigned int N)
+  {
+    if(N == 0) return false;
+    if(N >= nnets.size())
+      return true;
+    
+    std::set<unsigned int> samples;
+    for(unsigned int i=0;i<nnets.size();i++)
+      samples.insert(i);
+    
+    std::vector< nnetwork<T>* > nn;
+    
+    while(nn.size() < N){ 
+      auto iter = samples.begin();
+      int i = rand() % samples.size();
+      while(i > 0){ iter++; i--; }
+      const int index = *iter;
+      
+      samples.erase(iter);
+      nn.push_back(nnets[index]);
+    }
+    
+    // deletes rest of the nnetworks
+    {
+      auto iter = samples.begin();
+      
+      while(iter != samples.end()){
+	const int index = (*iter);
+	delete nnets[index];
+	iter++;
+      }
+    }
+    
+    nnets.clear();
+    nnets = nn;
     
     return true;
   }

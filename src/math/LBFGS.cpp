@@ -181,9 +181,9 @@ namespace whiteice
     {
     	// finds the correct scale first
     	// (exponential search)
-
-    	vertex<T> localbestx = x + d;
-    	T localbest  = T(1000000000.0f);
+      
+        vertex<T> localbestx = x + d;
+    	T localbest  = T(10e20);
     	// T best_alpha = T(1.0f);
     	unsigned int found = 0;
 
@@ -196,7 +196,7 @@ namespace whiteice
     	int k = 0;
     	T alpha = T(1.0f);
 
-    	while(found <= 0 && k <= 20){ // min 2**(-30) = 10e-9 step length
+    	while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
 
     		alpha  = T(::pow(2.0f, k));
     		T tvalue;
@@ -205,13 +205,13 @@ namespace whiteice
     		tvalue = U(t);
 
     		if(tvalue < localbest){
-    			// if(wolfe_conditions(x, alpha, d))
-    			{
-    				localbest = tvalue;
-    				localbestx = t;
-    				found++;
-    				break;
-    			}
+		  if(wolfe_conditions(x, alpha, d))
+		  {
+		    localbest = tvalue;
+		    localbestx = t;
+		    found++;
+		    break;
+		  }
     		}
 
     		alpha  = T(1.0f)/alpha;
@@ -220,13 +220,13 @@ namespace whiteice
     		tvalue = U(t);
 
     		if(tvalue < localbest){
-    			// if(wolfe_conditions(x, alpha, d))
-    			{
-    				localbest = tvalue;
-    				localbestx = t;
-    				found++;
-    				break;
-    			}
+		  if(wolfe_conditions(x, alpha, d))
+		  {
+		    localbest = tvalue;
+		    localbestx = t;
+		    found++;
+		    break;
+		  }
     		}
 	
     		k++;

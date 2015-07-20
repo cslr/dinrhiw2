@@ -485,10 +485,10 @@ namespace whiteice
       v.resize(input->dimension(1));
     }
     else{
-      if(input->size() == 0)
+      if(input->size(0) == 0)
 	return true;
       
-      if(input->size() != output->size())
+      if(input->size(0) != output->size(0))
 	return false;    
     
       v.resize((*output)[0].size());
@@ -522,7 +522,7 @@ namespace whiteice
       
     }
     else{
-      const unsigned int N = input->size();
+      const unsigned int N = input->size(0);
       
       for(unsigned int i=0;i<N;i++){
 	unsigned int counter = 0;
@@ -612,8 +612,8 @@ namespace whiteice
     }
     else{
       for(unsigned int e=0;e<niters;e++){
-	for(unsigned int i=0;i<input->size();i++){
-	  unsigned int index = rand() % (input->size());
+	for(unsigned int i=0;i<input->size(0);i++){
+	  unsigned int index = rand() % (input->size(0));
 	  
 	  nnetwork->input() = (*input)[index];
 	  nnetwork->calculate();
@@ -629,7 +629,7 @@ namespace whiteice
 	}
       }
       
-      sum_error /= T(niters*(input->size()));
+      sum_error /= T(niters*(input->size(0)));
       latestError = sum_error;
     }
     
