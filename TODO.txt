@@ -1,15 +1,30 @@
 TODO
 
 Neuromancer/Resonanz Requirements:
-* HMM, GB-RBM and BB-RBM
+
+* GB-RBM and BB-RBM
+
+   - bayesian GB-RBM for pictures (support png files)
+
+     => picture RBM "interpolation", picture synthesis from feature vectors
+        (learning image synthesizer for resonanz)
+
+   - bayesian BB-RBM
+
+   - stacked RBM => neural network pretraining
+
+   - multilayer stacked RBM autoencoder for pictures
+
+
+LATER (multistep optimization):
+
+* HMM (hidden markov models)
 
   - implement discrete HMM and using arbitrary precision numbers
     * study some Hidden Markov Model theory
     * this will be used to learn and generate likely stimulation sequences
       and tag stimulation elements into language (does make sense?)
       
-   - implement BB-RBM as well from the theory as GB-RBM 
-   - implement stacked autoencoder GB-RBM (input) + BB-RBM for pictures
    
 ========================
 
@@ -31,24 +46,12 @@ Neuromancer/Resonanz Requirements:
   - change GA implementation to sort offspring and select
     the better upper part (radix sort) (+ some randomness)
 
-- write configure script to detect existence of
-  NVIDIA BLAS-library and use it if it exists instead of generic
-  BLAS-library (should work on my new laptop)
-
 - there are bugs in classes that create internal pthreads to do
   background execution. the pthread-entry functions are not
   templated to do proper pointer casts (to templated pointer type)
 
 - bugfix and debugging:
   * valgrind, gdb
-
-- make it compile cleanly under MinGW
-
-- write configure scripts to use SSE instructions
-  if they are detected by the scripts
-
-- BIG TASK: implement RBM deep belief networks (deep learning) code
-  * implement NN learning using initial unsupervised learning step
 
 - DOCUMENTATION
 
