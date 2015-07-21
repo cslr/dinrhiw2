@@ -85,15 +85,16 @@ int main()
   srand(seed);
   
 
-  try{
-    bayesian_nnetwork_test();
+  try{    
 
-    // rbm_test();
+    rbm_test();
     
     return 0;
     
     
     nnetwork_test();
+    
+    bayesian_nnetwork_test();
     
     lreg_nnetwork_test();
     
