@@ -276,6 +276,13 @@ namespace whiteice
 		// L is fixed to rather large value 20
 		T accept_rate = T(0.0f);
 		unsigned int accept_rate_samples = 0;
+		
+		// heuristics: we don't store any samples until number of accepts
+		// has been 5, this is used to wait for epsilon parameter to adjust
+		// correctly so that the probability of accept per iteration is reasonable
+		// (we don't store rejects during initial epsilon parameter learning)
+		unsigned int number_of_accepts = 0;
+		const unsigned int EPSILON_LEARNING_ACCEPT_LIMIT = 5;
 
 		const bool use_difference = true;
 
@@ -349,22 +356,26 @@ namespace whiteice
 					q_updated = true;
 				}
 				// std::cout << "ACCEPT" << std::endl;
-
-				std::lock_guard<std::mutex> lock(solution_lock);
-
-				if(sum_N > 0){
-					sum_mean += q;
-					// sum_covariance += q.outerproduct();
-					sum_N++;
-				}
-				else{
-					sum_mean = q;
-					// sum_covariance = q.outerproduct();
-					sum_N++;
-				}
+				
+				number_of_accepts++;
+				
+				if(number_of_accepts > EPSILON_LEARNING_ACCEPT_LIMIT){
+				  std::lock_guard<std::mutex> lock(solution_lock);
+				  
+				  if(sum_N > 0){
+				    sum_mean += q;
+				    // sum_covariance += q.outerproduct();
+				    sum_N++;
+				  }
+				  else{
+				    sum_mean = q;
+				    // sum_covariance = q.outerproduct();
+				    sum_N++;
+				  }
 	
-				if(storeSamples)
-					samples.push_back(q);
+				  if(storeSamples)
+				    samples.push_back(q);
+				}
 
 				if(adaptive){
 					accept_rate++;
@@ -382,22 +393,26 @@ namespace whiteice
 
 					q_updated = true;
 				}
-
-				std::lock_guard<std::mutex> lock(solution_lock);
-
-				if(sum_N > 0){
-					sum_mean += q;
-					// sum_covariance += q.outerproduct();
-					sum_N++;
+				
+				
+				if(number_of_accepts > EPSILON_LEARNING_ACCEPT_LIMIT){
+				  std::lock_guard<std::mutex> lock(solution_lock);
+				  
+				  if(sum_N > 0){
+				    sum_mean += q;
+				    // sum_covariance += q.outerproduct();
+				    sum_N++;
+				  }
+				  else{
+				    sum_mean = q;
+				    // sum_covariance = q.outerproduct();
+				    sum_N++;
+				  }
+				  
+				  
+				  if(storeSamples)
+				    samples.push_back(q);
 				}
-				else{
-					sum_mean = q;
-					// sum_covariance = q.outerproduct();
-					sum_N++;
-				}
-
-				if(storeSamples)
-					samples.push_back(q);
 
 				if(adaptive){
 					// accept_rate;

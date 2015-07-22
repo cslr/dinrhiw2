@@ -719,6 +719,13 @@ namespace whiteice
     	// L is fixed to rather large value 20
     	T accept_rate = T(0.0f);
     	unsigned int accept_rate_samples = 0;
+	
+	// heuristics: we don't store any samples until number of accepts
+	// has been 5, this is used to wait for epsilon parameter to adjust
+	// correctly so that the probability of accept per iteration is reasonable
+	// (we don't store rejects during initial epsiln parameter learning)
+	unsigned int number_of_accepts = 0;
+	const unsigned int EPSILON_LEARNING_ACCEPT_LIMIT = 5;
 
 
     	while(running) // keep sampling forever or until stopped
@@ -767,54 +774,60 @@ namespace whiteice
     		{
     			// accept (q)
     			// printf("ACCEPT\n");
-
-    			solution_lock.lock();
-
-    			if(sum_N > 0){
-    				sum_mean += q;
-    				//sum_covariance += q.outerproduct();
-    				sum_N++;
-    			}
-    			else{
-    				sum_mean = q;
-    				// sum_covariance = q.outerproduct();
-    				sum_N++;
-    			}
-	
-    			if(store)
-    				samples.push_back(q);
-
-    			solution_lock.unlock();
+		  
+		        number_of_accepts++;
+			
+			if(number_of_accepts > EPSILON_LEARNING_ACCEPT_LIMIT){
+			  solution_lock.lock();
+			  
+			  if(sum_N > 0){
+			    sum_mean += q;
+			    //sum_covariance += q.outerproduct();
+			    sum_N++;
+			  }
+			  else{
+			    sum_mean = q;
+			    // sum_covariance = q.outerproduct();
+			    sum_N++;
+			  }
+			  
+			  if(store)
+			    samples.push_back(q);
+			  
+			  solution_lock.unlock();
+			}
 
     			if(adaptive){
-    				accept_rate++;
-    				accept_rate_samples++;
+			  accept_rate++;
+			  accept_rate_samples++;
     			}
 
     		}
     		else{
     			// reject (keep old_q)
     			// printf("REJECT\n");
-
     			q = old_q;
-
-    			solution_lock.lock();
-
-    			if(sum_N > 0){
-    				sum_mean += q;
-    				// sum_covariance += q.outerproduct();
-    				sum_N++;
-    			}
-    			else{
-    				sum_mean = q;
-    				// sum_covariance = q.outerproduct();
-    				sum_N++;
-    			}
-
-    			if(store)
-    				samples.push_back(q);
-
-    			solution_lock.unlock();
+			
+			
+			if(number_of_accepts > EPSILON_LEARNING_ACCEPT_LIMIT){
+			  solution_lock.lock();
+			  
+			  if(sum_N > 0){
+			    sum_mean += q;
+			    // sum_covariance += q.outerproduct();
+			    sum_N++;
+			  }
+			  else{
+			    sum_mean = q;
+			    // sum_covariance = q.outerproduct();
+			    sum_N++;
+			  }
+			  
+			  if(store)
+			    samples.push_back(q);
+			  
+			  solution_lock.unlock();
+			}
 
     			if(adaptive){
     				// accept_rate;
