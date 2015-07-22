@@ -178,7 +178,7 @@ bool GBRBM<T>::reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
 {
 	// calculates reconstruction v -> h -> v'
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
 	for(unsigned int i=0;i<samples.size();i++){
 		auto& v = samples[i];
 
@@ -1365,7 +1365,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 	    const unsigned int index0 = r.size();
 	    r.resize(r.size() + STEPSIZE);
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
 	    for(unsigned int index=0;index<STEPSIZE;index++){
 	    	auto& v = vs[index];
 	        // free-energy
@@ -1549,7 +1549,7 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 		vs.resize(SAMPLES);
 
 		// TODO parallelize this to use thread-safe random number generators..
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
 		for(unsigned int i=0;i<SAMPLES;i++){
 			math::vertex<T> vv;
 

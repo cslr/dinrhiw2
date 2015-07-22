@@ -200,7 +200,7 @@ namespace whiteice
 
     	T ninv  = T(1.0f/latestN);
 
-#pragma omp for nowait
+#pragma omp for nowait schedule(dynamic)
     	for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
     		nnets[i]->input() = input;
     		nnets[i]->calculate();

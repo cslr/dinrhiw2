@@ -62,23 +62,36 @@ namespace whiteice
   template <typename T>
   T LBFGS_nnetwork<T>::getError(const math::vertex<T>& x) const
   {
-    whiteice::nnetwork<T> nnet(this->net);
-    nnet.importdata(x);
-    
-    math::vertex<T> err;
     T e = T(0.0f);
     
-    // E = SUM 0.5*e(i)^2
-    for(unsigned int i=0;i<dtest.size(0);i++){
-      // std::cout << "data in  = " << dtest.access(0, i) << std::endl;
-      // std::cout << "data out = " << dtest.access(1, i) << std::endl;
+#pragma omp parallel shared(e)
+    {
+      whiteice::nnetwork<T> nnet(this->net);
+      nnet.importdata(x);
       
-      nnet.input() = dtest.access(0, i);
-      nnet.calculate(false);
-      err = dtest.access(1, i) - nnet.output();
+      math::vertex<T> err;
+      T esum = T(0.0f);
       
-      err = (err*err);
-      e += T(0.5f)*err[0];
+      
+      // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int i=0;i<dtest.size(0);i++){
+	// std::cout << "data in  = " << dtest.access(0, i) << std::endl;
+	// std::cout << "data out = " << dtest.access(1, i) << std::endl;
+	
+	nnet.input() = dtest.access(0, i);
+	nnet.calculate(false);
+	err = dtest.access(1, i) - nnet.output();
+	
+	err = (err*err);
+	esum += T(0.5f)*err[0];
+      }
+
+#pragma omp critical
+      {
+	e += esum;
+      }
+
     }
     
     e /= T( (float)dtest.size(0) ); // per N
@@ -90,26 +103,37 @@ namespace whiteice
   template <typename T>
   T LBFGS_nnetwork<T>::U(const math::vertex<T>& x) const
   {
-    whiteice::nnetwork<T> nnet(this->net);
-    
-    nnet.importdata(x);
-    
-    math::vertex<T> err;
     T e = T(0.0f);
-
-    // E = SUM 0.5*e(i)^2
-    for(unsigned int i=0;i<dtrain.size(0);i++){
-      nnet.input() = dtrain.access(0, i);
-      nnet.calculate(false);
-      err = dtrain.access(1, i) - nnet.output();
-      err = (err*err); // /T(dtrain.size(0));
-      e += T(0.5f)*err[0];
+    
+#pragma omp parallel
+    {
+      whiteice::nnetwork<T> nnet(this->net);
+      
+      nnet.importdata(x);
+      math::vertex<T> err;
+      T esum = T(0.0f);
+    
+      // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int i=0;i<dtrain.size(0);i++){
+	nnet.input() = dtrain.access(0, i);
+	nnet.calculate(false);
+	err = dtrain.access(1, i) - nnet.output();
+	err = (err*err); // /T(dtrain.size(0));
+	esum += T(0.5f)*err[0];
+      }
+      
+#pragma omp critical
+      {
+	e += esum;
+      }
+      
     }
 
 #if 1    
     {
       T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
-      err = T(0.5)*alpha*(x*x);
+      auto err = T(0.5)*alpha*(x*x);
       e += err[0];
     }
 #endif
@@ -123,40 +147,53 @@ namespace whiteice
   template <typename T>
   math::vertex<T> LBFGS_nnetwork<T>::Ugrad(const math::vertex<T>& x) const
   {
-	  whiteice::nnetwork<T> nnet(this->net);
+    math::vertex<T> sumgrad;
+    sumgrad = x;
+    sumgrad.zero();
+    
+#pragma omp parallel shared(sumgrad)
+    {
+      whiteice::nnetwork<T> nnet(this->net);
+      nnet.importdata(x);
+      
+      math::vertex<T> sgrad, grad, err;
+      
+      sgrad = x;
+      sgrad.zero();
 
-	  math::vertex<T> sumgrad, grad, err;
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int i=0;i<dtrain.size(0);i++){
+	nnet.input() = dtrain.access(0, i);
+	nnet.calculate(true);
+	err = dtrain.access(1,i) - nnet.output();
 
-	  nnet.importdata(x);
+	if(nnet.gradient(err, grad) == false){
+	  std::cout << "gradient failed." << std::endl;
+	  assert(0); // FIXME
+	}
+	
+	sgrad += grad; // /T(dtrain.size(0));
+      }
+      
+#pragma omp critical
+      {
+	sumgrad += sgrad;
+      }
 
-	  sumgrad = x;
-	  sumgrad.zero();
-
-	  for(unsigned int i=0;i<dtrain.size(0);i++){
-		  nnet.input() = dtrain.access(0, i);
-		  nnet.calculate(true);
-		  err = dtrain.access(1,i) - nnet.output();
-
-		  if(nnet.gradient(err, grad) == false){
-			  std::cout << "gradient failed." << std::endl;
-			  assert(0); // FIXME
-		  }
-
-		  sumgrad += grad; // /T(dtrain.size(0));
-	  }
+    }
 
 #if 1
-	  {
-		  T alpha = T(0.01f);
-		  sumgrad += alpha*x;
-	  }
+    {
+      T alpha = T(0.01f);
+      sumgrad += alpha*x;
+    }
 #endif
 	  
-	  sumgrad /= T(dtrain.size(0));
+    sumgrad /= T(dtrain.size(0));
+    
+    // sumgrad.normalize();
 	  
-	  // sumgrad.normalize();
-	  
-	  return (sumgrad);
+    return (sumgrad);
   }
   
   
