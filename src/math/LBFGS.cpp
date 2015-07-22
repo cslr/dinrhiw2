@@ -400,7 +400,7 @@ namespace whiteice
 
     			// y = U(xn);
     			y = getError(xn);
-
+			
     			if(y < besty){
     				std::lock_guard<std::mutex> lock(solution_mutex);
     				bestx = xn;

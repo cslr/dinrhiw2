@@ -70,6 +70,9 @@ namespace whiteice
     
     // E = SUM 0.5*e(i)^2
     for(unsigned int i=0;i<dtest.size(0);i++){
+      // std::cout << "data in  = " << dtest.access(0, i) << std::endl;
+      // std::cout << "data out = " << dtest.access(1, i) << std::endl;
+      
       nnet.input() = dtest.access(0, i);
       nnet.calculate(false);
       err = dtest.access(1, i) - nnet.output();
@@ -77,6 +80,8 @@ namespace whiteice
       err = (err*err);
       e += T(0.5f)*err[0];
     }
+    
+    std::cout << "LBFGS::getError() = " << e << std::endl;
     
     e /= T( (float)dtest.size(0) ); // per N
     

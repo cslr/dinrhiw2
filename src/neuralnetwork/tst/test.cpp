@@ -260,6 +260,7 @@ void rbm_test()
 	}
 #endif
 
+
 #if 0
 
 	// generates test data: a D dimensional sphere with gaussian noise and tests that GB-RBM can correctly learn it

@@ -114,6 +114,11 @@ namespace whiteice
       bool load(const std::string& filename) throw();
       bool save(const std::string& filename) const throw();
       
+      /*
+       * exports dataset values as ascii data without preprocessing
+       */
+      bool exportAscii(const std::string& filename) const throw();
+      
       // accesses data from cluster zero
       const math::vertex<T>& operator[](unsigned int index) const throw(std::out_of_range);
       

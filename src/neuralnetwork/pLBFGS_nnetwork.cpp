@@ -309,6 +309,9 @@ namespace whiteice
 		  global_best_x = x;
 		}
 		
+		std::cout << "PLBFGS STOP: " << iters << " iterations. error: " 
+			  << y << std::endl;
+		
 		global_iterations += iters;
 	      }
 	      

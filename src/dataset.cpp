@@ -1179,6 +1179,58 @@ namespace whiteice
     return true;
   }
   
+
+  template <typename T>
+  bool dataset<T>::exportAscii(const std::string& filename) const throw()
+  {
+    if(filename.length() <= 0)
+      return false;
+    
+    FILE* fp = (FILE*)fopen(filename.c_str(), "wt");
+    
+    if(fp == 0) return false;
+    if(ferror(fp)){ fclose(fp); return false; }
+    
+    const unsigned int BUFSIZE = 2048;
+    
+    char* buffer = (char*)malloc(BUFSIZE*sizeof(char));
+    if(buffer == NULL){ fclose(fp); return false; }
+    
+    for(unsigned int index = 0;index < clusters.size();index++){
+      snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimensions\n",
+	       index, (int)clusters[index].data.size(), clusters[index].data_dimension);
+      fputs(buffer, fp);
+      
+      // dumps data in this cluster to ascii format
+      for(auto d : clusters[index].data){
+	
+	this->invpreprocess(index, d); // removes possible preprocessing from data
+	
+	if(clusters[index].data_dimension > 0){
+	  float value = 0.0f;
+	  whiteice::math::convert(value, d[0]);
+	  snprintf(buffer, BUFSIZE, "%+f", value);
+	  fputs(buffer, fp);
+	  
+	  for(unsigned int i=1;i<d.size();i++){
+	    float value = 0.0f;
+	    whiteice::math::convert(value, d[i]);
+	    snprintf(buffer, BUFSIZE, " %+f", value);
+	    fputs(buffer, fp);
+	  }
+	  
+	  fputs("\n", fp);
+	}
+      }
+    }
+    
+    free(buffer);
+    if(ferror(fp)){ fclose(fp); return false;}
+    
+    fclose(fp);
+    return true;
+  }
+  
   
   // accesses zero cluster
   template <typename T>
