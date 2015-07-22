@@ -81,8 +81,6 @@ namespace whiteice
       e += T(0.5f)*err[0];
     }
     
-    std::cout << "LBFGS::getError() = " << e << std::endl;
-    
     e /= T( (float)dtest.size(0) ); // per N
     
     return e;

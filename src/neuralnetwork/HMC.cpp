@@ -706,7 +706,11 @@ namespace whiteice
     	p.zero();
 
     	T epsilon = T(0.01f);
-    	unsigned int L = 20;
+    	unsigned int L = 10;
+	
+	{
+	  epsilon /= T(data.size(0)); // gradient sum is now "divided by number of datapoints"
+	}
 
 	// std::random_device rd;
 	// std::mt19937 gen(rd());

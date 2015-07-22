@@ -664,7 +664,12 @@ namespace whiteice
     	p.zero();
 
     	T epsilon = T(0.01f);
-    	unsigned int L = 20;
+    	unsigned int L = 10;
+	
+	// scales epsilon heuristically according to number of datapoints in sum
+	{
+	  epsilon /= T(data.size(0)); // gradient sum is now "divided by number of datapoints"
+	}
 
 	// std::random_device rd;
 	// std::mt19937 gen(rd());
@@ -729,7 +734,7 @@ namespace whiteice
     		if(r < exp(current_U-proposed_U+current_K-proposed_K))
     		{
     			// accept (q)
-    			// printf("ACCEPT\n");
+		        // printf("ACCEPT\n");
 
 		        number_of_accepts++;
 			
@@ -761,7 +766,7 @@ namespace whiteice
     		}
     		else{
     			// reject (keep old_q)
-    			// printf("REJECT\n");
+		        // printf("REJECT\n");
 		        q = old_q;
 			
 			if(number_of_accepts > EPSILON_LEARNING_ACCEPT_LIMIT){
@@ -801,15 +806,15 @@ namespace whiteice
     			{
     				accept_rate /= accept_rate_samples;
 
-    				// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
+				// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
 
     				if(accept_rate <= T(0.65f)){
     					epsilon = T(0.8)*epsilon;
-    					// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
+					// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
     				}
     				else if(accept_rate >= T(0.85f)){
     					epsilon = T(1.1)*epsilon;
-    					// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
+					// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
     				}
 
     				accept_rate = T(0.0f);
