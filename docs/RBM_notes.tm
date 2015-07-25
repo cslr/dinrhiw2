@@ -829,9 +829,101 @@
 
   \;
 
-  \;
+  <with|font-series|bold|Multiple visible elements>
 
-  \;
+  In real world applications, it is often interesting to learn distribution
+  <math|p<around*|(|\<b-y\><around*|\||\<b-x\>|\<nobracket\>>|)>> and in RBM
+  context this means we have multiple different visible elements
+  <math|\<b-v\>=<around*|[|\<b-v\><rsub|1>,\<b-v\><rsub|2>|]>> and we need to
+  be able to sample from <math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>>
+  in order to predict value of <math|\<b-v\><rsub|2>> given elements
+  <math|\<b-v\><rsub|1>>. In this model, the learning of RBM elements can be
+  done normally. However, in reconstruction phase we need to sample from
+  <math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>> and
+  then from <math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-h\>|\<nobracket\>>|)>>
+  in order to approximate sample from integral
+
+  <center|<math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>=<big|int>p<around*|(|\<b-v\><rsub|2><around*|\||\<b-h\>|\<nobracket\>>|)>*p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>*d\<b-h\>>>
+
+  In GB-RBM we need that <math|p<around*|(|\<b-v\><around*|\||\<b-h\>|\<nobracket\>>|)>>
+  has a normal distribution and calculating conditional normal distribution
+  <math|p<around*|(|\<b-v\><rsub|1><around*|\||\<b-h\>|\<nobracket\>>|)>> and
+  <math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-h\>|\<nobracket\>>|)>> is
+  ``easy'':
+
+  <\center>
+    <math|p<around*|(|\<b-v\><around*|\||\<b-h\>|\<nobracket\>>|)>\<sim\>Normal<around*|(|\<b-v\><around*|\||\<b-Sigma\><rsup|1/2>*\<b-W\>*\<b-h\>+\<b-a\>,\<b-Sigma\>|\<nobracket\>>|)>,\<b-Sigma\>=diag<around*|(|<around*|[|\<sigma\><rsub|1>\<ldots\>\<sigma\><rsub|D>|]>|)>>
+
+    <math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-v\><rsub|1>=\<b-x\>|\<nobracket\>>,\<b-h\>|)>\<sim\>Normal<around*|(|<around*|\<nobracket\>|\<b-v\><rsub|2><around*|\||\<b-mu\><rsub|2>+\<b-Sigma\><rsub|21>*\<b-Sigma\><rsup|-1><rsub|11>|(>\<b-x\>-\<b-mu\><rsub|1>|)>,\<b-Sigma\><rsub|22>-\<b-Sigma\><rsub|21>*\<b-Sigma\><rsup|-1><rsub|11>*\<b-Sigma\><rsub|12>|)>>
+  </center>
+
+  But because <math|\<b-Sigma\>> is diagonal conditional distribution does
+  not directly depend on values of <math|\<b-v\><rsub|1>>.
+
+  <\center>
+    <math|p<around*|(|\<b-v\><rsub|1><around*|\||\<b-h\>|\<nobracket\>>|)>\<sim\>Normal<around*|(|\<b-v\><rsub|1><around*|\||\<b-mu\><rsub|1><around*|(|\<b-h\>|)>,\<b-Sigma\><rsub|11>|\<nobracket\>>|)>>
+
+    <math|p<around*|(|\<b-v\><rsub|2><around*|\||\<b-h\>|)>\<sim\>Normal<around*|(|\<b-v\><rsub|2><around*|\||\<b-mu\><rsub|2>|(>\<b-h\>|)>,\<b-Sigma\><rsub|22>|)>>
+  </center>
+
+  What is left is to calculate <math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>>
+  to generate hidden variables from input values
+  <math|\<b-v\><rsub|1>=\<b-x\>>, which is more difficult.
+
+  <center|<math|p<around|(|\<b-h\>\|\<b-v\>|)>=sigmoid<around|(|<around|(|\<b-Sigma\><rsup|-0.5>*\<b-v\>|)><rsup|T>\<b-W\>**+\<b-b\>*|)>>>
+
+  By generating <math|\<b-v\><rsub|2>>:s randomly we can generate
+  candidate(s) <math|\<b-h\><rsub|0>> which can be then improved and we can
+  use bayes rule to write
+
+  <center|<math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>\<propto\>p<around*|(|\<b-v\><rsub|1><around*|\||\<b-h\>|\<nobracket\>>|)>*p<around*|(|\<b-h\>|)>>>
+
+  And if we assume each configuration is is equally likely in our model
+  (without any data hidden states should have equal probability of being
+  either 0 or 1 <math|\<Rightarrow\>> so the prior should maybe still have
+  some effect - it should force values of <math|\<b-h\>> to be either 0 or 1
+  thought the values should be equally likely), then the prior
+  <math|p<around*|(|\<b-h\>|)>> is flat constant. This makes sampling from
+  <math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>>
+  using HMC rather easy. Our <math|U<around*|(|\<b-h\>|)>> terms are
+  (<math|\<b-Gamma\><rsub|1>>-matrix is simple used to select
+  <math|\<b-mu\><rsub|1>> from <math|\<b-mu\>>):
+
+  <\center>
+    <math|U<around*|(|\<b-h\>|)>=<frac|1|2><around*|(|\<b-v\><rsub|1>-\<b-mu\><rsub|1><around*|(|\<b-h\>|)>|)><rsup|T>\<b-Sigma\><rsup|-1><rsub|11><around*|(|\<b-v\><rsub|1>-\<b-mu\><rsub|1><around*|(|\<b-h\>|)>|)>>,
+    <math|\<b-mu\><rsub|1><around*|(|\<b-h\>|)>=\<b-Gamma\><rsub|1><around*|(|\<b-Sigma\><rsup|1/2>*\<b-W\>*\<b-h\>+\<b-a\>|)>>
+
+    <math|\<nabla\><rsub|\<b-h\>>U<around*|(|\<b-h\>|)>=<around*|(|\<b-mu\><rsub|1><around*|(|\<b-h\>|)>-\<b-v\><rsub|1>|)><rsup|T>\<b-Sigma\><rsup|-1><rsub|11><with|font-series|bold|>\<b-Gamma\><rsub|1>*\<b-Sigma\><rsup|1/2>*\<b-W\>*>
+  </center>
+
+  Here we have assumed <math|\<b-h\>> can take continuous values between
+  <math|0> and <math|1> in practice, the sampling should maybe happen in
+  continuous <math|\<b-h\>>-space but the exact samples generated should be
+  discretized. Alternatives:
+
+  <\itemize-dot>
+    <item>keep <math|\<b-h\>> values discretized to 0, 1 values always. Now
+    there is problem that with too small epsilon the sampler stays in a same
+    state and cannot never try to change state
+
+    <item>keep values of <math|\<b-h\>> continuous internally and only
+    discretize to 0, 1 states when emitting a sample
+
+    <item>use continuous <math|\<b-h\>> values, everywhere, this is not
+    well-defined as everything in our theory assumes samples must be
+    discretized and other sources recommend against completely continuous
+    variables..
+  </itemize-dot>
+
+  Another approach would generate candidate <math|\<b-h\><rsub|0>> states and
+  then do gradient descent until convergence to the best state and discretize
+  <math|\<b-h\>>. After discretization calculate gradient descent again until
+  convegence and discretize again <math|\<b-h\>>. Stop until there is no
+  changes in <math|\<b-h\>>. Repeat <math|N> times. This will be maximum data
+  likelihood estimate of <math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>>.
+  After this sample <math|\<b-p\><around*|(|\<b-v\><rsub|1><around*|\||\<b-h\>|\<nobracket\>>|)>>.
+
+  \ 
 
   \;
 </body>

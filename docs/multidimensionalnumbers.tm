@@ -79,16 +79,20 @@
     mod D>>
   </center>
 
-  By restrciting exponents to a modulo space we can create a number system
-  which is well defined and always works. This also means that ``division by
-  zero'' is always mathematically well defined and all numbers (including
-  ``zero'') has always somekind of inverse although by restricting the number
-  of dimensions to <math|D> means that dimensions can ``overflow'' back to
-  low dimensions and result into unintuitive results.
+  By resticting exponents to a modular arithmetic we can create a number
+  system which is well defined and always works. This also means that
+  ``division by zero'' is always mathematically well defined and all numbers
+  (including ``zero'') has always somekind of inverse although by restricting
+  the number of dimensions to <math|D> means that higher dimensions can
+  ``overflow'' back to lower dimensions and results into unintuitive results.
 
   Required: proof that number system defined this way works. (requires
   Fermat's theorem and discrete mathematics). I did this earlier but lost
-  documents.
+  documents. Partial mini proof: multiplication of
+  <math|r<rsup|i>*r<rsup|j>=r<rsup|<around*|(|i+j|)> mod D>> leads to number
+  system which have always inverse and is well defined (normal modular
+  arithmetic). Therefore multiplication of <math|r<rsup|d>>:s are well
+  defined.
 
   <with|font-series|bold|Algorithm for division>
 
@@ -97,4 +101,6 @@
   multiplication is similar to discrete finite Fourier transform which also
   uses circular buffers. Therefore somekind of transform approach could maybe
   make sense.
+
+  \;
 </body>

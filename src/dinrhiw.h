@@ -30,6 +30,7 @@
 //#include "RBM.h"
 //#include "CRBM.h"
 //#include "DBN.h"
+#include "GBRBM.h"
 
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"

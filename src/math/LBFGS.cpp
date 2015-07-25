@@ -32,12 +32,14 @@ namespace whiteice
     		thread_running = false;
 
     		// waits for thread to stop running
-    		std::unique_lock<std::mutex> lock(thread_is_running_mutex);
-    		thread_is_running_cond.wait_for(lock, std::chrono::milliseconds(1000)); // 1 second
+    		// std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+    		// thread_is_running_cond.wait_for(lock, std::chrono::milliseconds(1000)); // 1 second
     	}
 
-    	if(optimizer_thread)
-    		delete optimizer_thread;
+    	if(optimizer_thread){
+	        optimizer_thread->join();
+		delete optimizer_thread;
+	}
     	optimizer_thread = nullptr;
 
     	thread_mutex.unlock();
@@ -49,7 +51,7 @@ namespace whiteice
     {
     	thread_mutex.lock();
 
-    	if(thread_running){
+    	if(thread_running || optimizer_thread != nullptr){
     		thread_mutex.unlock();
     		return false;
     	}
@@ -73,7 +75,7 @@ namespace whiteice
 
     	try{
     		optimizer_thread = new thread(std::bind(&LBFGS<T>::optimizer_loop, this));
-    		optimizer_thread->detach();
+    		// optimizer_thread->detach();
     	}
     	catch(std::exception& e){
     		thread_running = false;
@@ -145,11 +147,13 @@ namespace whiteice
     	thread_running = false;
 
     	// waits for thread to stop running
-    	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
-    	thread_is_running_cond.wait_for(lock, std::chrono::milliseconds(1000)); // 1 sec
+    	// std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+    	// thread_is_running_cond.wait_for(lock, std::chrono::milliseconds(1000)); // 1 sec
 
-    	if(optimizer_thread)
+    	if(optimizer_thread){
+	        optimizer_thread->join();
     		delete optimizer_thread;
+	}
     	optimizer_thread = nullptr;
 
     	thread_mutex.unlock();
@@ -439,8 +443,8 @@ namespace whiteice
     	}
 
 
-    	thread_running = false; // very tricky here, writing false => false or true => false SHOULD BE ALWAYS SAFE without locks
-    	thread_is_running_cond.notify_all(); // waiters have to use wait_for() [timeout milliseconds] as it IS possible to miss notify_all()
+	thread_running = false; // very tricky here, writing false => false or true => false SHOULD BE ALWAYS SAFE without locks
+    	// thread_is_running_cond.notify_all(); // waiters have to use wait_for() [timeout milliseconds] as it IS possible to miss notify_all()
     }
     
     
