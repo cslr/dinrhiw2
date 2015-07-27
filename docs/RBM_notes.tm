@@ -923,7 +923,41 @@
   likelihood estimate of <math|p<around*|(|\<b-h\><around*|\||\<b-v\><rsub|1>|\<nobracket\>>|)>>.
   After this sample <math|\<b-p\><around*|(|\<b-v\><rsub|1><around*|\||\<b-h\>|\<nobracket\>>|)>>.
 
-  \ 
+  <with|font-series|bold|Brute force (modular) approach>
+
+  Assume we can divide <math|\<b-h\><rsub|>> into parts
+  <math|<around*|[|\<b-h\><rsub|1>\<ldots\>\<b-h\><rsub|L>|]>> and go through
+  all the combinations separatedly. If we have perfect parallel machine this
+  happens in <math|O<around*|(|2<rsup|max<rsub|i>*dim<around*|(|\<b-h\><rsub|i>|)>>|)>>
+  time or in <math|O<around*|(|2<rsup|dim<around*|(|\<b-h\>|)>/K>|)>> on
+  average if we can divide problem perfectly into <math|K >parts. We can
+  choose, for example, <math|dim<around*|(|\<b-h\><rsub|i>|)>=10> and the
+  computations scale now linearly (although the results are not equally
+  good).
+
+  <with|font-series|bold|General multiple elements (modular) approach>
+
+  In practice, the memory requirements <math|O<around*|(|dim<around*|(|\<b-v\>|)>\<times\>dim<around*|(|\<b-h\>|)>|)>>
+  and computation of huge RBM's grow too quickly if we use perfect model and
+  use full matrix <math|\<b-W\>>. Because of this we consider modular
+  approach (also suggested by neuroscience research) where vectors are
+  divided into modules/subvectors. This leads into following energy
+  equations:
+
+  <\center>
+    <\math>
+      E<rsub|B*B><around|(|\<b-v\><rsub|1>\<ldots\>\<b-v\><rsub|K>,\<b-h\><rsub|1>\<ldots\>\<b-h\><rsub|L>|)>=-\<b-a\><rsup|T>\<b-v\>-<big|sum><rsub|k,l>\<b-v\><rsub|k><rsup|T>\<b-W\><rsub|k*l>*\<b-h\><rsub|l>-\<b-b\><rsup|T>\<b-h\>
+
+      E<rsub|G*B><around|(|\<b-v\><rsub|1>\<ldots\>\<b-v\><rsub|K>,\<b-h\><rsub|1>\<ldots\>\<b-h\><rsub|L>|)>=<frac|1|2><around|\<\|\|\>|\<b-v\>-\<b-a\>|\<\|\|\>><rsup|2>-<big|sum><rsub|k,l>\<b-v\><rsub|k><rsup|T>\<b-W\><rsub|k*l>*\<b-h\><rsub|l>-\<b-b\><rsup|T>\<b-h\>
+    </math>
+  </center>
+
+  This reduces amount of memory required during computations but doesn't lead
+  into other improvements. But we want that
+  <math|p<around*|(|\<b-h\>|)>=p<around*|(|\<b-h\><rsub|1>|)>p<around*|(|\<b-h\><rsub|2>|)>\<ldots\>p<around*|(|\<b-h\><rsub|L>|)>>
+  in order to be able to brute force through <math|\<b-h\>> when looking for
+  optimum because now we can look for optimum for each <math|\<b-h\><rsub|i>>
+  vector separatedly.
 
   \;
 </body>

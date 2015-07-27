@@ -376,7 +376,9 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	if(samples.size() <= 0)
 		return T(100000.0); // nothing to do
 
-	std::vector< math::vertex<T> > random_samples; // generates random N(data_mean, datavar*I) data to test against
+	// generates random N(data_mean, datavar*I) data to test how
+	// well RBM fits to the data
+	std::vector< math::vertex<T> > random_samples; 
 
 	data_mean.resize(z.size());
 	data_var.resize(z.size());
@@ -1578,20 +1580,26 @@ template <typename T>
 T GBRBM<T>::p_ratio(const std::vector< math::vertex<T> >& data1, const std::vector< math::vertex<T> >& data2)
 {
 	// log(R) = log(P(data1)) - log(P(data2))
-
+  
+        // in order to keep ratios within sane range
+        // and to scale to large dimensions, theoretical geometric mean prbability 
+        // per each dimension will be calculated
+  
 	T logPdata1 = T(0.0);
 	T logPdata2 = T(0.0);
-
+	
 	if(data1.size() <= 0 ||  data2.size() <= 0)
 		return T(0.0);
+	
+	T D = T(data1[0].size());
 
 	for(const auto& v : data1)
-		logPdata1 += unscaled_log_probability(v);
+	        logPdata1 += unscaled_log_probability(v)/D;
 
 	logPdata1 /= T(data1.size());
 
 	for(const auto& v : data2)
-		logPdata2 += unscaled_log_probability(v);
+	        logPdata2 += unscaled_log_probability(v)/D;
 
 	logPdata2 /= T(data2.size());
 
