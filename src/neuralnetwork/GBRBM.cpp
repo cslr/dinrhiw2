@@ -366,7 +366,7 @@ bool GBRBM<T>::initializeWeights() // initialize weights to small values
 // (keep calculating until there is no improvement anymore)
 template <typename T>
 T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
-		const unsigned int EPOCHS, bool verbose, bool learnVariance)
+			 const unsigned int EPOCHS, bool verbose, bool learnVariance)
 {
 	const unsigned int CDk = 1;
 
@@ -425,13 +425,20 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 
 		var = z;
-		for(unsigned int i=0;i<var.size();i++) var[i] = math::exp(z[i]);
+		auto vv = T(0.0);
+		
+		for(unsigned int i=0;i<var.size();i++){
+		  var[i] = math::exp(z[i]);
+		  vv += var[i];
+		}
+		
+		vv /= var.size();
 
 		std::cout << "START " << epoch <<
 			". R: " << error <<
 			" R-ratio: " << r_ratio <<
 			//" log(P) : " << logp <<
-			" P-ratio: " << pratio << " Variance: " << var << std::endl;
+			" P-ratio: " << pratio << " Variance: " << vv << std::endl;
 	}
 
 	auto best_error = error;
@@ -678,16 +685,23 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 				auto rerror = reconstruct_gbrbm_data_error(random_samples, 1000, W, a, b, z, CDk);
 				auto r_ratio        = (error/rerror);
 				//auto logp           = logProbability(samples);
+				
+				auto vv = T(0.0);
 
 				var = z;
-				for(unsigned int i=0;i<var.size();i++) var[i] = math::exp(z[i]);
+				for(unsigned int i=0;i<var.size();i++){
+				  var[i] = math::exp(z[i]);
+				  vv += var[i];
+				}
+				
+				vv /= T(var.size());
 
 				std::cout << "EPOCH " << epoch <<
 						". R: " << error <<
 						" R-ratio: " << r_ratio <<
 						//" log(P): " << logp <<
 						" P-ratio: " << pratio <<
-						" Variance: " << var << std::endl;
+						" Variance: " << vv << std::endl;
 			}
 
 		}
