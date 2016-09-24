@@ -730,7 +730,7 @@ void print_usage()
   printf("                            note: ica implementation is unstable and may not work\n");
   printf(" -data:N                    jointly resamples all cluster sizes down to N datapoints\n");
   printf("\n");
-  printf("This program is distributed under LGPL license <dinrhiw2.googlecode.com>.\n");
+  printf("This program is distributed under LGPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
 } 
 
 

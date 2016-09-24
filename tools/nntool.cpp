@@ -3,7 +3,7 @@
  * a feedforward neural network
  * optimizer command line tool.
  * 
- * (C) copyright Tomas Ukkonen 2004, 2005, 2014-2015
+ * (C) copyright Tomas Ukkonen 2004, 2005, 2014-2016
  *
  *************************************************************
  * 
@@ -1417,7 +1417,7 @@ void print_usage(bool all)
   printf("\n");
   printf("               Ctrl-C shutdowns the program gracefully.\n");
   printf("\n");
-  printf("Report bugs to <dinrhiw2.googlecode.com>.\n");
+  printf("This program is distributed under LGPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
   
 }
 
