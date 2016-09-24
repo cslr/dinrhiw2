@@ -989,7 +989,9 @@ int main(int argc, char** argv)
 #endif
       
       // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
-      unsigned int ptlayers = (unsigned int)(math::log(data.size())/math::log(1.25));
+      unsigned int ptlayers =
+	(unsigned int)(math::log(data.size(0))/math::log(1.25));
+      
       if(ptlayers <= 10) ptlayers = 10;
       else if(ptlayers > 100) ptlayers = 100;
 
@@ -1253,8 +1255,8 @@ int main(int argc, char** argv)
 	    error2 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
 	}
 	
-	error1 /= math::blas_real<float>((float)data.size());
-	error2 /= math::blas_real<float>((float)data.size());
+	error1 /= math::blas_real<float>((float)data.size(0));
+	error2 /= math::blas_real<float>((float)data.size(0));
 	
 	std::cout << "Average error in dataset (E[f(x|w)]): " << error1 << std::endl;
 	std::cout << "Average error in dataset (f(x|E[w])): " << error2 << std::endl;
