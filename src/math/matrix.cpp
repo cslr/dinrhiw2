@@ -98,7 +98,7 @@ namespace whiteice
       compressor = M.compressor;
     }
     
-    
+#if 0    
     template <typename T>
     matrix<T>::matrix(matrix<T>&& t)
     {
@@ -110,7 +110,7 @@ namespace whiteice
       t.data = nullptr;
       t.compressor = nullptr;
     }
-    
+#endif
     
     template <typename T>
     matrix<T>::matrix(const vertex<T>& diagonal)
@@ -430,7 +430,7 @@ namespace whiteice
       return (*this);
     }
     
-    
+#if 0    
     template <typename T>
     matrix<T>& matrix<T>::operator=(matrix<T>&& t) throw(illegal_operation)
     {
@@ -438,8 +438,8 @@ namespace whiteice
       
       // printf("matrix&& operator=\n"); fflush(stdout);
       
-      if(this->data) free(data);
-      if(this->compressor) delete compressor;
+      if(this->data) free(this->data);
+      if(this->compressor) delete (this->compressor);
       
       this->data = std::move(t.data);
       this->numRows = std::move(t.numRows);
@@ -451,6 +451,7 @@ namespace whiteice
       
       return *this;
     }
+#endif
     
     
     

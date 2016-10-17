@@ -127,6 +127,7 @@ namespace whiteice
     
     
     // makes direct copy of temporal value
+#if 0    
     template <typename T>
     vertex<T>::vertex(vertex<T>&& t)
     {
@@ -137,6 +138,7 @@ namespace whiteice
       t.data = nullptr;
       t.compressor = nullptr;
     }
+#endif
     
     
     // vertex ctor - makes copy of v
@@ -668,7 +670,8 @@ namespace whiteice
       
       return *this;
     }
-    
+
+#if 0    
     template <typename T>
     vertex<T>& vertex<T>::operator=(vertex<T>&& t) throw(illegal_operation)
     {
@@ -688,6 +691,7 @@ namespace whiteice
       
       return *this;
     }
+#endif
     
     /***************************************************/
 
@@ -1018,7 +1022,7 @@ namespace whiteice
 	return r;
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
-	blas_complex<float> a, b;
+	blas_complex<double> a, b;
 	a = 1.0f; b = 0.0f;	
 	
 	cblas_zgemv(CblasRowMajor, CblasTrans,

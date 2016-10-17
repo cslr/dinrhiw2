@@ -70,7 +70,7 @@ namespace whiteice
       vertex();
       explicit vertex(unsigned int i);
       vertex(const vertex<T>& v);
-      vertex(vertex<T>&& t);
+      //vertex(vertex<T>&& t);
       vertex(const std::vector<T>& v);
       virtual ~vertex();
       
@@ -111,7 +111,7 @@ namespace whiteice
       vertex<T>& operator/=(const vertex<T>& v) throw(illegal_operation);
       
       vertex<T>& operator=(const vertex<T>& v) throw(illegal_operation);      
-      vertex<T>& operator=(vertex<T>&& t) throw(illegal_operation);      
+      //vertex<T>& operator=(vertex<T>&& t) throw(illegal_operation);      
       
       bool operator==(const vertex<T>& v) const throw(uncomparable);
       bool operator!=(const vertex<T>& v) const throw(uncomparable);
