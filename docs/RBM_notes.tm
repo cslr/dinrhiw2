@@ -1,4 +1,4 @@
-<TeXmacs|1.0.7.18>
+<TeXmacs|1.0.7.15>
 
 <style|generic>
 
@@ -267,9 +267,15 @@
   0.25 which means that the noise in input data should be modelled to be much
   smaller.
 
+  <with|font-shape|italic|NOTE: We should add a inverse-Wishart prior for
+  <math|\<Sigma\>> term assuming it to be diagnonal <math|I> initially (a
+  regularizer). After this we can normalize variance of each dimension to
+  have unit variance meaning that prior is hopefully close to noise prior and
+  integrate over the <math|p<around*|(|\<Sigma\>|)>> prior.>
+
   The energy model for the non-unit variance that can make sense is:
 
-  <math|E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-(\<Sigma\><rsup|-0.5>v*)<rsup|T>W*h-b<rsup|T>h>
+  <math|E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-(\<Sigma\><rsup|-0.5>v*)<rsup|T>W*h-b<rsup|T>h-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>>
 
   which can be further justified by calculating <math|p<around|(|v\|h|)>> and
   <math|p<around|(|h\|v|)>> distributions:
@@ -286,7 +292,7 @@
 
   <math|P<around|(|v\|h|)>=<frac|1|Z<around|(|\<Sigma\>|)>>*e<rsup|-<frac|1|2><around|\<\|\|\>|v-<around|(|\<Sigma\><rsup|0.5>W*h+a|)>|\<\|\|\>><rsub|\<Sigma\>><rsup|2>>\<sim\>Normal<around|(|v\|\<Sigma\><rsup|1/2>*W*h+a,\<Sigma\>|)>>
 
-  <math|P<around*|(|\<b-v\><around*|\||\<b-h\>|\<nobracket\>>|)>\<sim\>Normal<around*|(|v<around*|\||\<b-Sigma\><rsup|1/2>*\<b-W\>*\<b-h\>+\<b-a\>,\<b-Sigma\>|\<nobracket\>>|)>>
+  <math|P<around*|(|\<b-v\><around*|\||\<b-h\>|\<nobracket\>>,<with|font-series|bold|\<Sigma\>>|)>\<sim\>Normal<around*|(|v<around*|\||\<b-Sigma\><rsup|1/2>*\<b-W\>*\<b-h\>+\<b-a\>,\<b-Sigma\>|\<nobracket\>>|)>>
 
   \;
 
@@ -309,7 +315,7 @@
 
   <math|P<around|(|h<rsub|d>\|v|)>=<frac|e<rsup|<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>*h<rsub|d>>|<big|sum><rsub|h<rsub|d>>e<rsup|<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>*h<rsub|d>>>=sigmoid<around|(|<around|(|\<Sigma\><rsup|-0.5>*v|)><rsup|T>w<rsub|d>**+b*<rsub|d>|)>>.
 
-  <math|P<around|(|\<b-h\>\|\<b-v\>|)>=sigmoid<around|(|<around|(|\<b-Sigma\><rsup|-0.5>*\<b-v\>|)><rsup|T>\<b-W\>**+\<b-b\>*|)>>
+  <math|P<around|(|\<b-h\>\|\<b-v\>,<with|font-series|bold|\<Sigma\>>|)>=sigmoid<around|(|<around|(|\<b-Sigma\><rsup|-0.5>*\<b-v\>|)><rsup|T>\<b-W\>**+\<b-b\>*|)>>
 
   \;
 
@@ -337,24 +343,28 @@
   \;
 
   <\math>
-    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsub|\<Sigma\>><rsup|2>+<around|(|\<Sigma\>*<rsup|-0.5>v|)><rsup|T>W*h+b<rsup|T>h>
+    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsub|\<Sigma\>><rsup|2>+<around|(|\<Sigma\>*<rsup|-0.5>v|)><rsup|T>W*h+b<rsup|T>h+log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>-<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsup|T>h>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsup|T>h>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*h<rsub|i>>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*h<rsub|i>>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>+<around*|(|<around*|(|v+p+1|)>/2|)>*log<around*|(|<around*|\||\<Sigma\>|\|>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
   </math>
 
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
 
   <\math>
-    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>-<big|sum><rsub|i><frac|e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>><around|(|<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>|)>
+    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+<around*|(|v+p+1|)><big|sum><rsub|i><frac|\<partial\>|\<partial\>\<sigma\><rsub|k>>log*<around*|(|\<sigma\><rsub|i>|)>-<frac|1|\<sigma\><rsub|k><rsup|3>>-<big|sum><rsub|i><frac|e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>><around|(|<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>|)>
 
-    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k>*<big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
+    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+<around*|(|v+p+1|)><frac|1|\<sigma\><rsub|k>>-<frac|1|\<sigma\><rsub|k><rsup|3>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k>*<big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
   </math>
 
-  <math|<rsup|>diag<around|[|<frac|\<partial\>*F|\<partial\>*\<Sigma\>>|]>=diag[-\<Sigma\><rsup|-3/2><around|(|v-a|)>*<around|(|v-a|)><rsup|T>+*<around|(|\<Sigma\><rsup|-1>v|)>*<around|(|W*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v+b|)>|)><rsup|T>]>
+  <\math>
+    <rsup|>diag<around|[|<frac|\<partial\>*F|\<partial\>*\<Sigma\>>|]>=
+
+    diag[-\<Sigma\><rsup|-3/2><around*|(|<around|(|v-a|)>*<around|(|v-a|)><rsup|T>+I|)>+<around*|(|v+p+1|)>\<Sigma\><rsup|-1/2>+*<around|(|\<Sigma\><rsup|-1>v|)>*<around|(|W*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v+b|)>|)><rsup|T>]
+  </math>
 
   \;
 
@@ -394,14 +404,21 @@
   (as recommended below), leading into the equation:
 
   <\math>
-    F<around*|(|v|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
+    F<around*|(|v|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>+<around*|(|<around*|(|v+p+1|)>/2|)>*log<around*|(|<around*|\||\<Sigma\>|\|>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
 
-    =<frac|1|2><big|sum><rsub|i><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-z<rsub|i>>-<big|sum><rsub|j>log<around|(|1+exp<around*|(|<big|sum><rsub|k>w<rsub|k*j>*v<rsub|k>*e<rsup|-z<rsub|k>/2>+b<rsub|j>|)>|)>
+    =<frac|1|2><big|sum><rsub|i><around*|(|1+<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*|)>e<rsup|-z<rsub|i>>+<around*|(|<around*|(|v+p+1|)>/2|)><big|sum><rsub|i>z<rsub|i>-<big|sum><rsub|j>log<around|(|1+exp<around*|(|<big|sum><rsub|k>w<rsub|k*j>*v<rsub|k>*e<rsup|-z<rsub|k>/2>+b<rsub|j>|)>|)>
   </math>
 
-  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>e<rsup|-z<rsub|i>>-><math|<big|sum><rsub|j>sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j><around*|(|-<frac|1|2>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>/2>|)>>
+  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2><around*|(|1+<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>|)>e<rsup|-z<rsub|i>>+<around*|(|<around*|(|v+p+1|)>/2|)>-><math|<big|sum><rsub|j>sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j><around*|(|-<frac|1|2>w<rsub|i*j>v<rsub|i>*e<rsup|-z<rsub|i>/2>|)>>
 
-  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>*e<rsup|-z<rsub|i>><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>+<frac|1|2>e<rsup|-z<rsub|i>/2>><math|*v<rsub|i><big|sum><rsub|j>*w<rsub|i*j>*sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j>>
+  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-<frac|1|2>*e<rsup|-z<rsub|i>><around*|(|1+<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>|)>+<around*|(|<around*|(|2*dim<around*|(|v|)>+1|)>/2|)>+<frac|1|2>e<rsup|-z<rsub|i>/2>><math|*v<rsub|i><big|sum><rsub|j>*w<rsub|i*j>*sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j>>
+
+  \;
+
+  Wishart prior's degrees of freedom is chosen to be low so we choose the
+  minimum <math|v=p> so that mean of inverse wishart prior/regularizer so
+  degrees of freedom is minimized and variance is maximized (maximum
+  unceretainty).
 
   \;
 
