@@ -48,6 +48,8 @@
 #undef __STRICT_ANSI__
 #include <float.h>
 
+#include <fenv.h>
+
 
 using namespace whiteice;
 
@@ -251,14 +253,26 @@ void hmc_test()
 void rbm_test()
 {
 	std::cout << "GB-RBM UNIT TEST" << std::endl;
-#if 0
+
+#ifdef __linux__
+	// LINUX
+	{
+	  feenableexcept(FE_INVALID |
+			 FE_DIVBYZERO);
+	  //			 FE_OVERFLOW |  FE_UNDERFLOW);
+	}
+	
+#else
+	// WINDOWS
 	{
 		_clearfp();
 		unsigned unused_current_word = 0;
 		// clearing the bits unmasks (throws) the exception
-		_controlfp_s(&unused_current_word, 0, _EM_INVALID | _EM_OVERFLOW | _EM_ZERODIVIDE);  // _controlfp_s is the secure version of _controlfp
+		_controlfp_s(&unused_current_word, 0,
+			     _EM_INVALID | _EM_OVERFLOW | _EM_ZERODIVIDE);  // _controlfp_s is the secure version of _controlfp
 	}
 #endif
+
 
 
 #if 0
@@ -456,9 +470,9 @@ void rbm_test()
 	}
 #endif
 
-
+	
 	// generates another test/learning example
-	std::vector< math::vertex<> > samples;
+	std::vector< math::vertex< math::blas_real<double> > > samples;
 
 	const unsigned int NPOINTS = 5;
 	const unsigned int DIMENSION = 2;
@@ -473,11 +487,11 @@ void rbm_test()
 		// target is then to learn spline curve distribution
 
 		{
-			whiteice::math::hermite< math::vertex< math::blas_real<float> >, math::blas_real<float> > curve;
+			whiteice::math::hermite< math::vertex< math::blas_real<double> >, math::blas_real<double> > curve;
 
-		        whiteice::RNG< math::blas_real<float> > rng;
+		        whiteice::RNG< math::blas_real<double> > rng;
 
-			std::vector< math::vertex< math::blas_real<float> > > points;
+			std::vector< math::vertex< math::blas_real<double> > > points;
 			points.resize(NPOINTS);
 
 			for(auto& p : points){
@@ -490,11 +504,11 @@ void rbm_test()
 
 			// hand-selected point data to create interesting looking "8" figure
 			double pdata[5][2] = { {  4.132230, -8.69549 },
-								 { -0.201683, -4.68169 },
-								 { -1.406790, +3.38615 },
-								 { +7.191170, +7.73804 },
-								 { -1.802390, -7.46397 }
-								};
+					       { -0.201683, -4.68169 },
+					       { -1.406790, +3.38615 },
+					       { +7.191170, +7.73804 },
+					       { -1.802390, -7.46397 }
+			};
 
 			for(unsigned int p=0;p<5;p++){
 				for(unsigned int d=0;d<2;d++){
@@ -508,11 +522,48 @@ void rbm_test()
 				auto& m = curve[s];
 				auto  n = m;
 				rng.normal(n);
-				math::blas_real<float> stdev = 0.5;
+				math::blas_real<double> stdev = 0.5;
 				n = m + n*stdev;
 
 				samples.push_back(n);
 			}
+		}
+
+
+		{
+		  // normalizes mean and variance for each dimension
+		  math::vertex< math::blas_real<double> > m, v;
+		  m.resize(DIMENSION);
+		  v.resize(DIMENSION);
+		  m.zero();
+		  v.zero();
+		  
+		  for(unsigned int s=0;s<NSAMPLES;s++){
+		    auto x = samples[s];
+		    m += x;
+
+		    for(unsigned int i=0;i<x.size();i++)
+		      v[i] += x[i]*x[i];
+		  }
+
+		  m /= NSAMPLES;
+		  v /= NSAMPLES;
+
+		  for(unsigned int i=0;i<m.size();i++){
+		    v[i] -= m[i]*m[i];
+		    v[i] = sqrt(v[i]); // st.dev.
+		  }
+
+		  // normalizes mean to be zero and st.dev. / variance to be one
+		  for(unsigned int s=0;s<NSAMPLES;s++){
+		    auto x = samples[s];
+		    x -= m;
+
+		    for(unsigned int i=0;i<x.size();i++)
+		      x[i] /= v[i];
+
+		    samples[s] = x;
+		  }
 		}
 
 
@@ -530,29 +581,32 @@ void rbm_test()
 
 	// after generating samples train it using HMC GBRBM sampler ~ p(gbrbm_params|data)
 	std::cout << "Learning RBM parameters.." << std::endl;
-	std::vector< math::vertex<> > qsamples;
-	math::vertex<> best_q; // minimum single reconstruction error case..
+	std::vector< math::vertex< math::blas_real<double> > > qsamples;
+	math::vertex< math::blas_real<double> > best_q; // minimum single reconstruction error case..
 
-	const unsigned int HIDDEN_NODES = 200;
+	const unsigned int HIDDEN_NODES = 500; // was 200
+	
+#if 0
+	const unsigned int ITERLIMIT = 100;
 
 	{
-		math::vertex<> best_variance;
+		math::vertex< math::blas_real<double> > best_variance;
 
-		whiteice::HMC_GBRBM<> hmc(samples, HIDDEN_NODES, true, true);
+		whiteice::HMC_GBRBM< math::blas_real<double> > hmc(samples, HIDDEN_NODES, true, true);
 		hmc.setTemperature(1.0);
 
 		hmc.startSampler();
 
-		std::vector< math::vertex<> > starting_data;
-		std::vector< math::vertex<> > current_data;
-		math::blas_real<float> min_error = INFINITY;
+		std::vector< math::vertex< math::blas_real<double> > > starting_data;
+		std::vector< math::vertex< math::blas_real<double> > > current_data;
+		math::blas_real<double> min_error = INFINITY;
 		int last_checked_index = 0;
 
-		while(hmc.getNumberOfSamples() < 2000){
+		while(hmc.getNumberOfSamples() < ITERLIMIT){
 			sleep(1);
 			std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
 			if(hmc.getNumberOfSamples() > 0){
-				std::vector< math::vertex<> > qsamples;
+				std::vector< math::vertex< math::blas_real<double> > > qsamples;
 
 #if 1
 				hmc.getSamples(qsamples);
@@ -560,18 +614,18 @@ void rbm_test()
 				// calculate something using the samples..
 
 				if(qsamples.size()-last_checked_index > 5){
-					math::blas_real<float> mean = 0.0;
+					math::blas_real<double> mean = 0.0;
 
 					last_checked_index = qsamples.size() - 10;
 					if(last_checked_index < 0) last_checked_index = 0;
 
-					GBRBM<> rbm = hmc.getRBM();
+					GBRBM< math::blas_real<double> > rbm = hmc.getRBM();
 
-					math::vertex<> var;
+					math::vertex< math::blas_real<double> > var;
 					rbm.setParametersQ(qsamples[qsamples.size()-1]);
 					rbm.getVariance(var);
 
-					math::blas_real<float> meanvar = 0.0;
+					math::blas_real<double> meanvar = 0.0;
 
 					for(unsigned int i=0;i<var.size();i++)
 						meanvar += var[i];
@@ -580,7 +634,7 @@ void rbm_test()
 					std::cout << "mean(var) = " << meanvar << std::endl;
 
 					for(int s=last_checked_index;s < (signed)qsamples.size();s++){
-						GBRBM<> local_rbm = rbm;
+						GBRBM< math::blas_real<double> > local_rbm = rbm;
 						local_rbm.setParametersQ(qsamples[s]);
 						auto e = local_rbm.reconstructError(samples);
 						{
@@ -615,22 +669,33 @@ void rbm_test()
 		for(unsigned int i=(temp_all_samples.size()/2);i<temp_all_samples.size();i++)
 			qsamples.push_back(temp_all_samples[i]);
 	}
-
+#endif
 
 
 	// now we have training data samples and parameters q from the RBM sampling learning
+	// we keep ONLY variance from the sampling and then optimize (learn) parameters of basic RBM
 	{
-		whiteice::GBRBM<> rbm;
+		whiteice::GBRBM< math::blas_real<double> > rbm;
+		math::vertex< math::blas_real<double> > best_variance;
+		best_variance.resize(DIMENSION);
+
+		// sets initial variance to be one (according to our normalization)
+		for(unsigned int i=0;i<best_variance.size();i++){
+		  best_variance[i] = 1.00;
+		}
 
 		rbm.resize(DIMENSION, HIDDEN_NODES);
-		// rbm.setVariance(best_variance);
+		rbm.setVariance(best_variance);
 
 		auto rdata = samples;
 
-		// rbm.learnWeights(samples, 100, true, false);
-		rbm.setParametersQ(best_q);
+		// rbm.setParametersQ(best_q);
+		rbm.learnWeights(samples, 1000, true, true); // also try to learn variances..
 		rdata.clear();
-		rbm.sample(1000, rdata, samples); // samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+
+		// samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+		rbm.sample(1000, rdata, samples);
+		
 
 		std::cout << "Storing reconstruct results to disk.." << std::endl;
 
@@ -652,8 +717,9 @@ void rbm_test()
 		fclose(fp);
 
 		rdata = samples;
-		rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
-
+		// rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
+		rbm.reconstructData(rdata);
+		
 
 		fp = fopen("gbrbm_output2.txt", "wt");
 		for(unsigned int i=0;i<rdata.size();i++){
@@ -672,8 +738,8 @@ void rbm_test()
   
   // saves and loads machine to and from disk and checks configuration is correct
   {
-    whiteice::RBM<> machine(100,50);
-    whiteice::RBM<> machine2 = machine;
+    whiteice::RBM< math::blas_real<double> > machine(100,50);
+    whiteice::RBM< math::blas_real<double> > machine2 = machine;
     
     std::cout << "RBM LOAD/SAVE TEST" << std::endl;
       
@@ -688,12 +754,12 @@ void rbm_test()
     }
     
     // compares machine and machine2
-    math::matrix<> W1, W2;
+    math::matrix< math::blas_real<double> > W1, W2;
     W1 = machine.getWeights();
     W2 = machine2.getWeights();
     W1 = W2 - W1;
     
-    math::blas_real<float> e = 0.0001;
+    math::blas_real<double> e = 0.0001;
     
     if(frobenius_norm(W1) > e){
       std::cout << "ERROR: loaded RBM machine have different weights." 
