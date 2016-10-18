@@ -29,6 +29,9 @@
 #include "HMCGBRBM.h"
 #include "PTHMCGBRBM.h"
 #include "CRBM.h"
+
+#include "DBN.h"
+
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
 
@@ -66,6 +69,8 @@ void lreg_nnetwork_test();
 
 void rbm_test();
 
+void dbn_test();
+
 void bayesian_nnetwork_test();
 void backprop_test(const unsigned int size);
 void neuralnetwork_saveload_test();
@@ -80,6 +85,17 @@ void simple_dataset_test();
 void compressed_neuralnetwork_test();
 
 
+
+void createHermiteCurve(std::vector< math::vertex< math::blas_real<double> > >& samples,
+			const unsigned int NPOINTS,
+			const unsigned int DIMENSION,
+			const unsigned int NSAMPLES);
+
+bool saveSamples(const std::string& filename, std::vector< math::vertex< math::blas_real<double> > >& samples);
+
+
+
+
 int main()
 {
   unsigned int seed = (unsigned int)time(0);
@@ -87,9 +103,11 @@ int main()
   srand(seed);
   
 
-  try{    
+  try{
 
-    rbm_test();
+    dbn_test();
+
+    // rbm_test();
     
     return 0;
     
@@ -188,6 +206,86 @@ private:
   char* reason;
   
 };
+
+
+/************************************************************/
+
+// TODO IMPLEMENT AND FIX ISSUES IN DBN CODE...
+void dbn_test()
+{
+  std::cout << "Deep Belief Network (DBN) test.." << std::endl;
+
+  whiteice::DBN< math::blas_real<double> > dbn;
+
+  // generate training data
+  std::vector< math::vertex< math::blas_real<double> > > input;
+  std::vector< math::vertex< math::blas_real<double> > > output;
+
+  const unsigned int DIMENSION = 2;
+  const unsigned int NSAMPLES  = 10000;
+  {
+    // TODO cut'n'paste from RBN network and create DIMENSION
+    //      dimensional hermite curves to learn
+    //      assign separate output values to curve
+    //      based on distance from the beginning of the curve
+    //      (sin(distance)).
+
+    createHermiteCurve(input, 5, DIMENSION, NSAMPLES);
+
+    // create output values
+    math::blas_real<double> value, distance = 0;
+      
+    for(auto& p : input){
+      distance += 10*2*3.14159/NSAMPLES;
+      value = sin(distance);
+
+      math::vertex< math::blas_real<double> > o(1);
+      o[0] = value;
+
+      output.push_back(o);
+    }
+  }
+  
+
+  // learn DBN-network
+  {
+    // 
+    // D x 100D x 1000 x 10 neural network
+    // 
+    std::vector<unsigned int> arch;
+
+    arch.push_back(input[0].size());
+    arch.push_back(input[0].size()*100);
+    arch.push_back(1000);
+    arch.push_back(10);
+
+    dbn.resize(arch);
+
+    math::blas_real<double> dW = 0.01;
+
+    if(dbn.learnWeights(input, dW, true) == false){
+      std::cout << "DBN LEARNING FAILURE" << std::endl;
+      exit(-1);
+    }
+
+    // reconstruct data
+    auto reconstructedData = input;  
+
+    if(dbn.reconstructData(reconstructedData)){ // reconstruct data
+      std::cout << "ERROR: reconstructedData().." << std::endl;
+      exit(-1);
+    }
+
+    if(!saveSamples("dbn_input.txt", input) || !saveSamples("dbn_reconstructed.txt", reconstructedData)){
+      std::cout << "ERROR: saveSamples() failed" << std::endl;
+      exit(-1);
+    }
+    
+    // calculate reconstruction error and report it..
+  }
+  
+}
+
 
 
 /************************************************************/
@@ -981,6 +1079,130 @@ void rbm_test()
   
   
   std::cout << "RBM TESTS DONE." << std::endl;
+}
+
+/************************************************************/
+
+
+void createHermiteCurve(std::vector< math::vertex< math::blas_real<double> > >& samples,
+			const unsigned int NPOINTS, const unsigned int DIMENSION,
+			const unsigned int NSAMPLES)
+{
+  // const unsigned int NPOINTS = 5;
+  // const unsigned int DIMENSION = 2;
+  // const unsigned int NSAMPLES = 10000; // 10.000 samples
+	
+  {
+    std::cout << "Generating d-dimensional curve dataset for learning.." << std::endl;
+    
+    // pick N random points from DIMENSION dimensional space [-10,10]^D (initially N=5, DIMENSION=2)
+    // calculate hermite curve interpolation between N points and generate data
+    // add random noise N(0,1) to the spline to generate distribution
+    // target is then to learn spline curve distribution
+    
+    {
+      whiteice::math::hermite< math::vertex< math::blas_real<double> >, math::blas_real<double> > curve;
+      
+      whiteice::RNG< math::blas_real<double> > rng;
+      
+      std::vector< math::vertex< math::blas_real<double> > > points;
+      points.resize(NPOINTS);
+      
+      for(auto& p : points){
+	p.resize(DIMENSION);
+	for(unsigned int d=0;d<DIMENSION;d++){
+	  p[d] = rng.uniform()*20.0f - 10.0f; // [-10,10]
+	}
+	
+      }
+
+#if 0
+      // hand-selected point data to create interesting looking "8" figure
+      double pdata[5][2] = { {  4.132230, -8.69549 },
+			     { -0.201683, -4.68169 },
+			     { -1.406790, +3.38615 },
+			     { +7.191170, +7.73804 },
+			     { -1.802390, -7.46397 }
+      };
+      
+      for(unsigned int p=0;p<5;p++){
+	for(unsigned int d=0;d<2;d++){
+	  points[p][d] = pdata[p][d];
+	}
+      }
+#endif
+      
+      curve.calculate(points, (int)NSAMPLES);
+      
+      for(unsigned s=0;s<NSAMPLES;s++){
+	auto& m = curve[s];
+	auto  n = m;
+	rng.normal(n);
+	math::blas_real<double> stdev = 0.5;
+	n = m + n*stdev;
+	
+	samples.push_back(n);
+      }
+    }
+    
+    
+    {
+      // normalizes mean and variance for each dimension
+      math::vertex< math::blas_real<double> > m, v;
+      m.resize(DIMENSION);
+      v.resize(DIMENSION);
+      m.zero();
+      v.zero();
+      
+      for(unsigned int s=0;s<NSAMPLES;s++){
+	auto x = samples[s];
+	m += x;
+	
+	for(unsigned int i=0;i<x.size();i++)
+	  v[i] += x[i]*x[i];
+      }
+      
+      m /= NSAMPLES;
+      v /= NSAMPLES;
+      
+      for(unsigned int i=0;i<m.size();i++){
+	v[i] -= m[i]*m[i];
+	v[i] = sqrt(v[i]); // st.dev.
+      }
+      
+      // normalizes mean to be zero and st.dev. / variance to be one
+      for(unsigned int s=0;s<NSAMPLES;s++){
+	auto x = samples[s];
+	x -= m;
+	
+	for(unsigned int i=0;i<x.size();i++)
+	  x[i] /= v[i];
+	
+	samples[s] = x;
+      }
+    }
+
+    saveSamples("splinecurve.txt", samples);
+  }
+  
+}
+
+  
+bool saveSamples(const std::string& filename, std::vector< math::vertex< math::blas_real<double> > >& samples)
+{
+  // once data has been generated saves it to disk for inspection that is has been generated correctly
+  // stores the results into file for inspection
+  FILE* fp = fopen(filename.c_str(), "wt");
+
+  for(unsigned int i=0;i<samples.size();i++){
+    for(unsigned int n=0;n<samples[i].size();n++)
+      fprintf(fp, "%f ", samples[i][n].c[0]);
+    fprintf(fp, "\n");
+  }
+  
+  fclose(fp);
+
+  return true;
 }
 
 

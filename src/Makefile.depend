@@ -111,12 +111,12 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  math/integer.h math/blade_math.h math/integer.h math/gvertex.h \
  math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
  math/quaternion.h math/gvertex.cpp math/matrix_rotations.h math/norms.h \
- math/BFGS.h neuralnetwork/optimized_function.h \
- neuralnetwork/BFGS_nnetwork.h neuralnetwork/nnetwork.h conffile.h \
- dataset.h math/ica.h neuralnetwork/pBFGS_nnetwork.h \
- neuralnetwork/BFGS_nnetwork.h math/LBFGS.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
- neuralnetwork/LBFGS_nnetwork.h math/RNG.h math/RNG.cpp math/RNG.h \
+ neuralnetwork/GBRBM.h math/RNG.h math/RNG.cpp math/RNG.h math/BFGS.h \
+ neuralnetwork/optimized_function.h neuralnetwork/BFGS_nnetwork.h \
+ neuralnetwork/nnetwork.h conffile.h dataset.h math/ica.h \
+ neuralnetwork/pBFGS_nnetwork.h neuralnetwork/BFGS_nnetwork.h \
+ math/LBFGS.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/pLBFGS_nnetwork.h neuralnetwork/LBFGS_nnetwork.h \
  neuralnetwork/lreg_nnetwork.h neuralnetwork/nnetwork_function.h \
  neuralnetwork/optimized_function.h array.h container.h static_array.h \
  static_array.cpp dynamic_array.h stack.h queue.h dynamic_array.cpp \

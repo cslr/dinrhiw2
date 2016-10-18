@@ -4,16 +4,8 @@ Neuromancer/Resonanz Requirements:
 
 * GB-RBM and BB-RBM
 
-   - bayesian GB-RBM for pictures (support png files)
 
-     => picture RBM "interpolation", picture synthesis from feature vectors
-        (learning image synthesizer for resonanz)
-
-   - bayesian BB-RBM
-
-   - stacked RBM => neural network pretraining
-
-   - multilayer stacked RBM autoencoder for pictures
+ - implement and test BBRBM.cpp (from RBM.cpp)
 
 
 LATER (multistep optimization):
