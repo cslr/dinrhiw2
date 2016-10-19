@@ -127,7 +127,7 @@ float RNG<T>::rnor() const
         int hz = (signed)(this->*rdrand32)();
 	unsigned int iz = hz & 127;
 
-	if(abs(hz) < kn[iz]){
+	if((unsigned)abs(hz) < kn[iz]){
 		return hz*wn[iz];
 	}
 	else{
