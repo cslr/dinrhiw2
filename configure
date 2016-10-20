@@ -3974,7 +3974,7 @@ $as_echo_n "checking CPU family... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpufamily" >&5
 $as_echo "$cpufamily" >&6; }
 
-optimization_flags="-O3 -ffast-math"
+optimization_flags="-O2 -ffast-math"
 conf_flags=""
 
 if [ $cpufamily = "x86_64" ]; then

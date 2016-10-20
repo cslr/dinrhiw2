@@ -97,7 +97,7 @@ AC_MSG_CHECKING([CPU family])
 AC_MSG_RESULT($cpufamily)
 
 dnl enables CPU specific optimization flags
-optimization_flags="-O3 -ffast-math"
+optimization_flags="-O2 -ffast-math"
 conf_flags=""
 
 if [[ $cpufamily = "x86_64" ]]; then

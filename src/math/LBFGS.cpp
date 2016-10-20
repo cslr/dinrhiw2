@@ -265,10 +265,10 @@ namespace whiteice
     	vertex<T> s, q;
 
     	T y          = besty;
-    	T ratio      = T(1.0f);
+    	//T ratio      = T(1.0f);
 
     	std::list<T> ratios;
-    	bool reset = false;
+    	// bool reset = false;
 
     	unsigned int M = 15; // history size
     	std::list< vertex<T> > yk;
@@ -283,28 +283,41 @@ namespace whiteice
     			// the real error starts to increase
 
     			if(overfit == false){
-    				ratio = y/besty;
+			        //ratio = y;
 
-    				ratios.push_back(ratio);
-
+    				ratios.push_back(besty);
+				
     				while(ratios.size() > 10)
     					ratios.pop_front();
 
-    				T mean_ratio = 1000.0f;
-    				// T inv = 1.0f/ratios.size();
+    				T min_ratio = 1000.0f;
+				T mean_ratio = 0.0f;
+				T inv = 1.0f/ratios.size();
 
-    				for(auto& r : ratios)
-    					if(r < mean_ratio)
-    						mean_ratio = r; // min
+    				for(auto r : ratios){
+				  r /= besty;
+				  if(r < min_ratio)
+				    min_ratio = r; // min
+
+				  mean_ratio += r*inv;
+				}
 
     				// mean_ratio = math::pow(mean_ratio, inv);
     				// std::cout << "ratio = " << mean_ratio << std::endl;
+				// std::cout << "ratio = " << mean_ratio << std::endl;
 
-    				// 20% increase from the minimum found
+				
+    				// 50% increase from the minimum found
+    				//if(mean_ratio > T(1.50f) && iterations > 25){
+				//  break;
+    				//}
 
-    				if(mean_ratio > T(1.20f) && iterations > 25){
-    					break;
-    				}
+				// std::cout << "mean ratio: " << mean_ratio << std::endl;
+				
+				if(mean_ratio < T(1.005f) && iterations > 10){
+				  solution_converged = true; // last 10 iterations showed less than 0.5% change..
+				  break;
+				}
     			}
 
     			////////////////////////////////////////////////////////////
@@ -379,6 +392,7 @@ namespace whiteice
     				yk.clear();
     				rk.clear();
 
+#if 0
     				if(reset == false){
     					reset = true;
     					iterations++;
@@ -387,13 +401,22 @@ namespace whiteice
     				else{
     					// there was reset during the last iteration and
     					// we still cannot improve the result
-    					solution_converged = true;
-    					break; // we stop computation as we cannot find better solution
+				        {
+					  // solution has converged
+					  
+					  solution_converged = true;
+					  
+					  break; // we stop computation as we cannot find better solution
+					}
     				}
+#endif
     			}
+#if 0
     			else{
     				reset = false;
     			}
+#endif
+
 	  
 
     			heuristics(xn); // heuristically improve proposed next xn (might break L-BFGS algorithm!!)
@@ -404,6 +427,7 @@ namespace whiteice
 
     			// y = U(xn);
     			y = getError(xn);
+
 			
     			if(y < besty){
     				std::lock_guard<std::mutex> lock(solution_mutex);
@@ -413,7 +437,11 @@ namespace whiteice
 	  
     			s = xn - x;
     			vertex<T> yy = Ugrad(xn) - g; // Ugrad(xn) - Ugrad(x)
-    			T r = T(1.0f)/(s*yy)[0];
+			auto syy = (s*yy)[0];
+
+			T r = T(10e10f); // division by zero work-a-round..
+			if(abs(syy) > T(0.0))
+			  r = T(1.0f)/syy;
 
     			sk.push_front(s);
     			yk.push_front(yy);

@@ -1,5 +1,7 @@
 /*
  * simple tests
+ *
+ * Tomas Ukkonen
  */
 
 #include "HC.h"
@@ -29,6 +31,7 @@
 #include "HMCGBRBM.h"
 #include "PTHMCGBRBM.h"
 #include "CRBM.h"
+#include "LBFGS_GBRBM.h"
 
 #include "DBN.h"
 
@@ -69,6 +72,8 @@ void lreg_nnetwork_test();
 
 void rbm_test();
 
+void lbfgs_rbm_test();
+
 void dbn_test();
 
 void bayesian_nnetwork_test();
@@ -102,10 +107,11 @@ int main()
   printf("seed = %x\n", seed);
   srand(seed);
   
-
   try{
+    
+    // dbn_test();
 
-    dbn_test();
+    lbfgs_rbm_test();
 
     // rbm_test();
     
@@ -348,9 +354,10 @@ void hmc_test()
 /************************************************************/
 /* restricted boltzmann machines tests */
 
-void rbm_test()
+
+void lbfgs_rbm_test()
 {
-	std::cout << "GB-RBM UNIT TEST" << std::endl;
+	std::cout << "LBFGS GB-RBM OPTIMIZATION TEST" << std::endl;
 
 #ifdef __linux__
 	// LINUX
@@ -373,11 +380,10 @@ void rbm_test()
 
 
 
-#if 0
 
 	// generates test data: a D dimensional sphere with gaussian noise and tests that GB-RBM can correctly learn it
 	{
-		std::cout << "Generating data.." << std::endl;
+		std::cout << "Generating spherical data.." << std::endl;
 
 		unsigned int DIMENSION = 2; // mini-image size (16x16 = 256)
 
@@ -422,9 +428,237 @@ void rbm_test()
 			m /= (double)samples.size();
 			v /= (double)samples.size();
 
-			for(unsigned int j=0;j<v.size();j++)
+			for(unsigned int j=0;j<v.size();j++){
 				v[j] -= m[j]*m[j];
+				v[j] = sqrt(v[j]);
+			}
 
+
+			// normalizes mean and variance of data
+			for(unsigned int s=0;s<samples.size();s++){
+			  auto x = samples[s];
+			  x -= m;
+			  
+			  for(unsigned int i=0;i<x.size();i++){
+			    x[i] /= v[i];
+			  }
+			  
+			  samples[s] = x;
+			}
+
+			for(unsigned int i=0;i<var.size();i++){
+			  var[i] = math::sqrt(var[i])/v[i];
+			  var[i] = var[i]*var[i];
+			}
+			
+		}
+
+
+		std::cout << "Learning GB-RBM parameters using LBFGS (2nd order optimization).." << std::endl;
+		
+		whiteice::GBRBM< math::blas_real<double> > gbrbm;
+		whiteice::dataset< math::blas_real<double> > ds;
+		
+		gbrbm.resize(DIMENSION, 10); // 100 hidden nodes should be enough..
+		gbrbm.initializeWeights();
+		gbrbm.setUData(samples);
+
+		ds.createCluster("input", DIMENSION);
+		ds.add(0, samples);
+
+		math::vertex< math::blas_real<double> > x0;
+		//gbrbm.setVariance(var); // presets variance to correct values..
+		gbrbm.getParametersQ(x0);
+
+		const unsigned int NUMSOLVERS = 100;
+
+		whiteice::LBFGS_GBRBM< math::blas_real<double> >* optimizer[NUMSOLVERS];
+
+		math::vertex< math::blas_real<double> > x;
+		math::blas_real<double> error;
+		int last_iter = -1;
+		unsigned int iters = 0;
+
+		for(unsigned int i=0;i<NUMSOLVERS;i++){
+		  auto temperature = 1.0;
+		  // if(NUMSOLVERS > 1) temperature = i/((double)(NUMSOLVERS-1));
+		  
+		  if((i & 1) == 0){
+		    std::cout << i << ": Optimization of variance." << std::endl;
+		    gbrbm.setLearnVarianceMode();
+		  }
+		  else{
+		    std::cout << i << ": Optimization of main variables." << std::endl;
+		    gbrbm.setLearnParametersMode();
+		  }
+
+		  
+		  std::cout << "Optimization at temperature: " << temperature << std::endl;
+		  gbrbm.setUTemperature(temperature);
+		  gbrbm.getParametersQ(x0);
+		  
+		  optimizer[i] = new whiteice::LBFGS_GBRBM< math::blas_real<double> >(gbrbm, ds, false);
+		  optimizer[i]->minimize(x0);
+
+		  last_iter = -1;
+		  iters = 0;
+		  
+		  while(true){
+		    if(!optimizer[i]->isRunning() || optimizer[i]->solutionConverged()){
+		      break;
+		    }
+		    
+		    optimizer[i]->getSolution(x, error, iters);
+		      
+		    if((signed)iters > last_iter){
+		      printf("%d ITERATIONS. LBFGS RECONSTRUCTION ERROR: %f\n", iters, error.c[0]);
+		      if(gbrbm.setParametersQ(x) == false)
+			printf("setParametersQ() error\n");
+		      
+		      // math::vertex< math::blas_real<double> > v;
+		      // gbrbm.getVariance(v);
+		      // std::cout << "Variance: " << v << std::endl;
+		      
+		      fflush(stdout);
+		      last_iter = iters;
+		    }
+		      
+		    sleep(1);
+		  }
+
+		  
+		}
+		
+		//printf("%d IS RUNNING. %d SOLUTION CONVERGED\n", optimizer.isRunning(), optimizer.solutionConverged());
+
+		auto bestx = x;
+		auto besterror = error;
+		optimizer[0]->getSolution(x, error, iters);
+
+		for(unsigned int i=0;i<NUMSOLVERS;i++){
+		  optimizer[i]->getSolution(x, error, iters);
+		  if(error < besterror){
+		    besterror = error;
+		    bestx = x;
+		  }
+		}
+		
+		gbrbm.setParametersQ(bestx);
+		
+		auto rdata = samples;
+		rdata.clear();
+		
+		// samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+		gbrbm.sample(1000, rdata, samples); 
+
+		std::cout << "Storing reconstruct (circle) results to disk.." << std::endl;
+
+		saveSamples("gbrbm_lbfgs_sphere_input.txt", samples);
+		saveSamples("gbrbm_lbfgs_sphere_output.txt", rdata);
+
+		rdata = samples;
+		
+		// calculates reconstruction v -> h -> v
+		gbrbm.reconstructData(rdata);
+
+		saveSamples("gbrbm_lbfgs_sphere_output2.txt", rdata);
+	}
+	
+}
+
+
+
+void rbm_test()
+{
+	std::cout << "GB-RBM UNIT TEST" << std::endl;
+
+#ifdef __linux__
+	// LINUX
+	{
+	  feenableexcept(FE_INVALID |
+			 FE_DIVBYZERO);
+	  //			 FE_OVERFLOW |  FE_UNDERFLOW);
+	}
+	
+#else
+	// WINDOWS
+	{
+		_clearfp();
+		unsigned unused_current_word = 0;
+		// clearing the bits unmasks (throws) the exception
+		_controlfp_s(&unused_current_word, 0,
+			     _EM_INVALID | _EM_OVERFLOW | _EM_ZERODIVIDE);  // _controlfp_s is the secure version of _controlfp
+	}
+#endif
+
+
+
+
+#if 0
+
+	// generates test data: a D dimensional sphere with gaussian noise and tests that GB-RBM can correctly learn it
+	{
+		std::cout << "Generating spherical data.." << std::endl;
+
+		unsigned int DIMENSION = 2; // mini-image size (16x16 = 256)
+
+		std::vector< math::vertex< math::blas_real<double> > > samples;
+		math::vertex< math::blas_real<double> > var;
+
+		var.resize(DIMENSION);
+
+		for(unsigned int i=0;i<DIMENSION;i++){
+			var[i] = 1.0 + log((double)(i+1));
+		}
+
+		whiteice::RNG< math::blas_real<double> > rng;
+
+		{
+			// generates data for D (D-1 area) dimensional hypersphere
+
+			math::vertex< math::blas_real<double> > m, v;
+			m.resize(DIMENSION);
+			v.resize(DIMENSION);
+
+			for(unsigned int i=0;i<10000;i++){
+				math::vertex< math::blas_real<double> > s;
+				s.resize(DIMENSION);
+				rng.normal(s);
+				s.normalize(); // sample from unit hypersphere surface
+
+				// 5x larger radius than the largest variance [to keep noise separated]
+				s *= 5.0*math::sqrt(var[var.size()-1]);
+
+				// adds variance
+				for(unsigned int d=0;d<DIMENSION;d++)
+					s[d] = s[d] + rng.normal()*math::sqrt(var[d]);
+
+				samples.push_back(s);
+
+				m += s;
+				for(unsigned int j=0;j<s.size();j++)
+					v[j] += s[j]*s[j];
+			}
+
+			m /= (double)samples.size();
+			v /= (double)samples.size();
+
+			for(unsigned int j=0;j<v.size();j++){
+				v[j] -= m[j]*m[j];
+				v[j] = sqrt(v[j]);
+			}
+
+			// normalizes mean and variance of data to zero
+			for(unsigned int s=0;s<samples.size();s++){
+			  auto x = samples[s];
+			  x -= m;
+			  
+			  for(unsigned int i=0;i<x.size();i++)
+			    x[i] /= v[i];
+			  
+			  samples[s] = x;
+			}
+			
 		}
 
 		std::cout << "Learning RBM parameters.." << std::endl;
@@ -451,9 +685,10 @@ void rbm_test()
 			math::blas_real<double> min_error = INFINITY;
 			int last_checked_index = 0;
 
+			std::cout << "HMC-GBRBM sampling.." << std::endl;
+
 			while(hmc.getNumberOfSamples() < 2000){
-				sleep(1);
-				std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
+				sleep(1);				
 				if(hmc.getNumberOfSamples() > 0){
 					std::vector< math::vertex< math::blas_real<double> > > qsamples;
 
@@ -464,6 +699,8 @@ void rbm_test()
 					// [get the most recent sample and try to calculate log probability]
 
 					if(qsamples.size()-last_checked_index > 5){
+					        std::cout << "HMC-GBRBM number of samples: " << hmc.getNumberOfSamples() << std::endl;
+					  
 						// hmc.getRBM().sample(1000, current_data, samples);
 						math::blas_real<double> mean = 0.0;
 
@@ -522,49 +759,31 @@ void rbm_test()
 		}
 #endif
 
-
+		
 		whiteice::GBRBM< math::blas_real<double> > rbm;
-		rbm.resize(DIMENSION, 50);
+		rbm.resize(DIMENSION, 20); // 20 hidden units..
 		// rbm.setVariance(best_variance);
+		
+		rbm.learnWeights(samples, 100, true, false); // try to learn variance (models noise term)
+		// rbm.setParametersQ(best_q);
 
 		auto rdata = samples;
-
-		// rbm.learnWeights(samples, 100, true, false);
-		rbm.setParametersQ(best_q);
 		rdata.clear();
-		rbm.sample(1000, rdata, samples); // samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+		
+		// samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
+		rbm.sample(1000, rdata, samples); 
 
-		std::cout << "Storing reconstruct results to disk.." << std::endl;
+		std::cout << "Storing reconstruct (circle) results to disk.." << std::endl;
 
-		// stores the results into file for inspection
-		FILE* fp = fopen("gbrbm_input.txt", "wt");
-		for(unsigned int i=0;i<samples.size();i++){
-			for(unsigned int n=0;n<samples[i].size();n++)
-				fprintf(fp, "%f ", samples[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
-
-		fp = fopen("gbrbm_output.txt", "wt");
-		for(unsigned int i=0;i<rdata.size();i++){
-			for(unsigned int n=0;n<rdata[i].size();n++)
-				fprintf(fp, "%f ", rdata[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
+		saveSamples("gbrbm_sphere_input.txt", samples);
+		saveSamples("gbrbm_sphere_output.txt", rdata);
 
 		rdata = samples;
-		rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
+		// rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
 
+		rbm.reconstructData(rdata);
 
-		fp = fopen("gbrbm_output2.txt", "wt");
-		for(unsigned int i=0;i<rdata.size();i++){
-			for(unsigned int n=0;n<rdata[i].size();n++)
-				fprintf(fp, "%f ", rdata[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
-
+		saveSamples("gbrbm_sphere_output2.txt", rdata);
 	}
 #endif
 
@@ -788,7 +1007,7 @@ void rbm_test()
 		auto rdata = samples;
 
 		// rbm.setParametersQ(best_q);
-		rbm.learnWeights(samples, 1000, true, true); // also try to learn variances..
+		rbm.learnWeights(samples, 500, true, true);
 		rdata.clear();
 
 		// samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]
@@ -798,34 +1017,15 @@ void rbm_test()
 		std::cout << "Storing reconstruct results to disk.." << std::endl;
 
 		// stores the results into file for inspection
-		FILE* fp = fopen("gbrbm_input.txt", "wt");
-		for(unsigned int i=0;i<samples.size();i++){
-			for(unsigned int n=0;n<samples[i].size();n++)
-				fprintf(fp, "%f ", samples[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
 
-		fp = fopen("gbrbm_output.txt", "wt");
-		for(unsigned int i=0;i<rdata.size();i++){
-			for(unsigned int n=0;n<rdata[i].size();n++)
-				fprintf(fp, "%f ", rdata[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
-
+		saveSamples("gbrbm_input.txt", samples);
+		saveSamples("gbrbm_output.txt", rdata);
+		
 		rdata = samples;
 		// rbm.reconstructDataBayesQ(rdata, qsamples);	 // calculates reconstruction v -> h -> v
 		rbm.reconstructData(rdata);
-		
 
-		fp = fopen("gbrbm_output2.txt", "wt");
-		for(unsigned int i=0;i<rdata.size();i++){
-			for(unsigned int n=0;n<rdata[i].size();n++)
-				fprintf(fp, "%f ", rdata[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
+		saveSamples("gbrbm_output2.txt", rdata);
 	}
 
 	return;

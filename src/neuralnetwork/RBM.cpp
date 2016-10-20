@@ -12,7 +12,7 @@ namespace whiteice
     v.resize(2);
     h.resize(2);
     W.resize(2,2);
-    
+
     initializeWeights();
   }
   

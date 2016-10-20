@@ -57,7 +57,7 @@ class BBRBM {
   // but higher number of EPOCHS mean data calculations can take longer (higher quality)
   T learnWeights(const std::vector< math::vertex<T> >& samples,
 		 const unsigned int EPOCHS=1,
-		 bool verbose = false, bool learnVariance = false);
+		 bool verbose = false);
   
   ////////////////////////////////////////////////////////////
   
@@ -69,10 +69,8 @@ class BBRBM {
  private:
   math::vertex<T> h, v;
   
-  math::vertex<T> a, b;
   math::matrix<T> W;
-  
-  
+  math::vertex<T> a, b;
 };
 
  

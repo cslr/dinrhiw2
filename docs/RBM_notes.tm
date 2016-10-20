@@ -349,7 +349,7 @@
 
     =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*h<rsub|i>>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>+<around*|(|<around*|(|v+p+1|)>/2|)>*log<around*|(|<around*|\||\<Sigma\>|\|>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>+<around*|(|<around*|(|v+p+1|)>/2|)>*log<around*|(|<around*|\||\<Sigma\>|\|>|)>+<frac|1|2><big|sum><rsub|i><frac|1|\<sigma\><rsup|2><rsub|i>>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
   </math>
 
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
@@ -419,6 +419,19 @@
   minimum <math|v=p> so that mean of inverse wishart prior/regularizer so
   degrees of freedom is minimized and variance is maximized (maximum
   unceretainty).
+
+  Alternative variable change: (<math|e<rsup|-z<rsub|i>>=1/\<sigma\><rsub|i>>)
+  (without Wishart prior)
+
+  <\math>
+    F<around*|(|v|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
+
+    =<frac|1|2><big|sum><rsub|i><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-2*z<rsub|i>>-<big|sum><rsub|j>log<around|(|1+exp<around*|(|<big|sum><rsub|k>w<rsub|k*j>*v<rsub|k>*e<rsup|-z<rsub|k>>+b<rsub|j>|)>|)>
+  </math>
+
+  \;
+
+  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-e<rsup|-2*z<rsub|i>>*<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>+e<rsup|-z<rsub|i>>><math|*v<rsub|i><big|sum><rsub|j>*w<rsub|i*j>*sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j>>
 
   \;
 

@@ -68,6 +68,11 @@ public:
     bool setLogVariance(const math::vertex<T>& z);
     bool getLogVariance(math::vertex<T>& z) const;
 
+    // Ugrad..
+    void setLearnVarianceMode();
+    void setLearnParametersMode(); // other than variance
+    void setLearnBothMode(); // learn both variance and parameteres
+
     bool initializeWeights(); // initialize weights to small values
 
     // calculates single epoch for updating weights using CD-1 and
@@ -114,6 +119,10 @@ public:
 
     // sets (W, a, b, z) parameters according to q vector
     bool setParametersQ(const math::vertex<T>& q);
+    bool getParametersQ(math::vertex<T>& q) const;
+
+    // keeps parameters within sane values so that computations dont run into errors
+    void safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& z, math::matrix<T>& W) const;
 
     T U(const math::vertex<T>& q) const throw(); // calculates U(q) = -log(P(data|q))
 
@@ -200,6 +209,8 @@ private:
 	std::vector< math::vertex<T> > Usamples;
 	math::vertex<T> Umean, Uvariance;
 	T temperature;
+
+        unsigned int learningMode; // learn-both = 0, learn-parameters (other than variance) = 1, learn-variance = 2
 
 	RNG<T> rng;
 };

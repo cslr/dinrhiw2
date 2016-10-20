@@ -29,6 +29,9 @@ GBRBM<T>::GBRBM()
 	h.zero();
 	v.zero();
 
+	temperature = T(1.0); // untemperatured T=1.0 error function U() ..
+	learningMode = 0;
+
 	initializeWeights();
 }
 
@@ -42,6 +45,16 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
+
+	this->data_mean = rbm.data_mean;
+	this->data_var  = rbm.data_var;
+	
+	this->Usamples = rbm.Usamples;
+	this->Umean = rbm.Umean;
+	this->Uvariance = rbm.Uvariance;
+	this->temperature = rbm.temperature;
+
+	this->learningMode = rbm.learningMode;
 }
 
 // creates 2-layer: V * H network
@@ -59,6 +72,9 @@ GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_ar
     b.resize(hidden);
     z.resize(visible);
     W.resize(visible, hidden);
+
+    temperature = T(1.0); // un temperatured error U() function..
+    learningMode = 0;
 
     initializeWeights();
 }
@@ -78,6 +94,16 @@ GBRBM<T>& GBRBM<T>::operator=(const GBRBM<T>& rbm)
 
 	this->v = rbm.v;
 	this->h = rbm.h;
+
+	this->data_mean = rbm.data_mean;
+	this->data_var  = rbm.data_var;
+	
+	this->Usamples = rbm.Usamples;
+	this->Umean = rbm.Umean;
+	this->Uvariance = rbm.Uvariance;
+	this->temperature = rbm.temperature;
+
+	this->learningMode = rbm.learningMode;
 
 	return (*this);
 }
@@ -297,6 +323,8 @@ bool GBRBM<T>::setParameters(const math::matrix<T>& W, const math::vertex<T>& a,
 	for(unsigned int j=0;j<var.size();j++)
 		z[j] = math::log(var[j]);
 
+	safebox(this->a, this->b, this->z, this->W);
+
 	return true;
 }
 
@@ -415,7 +443,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 	T error = reconstruct_gbrbm_data_error(samples, 1000, W, a, b, z, CDk);
 	// auto pratio         = p_ratio(samples, random_samples);
-	auto pratio = 1.0;
+	// auto pratio = 1.0;
 	// errors.push_back(math::exp(pratio));
 	errors.push_back(error);
 
@@ -437,11 +465,10 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 		
 		vv /= var.size();
 
-		std::cout << "START " << epoch <<
-			". R: " << error <<
-			" R-ratio: " << r_ratio <<
-			//" log(P) : " << logp <<
-			" P-ratio: " << pratio << " Variance: " << vv << std::endl;
+		std::cout << "START " << epoch
+			  << ". R: " << error 
+			  << " R-ratio: " << r_ratio 
+			  << " Variance: " << vv << std::endl;
 	}
 
 	auto best_error = error;
@@ -456,7 +483,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	{
 	  
 // #pragma omp parallel for schedule(dynamic) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
-		for(unsigned int i=0;i<1000;i++){
+	          for(unsigned int i=0;i<100;i++){
 		        math::vertex<T> aa, bb, zz;
 			math::matrix<T> WW;
 
@@ -469,7 +496,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			}
 		        
 			// goes through data and calculates gradient
-			const unsigned int NUM_SAMPLES = 100;
+			const unsigned int NUM_SAMPLES = 50; /// was 100
 
 			// negative phase Emodel[gradient]
 			std::vector< math::vertex<T> > vs;
@@ -506,12 +533,21 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 				const auto& x = vs[i];
 
 				for(unsigned int j=0;j<z.size();j++){
-					var[j] = math::exp(-zz[j]);
-					varx[j] = math::exp(-zz[j]/T(2.0))*x[j];
+				  var[j] = math::exp(-zz[j]);
+				  varx[j] = math::exp(-zz[j]/T(2.0))*x[j];
 				}
 
 				math::vertex<T> y; // y = hidden state
 				sigmoid( (varx * WW) + bb, y);
+
+				// hack: discretizes y (hidden state)
+				{
+				  for(unsigned int i=0;i<y.size();i++){
+				    T r = rng.uniform();
+				    if(r <= y[i]) y[i] = T(1.0);
+				    else y[i] = T(0.0);
+				  }
+				}
 
 				// calculates gradients [negative phase]
 				math::vertex<T> xa(x - aa);
@@ -528,8 +564,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 				math::vertex<T> wy = WW*y;
 
 				for(unsigned int j=0;j<zz.size();j++){
-				  gz[j] = -T(2.0*zz.size() + 3.0)/T(2.0) + 
-				    math::exp(-zz[j])*T(0.5)*(T(1.0) + xa[j]*xa[j]) - math::exp(-zz[j]/T(2.0))*T(0.5)*x[j]*wy[j];
+				  gz[j] = math::exp(-zz[j])*T(0.5)*(xa[j]*xa[j]) - math::exp(-zz[j]/T(2.0))*T(0.5)*x[j]*wy[j];
 				}
 
 				da += ga;
@@ -563,11 +598,22 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				auto xa = (x - aa);
 
-				for(unsigned int j=0;j<var.size();j++)
-					varx[j] = math::exp(-zz[j]/T(2.0))*x[j];
+				for(unsigned int j=0;j<var.size();j++){
+				  varx[j] = math::exp(-zz[j]/T(2.0))*x[j];
+				}
 
 				math::vertex<T> y; // y = hidden state
 				sigmoid( (varx * WW) + bb, y);
+
+				
+				// hack: discretizes y (hidden state)
+				{
+				  for(unsigned int i=0;i<y.size();i++){
+				    T r = rng.uniform();
+				    if(r <= y[i]) y[i] = T(1.0);
+				    else y[i] = T(0.0);
+				  }
+				}
 
 				for(unsigned int j=0;j<x.size();j++)
 					ta[j] += var[j]*xa[j];
@@ -577,8 +623,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				auto wy = WW*y;
 				for(unsigned int j=0;j<zz.size();j++){
-				  tz[j] += -T(2.0*zz.size() + 3.0)/T(2.0) + 
-				    math::exp(-zz[j])*T(0.5)*(T(1.0) + xa[j]*xa[j]) - math::exp(-zz[j]/T(2.0))*T(0.5)*x[j]*wy[j];
+				  tz[j] += math::exp(-zz[j])*T(0.5)*(xa[j]*xa[j]) - math::exp(-zz[j]/T(2.0))*T(0.5)*x[j]*wy[j];
 				}
 			}
 
@@ -587,21 +632,23 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			tz /= T(NUM_SAMPLES);
 			tW /= T(NUM_SAMPLES);
 
-
-			auto ga = ta - da;
-			auto gb = tb - db;
-			auto gz = tz - dz;
-			auto gW = tW - dW;
+			// g terms are into direction that minimizes P(v)/free-energy
+			auto ga = (ta - da);
+			auto gb = (tb - db);
+			auto gz = (tz - dz);
+			auto gW = (tW - dW);
 
 			// if we learn variance, alter between variance and other parameters when updating parameters
 			if(learnVariance == false){
 			  gz.zero();
 			}
 			else{
-			  ga.zero();
-			  gb.zero();
-			  gW.zero();
+			  //ga.zero();
+			  //gb.zero();
+			  //gW.zero();
 			}
+
+			// gz = -gz; // change direction of gz
 
 			// now we have gradients
 
@@ -625,48 +672,48 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			  T lrate2 = lrate, lrate2z = lratez;
 
-#pragma omp parallel for schedule(dynamic)		  
+#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
 			  for(unsigned int j=0;j<3;j++){
-#pragma omp parallel for schedule(dynamic)
-			    for(unsigned int i=0;i<3;i++){
+			    //#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
+			    //for(unsigned int i=0;i<3;i++){
 			      T lrate1 = lrate, lrate1z = lratez;
 
 #pragma omp critical			      
 			      if(j==0){
-				a1 = aa - coef1*lrate*ga;
-				b1 = bb - coef1*lrate*gb;
-				W1 = WW - coef1*lrate*gW;
+				a1 = aa + coef1*lrate*ga;
+				b1 = bb + coef1*lrate*gb;
+				W1 = WW + coef1*lrate*gW;
 				lrate1 = coef1*lrate;
 			      }
 			      else if(j==1){
-				a1 = aa - coef2*lrate*ga;
-				b1 = bb - coef2*lrate*gb;
-				W1 = WW - coef2*lrate*gW;
+				a1 = aa + coef2*lrate*ga;
+				b1 = bb + coef2*lrate*gb;
+				W1 = WW + coef2*lrate*gW;
 				lrate1 = coef2*lrate;
 			      }
 			      else if(j==2){
-				a1 = aa - coef3*lrate*ga;
-				b1 = bb - coef3*lrate*gb;
-				W1 = WW - coef3*lrate*gW;
+				a1 = aa + coef3*lrate*ga;
+				b1 = bb + coef3*lrate*gb;
+				W1 = WW + coef3*lrate*gW;
 				lrate1 = coef3*lrate;
 			      }
 
  #pragma omp critical
-			      if(i==0){
-				z1 = zz - coef1*lratez*gz;
+			      if(j==0){
+				z1 = zz + coef1*lratez*gz;
 				lrate1z = coef1*lratez;
 			      }
-			      else if(i==1){
-				z1 = zz - coef2*lratez*gz;
+			      else if(j==1){
+				z1 = zz + coef2*lratez*gz;
 				lrate1z = coef2*lratez;
 			      }
-			      else if(i==2){
-				z1 = zz - coef3*lratez*gz;
+			      else if(j==2){
+				z1 = zz + coef3*lratez*gz;
 				lrate1z = coef3*lratez;
 			      }
 
 			      // only this function call will happen in parallel..
-			      T error = reconstruct_gbrbm_data_error(samples, 20, W1, a1, b1, z1, CDk);
+			      T error = reconstruct_gbrbm_data_error(samples, 10, W1, a1, b1, z1, CDk); /// was 50
 
 #pragma omp critical			      
 			      if(error < smallest_error){
@@ -678,7 +725,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 				lrate2 = lrate1;
 				lrate2z = lrate1z;
 			      }
-			    }
+			      //}
 			  }
 
 			  {
@@ -690,28 +737,21 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			    lratez = lrate2z;
 			  }
 			}
+
 		}
 
 		{
-			error = reconstruct_gbrbm_data_error(samples, 1000, W, a, b, z, CDk);
+			error = reconstruct_gbrbm_data_error(samples, 250, W, a, b, z, CDk);
 			// auto pratio         = p_ratio(samples, random_samples);
-			auto pratio = 1.0;
+			// auto pratio = 1.0;
 			// errors.push_back(math::exp(pratio));
 			errors.push_back(error);
-
-			if(error < best_error){
-				best_error = error;
-				best_a = a;
-				best_b = b;
-				best_W = W;
-				best_z = z;
-			}
 
 			T statistic = T(0.0);
 
 			// check for convergence
-			if(errors.size() > 10){
-				while(errors.size() > 20)
+			if(errors.size() > 20){
+				while(errors.size() > 30)
 					errors.pop_front();
 
 				auto me = T(0.0);
@@ -728,14 +768,14 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				statistic = sqrt(ve)/me;
 
-				if(statistic <= T(0.05)) // (real) st.dev. is 5% of the mean
+				if(statistic <= T(0.01)) // (real) st.dev. is 1% of the mean
 					convergence = true;
 			}
 
 			if(verbose){
 				math::vertex<T> var;
 
-				auto rerror = reconstruct_gbrbm_data_error(random_samples, 1000, W, a, b, z, CDk);
+				auto rerror = reconstruct_gbrbm_data_error(random_samples, 250, W, a, b, z, CDk);
 				auto r_ratio        = (error/rerror);
 				//auto logp           = logProbability(samples);
 				
@@ -750,15 +790,33 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 				vv /= T(var.size());
 
 				std::cout << "EPOCH " << epoch <<
-						". R: " << error <<
-						" R-ratio: " << r_ratio <<
-						//" log(P): " << logp <<
-						" P-ratio: " << pratio <<
-				                " Variance: " << vv <<
-				                " Statistic: " << statistic << std::endl;
+				  ". R: " << error <<
+				  " R-ratio: " << r_ratio <<
+				  //" log(P): " << logp <<
+				  // " P-ratio: " << pratio <<
+				  " Variance: " << vv <<
+				  " Learning Rates: " << lrate << " " << lratez << 
+				  " Statistic: " << statistic << std::endl;
 			}
 
 		}
+
+		
+		if(error < best_error){
+		  best_error = error;
+		  best_a = a;
+		  best_b = b;
+		  best_W = W;
+		  best_z = z;
+		}
+		else{ // reset to the best known solution (epoch starts from the best solution found so far..)
+		  a = best_a;
+		  b = best_b;
+		  W = best_W;
+		  z = best_z;
+		}
+
+
 
 		epoch++;
 	}
@@ -984,6 +1042,8 @@ bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
 		W.load_from_vertex(w);
 
+		safebox(a,b,z,W);
+
 		return true;
 	}
 	catch(std::exception& e){
@@ -993,11 +1053,59 @@ bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 
 
 
+// gets RBM machine's (W, a, b, z) parameters according to q vector
+template <typename T>
+bool GBRBM<T>::getParametersQ(math::vertex<T>& q) const
+{
+	try{
+	  convertParametersToQ(W, a, b, z, q);
+	  return true;
+	}
+	catch(std::exception& e){
+	  return false;
+	}
+}
+
+
+// keeps parameters within sane values so that computations dont run into errors
+template <typename T>
+void GBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& z, math::matrix<T>& W) const
+{
+  for(unsigned int i=0;i<a.size();i++){
+    if(isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
+    if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
+    if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
+  }
+
+  for(unsigned int i=0;i<b.size();i++){
+    if(isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
+    if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
+    if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
+  }
+
+  for(unsigned int j=0;j<W.ysize();j++){
+    for(unsigned int i=0;i<W.xsize();i++){
+      if(isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
+      if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
+      if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
+    }
+  }
+
+  for(unsigned int i=0;i<z.size();i++){
+    if(isnan(z[i])) z[i] = T(0.0); //printf("znan"); }
+    if(z[i] < T(-100.0)) z[i] = T(-100.0); //printf("zclip"); }
+    if(z[i] > T(+100.0)) z[i] = T(+100.0); //printf("zclip"); }
+  }
+  
+}
+
+
+
 
 template <typename T>
 T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
 {
-	const unsigned int NUMUSAMPLES = 10; // 1000 seem to work rather well
+        const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well
 
 	// FIXME this is incorrect as the calculation of U requires calculation of proper Z(v) and Z(theta)!
 
@@ -1017,6 +1125,8 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 			qW.load_from_vertex(qw);
 		}
 
+		safebox(qa, qb, qz, qW); // keeps parameters within sane values so that computations dont run into errors
+
 		// converts parameters to "temperized versions of themselves" (temperature E [0,1])
 		qW = temperature*qW;
 		qb = temperature*qb;
@@ -1025,16 +1135,29 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 			qa[i] = temperature*qa[i] + (T(1.0) - temperature)*Umean[i];
 			T v   = math::exp(qz[i]);
 			v     = temperature*v + (T(1.0) - temperature)*Uvariance[i];
-			qz[i] = math::log(v);
+			qz[i] = math::log(v + T(10e-100));
 		}
+
+		
+		// estimates logZ term [do not work]
+		// T logZ = T(0.0);
+		// ais(logZ, Umean, Uvariance, qW, qa, qb, qz);
 
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
+#pragma omp parallel for schedule(dynamic) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
-			u += -unscaled_log_probability(s, qW, qa, qb, qz);
+			auto ulp = -unscaled_log_probability(s, qW, qa, qb, qz);
+
+			// ulp += logZ;
+
+#pragma omp critical
+			{
+			  u += ulp;
+			}
 
 		}
 
@@ -1060,7 +1183,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(
 template <typename T>
 T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 {
-	const unsigned int NUMUSAMPLES = 10; // 1000 seem to work rather well
+	const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well
 
 	try{
 		// converts q to parameters [a, b, z, W]
@@ -1149,6 +1272,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
+#pragma omp parallel for schedule(dynamic) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
@@ -1157,7 +1281,10 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 			auto F1 = -unscaled_log_probability(s, qW1, qa1, qb1, qz1);
 			auto F2 = -unscaled_log_probability(s, qW2, qa2, qb2, qz2);
 
-			u += (F1 - F2) + aprox_logZratio;
+#pragma omp critical
+			{
+			  u += (F1 - F2) + aprox_logZratio;
+			}
 		}
 
 		u /= T(NUMUSAMPLES);
@@ -1182,7 +1309,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 template <typename T>
 whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
 {
-	const unsigned int NUMUSAMPLES = 10; // 1000 seem to work rather well..
+        const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well..
 	whiteice::math::vertex<T> grad(this->qsize());
 	grad.zero();
 
@@ -1202,6 +1329,8 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			qW.load_from_vertex(qw);
 		}
 
+		safebox(qa, qb, qz, qW); // keeps parameters within sane values so that computations dont run into errors
+
 		// converts parameters to "temperized versions of themselves" (temperature E [0,1])
 		qW = temperature*qW;
 		qb = temperature*qb;
@@ -1210,7 +1339,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			qa[i] = temperature*qa[i] + (T(1.0) - temperature)*Umean[i];
 			T v   = math::exp(qz[i]);
 			v     = temperature*v + (T(1.0) - temperature)*Uvariance[i];
-			qz[i] = math::log(v);
+			qz[i] = math::log(v + T(10e-100));
 		}
 
 		// calculates gradients for the data
@@ -1239,6 +1368,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 		}
 
 		// for(auto& v : Usamples){
+#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
 		for(unsigned int ui=0;ui<NUMUSAMPLES;ui++)
 		{
 			auto& v = Usamples[rng.rand()%Usamples.size()];
@@ -1255,6 +1385,17 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			math::vertex<T> h(qb.size());
 			sigmoid(sv*qW + qb, h);            // calculates h
 
+#if 0
+			// hack: discretizes h vector
+			{
+			  for(unsigned int i=0;i<h.size();i++){
+			    T r = rng.uniform();
+			    if(r <= h[i]) h[i] = T(1.0);
+			    else h[i] = T(0.0);
+			  }
+			}
+#endif
+
 			math::vertex<T> grad_b = h;
 
 			math::matrix<T> grad_W = sv.outerproduct(h);
@@ -1264,13 +1405,17 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			auto qWh = qW*h;
 
 			for(unsigned int i=0;i<qz.size();i++){
-				grad_z[i] = math::exp(-qz[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-qz[i]/2)*v[i]*qWh[i];
+			  grad_z[i] = 
+			    math::exp(-qz[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-qz[i]/2)*v[i]*qWh[i];
 			}
 
-			ga += grad_a;
-			gb += grad_b;
-			gz += grad_z;
-			gW += grad_W;
+#pragma omp critical
+			{
+			  ga += grad_a;
+			  gb += grad_b;
+			  gz += grad_z;
+			  gW += grad_W;
+			}
 		}
 
 		ga /= T(NUMUSAMPLES);
@@ -1290,17 +1435,24 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			// ais_sampling(vs, NEGSAMPLES, Umean, Uvariance, qa, qb, qz, qW);
 
 			// uses CD-1 to get samples [fast]
+#pragma omp parallel for schedule(dynamic) shared(vs)
 			for(unsigned int s=0;s<NEGSAMPLES;s++){
 				const unsigned int index = rng.rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
 
-				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 1); // gets x ~ p(v) from the model
-				vs.push_back(xx);
+				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 25); // gets x ~ p(v) from the model (CD-25)
+
+#pragma omp critical
+				{
+				  vs.push_back(xx);
+				}
 			}
 
 			const T scaling = T((double)1.0)/T((double)NEGSAMPLES);
 
-			for(auto& v : vs){
+#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
+			for(unsigned int i=0;i<vs.size();i++){
+			        const auto& v = vs[i];
 				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )
 
 				math::vertex<T> grad_a = (v-qa);
@@ -1314,6 +1466,17 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				math::vertex<T> h(qb.size());
 				sigmoid(sv*qW + qb, h);            // calculates h
 
+#if 0				
+				// hack: discretizes h vector
+				{
+				  for(unsigned int i=0;i<h.size();i++){
+				    T r = rng.uniform();
+				    if(r <= h[i]) h[i] = T(1.0);
+				    else h[i] = T(0.0);
+				  }
+				}
+#endif
+
 				math::vertex<T> grad_b = h;
 
 				math::matrix<T> grad_W = sv.outerproduct(h);
@@ -1323,7 +1486,9 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				auto qWh = qW*h;
 
 				for(unsigned int i=0;i<qz.size();i++){
-					grad_z[i] = math::exp(-qz[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-qz[i]/2)*v[i]*qWh[i];
+				  grad_z[i] = 
+				    math::exp(-qz[i])*T(0.5)*(v[i]-qa[i])*(v[i]-qa[i]) - T(0.5)*math::exp(-qz[i]/2)*v[i]*qWh[i];
+
 				}
 
 				// scales the values according to the number of samples
@@ -1334,15 +1499,48 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				grad_W *= scaling;
 
 				// this is negative phase so we minus point-wise gradients from the sum variables
-				ga -= grad_a;
-				gb -= grad_b;
-				gz -= grad_z;
-				gW -= grad_W;
+#pragma omp critical
+				{
+				  ga -= grad_a;
+				  gb -= grad_b;
+				  gz -= grad_z;
+				  gW -= grad_W;
+				}
 			}
 		}
 
 		// sets variance term to zero... [disables variance learning]
 		// gz.zero();
+
+		// we alternate between variance only gradient and
+		// other parameters gradient meaning that sampling/optimization optimizer either set of parameters
+		// but not the both at the same time... (heuristic that seems to work?)
+		// [optimization works with correct variance but not otherwise]
+
+		// 0 = all parameters (gradient descent) is attempted..
+		if(learningMode == 1){
+		  gz.zero();
+		}
+		else if(learningMode == 2){
+		  // only try to learn variance...
+		  ga.zero();
+		  gb.zero();
+		  gW.zero();
+		}
+		
+#if 0
+		if(rand()%1){
+		  gz.zero();
+		}
+		else{
+		  ga.zero();
+		  gb.zero();
+		  gW.zero();
+		}
+#endif
+
+
+		
 
 		// converts component gradients [ga,gb,gz,gW] to back to q gradient vector grad(q)
 
@@ -1363,6 +1561,26 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 	}
 }
 
+
+// Ugrad..
+template <typename T>
+void GBRBM<T>::setLearnVarianceMode()
+{
+  learningMode = 2;
+}
+
+template <typename T>
+void GBRBM<T>::setLearnParametersMode() // other than variance
+{
+  learningMode = 1;
+}
+
+template <typename T>
+void GBRBM<T>::setLearnBothMode() // learn both variance and parameteres
+{
+  learningMode = 0;
+}
+  
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1708,7 +1926,7 @@ T GBRBM<T>::p_ratio(const std::vector< math::vertex<T> >& data1, const std::vect
 template <typename T>
 T GBRBM<T>::ais(T& logZ,
 		const math::vertex<T>& m, const math::vertex<T>& s,
-	    const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z) const
+		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z) const
 {
 	// parallel tempering RBM stack
 	std::vector< GBRBM<T> > rbm;
@@ -1945,7 +2163,9 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_data(const math::vertex<T>& v,
 		auto mean = W*h; // pseudo-mean
 
 		for(unsigned int i=0;i<mean.size();i++){
-			x[i] = dd[i]*normalrnd() + dd[i]*mean[i] + a[i];
+		        x[i] = a[i];
+			x[i] += dd[i]*mean[i];
+			x[i] += dd[i]*normalrnd();
 		}
 	}
 
@@ -1999,7 +2219,7 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_hidden(const math::vertex<T>& v,
 
 template <typename T>
 T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& samples, unsigned int N,
-		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
+		const math::matrix<T>& W_, const math::vertex<T>& a_, const math::vertex<T>& b_, const math::vertex<T>& z_,
 		unsigned int CDk)
 {
 	T error = T(0.0);
@@ -2007,6 +2227,13 @@ T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& s
 	if(samples.size() <= 0)
 		return error;
 
+	auto W = W_;
+	auto a = a_;
+	auto b = b_;
+	auto z = z_;
+
+	safebox(a, b, z, W);
+	
 	for(unsigned int n=0;n<N;n++){
 		const unsigned int index = rng.rand() % samples.size();
 		auto& s = samples[index];
