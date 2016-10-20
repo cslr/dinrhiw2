@@ -420,18 +420,14 @@
   degrees of freedom is minimized and variance is maximized (maximum
   unceretainty).
 
-  Alternative variable change: (<math|e<rsup|-z<rsub|i>>=1/\<sigma\><rsub|i>>)
-  (without Wishart prior)
-
-  <\math>
-    F<around*|(|v|)>=<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
-
-    =<frac|1|2><big|sum><rsub|i><around*|(|v<rsub|i>-a<rsub|i>|)><rsup|2>*e<rsup|-2*z<rsub|i>>-<big|sum><rsub|j>log<around|(|1+exp<around*|(|<big|sum><rsub|k>w<rsub|k*j>*v<rsub|k>*e<rsup|-z<rsub|k>>+b<rsub|j>|)>|)>
-  </math>
-
-  \;
-
-  <math|<frac|\<partial\>F|\<partial\>z<rsub|i>>=-e<rsup|-2*z<rsub|i>>*<around*|(|v<rsub|i>-a<rsub|i>|)><rsup|<rsup|2>>+e<rsup|-z<rsub|i>>><math|*v<rsub|i><big|sum><rsub|j>*w<rsub|i*j>*sigmoid<around*|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|j>>
+  <with|font-shape|italic|NOTE: Using (Wishart) prior to the problem does not
+  improve results and can even harm the optimization. <strong|INSTEAD, one
+  should do optimization of non-variance terms (a,b,W) and variance terms (z)
+  separatedly by going to local optimum and then switching to another set of
+  variables and continue doing this until convergence which can typically
+  find the underlying real model.>> Alternatively, in sampling one should
+  maybe do Gibbs sampling and sample z and then (a,b,W) and then again z and
+  then again (a,b,W) using separative sampler for (z) and (a,b,W).
 
   \;
 
