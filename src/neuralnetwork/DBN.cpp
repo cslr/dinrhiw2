@@ -208,7 +208,7 @@ namespace whiteice
     std::vector< math::vertex<T> > out;
 
     unsigned int iters = 0;
-    while(input.learnWeights(in, 1, verbose, true) >= dW){
+    while(input.learnWeights(in, 1, verbose) >= dW){
       // learns also variance
       iters++;
 

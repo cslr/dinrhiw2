@@ -57,8 +57,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
  GDALogic.h GDALogic.h HMC_gaussian.h HMC_abstract.h RBM.h HMCGBRBM.h \
- GBRBM.h PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h DBN.h BBRBM.h \
- RBMvarianceerrorfunction.h
+ GBRBM.h PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h LBFGS_GBRBM.h \
+ DBN.h BBRBM.h RBMvarianceerrorfunction.h
 pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \
@@ -535,8 +535,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
  GDALogic.h GDALogic.h HMC_gaussian.h HMC_abstract.h RBM.h HMCGBRBM.h \
- GBRBM.h PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h DBN.h BBRBM.h \
- RBMvarianceerrorfunction.h
+ GBRBM.h PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h LBFGS_GBRBM.h \
+ DBN.h BBRBM.h RBMvarianceerrorfunction.h
 pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \
@@ -995,19 +995,6 @@ CRBM.o: CRBM.cpp CRBM.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
  ../conffile.h ../math/norms.h
-BBRBM.o: BBRBM.cpp BBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
- /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
- ../math/ownexception.h ../math/number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h backpropagation.h \
- ../math/dinrhiw_blas.h nn_iterative_correction.h neuralnetwork.h \
- backpropagation.h neuronlayer.h ../math/matrix.h \
- ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
- ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
- ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
- ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
- ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h ../math/norms.h activation_function.h function.h
 DBN.o: DBN.cpp DBN.h GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
  /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
@@ -1022,6 +1009,19 @@ DBN.o: DBN.cpp DBN.h GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h BBRBM.h
+BBRBM.o: BBRBM.cpp BBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
+ /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
+ ../math/ownexception.h ../math/number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h backpropagation.h \
+ ../math/dinrhiw_blas.h nn_iterative_correction.h neuralnetwork.h \
+ backpropagation.h neuronlayer.h ../math/matrix.h \
+ ../math/linear_algebra.h ../math/matrix.h ../math/vertex.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h ../math/norms.h activation_function.h function.h
 construct_nnetwork.o: construct_nnetwork.cpp construct_nnetwork.h DBN.h \
  GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
@@ -1038,6 +1038,22 @@ construct_nnetwork.o: construct_nnetwork.cpp construct_nnetwork.h DBN.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h BBRBM.h nnetwork.h \
  ../conffile.h lreg_nnetwork.h
+LBFGS_GBRBM.o: LBFGS_GBRBM.cpp LBFGS_GBRBM.h ../math/LBFGS.h \
+ ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
+ /usr/include/openblas/openblas_config.h \
+ /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
+ ../math/ownexception.h ../math/vertex.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ backpropagation.h ../math/dinrhiw_blas.h nn_iterative_correction.h \
+ ../math/vertex.h neuralnetwork.h backpropagation.h neuronlayer.h \
+ ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ neuronlayer.h ../math/norms.h activation_function.h function.h GBRBM.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ deep_ica_network_priming.h nnetwork.h ../conffile.h
 GBRBM.o: GBRBM.cpp GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
  /usr/include/openblas/openblas_config.h ../math/blas_primitives.h \
@@ -1051,7 +1067,8 @@ GBRBM.o: GBRBM.cpp GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ LBFGS_GBRBM.h ../math/LBFGS.h
 HMCGBRBM.o: HMCGBRBM.cpp HMCGBRBM.h HMC_abstract.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \

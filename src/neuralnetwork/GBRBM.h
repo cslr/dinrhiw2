@@ -68,20 +68,11 @@ public:
     bool setLogVariance(const math::vertex<T>& z);
     bool getLogVariance(math::vertex<T>& z) const;
 
-    // Ugrad..
-    void setLearnVarianceMode();
-    void setLearnParametersMode(); // other than variance
-    void setLearnBothMode(); // learn both variance and parameteres
-
     bool initializeWeights(); // initialize weights to small values
 
-    // calculates single epoch for updating weights using CD-1 and
-    // returns reconstruction error
-    // EPOCHS control quality of the solution, 1 epoch goes through data once
-    // but higher number of EPOCHS mean data calculations can take longer (higher quality)
+    // learn parameters using LBFGS 2nd order optimization and heuristics..
     T learnWeights(const std::vector< math::vertex<T> >& samples,
-    		const unsigned int EPOCHS=1,
-    		bool verbose = false, bool learnVariance = false);
+		   const unsigned int EPOCHS, bool verbose = false);
 
     // estimates log(P(samples|params)) of the RBM
     T logProbability(const std::vector< math::vertex<T> >& samples);
@@ -138,6 +129,12 @@ public:
     bool save(const std::string& filename) const throw();
 
 protected:
+    // Ugrad..
+    void setLearnVarianceMode();
+    void setLearnParametersMode(); // other than variance
+    void setLearnBothMode(); // learn both variance and parameteres
+    
+    
     // estimates ratio of Z values of unscaled p(v|params) distributions: Z1/Z2 using AIS Monte Carlo sampling.
     // this is needed by Udiff() which calculates difference of two P(params|v) distributions..
     T log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // data mean and variance used by the AIS sampler

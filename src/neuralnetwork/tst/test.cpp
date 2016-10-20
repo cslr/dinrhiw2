@@ -111,9 +111,9 @@ int main()
     
     // dbn_test();
 
-    lbfgs_rbm_test();
+    // lbfgs_rbm_test();
 
-    // rbm_test();
+    rbm_test();
     
     return 0;
     
@@ -357,6 +357,7 @@ void hmc_test()
 
 void lbfgs_rbm_test()
 {
+#if 0
 	std::cout << "LBFGS GB-RBM OPTIMIZATION TEST" << std::endl;
 
 #ifdef __linux__
@@ -563,7 +564,8 @@ void lbfgs_rbm_test()
 
 		saveSamples("gbrbm_lbfgs_sphere_output2.txt", rdata);
 	}
-	
+
+#endif
 }
 
 
@@ -764,7 +766,7 @@ void rbm_test()
 		rbm.resize(DIMENSION, 20); // 20 hidden units..
 		// rbm.setVariance(best_variance);
 		
-		rbm.learnWeights(samples, 100, true, false); // try to learn variance (models noise term)
+		rbm.learnWeights(samples, 100, true);
 		// rbm.setParametersQ(best_q);
 
 		auto rdata = samples;
@@ -882,17 +884,10 @@ void rbm_test()
 		    samples[s] = x;
 		  }
 		}
-
-
+		
 		// once data has been generated saves it to disk for inspection that is has been generated correctly
 		// stores the results into file for inspection
-		FILE* fp = fopen("splinecurve.txt", "wt");
-		for(unsigned int i=0;i<samples.size();i++){
-			for(unsigned int n=0;n<samples[i].size();n++)
-				fprintf(fp, "%f ", samples[i][n].c[0]);
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
+		saveSamples("splinecurve.txt", samples);
 	}
 
 
@@ -901,7 +896,7 @@ void rbm_test()
 	std::vector< math::vertex< math::blas_real<double> > > qsamples;
 	math::vertex< math::blas_real<double> > best_q; // minimum single reconstruction error case..
 
-	const unsigned int HIDDEN_NODES = 500; // was 200
+	const unsigned int HIDDEN_NODES = 50; // was 200
 	
 #if 0
 	const unsigned int ITERLIMIT = 100;
@@ -1007,7 +1002,7 @@ void rbm_test()
 		auto rdata = samples;
 
 		// rbm.setParametersQ(best_q);
-		rbm.learnWeights(samples, 500, true, true);
+		rbm.learnWeights(samples, 150, true);
 		rdata.clear();
 
 		// samples directly from P(v) [using AIS - annealed importance sampling. This probably DO NOT WORK PROPERLY.]

@@ -6,6 +6,11 @@
  */
 
 #include "GBRBM.h"
+#include "dataset.h"
+#include "LBFGS_GBRBM.h"
+
+#include <unistd.h>
+
 #include <chrono>
 #include <random>
 #include <time.h>
@@ -389,6 +394,121 @@ bool GBRBM<T>::initializeWeights() // initialize weights to small values
 	return true;
 }
 
+
+// learn parameters using LBFGS 2nd order optimization. Optimizes all parameters including variance.
+template <typename T>
+T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
+			 const unsigned int EPOCHS, bool verbose)
+{
+  if(EPOCHS <= 0) return T(INFINITY);
+  if(samples.size() <= 0) return T(INFINITY);
+  if(samples[0].size() != getVisibleNodes()) return T(INFINITY);
+
+  whiteice::dataset<T> ds;
+
+  this->initializeWeights();
+  this->setUData(samples);
+
+  ds.createCluster("input", getVisibleNodes());
+  ds.add(0, samples);
+
+  math::vertex<T> x0;
+  this->getParametersQ(x0);
+
+  whiteice::LBFGS_GBRBM<T>* optimizer[EPOCHS];
+		
+  math::vertex<T> x;
+  T error;
+  int last_iter = -1;
+  unsigned int iters = 0;
+
+  std::list<T> errors; // epoch errors... used to detect convergence
+
+  for(unsigned int i=0;i<EPOCHS;i++){
+    auto temperature = 1.0;
+		  
+    if((i & 1) == 0){
+      this->setLearnVarianceMode();
+    }
+    else{
+      this->setLearnParametersMode();
+    }
+    
+    this->setUTemperature(temperature);
+    this->getParametersQ(x0);
+		  
+    optimizer[i] = new whiteice::LBFGS_GBRBM<T>(*this, ds, false);
+    optimizer[i]->minimize(x0);
+
+    last_iter = -1;
+    iters = 0;
+    
+    while(true){
+      if(!optimizer[i]->isRunning() || optimizer[i]->solutionConverged()){
+	break;
+      }
+		    
+      optimizer[i]->getSolution(x, error, iters);
+      
+      if((signed)iters > last_iter){
+	if(verbose){
+	  if((i & 1) == 0)
+	    std::cout << "ITER " << iters << ": error = " << error
+		      << " (variance-step)" << std::endl;
+	  else
+	    std::cout << "ITER " << iters << ": error = " << error
+		      << " (parameter-step)" << std::endl;
+	  fflush(stdout);
+	}
+
+	last_iter = iters;
+      }
+      
+      sleep(1);
+    }
+
+    printf("\n");
+    fflush(stdout);
+
+    optimizer[i]->getSolution(x, error, iters);
+    this->setParametersQ(x);
+
+    if(verbose){
+      std::cout << "EPOCH " << i << "/" << EPOCHS << ": error = " << error << std::endl;
+      fflush(stdout);
+    }
+
+    errors.push_back(error);
+
+    // keeps last 20 error terms in epochs
+    while(errors.size() > 20)
+      errors.pop_front();
+
+    // TODO smart convergence detection..
+    
+  }
+		
+  auto bestx = x;
+  auto besterror = error;
+  optimizer[0]->getSolution(x, error, iters);
+  
+  for(unsigned int i=0;i<EPOCHS;i++){
+    optimizer[i]->getSolution(x, error, iters);
+    if(error < besterror){
+      besterror = error;
+      bestx = x;
+    }
+
+    delete optimizer[i];
+  }
+  
+  this->setParametersQ(bestx);
+  
+  return besterror;
+}
+  
+
+#if 0
 // calculates single epoch for updating weights using CD-1 and
 // returns reconstruction error
 // (keep calculating until there is no improvement anymore)
@@ -483,7 +603,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	{
 	  
 // #pragma omp parallel for schedule(dynamic) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
-	          for(unsigned int i=0;i<100;i++){
+	          for(unsigned int i=0;i<1000;i++){
 		        math::vertex<T> aa, bb, zz;
 			math::matrix<T> WW;
 
@@ -496,7 +616,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			}
 		        
 			// goes through data and calculates gradient
-			const unsigned int NUM_SAMPLES = 50; /// was 100
+			const unsigned int NUM_SAMPLES = 100; /// was 100
 
 			// negative phase Emodel[gradient]
 			std::vector< math::vertex<T> > vs;
@@ -539,15 +659,6 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				math::vertex<T> y; // y = hidden state
 				sigmoid( (varx * WW) + bb, y);
-
-				// hack: discretizes y (hidden state)
-				{
-				  for(unsigned int i=0;i<y.size();i++){
-				    T r = rng.uniform();
-				    if(r <= y[i]) y[i] = T(1.0);
-				    else y[i] = T(0.0);
-				  }
-				}
 
 				// calculates gradients [negative phase]
 				math::vertex<T> xa(x - aa);
@@ -604,17 +715,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 				math::vertex<T> y; // y = hidden state
 				sigmoid( (varx * WW) + bb, y);
-
 				
-				// hack: discretizes y (hidden state)
-				{
-				  for(unsigned int i=0;i<y.size();i++){
-				    T r = rng.uniform();
-				    if(r <= y[i]) y[i] = T(1.0);
-				    else y[i] = T(0.0);
-				  }
-				}
-
 				for(unsigned int j=0;j<x.size();j++)
 					ta[j] += var[j]*xa[j];
 
@@ -638,17 +739,16 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			auto gz = (tz - dz);
 			auto gW = (tW - dW);
 
-			// if we learn variance, alter between variance and other parameters when updating parameters
-			if(learnVariance == false){
+			// heuristics:
+			// alter between variance and other parameters when updating parameters
+			if((epoch & 1) == 0){
 			  gz.zero();
 			}
 			else{
-			  //ga.zero();
-			  //gb.zero();
-			  //gW.zero();
+			  ga.zero();
+			  gb.zero();
+			  gW.zero();
 			}
-
-			// gz = -gz; // change direction of gz
 
 			// now we have gradients
 
@@ -839,7 +939,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 	return error;
 }
-
+#endif
 
 
 // estimates log(P(samples|params)) of the RBM
