@@ -208,6 +208,12 @@
 
   <math|<frac|\<partial\>*F<around|(|v|)>|\<partial\>*w<rsub|i*j>>=-<frac|e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>*v<rsub|j>|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-v<rsub|j>*sigmoid<around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>
 
+  <with|font-shape|italic|The calculated gradients can be given to 2nd order
+  LBFGS optimizer which uses reconstruction error as the error function and
+  proper gradients of free energy <math|F<around*|(|v|)>> as input so we do
+  not do simple gradient descent but try to take 2nd order curvature into
+  consideration too when minimizing data reconstruction error.>\ 
+
   \;
 
   <strong|Gaussian distribution (Gaussian-Bernoulli RBM) - Continuous RBM>

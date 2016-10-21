@@ -32,6 +32,7 @@
 #include "PTHMCGBRBM.h"
 #include "CRBM.h"
 #include "LBFGS_GBRBM.h"
+#include "LBFGS_BBRBM.h"
 
 #include "DBN.h"
 
@@ -269,8 +270,8 @@ void bbrbm_test()
     }
   }
 
-
-  // learns weights given training data
+#if 0
+  // learns weights given training data (gradient descent)
   {
 
     bbrbm.resize(DIMENSION, DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
@@ -279,6 +280,50 @@ void bbrbm_test()
 
     std::cout << "BBRBM final reconstruction error = "
 	      << error << std::endl;
+    
+  }
+#endif
+  // learns parameters using LBFGS second order optimizer
+  {
+    whiteice::dataset< math::blas_real<double> > ds;
+    ds.createCluster("input", DIMENSION);
+    ds.add(0, samples);
+
+    bbrbm.resize(DIMENSION, DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
+    if(bbrbm.setUData(samples) == false)
+      printf("Setting samples FAILED!\n");
+
+    whiteice::LBFGS_BBRBM< math::blas_real<double> > optimizer(bbrbm, ds, false);
+
+    math::vertex< math::blas_real<double> > x0;
+    bbrbm.getParametersQ(x0);
+    
+    optimizer.minimize(x0);
+
+    math::vertex< math::blas_real<double> > x;
+    math::blas_real<double> error;
+    int last_iter = -1;
+    unsigned int iters = 0;
+
+    while(true){
+      if(!optimizer.isRunning() || optimizer.solutionConverged()){
+	break;
+      }
+      
+      optimizer.getSolution(x, error, iters);
+      
+      if((signed)iters > last_iter){
+	printf("%d ITERATIONS. LBFGS RECONSTRUCTION ERROR: %f\n", iters, error.c[0]);
+	if(bbrbm.setParametersQ(x) == false)
+	  printf("setParametersQ() error\n");
+	
+	fflush(stdout);
+	last_iter = iters;
+      }
+      
+      sleep(1);
+    }
+    
     
   }
   

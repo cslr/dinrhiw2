@@ -31,6 +31,8 @@ BBRBM<T>::BBRBM(const BBRBM<T>& rbm)
   this->W = rbm.W;
   this->a = rbm.a;
   this->b = rbm.b;
+
+  this->Usamples = rbm.Usamples;
 }
 
 // creates 2-layer: V * H network
@@ -67,6 +69,7 @@ BBRBM<T>& BBRBM<T>::operator=(const BBRBM<T>& rbm)
   this->W = rbm.W;
   this->a = rbm.a;
   this->b = rbm.b;
+  this->Usamples = rbm.Usamples;
 
   return (*this);
 }
@@ -543,11 +546,11 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 template <typename T>
 bool BBRBM<T>::setUData(const std::vector< math::vertex<T> >& samples)
 {
-  if(Usamples.size() == 0) return false;
-  if(Usamples[0].size() != a.size()) return false;
+  if(samples.size() == 0) return false;
+  if(samples[0].size() != a.size()) return false;
   
   this->Usamples = samples;
-
+  
   return true;
 }
 
@@ -678,8 +681,8 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
   math::vertex<T> nb(b);
   math::matrix<T> NW(W);
 
-  const unsigned int NUMSAMPLES = 100;
-  const unsigned int CDk = 10;
+  const unsigned int NUMSAMPLES = 10;
+  const unsigned int CDk = 1;
 
   {
     // calculates positive gradient from NUMSAMPLES examples Pdata(v))
@@ -773,9 +776,9 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       nb += h/T(NUMSAMPLES);
     }
 
-    ga = -(pa - na);
-    gb = -(pb - nb);
-    gW = -(PW - NW);
+    ga = (pa - na);
+    gb = (pb - nb);
+    gW = (PW - NW);
   }
 
   math::vertex<T> grad;
