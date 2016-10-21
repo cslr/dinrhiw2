@@ -460,7 +460,7 @@ namespace whiteice
       throw(uncomparable)
     {
       if(M.numCols != numCols || M.numRows != numRows)
-	throw illegal_operation("'==' operator: matrix size mismatch");
+	return false; // throw illegal_operation("'==' operator: matrix size mismatch");
       
       if(typeid(T) == typeid(blas_real<float>)    ||
 	 typeid(T) == typeid(blas_complex<float>) ||
@@ -483,7 +483,7 @@ namespace whiteice
       throw(uncomparable)
     {
       if(M.numCols != numCols || M.numRows != numRows)
-	throw illegal_operation("'!=' operator: matrix size mismatch");
+	return true; // throw illegal_operation("'!=' operator: matrix size mismatch");
       
       if(numCols*numRows <= 0) return false;
       

@@ -701,7 +701,7 @@ namespace whiteice
       throw(uncomparable)
     {
       if(v.dataSize != dataSize)
-	throw uncomparable("vertex compare: dimension mismatch");
+	return false; // throw uncomparable("vertex compare: dimension mismatch");
       
       if(typeid(T) == typeid(blas_real<float>)    ||
 	 typeid(T) == typeid(blas_complex<float>) ||
@@ -726,7 +726,7 @@ namespace whiteice
       throw(uncomparable)
     {
       if(v.dataSize != dataSize)
-	throw uncomparable("vertex compare: dimension mismatch");
+	return true; // throw uncomparable("vertex compare: dimension mismatch");
       
       
       if(typeid(T) == typeid(blas_real<float>)    ||

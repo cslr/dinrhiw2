@@ -32,6 +32,8 @@ public:
     virtual ~GBRBM();
 
     GBRBM<T>& operator=(const GBRBM<T>& rbm);
+    bool      operator==(const GBRBM<T>& rbm) const;
+    bool      operator!=(const GBRBM<T>& rbm) const;
 
     bool resize(unsigned int visible, unsigned int hidden);
 
@@ -130,7 +132,8 @@ public:
 
 protected:
     // Ugrad..
-    void setLearnVarianceMode();
+    // calculate only gradient of variance (term)
+    void setLearnVarianceMode(); 
     void setLearnParametersMode(); // other than variance
     void setLearnBothMode(); // learn both variance and parameteres
     

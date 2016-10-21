@@ -594,6 +594,29 @@ void rbm_test()
 #endif
 
 
+	{
+	  std::cout << "Unit testing GBRBM::save() and GBRBM::load() functions.." << std::endl;
+
+	  whiteice::GBRBM< math::blas_real<double> > rbm1, rbm2;
+
+	  rbm1.resize(20,30);
+	  rbm1.initializeWeights();
+
+	  rbm2.resize(11,24);
+	  rbm2.initializeWeights();
+
+	  if(rbm1 != rbm1) std::cout << "GBRBM comparison ERROR." << std::endl;
+	  if(rbm2 == rbm1) std::cout << "GBRBM comparison ERROR." << std::endl;
+
+	  rbm2 = rbm1;
+	  if(rbm2 != rbm1) std::cout << "GBRBM comparison ERROR." << std::endl;
+
+	  if(rbm2.save("rbmparams.dat") == false) std::cout << "GBRBM::save() FAILED." << std::endl;
+	  if(rbm1.load("rbmparams.dat") == false) std::cout << "GBRBM::load() FAILED." << std::endl;
+
+	  if(rbm2 != rbm1) std::cout << "GBRBM load() FAILED to create identical GBRBM." << std::endl;
+          
+	}
 
 
 #if 0

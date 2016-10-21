@@ -8,6 +8,7 @@
 #include "GBRBM.h"
 #include "dataset.h"
 #include "LBFGS_GBRBM.h"
+#include "linear_ETA.h"
 
 #include <unistd.h>
 
@@ -113,6 +114,54 @@ GBRBM<T>& GBRBM<T>::operator=(const GBRBM<T>& rbm)
 	return (*this);
 }
 
+template <typename T>
+bool GBRBM<T>::operator==(const GBRBM<T>& rbm) const
+{
+  if(this->W != rbm.W) return false;
+  if(this->a != rbm.a) return false;
+  if(this->b != rbm.b) return false;
+  if(this->z != rbm.z) return false;
+
+  if(this->v != rbm.v) return false;
+  if(this->h != rbm.h) return false;
+  
+  if(this->data_mean != rbm.data_mean) return false;
+  if(this->data_var  != rbm.data_var) return false;
+  
+  if(this->Usamples != rbm.Usamples) return false;
+  if(this->Umean != rbm.Umean) return false;
+  if(this->Uvariance != rbm.Uvariance) return false;
+  if(this->temperature != rbm.temperature) return false;
+     
+  if(this->learningMode != rbm.learningMode) return false;
+
+  return true;
+}
+
+template <typename T>
+bool GBRBM<T>::operator!=(const GBRBM<T>& rbm) const
+{
+  if(this->W == rbm.W) return false;
+  if(this->a == rbm.a) return false;
+  if(this->b == rbm.b) return false;
+  if(this->z == rbm.z) return false;
+
+  if(this->v == rbm.v) return false;
+  if(this->h == rbm.h) return false;
+  
+  if(this->data_mean == rbm.data_mean) return false;
+  if(this->data_var  == rbm.data_var) return false;
+  
+  if(this->Usamples == rbm.Usamples) return false;
+  if(this->Umean == rbm.Umean) return false;
+  if(this->Uvariance == rbm.Uvariance) return false;
+  if(this->temperature == rbm.temperature) return false;
+     
+  if(this->learningMode == rbm.learningMode) return false;
+
+  return true;
+}
+  
 template <typename T>
 bool GBRBM<T>::resize(unsigned int visible, unsigned int hidden)
 {
@@ -417,12 +466,19 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
   whiteice::LBFGS_GBRBM<T>* optimizer[EPOCHS];
 		
-  math::vertex<T> x;
+  math::vertex<T> x(x0);
   T error;
   int last_iter = -1;
   unsigned int iters = 0;
 
   std::list<T> errors; // epoch errors... used to detect convergence
+
+  auto bestx = x0;
+  auto besterror = T(INFINITY);
+
+  whiteice::linear_ETA<double> eta;
+  eta.start(0.0, EPOCHS+1);
+  eta.update(0.0);
 
   for(unsigned int i=0;i<EPOCHS;i++){
     auto temperature = 1.0;
@@ -460,21 +516,23 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 		      << " (parameter-step)" << std::endl;
 	  fflush(stdout);
 	}
-
+	
 	last_iter = iters;
       }
       
       sleep(1);
     }
 
-    printf("\n");
-    fflush(stdout);
-
     optimizer[i]->getSolution(x, error, iters);
     this->setParametersQ(x);
 
+    eta.update(i+1); // this epoch has been calculated..
+
     if(verbose){
-      std::cout << "EPOCH " << i << "/" << EPOCHS << ": error = " << error << std::endl;
+      std::cout << "EPOCH " << i << "/" << EPOCHS
+		<< ": error = " << error
+		<< " ETA " << eta.estimate()/(3600.0) << " hour(s)"
+		<< std::endl;
       fflush(stdout);
     }
 
@@ -483,24 +541,46 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
     // keeps last 20 error terms in epochs
     while(errors.size() > 20)
       errors.pop_front();
-
-    // TODO smart convergence detection..
     
-  }
-		
-  auto bestx = x;
-  auto besterror = error;
-  optimizer[0]->getSolution(x, error, iters);
-  
-  for(unsigned int i=0;i<EPOCHS;i++){
-    optimizer[i]->getSolution(x, error, iters);
-    if(error < besterror){
-      besterror = error;
-      bestx = x;
+    // smart convergence detection..
+    if(errors.size() > 20){
+      T m = 0.0, v = 0.0;
+      
+      for(auto& e : errors){
+	m += e;
+	v += e*e;
+      }
+
+      m /= T(errors.size());
+      v /= T(errors.size());
+
+      v -= m*m;
+
+      T statistic = sqrt(v)/m;
+
+      if(statistic < T(1.005)){ // only 0.5% change in optimized values
+	                        // within the latest 20 steps
+	delete optimizer[i];
+	
+	if(verbose)
+	  std::cout << "Early stopping.. convergence detected."
+		    << std::endl;
+	break;
+      }
+	
     }
 
+
+    if(optimizer[i]->getSolution(x, error, iters))
+      if(error < besterror){
+	besterror = error;
+	bestx = x;
+      }
+
     delete optimizer[i];
+    optimizer[i] = NULL;
   }
+
   
   this->setParametersQ(bestx);
   
@@ -1689,13 +1769,127 @@ void GBRBM<T>::setLearnBothMode() // learn both variance and parameteres
 template <typename T>
 bool GBRBM<T>::load(const std::string& filename) throw()
 {
-	return false; // not implemented (yet)
+  whiteice::dataset<T> file;
+
+  if(file.load(filename) == false)
+    return false;
+
+  if(file.getNumberOfClusters() != 14)
+    return false;
+
+  std::vector<std::string> names;
+  if(file.getClusterNames(names) == false) return false;
+
+  bool found = false;
+  for(auto& n : names)
+    if(n == "whiteice::GBRBM file"){
+      found = true;
+      break;
+    }
+
+  if(found == false)
+    return false; // unknown filetype
+				  
+  // tries to load data..
+  std::vector< math::vertex<T> > data;
+
+  if(file.getData(0, data) == false) return false;
+  a = data[0];
+  if(file.getData(1, data) == false) return false;
+  b = data[0];
+  if(file.getData(2, data) == false) return false;
+  z = data[0];
+  if(file.getData(3, data) == false) return false;
+  W.resize(a.size(), b.size());
+  if(W.load_from_vertex(data[0]) == false)
+    return false;
+  if(file.getData(4, data) == false) return false;
+  h = data[0];
+  if(file.getData(5, data) == false) return false;
+  v = data[0];
+  if(file.getData(6, data) == false) return false;
+  data_mean = data[0];
+  if(file.getData(7, data) == false) return false;
+  data_var = data[0];
+  if(file.getData(8, data) == false) return false;
+  Umean = data[0];
+  if(file.getData(9, data) == false) return false;
+  Uvariance = data[0];
+  if(file.getData(10, data) == false) return false;
+  Usamples = data;
+  if(file.getData(11, data) == false) return false;
+  temperature = data[0][0];
+  if(file.getData(12, data) == false) return false;
+  double d = 0.0;
+  if(math::convert(d, data[0][0]) == false) return false;
+  learningMode = (unsigned int)d;
+
+  // some sanity checks..
+  if(a.size() != W.ysize()) return false;
+  if(b.size() != W.xsize()) return false;
+  if(z.size() != a.size())  return false;
+  if(z.size() != v.size())  return false;
+  if(b.size() != h.size())  return false;
+  
+  return true;
 }
+  
 
 template <typename T>
 bool GBRBM<T>::save(const std::string& filename) const throw()
 {
-	return false; // not implemented (yet)
+  whiteice::dataset<T> file;
+
+  file.createCluster("a", a.size());
+  if(file.add(0, a) == false) return false;
+  file.createCluster("b", b.size());
+  if(file.add(1, b) == false) return false;
+  file.createCluster("z", z.size());
+  if(file.add(2, z) == false) return false;
+  file.createCluster("W", W.size());
+
+  math::vertex<T> vecW(W.xsize()*W.ysize());
+  W.save_to_vertex(vecW);
+  
+  if(file.add(3, vecW) == false) return false;
+
+  if(file.createCluster("h", h.size()) == false) return false;
+  file.add(4, h);
+  if(file.createCluster("v", v.size()) == false) return false;
+  file.add(5, v);
+
+  file.createCluster("data_mean", data_mean.size());
+  if(file.add(6, data_mean) == false) return false;
+  file.createCluster("data_var", data_var.size());
+  if(file.add(7, data_var) == false) return false;
+  file.createCluster("Umean", Umean.size());
+  if(file.add(8, Umean) == false) return false;
+  file.createCluster("Uvariance", Uvariance.size());
+  if(file.add(9, Uvariance) == false) return false;
+
+  if(Usamples.size() > 0){
+    file.createCluster("Usamples", Usamples[0].size());
+    if(file.add(10, Usamples) == false) return false;
+  }
+  else{
+    file.createCluster("Usamples", 0);
+  }
+     
+
+  file.createCluster("temperature", 1);
+  math::vertex<T> temp;
+  temp.resize(1);
+  temp[0] = temperature;
+  if(file.add(11, temp) == false) return false;
+  file.createCluster("learningMode", 1);
+  temp[0] = T(learningMode);
+  if(file.add(12, temp) == false) return false;
+
+  // finally add special file identity tag..
+  file.createCluster("whiteice::GBRBM file", 1); 
+
+  
+  return file.save(filename);
 }
 
 
