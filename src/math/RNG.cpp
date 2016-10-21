@@ -2,7 +2,7 @@
  * RNG.cpp
  *
  *  Created on: 28.6.2015
- *      Author: Tomas
+ *      Author: Tomas Ukkonen
  */
 
 #include "RNG.h"
@@ -36,10 +36,17 @@ RNG<T>::RNG()
 		  ((unsigned int *)vendor)[2] = regs[2]; // ECX
 		  std::string cpuvendor = std::string(vendor, 12);
 
+		  // printf("CPUVENDOR: %s\n", cpuvendor.c_str());
+
 		  if(cpuvendor == "GenuineIntel"){
-			  cpuid(1, 0, regs);
-			  if((regs[2] & 0x40000000) == 0x40000000)
-				  has_rdrand = true;
+		    cpuid(1, 0, regs);
+		    if((regs[2] & 0x40000000) == 0x40000000)
+		      has_rdrand = true;
+		  }
+		  else if(cpuvendor == "AuthenticAMD"){
+		    cpuid(1, 0, regs);
+		    if((regs[2] & 0x40000000) == 0x40000000) // 30th bit ECX is 1
+		      has_rdrand = true;
 		  }
 	}
 	
