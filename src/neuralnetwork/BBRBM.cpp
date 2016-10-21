@@ -301,8 +301,6 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
   const unsigned int NUMSAMPLES = 10;
   const unsigned int EPOCHSAMPLES = 1000;
 
-
-
   
   for(unsigned int e=0;e<EPOCHS;e++){
 
@@ -545,55 +543,246 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 template <typename T>
 bool BBRBM<T>::setUData(const std::vector< math::vertex<T> >& samples)
 {
-  return false;
+  if(Usamples.size() == 0) return false;
+  if(Usamples[0].size() != a.size()) return false;
+  
+  this->Usamples = samples;
+
+  return true;
 }
 
 template <typename T>
 unsigned int BBRBM<T>::qsize() const throw() // size of q vector q = [vec(W)]
 {
-  return (W.xsize()*W.ysize());
+  return (a.size() + b.size() + W.xsize()*W.ysize());
 }
   
 // converts (W) parameters into q vector
 template <typename T>
-bool BBRBM<T>::convertParametersToQ(const math::matrix<T>& W, math::vertex<T>& q) const
+bool BBRBM<T>::convertParametersToQ(const math::matrix<T>& W,
+				    const math::vertex<T>& a,
+				    const math::vertex<T>& b, 
+				    math::vertex<T>& q) const
 {
-  return false;
+  q.resize(a.size() + b.size() + W.ysize()*W.xsize());
+
+  q.write_subvertex(a, 0);
+  q.write_subvertex(b, a.size());
+  W.save_to_vertex(q, a.size()+b.size());
+
+  return true;
 }
   
 // converts q vector into parameters (W, a, b)
 template <typename T>
-bool BBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W) const
+bool BBRBM<T>::convertQToParameters(const math::vertex<T>& q,
+				    math::matrix<T>& W,
+				    math::vertex<T>& a,
+				    math::vertex<T>& b) const 
+				    
 {
-  return false;
+  a.resize(this->a.size());
+  b.resize(this->b.size());
+  W.resize(this->W.ysize(), this->W.xsize());
+  
+  if(q.size() != (a.size()+b.size()+W.ysize()*W.xsize()))
+    return false;
+  
+  try{
+    q.subvertex(a, 0, a.size());
+    q.subvertex(b, a.size(), b.size());
+    math::vertex<T> w(W.ysize()*W.xsize());
+    q.subvertex(w, (a.size()+b.size()), w.size());
+    W.load_from_vertex(w);
+    
+    return true;
+  }
+  catch(std::exception& e){
+    return false;
+  }
 }
   
 // sets (W) parameters according to q vector
 template <typename T>
 bool BBRBM<T>::setParametersQ(const math::vertex<T>& q)
 {
-  return false;
+  return convertQToParameters(q, W, a, b);
 }
 
 template <typename T>
 bool BBRBM<T>::getParametersQ(math::vertex<T>& q) const
 {
-  return false;
+  return convertParametersToQ(W, a, b, q);
+}
+
+// keeps parameters within sane levels
+// (clips overly large parameters and NaNs)
+template <typename T>
+void BBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b,
+		       math::matrix<T>& W) const
+{
+  for(unsigned int i=0;i<a.size();i++){
+    if(isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
+    if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
+    if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
+  }
+
+  for(unsigned int i=0;i<b.size();i++){
+    if(isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
+    if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
+    if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
+  }
+
+  for(unsigned int j=0;j<W.ysize();j++){
+    for(unsigned int i=0;i<W.xsize();i++){
+      if(isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
+      if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
+      if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
+    }
+  }
 }
   
 template <typename T>
 T BBRBM<T>::U(const math::vertex<T>& q) const throw()
 {
-  return T(-INFINITY);
+  math::vertex<T> a;
+  math::vertex<T> b;
+  math::matrix<T> W;
+
+  convertQToParameters(q, W, a, b);
+  safebox(a, b, W);
+  // currently uses only reconstruction error to estimate U(p)
+  return reconstructionError(Usamples, 1000, a, b, W);
 }
 
 template <typename T>
 math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 {
+  math::vertex<T> a;
+  math::vertex<T> b;
+  math::matrix<T> W;
+  
+  convertQToParameters(q, W, a, b);
+  safebox(a, b, W);
+
+  // calculates gradient vector
+  math::vertex<T> ga(a);
+  math::vertex<T> gb(b);
+  math::matrix<T> gW(W);
+
+  math::vertex<T> pa(a);
+  math::vertex<T> pb(b);
+  math::matrix<T> PW(W);
+
+  math::vertex<T> na(a);
+  math::vertex<T> nb(b);
+  math::matrix<T> NW(W);
+
+  const unsigned int NUMSAMPLES = 100;
+  const unsigned int CDk = 10;
+
+  {
+    // calculates positive gradient from NUMSAMPLES examples Pdata(v))
+    PW.zero();
+    pa.zero();
+    pb.zero();
+    
+    // Pdata
+    for(unsigned int i=0;i<NUMSAMPLES;i++){
+      const unsigned int index = rng.rand() % Usamples.size();
+      auto v = Usamples[index];
+      
+      auto h = W*v + b;
+      
+      // hidden units
+      for(unsigned int j=0;j<h.size();j++)
+	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+      
+      PW += h.outerproduct(v)/T(NUMSAMPLES);
+      pa += v/T(NUMSAMPLES);
+      pb += h/T(NUMSAMPLES);
+    }
+    
+
+    // samples from Pmodel(v) approximatedly
+    std::vector< math::vertex<T> > modelsamples; // model samples
+    
+    for(unsigned int i=0;i<NUMSAMPLES;i++)
+    {
+      const unsigned int index = rng.rand() % Usamples.size();
+      auto v = Usamples[index];
+      
+      
+      auto h = W*v + b;
+      
+      // 1. hidden units: calculates sigma(a_j)
+      for(unsigned int j=0;j<(h.size()-0);j++){
+	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	T r = T(rand())/T(RAND_MAX);
+	
+	if(aj > r) h[j] = T(1.0); // discretization step
+	else       h[j] = T(0.0);
+      }
+	
+      
+      for(unsigned int l=0;l<CDk;l++){
+	v = h*W + a;
+	
+	// 1. visible units: calculates sigma(a_j)
+	for(unsigned int j=0;j<(v.size()-0);j++){
+	  T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	  T r = T(rand())/T(RAND_MAX);
+	  
+	  if(aj > r) v[j] = T(1.0); // discretization step
+	  else       v[j] = T(0.0);
+	}
+	
+	h = W*v + b;
+	
+	// 2. hidden units: calculates sigma(a_j)
+	for(unsigned int j=0;j<(h.size()-0);j++){
+	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	  T r = T(rand())/T(RAND_MAX);
+	  
+	  if(aj > r) h[j] = T(1.0); // discretization step
+	  else       h[j] = T(0.0);
+	}
+	
+      }
+      
+      modelsamples.push_back(v);
+    }
+    
+    // calculates negative gradient by using samples from Pmodel(v)
+    NW.zero();
+    na.zero();
+    nb.zero();
+    
+    // Pmodel
+    for(unsigned int i=0;i<NUMSAMPLES;i++){
+      auto v = modelsamples[i];
+      
+      auto h = W*v + b;
+      
+      // hidden units
+      for(unsigned int j=0;j<h.size();j++)
+	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+      
+      NW += h.outerproduct(v)/T(NUMSAMPLES);
+      na += v/T(NUMSAMPLES);
+      nb += h/T(NUMSAMPLES);
+    }
+
+    ga = -(pa - na);
+    gb = -(pb - nb);
+    gW = -(PW - NW);
+  }
+
   math::vertex<T> grad;
   grad.resize(this->qsize());
-  grad.zero();
-
+  
+  convertParametersToQ(gW, ga, gb, grad);
+  
   return grad;
 }
 

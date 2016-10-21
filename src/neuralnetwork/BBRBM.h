@@ -83,17 +83,19 @@ class BBRBM {
 
   unsigned int qsize() const throw(); // size of q vector q = [vec(W)]
   
-  // converts (W) parameters into q vector
-  bool convertParametersToQ(const math::matrix<T>& W, math::vertex<T>& q) const;
-  
   // converts q vector into parameters (W, a, b)
-  bool convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W) const;
+  bool convertParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
+			    math::vertex<T>& q) const;
+
+  // converts q vector into parameters (W, a, b)
+  bool convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b) const;
   
   // sets (W) parameters according to q vector
   bool setParametersQ(const math::vertex<T>& q);
   bool getParametersQ(math::vertex<T>& q) const;
-  
 
+  // keeps parameters within sane levels (clips overly large parameters and NaNs)
+  void safebox(math::vertex<T>& a, math::vertex<T>& b, math::matrix<T>& W) const;
   
   T U(const math::vertex<T>& q) const throw();
   math::vertex<T> Ugrad(const math::vertex<T>& q) throw();
@@ -111,6 +113,8 @@ class BBRBM {
   math::matrix<T> W;
   math::vertex<T> a;
   math::vertex<T> b;
+
+  std::vector< math::vertex<T> > Usamples;
 
   RNG<T> rng;
 };

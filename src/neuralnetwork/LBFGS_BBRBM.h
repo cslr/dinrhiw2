@@ -1,28 +1,29 @@
 /*
- * LBFGS second order optimizer for GB-RBM
+ * LBFGS second order optimizer for BB-RBM
  * 
- * hopefully this will optimize GB-RBM better than first order gradient descent 
+ * hopefully this will optimize BB-RBM better than first order gradient descent 
  * which seem to get stuck into local minimas or something..
  */
 
-#ifndef LBFGS_GBRBM_h
-#define LBFGS_GBRBM_h
+#ifndef LBFGS_BBRBM_h
+#define LBFGS_BBRBM_h
 
 #include "LBFGS.h"
-#include "GBRBM.h"
+#include "BBRBM.h"
 #include "dataset.h"
 #include "vertex.h"
+
 
 namespace whiteice
 {
   template <typename T=math::blas_real<float> >
-    class LBFGS_GBRBM : public whiteice::math::LBFGS<T>
+    class LBFGS_BBRBM : public whiteice::math::LBFGS<T>
     {
     public:
-      LBFGS_GBRBM(const GBRBM<T>& net,
+      LBFGS_BBRBM(const BBRBM<T>& net,
 		  const dataset<T>& d, bool overfit=false);
     
-      virtual ~LBFGS_GBRBM();
+      virtual ~LBFGS_BBRBM();
     
     protected:
 
@@ -40,16 +41,16 @@ namespace whiteice
       T getError(const math::vertex<T>& x) const;
 
     private:
-      const GBRBM<T> net;
+      const BBRBM<T> net;
       const dataset<T>& data;
       
     };
 
 
-  extern template class LBFGS_GBRBM< float >;
-  extern template class LBFGS_GBRBM< double >;
-  extern template class LBFGS_GBRBM< math::blas_real<float> >;
-  extern template class LBFGS_GBRBM< math::blas_real<double> >;
+  extern template class LBFGS_BBRBM< float >;
+  extern template class LBFGS_BBRBM< double >;
+  extern template class LBFGS_BBRBM< math::blas_real<float> >;
+  extern template class LBFGS_BBRBM< math::blas_real<double> >;
   
 }
 
