@@ -10,6 +10,7 @@
 
 #include "vertex.h"
 #include "matrix.h"
+#include "RNG.h"
 
 
 namespace whiteice {
@@ -43,9 +44,10 @@ class BBRBM {
   bool setHidden(const math::vertex<T>& h);
   
   
-  bool reconstructData(unsigned int iters = 1);
-  bool reconstructData(std::vector< math::vertex<T> >& samples, unsigned int iters = 1);
-  bool reconstructDataHidden(unsigned int iters = 1);
+  bool reconstructData(unsigned int iters = 2); // 2 to v->h->h
+  bool reconstructData(std::vector< math::vertex<T> >& samples,
+		       unsigned int iters = 1);
+  bool reconstructDataHidden(unsigned int iters = 2);
   
   void getParameters(math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b) const;
   
@@ -53,12 +55,49 @@ class BBRBM {
   
   // calculates single epoch for updating weights using CD-1 and
   // returns reconstruction error
-  // EPOCHS control quality of the solution, 1 epoch goes through data once
-  // but higher number of EPOCHS mean data calculations can take longer (higher quality)
   T learnWeights(const std::vector< math::vertex<T> >& samples,
 		 const unsigned int EPOCHS=1,
 		 bool verbose = false);
+
+  T reconstructionError(const std::vector< math::vertex<T> >& samples,
+			unsigned int N, // number of samples to use from samples to estimate reconstruction error
+			const math::vertex<T>& a,
+			const math::vertex<T>& b,			
+			const math::matrix<T>& W) const throw(); // weight matrix (parameters) to use
+
+  T reconstructionError(const std::vector< math::vertex<T> >& samples,
+			unsigned int N) const throw() // number of samples to use from samples to estimate reconstruction error
   
+  { return reconstructionError(samples, N, this->a, this->b, this->W); }
+
+  T reconstructionError(const math::vertex<T>& s,
+			const math::vertex<T>& a,
+			const math::vertex<T>& b,
+			const math::matrix<T>& W) const throw(); // weight matrix (parameters) to use
+
+  ////////////////////////////////////////////////////////////
+  // U(q) functions used to maximize P(v|data, q) ~ exp(-U(q))
+  //       rbm parameters q
+
+  bool setUData(const std::vector< math::vertex<T> >& samples);
+
+  unsigned int qsize() const throw(); // size of q vector q = [vec(W)]
+  
+  // converts (W) parameters into q vector
+  bool convertParametersToQ(const math::matrix<T>& W, math::vertex<T>& q) const;
+  
+  // converts q vector into parameters (W, a, b)
+  bool convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W) const;
+  
+  // sets (W) parameters according to q vector
+  bool setParametersQ(const math::vertex<T>& q);
+  bool getParametersQ(math::vertex<T>& q) const;
+  
+
+  
+  T U(const math::vertex<T>& q) const throw();
+  math::vertex<T> Ugrad(const math::vertex<T>& q) throw();
+
   ////////////////////////////////////////////////////////////
   
   // load & saves RBM data from/to file
@@ -70,7 +109,10 @@ class BBRBM {
   math::vertex<T> h, v;
   
   math::matrix<T> W;
-  math::vertex<T> a, b;
+  math::vertex<T> a;
+  math::vertex<T> b;
+
+  RNG<T> rng;
 };
 
  

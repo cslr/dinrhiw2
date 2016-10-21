@@ -1021,7 +1021,8 @@ BBRBM.o: BBRBM.cpp BBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
- neuronlayer.h ../math/norms.h activation_function.h function.h
+ neuronlayer.h ../math/norms.h activation_function.h function.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 construct_nnetwork.o: construct_nnetwork.cpp construct_nnetwork.h DBN.h \
  GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
@@ -1068,7 +1069,8 @@ GBRBM.o: GBRBM.cpp GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h activation_function.h function.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
- LBFGS_GBRBM.h ../math/LBFGS.h
+ LBFGS_GBRBM.h ../math/LBFGS.h ../linear_ETA.h ../ETA.h ../linear_ETA.cpp \
+ ../linear_ETA.h
 HMCGBRBM.o: HMCGBRBM.cpp HMCGBRBM.h HMC_abstract.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \

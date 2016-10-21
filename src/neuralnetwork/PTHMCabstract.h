@@ -26,6 +26,9 @@ namespace whiteice {
  */
 template <typename T = math::blas_real<float> >
 class PTHMC_abstract {
+protected:
+	const bool adaptive;
+        const unsigned int deepness;
 public:
 	// deepness = the number of different temperatures
 	PTHMC_abstract(unsigned int deepness, bool adaptive);
@@ -61,10 +64,6 @@ public:
 	}
 
 protected:
-	const bool adaptive;
-	const unsigned int deepness;
-
-
 	mutable std::mutex sampler_lock;
 	std::list < std::shared_ptr< whiteice::HMC_abstract<T> > > hmc;
 	bool dynamic_pt; // does we add and remove new temperatures if accept rates are too high/low?

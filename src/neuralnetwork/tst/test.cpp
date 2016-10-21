@@ -74,6 +74,8 @@ void rbm_test();
 
 void lbfgs_rbm_test();
 
+void bbrbm_test();
+
 void dbn_test();
 
 void bayesian_nnetwork_test();
@@ -113,7 +115,9 @@ int main()
 
     // lbfgs_rbm_test();
 
-    rbm_test();
+    bbrbm_test();
+
+    // rbm_test();
     
     return 0;
     
@@ -213,6 +217,72 @@ private:
   
 };
 
+/************************************************************/
+
+void bbrbm_test()
+{
+  std::cout << "BBRBM UNIT test.." << std::endl;
+
+  // use high number of dimensions 16x16 = 256
+  const unsigned int DIMENSION = 256;
+  const unsigned int SAMPLES = 10000;
+
+  whiteice::BBRBM< math::blas_real<double> > bbrbm;
+  std::vector< math::vertex< math::blas_real<double> > > samples;
+  whiteice::RNG< math::blas_real<double> > rng;
+  
+  // generates training data for binary RBM machine
+  {
+    // we generate pictures of a circles with random center and radius of 4 with a wrap-a-around
+    // around the borders and inspect how well RBM can learn them..
+
+    math::vertex< math::blas_real<double> > image(DIMENSION);
+
+    for(unsigned int n=0;n<SAMPLES;n++){
+      image.zero();
+
+      math::blas_real<double> radius = 8;
+      math::blas_real<double> x0 = rng.rand() % 16;
+      math::blas_real<double> y0 = rng.rand() % 16;
+      
+      for(unsigned int k=0;k<256;k++){
+	double angle = 2*M_PI*((double)k/256.0);
+
+	auto x = x0 + radius*sin(angle);
+	auto y = y0 + radius*cos(angle);
+
+	if(x<0.0) x += 16.0;
+	if(y<0.0) y += 16.0;
+	if(x>=16.0) x -= 16.0;
+	if(y>=16.0) y -= 16.0;
+
+	unsigned int xx = 0, yy = 0;
+	math::convert(xx, x);
+	math::convert(yy, y);
+
+	unsigned int address = xx + yy*16;
+
+	image[address] = 1.0;
+      }
+
+      samples.push_back(image);
+    }
+  }
+
+
+  // learns weights given training data
+  {
+
+    bbrbm.resize(DIMENSION, DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
+    
+    auto error = bbrbm.learnWeights(samples, 10, true);
+
+    std::cout << "BBRBM final reconstruction error = "
+	      << error << std::endl;
+    
+  }
+  
+}
 
 /************************************************************/
 
