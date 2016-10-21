@@ -2,16 +2,23 @@ WHAT DINRHIW2 IS?
 -----------------
 
 Primary aim of the dinrhiw is to be linear algebra library and machine learning 
-library. For this reason dinrhiw implements PCA and neural
-network codes. Currently, the neural network code only supports:
+library. Dinrhiw implements PCA and neural network codes.
+Currently, the feedforward neural network code supports:
 
+* second order L-BFGS optimization and gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
-* experimental branch (RBM_test): HMC bayesian energy based model (RBM) [hamiltonian bayes-RBM neural network]
-* second order L-BFGS search
-* fast gradient descent (backpropagation)
 * parallel computing (OpenMP)
 
-.. as well as naive experimental PSO optimizer. 
+* experimental branch (RBM_test):
+  - working implementation of GB-RBM based on 2nd order LBFGS optimization (class GBRBM)
+  
+  - work-in-progress/todo:
+    * full BBRBM implementation and testing (class BBRBM)
+    * DBN implementation (GBRBM input layer + BBRBM hidden layers),
+      greedy optimizer (layerwise optimization) and transformation code to nnetwork
+      (feedforward neural network) which can be trained in a supervised manner
+
+
 
 BUILDING IT
 -----------
@@ -19,7 +26,7 @@ BUILDING IT
 You need GNU GCC (www.gcc.org). The code compiles both on Windows and Linux (requiring *nix environment).
 It is recommended to try to compile and use the library initially on Linux.
 
-RBM code is not currently directly usable using test programs. (look for special RBM directory).
+RBM code is not yet directly usable using tools. (look at neuralnetwork/tst/test.cpp for details).
 
 To build and install library execute
 
@@ -94,14 +101,22 @@ before 1.0 release. (cleanup the code)
 PLAN
 ----
 
-Version 1 ("done")
+Stage 1 ("done")
 
-L-BFGS code for feedforward network and bayesian neural network with sampling
-OpenBLAS
+L-BFGS code for feedforward network + bayesian neural network with sampling
+parallel BLAS implementation.
 
-Version 2 (in development)
+Stage 2 (in development)
 
-Stacked RBMs (GB-RBM + BB-RBMs) using PT-HMC sampling and L-BFGS finetuning + 
-HMC bayesian neural network for local mode uncertainty estimation (variance).
-OpenCL BLAS (GPU accelerated)
+Stacked RBMs (GB-RBM + BB-RBMs) and implementation of DBN networks,
+which can be transformed to nnetwork and further trained using output examples.
 
+Finally add support of parallel DBN pretraining + nnetwork optimization to tools ("nntool").
+
+Release version 1.0
+
+
+Stage 3 (possible ideas after 1.0)
+
+Recurrent neural networks (with memory or turing neural networks) and
+reinforcement learning. (something similar to Google DeepMind projects).
