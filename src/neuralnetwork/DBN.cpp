@@ -1,5 +1,7 @@
 
 #include "DBN.h"
+#include <list>
+
 
 namespace whiteice
 {
@@ -198,28 +200,57 @@ namespace whiteice
   // learns stacked RBM layer by layer, each RBM is trained one by one
   template <typename T>
   bool DBN<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
-			    const T& dW, bool verbose)
+			    const T& errorLevel, bool verbose)
   {
-    if(dW < T(0.0)) return false;
+    if(errorLevel < T(0.0)) return false;
 
     // increase after the whole learning process works..
     const unsigned int ITERLIMIT = 100;
-    const unsigned int EPOCH_STEPS = 5;
+    const unsigned int EPOCH_STEPS = 2;
     
     std::vector< math::vertex<T> > in = samples;
     std::vector< math::vertex<T> > out;
+    T error = T(INFINITY);
+    std::list<T> errors;
 
     unsigned int iters = 0;
-    while(input.learnWeights(in, EPOCH_STEPS, verbose) >= dW){
+    while((error = input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
+	  && iters < ITERLIMIT)
+    {
       // learns also variance
       iters += EPOCH_STEPS;
+      errors.push_back(error);
 
       if(verbose)
-	std::cout << "GBRBM INPUT LAYER: "
-		  << iters << "/" << ITERLIMIT << std::endl;
+	std::cout << "GBRBM LAYER OPTIMIZATION "
+		  << iters << "/" << ITERLIMIT << ": "
+		  << error << "/" << errorLevel 
+		  << std::endl;
       
-      if(iters >= ITERLIMIT)
-	break; // stop at this step
+      while(errors.size() > 10)
+	errors.pop_front();
+
+      // calculates mean and variance and stops if variance is
+      // within 1% of mean (convergence) during latest
+      // EPOCH_STEPS*10 iterations
+
+      if(errors.size() >= 10){
+	T m = T(0.0), v = T(0.0);
+
+	for(auto& e : errors){
+	  m += e;
+	  v += e*e;
+	}
+
+	m /= errors.size();
+	v /= errors.size();
+	v -= m*m;
+
+	v = sqrt(v);
+
+	if(v/m <= 1.01) 
+	  break; // stdev is less than 1% of mean
+      }
     }
 
     // maps input to output
@@ -241,17 +272,46 @@ namespace whiteice
       // learns the current layer from input
 
       unsigned int iters = 0;
-      while(layers[i].learnWeights(in, EPOCH_STEPS, verbose) >= dW){
+      while((error = layers[i].learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel &&
+	    iters < ITERLIMIT)
+      {
 	iters += EPOCH_STEPS;
 
-	if(verbose)
-	  std::cout << "BBRBM LAYER " << i << ": "
-		    << iters << "/" << ITERLIMIT << std::endl;
+	errors.push_back(error);
 	
-	if(iters >= ITERLIMIT)
-	  break; // stop at this step
+	if(verbose)
+	  std::cout << "BBRBM LAYER OPTIMIZATION "
+		    << iters << "/" << ITERLIMIT << ": "
+		    << error << "/" << errorLevel 
+		    << std::endl;
+	
+	while(errors.size() > 10)
+	  errors.pop_front();
+	
+	// calculates mean and variance and stops if variance is
+	// within 1% of mean (convergence) during latest
+	// EPOCH_STEPS*10 iterations
+	
+	if(errors.size() >= 10){
+	  T m = T(0.0), v = T(0.0);
+	  
+	  for(auto& e : errors){
+	    m += e;
+	    v += e*e;
+	  }
+	  
+	  m /= errors.size();
+	  v /= errors.size();
+	  v -= m*m;
+	  
+	  v = sqrt(v);
+	  
+	  if(v/m <= 1.01) 
+	    break; // stdev is less than 1% of mean
+	}
       }
-
+      
+      
       // maps input into output
       out.clear();
       
