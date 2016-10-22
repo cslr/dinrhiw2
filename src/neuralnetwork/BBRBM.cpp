@@ -541,7 +541,8 @@ T BBRBM<T>::reconstructionError(const std::vector< math::vertex<T> >& samples,
   T error = T(0.0);
 
   for(unsigned int n=0;n<N;n++){
-    const auto& s = samples[n];
+    const unsigned int index = rng.rand() % samples.size();
+    const auto& s = samples[index];
 
     error += reconstructionError(s, a, b, W) / T(N*s.size());
   }

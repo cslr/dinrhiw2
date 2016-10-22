@@ -20,6 +20,7 @@ void parse_commandline(int argc, char** argv,
 		       bool& overfit, 
 		       bool& adaptive,
 		       bool& negfeedback,
+		       bool& deep,
 		       bool& help, 
 		       bool& verbose);
 

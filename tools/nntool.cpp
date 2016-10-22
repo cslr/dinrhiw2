@@ -3,7 +3,7 @@
  * a feedforward neural network
  * optimizer command line tool.
  * 
- * (C) copyright Tomas Ukkonen 2004, 2005, 2014-2016
+ * (C) Copyright Tomas Ukkonen 2004, 2005, 2014-2016
  *
  *************************************************************
  * 
@@ -59,6 +59,7 @@ int main(int argc, char** argv)
     bool overfit = false;
     bool adaptive = false;
     bool negfeedback = false;
+    bool deep = false;
     
     unsigned int samples = 0; // number of samples or iterations in learning process
     unsigned int secs = 0;    // how many seconds the learning process should take
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
 		      overfit,
 		      adaptive,
 		      negfeedback,
+		      deep,
 		      help,
 		      verbose);
     srand(time(0));
@@ -217,11 +219,19 @@ int main(int argc, char** argv)
       data.downsampleAll(dataSize);
     }
 
+    if((lmethod != "use" && lmethod != "minimize") && deep == true){
+      printf("Deep pretraining (stacked RBMs) of neural network weights (slow).\n");
+      
+      if(deep_pretrain_nnetwork(nn, data, verbose) == false){
+	printf("ERROR: deep pretraining of nnetwork failed.\n");
+	return -1;
+      }
+    }
     /*
-     * initializes nnetwork weight values using 
+     * default: initializes nnetwork weight values using 
      * (simple) deep ica if possible
      */
-    if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
+    else if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
     {
 
       if(verbose)
@@ -1398,6 +1408,7 @@ void print_usage(bool all)
   printf("--version      displays version and exits\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
+  printf("--deep         pretrains feedforward neural network weights using stacked RBMs (slow)\n");
   printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
   printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
   printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
@@ -1417,7 +1428,7 @@ void print_usage(bool all)
   printf("\n");
   printf("               Ctrl-C shutdowns the program gracefully.\n");
   printf("\n");
-  printf("This program is distributed under LGPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
+  printf("This program is distributed under GPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
   
 }
 

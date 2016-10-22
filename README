@@ -41,7 +41,7 @@ commands at the top level.
 For the working examples how to use dinrhiw look at the tools directory
 below the root dictory.
 
-Building it (tst after installing the library) creates three programs:
+Building it (you need to install bison parser) creates three programs:
 
 aescipher - shows how to use AES encryption module.
 dstool and nntool - dataset management and neural network weight learning.

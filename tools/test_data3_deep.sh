@@ -16,14 +16,17 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool --samples 100 --negfb -v commviol-test.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg lbfgs
-./nntool --samples 100 --load -v commviol-test.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg lbfgs
+./nntool --deep --samples 100 -v commviol-test.ds 141-1000-100-4 commviol-nn.cfg lbfgs
+
+
+# ./nntool --samples 100 --negfb -v commviol-test.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg lbfgs
+# ./nntool --samples 100 --load -v commviol-test.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg lbfgs
 
 
 ##################################################
 # testing
 
-./nntool -v commviol-test.ds 141-141-141-141-141-141-141-4  commviol-nn.cfg use
+./nntool -v commviol-test.ds 141-1000-100-100-4  commviol-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
@@ -32,7 +35,7 @@ cp -f commviol-test.ds commviol-pred.ds
 ./dstool -clear:1 commviol-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v commviol-pred.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg use
+./nntool -v commviol-pred.ds 141-1000-4 commviol-nn.cfg use
 
 ./dstool -print:1:2204:2214 commviol-pred.ds
 tail commviol.out

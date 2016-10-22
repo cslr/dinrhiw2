@@ -203,19 +203,20 @@ namespace whiteice
     if(dW < T(0.0)) return false;
 
     // increase after the whole learning process works..
-    const unsigned int ITERLIMIT = 5; 
+    const unsigned int ITERLIMIT = 100;
+    const unsigned int EPOCH_STEPS = 5;
     
     std::vector< math::vertex<T> > in = samples;
     std::vector< math::vertex<T> > out;
 
     unsigned int iters = 0;
-    while(input.learnWeights(in, 5, verbose) >= dW){
+    while(input.learnWeights(in, EPOCH_STEPS, verbose) >= dW){
       // learns also variance
-      iters += 5;
+      iters += EPOCH_STEPS;
 
       if(verbose)
-	std::cout << "GB-RBM INPUT LAYER ITER "
-		  << iters << std::endl;
+	std::cout << "GBRBM INPUT LAYER: "
+		  << iters << "/" << ITERLIMIT << std::endl;
       
       if(iters >= ITERLIMIT)
 	break; // stop at this step
@@ -223,7 +224,7 @@ namespace whiteice
 
     // maps input to output
     out.clear();
-    
+
     for(auto v : in){
       input.setVisible(v);
       input.reconstructData(1);
@@ -235,28 +236,28 @@ namespace whiteice
     }
 
     in = out;
-    
-    
+
     for(unsigned int i=0;i<layers.size();i++){
       // learns the current layer from input
-      
+
       unsigned int iters = 0;
-      while(layers[i].learnWeights(in, 5, verbose) >= dW){
-	iters++;
+      while(layers[i].learnWeights(in, EPOCH_STEPS, verbose) >= dW){
+	iters += EPOCH_STEPS;
 
 	if(verbose)
-	  std::cout << "BB-RBM LAYER " << i << " ITER "
-		    << iters << std::endl;
+	  std::cout << "BBRBM LAYER " << i << ": "
+		    << iters << "/" << ITERLIMIT << std::endl;
 	
 	if(iters >= ITERLIMIT)
 	  break; // stop at this step
       }
-      
+
       // maps input into output
       out.clear();
       
       for(auto v : in){
 	layers[i].setVisible(v);
+
 	layers[i].reconstructData(1);
 
 	math::vertex<T> h;
@@ -279,7 +280,7 @@ namespace whiteice
    */
   template <typename T>
   bool DBN<T>::convertToNNetwork(const whiteice::dataset<T>& data,
-				 whiteice::lreg_nnetwork<T>*& net)
+				 whiteice::nnetwork<T>*& net)
   {
     if(data.getNumberOfClusters() < 2)
       return false;
@@ -390,7 +391,7 @@ namespace whiteice
     arch.push_back(outputDimension);
 
     
-    net = new whiteice::lreg_nnetwork<T>(arch);
+    net = new whiteice::nnetwork<T>(arch);
     
     // copies DBN parameters as nnetwork parameters..
     net->setWeights(input.getWeights(), 0);

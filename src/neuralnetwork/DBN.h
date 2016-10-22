@@ -12,7 +12,7 @@
 #include "BBRBM.h"
 #include "vertex.h"
 #include "dataset.h"
-#include "lreg_nnetwork.h"
+#include "nnetwork.h"
 
 namespace whiteice
 {
@@ -32,10 +32,6 @@ namespace whiteice
 
     unsigned int getNumberOfLayers() const;
 
-    // returns supervised neural network with extra output layer
-    // bool convertToNNetwork(whiteice::nnetwork<T>& net,
-    //                        const whiteice::dataset<T>& data);
-    
     ////////////////////////////////////////////////////////////
     
     // visible neurons/layer of the first RBM
@@ -63,10 +59,11 @@ namespace whiteice
     // by adding linear outputlayer which is optimized locally using linear optimization
     // returned nnetwork contains layer by layer optimized values which
     // can be further optimized across all layers using nnetwork optimizers
+    // returns supervised neural network with extra output layer
     //
     // net - allocates new nnetwork and overwrites pointer to it as a return value
     // 
-    bool convertToNNetwork(const whiteice::dataset<T>& data, whiteice::lreg_nnetwork<T>*& net);
+    bool convertToNNetwork(const whiteice::dataset<T>& data, whiteice::nnetwork<T>*& net);
     
     private:
     

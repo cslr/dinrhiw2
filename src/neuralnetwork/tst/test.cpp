@@ -444,7 +444,7 @@ void dbn_test()
 
     printf("TESTING DBN CONVERSION TO NNETWORK..\n");
 
-    whiteice::lreg_nnetwork< math::blas_real<double> >* nnet = NULL;
+    whiteice::nnetwork< math::blas_real<double> >* nnet = NULL;
 
     if(dbn.convertToNNetwork(ds, nnet) == false){
       std::cout << "ERROR: conversion of DBN to neural network code failed." << std::endl;
