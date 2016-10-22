@@ -5,4 +5,11 @@ Interesting revision numbers:
 				   it uses G-B RBM at the first layer and then B-B RBMs 
 				   to process hidden states
 
-152 - update rule for variance, octave GBRBM code still works but now I try to modify it
+152  				   update rule for variance, octave GBRBM code still works but now I try to modify it
+
+231 - tools/nntool   	     	   nntool (codenamed "narya") can now pretrain neural network weights using stacked RBMs (deep learning)!
+      				   more work is needed to make the code more robust.
+
+				   also, sigmoid-function is now the default non-linearity in nnetwork code because
+				   it fits well together with RBM code
+
