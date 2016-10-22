@@ -112,11 +112,11 @@ int main()
   
   try{
     
-    // dbn_test();
+    dbn_test();
 
     // lbfgs_rbm_test();
 
-    bbrbm_test();
+    // bbrbm_test();
 
     // rbm_test();
     
@@ -224,6 +224,33 @@ void bbrbm_test()
 {
   std::cout << "BBRBM UNIT test.." << std::endl;
 
+
+
+  {
+    std::cout << "Unit testing BBRBM::save() and BBRBM::load() functions.." << std::endl;
+    
+    whiteice::BBRBM< math::blas_real<double> > rbm1, rbm2;
+    
+    rbm1.resize(20,30);
+    rbm1.initializeWeights();
+    
+    rbm2.resize(11,24);
+    rbm2.initializeWeights();
+    
+    if(rbm1 != rbm1) std::cout << "BBRBM comparison ERROR." << std::endl;
+    if(rbm2 == rbm1) std::cout << "BBRBM comparison ERROR." << std::endl;
+    
+    rbm2 = rbm1;
+    if(rbm2 != rbm1) std::cout << "BBRBM comparison ERROR." << std::endl;
+    
+    if(rbm2.save("rbmparams.dat") == false) std::cout << "BBRBM::save() FAILED." << std::endl;
+    if(rbm1.load("rbmparams.dat") == false) std::cout << "BBRBM::load() FAILED." << std::endl;
+    
+    if(rbm2 != rbm1) std::cout << "BBRBM load() FAILED to create identical BBRBM." << std::endl;
+    
+  }
+  
+  
   // use high number of dimensions 16x16 = 256
   const unsigned int DIMENSION = 256;
   const unsigned int SAMPLES = 10000;
@@ -331,12 +358,12 @@ void bbrbm_test()
 
 /************************************************************/
 
-// TODO IMPLEMENT AND FIX ISSUES IN DBN CODE...
 void dbn_test()
 {
   std::cout << "Deep Belief Network (DBN) test.." << std::endl;
 
   whiteice::DBN< math::blas_real<double> > dbn;
+  whiteice::dataset< math::blas_real<double> > ds;
 
   // generate training data
   std::vector< math::vertex< math::blas_real<double> > > input;
@@ -345,11 +372,10 @@ void dbn_test()
   const unsigned int DIMENSION = 2;
   const unsigned int NSAMPLES  = 10000;
   {
-    // TODO cut'n'paste from RBN network and create DIMENSION
-    //      dimensional hermite curves to learn
-    //      assign separate output values to curve
-    //      based on distance from the beginning of the curve
-    //      (sin(distance)).
+    // hermite curve and output values based on (sin(distance))
+    // (this can be tricky problem when the curve is very long one,
+    //  nnetwork should basically learn the curve and the concept of
+    //  distance travelled)
 
     createHermiteCurve(input, 5, DIMENSION, NSAMPLES);
 
@@ -357,7 +383,8 @@ void dbn_test()
     math::blas_real<double> value, distance = 0;
       
     for(auto& p : input){
-      distance += 10*2*3.14159/NSAMPLES;
+      p = p; // dummy code to remove warning message..
+      distance += 10*2*M_PI/NSAMPLES;
       value = sin(distance);
 
       math::vertex< math::blas_real<double> > o(1);
@@ -365,44 +392,105 @@ void dbn_test()
 
       output.push_back(o);
     }
+
+    ds.createCluster("input", DIMENSION);
+    ds.createCluster("output", 1);
+
+    ds.add(0, input);
+    ds.add(1, output);
   }
   
 
   // learn DBN-network
   {
     // 
-    // D x 100D x 1000 x 10 neural network
+    // D x 50D x 10 neural network
     // 
     std::vector<unsigned int> arch;
 
     arch.push_back(input[0].size());
-    arch.push_back(input[0].size()*100);
-    arch.push_back(1000);
+    arch.push_back(input[0].size()*50);
     arch.push_back(10);
 
     dbn.resize(arch);
 
-    math::blas_real<double> dW = 0.01;
+#if 0
+    math::blas_real<double> dW = 0.1;
 
+    // optimizes DBN neural network
     if(dbn.learnWeights(input, dW, true) == false){
       std::cout << "DBN LEARNING FAILURE" << std::endl;
       exit(-1);
     }
+#endif
 
     // reconstruct data
     auto reconstructedData = input;  
-
-    if(dbn.reconstructData(reconstructedData)){ // reconstruct data
+    
+    if(dbn.reconstructData(reconstructedData) == false){
       std::cout << "ERROR: reconstructedData().." << std::endl;
       exit(-1);
     }
 
-    if(!saveSamples("dbn_input.txt", input) || !saveSamples("dbn_reconstructed.txt", reconstructedData)){
+    if(!saveSamples("dbn_input.txt", input) ||
+       !saveSamples("dbn_output.txt", output) || 
+       !saveSamples("dbn_reconstructed.txt", reconstructedData)){
       std::cout << "ERROR: saveSamples() failed" << std::endl;
       exit(-1);
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    // converts DBN to lreg_nnetwork<T>
+
+    printf("TESTING DBN CONVERSION TO NNETWORK..\n");
+
+    whiteice::lreg_nnetwork< math::blas_real<double> >* nnet = NULL;
+
+    if(dbn.convertToNNetwork(ds, nnet) == false){
+      std::cout << "ERROR: conversion of DBN to neural network code failed." << std::endl;
+      exit(-1);
+    }
+    else{
+      printf("CONVERT TO NNETWORK: SUCCESS\n");
+    }
+
+    // normal optimization of pretrained DBN neural network
+    LBFGS_nnetwork< math::blas_real<double> > optimizer(*nnet, ds,
+							true, false);
+
+    math::vertex< math::blas_real<double> > q;
+    nnet->exportdata(q);
+
+    optimizer.minimize(q);
+
+    int latestIteration = -1;
+    unsigned int currentIterator = 0;
     
-    // calculate reconstruction error and report it..
+    while(optimizer.isRunning() && !optimizer.solutionConverged()){
+      math::blas_real<double> error;
+      
+      if(optimizer.getSolution(q, error, currentIterator)){
+	if(latestIteration < (signed)currentIterator){
+	  latestIteration = (signed)currentIterator;
+
+	  std::cout << "FINETUNE " << currentIterator
+		    << ": " << error << std::endl;
+	  fflush(stdout);
+	}
+      }
+      
+      sleep(1);
+    }
+
+    // we have optimized DBN nnetwork and save results to disk
+    {
+      std::cout << "Saving deep neural network.." << std::endl;
+      
+      if(nnet->save("dbn_lreg_nnetwork.dat") == false){
+	printf("Saving deep neural network FAILED\n");
+      }
+    }
+    
   }
   
 }

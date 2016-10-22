@@ -171,11 +171,11 @@ namespace whiteice
 
 
   template <typename T>
-  bool DBN<T>::reconstructData(std::vector< math::vertex<T> >& samples, unsigned int iters)
+  bool DBN<T>::reconstructData(std::vector< math::vertex<T> >& samples)
   {
     for(auto& s : samples){
       if(!setVisible(s)) return false;
-      if(!reconstructData(iters)) return false;
+      if(!reconstructData(2)) return false;
       s = getVisible();
     }
 
@@ -202,15 +202,16 @@ namespace whiteice
   {
     if(dW < T(0.0)) return false;
 
-    const unsigned int ITERLIMIT = 100;
+    // increase after the whole learning process works..
+    const unsigned int ITERLIMIT = 5; 
     
     std::vector< math::vertex<T> > in = samples;
     std::vector< math::vertex<T> > out;
 
     unsigned int iters = 0;
-    while(input.learnWeights(in, 1, verbose) >= dW){
+    while(input.learnWeights(in, 5, verbose) >= dW){
       // learns also variance
-      iters++;
+      iters += 5;
 
       if(verbose)
 	std::cout << "GB-RBM INPUT LAYER ITER "
@@ -240,7 +241,7 @@ namespace whiteice
       // learns the current layer from input
       
       unsigned int iters = 0;
-      while(layers[i].learnWeights(in) >= dW){
+      while(layers[i].learnWeights(in, 5, verbose) >= dW){
 	iters++;
 
 	if(verbose)
@@ -265,6 +266,144 @@ namespace whiteice
       
       in = out;
     }
+    
+    return true;
+  }
+
+  
+  /* converts DBN to supervised nnetwork by using training samples
+   * (cluster 0 = input) and (cluster 1 = output) and
+   * by adding linear outputlayer which is optimized locally using linear optimization
+   * returned nnetwork contains layer by layer optimized values which
+   * can be further optimized across all layers using nnetwork optimizers
+   */
+  template <typename T>
+  bool DBN<T>::convertToNNetwork(const whiteice::dataset<T>& data,
+				 whiteice::lreg_nnetwork<T>*& net)
+  {
+    if(data.getNumberOfClusters() < 2)
+      return false;
+
+    // cluster 0 input values must match input layer dimensions
+    if(data.access(0,0).size() != input.getVisibleNodes()) 
+      return false;
+
+    // cluster 0 (input) and cluster 1 (output) have different sizes
+    if(data.size(0) != data.size(1))
+      return false; 
+
+    // output layer dimensions
+    const unsigned int outputDimension = data.access(1,0).size();
+    
+    // 1. process input data and calculates the deepest hidden values h
+    // 2. optimizes hidden values h to map output values:
+    //    min ||Ah + b - y||^2 (final linear layer)
+    // 3. creates lreg_nnetwork<T> and sets parameters (weights)
+    //    appropriately
+
+    // calculates hidden values
+    std::vector< math::vertex<T> > hidden;
+    
+    for(unsigned int i=0;i<data.size(0);i++){
+      this->setVisible(data.access(0,i));
+      this->reconstructData(1);
+      hidden.push_back(this->getHidden());
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // final layers linear optimizer (hidden(i) -> data.access(1, i))
+    // 
+    // solves min E{ 0.5*||Ah + b - y||^2 }
+    // 
+    // A = Syh * Shh^-1
+    // b = m_y - A*m_h
+    
+    math::matrix<T> A;
+    math::vertex<T> b;
+
+    const unsigned int hDimension = this->getHidden().size();
+
+    math::matrix<T> Shh(hDimension, hDimension);
+    math::matrix<T> Syh(outputDimension, hDimension);
+    math::vertex<T> mh(hDimension);
+    math::vertex<T> my(outputDimension);
+
+    Shh.zero();
+    Syh.zero();
+    mh.zero();
+    my.zero();
+
+    for(unsigned int i=0;i<hidden.size();i++){
+      const auto& h = hidden[i];
+      const auto& y = data.access(1, i);
+
+      mh += h/T(hidden.size());
+      my += y/T(hidden.size());
+
+      Shh += h.outerproduct(h)/T(hidden.size());
+      Syh += y.outerproduct(h)/T(hidden.size());
+    }
+
+    Shh -= mh.outerproduct(mh);
+    Syh -= my.outerproduct(mh);
+
+    // calculate inverse of Shh + regularizes it by adding terms
+    // to diagonal if inverse fails
+    // (TODO calculate pseudoinverse instead)
+    
+    T mindiagonal = Shh(0,0);
+
+    for(unsigned int i=0;i<outputDimension;i++)
+      if(Shh(i,i) < mindiagonal)
+	mindiagonal = Shh(i, i);
+
+    double k = 0.01;
+
+    while(Shh.inv() == false){
+      for(unsigned int i=0;i<outputDimension;i++){
+	T p = T(pow(2.0, k));
+	Shh(i,i) += p*mindiagonal;
+      }
+
+      k = 2.0*k;
+    }
+
+    A = Syh*Shh;
+    b = my - A*mh;
+    
+    //////////////////////////////////////////////////////////
+    // creates feedforward neural network
+
+    std::vector<unsigned int> arch; // architecture
+    arch.push_back(input.getVisibleNodes());
+
+    if(layers.size() > 0){
+      for(unsigned int i=0;i<layers.size();i++)
+	arch.push_back(layers[i].getVisibleNodes());
+
+      arch.push_back(layers[layers.size()-1].getHiddenNodes());
+    }
+    else{
+      arch.push_back(input.getHiddenNodes());
+    }
+
+    arch.push_back(outputDimension);
+
+    
+    net = new whiteice::lreg_nnetwork<T>(arch);
+    
+    // copies DBN parameters as nnetwork parameters..
+    net->setWeights(input.getWeights(), 0);
+    net->setBias(input.getBValue(), 0);
+    
+    for(unsigned int l=0;l<layers.size();l++){
+      net->setWeights(layers[l].getWeights(), l+1);
+      net->setBias(layers[l].getBValue(), l+1);
+    }
+
+    net->setWeights(A, layers.size()+1);
+    net->setBias(b, layers.size()+1);
+    
     
     return true;
   }

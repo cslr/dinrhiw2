@@ -2,10 +2,12 @@
  * BBRBM.cpp
  *
  *  Created on: 22.6.2015
- *      Author: Tomas
+ *      Author: Tomas Ukkonen
  */
 
 #include "BBRBM.h"
+#include "dataset.h"
+
 
 namespace whiteice {
 
@@ -74,6 +76,34 @@ BBRBM<T>& BBRBM<T>::operator=(const BBRBM<T>& rbm)
   return (*this);
 }
 
+template <typename T>
+bool BBRBM<T>::operator==(const BBRBM<T>& rbm) const
+{
+  if(this->v != rbm.v) return false;
+  if(this->h != rbm.h) return false;
+
+  if(this->W != rbm.W) return false;
+  if(this->a != rbm.a) return false;
+  if(this->b != rbm.b) return false;
+  if(this->Usamples != rbm.Usamples) return false;
+
+  return true;
+}
+
+template <typename T>
+bool BBRBM<T>::operator!=(const BBRBM<T>& rbm) const
+{
+  if(this->v == rbm.v) return false;
+  if(this->h == rbm.h) return false;
+
+  if(this->W == rbm.W) return false;
+  if(this->a == rbm.a) return false;
+  if(this->b == rbm.b) return false;
+  if(this->Usamples == rbm.Usamples) return false;
+
+  return true;
+}
+
 
 template <typename T>
 bool BBRBM<T>::resize(unsigned int visible, unsigned int hidden)
@@ -95,6 +125,19 @@ bool BBRBM<T>::resize(unsigned int visible, unsigned int hidden)
 }
 
 ////////////////////////////////////////////////////////////
+
+template <typename T>
+unsigned int BBRBM<T>::getVisibleNodes() const
+{
+  return v.size();
+}
+
+template <typename T>
+unsigned int BBRBM<T>::getHiddenNodes() const
+{
+  return h.size();
+}
+  
 template <typename T>
 void BBRBM<T>::getVisible(math::vertex<T>& v) const
 {
@@ -128,6 +171,24 @@ bool BBRBM<T>::setHidden(const math::vertex<T>& h)
   this->h = h;
   
   return true;
+}
+
+template <typename T>
+math::vertex<T> BBRBM<T>::getBValue() const
+{
+  return b;
+}
+
+template <typename T>
+math::vertex<T> BBRBM<T>::getAValue() const
+{
+  return a;
+}
+
+template <typename T>
+math::matrix<T> BBRBM<T>::getWeights() const
+{
+  return W;
 }
 
 template <typename T>
@@ -345,7 +406,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	// 1. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	  T r = T(rand())/T(RAND_MAX);
+	  T r = rng.uniform();
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
@@ -358,7 +419,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(v.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	    T r = T(rand())/T(RAND_MAX);
+	    T r = rng.uniform();
 	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
 	    else       v[j] = T(0.0);
@@ -369,7 +430,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  // 2. hidden units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(h.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	    T r = T(rand())/T(RAND_MAX);
+	    T r = rng.uniform();
 	    
 	    if(aj > r) h[j] = T(1.0); // discretization step
 	    else       h[j] = T(0.0);
@@ -482,7 +543,7 @@ T BBRBM<T>::reconstructionError(const std::vector< math::vertex<T> >& samples,
   for(unsigned int n=0;n<N;n++){
     const auto& s = samples[n];
 
-    error += reconstructionError(s, a, b, W) / T(N);
+    error += reconstructionError(s, a, b, W) / T(N*s.size());
   }
 
   return error;
@@ -681,7 +742,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
   math::vertex<T> nb(b);
   math::matrix<T> NW(W);
 
-  const unsigned int NUMSAMPLES = 10;
+  const unsigned int NUMSAMPLES = 100;
   const unsigned int CDk = 1;
 
   {
@@ -721,7 +782,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
 	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	T r = T(rand())/T(RAND_MAX);
+	T r = rng.uniform();
 	
 	if(aj > r) h[j] = T(1.0); // discretization step
 	else       h[j] = T(0.0);
@@ -734,7 +795,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 	// 1. visible units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(v.size()-0);j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	  T r = T(rand())/T(RAND_MAX);
+	  T r = rng.uniform();
 	  
 	  if(aj > r) v[j] = T(1.0); // discretization step
 	  else       v[j] = T(0.0);
@@ -745,7 +806,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 	// 2. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	  T r = T(rand())/T(RAND_MAX);
+	  T r = rng.uniform();
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
@@ -795,13 +856,86 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 template <typename T>
 bool BBRBM<T>::load(const std::string& filename) throw()
 {
-  return false;
+    whiteice::dataset<T> file;
+
+  if(file.load(filename) == false)
+    return false;
+
+  if(file.getNumberOfClusters() != 7)
+    return false;
+
+  std::vector<std::string> names;
+  if(file.getClusterNames(names) == false) return false;
+
+  bool found = false;
+  for(auto& n : names)
+    if(n == "whiteice::BBRBM file"){
+      found = true;
+      break;
+    }
+
+  if(found == false)
+    return false; // unknown filetype
+				  
+  // tries to load data..
+  std::vector< math::vertex<T> > data;
+
+  if(file.getData(0, data) == false) return false;
+  a = data[0];
+  if(file.getData(1, data) == false) return false;
+  b = data[0];
+  if(file.getData(2, data) == false) return false;
+  W.resize(a.size(), b.size());
+  if(W.load_from_vertex(data[0]) == false)
+    return false;
+  if(file.getData(3, data) == false) return false;
+  h = data[0];
+  if(file.getData(4, data) == false) return false;
+  v = data[0];
+  if(file.getData(5, data) == false) return false;
+  Usamples = data;
+
+  // some sanity checks..
+  if(a.size() != W.ysize()) return false;
+  if(b.size() != W.xsize()) return false;
+  if(a.size() != v.size())  return false;
+  if(b.size() != h.size())  return false;
+  
+  return true;
 }
 
 template <typename T>
 bool BBRBM<T>::save(const std::string& filename) const throw()
 {
-  return false;
+  whiteice::dataset<T> file;
+
+  file.createCluster("a", a.size());
+  if(file.add(0, a) == false) return false;
+  file.createCluster("b", b.size());
+  if(file.add(1, b) == false) return false;
+  file.createCluster("W", W.size());
+
+  math::vertex<T> vecW(W.xsize()*W.ysize());
+  W.save_to_vertex(vecW);
+  
+  if(file.add(2, vecW) == false) return false;
+
+  if(file.createCluster("h", h.size()) == false) return false;
+  file.add(3, h);
+  if(file.createCluster("v", v.size()) == false) return false;
+  file.add(4, v);
+
+  if(Usamples.size() > 0){
+    file.createCluster("Usamples", Usamples[0].size());
+    if(file.add(5, Usamples) == false) return false;
+  }
+  else{
+    file.createCluster("Usamples", 0);
+  }
+
+  file.createCluster("whiteice::BBRBM file", 1);
+  
+  return file.save(filename);
 }
 
 template class BBRBM< float >;

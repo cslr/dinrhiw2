@@ -992,6 +992,36 @@
   vector separatedly.
 
   \;
+
+  <emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash>--
+
+  <strong|Linear optimization>
+
+  Global optimum solution to linear optimization problem\ 
+
+  <center|<math|min e<around*|(|\<b-A\>,\<b-b\>|)>=
+  E<rsub|\<b-up-x\>*\<b-up-y\>><around*|{|<frac|1|2><around*|\<\|\|\>|\<b-A\>*\<b-x\>+\<b-b\>-\<b-y\>|\<\|\|\>><rsup|2>|}>>>
+
+  is rather straightforward to calculate and is part of solving many more
+  complicated problems, by taking gradients of
+  <math|e<around*|(|\<b-A\>,\<b-b\>|)>> and setting them to zero. We get
+  equations\ 
+
+  <math|\<b-A\>E<rsub|\<b-x\>><around*|{|\<b-x\>\<b-x\><rsup|T>|}>+\<b-b\>E<rsub|\<b-x\>><around*|{|\<b-x\>|}><rsup|T>*=E<rsub|\<b-x\>*\<b-y\>><around*|{|\<b-y\>*\<b-x\><rsup|T>|}>>
+
+  <math|\<b-A\>E<rsub|\<b-x\>><around*|{|\<b-x\>|}>+\<b-b\>=E<rsub|\<b-y\>><around*|{|\<b-y\>|}>>
+
+  which further simplify to
+
+  <math|\<b-A\><around*|(|E<rsub|\<b-x\>><around*|{|\<b-x\>\<b-x\><rsup|T>|}>-E<rsub|\<b-x\>><around*|{|\<b-x\>|}>E<rsub|\<b-x\>><around*|{|\<b-x\>|}><rsup|T>|)>*=E<rsub|\<b-x\>*\<b-y\>><around*|{|\<b-y\>*\<b-x\><rsup|T>|}>-E<rsub|\<b-y\>><around*|{|\<b-y\>|}>E<rsub|\<b-x\>><around*|{|\<b-x\>|}><rsup|T>>
+
+  <math|\<b-A\>*=\<b-Sigma\><rsub|\<b-y\>*\<b-x\>>\<b-Sigma\><rsup|-1><rsub|\<b-x\>\<b-x\>>>
+
+  and solving <math|\<b-b\>> is also straighforward\ 
+
+  <math|\<b-b\>=E<rsub|\<b-y\>><around*|{|\<b-y\>|}>-\<b-A\>E<rsub|\<b-x\>><around*|{|\<b-x\>|}>>
+
+  \;
 </body>
 
 <\initial>

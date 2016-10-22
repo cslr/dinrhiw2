@@ -94,7 +94,6 @@ namespace whiteice
     // gets and sets network parameters: Weight matrixes and biases
     bool getBias(math::vertex<T>& b, unsigned int layer) const throw();
     bool setBias(const math::vertex<T>& b, unsigned int layer) throw();
-
     bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
     

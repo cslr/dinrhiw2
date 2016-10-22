@@ -2,7 +2,7 @@
  * BBRBM.h
  *
  *  Created on: 22.6.2015
- *      Author: Tomas
+ *      Author: Tomas Ukkonen
  */
 
 #ifndef NEURALNETWORK_BBRBM_H_
@@ -32,17 +32,25 @@ class BBRBM {
   
   
   BBRBM<T>& operator=(const BBRBM<T>& rbm);
+  bool operator==(const BBRBM<T>& rbm) const;
+  bool operator!=(const BBRBM<T>& rbm) const;
   
   bool resize(unsigned int visible, unsigned int hidden);
   
   ////////////////////////////////////////////////////////////
+
+  unsigned int getVisibleNodes() const;
+  unsigned int getHiddenNodes() const;
   
   void getVisible(math::vertex<T>& v) const;
   bool setVisible(const math::vertex<T>& v);
   
   void getHidden(math::vertex<T>& h) const;
   bool setHidden(const math::vertex<T>& h);
-  
+
+  math::vertex<T> getBValue() const;
+  math::vertex<T> getAValue() const;
+  math::matrix<T> getWeights() const;
   
   bool reconstructData(unsigned int iters = 2); // 2 to v->h->h
   bool reconstructData(std::vector< math::vertex<T> >& samples,

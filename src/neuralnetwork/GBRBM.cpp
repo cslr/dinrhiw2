@@ -231,6 +231,21 @@ bool GBRBM<T>::setHidden(const math::vertex<T>& h)
 	return true;
 }
 
+template <typename T>
+math::vertex<T> GBRBM<T>::getBValue() const {
+  return b;
+}
+
+template <typename T>
+math::vertex<T> GBRBM<T>::getAValue() const {
+  return a;
+}
+
+template <typename T>  
+math::matrix<T> GBRBM<T>::getWeights() const {
+  return W;
+}
+
 // number of iterations to simulate the system
 // 1 = single step from visible to hidden and back
 // from hidden to visible (CD-1)

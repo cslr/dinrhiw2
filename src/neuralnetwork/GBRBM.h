@@ -48,6 +48,10 @@ public:
     void getHidden(math::vertex<T>& h) const;
     bool setHidden(const math::vertex<T>& h);
 
+    math::vertex<T> getBValue() const;
+    math::vertex<T> getAValue() const;
+    math::matrix<T> getWeights() const;
+
     bool reconstructData(unsigned int iters = 1);
     bool reconstructData(std::vector< math::vertex<T> >& samples, unsigned int iters = 1);
 
