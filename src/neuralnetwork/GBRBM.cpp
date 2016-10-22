@@ -470,7 +470,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
   whiteice::dataset<T> ds;
 
-  this->initializeWeights();
+  // this->initializeWeights();
   this->setUData(samples);
 
   ds.createCluster("input", getVisibleNodes());

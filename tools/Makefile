@@ -10,10 +10,10 @@ BISON = bison
 CP = cp
 RM = rm
 
-OPTIMIZE=-g -DAMD64 -ffast-math -march=native -fopenmp
+OPTIMIZE=-O3 -g -DAMD64 -ffast-math -march=native -fopenmp
 
-CFLAGS = -g $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
-CXXFLAGS = -g $(CFLAGS)
+CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
+CXXFLAGS = -g -O2  $(CFLAGS)
 
 AESCIPHER_LIBS = `pkg-config dinrhiw --libs` -lgmp
 WDV_LIBS = `pkg-config dinrhiw --libs` -lgmp
