@@ -42,6 +42,7 @@ clean:
 	$(CD) src/math && $(MAKE) clean
 	$(CD) src/crypto && $(MAKE) clean
 	$(CD) src/neuralnetwork && $(MAKE) clean
+	$(CD) tools && $(MAKE) clean
 	$(RM) *~
 
 realclean: clean removelib
@@ -49,6 +50,7 @@ realclean: clean removelib
 	$(CD) src/math && $(MAKE) realclean
 	$(CD) src/crypto && $(MAKE) realclean
 	$(CD) src/neuralnetwork && $(MAKE) realclean
+	$(CD) tools && $(MAKE) clean
 	$(RM) dinrhiw.pc
 	$(RM) Makefile 
 	$(RM) src/Makefile src/math/Makefile src/crypto/Makefile

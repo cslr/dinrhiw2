@@ -101,11 +101,11 @@ optimization_flags="-O2 -ffast-math"
 conf_flags=""
 
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math"
-    conf_flags="-DAMD64"
+    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
+    conf_flags="-fPIC -DAMD64"
 elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
-    optimization_flags="-O3 -g -DIA32 -ffast-math"
-    conf_flags="-DIA32"
+    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math"
+    conf_flags="-fPIC -DIA32"
 else
     AC_MSG_ERROR($cpufamily [, unrecognized/unsupported machine architecture.])
 fi

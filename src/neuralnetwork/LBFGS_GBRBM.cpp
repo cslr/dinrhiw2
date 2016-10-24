@@ -43,7 +43,7 @@ namespace whiteice
       T esum = T(0.0f);
       
       
-      // E = SUM 0.5*e(i)^2
+      // E = SUM ||e(i)||/dim(e)
       #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<1000;i++){
 	// std::cout << "data in  = " << dtest.access(0, i) << std::endl;
@@ -57,8 +57,8 @@ namespace whiteice
 	nnet.getVisible(v);
 	err = data.access(0, index) - v;
 	
-	err = (err*err);
-	esum += T(0.5f)*err[0];
+	err = err.norm()/T(err.size());
+	esum += err[0];
       }
 
 #pragma omp critical

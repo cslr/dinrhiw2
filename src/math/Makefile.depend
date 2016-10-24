@@ -387,6 +387,20 @@ fastpca.o: fastpca.cpp fastpca.h matrix.h dinrhiw_blas.h \
  integer.h number.h blade_math.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h quaternion.h gvertex.cpp \
  matrix_rotations.h norms.h
+RNG.o: RNG.cpp RNG.h vertex.h dinrhiw_blas.h \
+ /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
+ /usr/include/openblas/openblas_config.h blas_primitives.h ownexception.h \
+ number.h ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
+ number.h linear_algebra.h matrix.h vertex.h correlation.h \
+ ../dynamic_bitset.h integer.h blade_math.h integer.h gvertex.h gmatrix.h \
+ gmatrix.cpp ../neuralnetwork/function.h real.h quaternion.h gvertex.cpp \
+ matrix_rotations.h ../neuralnetwork/neuronlayer.h norms.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ linear_algebra.h correlation.h matrix_rotations.h RNG.cpp
 MemoryCompressor.o: ../MemoryCompressor.cpp ../MemoryCompressor.h \
  ../compressable.h
 conffile.o: ../conffile.cpp ../../config.h ../conffile.h
