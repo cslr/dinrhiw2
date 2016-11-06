@@ -19,7 +19,7 @@ rm -f commviol-test.ds
 # training error is 0.050528/0.011249/0.011249 (deep) [141-500-4]
 # ./nntool --deep --samples 100 -v commviol-test.ds 141-500-4 commviol-nn.cfg lbfgs
 # ./nntool --deep --samples 100 -v commviol-test.ds 141-100000-4 commviol-nn.cfg lbfgs
-./nntool --deep --samples 100 -v commviol-test.ds 141-100000-4 commviol-nn.cfg lbfgs 
+./nntool --deep --samples 100 -v commviol-test.ds 141-1000-10-4 commviol-nn.cfg lbfgs 
 
 # training error is 0.042815/0.00981616/0.00981616 (non-deep) [141-500-4]
 # training error is 0.041531/0.00981616/3.86269    (non-deep) [141-1000-4]

@@ -64,6 +64,9 @@ namespace whiteice
     // net - allocates new nnetwork and overwrites pointer to it as a return value
     // 
     bool convertToNNetwork(const whiteice::dataset<T>& data, whiteice::nnetwork<T>*& net);
+
+    // converts trained DBN to autoencoder which can be trained using LBFGS
+    bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
     
     private:
     

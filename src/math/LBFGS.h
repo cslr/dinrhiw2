@@ -69,6 +69,7 @@ namespace whiteice
       private:
       
         bool linesearch(vertex<T>& xn,
+			T& scale,
 			const vertex<T>& x,
 			const vertex<T>& d) const;
             

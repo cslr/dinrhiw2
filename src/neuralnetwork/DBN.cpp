@@ -450,23 +450,93 @@ namespace whiteice
 
     arch.push_back(outputDimension);
 
-    
     net = new whiteice::nnetwork<T>(arch);
-    
+
     // copies DBN parameters as nnetwork parameters..
-    net->setWeights(input.getWeights(), 0);
-    net->setBias(input.getBValue(), 0);
-    
+    if(net->setWeights(input.getWeights().transpose(), 0) == false){ delete net; net = nullptr; return false; }
+    if(net->setBias(input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+
     for(unsigned int l=0;l<layers.size();l++){
-      net->setWeights(layers[l].getWeights(), l+1);
-      net->setBias(layers[l].getBValue(), l+1);
+      if(net->setWeights(layers[l].getWeights(), l+1) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(layers[l].getBValue(), l+1) == false){ delete net; net = nullptr; return false; }
     }
 
-    net->setWeights(A, layers.size()+1);
-    net->setBias(b, layers.size()+1);
+    if(net->setWeights(A, layers.size()+1) == false){ delete net; net = nullptr; return false; }
+    if(net->setBias(b, layers.size()+1) == false){ delete net; net = nullptr; return false; }
     
     
     return true;
+  }
+
+
+  // converts trained DBN to autoencoder which can be trained using LBFGS
+  template <typename T>
+  bool DBN<T>::convertToAutoEncoder(whiteice::nnetwork<T>*& net) const
+  {
+    // we invert DBN in the middle so we have DBN><invDBN
+
+    //////////////////////////////////////////////////////////
+    // creates feedforward neural network
+    
+    std::vector<unsigned int> arch; // architecture
+    arch.push_back(input.getVisibleNodes());
+    
+    if(layers.size() > 0){
+      for(unsigned int i=0;i<layers.size();i++)
+	arch.push_back(layers[i].getVisibleNodes());
+
+      arch.push_back(layers[layers.size()-1].getHiddenNodes());
+    }
+    else{
+      arch.push_back(input.getHiddenNodes());
+    }
+
+    // we have arch all the way to hidden layer, now we invert it back
+    if(layers.size() > 0 ){
+      for(int i=layers.size()-1;i>=0;i--)
+	arch.push_back(layers[i].getVisibleNodes());
+    }
+    
+    arch.push_back(input.getVisibleNodes());
+
+    net = new whiteice::nnetwork<T>(arch);
+
+    for(unsigned int l=0;l<net->getLayers();l++){
+      whiteice::math::matrix< T > W;
+      whiteice::math::vertex< T > bias;
+
+      net->getBias(bias, l);
+      net->getWeights(W, l);      
+    }
+
+    try {
+      // copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
+      if(net->setWeights(input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+
+      if(net->setBias(input.getBValue(), 0) == false) throw "error setting input layer b";
+
+      for(unsigned int l=0;l<layers.size();l++){
+	if(net->setWeights(layers[l].getWeights(), l+1) == false) throw "error setting encoder layer W";
+	if(net->setBias(layers[l].getBValue(), l+1) == false) throw "error setting encoder layer b";
+      }
+
+      // copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
+      int ll = layers.size();
+      for(int l=layers.size()-1;l>=0;l--,ll++){
+	if(net->setWeights(layers[l].getWeights().transpose(), ll+1) == false) throw "error setting decoder layer W^t";
+	if(net->setBias(layers[l].getAValue(), ll+1) == false) throw "error setting decoder layer a";
+      }
+      
+      if(net->setWeights(input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
+      if(net->setBias(input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
+
+    
+      return true;
+    }
+    catch(const char* msg){
+      printf("ERROR: %s\n", msg);
+      return false;
+    }
   }
 
 

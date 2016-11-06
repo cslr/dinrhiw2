@@ -2,7 +2,7 @@
  * GBRBM.cpp
  *
  *  Created on: 20.6.2015
- *      Author: Tomas
+ *      Author: Tomas Ukkonen
  */
 
 #include "GBRBM.h"

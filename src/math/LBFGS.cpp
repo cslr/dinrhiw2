@@ -179,7 +179,8 @@ namespace whiteice
     
 
     template <typename T>
-    bool LBFGS<T>::linesearch(vertex<T>& xn,	
+    bool LBFGS<T>::linesearch(vertex<T>& xn,
+			      T& scale,
 			      const vertex<T>& x,
 			      const vertex<T>& d) const
     {
@@ -188,29 +189,48 @@ namespace whiteice
       
         vertex<T> localbestx = x + d;
     	T localbest  = T(10e20);
-    	// T best_alpha = T(1.0f);
     	unsigned int found = 0;
 
     	vertex<T> t;
 
-    	// best_alpha = 0.0f;
+	T best_alpha = scale * T(::pow(2.0f, -30)); // minimum possible step length
     	localbestx = x;
     	localbest = U(localbestx);
 
-    	int k = 0;
-    	T alpha = T(1.0f);
+	T alpha = T(1.0f);
+	
+	// k = 0
+	{
+	  alpha  = scale;
+	  T tvalue;
+
+	  t = x + alpha*d;
+	  tvalue = U(t);
+	  
+	  if(tvalue < localbest){
+	    //if(wolfe_conditions(x, alpha, d))
+	    {
+	      best_alpha = alpha;
+	      localbest = tvalue;
+	      localbestx = t;
+	    }
+	  }
+	}
+	
+    	int k = 1;    	
 
     	while(found <= 0 && k <= 30){ // min 2**(-30) = 10e-9 step length
 
-    		alpha  = T(::pow(2.0f, k));
+    		alpha  = scale * T(::pow(2.0f, k));
     		T tvalue;
 
     		t = x + alpha*d;
     		tvalue = U(t);
 
     		if(tvalue < localbest){
-		  if(wolfe_conditions(x, alpha, d))
+		  //if(wolfe_conditions(x, alpha, d))
 		  {
+		    best_alpha = alpha;
 		    localbest = tvalue;
 		    localbestx = t;
 		    found++;
@@ -218,14 +238,15 @@ namespace whiteice
 		  }
     		}
 
-    		alpha  = T(1.0f)/alpha;
+    		alpha  = scale * T(::pow(2.0f, -k));
 
     		t = x + alpha*d;
     		tvalue = U(t);
 
     		if(tvalue < localbest){
-		  if(wolfe_conditions(x, alpha, d))
+		  //if(wolfe_conditions(x, alpha, d))
 		  {
+		    best_alpha = alpha;
 		    localbest = tvalue;
 		    localbestx = t;
 		    found++;
@@ -237,6 +258,7 @@ namespace whiteice
     	}
 
     	xn = localbestx;
+	scale = best_alpha;
 
     	return (found > 0);
     }
@@ -263,6 +285,8 @@ namespace whiteice
     	vertex<T> d, g; // gradient
     	vertex<T> x(bestx), xn;
     	vertex<T> s, q;
+
+	T scale = T(1.0);
 
     	T y          = besty;
     	//T ratio      = T(1.0f);
@@ -386,8 +410,8 @@ namespace whiteice
 	  
     			// linear search finds xn = x + alpha*d
     			// so that U(xn) is minimized
-    			if(linesearch(xn, x, d) == false){
-    				// reset (we try to just follow gradient instead)
+    			if(linesearch(xn, scale, x, d) == false){
+    				// reset => (we try to just follow gradient instead)
     				sk.clear();
     				yk.clear();
     				rk.clear();
@@ -395,8 +419,7 @@ namespace whiteice
 #if 0
     				if(reset == false){
     					reset = true;
-    					iterations++;
-    					continue;
+    					iterations++;    					continue;
     				}
     				else{
     					// there was reset during the last iteration and
@@ -418,7 +441,8 @@ namespace whiteice
 #endif
 
 	  
-
+			if(scale <= T(0.0)) scale = 1.0; // fixes the case when scaling goes to zero
+			
     			heuristics(xn); // heuristically improve proposed next xn (might break L-BFGS algorithm!!)
 
 

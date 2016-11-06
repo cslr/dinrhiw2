@@ -19,6 +19,7 @@ rm -f wine-test.ds
 # uses nntool trying to learn from dataset
 
 ./nntool --deep -v wine-test.ds 13-50-10-1 winenn.cfg grad
+
 # ./nntool -v --time 10 wine-test.ds 13-1 winenn.cfg random
 
 # testing
