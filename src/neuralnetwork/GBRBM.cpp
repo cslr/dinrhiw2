@@ -497,7 +497,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
   for(unsigned int i=0;i<EPOCHS;i++){
     auto temperature = 1.0;
-		  
+
     if((i & 1) == 0){
       this->setLearnVarianceMode();
     }

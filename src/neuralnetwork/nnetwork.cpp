@@ -586,9 +586,11 @@ namespace whiteice
 
     // T output = -math::exp(T(-0.5)*input*input);
 #endif
+#if 1
     
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) / (T(1.0) + math::exp(-input));
+#endif
     
     return output;
   }
@@ -616,13 +618,14 @@ namespace whiteice
     // T output = input*math::exp(T(-0.5)*input*input);
     
     T t = math::tanh(input);
-    T output = T(1.0f) - t*t - T(0.5);
+    T output = T(1.0f) - t*t - T(0.5); // statistically better non-linearity?
 #endif
-
+#if 1
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) + math::exp(-input);
     
     output = math::exp(-input) / (output*output);
+#endif
     
     return output;
   }

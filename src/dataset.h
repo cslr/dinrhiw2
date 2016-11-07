@@ -64,6 +64,9 @@ namespace whiteice
 	       bool nopreprocess = false) throw();
       bool add(unsigned int index, const std::vector<math::vertex<T> >& inputs, 
 	       bool nopreprocess = false) throw();
+
+      bool add(unsigned int index, const std::vector<T>& input,
+	       bool nopreprocess = false) throw();
       
       bool add(unsigned int index, const std::string& input, 
 	       bool nopreprocess = false) throw();

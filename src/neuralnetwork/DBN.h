@@ -1,7 +1,8 @@
 /*
- * Constructs deep belief network using stacked binary RBMs.
+ * Constructs deep belief network using stacked RBMs.
  * GBRBM x BBRBM x BBRBM x BBRBM x BBRBM x ..
  * 
+ * Optimizes layers greedly (layer per layer basis)
  */
 
 #ifndef DBN_h

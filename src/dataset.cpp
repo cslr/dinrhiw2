@@ -295,8 +295,7 @@ namespace whiteice
 	if(inputs[i].size() != DD)
 	  return false;
     }
-    
-      
+
     typename std::vector<math::vertex<T> >::const_iterator i;
     
     {
@@ -311,6 +310,22 @@ namespace whiteice
     
     return true;
   }
+
+  
+  template <typename T>
+  bool dataset<T>::add(unsigned int index, const std::vector<T>& input,
+		       bool nopreprocess) throw()
+  {
+    math::vertex<T> v(input.size());
+    
+    for(unsigned int i=0;i<v.size();i++)
+      v[i] = input[i];
+    
+    return this->add(index, v, nopreprocess);
+  }
+  
+  
+
   
   
   template <typename T>

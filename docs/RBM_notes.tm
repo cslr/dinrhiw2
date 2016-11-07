@@ -109,9 +109,9 @@
   The energy of the restricted boltzman machine is:\ 
 
   <\math>
-    E<rsub|B*B><around|(|v,h|)>=-a<rsup|T>v-v<rsup|T>W*h-b<rsup|T>h
+    E<rsub|B*B><around|(|v,h|)>=a<rsup|T>v+v<rsup|T>W*h+b<rsup|T>h
 
-    E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>-v<rsup|T>W*h-b<rsup|T>h
+    E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>+v<rsup|T>W*h+b<rsup|T>h
   </math>
 
   Note that we could have added additional constant <math|c> term to these
