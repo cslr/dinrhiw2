@@ -3,17 +3,17 @@
 # the system (and have pkg-config installed)
 #
 
-CC = gcc-5
-CXX= g++-5
+CC = gcc
+CXX= g++
 BISON = bison
 
 CP = cp
 RM = rm
 
-OPTIMIZE=-D_GLIBCXX_DEBUG -fPIC -O3 -g -DAMD64 -ffast-math -march=native -fopenmp
+OPTIMIZE=-fPIC -O3 -g -DAMD64 -ffast-math -march=native -fopenmp
 
 CFLAGS = -g -O2 $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
-CXXFLAGS =   $(CFLAGS)
+CXXFLAGS = -g -O2  $(CFLAGS)
 
 AESCIPHER_LIBS = `pkg-config dinrhiw --libs` -lgmp
 WDV_LIBS = `pkg-config dinrhiw --libs` -lgmp
