@@ -463,7 +463,8 @@ namespace whiteice
 
     if(net->setWeights(A, layers.size()+1) == false){ delete net; net = nullptr; return false; }
     if(net->setBias(b, layers.size()+1) == false){ delete net; net = nullptr; return false; }
-    
+
+    net->setStochastic(true); // stochastic DBN activation
     
     return true;
   }
@@ -530,13 +531,15 @@ namespace whiteice
       if(net->setWeights(input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
       if(net->setBias(input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 
-    
-      return true;
+      net->setStochastic(true);
     }
     catch(const char* msg){
       printf("ERROR: %s\n", msg);
       return false;
     }
+
+    return true;
+    
   }
 
 

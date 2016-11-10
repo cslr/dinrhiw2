@@ -730,6 +730,7 @@ namespace whiteice
 	// (we don't store rejects during initial epsiln parameter learning)
 	unsigned int number_of_accepts = 0;
 	const unsigned int EPSILON_LEARNING_ACCEPT_LIMIT = 5;
+	const T MAX_EPSILON = T(1.0f);
 
 
     	while(running) // keep sampling forever or until stopped
@@ -773,8 +774,9 @@ namespace whiteice
     		}
 
 		T r = rng.uniform();
+		T p_accept = exp(current_U-proposed_U-logZratio+current_K-proposed_K);
 
-    		if(r < exp(current_U-proposed_U-logZratio+current_K-proposed_K))
+    		if(r < p_accept && !isnan(p_accept))
     		{
     			// accept (q)
     			// printf("ACCEPT\n");
@@ -850,13 +852,17 @@ namespace whiteice
     				accept_rate /= accept_rate_samples;
 
     				// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
+				// changed from 65-85% to 50%
 
-    				if(accept_rate <= T(0.65f)){
+    				if(accept_rate <= T(0.50f)){
     					epsilon = T(0.8)*epsilon;
     					// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
     				}
-    				else if(accept_rate >= T(0.85f)){
-    					epsilon = T(1.1)*epsilon;
+    				else if(accept_rate >= T(0.50f)){
+				        // important, sampler can diverge so we FORCE epsilon to be small (<MAX_EPSILON)
+				        auto new_epsilon = T(1.0/0.8)*epsilon;
+					if(new_epsilon < MAX_EPSILON)
+					  epsilon = new_epsilon;
     					// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
     				}
 

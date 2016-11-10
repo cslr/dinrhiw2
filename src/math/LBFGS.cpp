@@ -6,6 +6,14 @@
 
 #include <unistd.h>
 
+#ifdef _GLIBCXX_DEBUG
+
+#undef __STRICT_ANSI__
+#include <float.h>
+#include <fenv.h>
+
+#endif
+
 
 namespace whiteice
 {
@@ -282,6 +290,13 @@ namespace whiteice
     template <typename T>
     void LBFGS<T>::optimizer_loop()
     {
+#ifdef _GLIBCXX_DEBUG      
+        {
+	  // enables FPU exceptions
+	  feenableexcept(FE_INVALID | FE_DIVBYZERO);
+        }
+#endif
+      
     	vertex<T> d, g; // gradient
     	vertex<T> x(bestx), xn;
     	vertex<T> s, q;

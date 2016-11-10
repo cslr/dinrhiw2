@@ -41,7 +41,7 @@ namespace whiteice
     virtual ~nnetwork();
 
     nnetwork<T>& operator=(const nnetwork<T>& nn);
-    
+
     ////////////////////////////////////////////////////////////
     
     math::vertex<T>& input() throw(){ return inputValues; }
@@ -71,6 +71,9 @@ namespace whiteice
     bool gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
     
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
+
+    bool stochastic(); // return true if nnetwork has stochastic sigmoid activations (clipped to 0 or 1)
+    void setStochastic(bool stochastic); // sets stochastic sigmoid activations
     
     ////////////////////////////////////////////////////////////
     
@@ -126,6 +129,7 @@ namespace whiteice
     
 
     bool hasValidBPData;
+    bool stochasticActivation;
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;

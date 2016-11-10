@@ -648,8 +648,9 @@ namespace whiteice
 	U = A*V;
 	A = AA; // A = S (singular values)
 	
-	for(unsigned int j=0;j<N2;j++){	  
-	  A(j,j) = whiteice::math::sqrt(A(j,j)); // S^2 -> S (S is diagonal)
+	for(unsigned int j=0;j<N2;j++){
+	  // S^2 -> S (S is diagonal)
+	  A(j,j) = whiteice::math::sqrt(whiteice::math::abs(A(j,j)));
 
 	  T scaling = T(1.0);
 	  if(A(j,j) != T(0.0))
@@ -675,7 +676,7 @@ namespace whiteice
 	A = AA; // A = S
 	
 	for(unsigned int j=0;j<N1;j++){
-	  A(j,j) = whiteice::math::sqrt(A(j,j));
+	  A(j,j) = whiteice::math::sqrt(whiteice::math::abs(A(j,j)));
 	  
 	  T scaling = T(1.0);
 	  if(A(j,j) != T(0.0))

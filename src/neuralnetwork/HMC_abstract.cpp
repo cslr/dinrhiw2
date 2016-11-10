@@ -283,7 +283,8 @@ namespace whiteice
 		// (we don't store rejects during initial epsilon parameter learning)
 		unsigned int number_of_accepts = 0;
 		const unsigned int EPSILON_LEARNING_ACCEPT_LIMIT = 5;
-
+		const T MAX_EPSILON = T(1.0f);
+		
 		const bool use_difference = true;
 
 
@@ -329,10 +330,6 @@ namespace whiteice
 #endif
 			}
 
-			// std::cout << "current_U  = " << current_U << std::endl;
-			// std::cout << "proposed_U = " << proposed_U << std::endl;
-			// std::cout << "log(ratio) = " << (current_U - proposed_U) << std::endl;
-
 			T current_K  = T(0.0f);
 			T proposed_K = T(0.0f);
 
@@ -342,8 +339,9 @@ namespace whiteice
 			}
 
 			T r = rng.uniform();
+			T p_accept = exp(deltaU+current_K-proposed_K);
 
-			if(r <= exp(deltaU+current_K-proposed_K))
+			if(r <= p_accept && !isnan(p_accept))
 			{
 				// accept (q)
 				{
@@ -444,13 +442,20 @@ namespace whiteice
 					// I'm currently using MCMC samplers a bit more like random search
 					// optimizer methods meaning that not reaching the true distribution
 					// is not that serious..
+					
 					if(accept_rate < T(0.50f)){
 						epsilon = T(0.8)*epsilon;
 						// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
 	    
 					}
 					else if(accept_rate > T(0.50f)){
-						epsilon = T(1.0/0.8)*epsilon;
+					        // important: sampler can diverge because of adaptive epsilon so we FORCE
+					        //            epsilon to be small and sampler cannot diverge??
+					  
+					        auto new_epsilon  = T(1.0/0.8)*epsilon;
+						if(new_epsilon < MAX_EPSILON)
+						  epsilon = new_epsilon;
+						    
 						// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
 					}
 

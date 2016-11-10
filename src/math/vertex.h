@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vector>
 
+#include <assert.h>
 
 
 namespace whiteice
@@ -149,11 +150,17 @@ namespace whiteice
       
       inline T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
       {
+#ifdef _GLIBCXX_DEBUG	
+	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif
 	return data[index]; // no range check
       }
       
       inline const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
-      {
+      {	
+#ifdef _GLIBCXX_DEBUG	
+	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif	
 	return data[index]; // no range check
       }
       

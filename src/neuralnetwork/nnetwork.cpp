@@ -21,6 +21,8 @@ namespace whiteice
   template <typename T>
   nnetwork<T>::nnetwork()
   {
+    stochasticActivation = false;
+    
     arch.resize(2);    
     
     arch[0] = 1;
@@ -60,6 +62,8 @@ namespace whiteice
     maxwidth = nn.maxwidth;
     size = nn.size;
 
+    stochasticActivation = nn.stochasticActivation;
+
     arch   = nn.arch;
     bpdata = nn.bpdata;
     data   = nn.data;
@@ -77,6 +81,7 @@ namespace whiteice
       throw std::invalid_argument("invalid network architecture");
 
     maxwidth = 0;
+    stochasticActivation = false;
     
     for(unsigned int i=0;i<nnarch.size();i++){
       if(nnarch[i] <= 0)
@@ -127,6 +132,8 @@ namespace whiteice
     arch = nn.arch;
     maxwidth = nn.maxwidth;
     size = nn.size;
+
+    stochasticActivation = nn.stochasticActivation;
 
     data = nn.data;
     bpdata = nn.bpdata;
@@ -561,6 +568,18 @@ namespace whiteice
     
     return true;
   }
+
+
+  // return true if nnetwork has stochastic sigmoid activations (clipped to 0 or 1)
+  template <typename T>
+  bool nnetwork<T>::stochastic(){
+    return stochasticActivation;
+  }
+
+  template <typename T>
+  void nnetwork<T>::setStochastic(bool stochastic){ // sets stochastic sigmoid activations
+    stochasticActivation = stochastic;
+  }
   
   
   template <typename T> // non-linearity used in neural network
@@ -587,9 +606,16 @@ namespace whiteice
     // T output = -math::exp(T(-0.5)*input*input);
 #endif
 #if 1
-    
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) / (T(1.0) + math::exp(-input));
+
+    T r = T(((double)rand())/((double)RAND_MAX));
+
+    if(stochasticActivation){
+      if(output > r){ output = T(1.0); }
+      else{ output = T(0.0); }
+    }
+    
 #endif
     
     return output;
@@ -713,7 +739,8 @@ namespace whiteice
   // version 3.5 labels
 #define FNN_NUMWEIGHTS_CFGSTR       "FNN_NUM_WEIGHTS"
 #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"
-  
+
+#define FNN_STOCHASTIC_CFGSTR       "FNN_STOCHASTIC"
 
   //////////////////////////////////////////////////////////////////////
 
@@ -764,6 +791,19 @@ namespace whiteice
 	  return false;
 	
 	floats.clear();
+      }
+
+      // stochastic activation
+      {
+	if(stochasticActivation)
+	  ints.push_back(1); // true
+	else
+	  ints.push_back(0);
+	
+	if(!configuration.set(FNN_STOCHASTIC_CFGSTR, ints))
+	  return false;
+	
+	ints.clear();
       }
       
       
@@ -877,6 +917,18 @@ namespace whiteice
 	  return false;
 	
 	floats.clear();
+      }
+
+      // stochastic activation
+      {
+	if(!configuration.get(FNN_STOCHASTIC_CFGSTR, ints))
+	  return false;
+
+	if(ints.size() != 1) return false;
+
+	stochasticActivation = (bool)ints[0];
+	
+	ints.clear();
       }
       
       return true;

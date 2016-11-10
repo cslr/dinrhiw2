@@ -15,6 +15,11 @@
 #include <exception>
 #include <vector>
 
+#include <assert.h>
+
+#ifndef DINRHIW_DEBUG
+#define DINRHIW_DEBUG 1
+#endif
 
 namespace whiteice
 {
@@ -107,23 +112,36 @@ namespace whiteice
       // value from matrix (left->right, top->bottom order)
       T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
       {
+#ifdef _GLIBCXX_DEBUG
+	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif
 	return data[index]; // no range check
       }
       
       const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
       {
+#ifdef _GLIBCXX_DEBUG
+	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif	
 	return data[index]; // no range checks
       }
       
       
       T& operator()(unsigned int y, unsigned int x) throw(std::out_of_range, illegal_operation)
       {
+#ifdef _GLIBCXX_DEBUG
+	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif
+	
 	return data[y*numCols + x]; // no range checks
       }
       
       
       const T& operator()(unsigned y, unsigned int x) const throw(std::out_of_range, illegal_operation)
       {
+#ifdef _GLIBCXX_DEBUG
+	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+#endif	
 	return data[y*numCols + x]; // no range checks
       }
       

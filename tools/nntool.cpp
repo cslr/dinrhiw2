@@ -31,6 +31,14 @@
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
 
+#ifdef _GLIBCXX_DEBUG
+
+#undef __STRICT_ANSI__
+#include <float.h>
+#include <fenv.h>
+
+#endif
+
 
 void print_usage(bool all);
 
@@ -69,6 +77,12 @@ int main(int argc, char** argv)
 
     // number of datapoints to be used in learning (taken randomly from the dataset)
     unsigned int dataSize = 0;
+
+#ifdef _GLIBCXX_DEBUG    
+    // enables FPU exceptions
+    feenableexcept(FE_INVALID |
+		   FE_DIVBYZERO);
+#endif
     
     parse_commandline(argc,
 		      argv,

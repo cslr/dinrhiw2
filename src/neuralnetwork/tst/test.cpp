@@ -112,28 +112,30 @@ int main()
   
   try{
     
-    dbn_test();
+    // dbn_test();
+#if 0
+    lbfgs_rbm_test();
 
-    // lbfgs_rbm_test();
+    bbrbm_test();
 
-    // bbrbm_test();
-
-    // rbm_test();
+    rbm_test();
+#endif
+    /////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////
     
-    return 0;
+    // nnetwork_test();
     
+    // bayesian_nnetwork_test();
     
-    nnetwork_test();
-    
-    bayesian_nnetwork_test();
-    
-    lreg_nnetwork_test();
+    // lreg_nnetwork_test();
     
     hmc_test();
-    
+
+#if 0    
     activation_test();  
     
     gda_clustering_test(); // DO NOT WORK
+#endif
 
 
 #if 0
@@ -502,6 +504,26 @@ void dbn_test()
 void hmc_test()
 {
   std::cout << "HMC SAMPLING TEST (Normal distribution)" << std::endl;
+  
+#ifdef __linux__
+  // LINUX
+  {
+    feenableexcept(FE_INVALID |
+		   FE_DIVBYZERO | 
+		   FE_OVERFLOW |  FE_UNDERFLOW);
+  }
+  
+#else
+  // WINDOWS
+  {
+    _clearfp();
+    unsigned unused_current_word = 0;
+    // clearing the bits unmasks (throws) the exception
+    _controlfp_s(&unused_current_word, 0,
+		 _EM_INVALID | _EM_OVERFLOW | _EM_ZERODIVIDE);  // _controlfp_s is the secure version of _controlfp
+  }
+#endif
+
 
   {
     HMC_gaussian<> sampler(2);
