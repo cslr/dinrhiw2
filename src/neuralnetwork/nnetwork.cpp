@@ -318,7 +318,7 @@ namespace whiteice
 
 			  // s = b + W*s
 			  gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-					  arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+				     arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
 
 			  // s = g(v)
 
@@ -873,7 +873,7 @@ namespace whiteice
 	  arch[i] = ints[i];
 	
 	memuse = 0;
-	maxwidth = 0;
+	maxwidth = arch[0];
 	
 	unsigned int i = 1;
 	while(i < arch.size()){
@@ -1147,12 +1147,12 @@ namespace whiteice
 				      unsigned int dim, T* s, const T* b) const
   {
     // calculates y = b + W*x (y == x)
-	  std::vector<T> temp;
-	  temp.resize(maxwidth);
 
+    std::vector<T> temp;
+    temp.resize(maxwidth);
+    
     
 #if 1
-    
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
       memcpy(temp.data(), b, yd*sizeof(T));
       
