@@ -697,7 +697,7 @@ namespace whiteice
 	  arch[i] = ints[i];
 	
 	memuse = 0;
-	maxwidth = 0;
+	maxwidth = arch[0];
 	
 	unsigned int i = 1;
 	while(i < arch.size()){
