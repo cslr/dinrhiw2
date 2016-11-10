@@ -2,7 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
-inline void CPUID(unsigned int input, unsigned int *output);
+void CPUID(unsigned int input, unsigned int *output)
+{
+  __asm__ __volatile__("cpuid"
+		       : "=a" (output[0]), "=b" (output[1]), "=c" (output[2]),
+		         "=d" (output[3])
+		       : "a" (input));
+}
+
 
 int main()
 {
@@ -84,21 +91,4 @@ int main()
   printf("\n");
   
   return 0;
-}
-
-
-
-
-
-
-
-
-
-
-inline void CPUID(unsigned int input, unsigned int *output)
-{
-  __asm__ __volatile__("cpuid"
-		       : "=a" (output[0]), "=b" (output[1]), "=c" (output[2]),
-		         "=d" (output[3])
-		       : "a" (input));
 }
