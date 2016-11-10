@@ -1534,7 +1534,8 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 			qa[i] = temperature*qa[i] + (T(1.0) - temperature)*Umean[i];
 			T v   = math::exp(qz[i]);
 			v     = temperature*v + (T(1.0) - temperature)*Uvariance[i];
-			qz[i] = math::log(v + T(10e-100));
+			v     = math::abs(v);
+			qz[i] = math::log(v + T(10e-10));
 		}
 
 		// calculates gradients for the data
@@ -2450,7 +2451,7 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_data(const math::vertex<T>& v,
 
 	for(unsigned int i=0;i<z.size();i++){
 		d[i]  = math::exp(-z[i]/T(2.0));
-		dd[i] = math::sqrt(math::exp(z[i]));
+		dd[i] = math::exp( z[i]/T(2.0)); // dd[i] = math::sqrt(math::exp(z[i]));
 	}
 
 	for(unsigned int l=0;l<CDk;l++){
