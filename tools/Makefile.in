@@ -37,6 +37,10 @@ DATATOOL_OBJECTS = datatool.o
 DATATOOL_TARGET  = dstool
 DATATOOL_LIBS    = `pkg-config dinrhiw --libs` -lpthread
 
+GENDATA_OBJECTS  = gendata.o
+GENDATA_TARGET   = gendata
+GENDATA_LIBS     = `pkg-config dinrhiw --libs` -lpthread
+
 ##################################################
 
 all: aescipher nntools datatool
@@ -91,6 +95,13 @@ datatool: $(DATATOOL_OBJECTS)
 datatool_clean:
 	$(RM) -f $(DATATOOL_TARGET)
 	$(RM) -f $(DATATOOL_OBJECTS)
+
+gendata: $(GENDATA_OBJECTS)
+	$(CXX) -o $(GENDATA_TARGET) $(CXXFLAGS) $(GENDATA_OBJECTS) $(GENDATA_LIBS)
+
+gendata_clean:
+	$(RM) -f $(GENDATA_TARGET)
+	$(RM) -f $(GENDATA_OBJECTS)
 
 ##################################################
 
