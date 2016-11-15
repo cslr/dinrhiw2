@@ -1245,6 +1245,133 @@ namespace whiteice
     fclose(fp);
     return true;
   }
+
+  
+  /*
+   * imports space, "," or ";" separated floating point numbers as vectors into cluster 0
+   * which will be overwritten. Ignores the first line which may contain headers and
+   * reads at most LINES of vertex data or unlimited amount of data (if set to 0).
+   */
+  template <typename T>
+  bool dataset<T>::importAscii(const std::string& filename, unsigned int LINES) throw()
+  {
+    std::vector< math::vertex<T> > import;
+
+    FILE* fp = fopen(filename.c_str(), "rt");
+    if(fp == 0 || ferror(fp)){
+      if(fp) fclose(fp);
+      return false;
+    }
+
+    const unsigned int BUFLEN = 50000;
+    char* buffer = (char*)malloc(BUFLEN);
+    if(buffer == NULL){
+      fclose(fp);
+      return false;
+    }
+    
+    
+    // import format is
+    // <file> = (<line>"\n")*
+    // <line> = <vector> = "%f %f %f %f ... "
+    // where separators are either spaces, ";" or "," numbers are assumed to have form -12.3101
+
+    // silently ignores the first line which may contain headers or other strange characters
+    if(fgets(buffer, BUFLEN, fp) != buffer){
+      fclose(fp);
+      free(buffer);
+      return false; // we just give up if there is strange/bad file
+    }
+
+    unsigned int lines = 0;
+
+    while(!feof(fp)){
+      if(LINES){
+	if(lines >= LINES)
+	  break; // we stop after we have processed LINES lines
+      }
+
+      if(fgets(buffer, BUFLEN, fp) != buffer){
+	break; // silently fails if we cannot read new line
+      }
+      
+      // intepretes buffer as a vector
+      math::vertex<T> line;
+      char* s = buffer;
+      unsigned int index = 0;
+
+      while(*s == ' ' || *s == ',' || *s == ';') s++;
+    
+      while(*s != '\n' && *s != '\0' && *s != '\r'){
+	char* prev = s;
+	double v = strtod(s, &s);
+	if(s == prev){
+	  break; // no progress
+	}
+	
+	if(isnan(v) || isinf(v))
+	  break; // bad data
+      
+	line.resize(index+1);
+	line[index] = v;
+	index++;
+	
+	while(*s == ' ' || *s == ',' || *s == ';') s++;
+      }
+
+      if(import.size() > 0 && line.size() > 0){
+	if(line.size() != import[0].size()){ // number of dimensions must match for all lines
+	  printf("CCC\n"); fflush(stdout);
+	  fclose(fp);
+	  free(buffer);
+	  return false; // we just give up if there is strange/bad file
+	}
+      }
+
+      if(line.size() > 0){
+	import.push_back(line);
+	lines++;
+      }
+    }
+    
+    free(buffer);
+    fclose(fp);
+
+    if(import.size() <= 0)
+      return false;
+
+    // clears cluster 0 and adds new data
+    if(this->getNumberOfClusters() > 0){
+      this->clearAll(0);
+
+      typename std::map<std::string, unsigned int>::const_iterator i;
+      i = namemapping.find(clusters[0].cname);
+      
+      std::string name = "data import";
+      clusters[0].data_dimension = import[0].size();
+      clusters[0].cname = name;
+      clusters[0].cindex = 0;
+      
+      if(i != namemapping.end())
+	namemapping.erase(i);
+      
+      namemapping[name] = 0;
+      clusters[0].data = import;
+
+      return true;
+    }
+    else{
+      if(this->createCluster("data import", import[0].size()) == false)
+	return false;
+
+      if(this->add(0, import) == false){
+	this->removeCluster(0);
+	return false;
+      }
+      
+      return true;
+    }
+  }
   
   
   // accesses zero cluster
@@ -1278,7 +1405,7 @@ namespace whiteice
   template <typename T>
   const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range)
   {
-	    typename std::map<std::string, unsigned int>::const_iterator i;
+            typename std::map<std::string, unsigned int>::const_iterator i;
 	    i = namemapping.find(clusterName);
 
 	    if(i == namemapping.end())

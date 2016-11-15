@@ -39,7 +39,7 @@
 
 #else
 // eclipse has different build process we test with ready compiled library
-#include <dinrhiw/dinrhiw.h>
+#include "dinrhiw.h"
 #endif
 
 
@@ -2196,7 +2196,7 @@ void test_dataset()
 	std::cout << "u = " << u << std::endl;
 	std::cout << "v [error] = " << v << std::endl;
 	
-	return;
+	// return;
       }
     }
    
@@ -2443,6 +2443,98 @@ void test_dataset()
       return;
     }
   }
+
+
+  // dataset: test exportAscii() and importAscii() implementations
+  {
+    std::cout << "DATASET TESTING exportAscii() and importAscii()" << std::endl;
+
+    whiteice::dataset<float> test, loaded;
+
+    test.createCluster("test cluster with a longer name than usual", 10);
+
+    for(unsigned int i=0;i<1000;i++){
+      whiteice::math::vertex<float> v(test.dimension(0));
+
+      for(unsigned int j=0;j<v.size();j++){
+	v[j] = (float)rand()/((float)RAND_MAX) - 0.5f;
+      }
+
+      if(test.add(0, v) == false){
+	std::cout << "ERROR cannot add vertex to dataset. Index: " << i << std::endl;
+	break;
+      }
+    }
+
+    std::string asciiFilename = "exportedData-test.ds";
+
+    if(test.exportAscii(asciiFilename) == false){
+      std::cout << "ERROR: cannot export data to ascii file" << std::endl;
+    }
+
+    if(loaded.importAscii(asciiFilename) == false){
+      std::cout << "ERROR: cannot import ASCII data from file (1)" << std::endl;
+    }
+    
+    if(loaded.getNumberOfClusters() <= 0){
+      std::cout << "ERROR: cannot import ASCII data from file (2)" << std::endl;
+    }
+
+    if(loaded.dimension(0) != test.dimension(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (3)" << std::endl;
+    }
+
+    if(loaded.size(0) != test.size(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (4)" << std::endl;
+    }
+
+    for(unsigned int j=0;j<loaded.size(0);j++){
+      auto l = loaded[j];
+      auto t = test[j];
+
+      auto error = l - t;
+
+      if(error.norm() > 0.01f){
+	printf("ERROR: data corrupted in importAscii(exportAscii(data)). Index %d. Error: %f\n",
+	       j, error.norm());
+	break;
+      }
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // tries to load ASCII file AGAIN (with existing data structure) and checks everything works ok.
+    
+    if(loaded.importAscii(asciiFilename) == false){
+      std::cout << "ERROR: cannot import ASCII data from file (2.1)" << std::endl;
+    }
+    
+    if(loaded.getNumberOfClusters() <= 0){
+      std::cout << "ERROR: cannot import ASCII data from file (2.2)" << std::endl;
+    }
+
+    if(loaded.dimension(0) != test.dimension(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (2.3)" << std::endl;
+    }
+
+    if(loaded.size(0) != test.size(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (2.4)" << std::endl;
+    }
+
+    for(unsigned int j=0;j<loaded.size(0);j++){
+      auto l = loaded[j];
+      auto t = test[j];
+
+      auto error = l - t;
+
+      if(error.norm() > 0.01f){
+	printf("ERROR: data corrupted in importAscii(exportAscii(data)) (2). Index %d. Error: %f\n",
+	       j, error.norm());
+	break;
+      }
+    }
+    
+  }
+  
   
 }
 

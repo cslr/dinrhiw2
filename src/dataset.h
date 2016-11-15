@@ -118,9 +118,20 @@ namespace whiteice
       bool save(const std::string& filename) const throw();
       
       /*
-       * exports dataset values as ascii data without preprocessing
+       * exports dataset values as ascii data without preprocessing (cluster = 0)
        */
       bool exportAscii(const std::string& filename) const throw();
+
+      /*
+       * imports space, "," or ";" separated floating point numbers as vectors into cluster 0
+       * which will be overwritten. Ignores the first line which may contain headers and
+       * reads at most LINES of vertex data or unlimited amount of data (if set to 0).
+       *
+       * NOTE: in general, importAscii() cannot load data written using exportAscii() because
+       *       exportAscii() dumps data from all clusters. However, if there is only a single
+       *       cluster 0 then importAscii() can load data saved by exportAscii()
+       */
+      bool importAscii(const std::string& filename, unsigned int LINES=0) throw();
       
       // accesses data from cluster zero
       const math::vertex<T>& operator[](unsigned int index) const throw(std::out_of_range);
