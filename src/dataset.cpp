@@ -1196,7 +1196,7 @@ namespace whiteice
   
 
   template <typename T>
-  bool dataset<T>::exportAscii(const std::string& filename) const throw()
+  bool dataset<T>::exportAscii(const std::string& filename, bool writeHeaders) const throw()
   {
     if(filename.length() <= 0)
       return false;
@@ -1212,9 +1212,11 @@ namespace whiteice
     if(buffer == NULL){ fclose(fp); return false; }
     
     for(unsigned int index = 0;index < clusters.size();index++){
-      snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimensions\n",
-	       index, (int)clusters[index].data.size(), clusters[index].data_dimension);
-      fputs(buffer, fp);
+      if(writeHeaders){
+	snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimensions\n",
+		 index, (int)clusters[index].data.size(), clusters[index].data_dimension);
+	fputs(buffer, fp);
+      }
       
       // dumps data in this cluster to ascii format
       for(auto d : clusters[index].data){
@@ -1293,7 +1295,7 @@ namespace whiteice
       char* s = buffer;
       unsigned int index = 0;
 
-      while(*s == ' ' || *s == ',' || *s == ';') s++;
+      while(*s == ' ' || *s == ',' || *s == ';' || *s == '\t' || *s == '|') s++;
     
       while(*s != '\n' && *s != '\0' && *s != '\r'){
 	char* prev = s;
@@ -1309,7 +1311,8 @@ namespace whiteice
 	line[index] = v;
 	index++;
 	
-	while(*s == ' ' || *s == ',' || *s == ';') s++;
+	while(*s == ' ' || *s == ',' || *s == ';' || *s == '\t' || *s == '|')
+	  s++;
       }
 
       if(import.size() > 0 && line.size() > 0){

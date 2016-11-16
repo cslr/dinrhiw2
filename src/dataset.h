@@ -120,7 +120,7 @@ namespace whiteice
       /*
        * exports dataset values as ascii data without preprocessing (cluster = 0)
        */
-      bool exportAscii(const std::string& filename) const throw();
+      bool exportAscii(const std::string& filename, bool writeHeaders = false) const throw();
 
       /*
        * imports space, "," or ";" separated floating point numbers as vectors into cluster 0

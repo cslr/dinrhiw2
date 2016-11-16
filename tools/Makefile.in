@@ -43,9 +43,9 @@ GENDATA_LIBS     = `pkg-config dinrhiw --libs` -lpthread
 
 ##################################################
 
-all: aescipher nntools datatool
+all: aescipher nntools datatool gendata
 
-clean: aescipher_clean dataplot_clean mmap_clean nntools_clean datatool_clean
+clean: aescipher_clean dataplot_clean mmap_clean nntools_clean datatool_clean gendata_clean
 	$(RM) -f *~
 
 install: all

@@ -1,4 +1,7 @@
-// simple program creating machine learning example data
+// simple program creating machine learning example data that is difficult to learn
+// y = max(x). The function is simple but learning it requires sorting input vectors
+//             numbers and selecting the biggest one. Feedforward neural network cannot
+//             learn this easily so recurrent neural networks should be maybe used.
 
 
 #include <stdio.h>

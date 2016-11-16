@@ -1,11 +1,8 @@
 TODO
 
-Neuromancer/Resonanz Requirements:
-
-* GB-RBM and BB-RBM
+* implement recurrent neural networks (LSTM neural network)
 
 
- - implement and test BBRBM.cpp (from RBM.cpp)
 
 
 LATER (multistep optimization):
