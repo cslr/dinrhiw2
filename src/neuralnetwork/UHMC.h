@@ -1,6 +1,6 @@
 /*
  * Hamiltonian Monte Carlo Markov Chain sampler 
- * for neurnal network training data.
+ * for neural network training data.
  */
 
 // TODO: adaptive step lengths DO NOT work very well and

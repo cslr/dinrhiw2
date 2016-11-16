@@ -639,10 +639,11 @@ namespace whiteice
 	  
 	  sumErr += E;
 	}
-	
-		
-    	sumErr /= T((float)latestN);
-    	sumErr /= T((float)data.size(0));
+
+	if(latestN > 0){
+	  sumErr /= T((float)latestN);
+	  sumErr /= T((float)data.size(0));
+	}
 
     	return sumErr;
 	}
@@ -692,7 +693,7 @@ namespace whiteice
 
 	const T MAX_EPSILON = T(1.0f);
 
-
+	
     	while(running) // keep sampling forever or until stopped
     	{
     		updating_sample.lock();

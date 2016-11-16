@@ -682,9 +682,11 @@ namespace whiteice
 	  sumErr += E;
 	}
 	
-		
-    	sumErr /= T((float)latestN);
-    	sumErr /= T((float)data.size(0));
+
+	if(latestN > 0){
+	  sumErr /= T((float)latestN);
+	  sumErr /= T((float)data.size(0));
+	}
 
     	return sumErr;
 	}

@@ -1276,13 +1276,6 @@ namespace whiteice
     // <line> = <vector> = "%f %f %f %f ... "
     // where separators are either spaces, ";" or "," numbers are assumed to have form -12.3101
 
-    // silently ignores the first line which may contain headers or other strange characters
-    if(fgets(buffer, BUFLEN, fp) != buffer){
-      fclose(fp);
-      free(buffer);
-      return false; // we just give up if there is strange/bad file
-    }
-
     unsigned int lines = 0;
 
     while(!feof(fp)){
@@ -1321,7 +1314,6 @@ namespace whiteice
 
       if(import.size() > 0 && line.size() > 0){
 	if(line.size() != import[0].size()){ // number of dimensions must match for all lines
-	  printf("CCC\n"); fflush(stdout);
 	  fclose(fp);
 	  free(buffer);
 	  return false; // we just give up if there is strange/bad file
