@@ -297,7 +297,7 @@ AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search p
 			  [if [[ -n $withval ]]; then ATLASLIBS_PATH=$withval; fi], [])
 
 
-optimization_flags="$optimization_flags -march=native -fopenmp"
+optimization_flags="$optimization_flags -mtune=native -fopenmp"
 
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"

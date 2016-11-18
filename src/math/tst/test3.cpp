@@ -123,7 +123,8 @@ public:
   }
   
   blas_real<float> goodvalue() const{
-    return calculate(centers[0]);
+    auto tmp = calculate(centers[0]);
+    return tmp;
   }
   
 

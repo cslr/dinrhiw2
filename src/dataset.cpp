@@ -1291,7 +1291,7 @@ namespace whiteice
       }
       
       // intepretes buffer as a vector
-      math::vertex<T> line;
+      math::vertex<T> line(0);
       char* s = buffer;
       unsigned int index = 0;
 
