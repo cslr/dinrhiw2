@@ -572,7 +572,7 @@ int main(int argc, char** argv)
 
 	  bfgs.getSolution(w, error, iterations);
 	  
-	  error = bfgs.getError(w);
+	  // error = bfgs.getError(w); // we already have the error
 	  
 	  eta.update(iterations);
 
@@ -832,7 +832,7 @@ int main(int argc, char** argv)
 	    // mean_ratio = math::pow(mean_ratio, inv);
 	    
 	    if(overfit == false){
-	      if(mean_ratio > 1.20f)
+	      if(mean_ratio > 1.30f)
 		if(counter > 10) break; // do not stop immediately
 	    }
 	    
@@ -1021,8 +1021,9 @@ int main(int argc, char** argv)
 
       // std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
 
-      // whiteice::HMC<> hmc(*nn, data, adaptive);
-      whiteice::UHMC<> hmc(*nn, data, adaptive);
+      whiteice::HMC<> hmc(*nn, data, adaptive);
+      // whiteice::UHMC<> hmc(*nn, data, adaptive);
+      
       // whiteice::PTHMC<> hmc(ptlayers, *nn, data, adaptive);
       whiteice::linear_ETA<float> eta;
       
@@ -1260,6 +1261,11 @@ int main(int argc, char** argv)
 
 	single_nn.importdata(w);
 
+	whiteice::linear_ETA<float> eta;
+	
+	if(data.size(0) > 0)
+	  eta.start(0.0f, (float)data.size(0));
+
 
 	for(unsigned int i=0;i<data.size(0);i++){
 	  math::vertex<> out1;
@@ -1277,7 +1283,16 @@ int main(int argc, char** argv)
 
 	  for(unsigned int i=0;i<err.size();i++)
 	    error2 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
+
+	  eta.update((float)(i+1));
+
+	  float percent = 100.0f*((float)i)/((float)data.size(0));
+	  float etamin  = eta.estimate()/60.0f;
+	  printf("\r%d/%d (%.1f%%) [ETA: %.2f minutes]", i, data.size(0), percent, etamin);
+	  fflush(stdout);
 	}
+
+	printf("\n"); fflush(stdout);
 	
 	error1 /= math::blas_real<float>((float)data.size(0));
 	error2 /= math::blas_real<float>((float)data.size(0));
@@ -1295,17 +1310,34 @@ int main(int argc, char** argv)
 	  
 	  data.setName(0, "input");
 	  data.setName(1, "output");
+
+	  whiteice::linear_ETA<float> eta;
+	  
+	  if(data.size(0) > 0)
+	    eta.start(0.0f, (float)data.size(0));
 	
 	  for(unsigned int i=0;i<data.size(0);i++){
 	    math::vertex<> out;
 	    math::vertex<> var;
 	    math::matrix<> cov;
+
+	    eta.update((float)i);
+
+	    float percent = 100.0 * ((double)(i+1))/((double)data.size(0));
+	    float etamin  = eta.estimate()/60.0f;
+
+	    printf("\r%d/%d (%.1f%%) [ETA %.2f minutes]      ", i+1, data.size(0), percent, etamin);
+	    fflush(stdout);
 	    
 	    bnn->calculate(data.access(0, i),  out, cov);
 	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
-	  }	  
+	  }
+
+	  printf("\n");
+	  fflush(stdout);
+	  
 	}
 	else if(data.getNumberOfClusters() == 3 && data.size(0) > 0){
 	  
