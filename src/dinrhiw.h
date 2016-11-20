@@ -42,6 +42,8 @@
 #include "LBFGS_nnetwork.h"
 #include "pLBFGS_nnetwork.h"
 
+#include "rLBFGS_nnetwork.h"
+
 #include "RNG.h"
 
 #include "lreg_nnetwork.h"

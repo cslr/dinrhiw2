@@ -119,26 +119,27 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/BFGS_nnetwork.h neuralnetwork/pBFGS_nnetwork.h \
  neuralnetwork/BFGS_nnetwork.h math/LBFGS.h \
  neuralnetwork/LBFGS_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/lreg_nnetwork.h \
- neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
- array.h container.h static_array.h static_array.cpp dynamic_array.h \
- stack.h queue.h dynamic_array.cpp search_array.h compressable.h \
- printable.h data_source.h chainhash.h hash_table.h chainhash.cpp \
- dummystack.h priority_queue.h dynamic_bitset.h point.h point.cpp \
- exceptions/ownexception.h dynamic_ctor_protection.h singleton.h \
- singleton_list.h singleton.cpp augmented_data.h tree.h avltree.h \
- avlnode.h avlnode.cpp avltree.cpp rbtree.h rbnode.h rbnode.cpp \
- rbtree.cpp binary_tree.h btree_node.h binary_tree.cpp fast_radix.h \
- fast_gradix.h fast_radixv.h radix_sort.h radix_sortv.h insertion.h ETA.h \
- linear_ETA.h linear_ETA.cpp MemoryCompressor.h conffile.h unique_id.h \
- math/number.h math/blade_math.h math/blas_primitives.h math/real.h \
- math/modular.h math/gcd.h math/gcd.cpp math/gcd.h primality_test.h \
- primality_test.cpp math/quaternion.h math/gmatrix.h math/gvertex.h \
- math/norms.h math/linear_algebra.h math/linear_equations.h \
- math/matrix_rotations.h math/eig.h conversion.h math/correlation.h \
- math/bezier.h math/bezier.cpp math/bezier.h math/bezier_density.h \
- math/bezier_surface.h math/bezier_surface.cpp math/bezier_surface.h \
- math/hermite.h math/hermite.cpp math/hermite.h neuralnetwork/PSO.h \
+ neuralnetwork/LBFGS_nnetwork.h neuralnetwork/rLBFGS_nnetwork.h \
+ neuralnetwork/lreg_nnetwork.h neuralnetwork/nnetwork_function.h \
+ neuralnetwork/optimized_function.h array.h container.h static_array.h \
+ static_array.cpp dynamic_array.h stack.h queue.h dynamic_array.cpp \
+ search_array.h compressable.h printable.h data_source.h chainhash.h \
+ hash_table.h chainhash.cpp dummystack.h priority_queue.h \
+ dynamic_bitset.h point.h point.cpp exceptions/ownexception.h \
+ dynamic_ctor_protection.h singleton.h singleton_list.h singleton.cpp \
+ augmented_data.h tree.h avltree.h avlnode.h avlnode.cpp avltree.cpp \
+ rbtree.h rbnode.h rbnode.cpp rbtree.cpp binary_tree.h btree_node.h \
+ binary_tree.cpp fast_radix.h fast_gradix.h fast_radixv.h radix_sort.h \
+ radix_sortv.h insertion.h ETA.h linear_ETA.h linear_ETA.cpp \
+ MemoryCompressor.h conffile.h unique_id.h math/number.h \
+ math/blade_math.h math/blas_primitives.h math/real.h math/modular.h \
+ math/gcd.h math/gcd.cpp math/gcd.h primality_test.h primality_test.cpp \
+ math/quaternion.h math/gmatrix.h math/gvertex.h math/norms.h \
+ math/linear_algebra.h math/linear_equations.h math/matrix_rotations.h \
+ math/eig.h conversion.h math/correlation.h math/bezier.h math/bezier.cpp \
+ math/bezier.h math/bezier_density.h math/bezier_surface.h \
+ math/bezier_surface.cpp math/bezier_surface.h math/hermite.h \
+ math/hermite.cpp math/hermite.h neuralnetwork/PSO.h \
  neuralnetwork/GeneticAlgorithm.h neuralnetwork/GeneticAlgorithm.cpp \
  neuralnetwork/GeneticAlgorithm.h neuralnetwork/GeneticAlgorithm2.h \
  neuralnetwork/GeneticAlgorithm2.cpp crypto/Cryptosystem.h data_source.h \

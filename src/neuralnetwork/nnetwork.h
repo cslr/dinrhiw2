@@ -31,12 +31,21 @@ namespace whiteice
     class nnetwork
     {
     public:
+
+    enum nonLinearity {
+      sigmoidNonLinearity, // uses sigmoid non-linearity as the default
+      halfLinear // for deep networks
+    };
+
+
     
     // creates useless 1x1 network. 
     // Use to load some useful network
     nnetwork(); 
     nnetwork(const nnetwork& nn);
-    nnetwork(const std::vector<unsigned int>& nnarch) throw(std::invalid_argument);
+    nnetwork(const std::vector<unsigned int>& nnarch,
+	     const nonLinearity nl = sigmoidNonLinearity) throw(std::invalid_argument);
+    
     
     virtual ~nnetwork();
 
@@ -100,11 +109,6 @@ namespace whiteice
     bool setBias(const math::vertex<T>& b, unsigned int layer) throw();
     bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
-
-    enum nonLinearity {
-      sigmoidNonLinearity, // uses sigmoid non-linearity as the default
-      halfLinear // for deep networks
-    };
 
     nonLinearity getNonlinearity() const throw();
     bool setNonlinearity(nonLinearity nl);

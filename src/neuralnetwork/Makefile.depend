@@ -16,7 +16,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
  ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
- LBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -59,7 +59,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
  GDALogic.h GDALogic.h HMC_gaussian.h HMC_abstract.h RBM.h HMCGBRBM.h \
  PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h LBFGS_GBRBM.h \
- LBFGS_BBRBM.h rLBFGS_nnetwork.h RBMvarianceerrorfunction.h
+ LBFGS_BBRBM.h RBMvarianceerrorfunction.h
 pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \
@@ -378,7 +378,7 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
  ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
- LBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -438,7 +438,7 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
  ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
- LBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -497,7 +497,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
  ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
- LBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -540,7 +540,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
  GDALogic.h GDALogic.h HMC_gaussian.h HMC_abstract.h RBM.h HMCGBRBM.h \
  PTHMCGBRBM.h PTHMCabstract.h HMCGBRBM.h CRBM.h LBFGS_GBRBM.h \
- LBFGS_BBRBM.h rLBFGS_nnetwork.h RBMvarianceerrorfunction.h
+ LBFGS_BBRBM.h RBMvarianceerrorfunction.h
 pso_main.o: tst/pso_main.cpp PSO.h ../math/vertex.h \
  ../math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
  /usr/include/openblas/openblas_config.h \
@@ -614,22 +614,23 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  ../math/RNG.h BBRBM.h nnetwork.h ../conffile.h BBRBM.h GBRBM.h \
  stackedRBM_pretraining.h DBN.h ../math/BFGS.h optimized_function.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
- LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/real.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -674,22 +675,23 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  ../math/RNG.h BBRBM.h nnetwork.h ../conffile.h BBRBM.h GBRBM.h \
  stackedRBM_pretraining.h DBN.h ../math/BFGS.h optimized_function.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
- LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/real.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -733,22 +735,23 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/fastpca.h DBN.h GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h \
  stackedRBM_pretraining.h DBN.h ../math/BFGS.h optimized_function.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
- LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/real.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -1174,22 +1177,23 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/fastpca.h DBN.h GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h \
  stackedRBM_pretraining.h DBN.h ../math/BFGS.h optimized_function.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
- LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/real.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/real.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \

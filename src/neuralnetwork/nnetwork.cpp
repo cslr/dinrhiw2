@@ -76,7 +76,8 @@ namespace whiteice
   
   
   template <typename T>
-  nnetwork<T>::nnetwork(const std::vector<unsigned int>& nnarch) 
+  nnetwork<T>::nnetwork(const std::vector<unsigned int>& nnarch,
+			const typename nnetwork<T>::nonLinearity nl)
     throw(std::invalid_argument)
   {
     if(nnarch.size() < 2)
@@ -84,7 +85,7 @@ namespace whiteice
 
     maxwidth = 0;
     stochasticActivation = false;
-    nonlinearity = sigmoidNonLinearity;
+    nonlinearity = nl; // sigmoidNonLinearity; is the default
     
     for(unsigned int i=0;i<nnarch.size();i++){
       if(nnarch[i] <= 0)

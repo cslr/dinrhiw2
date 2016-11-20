@@ -219,7 +219,7 @@ int main(int argc, char** argv)
     bayesian_nnetwork<>* bnn = new bayesian_nnetwork<>();
 
     if(pseudolinear){
-      nn->setNonLinearity(whiteice::nnetwork<>::halfLinear);
+      nn->setNonlinearity(whiteice::nnetwork<>::halfLinear);
     }
     
     if(verbose && !stdinout_io){
@@ -290,8 +290,9 @@ int main(int argc, char** argv)
 
       std::vector< math::vertex<> > weights;
       std::vector< unsigned int > arch;
+      nnetwork<>::nonLinearity nl;
 
-      if(bnn->exportSamples(arch, weights) == false){
+      if(bnn->exportSamples(arch, weights, nl) == false){
 	std::cout << "ERROR: Loading neural network failed." << std::endl;
 	if(nn) delete nn;
 	if(bnn) delete bnn;
@@ -310,6 +311,8 @@ int main(int argc, char** argv)
 	if(bnn) delete bnn;
 	return -1;
       }
+
+      nn->setNonlinearity(nl);
       
     }
     
@@ -1127,8 +1130,9 @@ int main(int argc, char** argv)
       {
 	std::vector<unsigned int> arch;
 	std::vector< math::vertex< math::blas_real<float> > > weights;
+	nnetwork<>::nonLinearity nl;
 	
-	if(bnn->exportSamples(arch, weights) == false){
+	if(bnn->exportSamples(arch, weights, nl) == false){
 	  std::cout << "Loading neural network failed." << std::endl;
 	  delete nn;
 	  delete bnn;
@@ -1138,6 +1142,7 @@ int main(int argc, char** argv)
 	
 	delete nn;
 	nn = new nnetwork<>(arch);
+	nn->setNonlinearity(nl);
 	nn->importdata(weights[(rand() % weights.size())]);;
       }
       
@@ -1264,7 +1269,9 @@ int main(int argc, char** argv)
 	whiteice::nnetwork<> single_nn(*nn);
 	std::vector< math::vertex<> > weights;
 	std::vector< unsigned int> arch;
-	bnn->exportSamples(arch, weights);
+	nnetwork<>::nonLinearity nl;
+	
+	bnn->exportSamples(arch, weights, nl);
 	math::vertex<> w = weights[0];
 	w.zero();
 
@@ -1274,7 +1281,7 @@ int main(int argc, char** argv)
 	w /= weights.size(); // E[w]
 
 	single_nn.importdata(w);
-	single_nn.setNonlinearity(bnn.getNonlinearity());
+	single_nn.setNonlinearity(nl);
 
 	whiteice::linear_ETA<float> eta;
 	
