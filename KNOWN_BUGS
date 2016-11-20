@@ -1,20 +1,14 @@
 
 Code is only tested and known to compile on Debian/Linux (amd64) and 
-Windows 64bit platform. Minimal testing has been done on Intel 32bit plaforms.
+Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
-* compilation happens with "-march=native" remove CPU specific optimizations later..
-
-* neural network code: nnetwork has some bugs(?),
-  valgrind everything (testcases) and RECHECK/REREAD nnetwork code carefully.
-  (read backpropagation/gradient code carefully)
-
-  * The problem may be in NNGradDescent code (threading?)
-
-  * NOTE: nnetwork code should be bug free now (11/2016)
-
-* BFGS and LBFGS parallel code has rare threading/synchronization issues
-  (thread_running is MODIFIED by theading loop but somebody may get/modify
-   the thread_running (mutex) BEFORE we exit)
+* HMC (bayes nnetwork) do not work properly on more that
+  one dimension nnetwork..
+  
+* BFGS optimizer (but not L-BFGS) fails mysteriously
+  when optimizing large nnetworks
+  (vertex dimension mismatch with large nnetworks)
+  
 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.
@@ -27,6 +21,6 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaforms.
   some parts of the code uses native CPUID or other instructions.
 
 * realnumber (arbitrary precision math): sin() and cos() function calls fail
-  as they are not implemented.
+  as they are not properly implemented.
 
 

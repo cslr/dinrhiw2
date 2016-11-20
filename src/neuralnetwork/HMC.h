@@ -70,6 +70,9 @@ namespace whiteice
 		bool getAdaptive() const throw(){ return adaptive; }
 	
     	private:
+	        // performs leapfrog operation (keeps probability function constant)
+	        void leapfrog(math::vertex<T>& p, math::vertex<T>& q, const T epsilon, const unsigned int L) const;
+	
 	        // calculates negative phase gradient
 	        bool negative_phase(const math::vertex<T>& xx, const math::vertex<T>& yy,
 				    math::vertex<T>& grad, 

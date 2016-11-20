@@ -233,7 +233,7 @@ namespace whiteice
 		  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
 
 		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    state[i] = nonlin(state[i], aindex + 1);
+		    state[i] = nonlin(state[i], aindex + 1, i);
 		  }
 		}
 
@@ -270,7 +270,7 @@ namespace whiteice
 		  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
 
 		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    state[i] = nonlin(state[i], aindex + 1);
+		    state[i] = nonlin(state[i], aindex + 1, i);
 		  }
 		}
 
@@ -327,7 +327,7 @@ namespace whiteice
 				  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
 
 				  for(unsigned int i=0;i<arch[aindex+1];i++){
-					  state[i] = nonlin(state[i], aindex + 1);
+				    state[i] = nonlin(state[i], aindex + 1, i);
 				  }
 			  }
 
@@ -358,27 +358,63 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::randomize()
   {
-    // random initialization [-0.5, +0,5] interval
-    // for(unsigned int i=0;i<data.size();i++)
-    //   data[i] = T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+    if(false){
+      // random initialization [-0.5, +0,5] interval
+      
+      // T scaling = T(3.0f*((float)rand())/((float)RAND_MAX)); // different scaling for different nonlins
 
-    unsigned int start = 0;
-    unsigned int end   = 0;
-    
-    for(unsigned int i=1;i<arch.size();i++){
-      end   += (arch[i-1] + 1)*arch[i];
+      T scaling = T(2.0);
+
+      // std::cout << "random init 1 " << scaling << std::endl;
       
-      // this initialization is as described in the paper of Xavier Glorot
-      // Understanding the difficulty of training deep neural networks
+      for(unsigned int i=0;i<data.size();i++)
+	data[i] = scaling*T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
+    }
+    else{
+
+      unsigned int start = 0;
+      unsigned int end   = 0;
       
-      T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
+      for(unsigned int i=1;i<arch.size();i++){
+	end   += (arch[i-1] + 1)*arch[i];
+	
+	// this initialization is as described in the paper of Xavier Glorot
+	// Understanding the difficulty of training deep neural networks
+	
+	T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
+	T scaling = T(2.2);
+
+	  // T(3.0f*((float)rand())/((float)RAND_MAX)); // different scaling for different nonlins
+
+	// std::cout << "random init 2 " << scaling << std::endl;
       
-      for(unsigned int j=start;j<end;j++){
-	T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
-	data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	var *= scaling;
+	
+	for(unsigned int j=start;j<end;j++){
+	  T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
+	  // data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	  data[j] = var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	}
+
+	// sets bias terms to zero?
+	for(unsigned int l=0;l<getLayers();l++){
+	  whiteice::math::vertex<T> bias;
+	  if(getBias(bias, l)){
+	    bias.zero();
+	    setBias(bias,l);
+	  }
+
+#if 0
+	  whiteice::math::matrix<T> W;
+	  if(getWeights(W, l)){
+	    W.zero();
+	    setBias(W,l);
+	  }
+#endif
+	}
+	
+	start += (arch[i-1] + 1)*arch[i];
       }
-      
-      start += (arch[i-1] + 1)*arch[i];
     }
     
     return true;
@@ -486,7 +522,7 @@ namespace whiteice
 		    0.0f, (float*)temp, 1);
 	
 	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, counter - 1);
+	  temp[x] *= Dnonlin(*bptr, counter - 1, x);
 	  bptr++;
 	}
 	
@@ -499,7 +535,7 @@ namespace whiteice
 		    0.0f, (double*)temp, 1);
 	
 	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, counter - 1);
+	  temp[x] *= Dnonlin(*bptr, counter - 1, x);
 	  bptr++;
 	}
 	
@@ -510,7 +546,7 @@ namespace whiteice
 	  for(unsigned int y=0;y<rows;y++)
 	    sum += lgrad[y]*_data[x + y*cols];
 	  
-	  sum *= Dnonlin(*bptr, counter - 1);
+	  sum *= Dnonlin(*bptr, counter - 1, x);
 	  
 	  temp[x] = sum;
 	  bptr++;
@@ -583,7 +619,7 @@ namespace whiteice
   
   
   template <typename T> // non-linearity used in neural network
-  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw(){
+  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){
 #if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
@@ -601,7 +637,12 @@ namespace whiteice
     // T output = math::asinh(input);
 
     // tanh(x) - 0.5x non-linearity as proposed by a research paper [statistically better gradients]
-    T output = math::tanh(input) - T(0.5)*input;
+    // T output = math::tanh(input) - T(0.5)*input;
+
+    // rectifier non-linearity
+    T output = T(0.0);
+    if(input >= T(0.0))
+      output = input;
 
     // T output = -math::exp(T(-0.5)*input*input);
 #endif
@@ -609,20 +650,34 @@ namespace whiteice
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) / (T(1.0) + math::exp(-input));
 
-    T r = T(((double)rand())/((double)RAND_MAX));
-
     if(stochasticActivation){
+      T r = T(((double)rand())/((double)RAND_MAX));
+      
       if(output > r){ output = T(1.0); }
       else{ output = T(0.0); }
     }
     
+#endif
+#if 0
+    T output;
+
+    if(neuron & 1){ // alternates between sigmoid and rectifier non-linearities within each layer
+      // rectifier
+      output = T(0.0);
+      if(input >= T(0.0))
+	output = input;
+    }
+    else{
+      // non-linearity motivated by restricted boltzman machines..
+      output = T(1.0) / (T(1.0) + math::exp(-input));
+    }
 #endif
     
     return output;
   }
   
   template <typename T> // derivat of non-linearity used in neural network
-  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const throw(){
+  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){
 #if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
@@ -642,9 +697,16 @@ namespace whiteice
     // T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
     
     // T output = input*math::exp(T(-0.5)*input*input);
+
+    // statistically better gradients?
+    // T t = math::tanh(input);
+    // T output = T(1.0f) - t*t - T(0.5); // statistically better non-linearity?
+
+    // rectifier non-linearity
+    T output = T(0.0);
+    if(input >= T(0.0))
+      output = 1.0;
     
-    T t = math::tanh(input);
-    T output = T(1.0f) - t*t - T(0.5); // statistically better non-linearity?
 #endif
 #if 1
     // non-linearity motivated by restricted boltzman machines..
@@ -652,12 +714,28 @@ namespace whiteice
     
     output = math::exp(-input) / (output*output);
 #endif
+#if 0
+    T output;
+    
+    if(neuron & 1){
+      // rectifier non-linearity
+      output = T(0.0);
+      if(input >= T(0.0))
+	output = 1.0;
+    }
+    else{
+      // non-linearity motivated by restricted boltzman machines..
+      output = T(1.0) + math::exp(-input);
+      
+      output = math::exp(-input) / (output*output);
+    }
+#endif
     
     return output;
   }
   
   template <typename T>
-  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer) const throw(){ // inverse of non-linearity used
+  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){ // inverse of non-linearity used
 #if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
@@ -711,7 +789,7 @@ namespace whiteice
       x = A*x + a;
       
       for(unsigned int i=0;i<x.size();i++){
-	x[i] *= Dnonlin(x[i], l);
+	x[i] *= Dnonlin(x[i], l, i);
       }
     }
     
@@ -967,8 +1045,7 @@ namespace whiteice
   // exports and imports neural network parameters to/from vertex
   template <typename T>
   bool nnetwork<T>::exportdata(math::vertex<T>& v) const throw(){
-    if(v.size() < size)
-      v.resize(size);
+    v.resize(size);
     
     // NN exports TO vertex, vertex imports FROM NN
     return v.importData(&(data[0]), size, 0);

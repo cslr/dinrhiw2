@@ -369,8 +369,10 @@ namespace whiteice
     vertex<T> vertex<T>::operator+(const vertex<T>& v) const
       throw(illegal_operation)
     {
-      if(v.dataSize != dataSize)
+      if(v.dataSize != dataSize){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       // copy of this vector
       vertex<T> r(*this);
@@ -391,8 +393,10 @@ namespace whiteice
     vertex<T> vertex<T>::operator-(const vertex<T>& v) const
       throw(illegal_operation)
     {
-      if(v.dataSize != dataSize)
+      if(v.dataSize != dataSize){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       // copy of this vector
       vertex<T> r(*this);
@@ -440,8 +444,10 @@ namespace whiteice
     vertex<T> vertex<T>::operator*(const vertex<T>& v) const
       throw(illegal_operation)
     {
-      if(dataSize != v.dataSize && (dataSize != 1 && v.dataSize != 1))
+      if(dataSize != v.dataSize && (dataSize != 1 && v.dataSize != 1)){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       // uses BLAS
       
@@ -579,8 +585,10 @@ namespace whiteice
     vertex<T>& vertex<T>::operator+=(const vertex<T>& v)
       throw(illegal_operation)
     {
-      if(v.dataSize != dataSize)
+      if(v.dataSize != dataSize){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       if(typeid(T) == typeid(blas_real<float>)){
 	float alpha = +1.0;
@@ -604,8 +612,10 @@ namespace whiteice
     vertex<T>& vertex<T>::operator-=(const vertex<T>& v)
       throw(illegal_operation)
     {
-      if(dataSize != dataSize)
+      if(dataSize != dataSize){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       if(typeid(T) == typeid(blas_real<float>)){
 	float alpha = -1.0;
@@ -628,8 +638,10 @@ namespace whiteice
     vertex<T>& vertex<T>::operator*=(const vertex<T>& v)
       throw(illegal_operation)
     {
-      if(v.dataSize != dataSize)
-	throw illegal_operation("vector op: vector dim. mismatch");    
+      if(v.dataSize != dataSize){
+	assert(0);
+	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       // *NO* CBLAS
       
@@ -779,8 +791,10 @@ namespace whiteice
     vertex<T>& vertex<T>::operator=(const quaternion<T>& q)
       throw(std::domain_error)
     {
-      if(dataSize != 4)
+      if(dataSize != 4){
+	assert(0);
 	throw std::domain_error("vertex '='-operator: cannot assign quaternion - dimension mismatch");
+      }
       
       for(unsigned int i=0;i<4;i++)
 	data[i] = q[i];
@@ -981,8 +995,10 @@ namespace whiteice
     vertex<T> vertex<T>::operator* (const matrix<T>& M) const
       throw(std::invalid_argument)
     {
-      if(dataSize != M.numRows)
+      if(dataSize != M.numRows){
+	assert(0);
 	throw std::invalid_argument("multiply: vertex/matrix dim. mismatch");
+      }
       
       vertex<T> r(M.numCols);
       
@@ -1157,8 +1173,10 @@ namespace whiteice
     template <typename T>
     vertex<T>& vertex<T>::dotmulti(const vertex<T>& v) throw(illegal_operation)
     {
-      if(this->dataSize != v.dataSize)
+      if(this->dataSize != v.dataSize){
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
+      }
       
       // should be optimized
       

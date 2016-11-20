@@ -34,6 +34,9 @@
 #include "LBFGS_GBRBM.h"
 #include "LBFGS_BBRBM.h"
 
+#include "LBFGS_nnetwork.h"
+#include "rLBFGS_nnetwork.h"
+
 #include "DBN.h"
 
 #include "PSO.h"
@@ -70,6 +73,7 @@ void neuralnetwork_test();
 
 void nnetwork_test();
 void lreg_nnetwork_test();
+void recurrent_nnetwork_test();
 
 void rbm_test();
 
@@ -111,6 +115,7 @@ int main()
   srand(seed);
   
   try{
+    recurrent_nnetwork_test();
     
     // dbn_test();
 #if 0
@@ -129,7 +134,7 @@ int main()
     
     // lreg_nnetwork_test();
     
-    hmc_test();
+    // hmc_test();
 
 #if 0    
     activation_test();  
@@ -219,6 +224,118 @@ private:
   char* reason;
   
 };
+
+/************************************************************/
+
+void recurrent_nnetwork_test()
+{
+
+  std::cout << "Simple recurrent neural network optimizer tests."
+	    << std::endl;
+
+  whiteice::RNG< math::blas_real<double> > rng;
+  
+  const unsigned int DEEPNESS = 10;
+
+  printf("DEEPNESS = %d\n", DEEPNESS);
+
+  whiteice::nnetwork< math::blas_real<double> > * nn = nullptr;
+  whiteice::dataset< math::blas_real<double> >  data;
+
+  // generates dummy data for learning (5 values and takes min value)
+  {
+    std::vector< math::vertex< math::blas_real<double> > > input;
+    std::vector< math::vertex< math::blas_real<double> > > output;
+
+    const unsigned int DIM=5;
+
+    for(unsigned int i=0;i<1000;i++){ // 1000 examples
+      math::vertex< math::blas_real<double> > in;
+      math::vertex< math::blas_real<double> > out;
+
+      in.resize(DIM);
+      for(unsigned int j=0;j<in.size();j++){
+	in[j] = rng.uniform();
+      }
+
+      auto min = in[0];
+      for(unsigned int j=0;j<in.size();j++){
+	if(in[j] < min) min = in[j];
+      }
+
+      out.resize(1);
+      out[0] = min;
+      
+      input.push_back(in);
+      output.push_back(out);
+    }
+
+    data.createCluster("input", DIM);
+    data.createCluster("output", 1);
+
+    data.add(0, input);
+    data.add(1, output);
+
+    // no preprocessing of data
+    data.preprocess(0, whiteice::dataset< math::blas_real<double> >::dnMeanVarianceNormalization);
+    data.preprocess(1, whiteice::dataset< math::blas_real<double> >::dnMeanVarianceNormalization);
+  }
+
+  // creates nnetwork
+  {
+    std::vector< unsigned int > arch;
+
+    if(DEEPNESS > 1){
+      arch.push_back(data.dimension(0)+data.dimension(1));
+      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(data.dimension(1));
+    }
+    else{
+      arch.push_back(data.dimension(0));
+      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(data.dimension(1));
+    }
+    
+    
+    nn = new whiteice::nnetwork< math::blas_real<double> >(arch);
+    nn->randomize();
+  }
+
+  math::vertex< math::blas_real<double> > w;
+
+  nn->exportdata(w);
+
+  // deepness of recursiveness
+  whiteice::rLBFGS_nnetwork< math::blas_real<double> >
+    optimizer(*nn, data, DEEPNESS, false, false);
+
+  optimizer.minimize(w); // starts optimization
+
+  unsigned int iters = 0;
+
+  while(optimizer.isRunning() &&
+	optimizer.solutionConverged() == false){
+
+    whiteice::math::blas_real<double> error = 0.0;
+
+    unsigned int it = 0;
+
+    if(optimizer.getSolution(w, error, it)){
+      if(iters != it){
+	printf("%d ITERS: %f\n", iters, error.c[0]);
+	fflush(stdout);
+	iters = it;
+      }
+    }
+
+    sleep(1);
+  }
+
+
+  
+}
 
 /************************************************************/
 

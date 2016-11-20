@@ -166,6 +166,7 @@ namespace whiteice
     y = global_best_y;    
     iterations = global_iterations;
 
+#if 0
     for(auto& o : optimizers){
       math::vertex<T> _x;
       T _y;
@@ -178,6 +179,7 @@ namespace whiteice
 	}
       iterations += iters;
     }
+#endif
     
     return true;
   }
@@ -309,8 +311,8 @@ namespace whiteice
 		  global_best_x = x;
 		}
 		
-		std::cout << "PLBFGS STOP: " << iters << " iterations. error: " 
-			  << y << std::endl;
+		//std::cout << "PLBFGS STOP: " << iters << " iterations. error: " 
+		//	  << y << std::endl;
 		
 		global_iterations += iters;
 	      }

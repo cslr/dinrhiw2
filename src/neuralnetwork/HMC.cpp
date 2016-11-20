@@ -692,6 +692,24 @@ namespace whiteice
 	}
 
 
+  
+    template <typename T>
+    void HMC<T>::leapfrog(math::vertex<T>& p, math::vertex<T>& q, const T epsilon, const unsigned int L) const
+    {
+      p -= T(0.5f) * epsilon * Ugrad(q);
+      
+      for(unsigned int i=0;i<L;i++){
+	q += epsilon * p;
+	if(i != L-1)
+	  p -= epsilon*Ugrad(q);
+      }
+      
+      p -= T(0.5f) * epsilon * Ugrad(q);
+      
+      p = -p;
+    }
+
+  
     template <typename T>
     void HMC<T>::sampler_loop()
 	{
@@ -707,13 +725,15 @@ namespace whiteice
     	p.resize(q.size()); // momentum is initially zero
     	p.zero();
 
-    	T epsilon = T(0.01f);
-    	unsigned int L = 10;
+    	T epsilon = T(1.0f);
+    	const unsigned int L = 10; // HMC-10 has been used
 	
+#if 1
 	{
 	  epsilon /= T(data.size(0)); // gradient sum is now "divided by number of datapoints"
 	}
-
+#endif
+	
 	// std::random_device rd;
 	// std::mt19937 gen(rd());
     	// std::normal_distribution<> rngn(0, 1); // N(0,1) variables
@@ -744,23 +764,58 @@ namespace whiteice
 		// p[i] = T(normalrnd()); // Normal distribution
 		
 		sample_covariance_matrix(q);
-		
+
 		rng.normal(p);
 
-    		math::vertex<T> old_q = q;
+		math::vertex<T> old_q = q;
     		math::vertex<T> current_p = p;
 
-    		p -= T(0.5f) * epsilon * Ugrad(q);
+		
+		// tries three different epsilons and picks the one that gives smallest error (just use U() terms)
+		// TODO: should compare probabilities instead..
+		{
+		  auto p0 = p;
+		  auto q0 = q;
+		  auto e0 = epsilon;
 
-    		for(unsigned int i=0;i<L;i++){
-    			q += epsilon * p;
-    			if(i != L-1)
-    				p -= epsilon*Ugrad(q);
-    		}
+		  auto p1 = p;
+		  auto q1 = q;
+		  auto e1 = T(0.5)*epsilon;
 
-    		p -= T(0.5f) * epsilon * Ugrad(q);
+		  auto p2 = p;
+		  auto q2 = q;
+		  auto e2 = T(1.0/0.5)*epsilon;
+		  
+		  leapfrog(p0, q0, e0, L);
+		  leapfrog(p1, q1, e1, L);
+		  leapfrog(p2, q2, e2, L);
 
-    		p = -p;
+		  auto Uq0 = U(q0);
+		  auto Uq1 = U(q1);
+		  auto Uq2 = U(q2);
+
+		  if(Uq0 <= Uq1){
+		    if(Uq0 <= Uq2){
+		      epsilon = e0;
+		    }
+		    else if(Uq2 <= Uq0){
+		      epsilon = e2;
+		    }
+		  }
+		  else if(Uq1 <= Uq0){
+		    if(Uq1 <= Uq2){
+		      epsilon = e1;
+		    }
+		    else if(Uq2 <= Uq1){
+		      epsilon = e2;
+		    }
+		  }
+		  
+		}
+		
+		// after selecting the best epsilon, we do the actual sampling
+		
+		leapfrog(p ,q, epsilon, L);
 
     		T current_U  = U(old_q);
     		T proposed_U = U(q);
@@ -853,19 +908,19 @@ namespace whiteice
     			{
     				accept_rate /= accept_rate_samples;
 
-    				// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
+				std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
 				// changed from 65-85% to 50%
 
-    				if(accept_rate <= T(0.50f)){
+    				if(accept_rate < T(0.50f)){
     					epsilon = T(0.8)*epsilon;
-    					// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
+					std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
     				}
-    				else if(accept_rate >= T(0.50f)){
+    				else if(accept_rate > T(0.50f)){
 				        // important, sampler can diverge so we FORCE epsilon to be small (<MAX_EPSILON)
 				        auto new_epsilon = T(1.0/0.8)*epsilon;
 					if(new_epsilon < MAX_EPSILON)
 					  epsilon = new_epsilon;
-    					// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
+					std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
     				}
 
     				accept_rate = T(0.0f);

@@ -2,6 +2,9 @@
 #include "LBFGS_nnetwork.h"
 #include "deep_ica_network_priming.h"
 
+#include "eig.h"
+
+
 namespace whiteice
 {
 
@@ -150,13 +153,28 @@ namespace whiteice
     math::vertex<T> sumgrad;
     sumgrad = x;
     sumgrad.zero();
-    
+
+    math::matrix<T> sigma2;
+    sigma2.resize(net.output_size(), net.output_size());
+    sigma2.zero();
+
+    math::vertex<T> m(net.output_size());
+    m.zero();
+
+    // positive phase/gradient
 #pragma omp parallel shared(sumgrad)
     {
       whiteice::nnetwork<T> nnet(this->net);
       nnet.importdata(x);
       
       math::vertex<T> sgrad, grad, err;
+
+      math::matrix<T> sum_sigma2;
+      sum_sigma2.resize(net.output_size(), net.output_size());
+      sum_sigma2.zero();
+      
+      math::vertex<T> sum_m(net.output_size());
+      sum_m.zero();
       
       sgrad = x;
       sgrad.zero();
@@ -171,8 +189,79 @@ namespace whiteice
 	  std::cout << "gradient failed." << std::endl;
 	  assert(0); // FIXME
 	}
+
+	sum_sigma2 += err.outerproduct(err);
+	// sum_m += err;
 	
 	sgrad += grad; // /T(dtrain.size(0));
+      }
+      
+#pragma omp critical
+      {
+	sumgrad += sgrad;
+	sigma2 += sum_sigma2;
+	m += sum_m;
+      }
+
+    }
+
+    sigma2 /= T((double)dtrain.size(0));
+    m /= T((double)dtrain.size(0));
+    sigma2 -= m.outerproduct(m);
+
+    // sigma2 is error covariance matrix
+    // (we assume there are only few output dimensions)
+    // we need to sample from N(O, Sigma2) solve X*sqrt(D)*n
+    auto D = sigma2;
+    math::matrix<T> X;
+    
+    while(symmetric_eig(D, X) == false){
+      for(unsigned int i=0;i<m.size();i++)
+	sigma2(i,i) += T(1.0); // dummy regularizer..
+      D = sigma2;
+    }
+
+    sigma2 = D;
+    
+    for(unsigned int i=0;i<m.size();i++){
+      sigma2(i,i) = sqrt(abs(sigma2(i,i)));
+    }
+
+    sigma2 = X*sigma2;
+    
+
+    // negative phase/gradient
+    #pragma omp parallel shared(sumgrad)
+    {
+      whiteice::nnetwork<T> nnet(this->net);
+      nnet.importdata(x);
+      
+      math::vertex<T> sgrad, grad, err;
+      
+      sgrad = x;
+      sgrad.zero();
+
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int i=0;i<dtrain.size(0);i++){
+	// generates negative particle
+	auto x = dtrain.access(0, rng.rand() % dtrain.size(0));
+	
+	nnet.input() = x;
+	nnet.calculate(true);
+	auto y = nnet.output();
+
+	math::vertex<T> n(y.size());
+	rng.normal(n);
+	y += sigma2 * n; // adds properly correlated noise..
+	
+	err = y - nnet.output();
+
+	if(nnet.gradient(err, grad) == false){
+	  std::cout << "gradient failed." << std::endl;
+	  assert(0); // FIXME
+	}
+	
+	sgrad -= grad; // /T(dtrain.size(0));
       }
       
 #pragma omp critical
@@ -188,11 +277,12 @@ namespace whiteice
       sumgrad += alpha*x;
     }
 #endif
-	  
-    sumgrad /= T(dtrain.size(0));
     
-    // sumgrad.normalize();
+    sumgrad /= T(dtrain.size(0));
+
 	  
+    // sumgrad.normalize();
+    
     return (sumgrad);
   }
   

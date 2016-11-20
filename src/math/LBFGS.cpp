@@ -194,6 +194,8 @@ namespace whiteice
     {
     	// finds the correct scale first
     	// (exponential search)
+
+        scale = T(1.0); // complete line search..
       
         vertex<T> localbestx = x + d;
     	T localbest  = T(10e20);
@@ -329,16 +331,11 @@ namespace whiteice
     				while(ratios.size() > 10)
     					ratios.pop_front();
 
-    				T min_ratio = 1000.0f;
 				T mean_ratio = 0.0f;
 				T inv = 1.0f/ratios.size();
 
     				for(auto r : ratios){
-				  r /= besty;
-				  if(r < min_ratio)
-				    min_ratio = r; // min
-
-				  mean_ratio += r*inv;
+				  mean_ratio += (r/besty)*inv;
 				}
 
     				// mean_ratio = math::pow(mean_ratio, inv);

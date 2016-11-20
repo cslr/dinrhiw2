@@ -1,11 +1,11 @@
 /*
- * L-BFGS optimizer for neural networks
+ * L-BFGS optimizer for simple *recurrent* neural networks
  * 
  *
  */
 
-#ifndef LBFGS_nnetwork_h
-#define LBFGS_nnetwork_h
+#ifndef rLBFGS_nnetwork_h
+#define rLBFGS_nnetwork_h
 
 #include "LBFGS.h"
 #include "nnetwork.h"
@@ -17,13 +17,16 @@
 namespace whiteice
 {
   template <typename T=math::blas_real<float> >
-    class LBFGS_nnetwork : public whiteice::math::LBFGS<T>
+    class rLBFGS_nnetwork : public whiteice::math::LBFGS<T>
     {
     public:
-      LBFGS_nnetwork(const nnetwork<T>& net,
-		     const dataset<T>& d, bool overfit=false, bool negativefeedback=false);
+      rLBFGS_nnetwork(const nnetwork<T>& net,
+		      const dataset<T>& d,
+		      const unsigned int deepness=1,
+		      bool overfit=false,
+		      bool negativefeedback=false);
     
-      virtual ~LBFGS_nnetwork();
+      virtual ~rLBFGS_nnetwork();
     
     protected:
 
@@ -41,8 +44,10 @@ namespace whiteice
       T getError(const math::vertex<T>& x) const;
 
     private:
+      const unsigned int deepness;
+    
       const nnetwork<T> net;
-      const dataset<T>& data;
+      const dataset<T>& data;    
     
       bool negativefeedback;
     
@@ -54,10 +59,10 @@ namespace whiteice
     };
 
 
-  extern template class LBFGS_nnetwork< float >;
-  extern template class LBFGS_nnetwork< double >;
-  extern template class LBFGS_nnetwork< math::blas_real<float> >;
-  extern template class LBFGS_nnetwork< math::blas_real<double> >;
+  extern template class rLBFGS_nnetwork< float >;
+  extern template class rLBFGS_nnetwork< double >;
+  extern template class rLBFGS_nnetwork< math::blas_real<float> >;
+  extern template class rLBFGS_nnetwork< math::blas_real<double> >;
   
 }
 
