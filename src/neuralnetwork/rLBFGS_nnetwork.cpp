@@ -578,6 +578,35 @@ namespace whiteice
       nnet.exportdata(x);
     }
 
+#if 0
+    // heuristic: for linear neuron weights to be always
+    //            same as their non-linear pairs. this means signal is
+    //            always transferred without problems to the next layer
+    {
+      whiteice::nnetwork<T> nnet(this->net);
+      nnet.importdata(x);
+      
+      for(unsigned int l=0;l<(nnet.getLayers()-1);l++){ // do not process the last layer..
+	whiteice::math::vertex<T> b;
+	whiteice::math::matrix<T> W;
+
+	nnet.getBias(b, l);
+	nnet.getWeights(W, l);
+	
+	for(unsigned int n=0;n<nnet.getNeurons(l);n += 2){
+	  b[n] = b[n+1];
+	  for(unsigned int j=0;j<W.xsize();j++){
+	    W(n,j) = W(n+1,j);
+	  }
+	}
+
+	nnet.setBias(b,l);
+	nnet.setWeights(W,l);
+      }
+	    
+    }
+#endif
+
     return true;
   }
   

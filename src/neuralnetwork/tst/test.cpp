@@ -288,13 +288,15 @@ void recurrent_nnetwork_test()
     if(DEEPNESS > 1){
       arch.push_back(data.dimension(0)+data.dimension(1));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back((data.dimension(0)+data.dimension(1)));
+      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
     else{
       arch.push_back(data.dimension(0));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back((data.dimension(0)+data.dimension(1)));
+      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
     
@@ -315,6 +317,8 @@ void recurrent_nnetwork_test()
 
   unsigned int iters = 0;
 
+  // deepness 10 (best seen 0.013420)
+
   while(optimizer.isRunning() &&
 	optimizer.solutionConverged() == false){
 
@@ -324,7 +328,7 @@ void recurrent_nnetwork_test()
 
     if(optimizer.getSolution(w, error, it)){
       if(iters != it){
-	printf("%d ITERS: %f\n", iters, error.c[0]);
+	printf("%d ITERS: %f (best non-recursive %f [rectifier])\n", iters, error.c[0], 0.012551);
 	fflush(stdout);
 	iters = it;
       }

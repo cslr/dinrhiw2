@@ -396,6 +396,7 @@ namespace whiteice
 	  data[j] = var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
 	}
 
+#if 0
 	// sets bias terms to zero?
 	for(unsigned int l=0;l<getLayers();l++){
 	  whiteice::math::vertex<T> bias;
@@ -403,15 +404,17 @@ namespace whiteice
 	    bias.zero();
 	    setBias(bias,l);
 	  }
-
+	}
+#endif
 #if 0
-	  whiteice::math::matrix<T> W;
+	whiteice::math::matrix<T> W;
+	for(unsigned int l=0;l<getLayers();l++){
 	  if(getWeights(W, l)){
 	    W.zero();
-	    setBias(W,l);
+	    setWeights(W,l);
 	  }
-#endif
 	}
+#endif
 	
 	start += (arch[i-1] + 1)*arch[i];
       }
@@ -646,7 +649,7 @@ namespace whiteice
 
     // T output = -math::exp(T(-0.5)*input*input);
 #endif
-#if 1
+#if 0
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) / (T(1.0) + math::exp(-input));
 
@@ -672,7 +675,20 @@ namespace whiteice
       output = T(1.0) / (T(1.0) + math::exp(-input));
     }
 #endif
+#if 1
+    T output;
     
+    if(neuron & 1){
+      // rectifier non-linearity
+      output = T(0.0);
+      if(input >= T(0.0))
+	output = input;
+    }
+    else{
+      return input; // half-the layers nodes are linear!
+    }
+    
+#endif    
     return output;
   }
   
@@ -708,7 +724,7 @@ namespace whiteice
       output = 1.0;
     
 #endif
-#if 1
+#if 0
     // non-linearity motivated by restricted boltzman machines..
     T output = T(1.0) + math::exp(-input);
     
@@ -730,9 +746,23 @@ namespace whiteice
       output = math::exp(-input) / (output*output);
     }
 #endif
+#if 1
+    T output;
+    
+    if(neuron & 1){
+      // rectifier non-linearity
+      output = T(0.0);
+      if(input >= T(0.0))
+	output = 1.0;
+    }
+    else{
+      return 1.0; // half-the layers nodes are linear!
+    }
+#endif
     
     return output;
   }
+
   
   template <typename T>
   inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){ // inverse of non-linearity used
@@ -1072,6 +1102,14 @@ namespace whiteice
   template <typename T>
   unsigned int nnetwork<T>::getLayers() const throw(){
     return (arch.size()-1); 
+  }
+
+  // number of neurons per layer
+  template <typename T>
+  unsigned int nnetwork<T>::getNeurons(unsigned int layer) const throw()
+  {
+    if(layer+1 >= arch.size()) return 0;
+    return arch[layer+1];
   }
 
   template <typename T>

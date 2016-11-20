@@ -93,6 +93,7 @@ namespace whiteice
     ////////////////////////////////////////////////////////////
     
     unsigned int getLayers() const throw();
+    unsigned int getNeurons(unsigned int l) const throw(); // number of neurons per layer
 
     // gets and sets network parameters: Weight matrixes and biases
     bool getBias(math::vertex<T>& b, unsigned int layer) const throw();

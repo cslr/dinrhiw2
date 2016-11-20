@@ -195,7 +195,8 @@ namespace whiteice
     	// finds the correct scale first
     	// (exponential search)
 
-        scale = T(1.0); // complete line search..
+      // moves scale 2**(e/2) towards 1
+      scale = sqrt(scale); // T(1.0); // complete line search..
       
         vertex<T> localbestx = x + d;
     	T localbest  = T(10e20);
@@ -328,7 +329,7 @@ namespace whiteice
 
     				ratios.push_back(besty);
 				
-    				while(ratios.size() > 10)
+    				while(ratios.size() > 20)
     					ratios.pop_front();
 
 				T mean_ratio = 0.0f;
@@ -350,8 +351,8 @@ namespace whiteice
 
 				// std::cout << "mean ratio: " << mean_ratio << std::endl;
 				
-				if(mean_ratio < T(1.005f) && iterations > 10){
-				  solution_converged = true; // last 10 iterations showed less than 0.5% change..
+				if(mean_ratio < T(1.005f) && iterations > 20){
+				  solution_converged = true; // last 20 iterations showed less than 0.5% change..
 				  break;
 				}
     			}
