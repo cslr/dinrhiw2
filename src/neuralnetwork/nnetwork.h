@@ -100,6 +100,14 @@ namespace whiteice
     bool setBias(const math::vertex<T>& b, unsigned int layer) throw();
     bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
+
+    enum nonLinearity {
+      sigmoidNonLinearity, // uses sigmoid non-linearity as the default
+      halfLinear // for deep networks
+    };
+
+    nonLinearity getNonlinearity() const throw();
+    bool setNonlinearity(nonLinearity nl);
     
     unsigned int getSamplesCollected() const throw();
     bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
@@ -131,6 +139,7 @@ namespace whiteice
 
     bool hasValidBPData;
     bool stochasticActivation;
+    nonLinearity nonlinearity; // which non-linearity to use (default: sigmoid)
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;

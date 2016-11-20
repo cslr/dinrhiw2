@@ -22,6 +22,7 @@ namespace whiteice
   nnetwork<T>::nnetwork()
   {
     stochasticActivation = false;
+    nonlinearity = sigmoidNonLinearity;
     
     arch.resize(2);    
     
@@ -70,6 +71,7 @@ namespace whiteice
     state  = nn.state;
     temp   = nn.temp;
     lgrad  = nn.lgrad;
+    nonlinearity = nn.nonlinearity;
   }
   
   
@@ -82,6 +84,7 @@ namespace whiteice
 
     maxwidth = 0;
     stochasticActivation = false;
+    nonlinearity = sigmoidNonLinearity;
     
     for(unsigned int i=0;i<nnarch.size();i++){
       if(nnarch[i] <= 0)
@@ -134,6 +137,7 @@ namespace whiteice
     size = nn.size;
 
     stochasticActivation = nn.stochasticActivation;
+    nonlinearity = nn.nonlinearity;
 
     data = nn.data;
     bpdata = nn.bpdata;
@@ -622,7 +626,42 @@ namespace whiteice
   
   
   template <typename T> // non-linearity used in neural network
-  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){
+  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  {
+    if(nonlinearity == sigmoidNonLinearity){
+      // non-linearity motivated by restricted boltzman machines..
+      T output = T(1.0) / (T(1.0) + math::exp(-input));
+      
+      if(stochasticActivation){
+	T r = T(((double)rand())/((double)RAND_MAX));
+	
+	if(output > r){ output = T(1.0); }
+	else{ output = T(0.0); }
+      }
+
+      return output;
+    }
+    else if(nonlinearity == halfLinear){
+      T output = T(0.0);
+      
+      if(neuron & 1){
+	// rectifier non-linearity
+	output = T(0.0);
+	if(input >= T(0.0))
+	  output = input;
+      }
+      else{
+	return input; // half-the layers nodes are linear!
+      }
+
+      return output;
+    }
+    else{
+      assert(0);
+    }
+    
+
+    
 #if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
@@ -675,7 +714,7 @@ namespace whiteice
       output = T(1.0) / (T(1.0) + math::exp(-input));
     }
 #endif
-#if 1
+#if 0
     T output;
     
     if(neuron & 1){
@@ -687,13 +726,42 @@ namespace whiteice
     else{
       return input; // half-the layers nodes are linear!
     }
-    
-#endif    
+
     return output;
+#endif    
   }
   
   template <typename T> // derivat of non-linearity used in neural network
-  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){
+  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  {
+    if(nonlinearity == sigmoidNonLinearity){
+      // non-linearity motivated by restricted boltzman machines..
+      T output = T(1.0) + math::exp(-input);
+      
+      output = math::exp(-input) / (output*output);
+      
+      return output;
+    }
+    else if(nonlinearity == halfLinear){
+      T output = T(0.0);
+      
+      if(neuron & 1){
+	// rectifier non-linearity
+	output = T(0.0);
+	if(input >= T(0.0))
+	  output = T(1.0);
+      }
+      else{
+	return 1.0; // half-the layers nodes are linear!
+      }
+      
+      return output;
+    }
+    else{
+      assert(0);
+    }
+
+    
 #if 0
     const T af = T(1.7159f);
     const T bf = T(0.6666f);
@@ -746,7 +814,7 @@ namespace whiteice
       output = math::exp(-input) / (output*output);
     }
 #endif
-#if 1
+#if 0
     T output;
     
     if(neuron & 1){
@@ -758,9 +826,8 @@ namespace whiteice
     else{
       return 1.0; // half-the layers nodes are linear!
     }
-#endif
-    
     return output;
+#endif
   }
 
   
@@ -849,6 +916,7 @@ namespace whiteice
 #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"
 
 #define FNN_STOCHASTIC_CFGSTR       "FNN_STOCHASTIC"
+#define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEAR"
 
   //////////////////////////////////////////////////////////////////////
 
@@ -913,6 +981,22 @@ namespace whiteice
 	
 	ints.clear();
       }
+
+      // used non-linearity
+      {
+	if(nonlinearity == sigmoidNonLinearity){
+	  ints.push_back(0);
+	}
+	else if(nonlinearity == halfLinear){
+	  ints.push_back(1);
+	}
+	else return false; // error!
+
+	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints))
+	  return false;
+
+	ints.clear();
+      }
       
       
       return configuration.save(filename);
@@ -931,7 +1015,7 @@ namespace whiteice
   ///////////////////////////////////////////////////////////////////////////
   
 
-  // load & saves neuralnetwork data from file
+  // load neuralnetwork data from file
   template <typename T>
   bool nnetwork<T>::load(const std::string& filename) throw(){
     try{
@@ -1039,6 +1123,26 @@ namespace whiteice
 	ints.clear();
       }
       
+      // used nonlinearity
+      {
+	if(!configuration.get(FNN_NONLINEARITY_CFGSTR, ints))
+	  return false;
+
+	if(ints.size() != 1) return false;
+
+	if(ints[0] == 0){
+	  nonlinearity = sigmoidNonLinearity;
+	}
+	else if(ints[0] == 1){
+	  nonlinearity = halfLinear;
+	}
+	else{
+	  return false;
+	}
+	
+	ints.clear();
+      }
+      
       return true;
     }
     catch(std::exception& e){
@@ -1052,24 +1156,7 @@ namespace whiteice
   }
 
   
-  //////////////////////////////////////////////////////////////////////  
-  
-
-
-
-
-#undef FNN_LAYER_AFUN_PARAM_CFGSTR
-#undef FNN_VERSION_CFGSTR
-#undef FNN_VWEIGHTS_CFGSTR
-#undef FNN_LAYER_W_CFGSTR
-#undef FNN_LAYER_B_CFGSTR
-#undef FNN_MOMENS_CFGSTR
-#undef FNN_LRATES_CFGSTR
-#undef FNN_AFUNS_CFGSTR
-#undef FNN_ARCH_CFGSTR
-  
-  
-  //////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////  //////////////////////////////////////////////////////////////////////
   
   
   // exports and imports neural network parameters to/from vertex
@@ -1201,6 +1288,21 @@ namespace whiteice
 
     return true;
   }
+  
+
+  template <typename T>
+  typename nnetwork<T>::nonLinearity nnetwork<T>::getNonlinearity() const throw()
+  {
+    return nonlinearity;
+  }
+
+  template <typename T>
+  bool nnetwork<T>::setNonlinearity(nnetwork<T>::nonLinearity nl)
+  {
+    nonlinearity = nl;
+    return true;
+  }
+  
   
   template <typename T>
   unsigned int nnetwork<T>::getSamplesCollected() const throw()

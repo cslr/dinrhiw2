@@ -308,6 +308,7 @@ void recurrent_nnetwork_test()
   math::vertex< math::blas_real<double> > w;
 
   nn->exportdata(w);
+  nn->setNonlinearity(nnetwork< math::blas_real<double> >::halfLinear);
 
   // deepness of recursiveness
   whiteice::rLBFGS_nnetwork< math::blas_real<double> >

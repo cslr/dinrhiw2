@@ -245,7 +245,7 @@ namespace whiteice
 #define FNN_NUMWEIGHTS_CFGSTR       "FNN_NUM_WEIGHTS"
 #define FNN_ARCH_CFGSTR             "FNN_ARCH"
 #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"  
-  
+#define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEARITY"  
   
   // stores and loads bayesian nnetwork to a text file
   // (saves all samples into files)
@@ -254,29 +254,29 @@ namespace whiteice
   {
     try{
       // whiteice::conffile configuration;
-    	whiteice::dataset<T> configuration;
-    	math::vertex<T> data;
-    	// unsigned int cluster = 0;
-
+      whiteice::dataset<T> configuration;
+      math::vertex<T> data;
+      // unsigned int cluster = 0;
+      
       std::vector<int> ints;
       std::vector<float> floats;
       std::vector<std::string> strings;
-
+      
       if(configuration.load(filename) == false)
-    	  return false;
-
+	return false;
+      
       int versionid = 0;
       
       // checks version
       {
 	//if(!configuration.get(FNN_VERSION_CFGSTR, ints))
-	  //return false;
-     	 data = configuration.accessName(FNN_VERSION_CFGSTR, 0);
-     	 ints.resize(data.size());
-     	 for(unsigned int i=0;i<data.size();i++){
-     		 math::convert(ints[i], data[i]);
-     	 }
-
+	//return false;
+	data = configuration.accessName(FNN_VERSION_CFGSTR, 0);
+	ints.resize(data.size());
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
 	
 	if(ints.size() != 1)
 	  return false;
@@ -288,22 +288,22 @@ namespace whiteice
       
       if(versionid != 3500) // v3.5 datafile
 	return false;
-
+      
       std::vector<unsigned int> arch;
       
       // gets architecture
       {
 	//if(!configuration.get(FNN_ARCH_CFGSTR,ints))
-	  // return false;
-     	 data = configuration.accessName(FNN_ARCH_CFGSTR, 0);
-     	 ints.resize(data.size());
-     	 for(unsigned int i=0;i<data.size();i++){
-     		 math::convert(ints[i], data[i]);
-     	 }
-	  
+	// return false;
+	data = configuration.accessName(FNN_ARCH_CFGSTR, 0);
+	ints.resize(data.size());
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
 	if(ints.size() < 2)
 	  return false;
-
+	
 	arch.resize(ints.size());
 	
 	for(unsigned int i=0;i<ints.size();i++){
@@ -312,29 +312,51 @@ namespace whiteice
 	}
       }
 
+      // gets nonlinearity of nnetworks
+      typename whiteice::nnetwork<T>::nonLinearity nl =
+	whiteice::nnetwork<T>::sigmoidNonLinearity;
+      {
+	data = configuration.accessName(FNN_NONLINEARITY_CFGSTR, 0);
+	ints.resize(data.size());
+	
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
+	if(ints.size() != 1)
+	  return false;
+	
+	if(ints[0] == 0)
+	  nl = whiteice::nnetwork<T>::sigmoidNonLinearity;
+	else if(ints[0] == 1)
+	  nl = whiteice::nnetwork<T>::halfLinear;
+	else
+	  return false; // bad data
+      }
+
+      
       
       // reads number of samples information
       int numberOfSamples = 0;
       
       {
-
-	 data = configuration.accessName(FNN_NUMWEIGHTS_CFGSTR, 0);
-	 ints.resize(data.size());
-	 for(unsigned int i=0;i<data.size();i++){
-		 math::convert(ints[i], data[i]);
-	 }
-
+	data = configuration.accessName(FNN_NUMWEIGHTS_CFGSTR, 0);
+	ints.resize(data.size());
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
 	if(ints.size() != 1)
 	  return false;
-
+	
 	numberOfSamples = ints[0];
-
+	
 	ints.clear();
       }
-
+      
       if(numberOfSamples <= 0)
 	return false;
-
+      
       
       std::vector< nnetwork<T>* > nets;
       
@@ -344,16 +366,17 @@ namespace whiteice
       for(unsigned int index=0;index<nets.size();index++)
       {
 	nets[index] = new nnetwork<T>(arch);
-
+	nets[index]->setNonlinearity(nl); // sets non-linearity
+	
 	math::vertex<T> w;
 	
 	w = configuration.accessName(FNN_WEIGHTS_CFGSTR, index);
-
+	
 #if 0
 	char buffer[80];
-
+	
 	sprintf(buffer, FNN_WEIGHTS_CFGSTR, index);
-
+	
 	if(!configuration.get(buffer, floats)){
 	  for(unsigned int j=0;j<=index;j++)
 	    delete nets[j];
@@ -373,13 +396,13 @@ namespace whiteice
 	    delete nets[j];
 	  return false;
 	}
-
+	
 	floats.clear();
       }
-
+      
       for(unsigned int i=0;i<nnets.size();i++)
 	delete nnets[i]; // deletes old networks
-
+      
       nnets = nets; // saves the loaded nnetworks
       
       return true;
@@ -459,13 +482,39 @@ namespace whiteice
       {
 	ints.push_back(nnets.size());
 
-    configuration.createCluster(FNN_NUMWEIGHTS_CFGSTR, ints.size());
-    data.resize(ints.size());
-    for(unsigned int i=0;i<ints.size();i++){
-    	data[i] = ints[i];
-    }
-    configuration.add(configuration.getCluster(FNN_NUMWEIGHTS_CFGSTR), data);
+	configuration.createCluster(FNN_NUMWEIGHTS_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++){
+	  data[i] = ints[i];
+	}
+	configuration.add(configuration.getCluster(FNN_NUMWEIGHTS_CFGSTR), data);
+	
+	ints.clear();
+      }
 
+      // writes non-linearity information (assumes all have same nonlin)
+      {
+	typename whiteice::nnetwork<T>::nonLinearity nl =
+	  whiteice::nnetwork<T>::sigmoidNonLinearity;
+
+	if(nnets.size() > 0){
+	  nl = nnets[0]->getNonlinearity();
+
+	  if(nl == whiteice::nnetwork<T>::sigmoidNonLinearity)
+	    ints.push_back(0);
+	  else if(nl == whiteice::nnetwork<T>::halfLinear)
+	    ints.push_back(1);
+	  else
+	    return false;
+	}
+
+	configuration.createCluster(FNN_NONLINEARITY_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++){
+	  data[i] = ints[i];
+	}
+	configuration.add(configuration.getCluster(FNN_NONLINEARITY_CFGSTR), data);
+	
 	ints.clear();
       }
 
