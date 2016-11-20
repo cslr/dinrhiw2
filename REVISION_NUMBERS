@@ -13,3 +13,5 @@ Interesting revision numbers:
 				   also, sigmoid-function is now the default non-linearity in nnetwork code because
 				   it fits well together with RBM code
 
+257				   support for multiple different non-linearities in code (save&load) and simple recursive nnetworks)
+
