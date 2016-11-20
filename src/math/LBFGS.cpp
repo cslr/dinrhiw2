@@ -197,6 +197,7 @@ namespace whiteice
 
       // moves scale 2**(e/2) towards 1
       scale = sqrt(scale); // T(1.0); // complete line search..
+      // scale = T(1.0); // complete linesearch
       
         vertex<T> localbestx = x + d;
     	T localbest  = T(10e20);

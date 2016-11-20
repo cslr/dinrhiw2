@@ -585,7 +585,10 @@ namespace whiteice
 		std::vector<unsigned int> arch;
 		nnet.getArchitecture(arch);
 
-		if(bnn.importSamples(arch, samples) == false)
+		typename nnetwork<T>::nonLinearity nl =
+		  nnet.getNonlinearity();
+
+		if(bnn.importSamples(arch, samples, nl) == false)
 			return false;
 
 		return true;

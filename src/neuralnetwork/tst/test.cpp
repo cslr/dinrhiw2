@@ -235,7 +235,7 @@ void recurrent_nnetwork_test()
 
   whiteice::RNG< math::blas_real<double> > rng;
   
-  const unsigned int DEEPNESS = 10;
+  const unsigned int DEEPNESS = 1; // 10
 
   printf("DEEPNESS = %d\n", DEEPNESS);
 
@@ -288,14 +288,12 @@ void recurrent_nnetwork_test()
     if(DEEPNESS > 1){
       arch.push_back(data.dimension(0)+data.dimension(1));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back((data.dimension(0)+data.dimension(1)));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
     else{
       arch.push_back(data.dimension(0));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back((data.dimension(0)+data.dimension(1)));
       arch.push_back(100*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
@@ -318,7 +316,7 @@ void recurrent_nnetwork_test()
 
   unsigned int iters = 0;
 
-  // deepness 10 (best seen 0.013420)
+  // deepness 10 (best seen 0.009577)
 
   while(optimizer.isRunning() &&
 	optimizer.solutionConverged() == false){
@@ -3965,7 +3963,10 @@ void bayesian_nnetwork_test()
     arch.push_back(10);
     arch.push_back(1);
 
+    typename nnetwork<>::nonLinearity nl = nnetwork<>::sigmoidNonLinearity;
+    
     nn = new nnetwork<>(arch);
+    nn->setNonlinearity(nl);
 
     std::vector< math::vertex<> > weights;
     weights.resize(10);
@@ -3978,7 +3979,7 @@ void bayesian_nnetwork_test()
       }
     }
     
-    if(bnn.importSamples(arch, weights) == false){
+    if(bnn.importSamples(arch, weights, nl) == false){
       std::cout << "ERROR: BNN importSamples() failed" << std::endl;
       return;
     }
@@ -3997,8 +3998,9 @@ void bayesian_nnetwork_test()
 
     std::vector<unsigned int> loaded_arch;
     std::vector< math::vertex<> > loaded_weights;
+    nnetwork<>::nonLinearity loaded_nl;
 
-    if(bnn2.exportSamples(loaded_arch, loaded_weights) == false){
+    if(bnn2.exportSamples(loaded_arch, loaded_weights, nl) == false){
       std::cout << "ERROR: BNN exportSamples() failed" << std::endl;
       return;
     }
@@ -4022,6 +4024,11 @@ void bayesian_nnetwork_test()
 	std::cout << "ERROR: BNN arch values mismatch" << std::endl;
 	return;
       }
+    }
+
+    if(loaded_nl != nl){
+      std::cout << "ERROR: BNN nonlinearity settings mismatch" << std::endl;
+      return;
     }
 
     for(unsigned int i=0;i<loaded_weights.size();i++){

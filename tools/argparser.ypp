@@ -6,7 +6,7 @@
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
  *           "--time" <number> | "--load" | "--samples <NUMBER>" |
- *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep
+ *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep | --pseudolinear
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
@@ -40,6 +40,7 @@
     bool adaptive;
     bool negfeedback;
     bool deep;
+    bool pseudolinear;
     bool noinit;
     bool hasTIME;
     unsigned int secs;
@@ -85,6 +86,7 @@
 %token <str> OPT_ADAPTIVE
 %token <str> OPT_NEGFEEDBACK
 %token <str> OPT_DEEP
+%token <str> OPT_PSEUDOLINEAR
 %token <str> OPT_LOAD
 %token <str> OPT_HELP
 %token <str> OPT_VERBOSE
@@ -139,6 +141,7 @@ option:	OPT_NOINIT             { __info.noinit   = true; }
       | OPT_ADAPTIVE           { __info.adaptive = true; }
       | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
       | OPT_DEEP               { __info.deep     = true; }
+      | OPT_PSEUDOLINEAR       { __info.pseudolinear = true; }      
       | OPT_HELP               { __info.help     = true; }
       | OPT_LOAD               { __info.load     = true; }
       | OPT_VERBOSE            { __info.verbose  = true; }
@@ -238,7 +241,8 @@ void parse_commandline(int argc, char** argv,
 		       bool& overfit, 
 		       bool& adaptive,
 		       bool& negfeedback,
-		       bool& deep, 
+		       bool& deep,
+		       bool& pseudolinear,
 		       bool& help,
 		       bool& verbose)
 {
@@ -286,7 +290,9 @@ void parse_commandline(int argc, char** argv,
     p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
     cmdparamslist.push_back(p);
     p.name = "--deep"; p.code = OPT_DEEP;
-    cmdparamslist.push_back(p);    
+    cmdparamslist.push_back(p);
+    p.name = "--pseudolinear"; p.code = OPT_PSEUDOLINEAR;
+    cmdparamslist.push_back(p);        
     p.name = "--help"; p.code = OPT_HELP;
     cmdparamslist.push_back(p);
     p.name = "-v"; p.code = OPT_VERBOSE;
@@ -459,6 +465,7 @@ void parse_commandline(int argc, char** argv,
     adaptive    = __info.adaptive;
     negfeedback = __info.negfeedback;
     deep        = __info.deep;
+    pseudolinear = __info.pseudolinear;
     
     lmethod = __info.method;
     lmods   = __info.mods;

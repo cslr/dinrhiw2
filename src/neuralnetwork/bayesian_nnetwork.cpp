@@ -53,7 +53,8 @@ namespace whiteice
    */
   template <typename T>
   bool bayesian_nnetwork<T>::importSamples(const std::vector<unsigned int>& arch,
-					   const std::vector< math::vertex<T> >& weights)
+					   const std::vector< math::vertex<T> >& weights,
+					   const typename nnetwork<T>::nonLinearity nl)
   {
     if(weights.size() <= 0) return false;
     
@@ -62,6 +63,7 @@ namespace whiteice
     
     for(unsigned int i=0;i<nnnets.size();i++){
       nnnets[i] = new nnetwork<T>(arch);
+      nnnets[i]->setNonlinearity(nl);
       if(nnnets[i]->importdata(weights[i]) == false){
 	for(unsigned int j=0;j<=i;j++){
 	  delete nnnets[i];
@@ -100,19 +102,25 @@ namespace whiteice
     if(net.exportdata(weight[0]) == false)
       return false;
 
-    return importSamples(arch, weight);
+    typename nnetwork<T>::nonLinearity nl = 
+      net.getNonlinearity();
+
+    return importSamples(arch, weight, nl);
   }
   
 
   template <typename T>
   bool bayesian_nnetwork<T>::exportSamples(std::vector<unsigned int>& arch,
-					   std::vector< math::vertex<T> >& weights, int latestN)
+					   std::vector< math::vertex<T> >& weights,
+					   typename nnetwork<T>::nonLinearity& nl,
+					   int latestN)
   {
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
 
     nnets[0]->getArchitecture(arch);
+    nl = nnets[0]->getNonlinearity();
 
     weights.resize(latestN);
 
@@ -123,6 +131,25 @@ namespace whiteice
       }
     
     return true;
+  }
+
+  template <typename T>
+  bool bayesian_nnetwork<T>::setNonlinearity(typename nnetwork<T>::nonLinearity nl){
+    for(unsigned int i=0;i<nnets.size();i++)
+      if(nnets[i])
+	if(nnets[i]->setNonlinearity(nl) == false)
+	  return false;
+    
+    return true;
+  }
+
+  template <typename T>
+  typename nnetwork<T>::nonLinearity bayesian_nnetwork<T>::getNonlinearity(){ // returns sigmoid if there are no nnetworks
+    if(nnets.size() > 0)
+      if(nnets[0])
+	return nnets[0]->getNonlinearity();
+
+    return nnetwork<T>::sigmoidNonLinearity;
   }
   
   

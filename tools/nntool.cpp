@@ -68,6 +68,7 @@ int main(int argc, char** argv)
     bool adaptive = false;
     bool negfeedback = false;
     bool deep = false;
+    bool pseudolinear = false;
     
     unsigned int samples = 0; // number of samples or iterations in learning process
     unsigned int secs = 0;    // how many seconds the learning process should take
@@ -102,6 +103,7 @@ int main(int argc, char** argv)
 		      adaptive,
 		      negfeedback,
 		      deep,
+		      pseudolinear,
 		      help,
 		      verbose);
     srand(time(0));
@@ -205,11 +207,20 @@ int main(int argc, char** argv)
       fprintf(stderr, "stdin/stdout I/O isn't supported yet.\n");    
       exit(-1);
     }
+
+    if(pseudolinear && deep){
+      fprintf(stderr, "Cannot set both deep and pseudolinear options at the same time\n");
+      exit(-1);
+    }
     
 
     nnetwork<>* nn = NULL;
     nn = new nnetwork<>(arch);
     bayesian_nnetwork<>* bnn = new bayesian_nnetwork<>();
+
+    if(pseudolinear){
+      nn->setNonLinearity(whiteice::nnetwork<>::halfLinear);
+    }
     
     if(verbose && !stdinout_io){
       math::vertex<> w;
@@ -329,8 +340,10 @@ int main(int argc, char** argv)
 	fprintf(stderr, "L-BFGS search requires --time or --samples command line switch.\n");
 	return -1;
       }
+
+      const unsigned int DEEPNESS_RECURSION = 1; // do not activate recursive nnetwork
       
-      LBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
+      rLBFGS_nnetwork<> bfgs(*nn, data, DEEPNESS_RECURSION, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
@@ -544,7 +557,8 @@ int main(int argc, char** argv)
 	fprintf(stderr, "L-BFGS search requires --time or --samples command line switch.\n");
 	return -1;
       }
-      
+
+      // FIXME add support for recursive neural networks
       pLBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
       
       {
@@ -1260,6 +1274,7 @@ int main(int argc, char** argv)
 	w /= weights.size(); // E[w]
 
 	single_nn.importdata(w);
+	single_nn.setNonlinearity(bnn.getNonlinearity());
 
 	whiteice::linear_ETA<float> eta;
 	
@@ -1455,6 +1470,7 @@ void print_usage(bool all)
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
   printf("--deep         pretrains feedforward neural network weights using stacked RBMs (slow)\n");
+  printf("--pseudolinear sets neural network weights to be 50%% linear (good for multilayer)\n");
   printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
   printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
   printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");

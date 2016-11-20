@@ -27,12 +27,17 @@ namespace whiteice
     unsigned int getNumberOfSamples() const throw(); // number of samples in BNN
 
     bool importSamples(const std::vector<unsigned int>& arch,
-		       const std::vector< math::vertex<T> >& weights);
+		       const std::vector< math::vertex<T> >& weights,
+		       const typename nnetwork<T>::nonLinearity nl);
     bool importNetwork(const nnetwork<T>& net);
 
     bool exportSamples(std::vector<unsigned int>& arch,
 		       std::vector< math::vertex<T> >& weights,
-			   int latestN = 0);
+		       typename nnetwork<T>::nonLinearity& nl,
+		       int latestN = 0);
+
+    bool setNonlinearity(typename nnetwork<T>::nonLinearity nl);
+    typename nnetwork<T>::nonLinearity getNonlinearity(); // returns sigmoid if there are no nnetworks
     
     /*
      * downsamples number of neural networks down to N neural networks
