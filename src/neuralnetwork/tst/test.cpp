@@ -235,7 +235,7 @@ void recurrent_nnetwork_test()
 
   whiteice::RNG< math::blas_real<double> > rng;
   
-  const unsigned int DEEPNESS = 1; // 10
+  const unsigned int DEEPNESS = 10; // 10
 
   printf("DEEPNESS = %d\n", DEEPNESS);
 
@@ -4000,7 +4000,7 @@ void bayesian_nnetwork_test()
     std::vector< math::vertex<> > loaded_weights;
     nnetwork<>::nonLinearity loaded_nl;
 
-    if(bnn2.exportSamples(loaded_arch, loaded_weights, nl) == false){
+    if(bnn2.exportSamples(loaded_arch, loaded_weights, loaded_nl) == false){
       std::cout << "ERROR: BNN exportSamples() failed" << std::endl;
       return;
     }
