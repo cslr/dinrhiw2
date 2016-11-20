@@ -69,6 +69,9 @@ int main(int argc, char** argv)
     bool negfeedback = false;
     bool deep = false;
     bool pseudolinear = false;
+
+    // should we use recurent neural network or not..
+    unsigned int SIMULATION_DEPTH = 1;
     
     unsigned int samples = 0; // number of samples or iterations in learning process
     unsigned int secs = 0;    // how many seconds the learning process should take
@@ -97,6 +100,7 @@ int main(int argc, char** argv)
 		      samples,
 		      threads,
 		      dataSize,
+		      SIMULATION_DEPTH,
 		      no_init,
 		      load,
 		      overfit,
@@ -158,11 +162,34 @@ int main(int argc, char** argv)
       
       
       if(arch[0] <= 0){
-	arch[0] = data.dimension(0);
+	if(SIMULATION_DEPTH > 1){
+	  if(data.getNumberOfClusters() >= 2){
+	    arch[0] = data.dimension(0)+data.dimension(1);
+	  }
+	  else{
+	    fprintf(stderr, "error: cannot compute recurrent network input layer size.\n");
+	    exit(-1);
+	  }
+	}
+	else{
+	  arch[0] = data.dimension(0);
+	}
       }
-      else if(arch[0] != data.dimension(0)){
-	fprintf(stderr, "error: bad network input layer size, input data dimension pair.\n");
-	exit(-1);
+      else{
+	if(SIMULATION_DEPTH > 1){
+	  if(data.getNumberOfClusters() >= 2){
+	    if(arch[0] != data.dimension(0)+data.dimension(1)){
+	      fprintf(stderr, "error: bad recurrent network input layer size, input data dimension pair.\n");
+	      exit(-1);
+	    }
+	  }
+	}
+	else{
+	  if(arch[0] != data.dimension(0)){
+	    fprintf(stderr, "error: bad network input layer size, input data dimension pair.\n");
+	    exit(-1);
+	  }
+	}
       }
       
       if(arch[arch.size()-1] <= 0){
@@ -344,9 +371,8 @@ int main(int argc, char** argv)
 	return -1;
       }
 
-      const unsigned int DEEPNESS_RECURSION = 1; // do not activate recursive nnetwork
       
-      rLBFGS_nnetwork<> bfgs(*nn, data, DEEPNESS_RECURSION, overfit, negfeedback);
+      rLBFGS_nnetwork<> bfgs(*nn, data, SIMULATION_DEPTH, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
@@ -430,6 +456,11 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "parallelbfgs"){
+
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
       
       if(verbose){
 	if(overfit == false){
@@ -536,6 +567,11 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "parallellbfgs"){
+
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
       
       if(verbose){
 	if(overfit == false){
@@ -642,6 +678,11 @@ int main(int argc, char** argv)
       
     }    
     else if(lmethod == "random"){
+
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
       
       if(verbose)
 	std::cout << "Starting neural network parallel random search (T=" << secs << " seconds, " << threads << " threads).."
@@ -710,7 +751,12 @@ int main(int argc, char** argv)
       
 
     }
-    else if(lmethod == "parallelgrad"){ 
+    else if(lmethod == "parallelgrad"){
+      
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
       
       if(verbose)
 	std::cout << "Starting neural network parallel multistart gradient descent (T=" << secs << " seconds, " << threads << " threads).."
@@ -763,6 +809,12 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "grad"){
+      
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
+      
       if(verbose){
 	std::cout << "Starting neural network gradient descent optimizer.."
 		  << std::endl;
@@ -984,7 +1036,13 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "bayes"){
-    	threads = 1;
+      
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
+      
+      threads = 1;
 
       if(verbose){
 	if(secs > 0){
@@ -1105,6 +1163,11 @@ int main(int argc, char** argv)
       
     }
     else if(lmethod == "minimize"){
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
+      
       if(verbose){
 	if(secs > 0){
 	  std::cout << "Finding neural network input (genetic algorithms) with minimum response (T=" 
@@ -1293,14 +1356,22 @@ int main(int argc, char** argv)
 	  math::vertex<> out1;
 	  math::matrix<> cov;
 
-	  bnn->calculate(data.access(0, i), out1, cov);
+	  bnn->calculate(data.access(0, i), out1, cov, SIMULATION_DEPTH);
 	  err = data.access(1,i) - out1;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
 	    error1 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
+
+	  single_nn.input().zero();
+	  single_nn.output().zero();
+	  single_nn.input().write_subvertex(data.access(0, i), 0);	  
 	  
-	  single_nn.input() = data.access(0, i);
-	  single_nn.calculate(false, false);
+	  for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
+	    if(SIMULATION_DEPTH > 1)
+	      single_nn.input().write_subvertex(single_nn.output(), data.access(0, i).size());
+	    single_nn.calculate(false, false);
+	  }
+	  
 	  err = data.access(1, i) - single_nn.output();
 
 	  for(unsigned int i=0;i<err.size();i++)
@@ -1351,7 +1422,7 @@ int main(int argc, char** argv)
 	    printf("\r%d/%d (%.1f%%) [ETA %.2f minutes]      ", i+1, data.size(0), percent, etamin);
 	    fflush(stdout);
 	    
-	    bnn->calculate(data.access(0, i),  out, cov);
+	    bnn->calculate(data.access(0, i),  out, cov, SIMULATION_DEPTH);
 	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
@@ -1375,7 +1446,7 @@ int main(int argc, char** argv)
 	    math::vertex<> var;
 	    math::matrix<> cov;
 	    
-	    bnn->calculate(data.access(0, i), out, cov);
+	    bnn->calculate(data.access(0, i), out, cov, SIMULATION_DEPTH);
 	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
@@ -1477,7 +1548,8 @@ void print_usage(bool all)
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
   printf("--deep         pretrains feedforward neural network weights using stacked RBMs (slow)\n");
-  printf("--pseudolinear sets neural network weights to be 50%% linear (good for multilayer)\n");
+  printf("--pseudolinear sets neural network weights to be 50%% linear (good for multilayer/recurrent)\n");
+  printf("--recurrent N  simple recurrent network (simulates N steps) (lbfgs, use)\n");
   printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
   printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
   printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
@@ -1495,7 +1567,7 @@ void print_usage(bool all)
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");
   printf("               gradient descent algorithms use negative feedback heuristic\n");
   printf("\n");
-  printf("               Ctrl-C shutdowns the program gracefully.\n");
+  printf("               Ctrl-C shutdowns the program.\n");
   printf("\n");
   printf("This program is distributed under GPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
   

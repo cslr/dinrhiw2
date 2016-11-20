@@ -199,11 +199,21 @@ namespace whiteice
   bool bayesian_nnetwork<T>::calculate(const math::vertex<T>& input,
 				       math::vertex<T>& mean,
 				       math::matrix<T>& covariance,
+				       unsigned int SIMULATION_DEPTH, // for recurrent use of nnetworks..
 				       int latestN)
   {
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
+
+    if(SIMULATION_DEPTH > 1){
+      if(nnets[0]->output_size() + input.size() != nnets[0]->input_size())
+	return false;
+    }
+    else{
+      if(input.size() != nnets[0]->input_size())
+	return false;
+    }
 
     const unsigned int D = nnets[0]->output_size();
     mean.resize(D);
@@ -229,8 +239,16 @@ namespace whiteice
 
 #pragma omp for nowait schedule(dynamic)
     	for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
-    		nnets[i]->input() = input;
-    		nnets[i]->calculate();
+	        nnets[i]->input().zero();
+		nnets[i]->output().zero();
+	        nnets[i]->input().write_subvertex(input, 0); // writes input section
+
+		for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
+		  if(SIMULATION_DEPTH > 1)
+		    nnets[i]->input().write_subvertex(nnets[i]->output(), input.size());
+		  nnets[i]->calculate();       // recurrent calculations if needed
+		}
+		
     		math::vertex<T> out = nnets[i]->output();
 
     		m += ninv*out;

@@ -1,6 +1,10 @@
 TODO
 
-* implement recurrent neural networks (LSTM neural network)
+* implement recurrent neural networks
+
+  * RUN/TEST RECURRENT NNTOOL TESTS IN TOOLS DIRECTORY
+
+  * AFTER TESTING CHECK ALLSTATES COMPO RESULTS
 
 
 
@@ -9,7 +13,7 @@ LATER (multistep optimization):
 
 * HMM (hidden markov models)
 
-  - implement discrete HMM and using arbitrary precision numbers
+  - implement discrete HMM using arbitrary precision numbers
     * study some Hidden Markov Model theory
     * this will be used to learn and generate likely stimulation sequences
       and tag stimulation elements into language (does make sense?)

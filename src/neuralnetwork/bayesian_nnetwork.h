@@ -50,6 +50,7 @@ namespace whiteice
     bool calculate(const math::vertex<T>& input,
 		   math::vertex<T>& mean,
 		   math::matrix<T>& covariance,
+		   unsigned int SIMULATION_DEPTH, // for recurrent use of nnetworks..
 		   int latestN = 0);
 
     unsigned int outputSize() const throw();

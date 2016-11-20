@@ -5,7 +5,7 @@
  *
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
- *           "--time" <number> | "--load" | "--samples <NUMBER>" |
+ *           "--time" <number> | "--load" | "--samples <NUMBER>" | "--recurrent <NUMBER>"
  *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep | --pseudolinear
  * ENDOPT  = "--"
  * DATA    = <filename>
@@ -46,6 +46,9 @@
     unsigned int secs;
     bool hasSAMPLES;
     unsigned int samples;
+
+    bool isRecurrent;
+    unsigned int SIMULATION_DEPTH;
 
     unsigned int threads;
 
@@ -95,6 +98,7 @@
 %token <str> OPT_SAMPLES
 %token <str> OPT_THREADS
 %token <str> OPT_DATASIZE
+%token <str> OPT_RECURRENT
 %token <str> OPT_ENDOPT
 
 /* LMETHOD */
@@ -150,6 +154,7 @@ option:	OPT_NOINIT             { __info.noinit   = true; }
       | OPT_DATASIZE NUMBER    { __info.dataSize = $2; }
       | OPT_TIME NUMBER        { __info.hasTIME  = true; __info.secs = $2; }
       | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
+      | OPT_RECURRENT NUMBER   { __info.isRecurrent = true; __info.SIMULATION_DEPTH = $2; }
 
 ;
 
@@ -236,6 +241,7 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& samples,
 		       unsigned int& threads,
 		       unsigned int& dataSize,
+		       unsigned int& SIMULATION_DEPTH,
 		       bool& no_init,
 		       bool& load, 
 		       bool& overfit, 
@@ -255,6 +261,7 @@ void parse_commandline(int argc, char** argv,
   load    = false;
   help    = false;
   threads = 0;
+  SIMULATION_DEPTH = 1;
   
   // handles simple params 
   // (not handled correctly by grammar which assumes network file
@@ -306,7 +313,9 @@ void parse_commandline(int argc, char** argv,
     p.name = "--data"; p.code = OPT_DATASIZE;
     cmdparamslist.push_back(p);    
     p.name = "--samples"; p.code = OPT_SAMPLES;
-    cmdparamslist.push_back(p);    
+    cmdparamslist.push_back(p);
+    p.name = "--recurrent"; p.code = OPT_RECURRENT;
+    cmdparamslist.push_back(p);
     p.name = "--"; p.code = OPT_ENDOPT;
     cmdparamslist.push_back(p);
 
@@ -350,6 +359,8 @@ void parse_commandline(int argc, char** argv,
   __info.samples    = 0;
   __info.threads    = 0;
   __info.dataSize   = 0;
+  __info.SIMULATION_DEPTH = 1;
+  __info.isRecurrent = false;
   __info.method     = "use";
   
   
@@ -478,6 +489,9 @@ void parse_commandline(int argc, char** argv,
     samples  = __info.samples;
     threads  = __info.threads;
     dataSize = __info.dataSize;
+
+    if(__info.isRecurrent)
+	SIMULATION_DEPTH = __info.SIMULATION_DEPTH;
         
     return;
   }
