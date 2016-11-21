@@ -27,8 +27,8 @@ namespace whiteice {
 template <typename T = math::blas_real<float> >
 class PTHMC_abstract {
 protected:
-	const bool adaptive;
         const unsigned int deepness;
+        const bool adaptive;
 public:
 	// deepness = the number of different temperatures
 	PTHMC_abstract(unsigned int deepness, bool adaptive);

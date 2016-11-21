@@ -299,6 +299,13 @@ AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search p
 
 optimization_flags="$optimization_flags -mtune=native -fopenmp"
 
+AC_ARG_ENABLE([native],
+	AS_HELP_STRING([--enable-native],[Enable native optimization]))
+
+AS_IF([test "x$enable_native" = "xyes"],[
+  optimization_flags="$optimization_flags -march=native"
+])
+
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

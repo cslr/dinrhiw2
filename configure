@@ -686,6 +686,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_atlaslpath
+enable_native
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1315,6 +1316,12 @@ if test -n "$ac_init_help"; then
      short | recursive ) echo "Configuration of whiteice::dinrhiw <nop@iki.fi>:";;
    esac
   cat <<\_ACEOF
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-native         Enable native optimization
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3981,8 +3988,8 @@ if [ $cpufamily = "x86_64" ]; then
     optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
     conf_flags="-fPIC -DAMD64"
 elif [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]; then
-    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
-    conf_flags="-fPIC -DAMD64"    
+    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math"
+    conf_flags="-fPIC -DIA32"
 else
     as_fn_error $? "$cpufamily , unrecognized/unsupported machine architecture." "$LINENO" 5
 fi
@@ -4199,6 +4206,18 @@ fi
 
 
 optimization_flags="$optimization_flags -mtune=native -fopenmp"
+
+# Check whether --enable-native was given.
+if test "${enable_native+set}" = set; then :
+  enableval=$enable_native;
+fi
+
+
+if test "x$enable_native" = "xyes"; then :
+
+  optimization_flags="$optimization_flags -march=native"
+
+fi
 
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
