@@ -239,6 +239,17 @@ int main(int argc, char** argv)
       fprintf(stderr, "Cannot set both deep and pseudolinear options at the same time\n");
       exit(-1);
     }
+
+    if(SIMULATION_DEPTH > 1){
+      if(verbose){
+	if(pseudolinear){
+	  printf("Optimizing simple recurrent neural network (pseudolinear)\n");
+	}
+	else{
+	  printf("Optimizing simple recurrent neural network (sigmoid)\n");
+	}
+      }
+    }
     
 
     nnetwork<>* nn = NULL;
@@ -1261,7 +1272,7 @@ int main(int argc, char** argv)
       }
       
       
-      if(bnn->inputSize() != data.dimension(0)){
+      if(bnn->inputSize() != data.dimension(0) && SIMULATION_DEPTH == 1){
 	std::cout << "Neural network input dimension mismatch for input dataset ("
 		  << bnn->inputSize() << " != " << data.dimension(0) << ")"
 		  << std::endl;
@@ -1270,6 +1281,16 @@ int main(int argc, char** argv)
 	nn = NULL;
 	return -1;
       }
+      else if(bnn->inputSize() != data.dimension(0)+bnn->outputSize() && SIMULATION_DEPTH > 1){
+	std::cout << "Recurrent neural network input dimension mismatch for input dataset ("
+		  << bnn->inputSize() << " != " << data.dimension(0)+bnn->outputSize() << ")"
+		  << std::endl;
+	delete bnn;
+	delete nn;
+	nn = NULL;
+	return -1;
+      }
+      
       
       
       bool compare_clusters = false;
