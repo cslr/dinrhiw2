@@ -1,5 +1,7 @@
 #!/bin/sh
 
+#### recurrent result 0.0114799 (Average error in dataset).
+
 ./nntool --version
 date
 
@@ -38,7 +40,7 @@ OPTIONS="-v --recurrent 10 --pseudolinear"
 cp -f commviol-test.ds commviol-pred.ds
 ./dstool -clear:1 commviol-pred.ds
 
-./nntool -v commviol-pred.ds $ARCH commviol-nn.cfg use
+./nntool $OPTIONS commviol-pred.ds $ARCH commviol-nn.cfg use
 
 ./dstool -print:1:2205:2214 commviol-pred.ds
 tail commviol.out
