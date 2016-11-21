@@ -90,10 +90,10 @@ namespace whiteice
 {
   namespace math
   {
-    // extern template class NNGradDescent< float >;
+    extern template class NNGradDescent< float >;
     extern template class NNGradDescent< double >;
-    // extern template class NNGradDescent< blas_real<float> >;
-    // extern template class NNGradDescent< blas_real<double> >;
+    extern template class NNGradDescent< blas_real<float> >;
+    extern template class NNGradDescent< blas_real<double> >;
     
     
   };

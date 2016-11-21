@@ -93,10 +93,10 @@ namespace whiteice
 {
   namespace math
   {
-    //extern template class NNRandomSearch< float >;
-    //extern template class NNRandomSearch< double >;
+    extern template class NNRandomSearch< float >;
+    extern template class NNRandomSearch< double >;
     extern template class NNRandomSearch< blas_real<float> >;
-    //extern template class NNRandomSearch< blas_real<double> >;o
+    extern template class NNRandomSearch< blas_real<double> >;
     
     
   };

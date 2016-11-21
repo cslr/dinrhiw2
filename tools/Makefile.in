@@ -15,9 +15,12 @@ OPTIMIZE=@optimization_flags@
 CFLAGS = @CFLAGS@ $(OPTIMIZE) -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
+SOURCES = aescipher.cpp FileSource.cpp CryptoFleSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
+	nntool.cpp argparser.tab.cpp cpuid_threads.cpp datatool.cpp gendata.cpp
+
+
 AESCIPHER_LIBS = `pkg-config dinrhiw --libs` -lgmp
 WDV_LIBS = `pkg-config dinrhiw --libs` -lgmp
-
 
 AESCIPHER_OBJECTS = aescipher.o FileSource.o CryptoFileSource.o
 AESCIPHER_TARGET = aescipher
@@ -103,9 +106,15 @@ gendata_clean:
 	$(RM) -f $(GENDATA_TARGET)
 	$(RM) -f $(GENDATA_OBJECTS)
 
+depend:
+	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend
+
 ##################################################
 
 # rule for building parser for command line arguments
 argparser.tab.cpp: argparser.ypp
 	$(BISON) -v argparser.ypp
+
+
+include Makefile.depend
 

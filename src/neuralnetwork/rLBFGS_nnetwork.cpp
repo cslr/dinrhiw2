@@ -146,9 +146,6 @@ namespace whiteice
 	  err = dtest.access(1, i) - nnet.output();
 	  err = (err*err);
 	  esum += T(0.5f)*err[0];
-	    
-
-	  
 	}
 	
 #pragma omp critical

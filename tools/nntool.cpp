@@ -34,7 +34,7 @@
 #ifdef _GLIBCXX_DEBUG
 
 #undef __STRICT_ANSI__
-#include <float.h>
+#include <double.h>
 #include <fenv.h>
 
 #endif
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
     // tries to open data and nnfile
     
     // loads data
-    dataset<> data;
+    dataset< whiteice::math::blas_real<double> > data;
     bool stdinout_io = false;
     
     if(datafn.size() > 0){ // file input
@@ -252,24 +252,31 @@ int main(int argc, char** argv)
     }
     
 
-    nnetwork<>* nn = NULL;
-    nn = new nnetwork<>(arch);
-    bayesian_nnetwork<>* bnn = new bayesian_nnetwork<>();
+    nnetwork< whiteice::math::blas_real<double> >* nn = NULL;
+    nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
+    bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
     if(pseudolinear){
-      nn->setNonlinearity(whiteice::nnetwork<>::halfLinear);
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear);
     }
     
     if(verbose && !stdinout_io){
-      math::vertex<> w;
+      math::vertex< whiteice::math::blas_real<double> > w;
       nn->exportdata(w);
       
-      if(lmethod == "use")
+      if(lmethod == "use"){
 	printf("Processing %d data points (%d parameters in neural network).\n", data.size(0), w.size());
-      else
-	printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
-	       data.size(0), data.dimension(0), data.dimension(1),
-	       w.size());
+      }
+      else{
+	if(SIMULATION_DEPTH <= 1)
+	  printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
+		 data.size(0), data.dimension(0), data.dimension(1),
+		 w.size());
+	else
+	  printf("%d data points for %d+%d -> %d mapping (%d parameters in neural network).\n",
+		 data.size(0), data.dimension(0), data.dimension(1), data.dimension(1),
+		 w.size());
+      }
     }
     
     
@@ -309,7 +316,7 @@ int main(int argc, char** argv)
 
       // also sets initial weights to be "orthogonal" against each other
       if(negfeedback){
-	math::blas_real<float> alpha = 0.5f;
+	math::blas_real<double> alpha = 0.5f;
 	negative_feedback_between_neurons(*nn, data, alpha);
       }
       
@@ -326,9 +333,9 @@ int main(int argc, char** argv)
 	return -1;
       }
 
-      std::vector< math::vertex<> > weights;
+      std::vector< math::vertex< whiteice::math::blas_real<double> > > weights;
       std::vector< unsigned int > arch;
-      nnetwork<>::nonLinearity nl;
+      nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
 
       if(bnn->exportSamples(arch, weights, nl) == false){
 	std::cout << "ERROR: Loading neural network failed." << std::endl;
@@ -383,25 +390,25 @@ int main(int argc, char** argv)
       }
 
       
-      rLBFGS_nnetwork<> bfgs(*nn, data, SIMULATION_DEPTH, overfit, negfeedback);
+      rLBFGS_nnetwork< whiteice::math::blas_real<double> > bfgs(*nn, data, SIMULATION_DEPTH, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::blas_real<float> error = 1000.0f;
-	math::vertex<> w;
+	math::blas_real<double> error = 1000.0f;
+	math::vertex< whiteice::math::blas_real<double> > w;
 	unsigned int iterations = 0;
-	whiteice::linear_ETA<float> eta;
+	whiteice::linear_ETA<double> eta;
 
 	if(samples > 0)
-	  eta.start(0.0f, (float)samples);
+	  eta.start(0.0f, (double)samples);
 
 	// initial starting position
 	nn->exportdata(w);
 	
 	bfgs.minimize(w);
 
-	while(error > math::blas_real<float>(0.001f) &&
+	while(error > math::blas_real<double>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0) && // or max samples
 	      bfgs.solutionConverged() == false && bfgs.isRunning() == true && // or until solution converged.. (or exit due error)
@@ -497,25 +504,25 @@ int main(int argc, char** argv)
 	return -1;
       }
       
-      pBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
+      pBFGS_nnetwork< whiteice::math::blas_real<double> > bfgs(*nn, data, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::blas_real<float> error = 1000.0f;
-	math::vertex<> w;
+	math::blas_real<double> error = 1000.0f;
+	math::vertex< whiteice::math::blas_real<double> > w;
 	unsigned int iterations = 0;
-	whiteice::linear_ETA<float> eta;
+	whiteice::linear_ETA<double> eta;
 
 	if(samples > 0)
-	  eta.start(0.0f, (float)samples);
+	  eta.start(0.0f, (double)samples);
 
 	// initial starting position
 	// nn->exportdata(w);
 	
 	bfgs.minimize(threads);
 
-	while(error > math::blas_real<float>(0.001f) &&
+	while(error > math::blas_real<double>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0) && 
 	      !stopsignal)
@@ -609,25 +616,25 @@ int main(int argc, char** argv)
       }
 
       // FIXME add support for recursive neural networks
-      pLBFGS_nnetwork<> bfgs(*nn, data, overfit, negfeedback);
+      pLBFGS_nnetwork< whiteice::math::blas_real<double> > bfgs(*nn, data, overfit, negfeedback);
       
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::blas_real<float> error = 1000.0f;
-	math::vertex<> w;
+	math::blas_real<double> error = 1000.0f;
+	math::vertex< whiteice::math::blas_real<double> > w;
 	unsigned int iterations = 0;
-	whiteice::linear_ETA<float> eta;
+	whiteice::linear_ETA<double> eta;
 
 	if(samples > 0)
-	  eta.start(0.0f, (float)samples);
+	  eta.start(0.0f, (double)samples);
 
 	// initial starting position
 	// nn->exportdata(w);
 	
 	bfgs.minimize(threads);
 
-	while(error > math::blas_real<float>(0.001f) &&
+	while(error > math::blas_real<double>(0.001f) &&
 	      (counter < secs || secs <= 0) && // compute max SECS seconds
 	      (iterations < samples || samples <= 0) && 
 	      !stopsignal)
@@ -708,8 +715,8 @@ int main(int argc, char** argv)
       // hack to test ultradeep
       // NOTE: brute-forcing does not really work..
       {
-	std::vector< math::vertex<> > input;
-	std::vector< math::vertex<> > output;
+	std::vector< math::vertex< whiteice::math::blas_real<double> > > input;
+	std::vector< math::vertex< whiteice::math::blas_real<double> > > output;
 	
 	data.getData(0, input);
 	data.getData(1, output);
@@ -723,18 +730,18 @@ int main(int argc, char** argv)
       }
 #endif
       
-      math::NNRandomSearch<> search;
+      math::NNRandomSearch< whiteice::math::blas_real<double> > search;
       search.startOptimize(data, arch, threads);
 
       
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::blas_real<float> error = 100.0f;
+	math::blas_real<double> error = 100.0f;
 	unsigned int solutions = 0;
 	
 	
-	while(error > math::blas_real<float>(0.001f) &&
+	while(error > math::blas_real<double>(0.001f) &&
 	      counter < secs && // compute max SECS seconds
 	      !stopsignal) 
 	{
@@ -779,7 +786,7 @@ int main(int argc, char** argv)
       }
       
       
-      math::NNGradDescent<> grad(negfeedback);
+      math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
 
       if(samples > 0)
 	grad.startOptimize(data, arch, threads, samples);
@@ -790,7 +797,7 @@ int main(int argc, char** argv)
       {
 	time_t t0 = time(0);
 	unsigned int counter = 0;
-	math::blas_real<float> error = 100.0f;
+	math::blas_real<double> error = 100.0f;
 	unsigned int solutions = 0;
 	
 	
@@ -836,7 +843,7 @@ int main(int argc, char** argv)
 
       {
 	// divide data to training and testing sets
-	dataset<> dtrain, dtest;
+	dataset< whiteice::math::blas_real<double> > dtrain, dtest;
 	
 	dtrain = data;
 	dtest  = data;
@@ -850,15 +857,15 @@ int main(int argc, char** argv)
 	  const unsigned int r = (rand() & 1);
 	  
 	  if(r == 0){
-	    math::vertex<> in  = data.access(0,i);
-	    math::vertex<> out = data.access(1,i);
+	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
+	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
 	    dtrain.add(0, in,  true);
 	    dtrain.add(1, out, true);
 	  }
 	  else{
-	    math::vertex<> in  = data.access(0,i);
-	    math::vertex<> out = data.access(1,i);
+	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
+	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
 	    dtest.add(0, in,  true);
 	    dtest.add(1, out, true);	    
@@ -868,30 +875,30 @@ int main(int argc, char** argv)
 	// 1. normal gradient descent optimization using dtrain dataset
 	// 2. after each iteration calculate the actual error terms from dtest dataset
 	{
-	  math::vertex<> grad, err, weights;
+	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;
 	  
-	  math::vertex<> best_weights;
+	  math::vertex< whiteice::math::blas_real<double> > best_weights;
 	  
 	  unsigned int counter = 0;
-	  math::blas_real<float> error, mean_ratio;
-	  math::blas_real<float> prev_error;
-	  math::blas_real<float> lrate = math::blas_real<float>(0.05f);
-	  math::blas_real<float> delta_error = 0.0f;	  
+	  math::blas_real<double> error, mean_ratio;
+	  math::blas_real<double> prev_error;
+	  math::blas_real<double> lrate = math::blas_real<double>(0.05f);
+	  math::blas_real<double> delta_error = 0.0f;	  
 
-	  math::blas_real<float> minimum_error = 10000000000.0f;
+	  math::blas_real<double> minimum_error = 10000000000.0f;
 	  
-	  std::list< math::blas_real<float> > ratios;
+	  std::list< math::blas_real<double> > ratios;
 	  
 	  error = 1000.0f;
 	  prev_error = 1000.0f;
 	  mean_ratio = 1.0f;
 	  
 
-	  math::vertex<> prev_sumgrad;
+	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
 
-	  whiteice::linear_ETA<float> eta;
+	  whiteice::linear_ETA<double> eta;
 	  if(samples > 0)
-	    eta.start(0.0f, (float)samples);
+	    eta.start(0.0f, (double)samples);
 	  
 	  const unsigned int SAMPLE_SIZE = 500;
 	  
@@ -901,7 +908,7 @@ int main(int argc, char** argv)
 	    while(ratios.size() > 10)
 	      ratios.pop_front();
 	    
-	    math::blas_real<float> inv = 1.0f/ratios.size();
+	    math::blas_real<double> inv = 1.0f/ratios.size();
 	    
 	    mean_ratio = 1000.0f;
 	    
@@ -923,8 +930,8 @@ int main(int argc, char** argv)
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
 
-	    math::vertex<> sumgrad;
-	    math::blas_real<float> ninv = 1.0f/SAMPLE_SIZE;
+	    math::vertex< whiteice::math::blas_real<double> > sumgrad;
+	    math::blas_real<double> ninv = 1.0f/SAMPLE_SIZE;
 
 	    for(unsigned int i=0;i<SAMPLE_SIZE;i++){
 	      const unsigned index = rand() % dtrain.size(0);
@@ -946,18 +953,18 @@ int main(int argc, char** argv)
 	    if(nn->exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 	    
-	    lrate = 0.15f;
-	    math::vertex<> w;
+	    lrate = 0.15;
+	    math::vertex< whiteice::math::blas_real<double> > w;
 	    
 	    do{	      
-	      lrate = 0.5f*lrate;
+	      lrate = 0.5*lrate;
 	      w = weights;
 	      
 	      if(prev_sumgrad.size() <= 1){
 		w -= lrate * sumgrad;
 	      }
 	      else{
-		math::blas_real<float> momentum = 0.0f; // 0.8f
+		math::blas_real<double> momentum = 0.0f; // 0.8f
 		w -= lrate * sumgrad + momentum*prev_sumgrad;
 	      }
 	      
@@ -965,11 +972,11 @@ int main(int argc, char** argv)
 	      
 	      if(negfeedback){
 		// using negative feedback heuristic
-		math::blas_real<float> alpha = 0.5f;
+		math::blas_real<double> alpha = 0.5f;
 		negative_feedback_between_neurons(*nn, dtrain, alpha);	      
 	      }
 	      
-	      error = 0.0f;
+	      error = 0.0;
 	      
 	      // calculates error from the testing dataset
 	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
@@ -980,11 +987,11 @@ int main(int argc, char** argv)
 		err = dtest.access(1, index) - nn->output();
 		
 		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+		  error += (err[i]*err[i]) / math::blas_real<double>((double)err.size());
 	      }
 	      
 	      error /= SAMPLE_SIZE;
-	      error *= math::blas_real<float>(0.5f); // missing scaling constant
+	      error *= math::blas_real<double>(0.5f); // missing scaling constant
 	      
 	      delta_error = (prev_error - error); // if the error is negative we try again	      
 	    }
@@ -1007,11 +1014,11 @@ int main(int argc, char** argv)
 		err = dtest.access(1, index) - nn->output();
 		
 		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / math::blas_real<float>((float)err.size());
+		  error += (err[i]*err[i]) / math::blas_real<double>((double)err.size());
 	      }
 	      
 	      error /= SAMPLE_SIZE;
-	      error *= math::blas_real<float>(0.5f); // missing scaling constant
+	      error *= math::blas_real<double>(0.5f); // missing scaling constant
 	    }
 #endif
 	    
@@ -1020,7 +1027,7 @@ int main(int argc, char** argv)
 	      minimum_error = error;
 	    }
 	    
-	    math::blas_real<float> ratio = error / minimum_error;
+	    math::blas_real<double> ratio = error / minimum_error;
 	    ratios.push_back(ratio);
 	    
 	    prev_sumgrad = lrate * sumgrad;
@@ -1031,7 +1038,7 @@ int main(int argc, char** argv)
 	    fflush(stdout);
 	    
 	    counter++;
-	    eta.update((float)counter);
+	    eta.update((double)counter);
 	  }
 	  
 	  if(best_weights.size() > 1)
@@ -1070,18 +1077,18 @@ int main(int argc, char** argv)
 #if 0
       // calculates error covariance matrix using current 
       // (random or loaded neural network configuration)
-      math::matrix<> covariance;
+      math::matrix< whiteice::math::blas_real<double> > covariance;
       {
 	covariance.resize(data.dimension(1), data.dimension(1));
 	covariance.zero();
 	
-	math::vertex<> mean;
+	math::vertex< whiteice::math::blas_real<double> > mean;
 	mean.resize(data.dimension(1));
 	mean.zero();
 	
 	for(unsigned int i=0;i<data.size(0);i++){
-	  math::vertex<> out1;
-	  math::matrix<> cov;
+	  math::vertex< whiteice::math::blas_real<double> > out1;
+	  math::matrix< whiteice::math::blas_real<double> > cov;
 	  
 	  bnn->calculate(data.access(0, i), out1, cov);
 	  auto err = data.access(1, i) - out1;
@@ -1090,15 +1097,15 @@ int main(int argc, char** argv)
 	  covariance += err.outerproduct();
 	}
 
-	mean /= whiteice::math::blas_real<float>(data.size(0));
-	covariance /= whiteice::math::blas_real<float>(data.size(0));
+	mean /= whiteice::math::blas_real<double>(data.size(0));
+	covariance /= whiteice::math::blas_real<double>(data.size(0));
 	covariance -= mean.outerproduct();
       }
       
       std::cout << "covariance = " << covariance << std::endl;
 #endif
       
-      // whiteice::HMC_convergence_check<> hmc(*nn, data, adaptive);
+      // whiteice::HMC_convergence_check< whiteice::math::blas_real<double> > hmc(*nn, data, adaptive);
       unsigned int ptlayers =
 	(unsigned int)(math::log(data.size(0))/math::log(1.25));
       
@@ -1107,11 +1114,11 @@ int main(int argc, char** argv)
 
       // std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
 
-      whiteice::HMC<> hmc(*nn, data, adaptive);
-      // whiteice::UHMC<> hmc(*nn, data, adaptive);
+      whiteice::HMC< whiteice::math::blas_real<double> > hmc(*nn, data, adaptive);
+      // whiteice::UHMC< whiteice::math::blas_real<double> > hmc(*nn, data, adaptive);
       
-      // whiteice::PTHMC<> hmc(ptlayers, *nn, data, adaptive);
-      whiteice::linear_ETA<float> eta;
+      // whiteice::PTHMC< whiteice::math::blas_real<double> > hmc(ptlayers, *nn, data, adaptive);
+      whiteice::linear_ETA<double> eta;
       
       time_t t0 = time(0);
       unsigned int counter = 0;
@@ -1119,12 +1126,12 @@ int main(int argc, char** argv)
       hmc.startSampler();
       
       if(samples > 0)
-	eta.start(0.0f, (float)samples);
+	eta.start(0.0f, (double)samples);
       
       while(((hmc.getNumberOfSamples() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
       // while(!hmc.hasConverged() && !stopsignal){
 
-	eta.update((float)hmc.getNumberOfSamples());
+	eta.update((double)hmc.getNumberOfSamples());
 	
 	if(hmc.getNumberOfSamples() > 0){
 	  if(secs > 0)
@@ -1161,7 +1168,7 @@ int main(int argc, char** argv)
       delete nn;
       nn = NULL;
 
-      bnn = new bayesian_nnetwork<>();
+      bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
       assert(hmc.getNetwork(*bnn) == true);
 
       // instead of using mean weight vector
@@ -1203,8 +1210,8 @@ int main(int argc, char** argv)
       // loads nnetwork weights from BNN
       {
 	std::vector<unsigned int> arch;
-	std::vector< math::vertex< math::blas_real<float> > > weights;
-	nnetwork<>::nonLinearity nl;
+	std::vector< math::vertex< math::blas_real<double> > > weights;
+	nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
 	
 	if(bnn->exportSamples(arch, weights, nl) == false){
 	  std::cout << "Loading neural network failed." << std::endl;
@@ -1215,21 +1222,21 @@ int main(int argc, char** argv)
 	}
 	
 	delete nn;
-	nn = new nnetwork<>(arch);
+	nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
 	nn->setNonlinearity(nl);
 	nn->importdata(weights[(rand() % weights.size())]);;
       }
       
-      nnetwork_function<> nf(*nn);
-      GA3<> ga(&nf);
+      nnetwork_function< whiteice::math::blas_real<double> > nf(*nn);
+      GA3< whiteice::math::blas_real<double> > ga(&nf);
 
       time_t t0 = time(0);
       unsigned int counter = 0;
       
       ga.minimize();
       
-      whiteice::math::vertex<> s;
-      math::blas_real<float> r;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > s;
+      math::blas_real<double> r;
       
       while(((ga.getGenerations() < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal){
 	r = ga.getBestSolution(s);
@@ -1345,18 +1352,18 @@ int main(int argc, char** argv)
       
       
       if(compare_clusters == true){
-	math::blas_real<float> error1 = math::blas_real<float>(0.0f);
-	math::blas_real<float> error2 = math::blas_real<float>(0.0f);
-	math::blas_real<float> c = math::blas_real<float>(0.5f);
-	math::vertex<> err;
+	math::blas_real<double> error1 = math::blas_real<double>(0.0f);
+	math::blas_real<double> error2 = math::blas_real<double>(0.0f);
+	math::blas_real<double> c = math::blas_real<double>(0.5f);
+	math::vertex< whiteice::math::blas_real<double> > err;
 	
-	whiteice::nnetwork<> single_nn(*nn);
-	std::vector< math::vertex<> > weights;
+	whiteice::nnetwork< whiteice::math::blas_real<double> > single_nn(*nn);
+	std::vector< math::vertex< whiteice::math::blas_real<double> > > weights;
 	std::vector< unsigned int> arch;
-	nnetwork<>::nonLinearity nl;
+	nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
 	
 	bnn->exportSamples(arch, weights, nl);
-	math::vertex<> w = weights[0];
+	math::vertex< whiteice::math::blas_real<double> > w = weights[0];
 	w.zero();
 
 	for(auto& wi : weights)
@@ -1367,21 +1374,21 @@ int main(int argc, char** argv)
 	single_nn.importdata(w);
 	single_nn.setNonlinearity(nl);
 
-	whiteice::linear_ETA<float> eta;
+	whiteice::linear_ETA<double> eta;
 	
 	if(data.size(0) > 0)
-	  eta.start(0.0f, (float)data.size(0));
+	  eta.start(0.0f, (double)data.size(0));
 
 
 	for(unsigned int i=0;i<data.size(0);i++){
-	  math::vertex<> out1;
-	  math::matrix<> cov;
+	  math::vertex< whiteice::math::blas_real<double> > out1;
+	  math::matrix< whiteice::math::blas_real<double> > cov;
 
 	  bnn->calculate(data.access(0, i), out1, cov, SIMULATION_DEPTH);
 	  err = data.access(1,i) - out1;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
-	    error1 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	    error1 += c*(err[i]*err[i]) / math::blas_real<double>((double)err.size());
 
 	  single_nn.input().zero();
 	  single_nn.output().zero();
@@ -1396,20 +1403,20 @@ int main(int argc, char** argv)
 	  err = data.access(1, i) - single_nn.output();
 
 	  for(unsigned int i=0;i<err.size();i++)
-	    error2 += c*(err[i]*err[i]) / math::blas_real<float>((float)err.size());
+	    error2 += c*(err[i]*err[i]) / math::blas_real<double>((double)err.size());
 
-	  eta.update((float)(i+1));
+	  eta.update((double)(i+1));
 
-	  float percent = 100.0f*((float)i)/((float)data.size(0));
-	  float etamin  = eta.estimate()/60.0f;
+	  double percent = 100.0f*((double)i)/((double)data.size(0));
+	  double etamin  = eta.estimate()/60.0f;
 	  printf("\r%d/%d (%.1f%%) [ETA: %.2f minutes]", i, data.size(0), percent, etamin);
 	  fflush(stdout);
 	}
 
 	printf("\n"); fflush(stdout);
 	
-	error1 /= math::blas_real<float>((float)data.size(0));
-	error2 /= math::blas_real<float>((float)data.size(0));
+	error1 /= math::blas_real<double>((double)data.size(0));
+	error2 /= math::blas_real<double>((double)data.size(0));
 	
 	std::cout << "Average error in dataset (E[f(x|w)]): " << error1 << std::endl;
 	std::cout << "Average error in dataset (f(x|E[w])): " << error2 << std::endl;
@@ -1425,20 +1432,20 @@ int main(int argc, char** argv)
 	  data.setName(0, "input");
 	  data.setName(1, "output");
 
-	  whiteice::linear_ETA<float> eta;
+	  whiteice::linear_ETA<double> eta;
 	  
 	  if(data.size(0) > 0)
-	    eta.start(0.0f, (float)data.size(0));
+	    eta.start(0.0f, (double)data.size(0));
 	
 	  for(unsigned int i=0;i<data.size(0);i++){
-	    math::vertex<> out;
-	    math::vertex<> var;
-	    math::matrix<> cov;
+	    math::vertex< whiteice::math::blas_real<double> > out;
+	    math::vertex< whiteice::math::blas_real<double> > var;
+	    math::matrix< whiteice::math::blas_real<double> > cov;
 
-	    eta.update((float)i);
+	    eta.update((double)i);
 
-	    float percent = 100.0 * ((double)(i+1))/((double)data.size(0));
-	    float etamin  = eta.estimate()/60.0f;
+	    double percent = 100.0 * ((double)(i+1))/((double)data.size(0));
+	    double etamin  = eta.estimate()/60.0f;
 
 	    printf("\r%d/%d (%.1f%%) [ETA %.2f minutes]      ", i+1, data.size(0), percent, etamin);
 	    fflush(stdout);
@@ -1463,9 +1470,9 @@ int main(int argc, char** argv)
 	  data.setName(2, "output_stddev");
 	  
 	  for(unsigned int i=0;i<data.size(0);i++){
-	    math::vertex<> out;
-	    math::vertex<> var;
-	    math::matrix<> cov;
+	    math::vertex< whiteice::math::blas_real<double> > out;
+	    math::vertex< whiteice::math::blas_real<double> > var;
+	    math::matrix< whiteice::math::blas_real<double> > cov;
 	    
 	    bnn->calculate(data.access(0, i), out, cov, SIMULATION_DEPTH);
 	    

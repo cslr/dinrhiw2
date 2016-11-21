@@ -354,10 +354,10 @@ namespace whiteice
 
 
     
-    // template class NNGradDescent< float >;
-    // template class NNGradDescent< double >;
+    template class NNGradDescent< float >;
+    template class NNGradDescent< double >;
     template class NNGradDescent< blas_real<float> >;
-    // template class NNGradDescent< blas_real<double> >;    
+    template class NNGradDescent< blas_real<double> >;    
     
   };
 };
