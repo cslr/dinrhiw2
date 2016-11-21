@@ -15,3 +15,14 @@ Interesting revision numbers:
 
 257				   support for multiple different non-linearities in code (save&load) and simple recursive nnetworks)
 
+264				   nntool has now working simple recurrent neural network optimization/support (not fully tested)
+				   (it seems that using mostly linear neural network is beneficial for large recurrent nnetworks
+				    so that it can be trained while having just enough non-linearitiness so that resulting system
+				    is not linear)
+
+				   nntool also uses doubles instead of single precision numbers now internally.
+				   extra accuracy can be useful when optimization requires near zero gradients or
+				   so that we do not get easily infinities.
+				   
+				   
+
