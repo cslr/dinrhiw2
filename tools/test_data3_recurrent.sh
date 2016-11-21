@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#### recurrent result 0.0114799 (Average error in dataset).
+#### recurrent result 0.0114799 (Average error in dataset). [about same then in non-recursive case]
 
 ./nntool --version
 date

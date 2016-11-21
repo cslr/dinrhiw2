@@ -1,5 +1,7 @@
 #!/bin/sh
 
+#### feedforward net result 0.0128355
+
 rm -f commviol-test.ds
 
 # creates training dataset for nntool

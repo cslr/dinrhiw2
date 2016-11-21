@@ -18,12 +18,12 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v wine-test.ds 13-20-1 winenn.cfg grad
+./nntool -v wine-test.ds 13-20-1 winenn.cfg lbfgs
 # ./nntool -v --time 10 wine-test.ds 13-1 winenn.cfg random
 
 # testing
 
-./nntool -v wine-test.ds 13-13-1 winenn.cfg use
+./nntool -v wine-test.ds 13-20-1 winenn.cfg use
 
 # predicting [stores results to dataset]
 

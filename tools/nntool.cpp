@@ -30,13 +30,10 @@
 
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
-#ifdef _GLIBCXX_DEBUG
 
 #undef __STRICT_ANSI__
-#include <double.h>
 #include <fenv.h>
 
-#endif
 
 
 void print_usage(bool all);
@@ -81,6 +78,7 @@ int main(int argc, char** argv)
     // number of datapoints to be used in learning (taken randomly from the dataset)
     unsigned int dataSize = 0;
 
+    
 #ifdef _GLIBCXX_DEBUG    
     // enables FPU exceptions
     feenableexcept(FE_INVALID |
@@ -1402,7 +1400,48 @@ int main(int argc, char** argv)
 
 	w /= weights.size(); // E[w]
 
-	single_nn.importdata(w);
+	
+	{
+	  std::vector<unsigned int> arch2;
+	  single_nn.getArchitecture(arch2);
+
+	  if(arch2.size() != arch.size()){
+	    printf("ERROR: cannot import weights from bayesian nnetwork to a single network (mismatch network layout %d != %d).\n",
+		   (int)arch2.size(), (int)arch.size());
+	    delete bnn;
+	    delete nn;
+	    exit(-1);
+	  }
+	  
+	  for(unsigned int i=0;i<arch.size();i++){
+	    if(arch2[i] != arch[i]){
+	      printf("ERROR: cannot import weights from bayesian nnetwork to a single network (mismatch network layout).\n");
+	      for(unsigned int i=0;i<arch.size();i++)
+		printf("%d ", arch[i]);
+	      printf("\n");
+
+	      for(unsigned int i=0;i<arch2.size();i++)
+		printf("%d ", arch2[i]);
+	      printf("\n");
+	      
+	      delete bnn;
+	      delete nn;
+	      exit(-1);
+	    }
+	  }
+	}
+
+	
+	if(single_nn.importdata(w) == false){
+	  printf("ERROR: cannot import weights from bayesian nnetwork to a single network.\n");
+	  delete bnn;
+	  delete nn;
+	  exit(-1);
+	}
+	
+
+	
+	
 	single_nn.setNonlinearity(nl);
 
 	whiteice::linear_ETA<double> eta;
