@@ -30,7 +30,6 @@
 
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
-
 #ifdef _GLIBCXX_DEBUG
 
 #undef __STRICT_ANSI__
@@ -243,10 +242,10 @@ int main(int argc, char** argv)
     if(SIMULATION_DEPTH > 1){
       if(verbose){
 	if(pseudolinear){
-	  printf("Optimizing simple recurrent neural network (pseudolinear)\n");
+	  printf("Simple recurrent neural network (pseudolinear)\n");
 	}
 	else{
-	  printf("Optimizing simple recurrent neural network (sigmoid)\n");
+	  printf("Simple recurrent neural network (sigmoid)\n");
 	}
       }
     }
@@ -424,12 +423,14 @@ int main(int argc, char** argv)
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
 	  if(secs > 0){
-	    printf("\r%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d iters: %f [%.1f minutes]",
 		   iterations, 
 		   error.c[0], (secs - counter)/60.0f);
 	  }
 	  else{
-	    printf("\r%d/%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d/%d iters: %f [%.1f minutes]",
 		   iterations, samples,  
 		   error.c[0], eta.estimate()/60.0f);
 
@@ -439,14 +440,18 @@ int main(int argc, char** argv)
 	}
 	      
 	
-	if(secs > 0)
-	  printf("\r%d iters: %f [%f minutes]             \n",
+	if(secs > 0){
+	  printf("\r                                                            \r");
+	  printf("%d iters: %f [%.1f minutes]\n",
 		 iterations,
 		 error.c[0], (secs - counter)/60.0f);
-	else
-	  printf("\r%d/%d iters: %f [%f minutes]           \n",
+	}
+	else{
+	  printf("\r                                                            \r");
+	  printf("%d/%d iters: %f [%.1f minutes]\n",
 		 iterations, samples,  
 		 error.c[0], eta.estimate()/60.0f);
+	}
 	
 	if(bfgs.solutionConverged()){
 	  printf("Optimizer solution converged and cannot improve the result further.\n");
@@ -539,32 +544,34 @@ int main(int argc, char** argv)
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
 	  if(secs > 0){
-	    printf("\r%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d iters: %f [%.1f minutes]",
 		   iterations, 
 		   error.c[0], (secs - counter)/60.0f);
 	  }
 	  else{
-	    printf("\r%d/%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d/%d iters: %f [%.1f minutes]",
 		   iterations, samples,  
 		   error.c[0], eta.estimate()/60.0f);
 
 	  }
-
-	  
-	  
 	  fflush(stdout);
 	}
 	      
 	
-	if(secs > 0)
-	  printf("\r%d iters: %f [%f minutes]             \n",
+	if(secs > 0){
+	  printf("\r                                                            \r");
+	  printf("%d iters: %f [%.1f minutes]\n",
 		 iterations,
 		 error.c[0], (secs - counter)/60.0f);
-	else
-	  printf("\r%d/%d iters: %f [%f minutes]           \n",
+	}
+	else{
+	  printf("\r                                                            \r");
+	  printf("%d/%d iters: %f [%.1f minutes]\n",
 		 iterations, samples,  
 		 error.c[0], eta.estimate()/60.0f);
-	  
+	}
 	fflush(stdout);
 
 	bfgs.stopComputation();
@@ -651,12 +658,14 @@ int main(int argc, char** argv)
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
 	  if(secs > 0){
-	    printf("\r%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d iters: %f [%.1f minutes]",
 		   iterations, 
 		   error.c[0], (secs - counter)/60.0f);
 	  }
 	  else{
-	    printf("\r%d/%d iters: %f [%f minutes]           ",
+	    printf("\r                                                            \r");
+	    printf("%d/%d iters: %f [%.1f minutes]",
 		   iterations, samples,  
 		   error.c[0], eta.estimate()/60.0f);
 
@@ -666,14 +675,18 @@ int main(int argc, char** argv)
 	}
 	      
 	
-	if(secs > 0)
-	  printf("\r%d iters: %f [%f minutes]             \n",
+	if(secs > 0){
+	  printf("\r                                                            \r");
+	  printf("%d iters: %f [%.1f minutes]\n",
 		 iterations,
 		 error.c[0], (secs - counter)/60.0f);
-	else
-	  printf("\r%d/%d iters: %f [%f minutes]           \n",
+	}
+	else{
+	  printf("\r                                                            \r");
+	  printf("%d/%d iters: %f [%.1f minutes]\n",
 		 iterations, samples,  
 		 error.c[0], eta.estimate()/60.0f);
+	}
 	  
 	fflush(stdout);
 	
@@ -752,11 +765,13 @@ int main(int argc, char** argv)
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
-	  printf("\r%d tries: %f [%f minutes]           ", solutions, error.c[0], (secs - counter)/60.0f);
+	  printf("\r                                                            \r");
+	  printf("%d tries: %f [%.1f minutes]", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
-	
-	printf("\r%d tries: %f [%f minutes]             \n", solutions, error.c[0], (secs - counter)/60.0f);
+
+	printf("\r                                                            \r");
+	printf("%d tries: %f [%.1f minutes]\n", solutions, error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
 
 	search.stopComputation();
@@ -810,11 +825,13 @@ int main(int argc, char** argv)
 	  time_t t1 = time(0);
 	  counter = (unsigned int)(t1 - t0); // time-elapsed
 
-	  printf("\r%d tries: %f [%f minutes]         ", solutions, error.c[0], (secs - counter)/60.0f);
+	  printf("\r                                                            \r");
+	  printf("%d tries: %f [%.1f minutes]", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
 	}
-	
-	printf("\r%d tries: %f [%f minutes]           \n", solutions, error.c[0], (secs - counter)/60.0f);
+
+	printf("\r                                                            \r");
+	printf("%d tries: %f [%.1f minutes]\n", solutions, error.c[0], (secs - counter)/60.0f);
 	fflush(stdout);
 
 	grad.stopComputation();
@@ -1032,8 +1049,9 @@ int main(int argc, char** argv)
 	    
 	    prev_sumgrad = lrate * sumgrad;
 
-	    
-	    printf("\r%d/%d iterations: %f (%f) [%f minutes]                  ", counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	    printf("\r                                                            \r");
+	    printf("%d/%d iterations: %f (%f) [%.1f minutes]",
+		   counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
 	    
 	    fflush(stdout);
 	    
@@ -1043,8 +1061,10 @@ int main(int argc, char** argv)
 	  
 	  if(best_weights.size() > 1)
 	    nn->importdata(best_weights);
-	  
-	  printf("\r%d/%d : %f (%f) [%f minutes]                 \n", counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+
+	  printf("\r                                                            \r");
+	  printf("%d/%d : %f (%f) [%.1f minutes]\n",
+		 counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
 	  fflush(stdout);
 	}
 	
@@ -1134,13 +1154,16 @@ int main(int argc, char** argv)
 	eta.update((double)hmc.getNumberOfSamples());
 	
 	if(hmc.getNumberOfSamples() > 0){
-	  if(secs > 0)
-	    printf("\r%d samples: %f [%.2f minutes]                ",
+	  if(secs > 0){
+	    printf("\r                                                            \r");
+	    printf("%d samples: %f [%.1f minutes]",
 		   hmc.getNumberOfSamples(),
-		   hmc.getMeanError(100).c[0],
+		   hmc.getMeanError(100).c[0],		   
 		   (secs - counter)/60.0);
+	  }
 	  else{
-	    printf("\r%d/%d samples : %f [%.2f minutes]             ",
+	    printf("\r                                                            \r");
+	    printf("%d/%d samples : %f [%.1f minutes]",
 		   hmc.getNumberOfSamples(),
 		   samples,
 		   hmc.getMeanError(100).c[0],
@@ -1157,10 +1180,16 @@ int main(int argc, char** argv)
       
       hmc.stopSampler();
 
-      if(secs > 0)
-	printf("\r%d samples : %f                           \n", hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0]);
-      else
-	printf("\r%d/%d samples : %f                        \n", hmc.getNumberOfSamples(), samples, hmc.getMeanError(100).c[0]);
+      if(secs > 0){
+	printf("\r                                                            \r");
+	printf("%d samples : %f\n",
+	       hmc.getNumberOfSamples(), hmc.getMeanError(100).c[0]);
+      }
+      else{
+	printf("\r                                                            \r");
+	printf("%d/%d samples : %f\n",
+	       hmc.getNumberOfSamples(), samples, hmc.getMeanError(100).c[0]);
+      }
       
       fflush(stdout);
 
@@ -1243,12 +1272,14 @@ int main(int argc, char** argv)
 	const unsigned int g = ga.getGenerations();
 	
 	if(secs > 0){
-	  printf("\r%d generations: %f [%f minutes]                 ",
+	  printf("\r                                                            \r");
+	  printf("%d generations: %f [%.1f minutes]",
 		 g, r.c[0],
 		 (secs - counter)/60.0);
 	}
 	else{
-	  printf("\r%d/%d generations : %f             ",
+	  printf("\r                                                            \r");
+	  printf("%d/%d generations : %f",
 		 g, samples, r.c[0]);
 	}
 	fflush(stdout);
@@ -1409,7 +1440,9 @@ int main(int argc, char** argv)
 
 	  double percent = 100.0f*((double)i)/((double)data.size(0));
 	  double etamin  = eta.estimate()/60.0f;
-	  printf("\r%d/%d (%.1f%%) [ETA: %.2f minutes]", i, data.size(0), percent, etamin);
+
+	  printf("\r                                                            \r");
+	  printf("%d/%d (%.1f%%) [ETA: %.1f minutes]", i, data.size(0), percent, etamin);
 	  fflush(stdout);
 	}
 
@@ -1447,7 +1480,8 @@ int main(int argc, char** argv)
 	    double percent = 100.0 * ((double)(i+1))/((double)data.size(0));
 	    double etamin  = eta.estimate()/60.0f;
 
-	    printf("\r%d/%d (%.1f%%) [ETA %.2f minutes]      ", i+1, data.size(0), percent, etamin);
+	    printf("\r                                                            \r");
+	    printf("%d/%d (%.1f%%) [ETA %.1f minutes]", i+1, data.size(0), percent, etamin);
 	    fflush(stdout);
 	    
 	    bnn->calculate(data.access(0, i),  out, cov, SIMULATION_DEPTH);

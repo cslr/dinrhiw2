@@ -313,7 +313,8 @@ namespace whiteice
     	std::list<T> ratios;
     	// bool reset = false;
 
-    	unsigned int M = 15; // history size
+    	const unsigned int M = 15; // history size is large (15) should try value 5 and change to if results do not become worse.
+	
     	std::list< vertex<T> > yk;
     	std::list< vertex<T> > sk;
     	std::list< T > rk;

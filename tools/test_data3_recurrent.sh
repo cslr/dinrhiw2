@@ -1,5 +1,8 @@
 #!/bin/sh
 
+./nntool --version
+date
+
 rm -f commviol-test.ds
 
 # creates training dataset for nntool
@@ -14,7 +17,7 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-ARCH="145-1000-1000-4"
+ARCH="145-300-300-4"
 OPTIONS="-v --recurrent 10 --pseudolinear"
 
 ./nntool --samples 1000 $OPTIONS commviol-test.ds $ARCH commviol-nn.cfg lbfgs
