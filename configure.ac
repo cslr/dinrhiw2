@@ -105,6 +105,8 @@ optimization_flags="-O2 -ffast-math"
 
 AS_IF([test "x$enable_optimize" == "xno"],[
   optimization_flags="-g"
+  CFLAGS=""
+  CXXFLAGS=""
 ])
 
 conf_flags=""
@@ -114,6 +116,8 @@ if [[ $cpufamily = "x86_64" ]]; then
 
     AS_IF([test "x$enable_optimize" == "xno"],[
       optimization_flags="-fPIC -g -DAMD64"
+      CFLAGS=""
+      CXXFLAGS=""
     ])
 
     conf_flags="-fPIC -DAMD64"
@@ -123,6 +127,8 @@ elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "
 
     AS_IF([test "x$enable_optimize" == "xno"],[
       optimization_flags="-fPIC -g -DIA32"
+      CFLAGS=""
+      CXXFLAGS=""
     ])
 
     conf_flags="-fPIC -DIA32"
@@ -340,9 +346,6 @@ AS_IF([test "x$enable_cppdebug" = "xyes"],[
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
 ])
 
-
-CFLAGS="$(CFLAGS)"
-CXXFLAGS="$(CXXFLAGS)"
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

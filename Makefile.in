@@ -98,14 +98,15 @@ install:
 	$(MKDIR) @includedir@/dinrhiw
 	$(CP) lib/*.h @includedir@/dinrhiw
 	$(CP) lib/*.cpp @includedir@/dinrhiw
-	$(CP) lib/libdinrhiw.a @libdir@/libdinrhiw.a
+	$(CP) lib/$(LIBNAME) @libdir@/$(LIBNAME)
 	$(CP) lib/$(SOLIBNAME) @libdir@/$(SOLIBNAME)
 	$(MKDIR) @libdir@/pkgconfig/
 	$(CP) dinrhiw.pc @libdir@/pkgconfig/dinrhiw.pc
 
 uninstall:
 	$(RM) -rf @includedir@/dinrhiw
-	$(RM) @libdir@/libdinrhiw.a
+	$(RM) @libdir@/$(LIBNAME)
+	$(RM) @libdir@/$(SOLIBNAME)
 	$(RM) @libdir@/pkgconfig/dinrhiw.pc
 
 ############################################################

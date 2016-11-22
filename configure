@@ -3999,6 +3999,8 @@ optimization_flags="-O2 -ffast-math"
 if test "x$enable_optimize" == "xno"; then :
 
   optimization_flags="-g"
+  CFLAGS=""
+  CXXFLAGS=""
 
 fi
 
@@ -4010,6 +4012,8 @@ if [ $cpufamily = "x86_64" ]; then
     if test "x$enable_optimize" == "xno"; then :
 
       optimization_flags="-fPIC -g -DAMD64"
+      CFLAGS=""
+      CXXFLAGS=""
 
 fi
 
@@ -4021,6 +4025,8 @@ elif [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$
     if test "x$enable_optimize" == "xno"; then :
 
       optimization_flags="-fPIC -g -DIA32"
+      CFLAGS=""
+      CXXFLAGS=""
 
 fi
 
@@ -4278,9 +4284,6 @@ if test "x$enable_cppdebug" = "xyes"; then :
 
 fi
 
-
-CFLAGS="$(CFLAGS)"
-CXXFLAGS="$(CXXFLAGS)"
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

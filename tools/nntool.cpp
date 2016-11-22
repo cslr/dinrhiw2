@@ -1671,7 +1671,7 @@ void print_usage(bool all)
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
   printf("--deep         pretrains feedforward neural network weights using stacked RBMs (slow)\n");
-  printf("--pseudolinear sets neural network weights to be 50%% linear (good for multilayer/recurrent)\n");
+  printf("--pseudolinear sets nonlinears to be 50%% linear (--purelinear is 100%% linear)\n");
   printf("--recurrent N  simple recurrent network (simulates N steps) (lbfgs, use)\n");
   printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
   printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
