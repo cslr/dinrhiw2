@@ -20,6 +20,9 @@ includedir=@includedir@/dinrhiw
 
 LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o
 LIBNAME = libdinrhiw.a
+BASESOLIBNAME = libdinrhiw.so
+SOLIBNAME = libdinrhiw.so
+
 
 ############################################################
 
@@ -68,7 +71,9 @@ realclean: clean removelib
 makelib:
 	$(RM) *.a
 	$(AR) rc $(LIBNAME) $(LIBOBJECTS)
+	$(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 	$(MV) $(LIBNAME) lib
+	$(MV) $(SOLIBNAME) lib
 	$(CP) src/*.h lib/
 	$(CP) src/math/*.h lib/
 	$(CP) src/crypto/*.h lib/
@@ -94,6 +99,7 @@ install:
 	$(CP) lib/*.h @includedir@/dinrhiw
 	$(CP) lib/*.cpp @includedir@/dinrhiw
 	$(CP) lib/libdinrhiw.a @libdir@/libdinrhiw.a
+	$(CP) lib/$(SOLIBNAME) @libdir@/$(SOLIBNAME)
 	$(MKDIR) @libdir@/pkgconfig/
 	$(CP) dinrhiw.pc @libdir@/pkgconfig/dinrhiw.pc
 

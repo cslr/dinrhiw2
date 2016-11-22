@@ -97,14 +97,34 @@ AC_MSG_CHECKING([CPU family])
 AC_MSG_RESULT($cpufamily)
 
 dnl enables CPU specific optimization flags
+
+AC_ARG_ENABLE([optimize],
+	AS_HELP_STRING([--disable-optimize],[Disable optimization]))
+
 optimization_flags="-O2 -ffast-math"
+
+AS_IF([test "x$enable_optimize" == "xno"],[
+  optimization_flags="-g"
+])
+
 conf_flags=""
 
 if [[ $cpufamily = "x86_64" ]]; then
     optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
+
+    AS_IF([test "x$enable_optimize" == "xno"],[
+      optimization_flags="-fPIC -g -DAMD64"
+    ])
+
     conf_flags="-fPIC -DAMD64"
 elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
+
     optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math"
+
+    AS_IF([test "x$enable_optimize" == "xno"],[
+      optimization_flags="-fPIC -g -DIA32"
+    ])
+
     conf_flags="-fPIC -DIA32"
 else
     AC_MSG_ERROR($cpufamily [, unrecognized/unsupported machine architecture.])
@@ -297,7 +317,14 @@ AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search p
 			  [if [[ -n $withval ]]; then ATLASLIBS_PATH=$withval; fi], [])
 
 
-optimization_flags="$optimization_flags -mtune=native -fopenmp"
+optimization_flags="$optimization_flags -mtune=native"
+
+AC_ARG_ENABLE([openmp],
+	AS_HELP_STRING([--disable-openmp],[Disable OpenMP]))
+
+AS_IF([test "x$enable_openmp" != "xno"],[
+  optimization_flags="$optimization_flags -fopenmp"
+])
 
 AC_ARG_ENABLE([native],
 	AS_HELP_STRING([--enable-native],[Enable native optimization]))
@@ -306,6 +333,16 @@ AS_IF([test "x$enable_native" = "xyes"],[
   optimization_flags="$optimization_flags -march=native"
 ])
 
+AC_ARG_ENABLE([cppdebug],
+	AS_HELP_STRING([--enable-cppdebug],[Enable C++ debugging mode (stdc++)]))
+
+AS_IF([test "x$enable_cppdebug" = "xyes"],[
+  optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+])
+
+
+CFLAGS="$(CFLAGS)"
+CXXFLAGS="$(CXXFLAGS)"
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

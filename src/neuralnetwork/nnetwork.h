@@ -34,7 +34,8 @@ namespace whiteice
 
     enum nonLinearity {
       sigmoidNonLinearity, // uses sigmoid non-linearity as the default
-      halfLinear // for deep networks
+      halfLinear, // for deep networks
+      pureLinear  // for testing and comparing nnetworks (pure linear)
     };
 
 

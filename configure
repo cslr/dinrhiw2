@@ -685,8 +685,11 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_optimize
 with_atlaslpath
+enable_openmp
 enable_native
+enable_cppdebug
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1321,7 +1324,10 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --disable-optimize      Disable optimization
+  --disable-openmp        Disable OpenMP
   --enable-native         Enable native optimization
+  --enable-cppdebug       Enable C++ debugging mode (stdc++)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3981,14 +3987,43 @@ $as_echo_n "checking CPU family... " >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $cpufamily" >&5
 $as_echo "$cpufamily" >&6; }
 
+
+# Check whether --enable-optimize was given.
+if test "${enable_optimize+set}" = set; then :
+  enableval=$enable_optimize;
+fi
+
+
 optimization_flags="-O2 -ffast-math"
+
+if test "x$enable_optimize" == "xno"; then :
+
+  optimization_flags="-g"
+
+fi
+
 conf_flags=""
 
 if [ $cpufamily = "x86_64" ]; then
     optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
+
+    if test "x$enable_optimize" == "xno"; then :
+
+      optimization_flags="-fPIC -g -DAMD64"
+
+fi
+
     conf_flags="-fPIC -DAMD64"
 elif [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]; then
+
     optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math"
+
+    if test "x$enable_optimize" == "xno"; then :
+
+      optimization_flags="-fPIC -g -DIA32"
+
+fi
+
     conf_flags="-fPIC -DIA32"
 else
     as_fn_error $? "$cpufamily , unrecognized/unsupported machine architecture." "$LINENO" 5
@@ -4205,7 +4240,19 @@ fi
 
 
 
-optimization_flags="$optimization_flags -mtune=native -fopenmp"
+optimization_flags="$optimization_flags -mtune=native"
+
+# Check whether --enable-openmp was given.
+if test "${enable_openmp+set}" = set; then :
+  enableval=$enable_openmp;
+fi
+
+
+if test "x$enable_openmp" != "xno"; then :
+
+  optimization_flags="$optimization_flags -fopenmp"
+
+fi
 
 # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
@@ -4219,6 +4266,21 @@ if test "x$enable_native" = "xyes"; then :
 
 fi
 
+# Check whether --enable-cppdebug was given.
+if test "${enable_cppdebug+set}" = set; then :
+  enableval=$enable_cppdebug;
+fi
+
+
+if test "x$enable_cppdebug" = "xyes"; then :
+
+  optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+
+fi
+
+
+CFLAGS="$(CFLAGS)"
+CXXFLAGS="$(CXXFLAGS)"
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"
 EXTRA_LIBS="$EXTRA_LIBS $BLAS_LIBS"

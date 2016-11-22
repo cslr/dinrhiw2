@@ -363,20 +363,9 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::randomize()
   {
-    if(false){
-      // random initialization [-0.5, +0,5] interval
-      
-      // T scaling = T(3.0f*((float)rand())/((float)RAND_MAX)); // different scaling for different nonlins
-
-      T scaling = T(2.0);
-
-      // std::cout << "random init 1 " << scaling << std::endl;
-      
-      for(unsigned int i=0;i<data.size();i++)
-	data[i] = scaling*T( 1.0f*(((float)rand())/((float)RAND_MAX)) - 0.5f );
-    }
-    else{
-
+    // memset(data.data(), 0, sizeof(T)*data.size()); // debugging..
+    
+    {
       unsigned int start = 0;
       unsigned int end   = 0;
       
@@ -410,8 +399,7 @@ namespace whiteice
 	    setBias(bias,l);
 	  }
 	}
-#endif
-#if 0
+	
 	whiteice::math::matrix<T> W;
 	for(unsigned int l=0;l<getLayers();l++){
 	  if(getWeights(W, l)){
@@ -423,7 +411,11 @@ namespace whiteice
 	
 	start += (arch[i-1] + 1)*arch[i];
       }
+
+      assert(start == data.size()); // we have processed the whole memory area correctly
     }
+
+    
     
     return true;
   }
@@ -646,16 +638,25 @@ namespace whiteice
       T output = T(0.0);
       
       if(neuron & 1){
+#if 0
+	// softmax function
+	T a = T(5.0);
+	output = log(T(1.0) + exp(a*input));
+	return output;
+#endif
+#if 1
 	// rectifier non-linearity
 	output = T(0.0);
-	if(input >= T(0.0))
-	  output = input;
+	if(input >= T(0.0)) output = input;
+	return output;
+#endif
       }
       else{
 	return input; // half-the layers nodes are linear!
       }
-
-      return output;
+    }
+    else if(nonlinearity == pureLinear){
+      return input; // all layers/neurons are linear..
     }
     else{
       assert(0);
@@ -744,19 +745,28 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity == halfLinear){
-      T output = T(0.0);
-      
       if(neuron & 1){
+#if 0
+	// softmax
+	T a = T(5.0);
+	T output = a/(T(1.0) + exp(-a*input));
+	return output;
+#endif
+#if 1
 	// rectifier non-linearity
-	output = T(0.0);
+	T output = T(0.0);
 	if(input >= T(0.0))
 	  output = T(1.0);
+	return output;
+#endif
+
       }
       else{
 	return 1.0; // half-the layers nodes are linear!
       }
-      
-      return output;
+    }
+    else if(nonlinearity == pureLinear){
+      return 1.0; // all layers/neurons are linear..
     }
     else{
       assert(0);
@@ -991,6 +1001,9 @@ namespace whiteice
 	else if(nonlinearity == halfLinear){
 	  ints.push_back(1);
 	}
+	else if(nonlinearity == pureLinear){
+	  ints.push_back(2);
+	}
 	else return false; // error!
 
 	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints))
@@ -1137,6 +1150,9 @@ namespace whiteice
 	else if(ints[0] == 1){
 	  nonlinearity = halfLinear;
 	}
+	else if(ints[0] == 2){
+	  nonlinearity = pureLinear;
+	}
 	else{
 	  return false;
 	}
@@ -1175,7 +1191,17 @@ namespace whiteice
       return false;
     
     // nn imports FROM vertex, vertex exports TO network
-    return v.exportData(&(data[0]), size, 0);
+    if(v.exportData(&(data[0]), size, 0) == false)
+      return false;
+
+    // "safebox" (keeps data always within sane levels)
+    for(unsigned int i=0;i<data.size();i++){
+      if(isnan(data[i])) data[i] = T(0.0);
+      if(data[i] < T(-10000.0)) data[i] = T(-10000.0);
+      else if(data[i] > T(10000.0)) data[i] = T(10000.0);
+    }
+
+    return true;
   }
   
   
@@ -1369,8 +1395,7 @@ namespace whiteice
     std::vector<T> temp;
     temp.resize(maxwidth);
     
-    
-#if 1
+#if 0
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
       memcpy(temp.data(), b, yd*sizeof(T));
       

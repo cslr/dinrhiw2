@@ -308,10 +308,9 @@ namespace whiteice
 	T scale = T(1.0);
 
     	T y          = besty;
-    	//T ratio      = T(1.0f);
-
+	
     	std::list<T> ratios;
-    	// bool reset = false;
+	bool reset = false;
 
     	const unsigned int M = 15; // history size is large (15) should try value 5 and change to if results do not become worse.
 	
@@ -326,9 +325,7 @@ namespace whiteice
     			// we keep iterating until we converge (later) or
     			// the real error starts to increase
 
-    			if(overfit == false){
-			        //ratio = y;
-
+		        if(overfit == false){
     				ratios.push_back(besty);
 				
     				while(ratios.size() > 20)
@@ -352,6 +349,7 @@ namespace whiteice
     				//}
 
 				// std::cout << "mean ratio: " << mean_ratio << std::endl;
+
 				
 				if(mean_ratio < T(1.005f) && iterations > 20){
 				  solution_converged = true; // last 20 iterations showed less than 0.5% change..
@@ -431,14 +429,15 @@ namespace whiteice
     				yk.clear();
     				rk.clear();
 
-#if 0
+#if 1
     				if(reset == false){
     					reset = true;
-    					iterations++;    					continue;
+    					iterations++;
+					continue;
     				}
     				else{
     					// there was reset during the last iteration and
-    					// we still cannot improve the result
+    					// we still cannot improve the result (even after reset)
 				        {
 					  // solution has converged
 					  
@@ -449,11 +448,9 @@ namespace whiteice
     				}
 #endif
     			}
-#if 0
     			else{
     				reset = false;
     			}
-#endif
 
 	  
 			if(scale <= T(0.0)) scale = 1.0; // fixes the case when scaling goes to zero

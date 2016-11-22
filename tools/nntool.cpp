@@ -65,6 +65,7 @@ int main(int argc, char** argv)
     bool negfeedback = false;
     bool deep = false;
     bool pseudolinear = false;
+    bool purelinear = false;
 
     // should we use recurent neural network or not..
     unsigned int SIMULATION_DEPTH = 1;
@@ -105,6 +106,7 @@ int main(int argc, char** argv)
 		      negfeedback,
 		      deep,
 		      pseudolinear,
+		      purelinear,
 		      help,
 		      verbose);
     srand(time(0));
@@ -233,17 +235,30 @@ int main(int argc, char** argv)
     }
 
     if(pseudolinear && deep){
-      fprintf(stderr, "Cannot set both deep and pseudolinear options at the same time\n");
+      fprintf(stderr,"Cannot set both deep and pseudolinear options at the same time.\n");
+      exit(-1);
+    }
+
+    if(pseudolinear && deep){
+      fprintf(stderr,"Cannot set both deep and purelinear options at the same time.\n");
+      exit(-1);
+    }
+
+    if(pseudolinear && purelinear){
+      fprintf(stderr,"Cannot set both pseudolinear and purelinear options at the same time.\n");
       exit(-1);
     }
 
     if(SIMULATION_DEPTH > 1){
       if(verbose){
 	if(pseudolinear){
-	  printf("Simple recurrent neural network (pseudolinear)\n");
+	  printf("Simple recurrent neural network (pseudolinear).\n");
+	}
+	else if(purelinear){
+	  printf("Simple recurrent neural network (purelinear).\n");
 	}
 	else{
-	  printf("Simple recurrent neural network (sigmoid)\n");
+	  printf("Simple recurrent neural network (sigmoid).\n");
 	}
       }
     }
@@ -256,6 +271,13 @@ int main(int argc, char** argv)
     if(pseudolinear){
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear);
     }
+    else if(purelinear){
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
+    }
+    else{
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoidNonLinearity);
+    }
+
     
     if(verbose && !stdinout_io){
       math::vertex< whiteice::math::blas_real<double> > w;

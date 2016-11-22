@@ -2,6 +2,11 @@
 Code is only tested and known to compile on Debian/Linux (amd64) and 
 Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
+* LBFGS optimizer can produce NaNs and do not work!
+  (inf minus inf in nnetwork<>::calculate but
+   I have no idea where those infinites come from)
+
+
 * HMC (bayes nnetwork) do not work properly on more that
   one dimension nnetwork..
   

@@ -196,7 +196,7 @@ namespace whiteice
     }
     else{ // recurrent neural network
       
-#pragma omp parallel
+#pragma omp parallel shared(e)
       {
 	whiteice::nnetwork<T> nnet(this->net);
 	
@@ -208,9 +208,9 @@ namespace whiteice
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  math::vertex<T> input;
-	  input.resize(dtrain.dimension(0)+dtrain.dimension(1));
+	  input.resize(nnet.input_size());
 	  input.zero();
-	  input.write_subvertex(dtrain.access(0,i), 0);
+	  assert(input.write_subvertex(dtrain.access(0,i), 0));
 
 	  // recurrency: feebacks output back to inputs and
 	  //             calculates error
@@ -222,7 +222,7 @@ namespace whiteice
 	    err = (err*err);
 	    esum += T(0.5f)*err[0];
 
-	    input.write_subvertex(nnet.output(), dtrain.dimension(0));
+	    assert(input.write_subvertex(nnet.output(), nnet.output_size()));
 	  }
 	  
 	}
@@ -420,7 +420,7 @@ namespace whiteice
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  math::vertex<T> input;
-	  input.resize(dtrain.dimension(0)+dtrain.dimension(1));
+	  input.resize(net.input_size());
 	  input.zero();
 	  input.write_subvertex(dtrain.access(0,i), 0);
 
@@ -437,8 +437,8 @@ namespace whiteice
 	      assert(0); // FIXME
 	    }
 	    
-	    sum_sigma2[d] += err.outerproduct(err);
-	    // sum_m[d] += err;
+	    sum_sigma2.at(d) += err.outerproduct(err);
+	    // sum_m.at(d) += err;
 	    
 	    sgrad += grad; // /T(dtrain.size(0));
 
@@ -451,7 +451,7 @@ namespace whiteice
 	{
 	  sumgrad += sgrad;
 
-	  for(unsigned int d=0;d<deepness;d++){
+	  for(unsigned int d=0;d<deepness;d++){ 
 	    sigma2[d] += sum_sigma2[d];
 	    m[d] += sum_m[d];
 	  }
@@ -533,7 +533,7 @@ namespace whiteice
 	    sgrad -= grad; // /T(dtrain.size(0));
 
 	    // input.write_subvertex(nnet.output(), dtrain.dimension(0));
-	    input.write_subvertex(y, dtrain.dimension(0));
+	    input.write_subvertex(y, dtrain.dimension(0)); // INCLUDE NOISE IN FEEDBACK??
 	  }
 	}
 	

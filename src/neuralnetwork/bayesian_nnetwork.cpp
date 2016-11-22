@@ -375,6 +375,8 @@ namespace whiteice
 	  nl = whiteice::nnetwork<T>::sigmoidNonLinearity;
 	else if(ints[0] == 1)
 	  nl = whiteice::nnetwork<T>::halfLinear;
+	else if(ints[0] == 2)
+	  nl = whiteice::nnetwork<T>::pureLinear;
 	else
 	  return false; // bad data
       }
@@ -549,6 +551,8 @@ namespace whiteice
 	    ints.push_back(0);
 	  else if(nl == whiteice::nnetwork<T>::halfLinear)
 	    ints.push_back(1);
+	  else if(nl == whiteice::nnetwork<T>::pureLinear)
+	    ints.push_back(2);
 	  else
 	    return false;
 	}
