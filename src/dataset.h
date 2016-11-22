@@ -35,7 +35,7 @@ namespace whiteice
       dataset(unsigned int dimension) throw(std::out_of_range);
       dataset(const dataset<T>& d);
       ~dataset() throw();
-      
+
       
       bool createCluster(const std::string& name, const unsigned int dimension);
       
@@ -50,7 +50,9 @@ namespace whiteice
       
       bool removeCluster(std::string& name);
       bool removeCluster(unsigned int index);
-      
+
+      // copies preprocessing and other information to dataset but no data (perfect copy but no data)
+      void copyAllButData(const dataset<T>& d);
       
       // adds data examples
       bool add(const math::vertex<T>& input, bool nopreprocess = false) throw();

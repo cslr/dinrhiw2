@@ -4258,6 +4258,10 @@ if test "x$enable_openmp" != "xno"; then :
 
   optimization_flags="$optimization_flags -fopenmp"
 
+else
+
+  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
+
 fi
 
 # Check whether --enable-native was given.

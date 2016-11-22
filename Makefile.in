@@ -9,6 +9,7 @@ CD = cd
 RM = rm -f
 MV = mv
 CP = cp
+LDCONFIG = ldconfig
 
 CFLAGS=@CFLAGS@
 CXXFLAGS=@CXXFLAGS@
@@ -102,6 +103,7 @@ install:
 	$(CP) lib/$(SOLIBNAME) @libdir@/$(SOLIBNAME)
 	$(MKDIR) @libdir@/pkgconfig/
 	$(CP) dinrhiw.pc @libdir@/pkgconfig/dinrhiw.pc
+	$(LDCONFIG)
 
 uninstall:
 	$(RM) -rf @includedir@/dinrhiw

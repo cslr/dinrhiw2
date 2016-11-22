@@ -16,6 +16,7 @@
 #include "nnetwork.h"
 #include "lreg_nnetwork.h"
 #include "GDALogic.h"
+#include "Mixture.h"
 
 #include "dataset.h"
 #include "nnPSO.h"
@@ -74,7 +75,8 @@ void neuralnetwork_test();
 void nnetwork_test();
 void lreg_nnetwork_test();
 void recurrent_nnetwork_test();
-
+void mixture_nnetwork_test();
+  
 void rbm_test();
 
 void lbfgs_rbm_test();
@@ -115,6 +117,8 @@ int main()
   srand(seed);
   
   try{
+    mixture_nnetwork_test();
+    
     recurrent_nnetwork_test();
     
     // dbn_test();
@@ -227,6 +231,108 @@ private:
 
 /************************************************************/
 
+void mixture_nnetwork_test()
+{
+  std::cout << "Mixture of experts learning" << std::endl;
+  
+  whiteice::RNG< math::blas_real<double> > rng;
+  
+  whiteice::dataset< math::blas_real<double> >  data;
+
+  // generates dummy data for learning (5 values and takes min value) (so it is a clear function..)
+  {
+    std::vector< math::vertex< math::blas_real<double> > > input;
+    std::vector< math::vertex< math::blas_real<double> > > output;
+
+    const unsigned int DIM=5;
+
+    for(unsigned int i=0;i<10000;i++){ // 10000 examples
+      math::vertex< math::blas_real<double> > in;
+      math::vertex< math::blas_real<double> > out;
+
+      in.resize(DIM);
+      for(unsigned int j=0;j<in.size();j++){
+	in[j] = rng.uniform();
+      }
+
+      auto min = in[0];
+      for(unsigned int j=0;j<in.size();j++){
+	if(in[j] < min) min = in[j];
+      }
+
+      out.resize(1);
+      out[0] = min;
+      
+      input.push_back(in);
+      output.push_back(out);
+    }
+
+    data.createCluster("input", DIM);
+    data.createCluster("output", 1);
+
+    data.add(0, input);
+    data.add(1, output);
+
+    // no preprocessing of data
+    data.preprocess(0, whiteice::dataset< math::blas_real<double> >::dnMeanVarianceNormalization);
+    data.preprocess(1, whiteice::dataset< math::blas_real<double> >::dnMeanVarianceNormalization);
+  }
+
+  whiteice::nnetwork< math::blas_real<double> > * nn = nullptr;
+  
+  // creates nnetwork
+  {
+    std::vector< unsigned int > arch;
+
+    {
+      arch.push_back(data.dimension(0));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(data.dimension(1));
+    }
+    
+    
+    nn = new whiteice::nnetwork< math::blas_real<double> >(arch);
+    nn->setNonlinearity(nnetwork< math::blas_real<double> >::halfLinear);
+    nn->randomize();
+  }
+
+  whiteice::Mixture< whiteice::math::blas_real<double> > mixture(5);
+
+  assert(mixture.minimize(*nn, data) == true);
+
+  unsigned int iters = 0;
+
+  while(mixture.isRunning() &&
+	mixture.solutionConverged() == false){
+
+    std::vector< whiteice::math::blas_real<double> > error;
+    std::vector< whiteice::math::vertex< whiteice::math::blas_real<double> > > w;
+    unsigned int it = 0;
+    unsigned int changes = 0;
+
+    if(mixture.getSolution(w, error, it, changes)){
+      if(iters != it){
+	printf("%d ITERS: %d deltas\n", iters, changes);
+	for(unsigned int i=0;i<error.size();i++){
+	  printf("%.3f ", error[i].c[0]);
+	}
+	printf("\n");
+	fflush(stdout);
+	iters = it;
+      }
+    }
+
+    sleep(1);
+  }
+
+  
+  
+}
+
+
+/************************************************************/
+
 void recurrent_nnetwork_test()
 {
 
@@ -316,7 +422,7 @@ void recurrent_nnetwork_test()
 
   unsigned int iters = 0;
 
-  // deepness 10 (best seen 0.009577)
+  // deepness 10 (best seen 0.009577)!!! (linear and half-linear rectifier..)
 
   while(optimizer.isRunning() &&
 	optimizer.solutionConverged() == false){

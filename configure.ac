@@ -330,6 +330,8 @@ AC_ARG_ENABLE([openmp],
 
 AS_IF([test "x$enable_openmp" != "xno"],[
   optimization_flags="$optimization_flags -fopenmp"
+],[
+  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
 ])
 
 AC_ARG_ENABLE([native],

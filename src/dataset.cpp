@@ -81,6 +81,38 @@ namespace whiteice
     clusters.clear();
     namemapping.clear();
   }
+
+
+  // copies preprocessing and other information to dataset but no data (perfect copy but no data)
+  template <typename T>
+  void dataset<T>::copyAllButData(const dataset<T>& d)
+  {
+    clusters.resize(d.clusters.size());
+
+    for(unsigned int i=0;i<clusters.size();i++){
+      clusters[i].cname = d.clusters[i].cname;
+      clusters[i].cindex = d.clusters[i].cindex;
+
+      clusters[i].data_dimension = d.clusters[i].data_dimension;
+      clusters[i].data.clear(); // DO NOT COPY DATA
+      
+      clusters[i].preprocessings = d.clusters[i].preprocessings;
+
+      clusters[i].mean = d.clusters[i].mean;
+      clusters[i].variance = d.clusters[i].variance;
+
+      clusters[i].softmax_parameter = d.clusters[i].softmax_parameter;
+
+      clusters[i].Rxx = d.clusters[i].Rxx;
+      clusters[i].Wxx = d.clusters[i].Wxx;
+      clusters[i].invWxx = d.clusters[i].invWxx;
+      
+      clusters[i].ICA = d.clusters[i].ICA;
+      clusters[i].invICA = d.clusters[i].invICA;
+      
+      namemapping[clusters[i].cname] = i;
+    }
+  }
   
   
   ////////////////////////////////////////////////////////////

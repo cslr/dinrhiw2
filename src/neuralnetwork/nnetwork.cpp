@@ -635,7 +635,7 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity == halfLinear){
-      T output = T(0.0);
+      // T output = T(0.0);
       
       if(neuron & 1){
 #if 0
@@ -644,12 +644,16 @@ namespace whiteice
 	output = log(T(1.0) + exp(a*input));
 	return output;
 #endif
-#if 1
+#if 0
 	// rectifier non-linearity
 	output = T(0.0);
 	if(input >= T(0.0)) output = input;
 	return output;
 #endif
+	// non-linearity motivated by restricted boltzman machines..
+	T output = T(1.0) / (T(1.0) + math::exp(-input));
+	return output;
+
       }
       else{
 	return input; // half-the layers nodes are linear!
@@ -739,9 +743,7 @@ namespace whiteice
     if(nonlinearity == sigmoidNonLinearity){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) + math::exp(-input);
-      
       output = math::exp(-input) / (output*output);
-      
       return output;
     }
     else if(nonlinearity == halfLinear){
@@ -752,13 +754,17 @@ namespace whiteice
 	T output = a/(T(1.0) + exp(-a*input));
 	return output;
 #endif
-#if 1
+#if 0
 	// rectifier non-linearity
 	T output = T(0.0);
 	if(input >= T(0.0))
 	  output = T(1.0);
 	return output;
 #endif
+	// non-linearity motivated by restricted boltzman machines..
+	T output = T(1.0) + math::exp(-input);
+	output = math::exp(-input) / (output*output);
+	return output;
 
       }
       else{

@@ -43,6 +43,7 @@
 #include "pLBFGS_nnetwork.h"
 
 #include "rLBFGS_nnetwork.h"
+#include "Mixture.h"
 
 #include "RNG.h"
 
