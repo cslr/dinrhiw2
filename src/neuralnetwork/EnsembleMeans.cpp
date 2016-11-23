@@ -111,23 +111,87 @@ namespace whiteice
   }
 
   template <typename T>
-  bool EnsembleMeans<T>::getMajorityCluster(math::vertex<T>& mean,
-					    T& p) const
+  bool EnsembleMeans<T>::clusterize(const std::vector< math::vertex<T> >& data,
+				    std::vector<unsigned int>& cluster)
   {
+    if(data.size() <= 0) return true;
     if(kmeans.size() <= 0) return false;
+
+    cluster.resize(data.size());
+
+    for(unsigned int n=0;n<data.size();n++){
+      unsigned int index = 0;
+      auto delta = data[n] - kmeans[index];
+      auto minError = (delta*delta)[0];
+      
+      for(unsigned int k=1;k<kmeans.size();k++){
+	auto delta = data[n] - kmeans[k];
+	auto error = (delta*delta)[0];
+
+	if(error < minError){
+	  index = k;
+	  minError = error;
+	}
+      }
+      
+      cluster[n] = index;
+    }
+
+    return true;
+  }
+  
+
+  template <typename T>
+  int EnsembleMeans<T>::getMajorityCluster(math::vertex<T>& mean,
+					   T& p) const
+  {
+    if(kmeans.size() <= 0) return -1;
 
     mean = kmeans[0];
     p = percent[0];
-    
+    unsigned int index = 0;
 
     for(unsigned int k=1;k<kmeans.size();k++){
       if(percent[k] > p){
 	p = percent[k];
 	mean = kmeans[k];
+	index = k;
       }      
     }
 
+    return index;
+  }
+
+  
+  // gets cluster with p% probability (% of datapoints) (for denoising gradient)
+  template <typename T>
+  int EnsembleMeans<T>::getProbabilisticCluster(math::vertex<T>& mean,
+						T& p) const
+  {
+    if(kmeans.size() <= 0) return -1;
+
+    mean = kmeans[0];
+    p = percent[0];
+    
+    T r = rng.uniform();
+
+    if(r <= p) return 0;
+    
+    for(unsigned int k=1;k<kmeans.size();k++){
+      p += percent[k];
+
+      if(r <= p){
+	p = percent[k];
+	mean = kmeans[k];
+	return k;
+      }
+    }
+    
+    mean = kmeans[kmeans.size()-1];
+    p = percent[kmeans.size()-1];
+
     return true;
+
   }
   
 

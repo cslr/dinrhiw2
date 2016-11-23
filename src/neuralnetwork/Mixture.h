@@ -30,7 +30,10 @@ namespace whiteice
     class Mixture
     {
     public:
-      Mixture(unsigned int N); // N = number of experts
+      Mixture(const unsigned int N, // N = number of experts
+	      const unsigned int depth = 1,
+	      const bool overfit = false,
+	      const bool negfeedback = false);
       ~Mixture();
 
       //////////////////////////////////////////////////
@@ -56,6 +59,10 @@ namespace whiteice
 
     protected:
       const unsigned int N; // number of mixtures
+
+      const unsigned int SIMULATION_DEPTH;
+      const bool overfit;
+      const bool negfeedback;
 
       mutable std::mutex solutionMutex;
       std::vector< math::vertex<T> > solutions;

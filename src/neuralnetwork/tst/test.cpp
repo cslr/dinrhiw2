@@ -120,8 +120,6 @@ int main()
   srand(seed);
   
   try{
-    ensemble_means_test();
-    
     mixture_nnetwork_test();
     
     recurrent_nnetwork_test();
@@ -129,6 +127,8 @@ int main()
     // dbn_test();
 #if 0
     lbfgs_rbm_test();
+
+    ensemble_means_test();
 
     bbrbm_test();
 

@@ -10,7 +10,14 @@ namespace whiteice
 {
   
   template <typename T>
-  Mixture<T>::Mixture(unsigned int NUM) : N(NUM)
+  Mixture<T>::Mixture(const unsigned int NUM,
+		      const unsigned int depth,
+		      const bool overfit_,
+		      const bool negfeedback_
+		      ) : N(NUM),
+			  SIMULATION_DEPTH(depth),
+			  overfit(overfit_),
+			  negfeedback(negfeedback_)
   {
     // N = number of experts
     std::lock_guard<std::mutex> lock1(solutionMutex);
@@ -316,7 +323,11 @@ namespace whiteice
       for(unsigned int index=0;index<optimizers.size();index++){
 	if(sets[index].size(0) > 0){
 	  auto& o = optimizers[index];
-	  o = new rLBFGS_nnetwork<T>(*models[index], sets[index]);
+	  o = new rLBFGS_nnetwork<T>(*models[index],
+				     sets[index],
+				     SIMULATION_DEPTH,
+				     overfit,
+				     negfeedback);
 	  math::vertex<T> x0;
 	  models[index]->exportdata(x0);
 	  

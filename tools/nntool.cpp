@@ -1684,11 +1684,12 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, mix\n");
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");
-  printf("               gradient descent algorithms use negative feedback heuristic\n");
+  printf("               gradient descent algorithms can use negative feedback heuristic\n");
+  printf("               mix uses mixture of neural networks\n");
   printf("\n");
   printf("               Ctrl-C shutdowns the program.\n");
   printf("\n");

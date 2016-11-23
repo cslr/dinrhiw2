@@ -259,19 +259,77 @@ namespace whiteice
     sumgrad.zero();
 
     // we collect distribution of gradients and clusterize it and take majority direction
+    // this should mean our gradint (machine learning pattern) is "less confused" so that
+    // the mixture of such experts specialize into different sets of data
     std::vector< math::vertex<T> > pgradients;
     std::vector< math::vertex<T> > ngradients;
 
 
     if(deepness <= 1){
+
+      // positive phase/gradient
+      // (calculate distribution of positive gradients)
+#pragma omp parallel shared(sumgrad) shared(pgradients)
+      {
+	whiteice::nnetwork<T> nnet(this->net);
+	nnet.importdata(x);
+	
+	math::vertex<T> grad, err;
+	std::vector< math::vertex<T> > grads; // grads direction
+	
+#pragma omp for nowait schedule(dynamic)
+	for(unsigned int i=0;i<dtrain.size(0);i++){
+	  nnet.input() = dtrain.access(0, i);
+	  nnet.calculate(true);
+	  err = dtrain.access(1,i) - nnet.output();
+	  
+	  if(nnet.gradient(err, grad) == false){
+	    std::cout << "gradient failed." << std::endl;
+	    assert(0); // FIXME
+	  }
+	  
+	  grads.push_back(grad);
+	}
+	
+#pragma omp critical
+	{
+	  for(unsigned int i=0;i<grads.size();i++){
+	    auto g = grads[i];
+	    g.normalize();
+	    pgradients.push_back(g);
+	  }
+	}
+	
+      }
+
+      std::vector<unsigned int> cluster;
+      unsigned int chosenCluster;
+
+      // we clusterize and use majority cluster of gradients
+      {
+	whiteice::EnsembleMeans<T> em;
+	whiteice::math::vertex<T> c;
+	T p;
+	
+	em.learn(3, pgradients); // 3 groups and we keep majority cluster
+	chosenCluster = (unsigned int)em.getProbabilisticCluster(c, p);
+	// chosenCluster = (unsigned int)em.getMajorityCluster(c, p);
+	
+	em.clusterize(pgradients, cluster);
+      }
+
       math::matrix<T> sigma2;
       sigma2.resize(net.output_size(), net.output_size());
       sigma2.zero();
       
       math::vertex<T> m(net.output_size());
       m.zero();
-    
+
+      unsigned int numGradients = 0;
+      
       // positive phase/gradient
+      // (calculate majority clusters gradient
+      // (both positive and negative phases)
 #pragma omp parallel shared(sumgrad) shared(pgradients)
       {
 	whiteice::nnetwork<T> nnet(this->net);
@@ -292,27 +350,29 @@ namespace whiteice
 	
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
-	  nnet.input() = dtrain.access(0, i);
-	  nnet.calculate(true);
-	  err = dtrain.access(1,i) - nnet.output();
 	  
-	  if(nnet.gradient(err, grad) == false){
-	    std::cout << "gradient failed." << std::endl;
-	    assert(0); // FIXME
-	  }
-	  
-	  sum_sigma2 += err.outerproduct(err);
-	  sum_m += err; // should not be calculated??
+	  if(cluster[i] == chosenCluster){ // only selected cluster
+	    
+	    nnet.input() = dtrain.access(0, i);
+	    nnet.calculate(true);
+	    err = dtrain.access(1,i) - nnet.output();
+	    
+	    if(nnet.gradient(err, grad) == false){
+	      std::cout << "gradient failed." << std::endl;
+	      assert(0); // FIXME
+	    }
+	    
+	    sum_sigma2 += err.outerproduct(err);
+	    sum_m += err; // should not be calculated??
+	    
+	    sgrad += grad; // /T(dtrain.size(0));
 
-	  grads.push_back(grad);
-	  sgrad += grad; // /T(dtrain.size(0));
+	    numGradients++;
+	  }
 	}
 	
 #pragma omp critical
 	{
-	  for(unsigned int i=0;i<grads.size();i++)
-	    pgradients.push_back(grads[i]);
-	  
 	  sumgrad += sgrad;
 	  sigma2 += sum_sigma2;
 	  m += sum_m;
@@ -320,8 +380,8 @@ namespace whiteice
 	
       }
       
-      sigma2 /= T((double)dtrain.size(0));
-      m /= T((double)dtrain.size(0));
+      sigma2 /= T(numGradients);
+      m /= T(numGradients);
       sigma2 -= m.outerproduct(m);
       
       // sigma2 is error covariance matrix
@@ -345,7 +405,7 @@ namespace whiteice
       sigma2 = X*sigma2;
       
 
-#if 0
+#if 1
       // negative phase/gradient
 #pragma omp parallel shared(sumgrad) shared(ngradients)
       {
@@ -360,68 +420,51 @@ namespace whiteice
 	
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
-	  // generates negative particle
-	  auto x = dtrain.access(0, rng.rand() % dtrain.size(0));
 	  
-	  nnet.input() = x;
-	  nnet.calculate(true);
-	  auto y = nnet.output();
-	  
-	  math::vertex<T> n(y.size());
-	  rng.normal(n);
-	  y += sigma2 * n; // adds properly correlated noise..
-	  
-	  err = y - nnet.output();
-	  
-	  if(nnet.gradient(err, grad) == false){
-	    std::cout << "gradient failed." << std::endl;
-	    assert(0); // FIXME
+	  if(cluster[i] == chosenCluster){ // only selected cluster
+	    
+	    // generates negative particle
+	    auto x = dtrain.access(0, rng.rand() % dtrain.size(0));
+	    
+	    nnet.input() = x;
+	    nnet.calculate(true);
+	    auto y = nnet.output();
+	    
+	    math::vertex<T> n(y.size());
+	    rng.normal(n);
+	    y += sigma2 * n; // adds properly correlated noise..
+	    
+	    err = y - nnet.output();
+	    
+	    if(nnet.gradient(err, grad) == false){
+	      std::cout << "gradient failed." << std::endl;
+	      assert(0); // FIXME
+	    }
+	    
+	    grads.push_back(-grad);	  
+	    sgrad -= grad; // /T(dtrain.size(0));
 	  }
-
-	  grads.push_back(-grad);	  
-	  sgrad -= grad; // /T(dtrain.size(0));
+	  
 	}
 	
 #pragma omp critical
 	{
 	  for(unsigned int i=0;i<grads.size();i++)
-	    pgradients.push_back(grads[i]);
+	    ngradients.push_back(grads[i]);
 	  
 	  sumgrad += sgrad;
 	}
 	
       }
 #endif // disables negative phase
-
-      // next we compute clusterize(pgradients) + clusterize(ngradients)
-      
-      whiteice::EnsembleMeans<T> emp, emn;
-      math::vertex<T> empgrad, emngrad;
-      T p_emp, p_emn;
-
-      emp.learn(4, pgradients); // was 3
-      //emn.learn(3, ngradients);
-
-      emp.getMajorityCluster(empgrad, p_emp);
-      //emn.getMajorityCluster(emngrad, p_emn);
-
-      std::cout << "MAJORITY GRADCLUSTER: "
-		<< T(100.0)*p_emp << std::endl;
-
-      p_emp *= T(dtrain.size(0));
-      // p_emn P= T(dtrain.size(0));
-      
-      sumgrad = p_emp*empgrad; //  + p_emn*emngrad;
       
       {
 	T alpha = T(0.01f);
 	sumgrad += alpha*x;
       }
+
+      sumgrad /= T(numGradients);
       
-      sumgrad /= T(p_emp);
-      
-      
-      // sumgrad.normalize();
       
       return (sumgrad);
     }

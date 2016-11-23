@@ -13,7 +13,7 @@
  * AC      = <number> | "?"
  * NNFILE  = <filename>
  * LMETHOD = MBASIC 
- * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs | minimize
+ * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs | minimize | mix
  * 
  */
 
@@ -113,6 +113,7 @@
 %token <str> LM_LBFGS
 %token <str> LM_RANDOM
 %token <str> LM_BAYES
+%token <str> LM_MIX
 
 /* PREPROCESSING */
 %token <str> MMOD_OVERTRAIN
@@ -192,6 +193,7 @@ mbasic: LM_USE      { __info.method = $1; }
       | LM_PARALLELGRAD { __info.method = $1; }
       | LM_RANDOM   { __info.method = $1; }
       | LM_BAYES    { __info.method = $1; }
+      | LM_MIX      { __info.method = $1; }
 ;
 
 mmodseq: /* empty */
@@ -328,7 +330,7 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
 
     p.name = "use"; p.code = LM_USE;
-    cmdparamslist.push_back(p);
+    cmdparamslist.push_back(p);    
     p.name = "minimize"; p.code = LM_MINIMIZE;
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
@@ -344,6 +346,8 @@ void parse_commandline(int argc, char** argv,
     p.name = "random"; p.code = LM_RANDOM;
     cmdparamslist.push_back(p);
     p.name = "bayes"; p.code = LM_BAYES;
+    cmdparamslist.push_back(p);
+    p.name = "max"; p.code = LM_MAX;
     cmdparamslist.push_back(p);
     
     p.name = "+ot"; p.code = MMOD_OVERTRAIN;
