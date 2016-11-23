@@ -24,5 +24,6 @@ Interesting revision numbers:
 				   extra accuracy can be useful when optimization requires near zero gradients or
 				   so that we do not get easily infinities.
 				   
+272				   after >=273 there is now work-in-progress to add clustering of gradients and neural networks.
 				   
 
