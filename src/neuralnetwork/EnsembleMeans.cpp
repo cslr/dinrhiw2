@@ -111,19 +111,20 @@ namespace whiteice
   }
 
   template <typename T>
-  bool EnsembleMeans<T>::getMajorityCluster(math::vertex<T>& mean) const
+  bool EnsembleMeans<T>::getMajorityCluster(math::vertex<T>& mean,
+					    T& p) const
   {
     if(kmeans.size() <= 0) return false;
 
     mean = kmeans[0];
-    auto p = percent[0];
+    p = percent[0];
     
 
     for(unsigned int k=1;k<kmeans.size();k++){
       if(percent[k] > p){
 	p = percent[k];
 	mean = kmeans[k];
-      }
+      }      
     }
 
     return true;

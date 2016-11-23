@@ -30,7 +30,7 @@ namespace whiteice
 			 std::vector< T >& percent) const;
 
       // gets cluster that has most datapoints (for denoising gradient)
-      bool getMajorityCluster(math::vertex<T>& mean) const;
+      bool getMajorityCluster(math::vertex<T>& mean, T& percent) const;
       
 
     private:

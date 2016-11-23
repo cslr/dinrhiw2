@@ -3,6 +3,7 @@
 #include "deep_ica_network_priming.h"
 
 #include "eig.h"
+#include "EnsembleMeans.h"
 
 
 namespace whiteice
@@ -257,8 +258,12 @@ namespace whiteice
     sumgrad = x;
     sumgrad.zero();
 
-    if(deepness <= 1){
+    // we collect distribution of gradients and clusterize it and take majority direction
+    std::vector< math::vertex<T> > pgradients;
+    std::vector< math::vertex<T> > ngradients;
 
+
+    if(deepness <= 1){
       math::matrix<T> sigma2;
       sigma2.resize(net.output_size(), net.output_size());
       sigma2.zero();
@@ -267,12 +272,13 @@ namespace whiteice
       m.zero();
     
       // positive phase/gradient
-#pragma omp parallel shared(sumgrad)
+#pragma omp parallel shared(sumgrad) shared(pgradients)
       {
 	whiteice::nnetwork<T> nnet(this->net);
 	nnet.importdata(x);
 	
 	math::vertex<T> sgrad, grad, err;
+	std::vector< math::vertex<T> > grads; // grads direction
 	
 	math::matrix<T> sum_sigma2;
 	sum_sigma2.resize(net.output_size(), net.output_size());
@@ -297,12 +303,16 @@ namespace whiteice
 	  
 	  sum_sigma2 += err.outerproduct(err);
 	  sum_m += err; // should not be calculated??
-	  
+
+	  grads.push_back(grad);
 	  sgrad += grad; // /T(dtrain.size(0));
 	}
 	
 #pragma omp critical
 	{
+	  for(unsigned int i=0;i<grads.size();i++)
+	    pgradients.push_back(grads[i]);
+	  
 	  sumgrad += sgrad;
 	  sigma2 += sum_sigma2;
 	  m += sum_m;
@@ -335,14 +345,15 @@ namespace whiteice
       sigma2 = X*sigma2;
       
 
-#if 1
+#if 0
       // negative phase/gradient
-#pragma omp parallel shared(sumgrad)
+#pragma omp parallel shared(sumgrad) shared(ngradients)
       {
 	whiteice::nnetwork<T> nnet(this->net);
 	nnet.importdata(x);
 	
 	math::vertex<T> sgrad, grad, err;
+	std::vector< math::vertex<T> > grads; // grads direction
 	
 	sgrad = x;
 	sgrad.zero();
@@ -366,18 +377,53 @@ namespace whiteice
 	    std::cout << "gradient failed." << std::endl;
 	    assert(0); // FIXME
 	  }
-	  
+
+	  grads.push_back(-grad);	  
 	  sgrad -= grad; // /T(dtrain.size(0));
 	}
 	
 #pragma omp critical
 	{
+	  for(unsigned int i=0;i<grads.size();i++)
+	    pgradients.push_back(grads[i]);
+	  
 	  sumgrad += sgrad;
 	}
 	
       }
 #endif // disables negative phase
 
+      // next we compute clusterize(pgradients) + clusterize(ngradients)
+      
+      whiteice::EnsembleMeans<T> emp, emn;
+      math::vertex<T> empgrad, emngrad;
+      T p_emp, p_emn;
+
+      emp.learn(4, pgradients); // was 3
+      //emn.learn(3, ngradients);
+
+      emp.getMajorityCluster(empgrad, p_emp);
+      //emn.getMajorityCluster(emngrad, p_emn);
+
+      std::cout << "MAJORITY GRADCLUSTER: "
+		<< T(100.0)*p_emp << std::endl;
+
+      p_emp *= T(dtrain.size(0));
+      // p_emn P= T(dtrain.size(0));
+      
+      sumgrad = p_emp*empgrad; //  + p_emn*emngrad;
+      
+      {
+	T alpha = T(0.01f);
+	sumgrad += alpha*x;
+      }
+      
+      sumgrad /= T(p_emp);
+      
+      
+      // sumgrad.normalize();
+      
+      return (sumgrad);
     }
     else{ // recurrent neural network!
 
