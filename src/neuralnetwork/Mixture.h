@@ -40,8 +40,13 @@ namespace whiteice
 
       bool getSolution(std::vector< math::vertex<T> >& x,
 		       std::vector< T >& y,
+		       std::vector< T >& percent,
 		       unsigned int& iterations,
 		       unsigned int& changes) const;
+
+      bool getMajoritySolution(math::vertex<T>& x,
+			       T& percent);
+			       
 
       bool stopComputation();
       
@@ -55,7 +60,11 @@ namespace whiteice
       mutable std::mutex solutionMutex;
       std::vector< math::vertex<T> > solutions;
       std::vector< T > y;
+      std::vector< T > percent; // how many percent of
+                                // data this cluster of
+                                // solutions handle?
       unsigned int global_iterations;
+      unsigned int running_iterations;
       unsigned int latestChanges; // how many data points switched to different solution?
 
       mutable std::mutex threadMutex;

@@ -17,7 +17,7 @@ SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
 	LBFGS_nnetwork.cpp pLBFGS_nnetwork.cpp lreg_nnetwork.cpp nnetwork_function.cpp ultradeep.cpp \
 	RBM.cpp CRBM.cpp DBN.cpp BBRBM.cpp construct_nnetwork.cpp LBFGS_GBRBM.cpp LBFGS_BBRBM.cpp \
 	GBRBM.cpp HMCGBRBM.cpp PTHMCGBRBM.cpp PTHMCabstract.cpp  HMCconvergencecheck.cpp UHMC.cpp \
-	stackedRBM_pretraining.cpp rLBFGS_nnetwork.cpp Mixture.cpp
+	stackedRBM_pretraining.cpp rLBFGS_nnetwork.cpp Mixture.cpp EnsembleMeans.cpp
 
 OBJECTS= neuron.o neuronlayer.o \
 	activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
@@ -31,7 +31,7 @@ OBJECTS= neuron.o neuronlayer.o \
 	LBFGS_nnetwork.o pLBFGS_nnetwork.o lreg_nnetwork.o nnetwork_function.o ultradeep.o \
 	RBM.o CRBM.o DBN.o BBRBM.o construct_nnetwork.o LBFGS_GBRBM.o LBFGS_BBRBM.o \
 	GBRBM.o HMCGBRBM.o PTHMCGBRBM.o PTHMCabstract.o  HMCconvergencecheck.o UHMC.o \
-	stackedRBM_pretraining.o rLBFGS_nnetwork.o Mixture.o
+	stackedRBM_pretraining.o rLBFGS_nnetwork.o Mixture.o EnsembleMeans.o
 
 EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math/integer.o \
 	../math/matrix_rotations.o ../math/eig.o ../math/correlation.o ../math/blade_math.o \

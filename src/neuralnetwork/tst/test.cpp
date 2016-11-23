@@ -16,7 +16,9 @@
 #include "nnetwork.h"
 #include "lreg_nnetwork.h"
 #include "GDALogic.h"
+
 #include "Mixture.h"
+#include "EnsembleMeans.h"
 
 #include "dataset.h"
 #include "nnPSO.h"
@@ -76,6 +78,7 @@ void nnetwork_test();
 void lreg_nnetwork_test();
 void recurrent_nnetwork_test();
 void mixture_nnetwork_test();
+void ensemble_means_test();
   
 void rbm_test();
 
@@ -117,6 +120,8 @@ int main()
   srand(seed);
   
   try{
+    ensemble_means_test();
+    
     mixture_nnetwork_test();
     
     recurrent_nnetwork_test();
@@ -231,6 +236,47 @@ private:
 
 /************************************************************/
 
+void ensemble_means_test()
+{
+  std::cout << "Ensemble means testing" << std::endl;
+
+  std::vector< math::vertex< math::blas_real<double> > > data;
+  whiteice::RNG< math::blas_real<double> > rng;
+
+  {
+    std::vector< math::vertex< math::blas_real<double> > > input;
+    
+    const unsigned int DIM=5;
+
+    for(unsigned int i=0;i<10000;i++){ // 10000 examples
+      math::vertex< math::blas_real<double> > in;
+
+      in.resize(DIM);
+      for(unsigned int j=0;j<in.size();j++){
+	in[j] = rng.uniform();
+      }
+
+      data.push_back(in);
+    }
+  }
+
+  whiteice::EnsembleMeans< math::blas_real<double> > em;
+
+  assert(em.learn(3, data) == true);
+
+  std::vector< math::vertex< math::blas_real<double> > > kmeans;
+  std::vector< math::blas_real<double> > p;
+
+  assert(em.getClustering(kmeans, p) == true);
+
+  for(const auto& v : p)
+    std::cout << 100.0*v << "% ";
+  std::cout << std::endl;
+  
+}
+
+/************************************************************/
+
 void mixture_nnetwork_test()
 {
   std::cout << "Mixture of experts learning" << std::endl;
@@ -308,14 +354,16 @@ void mixture_nnetwork_test()
 
     std::vector< whiteice::math::blas_real<double> > error;
     std::vector< whiteice::math::vertex< whiteice::math::blas_real<double> > > w;
+    std::vector< whiteice::math::blas_real<double> > p;
+    
     unsigned int it = 0;
     unsigned int changes = 0;
 
-    if(mixture.getSolution(w, error, it, changes)){
+    if(mixture.getSolution(w, error, p, it, changes)){
       if(iters != it){
-	printf("%d ITERS: %d deltas\n", iters, changes);
+	printf("%d ITERS: %d deltas ", iters, changes);
 	for(unsigned int i=0;i<error.size();i++){
-	  printf("%.3f ", error[i].c[0]);
+	  printf("%.4f(%.1f%%) ", error[i].c[0], 100.0*p[i].c[0]);
 	}
 	printf("\n");
 	fflush(stdout);

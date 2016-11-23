@@ -44,6 +44,7 @@
 
 #include "rLBFGS_nnetwork.h"
 #include "Mixture.h"
+#include "EnsembleMeans.h"
 
 #include "RNG.h"
 

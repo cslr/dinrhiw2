@@ -19,8 +19,13 @@ namespace whiteice
     thread_running = false;
     worker_thread  = nullptr;
     global_iterations = 0;
+    running_iterations = 0;
     converged = false;
     model = nullptr;
+
+    solutions.resize(N);
+    y.resize(N);
+    percent.resize(N);
   }
 
   
@@ -87,6 +92,7 @@ namespace whiteice
   template <typename T>
   bool Mixture<T>::getSolution(std::vector< math::vertex<T> >& x,
 			       std::vector< T >& y,
+			       std::vector< T >& percent,
 			       unsigned int& iterations,
 			       unsigned int& changes) const
   {
@@ -96,11 +102,38 @@ namespace whiteice
     
     x = solutions;
     y = this->y;
-    iterations = global_iterations;
+    percent = this->percent;
+    iterations = global_iterations + running_iterations;
     changes = latestChanges;
 
     return true;
   }
+
+  template <typename T>
+  bool Mixture<T>::getMajoritySolution(math::vertex<T>& x,
+				       T& p)
+  {
+    std::lock_guard<std::mutex> lock(solutionMutex);
+    
+    if(global_iterations <= 0) return false; // no solution
+    if(percent.size() <= 0) return false;
+
+    unsigned int bestIndex = 0;
+    auto bestP = percent[0];
+
+    for(unsigned int n=1;n<percent.size();n++){
+      if(percent[n] > bestP){
+	bestP = percent[n];
+	bestIndex = n;
+      }
+    }
+
+    p = bestP;
+    x = solutions[bestIndex];
+
+    return true;
+  }
+
   
   template <typename T>
   bool Mixture<T>::stopComputation()
@@ -138,10 +171,13 @@ namespace whiteice
     converged = false;
     std::vector< whiteice::nnetwork<T>* > models(N);
     std::vector<unsigned int> assignments;
+    std::vector<unsigned int> counts(N);
     
     for(unsigned int m=0;m<models.size();m++){
       models[m] = new whiteice::nnetwork<T>(*model);
       models[m]->randomize(); // random initial states
+
+      percent[m] = T(1.0) / T(models.size());
     }
 
     {
@@ -149,6 +185,7 @@ namespace whiteice
       solutions.resize(N);
       y.resize(N);
       global_iterations = 0;
+      running_iterations = 0;
       
       for(unsigned int m=0;m<models.size();m++){
 	assert(models[m]->exportdata(solutions[m]) == true);
@@ -167,6 +204,7 @@ namespace whiteice
       {
 	for(unsigned int m=0;m<models.size();m++){
 	  assert(models[m]->importdata(solutions[m]) == true);
+	  counts[m] = 0;
 	}
       }
       
@@ -179,39 +217,78 @@ namespace whiteice
 	sets[n].copyAllButData(data);
 
       // assign each data point according to minimum error
+      // (also calculates mean error)
+      math::vertex<T> sum_output;
+      sum_output.resize(models[0]->output_size());
+      T mean_error = T(0.0);
+      
       for(unsigned int i=0;i<data.size(0);i++){
 	unsigned int index = 0;
+	unsigned int nn = 0;
+	
 	math::vertex<T> input, output;
 	input = data.access(0, i);
-	models[0]->calculate(input, output);
+	models[index]->calculate(input, output);
+
+	sum_output.zero();
+	
+	if(!isinf(y[index])){	  
+	  sum_output += output;
+	  nn++;
+	}
+	
 	auto delta = (data.access(1, i) - output);
 	T minError = (delta*delta)[0];
 	
-	for(unsigned int n=1;n<N;n++){
+	for(unsigned int n=index;n<N;n++){
+	  
 	  input = data.access(0, i);
 	  models[n]->calculate(input, output);
+
+	  if(!isinf(y[n])){
+	    sum_output += output;
+	    nn++;
+	  }
+	    
 	  auto delta = (data.access(1, i) - output);
 	  auto error = (delta*delta)[0];
-
+	  
 	  if(error < minError){
 	    error = minError;
 	    index = n;
 	  }
+	  
 	}
 
-	if(index != assignments[i])
-	  changes++;
+	sum_output /= T(nn);
+	delta = (data.access(1, i) - sum_output);
+	mean_error += (delta*delta)[0] / T(data.size(0));
 
 	// random assingments on the first round..
 	if(first_time)
 	  index = rand() % N;
+
+	if(index != assignments[i])
+	  changes++;
 
 	// printf("%d ", index); fflush(stdout);
 				      
 	sets[index].add(0, data.access(0, i));
 	sets[index].add(1, data.access(1, i));
 	assignments[i] = index;
+	counts[index]++;
       }
+
+      // updates percentages
+      {
+	std::lock_guard<std::mutex> lock(solutionMutex);
+
+	for(unsigned int n=0;n<N;n++)
+	  percent[n] = T(counts[n]) / T(data.size(0));
+	
+      }
+      std::cout << "MEAN ERROR " << mean_error << std::endl;
+      
 
       if(changes == 0 && !first_time){ // convergence
 	std::lock_guard<std::mutex> lock(threadMutex);
@@ -254,11 +331,29 @@ namespace whiteice
 	}
       }
 
+      
       // 3. wait until convergence of each optimizer
       {
 	bool waiting = true;
 
 	while(waiting){
+	  // gets current solutions
+	  {
+	    unsigned int sumiterations = 0;
+
+	    math::vertex<T> x;
+	    T y;
+	    unsigned int iterations = 0;
+
+	    for(unsigned int i=0;i<optimizers.size();i++)
+	      if(optimizers[i])
+		if(optimizers[i]->getSolution(x, y, iterations) == true)
+		  sumiterations += iterations;
+
+	    std::lock_guard<std::mutex> lock(solutionMutex);
+	    running_iterations = sumiterations;
+	  }
+	  
 	  unsigned int counter = 0;
 	  unsigned int total = 0;
 
@@ -281,13 +376,16 @@ namespace whiteice
 
 	  if(thread_running == false)
 	  {
-	    std::lock_guard<std::mutex> lock(threadMutex);
+	    std::lock_guard<std::mutex> lock1(threadMutex);
 	    
 	    thread_running = false;
 	    
 	    for(unsigned int i=0;i<optimizers.size();i++){
 	      delete optimizers[i];
 	    }
+
+	    std::lock_guard<std::mutex> lock2(solutionMutex);
+	    running_iterations = 0;
 	  }
 	  
 	}
@@ -297,6 +395,7 @@ namespace whiteice
       // 4. copy model parameters to our solution
       {
 	std::lock_guard<std::mutex> lock(solutionMutex);
+	running_iterations = 0;
 
 	for(unsigned int i=0;i<optimizers.size();i++){
 	  if(optimizers[i]){
