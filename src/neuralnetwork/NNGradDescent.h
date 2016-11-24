@@ -12,6 +12,7 @@
 #include "dinrhiw_blas.h"
 #include "dataset.h"
 #include "dinrhiw.h"
+#include "nnetwork.h"
 
 #ifndef NNGradDescent_h
 #define NNGradDescent_h
@@ -42,7 +43,7 @@ namespace whiteice
 	 * descent solution
 	 */
 	bool startOptimize(const whiteice::dataset<T>& data,
-			   const std::vector<unsigned int>& arch,
+			   const whiteice::nnetwork<T>& nn,
 			   unsigned int NTHREADS,
 			   unsigned int MAXITERS = 10000);
       
@@ -59,7 +60,7 @@ namespace whiteice
 	bool stopComputation();
 
       private:
-	std::vector<unsigned int> nn_arch;
+        whiteice::nnetwork<T>* nn; // network architecture and settings
       
         bool negativefeedback;
       

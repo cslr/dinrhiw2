@@ -145,7 +145,7 @@ namespace whiteice
 
     cluster.resize(data.size());
 
-    if(K == 1){ // only one cluster
+    if(kmeans.size() == 1){ // only one cluster
       for(unsigned int n=0;n<data.size();n++)
 	cluster[n] = 0;
       return true;

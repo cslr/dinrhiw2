@@ -27,6 +27,7 @@ namespace whiteice
       this->negativefeedback = negativefeedback;
 
       running = false;
+      nn = NULL;
 
       pthread_mutex_init(&solution_lock, 0);
       pthread_mutex_init(&start_lock, 0);
@@ -44,6 +45,9 @@ namespace whiteice
 	}
 
       running = false;
+      
+      if(nn) delete nn;
+      nn = NULL;
 
       pthread_mutex_unlock( &start_lock );
 
@@ -61,21 +65,18 @@ namespace whiteice
      */
     template <typename T>
     bool NNGradDescent<T>::startOptimize(const whiteice::dataset<T>& data,
-					 const std::vector<unsigned int>& arch, 
+					 const whiteice::nnetwork<T>& nn,
 					 unsigned int NTHREADS,
 					 unsigned int MAXITERS)
     {
-      if(arch.size() < 2) return false;
-
       if(data.getNumberOfClusters() != 2) return false;
-
       if(data.size(0) != data.size(1)) return false;
 
       // need at least 50 datapoints
       if(data.size(0) <= 50) return false;
 
-      if(data.dimension(0) != arch[0] ||
-	 data.dimension(1) != arch[arch.size()-1])
+      if(data.dimension(0) != nn.input_size() ||
+	 data.dimension(1) != nn.output_size())
 	return false;
       
       pthread_mutex_lock( &start_lock );
@@ -89,11 +90,13 @@ namespace whiteice
       this->data = &data;
       this->NTHREADS = NTHREADS;
       this->MAXITERS = MAXITERS;
-      this->nn_arch = arch;
       best_error = T(1000.0f);
       converged_solutions = 0;
       running = true;
       thread_is_running = 0;
+      
+      this->nn = new nnetwork<T>(nn); // copies network (settings)
+      nn.exportdata(bestx);
 
       optimizer_thread.resize(NTHREADS);
 
@@ -121,22 +124,16 @@ namespace whiteice
 				       T& error, unsigned int& Nconverged)
     {
       // checks if the neural network architecture is the correct one
+      if(this->nn == NULL) return false;
 
-      std::vector<unsigned int> a;
-      nn.getArchitecture(a);
-
-      if(a.size() != nn_arch.size()) return false;
-      for(unsigned int i=0;i<a.size();i++)
-	if(a[i] != nn_arch[i]) return false;
-      
-      
       pthread_mutex_lock( &solution_lock );
 
+      nn = *(this->nn);
       nn.importdata(bestx);
+	    
       error = best_error;
       Nconverged = converged_solutions;
 
-      
       pthread_mutex_unlock( &solution_lock );
 
       return true;
@@ -216,14 +213,19 @@ namespace whiteice
 	// keep looking for solution forever
 
 	// starting location for neural network
-	nnetwork<T> nn(nn_arch);
-
-	// use heuristic to normalize weights to unity
-	nn.randomize();
-	normalize_weights_to_unity(nn); 
-	T alpha = T(0.5f);
-	negative_feedback_between_neurons(nn, dtrain, alpha);
+	nnetwork<T> nn(*(this->nn));
 	
+	// use heuristic to normalize weights to unity (keep input weights)
+	if(0){
+	  nn.randomize();
+	  normalize_weights_to_unity(nn); 
+	  T alpha = T(0.5f);
+	  negative_feedback_between_neurons(nn, dtrain, alpha);
+	}
+
+	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
+	
+	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
 	{
@@ -278,6 +280,9 @@ namespace whiteice
 	    if(nn.exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 
+	    // ADDS STRONG REGULARIZER TERM TO GRADIENT!
+	    sumgrad += regularizer*weights;
+
 	    if(prev_sumgrad.size() <= 1){
 	      weights -= lrate * sumgrad;
 	    }
@@ -312,6 +317,7 @@ namespace whiteice
 	    
 	    delta_error = (prev_error - error);
 	    ratio = delta_error / error;
+
 	    
 	    // cancellation point
 	    {

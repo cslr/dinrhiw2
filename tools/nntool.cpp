@@ -898,9 +898,9 @@ int main(int argc, char** argv)
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
 
       if(samples > 0)
-	grad.startOptimize(data, arch, threads, samples);
+	grad.startOptimize(data, *nn, threads, samples);
       else
-	grad.startOptimize(data, arch, threads);
+	grad.startOptimize(data, *nn, threads);
 
       
       {
@@ -1252,7 +1252,7 @@ int main(int argc, char** argv)
 	    printf("\r                                                            \r");
 	    printf("%d samples: %f [%.1f minutes]",
 		   hmc.getNumberOfSamples(),
-		   hmc.getMeanError(100).c[0],		   
+		   hmc.getMeanError(1).c[0],		   
 		   (secs - counter)/60.0);
 	  }
 	  else{
@@ -1260,7 +1260,7 @@ int main(int argc, char** argv)
 	    printf("%d/%d samples : %f [%.1f minutes]",
 		   hmc.getNumberOfSamples(),
 		   samples,
-		   hmc.getMeanError(100).c[0],
+		   hmc.getMeanError(1).c[0],
 		   eta.estimate()/60.0);
 	  }
 	  fflush(stdout);
