@@ -19,8 +19,8 @@ rm -f commviol-test.ds
 
 # uses nntool trying to learn from dataset
 
-ARCH="145-300-300-4"
-OPTIONS="-v --recurrent 10 --pseudolinear"
+ARCH="145-100-100-4"
+OPTIONS="-v --recurrent 3 --pseudolinear"
 
 ./nntool --samples 1000 $OPTIONS commviol-test.ds $ARCH commviol-nn.cfg lbfgs
 # ./nntool -v --negfb --samples 1000 commviol-test.ds 141-20-4 commviol-nn.cfg lbfgs

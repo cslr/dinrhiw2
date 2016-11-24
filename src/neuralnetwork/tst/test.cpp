@@ -120,7 +120,7 @@ int main()
   srand(seed);
   
   try{
-    mixture_nnetwork_test();
+    // mixture_nnetwork_test();
     
     recurrent_nnetwork_test();
     
@@ -441,14 +441,14 @@ void recurrent_nnetwork_test()
 
     if(DEEPNESS > 1){
       arch.push_back(data.dimension(0)+data.dimension(1));
-      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
     else{
       arch.push_back(data.dimension(0));
-      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
-      arch.push_back(100*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
+      arch.push_back(10*(data.dimension(0)+data.dimension(1)));
       arch.push_back(data.dimension(1));
     }
     

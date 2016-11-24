@@ -22,10 +22,10 @@ namespace whiteice
     {
     public:
     
-    DBN();
+    DBN(bool binary = false);
     
     // constructs stacked RBM network with the given architecture
-    DBN(std::vector<unsigned int>& arch);
+    DBN(std::vector<unsigned int>& arch, bool binary = false);
     
     DBN(const DBN<T>& dbn);
     
@@ -73,7 +73,9 @@ namespace whiteice
     
     // stacked RBMs from the first to the last one
 
-    whiteice::GBRBM<T> input; // input layer
+    whiteice::GBRBM<T> gb_input; // input layer
+    whiteice::BBRBM<T> bb_input;
+    bool binaryInput;
     
     std::vector< whiteice::BBRBM<T> > layers; // hidden layers
     

@@ -7,16 +7,20 @@ namespace whiteice
 {
   
   template <typename T>
-  DBN<T>::DBN()
+  DBN<T>::DBN(bool binary)
   {
-    input.resize(1,1); // 1 => 1 pseudonetwork
-    input.initializeWeights();
+    gb_input.resize(1,1); // 1 => 1 pseudonetwork
+    bb_input.resize(1,1);
+    binaryInput = binary;
+    
+    gb_input.initializeWeights();
+    bb_input.initializeWeights();
   }
   
   
   // constructs stacked RBM netwrok with the given architecture
   template <typename T>
-  DBN<T>::DBN(std::vector<unsigned int>& arch)
+  DBN<T>::DBN(std::vector<unsigned int>& arch, bool binary)
   {
     if(arch.size() <= 1)
       throw std::invalid_argument("Invalid network architechture.");
@@ -26,9 +30,17 @@ namespace whiteice
        
     layers.resize(arch.size() - 2);
 
-    input.resize(arch[0], arch[1]);
-    input.initializeWeights();
+    binaryInput = binary;
     
+    if(!binary){
+      gb_input.resize(arch[0], arch[1]);
+      gb_input.initializeWeights();
+    }
+    else{
+      bb_input.resize(arch[0], arch[1]);
+      bb_input.initializeWeights();
+    }
+
     for(unsigned int i=0;i<(arch.size()-2);i++){
       layers[i].resize(arch[i+1],arch[i+2]);
       layers[i].initializeWeights();
@@ -38,7 +50,9 @@ namespace whiteice
   template <typename T>
   DBN<T>::DBN(const DBN<T>& dbn)
   {
-    input = dbn.input;
+    gb_input = dbn.gb_input;
+    bb_input = dbn.bb_input;
+    binaryInput = dbn.binaryInput;
     layers = dbn.layers;
   }
 
@@ -61,8 +75,10 @@ namespace whiteice
 
     layers.resize(arch.size() - 2);
 
-    input.resize(arch[0], arch[1]);
-    input.initializeWeights();
+    gb_input.resize(arch[0], arch[1]);
+    gb_input.initializeWeights();
+    bb_input.resize(arch[0], arch[1]);
+    bb_input.initializeWeights();
     
     for(unsigned int i=0;i<(arch.size()-2);i++){
       layers[i].resize(arch[i+1],arch[i+2]);
@@ -81,7 +97,10 @@ namespace whiteice
   {
     math::vertex<T> v;
 
-    input.getVisible(v);
+    if(!binaryInput)
+      gb_input.getVisible(v);
+    else
+      bb_input.getVisible(v);
     
     return v;
   }
@@ -89,7 +108,10 @@ namespace whiteice
   template <typename T>
   bool DBN<T>::setVisible(const math::vertex<T>& v)
   {
-    return input.setVisible(v);
+    if(!binaryInput)
+      return gb_input.setVisible(v);
+    else
+      return bb_input.setVisible(v);
   }
   
   
@@ -104,7 +126,11 @@ namespace whiteice
       return h;
     }
     else{
-      input.getHidden(h);
+      if(!binaryInput)
+	gb_input.getHidden(h);
+      else
+	bb_input.getHidden(h);
+      
       return h;
     }
   }
@@ -116,7 +142,10 @@ namespace whiteice
       return layers[layers.size()-1].setHidden(h);
     }
     else{
-      return input.setHidden(h);
+      if(!binaryInput)
+	return gb_input.setHidden(h);
+      else
+	return bb_input.setHidden(h);
     }
   }
   
@@ -127,13 +156,20 @@ namespace whiteice
     if(iters == 0) return false;
     
     while(iters > 0){
-      input.reconstructData(1);
+      if(!binaryInput)
+	gb_input.reconstructData(1);
+      else
+	bb_input.reconstructData(1);
 
       for(unsigned int i=0;i<layers.size();i++){
 	math::vertex<T> h;
 
 	if(i == 0){
-	  input.getHidden(h);
+	  if(!binaryInput)
+	    gb_input.getHidden(h);
+	  else
+	    bb_input.getHidden(h);
+	  
 	  layers[0].setVisible(h);
 	}
 	else{
@@ -159,11 +195,19 @@ namespace whiteice
 	}
 	else{
 	  layers[0].getVisible(v);
-	  input.setHidden(v);
+
+	  if(!binaryInput)
+	    gb_input.setHidden(v);
+	  else
+	    bb_input.setHidden(v);
 	}
       }
 
-      input.reconstructDataHidden(1);
+      if(!binaryInput)
+	gb_input.reconstructDataHidden(1);
+      else
+	bb_input.reconstructDataHidden(1);
+      
       
       iters--;
     }
@@ -188,7 +232,8 @@ namespace whiteice
   template <typename T>
   bool DBN<T>::initializeWeights()
   {
-    input.initializeWeights();
+    gb_input.initializeWeights();
+    bb_input.initializeWeights();
     
     for(auto l :layers)
       l.initializeWeights();
@@ -213,60 +258,125 @@ namespace whiteice
     T error = T(INFINITY);
     std::list<T> errors;
 
-    unsigned int iters = 0;
-    while((error = input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
-	  && iters < ITERLIMIT)
-    {
-      // learns also variance
-      iters += EPOCH_STEPS;
-      errors.push_back(error);
-
-      if(verbose)
-	std::cout << "GBRBM LAYER OPTIMIZATION "
-		  << iters << "/" << ITERLIMIT << ": "
-		  << error << "/" << errorLevel 
-		  << std::endl;
+    if(!binaryInput){ // GBRBM
       
-      while(errors.size() > 10)
-	errors.pop_front();
-
-      // calculates mean and variance and stops if variance is
-      // within 1% of mean (convergence) during latest
-      // EPOCH_STEPS*10 iterations
-
-      if(errors.size() >= 10){
-	T m = T(0.0), v = T(0.0);
-
-	for(auto& e : errors){
-	  m += e;
-	  v += e*e;
+      unsigned int iters = 0;
+      while((error = gb_input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
+	    && iters < ITERLIMIT)
+      {
+	// learns also variance
+	iters += EPOCH_STEPS;
+	errors.push_back(error);
+	
+	if(verbose)
+	  std::cout << "GBRBM LAYER OPTIMIZATION "
+		    << iters << "/" << ITERLIMIT << ": "
+		    << error << "/" << errorLevel 
+		    << std::endl;
+	
+	while(errors.size() > 10)
+	  errors.pop_front();
+	
+	// calculates mean and variance and stops if variance is
+	// within 1% of mean (convergence) during latest
+	// EPOCH_STEPS*10 iterations
+	
+	if(errors.size() >= 10){
+	  T m = T(0.0), v = T(0.0);
+	  
+	  for(auto& e : errors){
+	    m += e;
+	    v += e*e;
+	  }
+	  
+	  m /= errors.size();
+	  v /= errors.size();
+	  v -= m*m;
+	  
+	  v = sqrt(v);
+	  
+	  if(v/m <= 1.01) 
+	    break; // stdev is less than 1% of mean
 	}
-
-	m /= errors.size();
-	v /= errors.size();
-	v -= m*m;
-
-	v = sqrt(v);
-
-	if(v/m <= 1.01) 
-	  break; // stdev is less than 1% of mean
       }
+
+      // maps input to output
+      out.clear();
+      
+      for(auto v : in){
+	gb_input.setVisible(v);
+	gb_input.reconstructData(1);
+	
+	math::vertex<T> h;
+	gb_input.getHidden(h);
+	
+	out.push_back(h);
+      }
+      
+      in = out;
+      
+    }
+    else{ // BBRBM
+      
+      unsigned int iters = 0;
+      while((error = bb_input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
+	    && iters < ITERLIMIT)
+      {
+	// learns also variance
+	iters += EPOCH_STEPS;
+	errors.push_back(error);
+	
+	if(verbose)
+	  std::cout << "BBRBM LAYER OPTIMIZATION "
+		    << iters << "/" << ITERLIMIT << ": "
+		    << error << "/" << errorLevel 
+		    << std::endl;
+	
+	while(errors.size() > 10)
+	  errors.pop_front();
+	
+	// calculates mean and variance and stops if variance is
+	// within 1% of mean (convergence) during latest
+	// EPOCH_STEPS*10 iterations
+	
+	if(errors.size() >= 10){
+	  T m = T(0.0), v = T(0.0);
+	  
+	  for(auto& e : errors){
+	    m += e;
+	    v += e*e;
+	  }
+	  
+	  m /= errors.size();
+	  v /= errors.size();
+	  v -= m*m;
+	  
+	  v = sqrt(v);
+	  
+	  if(v/m <= 1.01) 
+	    break; // stdev is less than 1% of mean
+	}
+      }
+
+      // maps input to output
+      out.clear();
+      
+      for(auto v : in){
+	bb_input.setVisible(v);
+	bb_input.reconstructData(1);
+	
+	math::vertex<T> h;
+	bb_input.getHidden(h);
+	
+	out.push_back(h);
+      }
+      
+      in = out;
+      
     }
 
-    // maps input to output
-    out.clear();
-
-    for(auto v : in){
-      input.setVisible(v);
-      input.reconstructData(1);
-
-      math::vertex<T> h;
-      input.getHidden(h);
-
-      out.push_back(h);
-    }
-
-    in = out;
+    
+    
 
     for(unsigned int i=0;i<layers.size();i++){
       // learns the current layer from input
@@ -346,16 +456,22 @@ namespace whiteice
       return false;
 
     // cluster 0 input values must match input layer dimensions
-    if(data.access(0,0).size() != input.getVisibleNodes()) 
-      return false;
+    if(!binaryInput){
+      if(data.access(0,0).size() != gb_input.getVisibleNodes()) 
+	return false;
+    }
+    else{
+      if(data.access(0,0).size() != bb_input.getVisibleNodes()) 
+	return false;      
+    }
 
     // cluster 0 (input) and cluster 1 (output) have different sizes
     if(data.size(0) != data.size(1))
-      return false; 
+      return false;
 
     // output layer dimensions
     const unsigned int outputDimension = data.access(1,0).size();
-    
+
     // 1. process input data and calculates the deepest hidden values h
     // 2. optimizes hidden values h to map output values:
     //    min ||Ah + b - y||^2 (final linear layer)
@@ -436,7 +552,11 @@ namespace whiteice
     // creates feedforward neural network
 
     std::vector<unsigned int> arch; // architecture
-    arch.push_back(input.getVisibleNodes());
+
+    if(!binaryInput)
+      arch.push_back(gb_input.getVisibleNodes());
+    else
+      arch.push_back(bb_input.getVisibleNodes());
 
     if(layers.size() > 0){
       for(unsigned int i=0;i<layers.size();i++)
@@ -445,7 +565,10 @@ namespace whiteice
       arch.push_back(layers[layers.size()-1].getHiddenNodes());
     }
     else{
-      arch.push_back(input.getHiddenNodes());
+      if(!binaryInput)
+	arch.push_back(gb_input.getHiddenNodes());
+      else
+	arch.push_back(bb_input.getHiddenNodes());
     }
 
     arch.push_back(outputDimension);
@@ -453,8 +576,14 @@ namespace whiteice
     net = new whiteice::nnetwork<T>(arch);
 
     // copies DBN parameters as nnetwork parameters..
-    if(net->setWeights(input.getWeights().transpose(), 0) == false){ delete net; net = nullptr; return false; }
-    if(net->setBias(input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+    if(!binaryInput){
+      if(net->setWeights(gb_input.getWeights().transpose(), 0) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(gb_input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+    }
+    else{
+      if(net->setWeights(bb_input.getWeights(), 0) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(bb_input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+    }
 
     for(unsigned int l=0;l<layers.size();l++){
       if(net->setWeights(layers[l].getWeights(), l+1) == false){ delete net; net = nullptr; return false; }
@@ -464,6 +593,7 @@ namespace whiteice
     if(net->setWeights(A, layers.size()+1) == false){ delete net; net = nullptr; return false; }
     if(net->setBias(b, layers.size()+1) == false){ delete net; net = nullptr; return false; }
 
+    net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
     net->setStochastic(true); // stochastic DBN activation
     
     return true;
@@ -476,69 +606,142 @@ namespace whiteice
   {
     // we invert DBN in the middle so we have DBN><invDBN
 
-    //////////////////////////////////////////////////////////
-    // creates feedforward neural network
-    
-    std::vector<unsigned int> arch; // architecture
-    arch.push_back(input.getVisibleNodes());
-    
-    if(layers.size() > 0){
-      for(unsigned int i=0;i<layers.size();i++)
-	arch.push_back(layers[i].getVisibleNodes());
 
-      arch.push_back(layers[layers.size()-1].getHiddenNodes());
-    }
-    else{
-      arch.push_back(input.getHiddenNodes());
-    }
-
-    // we have arch all the way to hidden layer, now we invert it back
-    if(layers.size() > 0 ){
-      for(int i=layers.size()-1;i>=0;i--)
-	arch.push_back(layers[i].getVisibleNodes());
-    }
-    
-    arch.push_back(input.getVisibleNodes());
-
-    net = new whiteice::nnetwork<T>(arch);
-
-    for(unsigned int l=0;l<net->getLayers();l++){
-      whiteice::math::matrix< T > W;
-      whiteice::math::vertex< T > bias;
-
-      net->getBias(bias, l);
-      net->getWeights(W, l);      
-    }
-
-    try {
-      // copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
-      if(net->setWeights(input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
-
-      if(net->setBias(input.getBValue(), 0) == false) throw "error setting input layer b";
-
-      for(unsigned int l=0;l<layers.size();l++){
-	if(net->setWeights(layers[l].getWeights(), l+1) == false) throw "error setting encoder layer W";
-	if(net->setBias(layers[l].getBValue(), l+1) == false) throw "error setting encoder layer b";
+    if(!binaryInput){
+      //////////////////////////////////////////////////////////
+      // creates feedforward neural network
+      
+      std::vector<unsigned int> arch; // architecture
+      arch.push_back(gb_input.getVisibleNodes());
+      
+      if(layers.size() > 0){
+	for(unsigned int i=0;i<layers.size();i++)
+	  arch.push_back(layers[i].getVisibleNodes());
+	
+	arch.push_back(layers[layers.size()-1].getHiddenNodes());
       }
-
-      // copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
-      int ll = layers.size();
-      for(int l=layers.size()-1;l>=0;l--,ll++){
-	if(net->setWeights(layers[l].getWeights().transpose(), ll+1) == false) throw "error setting decoder layer W^t";
-	if(net->setBias(layers[l].getAValue(), ll+1) == false) throw "error setting decoder layer a";
+      else{
+	arch.push_back(gb_input.getHiddenNodes());
       }
       
-      if(net->setWeights(input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
-      if(net->setBias(input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
+      // we have arch all the way to hidden layer, now we invert it back
+      if(layers.size() > 0 ){
+	for(int i=layers.size()-1;i>=0;i--)
+	  arch.push_back(layers[i].getVisibleNodes());
+      }
+      
+      arch.push_back(gb_input.getVisibleNodes());
+      
+      net = new whiteice::nnetwork<T>(arch);
+      
+      for(unsigned int l=0;l<net->getLayers();l++){
+	whiteice::math::matrix< T > W;
+	whiteice::math::vertex< T > bias;
+	
+	net->getBias(bias, l);
+	net->getWeights(W, l);      
+      }
+      
+      try {
+	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
+	if(net->setWeights(gb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	
+	if(net->setBias(gb_input.getBValue(), 0) == false) throw "error setting input layer b";
+	
+	for(unsigned int l=0;l<layers.size();l++){
+	  if(net->setWeights(layers[l].getWeights(), l+1) == false) throw "error setting encoder layer W";
+	  if(net->setBias(layers[l].getBValue(), l+1) == false) throw "error setting encoder layer b";
+	}
+	
+	// copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
+	int ll = layers.size();
+	for(int l=layers.size()-1;l>=0;l--,ll++){
+	  if(net->setWeights(layers[l].getWeights().transpose(), ll+1) == false) throw "error setting decoder layer W^t";
+	  if(net->setBias(layers[l].getAValue(), ll+1) == false) throw "error setting decoder layer a";
+	}
+	
+	if(net->setWeights(gb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
+	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
+	
+	net->setStochastic(true);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
+      }
+      catch(const char* msg){
+	printf("ERROR: %s\n", msg);
+	return false;
+      }
+      
+      return true;
 
-      net->setStochastic(true);
     }
-    catch(const char* msg){
-      printf("ERROR: %s\n", msg);
-      return false;
-    }
+    else{ // binary input
 
-    return true;
+      //////////////////////////////////////////////////////////
+      // creates feedforward neural network
+      
+      std::vector<unsigned int> arch; // architecture
+      arch.push_back(bb_input.getVisibleNodes());
+      
+      if(layers.size() > 0){
+	for(unsigned int i=0;i<layers.size();i++)
+	  arch.push_back(layers[i].getVisibleNodes());
+	
+	arch.push_back(layers[layers.size()-1].getHiddenNodes());
+      }
+      else{
+	arch.push_back(bb_input.getHiddenNodes());
+      }
+      
+      // we have arch all the way to hidden layer, now we invert it back
+      if(layers.size() > 0 ){
+	for(int i=layers.size()-1;i>=0;i--)
+	  arch.push_back(layers[i].getVisibleNodes());
+      }
+      
+      arch.push_back(bb_input.getVisibleNodes());
+      
+      net = new whiteice::nnetwork<T>(arch);
+      
+      for(unsigned int l=0;l<net->getLayers();l++){
+	whiteice::math::matrix< T > W;
+	whiteice::math::vertex< T > bias;
+	
+	net->getBias(bias, l);
+	net->getWeights(W, l);      
+      }
+      
+      try {
+	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
+	if(net->setWeights(bb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	
+	if(net->setBias(bb_input.getBValue(), 0) == false) throw "error setting input layer b";
+	
+	for(unsigned int l=0;l<layers.size();l++){
+	  if(net->setWeights(layers[l].getWeights(), l+1) == false) throw "error setting encoder layer W";
+	  if(net->setBias(layers[l].getBValue(), l+1) == false) throw "error setting encoder layer b";
+	}
+	
+	// copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
+	int ll = layers.size();
+	for(int l=layers.size()-1;l>=0;l--,ll++){
+	  if(net->setWeights(layers[l].getWeights().transpose(), ll+1) == false) throw "error setting decoder layer W^t";
+	  if(net->setBias(layers[l].getAValue(), ll+1) == false) throw "error setting decoder layer a";
+	}
+	
+	if(net->setWeights(bb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
+	if(net->setBias(bb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
+	
+	net->setStochastic(true);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
+      }
+      catch(const char* msg){
+	printf("ERROR: %s\n", msg);
+	return false;
+      }
+      
+      return true;
+      
+    }
     
   }
 

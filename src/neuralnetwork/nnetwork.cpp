@@ -650,10 +650,12 @@ namespace whiteice
 	if(input >= T(0.0)) output = input;
 	return output;
 #endif
-	// non-linearity motivated by restricted boltzman machines..
-	T output = T(1.0) / (T(1.0) + math::exp(-input));
+	const T af = T(1.7159f);
+	const T bf = T(0.6666f);
+	
+	T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
+	T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
 	return output;
-
       }
       else{
 	return input; // half-the layers nodes are linear!
@@ -761,11 +763,14 @@ namespace whiteice
 	  output = T(1.0);
 	return output;
 #endif
-	// non-linearity motivated by restricted boltzman machines..
-	T output = T(1.0) + math::exp(-input);
-	output = math::exp(-input) / (output*output);
+	const T af = T(1.7159f);
+	const T bf = T(0.6666f);
+	//const T af = T(1.0f);
+	//const T bf = T(1.0f);
+	
+	T fxa = input/af;
+	T output = (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
 	return output;
-
       }
       else{
 	return 1.0; // half-the layers nodes are linear!

@@ -32,6 +32,8 @@ namespace whiteice
       bool clusterize(const std::vector< math::vertex<T> >& data,
 		      std::vector<unsigned int>& cluster);
 
+      unsigned int getCluster(const math::vertex<T>& d) const;
+
       // gets cluster that has most datapoints (for denoising gradient)
       // returns Majority cluster's index (0..K-1)
       int getMajorityCluster(math::vertex<T>& mean, T& percent) const;
@@ -39,6 +41,8 @@ namespace whiteice
       // gets cluster with p% probability (% of datapoints) (for denoising gradient)
       // retruns Probabilistically chosen cluster's index (0..K-1)
       int getProbabilisticCluster(math::vertex<T>& mean, T& percent) const;
+
+      T distance(const math::vertex<T>& a, const math::vertex<T>& b) const;
       
 
     private:

@@ -30,7 +30,7 @@ namespace whiteice
 		this->overfit = overfit;
     }
     
-    
+ 
     template <typename T>
     LBFGS<T>::~LBFGS()
     {
@@ -310,7 +310,8 @@ namespace whiteice
     	T y          = besty;
 	
     	std::list<T> ratios;
-	bool reset = false;
+	unsigned int reset = 0;
+	const unsigned int RESET = 5;
 
     	const unsigned int M = 15; // history size is large (15) should try value 5 and change to if results do not become worse.
 	
@@ -430,13 +431,13 @@ namespace whiteice
     				rk.clear();
 
 #if 1
-    				if(reset == false){
-    					reset = true;
+    				if(reset < RESET){
+				        reset++;
     					iterations++;
 					continue;
     				}
     				else{
-    					// there was reset during the last iteration and
+    					// cannot improve after RESET re-tries
     					// we still cannot improve the result (even after reset)
 				        {
 					  // solution has converged
@@ -449,7 +450,7 @@ namespace whiteice
 #endif
     			}
     			else{
-    				reset = false;
+    				reset = 0;
     			}
 
 	  

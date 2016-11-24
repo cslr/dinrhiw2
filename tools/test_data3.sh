@@ -25,6 +25,8 @@ rm -f commviol-test.ds
 # ./nntool -v  --load --samples 1000 commviol-test.ds 141-20-20-4 commviol-nn.cfg grad
 
 
+# ./nntool -v --samples 1000 commviol-test.ds 141-141-4 commviol-nn.cfg mix
+
 ./nntool -v --samples 1000 commviol-test.ds 141-141-4 commviol-nn.cfg lbfgs
 
 

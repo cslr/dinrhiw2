@@ -310,11 +310,15 @@ int main(int argc, char** argv)
 
     if((lmethod != "use" && lmethod != "minimize") && deep == true){
       printf("Deep pretraining (stacked RBMs) of neural network weights (slow).\n");
+
+      const bool binary = true; // trains full BINARY RBM!!! (FIXME)
       
-      if(deep_pretrain_nnetwork(nn, data, verbose) == false){
+      if(deep_pretrain_nnetwork(nn, data, binary, verbose) == false){
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
 	return -1;
       }
+
+      // nn->setStochastic(false); // do not use stochastic values
     }
     /*
      * default: initializes nnetwork weight values using 
@@ -382,7 +386,77 @@ int main(int argc, char** argv)
     
     
     // learning or activation
-    if(lmethod == "lbfgs"){
+    if(lmethod == "mix"){
+      // mixture of experts
+      Mixture< whiteice::math::blas_real<double> > moe(5, SIMULATION_DEPTH, overfit, negfeedback); 
+            
+
+      time_t t0 = time(0);
+      unsigned int counter = 0;
+      unsigned int iterations = 0;
+      whiteice::math::blas_real<double> error = 1000.0;
+      whiteice::linear_ETA<double> eta;
+
+      if(samples > 0)
+	eta.start(0.0f, (double)samples);
+
+      moe.minimize(*nn, data);
+      
+      while(error > math::blas_real<double>(0.001f) &&
+	    (counter < secs || secs <= 0) && // compute max SECS seconds
+	    (iterations < samples || samples <= 0) && // or max samples
+	    moe.solutionConverged() == false && moe.isRunning() == true && // or until solution converged.. (or exit due error)
+	    !stopsignal)
+      {
+	sleep(1);
+
+	std::vector< whiteice::math::vertex< whiteice::math::blas_real<double> > > weights;
+	std::vector< whiteice::math::blas_real<double> > errors;
+	std::vector< whiteice::math::blas_real<double> > percent;
+	unsigned int changes = 0;
+	
+	moe.getSolution(weights, errors, percent, iterations, changes);
+
+	error = 0.0;
+	double c = 0;
+
+	for(unsigned int i=0;i<errors.size();i++){
+	  if(isinf(errors[i]) == false){
+	    error += errors[i];
+	    c++;
+	  }
+	}
+
+	if(c > 0.0) error /= c;
+	else error = 1000.0;
+	
+	eta.update(iterations);
+	
+	time_t t1 = time(0);
+	counter = (unsigned int)(t1 - t0); // time-elapsed
+	
+	if(secs > 0){
+	  printf("\r                                                            \r");
+	  printf("%d iters: %f [%.1f minutes]",
+		 iterations, 
+		 error.c[0], (secs - counter)/60.0f);
+	}
+	else{
+	  printf("\r                                                            \r");
+	  printf("%d/%d iters: %f [%.1f minutes]",
+		 iterations, samples,  
+		 error.c[0], eta.estimate()/60.0f);
+	  
+	}
+	  
+	fflush(stdout);
+      }
+
+      if(moe.isRunning())
+	moe.stopComputation();
+      
+    }
+    else if(lmethod == "lbfgs"){
       
       if(verbose){
 	if(overfit == false){

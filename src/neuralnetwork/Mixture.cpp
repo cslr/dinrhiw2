@@ -39,8 +39,6 @@ namespace whiteice
   template <typename T>
   Mixture<T>::~Mixture()
   {
-    std::lock_guard<std::mutex> lock(threadMutex);
-    
     thread_running = false;
     if(worker_thread != nullptr)
       worker_thread->join();
@@ -105,7 +103,8 @@ namespace whiteice
   {
     std::lock_guard<std::mutex> lock(solutionMutex);
     
-    if(global_iterations <= 0) return false; // no solution
+    if(global_iterations+running_iterations <= 0)
+      return false; // no solution (yet)
     
     x = solutions;
     y = this->y;
@@ -146,12 +145,12 @@ namespace whiteice
   bool Mixture<T>::stopComputation()
   {
     std::lock_guard<std::mutex> lock(threadMutex);
-
+    
     if(thread_running == false) return false; // nothing to do
     
     thread_running = false;
     if(worker_thread != nullptr)
-      worker_thread->join();
+      worker_thread->join();    
 
     worker_thread = nullptr;
     if(model) delete model;
@@ -297,11 +296,11 @@ namespace whiteice
       std::cout << "MEAN ERROR " << mean_error << std::endl;
       
 
-      if(changes == 0 && !first_time){ // convergence
+      if(changes == 0 && first_time == false){ // convergence
 	std::lock_guard<std::mutex> lock(threadMutex);
 	converged = true;
 	thread_running = false;
-
+	
 	for(unsigned int m=0;m<models.size();m++){
 	  delete models[m];
 	}
@@ -313,7 +312,7 @@ namespace whiteice
       else{
 	latestChanges = changes;
       }
-
+      
       first_time = false;
       
       // 2. optimize each network with non-zero set
@@ -334,6 +333,7 @@ namespace whiteice
 	  if(o->minimize(x0) == false){
 	    for(unsigned int i=0;i<index;i++){
 	      delete optimizers[i];
+	      optimizers[i] = nullptr;
 	    }
 
 	    thread_running = false;
@@ -348,6 +348,7 @@ namespace whiteice
 	bool waiting = true;
 
 	while(waiting){
+	  
 	  // gets current solutions
 	  {
 	    unsigned int sumiterations = 0;
@@ -356,10 +357,15 @@ namespace whiteice
 	    T y;
 	    unsigned int iterations = 0;
 
-	    for(unsigned int i=0;i<optimizers.size();i++)
-	      if(optimizers[i])
-		if(optimizers[i]->getSolution(x, y, iterations) == true)
+	    for(unsigned int i=0;i<optimizers.size();i++){
+	      if(optimizers[i]){
+		if(optimizers[i]->getSolution(x, y, iterations) == true){
 		  sumiterations += iterations;
+		  this->y[i] = y;
+		  std::cout << "OPT " << i << " " << y << " : " << iterations << std::endl;
+		}
+	      }
+	    }
 
 	    std::lock_guard<std::mutex> lock(solutionMutex);
 	    running_iterations = sumiterations;
@@ -385,22 +391,20 @@ namespace whiteice
 	    std::this_thread::sleep_for(duration);
 	  }
 
-	  if(thread_running == false)
-	  {
-	    std::lock_guard<std::mutex> lock1(threadMutex);
-	    
-	    thread_running = false;
-	    
+	  if(thread_running == false){
+
 	    for(unsigned int i=0;i<optimizers.size();i++){
-	      delete optimizers[i];
+	      if(optimizers[i]) delete optimizers[i];
+	      optimizers[i] = nullptr;
 	    }
 
 	    std::lock_guard<std::mutex> lock2(solutionMutex);
 	    running_iterations = 0;
+	    
+	    break;
 	  }
 	  
-	}
-	
+	}	
       }
 
       // 4. copy model parameters to our solution
@@ -425,16 +429,12 @@ namespace whiteice
 		
 		thread_running = false;
 		
-		if(thread_running == false){
-		  
-		  thread_running = false;
-		  
-		  for(unsigned int i=0;i<optimizers.size();i++){
-		    delete optimizers[i];
-		  }
-		  
-		  break;
+		for(unsigned int i=0;i<optimizers.size();i++){
+		  delete optimizers[i];
+		  optimizers[i] = nullptr;
 		}
+
+		break;
 	      }
 	    
 	    }
