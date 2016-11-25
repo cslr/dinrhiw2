@@ -62,6 +62,7 @@ namespace whiteice
     // returns input and output dimensions of neural network
     unsigned int input_size() const throw();
     unsigned int output_size() const throw();
+    unsigned int gradient_size() const throw();
 
     void getArchitecture(std::vector<unsigned int>& arch) const;
     

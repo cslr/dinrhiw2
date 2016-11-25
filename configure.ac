@@ -137,6 +137,17 @@ else
 fi
 
 
+AC_ARG_ENABLE([openmp],
+	AS_HELP_STRING([--disable-openmp],[Disable OpenMP]))
+
+AS_IF([test "x$enable_openmp" != "xno"],[
+  conf_flags="$conf_flags -fopenmp"
+],[
+  conf_flags="$conf_flags -Wno-unknown-pragmas"
+])
+
+
+
 AC_MSG_CHECKING([CPUID identification])
 CPUINFO_FILE="cpuinfo"
 `rm -rf cputest cpuinfo &> /dev/null`
@@ -325,14 +336,6 @@ AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search p
 
 optimization_flags="$optimization_flags -mtune=native"
 
-AC_ARG_ENABLE([openmp],
-	AS_HELP_STRING([--disable-openmp],[Disable OpenMP]))
-
-AS_IF([test "x$enable_openmp" != "xno"],[
-  optimization_flags="$optimization_flags -fopenmp"
-],[
-  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
-])
 
 AC_ARG_ENABLE([native],
 	AS_HELP_STRING([--enable-native],[Enable native optimization]))
@@ -346,6 +349,13 @@ AC_ARG_ENABLE([cppdebug],
 
 AS_IF([test "x$enable_cppdebug" = "xyes"],[
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+])
+
+AC_ARG_ENABLE([profiling],
+	AS_HELP_STRING([--enable-profiling],[Enable code profiling (speed) mode (-pg)]))
+
+AS_IF([test "x$enable_profiling" = "xyes"],[
+  optimization_flags="$optimization_flags -pg"
 ])
 
 

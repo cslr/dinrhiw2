@@ -686,10 +686,11 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_optimize
-with_atlaslpath
 enable_openmp
+with_atlaslpath
 enable_native
 enable_cppdebug
+enable_profiling
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1328,6 +1329,7 @@ Optional Features:
   --disable-openmp        Disable OpenMP
   --enable-native         Enable native optimization
   --enable-cppdebug       Enable C++ debugging mode (stdc++)
+  --enable-profiling      Enable code profiling (speed) mode (-pg)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4036,6 +4038,24 @@ else
 fi
 
 
+# Check whether --enable-openmp was given.
+if test "${enable_openmp+set}" = set; then :
+  enableval=$enable_openmp;
+fi
+
+
+if test "x$enable_openmp" != "xno"; then :
+
+  conf_flags="$conf_flags -fopenmp"
+
+else
+
+  conf_flags="$conf_flags -Wno-unknown-pragmas"
+
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking CPUID identification" >&5
 $as_echo_n "checking CPUID identification... " >&6; }
 CPUINFO_FILE="cpuinfo"
@@ -4248,21 +4268,6 @@ fi
 
 optimization_flags="$optimization_flags -mtune=native"
 
-# Check whether --enable-openmp was given.
-if test "${enable_openmp+set}" = set; then :
-  enableval=$enable_openmp;
-fi
-
-
-if test "x$enable_openmp" != "xno"; then :
-
-  optimization_flags="$optimization_flags -fopenmp"
-
-else
-
-  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
-
-fi
 
 # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
@@ -4285,6 +4290,18 @@ fi
 if test "x$enable_cppdebug" = "xyes"; then :
 
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+
+fi
+
+# Check whether --enable-profiling was given.
+if test "${enable_profiling+set}" = set; then :
+  enableval=$enable_profiling;
+fi
+
+
+if test "x$enable_profiling" = "xyes"; then :
+
+  optimization_flags="$optimization_flags -pg"
 
 fi
 

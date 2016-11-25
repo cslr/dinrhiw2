@@ -171,6 +171,12 @@ namespace whiteice
     else return 0;
   }
 
+  template <typename T>
+  unsigned int nnetwork<T>::gradient_size() const throw()
+  {
+    return size; // number of parameters in neural network
+  }
+
 
   template <typename T>
   void nnetwork<T>::getArchitecture(std::vector<unsigned int>& nn_arch) const
@@ -466,7 +472,7 @@ namespace whiteice
     }
     
     grad.resize(size);
-    unsigned gindex = grad.size();
+    unsigned int gindex = grad.size(); // was "unsigned gindex" ..
     
     
     while(counter > 1){

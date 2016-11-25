@@ -1072,20 +1072,33 @@ int main(int argc, char** argv)
 	    math::vertex< whiteice::math::blas_real<double> > sumgrad;
 	    math::blas_real<double> ninv = 1.0f/SAMPLE_SIZE;
 
-	    for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-	      const unsigned index = rand() % dtrain.size(0);
-	      
-	      nn->input() = dtrain.access(0, index);
-	      nn->calculate(true);
-	      err = dtrain.access(1, index) - nn->output();
+	    sumgrad.resize(nn->gradient_size());
+	    sumgrad.zero();
 
-	      if(nn->gradient(err, grad) == false)
-		std::cout << "gradient failed." << std::endl;
+//#pragma omp parallel shared(sumgrad)
+	    {
+	      nnetwork< math::blas_real<double> > net(*nn);
+	      math::vertex< whiteice::math::blas_real<double> > sgrad(sumgrad.size());
+	      sgrad.zero();
 
-	      if(i == 0)
-		sumgrad = ninv*grad;
-	      else
-		sumgrad += ninv*grad;
+//#pragma omp for nowait schedule(dynamic)
+	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
+		const unsigned index = rand() % dtrain.size(0);
+		
+		net.input() = dtrain.access(0, index);
+		net.calculate(true);
+		err = dtrain.access(1, index) - net.output();
+		
+		if(net.gradient(err, grad) == false)
+		  std::cout << "gradient failed." << std::endl;
+		
+		sgrad += ninv*grad;
+	      }
+
+//#pragma omp critical
+	      {
+		sumgrad += sgrad;
+	      }
 	    }
 	    
 	    
@@ -1095,12 +1108,14 @@ int main(int argc, char** argv)
 	    }
 
 	    // adds regularizer to gradient descent
+#if 0
 	    {
 	      whiteice::math::blas_real<double>
 		regularizer = 1.0;
 	      
 	      sumgrad += regularizer*weights;
 	    }
+#endif
 	    
 	    lrate = 0.15;
 	    math::vertex< whiteice::math::blas_real<double> > w;
@@ -1126,18 +1141,31 @@ int main(int argc, char** argv)
 	      }
 	      
 	      error = 0.0;
+
 	      
 	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-		const unsigned int index = rand() % dtest.size(0);
+#pragma omp parallel shared(error)
+	      {
+		math::blas_real<double> e = 0.0;
 		
-		nn->input() = dtest.access(0, index);
-		nn->calculate(false);
-		err = dtest.access(1, index) - nn->output();
-		
-		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / math::blas_real<double>((double)err.size());
+#pragma omp for nowait schedule(dynamic)		
+		for(unsigned int i=0;i<SAMPLE_SIZE;i++){
+		  const unsigned int index = rand() % dtest.size(0);
+		  auto input = dtest.access(0, index);
+		  auto output = dtest.access(1, index);
+		  
+		  nn->calculate(input, output); // thread-safe
+		  err = dtest.access(1, index) - output;
+		  
+		  e += (err*err)[0] / math::blas_real<double>((double)err.size());
+		}
+
+#pragma omp critical
+		{
+		  error += e;
+		}
 	      }
+	      
 	      
 	      error /= SAMPLE_SIZE;
 	      error *= math::blas_real<double>(0.5f); // missing scaling constant
