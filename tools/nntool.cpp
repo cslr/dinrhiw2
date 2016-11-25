@@ -367,6 +367,28 @@ int main(int argc, char** argv)
 	return -1;
       }
 
+      std::vector<unsigned int> loadedArch;
+      nnParams.getArchitecture(loadedArch);
+
+      if(arch.size() != loadedArch.size()){
+	std::cout << "ERROR: Mismatch between loaded network architecture and parameter architecture." << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	nn = NULL;
+	return -1;
+      }
+
+      for(unsigned int i=0;i<arch.size();i++){
+	if(arch[i] != loadedArch[i]){
+	  std::cout << "ERROR: Mismatch between loaded network architecture and parameter architecture." << std::endl;
+	  if(nn) delete nn;
+	  if(bnn) delete bnn;
+	  nn = NULL;
+	  return -1;
+	}
+      }
+      
+
       *nn = nnParams;
 
       // just pick one randomly if there are multiple ones
@@ -383,7 +405,8 @@ int main(int argc, char** argv)
       
     }
     
-    
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
     // learning or activation
     if(lmethod == "mix"){
       // mixture of experts
@@ -455,6 +478,7 @@ int main(int argc, char** argv)
 	moe.stopComputation();
       
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "lbfgs"){
       
       if(verbose){
@@ -571,6 +595,7 @@ int main(int argc, char** argv)
       }
       
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "parallelbfgs"){
 
       if(SIMULATION_DEPTH > 1){
@@ -684,6 +709,7 @@ int main(int argc, char** argv)
       
       
     }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "parallellbfgs"){
 
       if(SIMULATION_DEPTH > 1){
@@ -800,7 +826,8 @@ int main(int argc, char** argv)
 	
       }
       
-    }    
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "random"){
 
       if(SIMULATION_DEPTH > 1){
@@ -877,6 +904,7 @@ int main(int argc, char** argv)
       
 
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "parallelgrad"){
       
       if(SIMULATION_DEPTH > 1){
@@ -936,6 +964,7 @@ int main(int argc, char** argv)
 
       
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "grad"){
       
       if(SIMULATION_DEPTH > 1){
@@ -1060,8 +1089,18 @@ int main(int argc, char** argv)
 	    }
 	    
 	    
-	    if(nn->exportdata(weights) == false)
-	      std::cout << "export failed." << std::endl;
+	    if(nn->exportdata(weights) == false){
+	      std::cout << "FATAL: export failed." << std::endl;
+	      exit(-1);
+	    }
+
+	    // adds regularizer to gradient descent
+	    {
+	      whiteice::math::blas_real<double>
+		regularizer = 1.0;
+	      
+	      sumgrad += regularizer*weights;
+	    }
 	    
 	    lrate = 0.15;
 	    math::vertex< whiteice::math::blas_real<double> > w;
@@ -1107,34 +1146,14 @@ int main(int argc, char** argv)
 	    }
 	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
-	    
-	    
-
-	    
-#if 0
-	    {
-	      error = 0.0f;
-	      
-	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-		const unsigned int index = rand() % dtest.size();
-		
-		nn->input() = dtest.access(0, index);
-		nn->calculate(false);
-		err = dtest.access(1, index) - nn->output();
-		
-		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / math::blas_real<double>((double)err.size());
-	      }
-	      
-	      error /= SAMPLE_SIZE;
-	      error *= math::blas_real<double>(0.5f); // missing scaling constant
-	    }
-#endif
-	    
+	    	    
 	    if(error < minimum_error){
 	      best_weights = w;
 	      minimum_error = error;
+	    }
+	    else if((rand() & 0x7F) == 0x7F){ // every 128th iteration reset back to known best solution
+	      w = best_weights;
+	      error = minimum_error;
 	    }
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
@@ -1166,6 +1185,7 @@ int main(int argc, char** argv)
       bnn->importNetwork(*nn);
       
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "bayes"){
       
       if(SIMULATION_DEPTH > 1){
@@ -1293,8 +1313,19 @@ int main(int argc, char** argv)
       delete nn;
       nn = NULL;
 
-      bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
-      assert(hmc.getNetwork(*bnn) == true);
+      // saves samples to bayesian network data structure
+      // (keeps only 50% latest samples) so we ignore initial tail
+      // to high probability distribution
+      {
+	bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
+	
+	unsigned int savedSamples = 1;
+	if(hmc.getNumberOfSamples() > 1){
+	  savedSamples = hmc.getNumberOfSamples()/2;
+	}
+	
+	assert(hmc.getNetwork(*bnn, savedSamples) == true);
+      }
 
       // instead of using mean weight vector
       // we now use y = E[network(x,w)] in bayesian inference
@@ -1305,6 +1336,7 @@ int main(int argc, char** argv)
       //       {w_i} converge to p(w|data)).
       
     }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "minimize"){
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");
@@ -1549,8 +1581,9 @@ int main(int argc, char** argv)
 	if(data.size(0) > 0)
 	  eta.start(0.0f, (double)data.size(0));
 
+	unsigned int counter = 0; // number of points calculated..
 
-	for(unsigned int i=0;i<data.size(0);i++){
+	for(unsigned int i=0;i<data.size(0) && !stopsignal;i++){
 	  math::vertex< whiteice::math::blas_real<double> > out1;
 	  math::matrix< whiteice::math::blas_real<double> > cov;
 
@@ -1583,12 +1616,16 @@ int main(int argc, char** argv)
 	  printf("\r                                                            \r");
 	  printf("%d/%d (%.1f%%) [ETA: %.1f minutes]", i, data.size(0), percent, etamin);
 	  fflush(stdout);
+
+	  counter++;
 	}
 
 	printf("\n"); fflush(stdout);
-	
-	error1 /= math::blas_real<double>((double)data.size(0));
-	error2 /= math::blas_real<double>((double)data.size(0));
+
+	if(counter > 0){
+	  error1 /= math::blas_real<double>((double)counter);
+	  error2 /= math::blas_real<double>((double)counter);
+	}
 	
 	std::cout << "Average error in dataset (E[f(x|w)]): " << error1 << std::endl;
 	std::cout << "Average error in dataset (f(x|E[w])): " << error2 << std::endl;
@@ -1609,7 +1646,7 @@ int main(int argc, char** argv)
 	  if(data.size(0) > 0)
 	    eta.start(0.0f, (double)data.size(0));
 	
-	  for(unsigned int i=0;i<data.size(0);i++){
+	  for(unsigned int i=0;i<data.size(0) && !stopsignal;i++){
 	    math::vertex< whiteice::math::blas_real<double> > out;
 	    math::vertex< whiteice::math::blas_real<double> > var;
 	    math::matrix< whiteice::math::blas_real<double> > cov;
@@ -1630,8 +1667,7 @@ int main(int argc, char** argv)
 	  }
 
 	  printf("\n");
-	  fflush(stdout);
-	  
+	  fflush(stdout);	  
 	}
 	else if(data.getNumberOfClusters() == 3 && data.size(0) > 0){
 	  
@@ -1642,7 +1678,7 @@ int main(int argc, char** argv)
 	  data.setName(1, "output");
 	  data.setName(2, "output_stddev");
 	  
-	  for(unsigned int i=0;i<data.size(0);i++){
+	  for(unsigned int i=0;i<data.size(0) && !stopsignal;i++){
 	    math::vertex< whiteice::math::blas_real<double> > out;
 	    math::vertex< whiteice::math::blas_real<double> > var;
 	    math::matrix< whiteice::math::blas_real<double> > cov;
@@ -1657,7 +1693,14 @@ int main(int argc, char** argv)
 	      var[j] = math::sqrt(cov(j,j)); // st.dev.
 	    
 	    data.add(2, var, true);
-	  }	  
+	  }
+	}
+
+	if(stopsignal){
+	  if(bnn) delete bnn;
+	  if(nn)  delete nn;
+	  
+	  exit(-1);
 	}
 	
 	if(data.save(datafn) == true)

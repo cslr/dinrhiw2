@@ -21,6 +21,7 @@ namespace whiteice
 		this->alpha = alpha;
 		this->temperature = T(1.0);
 		this->store = store;
+		this->sigma2 = T(1.0);
 
 		sum_N = 0;
 		sum_mean.zero();
@@ -295,6 +296,17 @@ namespace whiteice
         template <typename T>
 	bool HMC<T>::sample_covariance_matrix(const math::vertex<T>& q)
 	{
+	  // DISABLED
+
+	  sigma2 = T(0.01); // assume 0.1 st.dev. modelling
+	                    // noise/variance in data (value is kept constant)
+	                    // I do not know how to otherwise altering sigma2 and
+	                    // getting right sampling results.
+
+	  return true;
+
+
+	  
 	  const unsigned int DIM = nnet.output_size();
 	  
 	  math::matrix<T> S(DIM, DIM);
@@ -575,15 +587,28 @@ namespace whiteice
   
   
 	template <typename T>
-	bool HMC<T>::getNetwork(bayesian_nnetwork<T>& bnn)
+	bool HMC<T>::getNetwork(bayesian_nnetwork<T>& bnn, unsigned int latestN)
 	{
 		std::lock_guard<std::mutex> lock(solution_lock);
 
 		if(samples.size() <= 0)
-			return false;
+		        return false;
 
-		if(bnn.importSamples(nnet, samples) == false)
+		if(latestN == 0) latestN = samples.size();
+
+		if(latestN == samples.size()){
+		  if(bnn.importSamples(nnet, samples) == false)
 			return false;
+		}
+		else{
+		  std::vector< math::vertex<T> > temp;
+
+		  for(unsigned int i=samples.size()-latestN;i<samples.size();i++)
+		    temp.push_back(samples[i]);
+
+		  if(bnn.importSamples(nnet, temp) == false)
+		    return false;
+		}
 
 		return true;
 	}
@@ -640,14 +665,25 @@ namespace whiteice
     template <typename T>
     T HMC<T>::getMeanError(unsigned int latestN) const
 	{
-    	std::lock_guard<std::mutex> lock(solution_lock);
-    
-    	if(!latestN) latestN = samples.size();
-    	if(latestN > samples.size()) latestN = samples.size();
+	  std::vector< math::vertex<T> > sample;
+
+	  // copies selected nnetwork configurations
+	  // from global variable (synchronized) to local memory;
+	  {
+	    std::lock_guard<std::mutex> lock(solution_lock);
+	    
+	    if(!latestN) latestN = samples.size();
+	    if(latestN > samples.size()) latestN = samples.size();
+	    
+	    for(unsigned int i=samples.size()-latestN;i<samples.size();i++){
+	      sample.push_back(samples[i]);
+	    }
+	  }
+	  
 
     	T sumErr = T(0.0f);
 
-    	for(unsigned int i=samples.size()-latestN;i<samples.size();i++)
+    	for(unsigned int i=0;i<sample.size();i++)
 	{
 	  T E = T(0.0f);
 	  
@@ -655,7 +691,7 @@ namespace whiteice
 #pragma omp parallel shared(E)
 	  {
 	    whiteice::nnetwork<T> nnet(this->nnet);
-	    nnet.importdata(samples[i]);
+	    nnet.importdata(sample[i]);
 	    
 	    math::vertex<T> err;
 	    T e = T(0.0f);
@@ -678,10 +714,10 @@ namespace whiteice
 	  
 	  sumErr += E;
 	}
-	
 
-	if(latestN > 0){
-	  sumErr /= T((float)latestN);
+	
+	if(sample.size() > 0){
+	  sumErr /= T((float)sample.size());
 	  sumErr /= T((float)data.size(0));
 	}
 

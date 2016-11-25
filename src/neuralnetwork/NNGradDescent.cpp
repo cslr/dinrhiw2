@@ -280,8 +280,10 @@ namespace whiteice
 	    if(nn.exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 
+#if 0
 	    // ADDS STRONG REGULARIZER TERM TO GRADIENT!
 	    sumgrad += regularizer*weights;
+#endif
 
 	    if(prev_sumgrad.size() <= 1){
 	      weights -= lrate * sumgrad;
@@ -317,6 +319,18 @@ namespace whiteice
 	    
 	    delta_error = (prev_error - error);
 	    ratio = delta_error / error;
+
+	    std::cout << "DELTA = " << delta_error << std::endl;
+#if 0
+	    if(delta_error < T(0.0)){ // if error grows we reduce learning rate
+	      lrate *= T(0.90);
+	      std::cout << "NEW LRATE= " << lrate << std::endl;
+	    }
+	    else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
+	      lrate *= T(1.0/0.90);
+	      std::cout << "NEW LRATE= " << lrate << std::endl;
+	    }
+#endif
 
 	    
 	    // cancellation point

@@ -59,7 +59,8 @@ namespace whiteice
 		unsigned int getSamples(std::vector< math::vertex<T> >& samples) const;
 		unsigned int getNumberOfSamples() const;
 
-		bool getNetwork(bayesian_nnetwork<T>& bnn);
+	        // get latestN samples from HMC sampler or all (0)
+	        bool getNetwork(bayesian_nnetwork<T>& bnn, unsigned int latestN = 0);
 
 		math::vertex<T> getMean() const;
 		// math::matrix<T> getCovariance() const; // DO NOT SCALE TO HIGH DIMENSIONS
@@ -96,7 +97,7 @@ namespace whiteice
 	
 	        T sigma2;
 	
-		std::vector< math::vertex<T> > samples;
+	        std::vector< math::vertex<T> > samples;
 
 		T alpha; // prior distribution parameter for neural networks (gaussian prior)
 		T temperature; // temperature parameter for the probability function

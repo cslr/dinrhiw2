@@ -6,9 +6,7 @@ dynamic_array.o: dynamic_array.cpp dynamic_array.h array.h container.h \
 primality_test.o: primality_test.cpp primality_test.h primality_test.cpp
 binary_tree.o: binary_tree.cpp binary_tree.h tree.h container.h \
  btree_node.h binary_tree.cpp
-dataset.o: dataset.cpp math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
- /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
+dataset.o: dataset.cpp math/dinrhiw_blas.h math/blas_primitives.h \
  math/ownexception.h math/vertex.h math/dinrhiw_blas.h math/number.h \
  compressable.h MemoryCompressor.h compressable.h \
  neuralnetwork/backpropagation.h neuralnetwork/nn_iterative_correction.h \
@@ -30,24 +28,21 @@ MemoryCompressor.o: MemoryCompressor.cpp MemoryCompressor.h \
 timed_boolean.o: timed_boolean.cpp timed_boolean.h augmented_data.h \
  ../config.h
 vertex.o: math/vertex.cpp math/vertex.h math/dinrhiw_blas.h \
- /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
- math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
- compressable.h neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
- neuralnetwork/nn_iterative_correction.h math/vertex.h \
- neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
- neuralnetwork/neuronlayer.h math/matrix.h math/linear_algebra.h \
- math/matrix.h math/correlation.h dynamic_bitset.h math/integer.h \
- math/blade_math.h math/integer.h math/gvertex.h math/gmatrix.h \
- math/gmatrix.cpp neuralnetwork/function.h math/real.h math/quaternion.h \
- math/gvertex.cpp math/matrix_rotations.h neuralnetwork/neuronlayer.h \
- math/norms.h neuralnetwork/activation_function.h \
- neuralnetwork/function.h math/gcd.h math/gcd.cpp
+ math/blas_primitives.h math/ownexception.h math/number.h compressable.h \
+ MemoryCompressor.h compressable.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ math/vertex.h neuralnetwork/neuralnetwork.h \
+ neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
+ math/matrix.h math/linear_algebra.h math/matrix.h math/correlation.h \
+ dynamic_bitset.h math/integer.h math/blade_math.h math/integer.h \
+ math/gvertex.h math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h \
+ math/real.h math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
+ neuralnetwork/neuronlayer.h math/norms.h \
+ neuralnetwork/activation_function.h neuralnetwork/function.h math/gcd.h \
+ math/gcd.cpp
 matrix.o: math/matrix.cpp math/matrix.h math/dinrhiw_blas.h \
- /usr/include/openblas/cblas.h /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
- math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
- compressable.h math/linear_algebra.h math/vertex.h \
+ math/blas_primitives.h math/ownexception.h math/number.h compressable.h \
+ MemoryCompressor.h compressable.h math/linear_algebra.h math/vertex.h \
  neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
  neuralnetwork/nn_iterative_correction.h math/vertex.h \
  neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
@@ -68,18 +63,15 @@ test.o: tst/test.cpp point.h printable.h point.cpp point.h static_array.h \
  augmented_data.h rbtree.h tree.h rbnode.h rbtree.h rbnode.cpp rbtree.cpp \
  binary_tree.h btree_node.h binary_tree.cpp binary_tree.h avltree.h \
  avlnode.h avltree.h avlnode.cpp avltree.cpp dataset.h math/vertex.h \
- math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
- /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
- compressable.h MemoryCompressor.h compressable.h \
- neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
- neuralnetwork/nn_iterative_correction.h neuralnetwork/neuralnetwork.h \
- neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
- math/matrix.h math/linear_algebra.h math/matrix.h math/vertex.h \
- math/correlation.h math/blade_math.h math/integer.h math/gvertex.h \
- math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
- math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
- neuralnetwork/neuronlayer.h math/norms.h \
+ math/dinrhiw_blas.h math/blas_primitives.h compressable.h \
+ MemoryCompressor.h compressable.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
+ neuralnetwork/neuronlayer.h math/matrix.h math/linear_algebra.h \
+ math/matrix.h math/vertex.h math/correlation.h math/blade_math.h \
+ math/integer.h math/gvertex.h math/gmatrix.h math/gmatrix.cpp \
+ neuralnetwork/function.h math/real.h math/quaternion.h math/gvertex.cpp \
+ math/matrix_rotations.h neuralnetwork/neuronlayer.h math/norms.h \
  neuralnetwork/activation_function.h neuralnetwork/function.h math/ica.h \
  unique_id.h conffile.h list_source.h data_source.h list_source.cpp \
  list_source.h
@@ -97,22 +89,19 @@ modtest.o: tst/modtest.cpp singleton.h singleton_list.h singleton.cpp \
  singleton.h function_access_control.h exceptions/ownexception.h \
  unique_id.h function_access_control.cpp function_access_control.h
 dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
- math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
- /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
- math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
- compressable.h math/linear_algebra.h math/vertex.h \
- neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
- neuralnetwork/nn_iterative_correction.h math/vertex.h \
- neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
- neuralnetwork/neuronlayer.h math/matrix.h \
- neuralnetwork/activation_function.h neuralnetwork/function.h \
- neuralnetwork/neuronlayer.h math/correlation.h dynamic_bitset.h \
- math/integer.h math/blade_math.h math/integer.h math/gvertex.h \
- math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
- math/quaternion.h math/gvertex.cpp math/matrix_rotations.h math/norms.h \
- neuralnetwork/DBN.h neuralnetwork/GBRBM.h math/RNG.h math/RNG.cpp \
- math/RNG.h neuralnetwork/BBRBM.h dataset.h math/ica.h \
+ math/dinrhiw_blas.h math/blas_primitives.h math/ownexception.h \
+ math/number.h compressable.h MemoryCompressor.h compressable.h \
+ math/linear_algebra.h math/vertex.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ math/vertex.h neuralnetwork/neuralnetwork.h \
+ neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
+ math/matrix.h neuralnetwork/activation_function.h \
+ neuralnetwork/function.h neuralnetwork/neuronlayer.h math/correlation.h \
+ dynamic_bitset.h math/integer.h math/blade_math.h math/integer.h \
+ math/gvertex.h math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h \
+ math/real.h math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
+ math/norms.h neuralnetwork/DBN.h neuralnetwork/GBRBM.h math/RNG.h \
+ math/RNG.cpp math/RNG.h neuralnetwork/BBRBM.h dataset.h math/ica.h \
  neuralnetwork/nnetwork.h conffile.h neuralnetwork/BBRBM.h \
  neuralnetwork/GBRBM.h neuralnetwork/stackedRBM_pretraining.h \
  neuralnetwork/DBN.h math/BFGS.h neuralnetwork/optimized_function.h \
@@ -178,18 +167,15 @@ test.o: tst/test.cpp point.h printable.h point.cpp point.h static_array.h \
  augmented_data.h rbtree.h tree.h rbnode.h rbtree.h rbnode.cpp rbtree.cpp \
  binary_tree.h btree_node.h binary_tree.cpp binary_tree.h avltree.h \
  avlnode.h avltree.h avlnode.cpp avltree.cpp dataset.h math/vertex.h \
- math/dinrhiw_blas.h /usr/include/openblas/cblas.h \
- /usr/include/openblas/openblas_config.h \
- /usr/include/openblas/openblas_config.h math/blas_primitives.h \
- compressable.h MemoryCompressor.h compressable.h \
- neuralnetwork/backpropagation.h math/dinrhiw_blas.h \
- neuralnetwork/nn_iterative_correction.h neuralnetwork/neuralnetwork.h \
- neuralnetwork/backpropagation.h neuralnetwork/neuronlayer.h \
- math/matrix.h math/linear_algebra.h math/matrix.h math/vertex.h \
- math/correlation.h math/blade_math.h math/integer.h math/gvertex.h \
- math/gmatrix.h math/gmatrix.cpp neuralnetwork/function.h math/real.h \
- math/quaternion.h math/gvertex.cpp math/matrix_rotations.h \
- neuralnetwork/neuronlayer.h math/norms.h \
+ math/dinrhiw_blas.h math/blas_primitives.h compressable.h \
+ MemoryCompressor.h compressable.h neuralnetwork/backpropagation.h \
+ math/dinrhiw_blas.h neuralnetwork/nn_iterative_correction.h \
+ neuralnetwork/neuralnetwork.h neuralnetwork/backpropagation.h \
+ neuralnetwork/neuronlayer.h math/matrix.h math/linear_algebra.h \
+ math/matrix.h math/vertex.h math/correlation.h math/blade_math.h \
+ math/integer.h math/gvertex.h math/gmatrix.h math/gmatrix.cpp \
+ neuralnetwork/function.h math/real.h math/quaternion.h math/gvertex.cpp \
+ math/matrix_rotations.h neuralnetwork/neuronlayer.h math/norms.h \
  neuralnetwork/activation_function.h neuralnetwork/function.h math/ica.h \
  unique_id.h conffile.h list_source.h data_source.h list_source.cpp \
  list_source.h
