@@ -1406,7 +1406,7 @@ namespace whiteice
     std::vector<T> temp;
     temp.resize(maxwidth);
     
-#if 0
+#if 1
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
       memcpy(temp.data(), b, yd*sizeof(T));
       

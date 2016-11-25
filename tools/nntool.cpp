@@ -357,16 +357,17 @@ int main(int argc, char** argv)
       }
 
       std::vector< math::vertex< whiteice::math::blas_real<double> > > weights;
-      std::vector< unsigned int > arch;
-      nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+      nnetwork< whiteice::math::blas_real<double> > nnParams;
 
-      if(bnn->exportSamples(arch, weights, nl) == false){
+      if(bnn->exportSamples(nnParams, weights) == false){
 	std::cout << "ERROR: Loading neural network failed." << std::endl;
 	if(nn) delete nn;
 	if(bnn) delete bnn;
 	nn = NULL;
 	return -1;
       }
+
+      *nn = nnParams;
 
       // just pick one randomly if there are multiple ones
       unsigned int index = 0;
@@ -379,8 +380,6 @@ int main(int argc, char** argv)
 	if(bnn) delete bnn;
 	return -1;
       }
-
-      nn->setNonlinearity(nl);
       
     }
     
@@ -1228,6 +1227,9 @@ int main(int argc, char** argv)
 
       // std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
 
+      // need for speed: (we downsample
+      
+
       whiteice::HMC< whiteice::math::blas_real<double> > hmc(*nn, data, adaptive);
       // whiteice::UHMC< whiteice::math::blas_real<double> > hmc(*nn, data, adaptive);
       
@@ -1332,11 +1334,18 @@ int main(int argc, char** argv)
       
       // loads nnetwork weights from BNN
       {
-	std::vector<unsigned int> arch;
 	std::vector< math::vertex< math::blas_real<double> > > weights;
-	nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+	nnetwork< whiteice::math::blas_real<double> > nnParam;
 	
-	if(bnn->exportSamples(arch, weights, nl) == false){
+	if(bnn->exportSamples(nnParam, weights) == false){
+	  std::cout << "Loading neural network failed." << std::endl;
+	  delete nn;
+	  delete bnn;
+	  nn = NULL;
+	  return -1;
+	}
+
+	if(weights.size() == 0){
 	  std::cout << "Loading neural network failed." << std::endl;
 	  delete nn;
 	  delete bnn;
@@ -1345,8 +1354,9 @@ int main(int argc, char** argv)
 	}
 	
 	delete nn;
-	nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
-	nn->setNonlinearity(nl);
+	nn = new nnetwork< whiteice::math::blas_real<double> >(nnParam);
+
+	*nn = nnParam;
 	nn->importdata(weights[(rand() % weights.size())]);;
       }
       
@@ -1484,10 +1494,8 @@ int main(int argc, char** argv)
 	
 	whiteice::nnetwork< whiteice::math::blas_real<double> > single_nn(*nn);
 	std::vector< math::vertex< whiteice::math::blas_real<double> > > weights;
-	std::vector< unsigned int> arch;
-	nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
 	
-	bnn->exportSamples(arch, weights, nl);
+	bnn->exportSamples(single_nn, weights);
 	math::vertex< whiteice::math::blas_real<double> > w = weights[0];
 	w.zero();
 
@@ -1535,10 +1543,6 @@ int main(int argc, char** argv)
 	  exit(-1);
 	}
 	
-
-	
-	
-	single_nn.setNonlinearity(nl);
 
 	whiteice::linear_ETA<double> eta;
 	

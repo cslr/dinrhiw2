@@ -52,9 +52,8 @@ namespace whiteice
    * imports and exports samples of p(w) to and from nnetwork
    */
   template <typename T>
-  bool bayesian_nnetwork<T>::importSamples(const std::vector<unsigned int>& arch,
-					   const std::vector< math::vertex<T> >& weights,
-					   const typename nnetwork<T>::nonLinearity nl)
+  bool bayesian_nnetwork<T>::importSamples(const whiteice::nnetwork<T>& nn,
+					   const std::vector< math::vertex<T> >& weights)
   {
     if(weights.size() <= 0) return false;
     
@@ -62,8 +61,7 @@ namespace whiteice
     nnnets.resize(weights.size());
     
     for(unsigned int i=0;i<nnnets.size();i++){
-      nnnets[i] = new nnetwork<T>(arch);
-      nnnets[i]->setNonlinearity(nl);
+      nnnets[i] = new nnetwork<T>(nn);
       if(nnnets[i]->importdata(weights[i]) == false){
 	for(unsigned int j=0;j<=i;j++){
 	  delete nnnets[i];
@@ -96,31 +94,23 @@ namespace whiteice
     std::vector< math::vertex<T> > weight;
     weight.resize(1);
 
-    std::vector<unsigned int> arch;
-
-    net.getArchitecture(arch);
     if(net.exportdata(weight[0]) == false)
       return false;
-
-    typename nnetwork<T>::nonLinearity nl = 
-      net.getNonlinearity();
-
-    return importSamples(arch, weight, nl);
+    
+    return importSamples(net, weight);
   }
   
 
   template <typename T>
-  bool bayesian_nnetwork<T>::exportSamples(std::vector<unsigned int>& arch,
+  bool bayesian_nnetwork<T>::exportSamples(whiteice::nnetwork<T>& nn, 
 					   std::vector< math::vertex<T> >& weights,
-					   typename nnetwork<T>::nonLinearity& nl,
 					   int latestN)
   {
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
 
-    nnets[0]->getArchitecture(arch);
-    nl = nnets[0]->getNonlinearity();
+    nn = (*nnets[0]);
 
     weights.resize(latestN);
 

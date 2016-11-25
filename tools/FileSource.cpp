@@ -22,7 +22,7 @@ FileSource<B>::FileSource(const std::string& filename)
   file = (FILE*)fopen(filename.c_str(), "rb");
   
   buffer = new unsigned char[(size()*B)/8];  // size also calculates filesize
-  memset(buffer, size()*B/8, 0);
+  memset(buffer, 0, size()*B/8);
   
   if(fread(buffer, sizeof(char), filesize, file) != filesize)
     throw std::runtime_error("file i/o error");

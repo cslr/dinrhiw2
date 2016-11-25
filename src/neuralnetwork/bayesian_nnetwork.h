@@ -26,14 +26,12 @@ namespace whiteice
      */
     unsigned int getNumberOfSamples() const throw(); // number of samples in BNN
 
-    bool importSamples(const std::vector<unsigned int>& arch,
-		       const std::vector< math::vertex<T> >& weights,
-		       const typename nnetwork<T>::nonLinearity nl);
+    bool importSamples(const whiteice::nnetwork<T>& nn,
+		       const std::vector< math::vertex<T> >& weights);
     bool importNetwork(const nnetwork<T>& net);
 
-    bool exportSamples(std::vector<unsigned int>& arch,
+    bool exportSamples(whiteice::nnetwork<T>& nn, 
 		       std::vector< math::vertex<T> >& weights,
-		       typename nnetwork<T>::nonLinearity& nl,
 		       int latestN = 0);
 
     bool setNonlinearity(typename nnetwork<T>::nonLinearity nl);

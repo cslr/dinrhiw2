@@ -4133,7 +4133,7 @@ void bayesian_nnetwork_test()
       }
     }
     
-    if(bnn.importSamples(arch, weights, nl) == false){
+    if(bnn.importSamples(*nn, weights) == false){
       std::cout << "ERROR: BNN importSamples() failed" << std::endl;
       return;
     }
@@ -4154,10 +4154,15 @@ void bayesian_nnetwork_test()
     std::vector< math::vertex<> > loaded_weights;
     nnetwork<>::nonLinearity loaded_nl;
 
-    if(bnn2.exportSamples(loaded_arch, loaded_weights, loaded_nl) == false){
+    whiteice::nnetwork<> loaded_nn;
+
+    if(bnn2.exportSamples(loaded_nn, loaded_weights) == false){
       std::cout << "ERROR: BNN exportSamples() failed" << std::endl;
       return;
     }
+
+    loaded_nn.getArchitecture(loaded_arch);
+    loaded_nl = loaded_nn.getNonlinearity();
 
     if(loaded_arch.size() != arch.size()){
       std::cout << "ERROR: BNN save/load arch size mismatch"

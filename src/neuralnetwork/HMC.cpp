@@ -190,7 +190,7 @@ namespace whiteice
 		
 		sum += T(0.5)*alpha*q;
 		
-		sum.normalize();
+		// sum.normalize();
 
 		return (sum);
 	}
@@ -213,7 +213,7 @@ namespace whiteice
 	  
 	  while(iters < MAXITERS) // continues until convergence
 	  { 
-	    unsigned int index0 = zratio.size();
+	    const unsigned int index0 = zratio.size();
 	    
 	    zratio.resize(index0 + BLOCKSIZE); // increases zratio size
 	    
@@ -582,13 +582,7 @@ namespace whiteice
 		if(samples.size() <= 0)
 			return false;
 
-		std::vector<unsigned int> arch;
-		nnet.getArchitecture(arch);
-
-		typename nnetwork<T>::nonLinearity nl =
-		  nnet.getNonlinearity();
-
-		if(bnn.importSamples(arch, samples, nl) == false)
+		if(bnn.importSamples(nnet, samples) == false)
 			return false;
 
 		return true;
@@ -715,7 +709,7 @@ namespace whiteice
   
     template <typename T>
     void HMC<T>::sampler_loop()
-	{
+    {
     	// q = location, p = momentum, H(q,p) = hamiltonian
     	math::vertex<T> p; // q is global and defined in HMC class
 
@@ -729,7 +723,7 @@ namespace whiteice
     	p.zero();
 
     	T epsilon = T(1.0f);
-    	const unsigned int L = 10; // HMC-10 has been used
+    	const unsigned int L = 3; // HMC-10 has been used
 	
 #if 1
 	{
@@ -773,6 +767,7 @@ namespace whiteice
 		math::vertex<T> old_q = q;
     		math::vertex<T> current_p = p;
 
+#if 0
 		
 		// tries three different epsilons and picks the one that gives smallest error (just use U() terms)
 		// TODO: should compare probabilities instead..
@@ -815,6 +810,7 @@ namespace whiteice
 		  }
 		  
 		}
+#endif
 		
 		// after selecting the best epsilon, we do the actual sampling
 		
@@ -939,7 +935,7 @@ namespace whiteice
     		}
     	}
 
-	}
+    }
   
   
 };
