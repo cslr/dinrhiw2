@@ -4,10 +4,16 @@
 
 extern "C" {
 
-#include <cblas.h>
-
 #ifdef OPENBLAS
+  
+#include <cblas.h>
 #include "openblas_config.h"
+  
+#endif
+
+#ifdef INTELMKL
+#include "mkl.h"
+#include "mkl_blas.h"
 #endif
 
 }

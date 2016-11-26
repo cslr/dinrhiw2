@@ -142,8 +142,10 @@ AC_ARG_ENABLE([openmp],
 
 AS_IF([test "x$enable_openmp" != "xno"],[
   conf_flags="$conf_flags -fopenmp"
+  optimization_flags="$optimization_flags -fopenmp"
 ],[
   conf_flags="$conf_flags -Wno-unknown-pragmas"
+  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
 ])
 
 
@@ -301,6 +303,27 @@ else
 fi
 
 
+MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
+
+AC_MSG_CHECKING([for Intel MKL library])
+`g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
+
+
+if [[ $? -eq 0 ]]; then
+   INTELMKL="yes"
+   BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+   BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+   AC_MSG_RESULT([yes, installed in $MKLROOT])
+else
+   AC_MSG_RESULT([no Intel MKL detected])
+   INTELMKL="no"
+fi
+
+
+if [[ $INTELMKL == "no" -a $OPENBLAS == "no" ]]; then
+  AC_MSG_ERROR([NO BLAS DETECTED])
+fi
+
 dnl AC_MSG_CHECKING([for NVIDIA CUDA cuBLAS library])
 dnl `gcc -o cublastest blastest.c -lcublas`
 dnl 
@@ -351,12 +374,14 @@ AS_IF([test "x$enable_cppdebug" = "xyes"],[
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
 ])
 
-AC_ARG_ENABLE([profiling],
-	AS_HELP_STRING([--enable-profiling],[Enable code profiling (speed) mode (-pg)]))
-
-AS_IF([test "x$enable_profiling" = "xyes"],[
-  optimization_flags="$optimization_flags -pg"
-])
+dnl 
+dnl AC_ARG_ENABLE([profiling],
+dnl	AS_HELP_STRING([--enable-profiling],[Enable code profiling (speed) mode (-pg)]))
+dnl 
+dnl AS_IF([test "x$enable_profiling" = "xyes"],[
+dnl   optimization_flags="$optimization_flags -pg"
+dnl ])
+dnl 
 
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"

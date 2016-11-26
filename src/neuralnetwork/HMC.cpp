@@ -296,6 +296,7 @@ namespace whiteice
         template <typename T>
 	bool HMC<T>::sample_covariance_matrix(const math::vertex<T>& q)
 	{
+#if 1
 	  // DISABLED
 
 	  sigma2 = T(0.01); // assume 0.1 st.dev. modelling
@@ -304,7 +305,7 @@ namespace whiteice
 	                    // getting right sampling results.
 
 	  return true;
-
+#endif
 
 	  
 	  const unsigned int DIM = nnet.output_size();
@@ -943,19 +944,19 @@ namespace whiteice
     			{
     				accept_rate /= accept_rate_samples;
 
-				std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
+				// std::cout << "ACCEPT RATE: " << accept_rate << std::endl;
 				// changed from 65-85% to 50%
 
     				if(accept_rate < T(0.50f)){
     					epsilon = T(0.8)*epsilon;
-					std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
+					// std::cout << "NEW SMALLER EPSILON: " << epsilon << std::endl;
     				}
     				else if(accept_rate > T(0.50f)){
 				        // important, sampler can diverge so we FORCE epsilon to be small (<MAX_EPSILON)
 				        auto new_epsilon = T(1.0/0.8)*epsilon;
 					if(new_epsilon < MAX_EPSILON)
 					  epsilon = new_epsilon;
-					std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
+					// std::cout << "NEW LARGER  EPSILON: " << epsilon << std::endl;
     				}
 
     				accept_rate = T(0.0f);

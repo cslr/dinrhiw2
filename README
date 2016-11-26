@@ -1,34 +1,32 @@
 WHAT DINRHIW2 IS?
 -----------------
 
-Primary aim of the dinrhiw is to be linear algebra library and machine learning 
-library. Dinrhiw implements PCA and neural network codes.
-Currently, the feedforward neural network code supports:
+Dinrhiw is a linear algebra library and machine learning  library.
+Dinrhiw implements PCA and neural network codes. Currently,
+the feedforward neural network code supports:
 
 * second order L-BFGS optimization and gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
-* parallel computing (OpenMP)
-
-* experimental branch (RBM_test):
-  - working implementation of GB-RBM based on 2nd order LBFGS optimization (class GBRBM)
+* parallel computing (via OpenMP)
+* experimental branch (RBM_test): GB-RBM and BB-RBM 2nd order
+  LBFGS optimizer and HMC sampler => greedy deep belief net optimizer
   
-  - work-in-progress/todo:
-    * full BBRBM implementation and testing (class BBRBM)
-    * DBN implementation (GBRBM input layer + BBRBM hidden layers),
-      greedy optimizer (layerwise optimization) and transformation code to nnetwork
-      (feedforward neural network) which can be trained in a supervised manner
-
-
 
 BUILDING IT
 -----------
 
-You need GNU GCC (www.gcc.org). The code compiles both on Windows and Linux (requiring *nix environment).
-It is recommended to try to compile and use the library initially on Linux.
+You need GNU GCC (www.gcc.org). The code compiles both on Linux and
+Windows (requiring *nix environment). It is recommended to try
+to compile and use the library initially on Linux.
 
-RBM code is not yet directly usable using tools. (look at neuralnetwork/tst/test.cpp for details).
+Library requirements:
 
-To build and install library execute
+* OpenBLAS (cblas.h interface),
+* GMP (arbitrary precision mathematics) [not really needed]
+* ZLib (memory compression) [not really needed]
+
+
+To build and install library execute: 
 
 
 ./build.sh
@@ -38,12 +36,11 @@ make install
 commands at the top level.
 
 
-For the working examples how to use dinrhiw look at the tools directory
+For the working examples how to use dinrhiw look at the *tools* directory
 below the root dictory.
 
-Building it (you need to install bison parser) creates three programs:
+Building it (you need to install bison parser) creates programs:
 
-aescipher - shows how to use AES encryption module.
 dstool and nntool - dataset management and neural network weight learning.
 
 So the keyfiles to read for the (neural network) documentation are
@@ -52,7 +49,7 @@ tools/nntool.cpp
 src/dataset.h
 src/neuralnetwork/nnetwork.h
 
-Expecially the latter one shows how to use nnetwork<> class properly to 
+Expecially the first one shows how to use nnetwork<> class properly to 
 learn from the data. Note that it only accepts aprox. [-1,1] valued data
 as a default so proper preprocessing of the data using dataset class can
 be very important in order to keep data within the correct range 
@@ -62,32 +59,21 @@ be very important in order to keep data within the correct range
 IMPORTANT: There is also (alternative) neural network implementation
            in neuralnetwork.h and related files that DO NOT work.
 
-	   However, I plan to make it work and write conversion code
-	   to change representation of the network between
-	   neuralnetwork <-> nnetwork classes so that you can
-	   convert low level (but fast) implementation of nnetwork
-	   into higher level representation of the network that
-	   is often more easy to understand.
-
-	   This is maybe needed when you want to write special
-	   bayesian priors for different neural network layers and
-	   convert multilayer restricted boltzman machine (RBM) to
-	   initial neural network weights.
-	   
-
 Additionally, there are 
 
 tools/test_data.sh
 tools/test_data2.sh
 tools/test_data3.sh
-tools/test_data3_bayes.sh    (SLOW but here bayesian method gives
-			      BETTER (bad) result than
-			      gradient descent algorithms)
+tools/test_data3_bayes.sh
+
 
 scripts that shows how the learning and data prediction from example data 
-works in practice using dstool and nntool commands (only bayes and feedforward training).
+works in practice using dstool and nntool commands
+(only bayes and feedforward training).
 
-Use of RBM neural networks requires direct use the library (C++ interface classes).
+Use of RBM neural networks requires direct use the library
+(C++ interface classes).
+
 
 ADDITIONAL NOTES
 ----------------
@@ -97,16 +83,10 @@ that DO NOT belong to this library. They will be removed slowly
 before 1.0 release. (cleanup the code)
 
 
-
 PLAN
 ----
 
-Stage 1 ("done")
-
-L-BFGS code for feedforward network + bayesian neural network with sampling
-parallel BLAS implementation.
-
-Stage 2 (in development)
+In development:
 
 Stacked RBMs (GB-RBM + BB-RBMs) and implementation of DBN networks,
 which can be transformed to nnetwork and further trained using output examples.
@@ -116,7 +96,12 @@ Finally add support of parallel DBN pretraining + nnetwork optimization to tools
 Release version 1.0
 
 
-Stage 3 (possible ideas after 1.0)
+(possible ideas after 1.0)
 
-Recurrent neural networks (with memory or turing neural networks) and
-reinforcement learning. (something similar to Google DeepMind projects).
+FOCUS: generalization capabilities of neural networks. Neural network
+optimization works rather well but currently dinrhiw does a poor job
+when the solutions should extrapolate or interpolate to outside.
+
+
+Recurrent neural networks (with memory) and reinforcement learning.
+

@@ -690,7 +690,6 @@ enable_openmp
 with_atlaslpath
 enable_native
 enable_cppdebug
-enable_profiling
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1329,7 +1328,6 @@ Optional Features:
   --disable-openmp        Disable OpenMP
   --enable-native         Enable native optimization
   --enable-cppdebug       Enable C++ debugging mode (stdc++)
-  --enable-profiling      Enable code profiling (speed) mode (-pg)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -4047,10 +4045,12 @@ fi
 if test "x$enable_openmp" != "xno"; then :
 
   conf_flags="$conf_flags -fopenmp"
+  optimization_flags="$optimization_flags -fopenmp"
 
 else
 
   conf_flags="$conf_flags -Wno-unknown-pragmas"
+  optimization_flags="$optimization_flags -Wno-unknown-pragmas"
 
 fi
 
@@ -4239,6 +4239,30 @@ $as_echo "no OpenBLAS detected" >&6; }
 fi
 
 
+MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Intel MKL library" >&5
+$as_echo_n "checking for Intel MKL library... " >&6; }
+`g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
+
+
+if [ $? -eq 0 ]; then
+   INTELMKL="yes"
+   BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+   BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, installed in $MKLROOT" >&5
+$as_echo "yes, installed in $MKLROOT" >&6; }
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no Intel MKL detected" >&5
+$as_echo "no Intel MKL detected" >&6; }
+   INTELMKL="no"
+fi
+
+
+if [ $INTELMKL == "no" -a $OPENBLAS == "no" ]; then
+  as_fn_error $? "NO BLAS DETECTED" "$LINENO" 5
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ZLIB library and headers" >&5
@@ -4293,17 +4317,6 @@ if test "x$enable_cppdebug" = "xyes"; then :
 
 fi
 
-# Check whether --enable-profiling was given.
-if test "${enable_profiling+set}" = set; then :
-  enableval=$enable_profiling;
-fi
-
-
-if test "x$enable_profiling" = "xyes"; then :
-
-  optimization_flags="$optimization_flags -pg"
-
-fi
 
 
 EXTRA_INCLUDEPATHS="$EXTRA_INCLUDEPATHS $BLAS_CFLAGS $EXTRA_DEFINES"

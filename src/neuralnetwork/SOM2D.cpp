@@ -16,11 +16,19 @@
 #include <math.h>
 
 #include "SOM2D.h"
-#include "cblas.h"
+
 #include "vertex.h"
 #include "data_source.h"
 #include "linear_ETA.h"
 #include "conffile.h"
+
+#ifdef OPENBLAS
+#include "cblas.h"
+#endif
+
+#ifdef INTELMKL
+#include "mkl_blas.h"
+#endif
 
 //#include "dlib.h"
 
