@@ -687,20 +687,20 @@ void BBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b,
 		       math::matrix<T>& W) const
 {
   for(unsigned int i=0;i<a.size();i++){
-    if(isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
+    if(whiteice::math::isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
     if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
     if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
   }
 
   for(unsigned int i=0;i<b.size();i++){
-    if(isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
+    if(whiteice::math::isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
     if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
     if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
   }
 
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
-      if(isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
+      if(whiteice::math::isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
       if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
       if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
     }

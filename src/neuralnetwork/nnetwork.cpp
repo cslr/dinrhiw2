@@ -1213,7 +1213,7 @@ namespace whiteice
 
     // "safebox" (keeps data always within sane levels)
     for(unsigned int i=0;i<data.size();i++){
-      if(isnan(data[i])) data[i] = T(0.0);
+      if(whiteice::math::isnan(data[i])) data[i] = T(0.0);
       if(data[i] < T(-10000.0)) data[i] = T(-10000.0);
       else if(data[i] > T(10000.0)) data[i] = T(10000.0);
     }

@@ -1267,27 +1267,27 @@ template <typename T>
 void GBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& z, math::matrix<T>& W) const
 {
   for(unsigned int i=0;i<a.size();i++){
-    if(isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
+    if(whiteice::math::isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
     if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
     if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
   }
 
   for(unsigned int i=0;i<b.size();i++){
-    if(isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
+    if(whiteice::math::isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
     if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
     if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
   }
 
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
-      if(isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
+      if(whiteice::math::isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
       if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
       if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
     }
   }
 
   for(unsigned int i=0;i<z.size();i++){
-    if(isnan(z[i])) z[i] = T(0.0); //printf("znan"); }
+    if(whiteice::math::isnan(z[i])) z[i] = T(0.0); //printf("znan"); }
     if(z[i] < T(-100.0)) z[i] = T(-100.0); //printf("zclip"); }
     if(z[i] > T(+100.0)) z[i] = T(+100.0); //printf("zclip"); }
   }
@@ -1985,7 +1985,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 
 	    for(auto& s : r){
 	      // we filter out infinities and NaNs (bad samples)
-	      if(!isinf(s) && !isnan(s)){ // should we keep infinities??
+	      if(!whiteice::math::isinf(s) && !whiteice::math::isnan(s)){ // should we keep infinities??
 		mr += s;
 		vr += s*s;
 		rsize++;
@@ -2007,7 +2007,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 
 	    auto mr2 = mr*mr;
 
-	    if(isinf(mr) || isinf(mr2))
+	    if(whiteice::math::isinf(mr) || whiteice::math::isinf(mr2))
 	      return mr; // we just stop if mr or mr2 becomes infinity 
 	                 // because then we cannot analyze sample
 	                 // variance of mean anymore

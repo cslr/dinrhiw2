@@ -238,7 +238,7 @@ namespace whiteice
 
 	sum_output.zero();
 	
-	if(!isinf(y[index])){	  
+	if(!whiteice::math::isinf(y[index])){	  
 	  sum_output += output;
 	  nn++;
 	}
@@ -251,7 +251,7 @@ namespace whiteice
 	  input = data.access(0, i);
 	  models[n]->calculate(input, output);
 
-	  if(!isinf(y[n])){
+	  if(!whiteice::math::isinf(y[n])){
 	    sum_output += output;
 	    nn++;
 	  }

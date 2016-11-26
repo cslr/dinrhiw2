@@ -1336,7 +1336,7 @@ namespace whiteice
 	  break; // no progress
 	}
 	
-	if(isnan(v) || isinf(v))
+	if(whiteice::math::isnan(v) || whiteice::math::isinf(v))
 	  break; // bad data
       
 	line.resize(index+1);

@@ -869,7 +869,7 @@ namespace whiteice
 		T r = rng.uniform();
 		T p_accept = exp(current_U-proposed_U-logZratio+current_K-proposed_K);
 
-    		if(r < p_accept && !isnan(p_accept))
+    		if(r < p_accept && !whiteice::math::isnan(p_accept))
     		{
     			// accept (q)
     			// printf("ACCEPT\n");
