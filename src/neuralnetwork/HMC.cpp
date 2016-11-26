@@ -143,7 +143,7 @@ namespace whiteice
 			}
 		}
 		
-		
+#if 0		
 		// negative gradient
 #pragma omp parallel shared(sum)
 		{
@@ -183,6 +183,7 @@ namespace whiteice
 				sum += sumgrad;
 			}
 		}
+#endif
 		
 		sum /= sigma2;
 
@@ -856,7 +857,12 @@ namespace whiteice
     		T current_U  = U(old_q);
     		T proposed_U = U(q);
 
+		
+		T logZratio  = T(0.0);
+#if 0
 		T logZratio  = math::log(zratio(q, old_q));
+#endif
+		
 
     		T current_K  = T(0.0f);
     		T proposed_K = T(0.0f);

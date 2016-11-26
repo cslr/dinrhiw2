@@ -1170,24 +1170,25 @@ int main(int argc, char** argv)
 	      error /= SAMPLE_SIZE;
 	      error *= math::blas_real<double>(0.5f); // missing scaling constant
 	      
-	      delta_error = (prev_error - error); // if the error is negative we try again	      
+	      delta_error = (prev_error - error); // if the error is negative (error increases) we try again
 	    }
 	    while(delta_error < 0.0f && lrate > 10e-20);
 	    
-	    	    
+
+	    prev_sumgrad = lrate * sumgrad;
+	    
 	    if(error < minimum_error){
 	      best_weights = w;
 	      minimum_error = error;
 	    }
-	    else if((rand() & 0x7F) == 0x7F){ // every 128th iteration reset back to known best solution
+	    else if((rand() & 0xFF) == 0xFF){ // on averare every 128th iteration reset back to known best solution
 	      w = best_weights;
 	      error = minimum_error;
+	      prev_sumgrad.zero();
 	    }
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
-	    ratios.push_back(ratio);
-	    
-	    prev_sumgrad = lrate * sumgrad;
+	    ratios.push_back(ratio);	    
 
 	    printf("\r                                                            \r");
 	    printf("%d/%d iterations: %f (%f) [%.1f minutes]",
@@ -1198,6 +1199,8 @@ int main(int argc, char** argv)
 	    counter++;
 	    eta.update((double)counter);
 	  }
+
+
 	  
 	  if(best_weights.size() > 1)
 	    nn->importdata(best_weights);
@@ -1273,7 +1276,7 @@ int main(int argc, char** argv)
       if(ptlayers <= 10) ptlayers = 10;
       else if(ptlayers > 100) ptlayers = 100;
 
-      // std::cout << "Parallel Tempering deepness: " << ptlayers << std::endl;
+      // std::cout << "Parallel Tempering depth: " << ptlayers << std::endl;
 
       // need for speed: (we downsample
       
