@@ -37,7 +37,8 @@ EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math
 	../math/matrix_rotations.o ../math/eig.o ../math/correlation.o ../math/blade_math.o \
 	../math/real.o 	../dataset.o ../conffile.o ../MemoryCompressor.o ../linear_ETA.o \
 	../dynamic_bitset.o ../math/ica.o ../math/BFGS.o ../math/LBFGS.o ../math/linear_algebra.o \
-	../math/correlation.o ../math/ica.o ../math/linear_equations.o ../math/norms.o ../math/RNG.o
+	../math/correlation.o ../math/ica.o ../math/linear_equations.o ../math/norms.o ../math/RNG.o \
+	../math/outerproduct.o
 
 
 TARGET1_OBJECTS= tst/test.o 

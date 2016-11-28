@@ -171,6 +171,41 @@ namespace whiteice
     return (*this);
   }
 
+  template <typename T>
+  void nnetwork<T>::printInfo() const
+  {
+    // prints nnetwork information (mostly for debugging purposes)
+
+    printf("NETWORK LAYOUT (%d): \n", getLayers());
+
+    for(unsigned int l=0;l<getLayers();l++){
+      bool frozen = this->getFrozen(l);
+      unsigned int nl = (unsigned int)this->getNonlinearity(l);
+      unsigned int inputsize = this->getInputs(l);
+      unsigned int width = this->getNeurons(l);
+
+      if(frozen)
+	printf("%d->%d (F%d) ", inputsize, width, nl);
+      else
+	printf("%d->%d( %d) ", inputsize, width, nl);
+    }
+
+    printf("\n");
+    fflush(stdout);
+
+    printf("LAST LAYER WEIGHTS:\n");
+
+    math::matrix<T> W;
+    math::vertex<T> b;
+
+    this->getBias(b, getLayers()-1);
+    this->getWeights(W, getLayers()-1);
+
+    std::cout << "W = " << W << std::endl;
+    std::cout << "b = " << b << std::endl;
+    
+  }
+
   
   ////////////////////////////////////////////////////////////
 
@@ -200,6 +235,65 @@ namespace whiteice
   void nnetwork<T>::getArchitecture(std::vector<unsigned int>& nn_arch) const
   {
     nn_arch = this->arch;
+  }
+
+  // invalidates all data and essentially creates a new network over previous one
+  template <typename T>
+  bool nnetwork<T>::setArchitecture(const std::vector<unsigned int>& nnarch,
+				    const typename nnetwork<T>::nonLinearity nl)
+  {
+    if(nnarch.size() <= 1) return false;
+
+    for(unsigned int i=0;i<nnarch.size();i++)
+      if(nnarch[i] <= 0) return false;
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // resets nnetwork<T> parameters
+    
+    maxwidth = 0;
+    
+    for(unsigned int i=0;i<nnarch.size();i++){
+      if(nnarch[i] > maxwidth)
+	maxwidth = nnarch[i];
+    }
+
+    // sets up architecture
+    arch = nnarch;
+
+    nonlinearity.resize(arch.size()-1);
+    for(unsigned int i=0;i<nonlinearity.size();i++)
+      nonlinearity[i] = nl;
+    
+    nonlinearity[nonlinearity.size()-1] = pureLinear; // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
+    
+    unsigned int memuse = 0;
+    
+    for(unsigned int i=0;i<arch.size();i++){
+      if(i > 0) 
+	memuse += (arch[i-1] + 1)*arch[i];
+    }
+    
+    size = memuse;
+    
+    data.resize(size);
+    
+    state.resize(maxwidth);
+    temp.resize(maxwidth);
+    lgrad.resize(maxwidth);
+     
+    inputValues.resize(arch[0]);
+    outputValues.resize(arch[arch.size()-1]);
+    
+    // there are arch.size()-1 layers in our network
+    // which are all optimized as the default
+    frozen.resize(arch.size()-1);
+    for(unsigned int i=0;i<frozen.size();i++)
+      frozen[i] = false;
+
+    
+    hasValidBPData = false;
+
+    return true;
   }
 
 
@@ -1330,6 +1424,14 @@ namespace whiteice
   {
     if(layer+1 >= arch.size()) return 0;
     return arch[layer+1];
+  }
+
+  // number of neurons per layer
+  template <typename T>
+  unsigned int nnetwork<T>::getInputs(unsigned int layer) const throw()
+  {
+    if(layer >= arch.size()-1) return 0;
+    return arch[layer];
   }
 
   template <typename T>

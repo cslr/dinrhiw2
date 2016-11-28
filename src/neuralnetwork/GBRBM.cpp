@@ -307,7 +307,15 @@ bool GBRBM<T>::reconstructDataHidden(unsigned int iters)
 	return true;
 }
 
+// generates visible values from hidden state
+template <typename T>
+bool GBRBM<T>::reconstructDataHidden2Visible()
+{
+  v = gbrbm_hidden2visible(h, W, a, b, z);
+  return true;
+}
 
+  
 // sample from p(h|v)
 template <typename T>
 bool GBRBM<T>::sampleHidden(math::vertex<T>& h, const math::vertex<T>& v)
@@ -2488,8 +2496,11 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_data(const math::vertex<T>& v,
 
 template <typename T>
 math::vertex<T> GBRBM<T>::reconstruct_gbrbm_hidden(const math::vertex<T>& v,
-		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
-		unsigned int CDk)
+						   const math::matrix<T>& W,
+						   const math::vertex<T>& a,
+						   const math::vertex<T>& b,
+						   const math::vertex<T>& z,
+						   unsigned int CDk)
 {
 	auto x = v;
 
@@ -2530,10 +2541,46 @@ math::vertex<T> GBRBM<T>::reconstruct_gbrbm_hidden(const math::vertex<T>& v,
 }
 
 
+// this one starts FROM h and calculates h->v and returns visible value v
 template <typename T>
-T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& samples, unsigned int N,
-		const math::matrix<T>& W_, const math::vertex<T>& a_, const math::vertex<T>& b_, const math::vertex<T>& z_,
-		unsigned int CDk)
+math::vertex<T> GBRBM<T>::gbrbm_hidden2visible(const math::vertex<T>& h,
+					       const math::matrix<T>& W,
+					       const math::vertex<T>& a,
+					       const math::vertex<T>& b,
+					       const math::vertex<T>& z)
+{
+  // math::vertex<T> d;
+  math::vertex<T> dd;
+  //d.resize(z.size());
+  dd.resize(z.size());
+
+  math::vertex<T> x(z.size());
+  
+  for(unsigned int i=0;i<z.size();i++){
+    //d[i]  = math::exp(-z[i]/T(2.0));
+    dd[i] = math::sqrt(math::exp(z[i]));
+  }
+  
+  {
+    auto mean = W*h;
+    
+    for(unsigned int i=0;i<mean.size();i++){
+      x[i] = dd[i]*normalrnd() + dd[i]*mean[i] + a[i];
+    }
+  }
+  
+  return x;
+} 
+  
+
+template <typename T>
+T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& samples,
+					 unsigned int N,
+					 const math::matrix<T>& W_,
+					 const math::vertex<T>& a_,
+					 const math::vertex<T>& b_,
+					 const math::vertex<T>& z_,
+					 unsigned int CDk)
 {
 	T error = T(0.0);
 

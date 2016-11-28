@@ -157,9 +157,9 @@ namespace whiteice
     
     while(iters > 0){
       if(!binaryInput)
-	gb_input.reconstructData(1);
+	gb_input.reconstructDataHidden(1); //GBRBM: from visible to hidden
       else
-	bb_input.reconstructData(1);
+	bb_input.reconstructData(1);  // BBRBM: v->h
 
       for(unsigned int i=0;i<layers.size();i++){
 	math::vertex<T> h;
@@ -203,10 +203,18 @@ namespace whiteice
 	}
       }
 
-      if(!binaryInput)
-	gb_input.reconstructDataHidden(1);
-      else
+      if(!binaryInput){
+	gb_input.reconstructDataHidden2Visible();
+	/*
+	  math::vertex<T> h,v;
+	  gb_input.getHidden(h);
+	  gb_input.sampleVisible(v, h);
+	  gb_input.setVisible(v);
+	*/
+      }
+      else{
 	bb_input.reconstructDataHidden(1);
+      }
       
       
       iters--;
@@ -250,7 +258,7 @@ namespace whiteice
     if(errorLevel < T(0.0)) return false;
 
     // increase after the whole learning process works..
-    const unsigned int ITERLIMIT = 100;
+    const unsigned int ITERLIMIT = 25; // FIXME BACK TO 25!!!
     const unsigned int EPOCH_STEPS = 2;
     
     std::vector< math::vertex<T> > in = samples;
@@ -295,8 +303,8 @@ namespace whiteice
 	  
 	  v = sqrt(v);
 
-	  if(v/m <= 0.001)
-	    break; // stdev is less than 0.1% of mean
+	  if(v/m <= 0.05)
+	    break; // stdev is less than 5% of mean
 	    
 	}
       }
@@ -354,8 +362,8 @@ namespace whiteice
 	  
 	  v = sqrt(v);
 
-	  if((v/m) <= T(0.001))
-	    break; // stdev is less than 0.1% of mean
+	  if((v/m) <= T(0.05))
+	    break; // stdev is less than 5% of mean
 	}
       }
 
@@ -417,8 +425,8 @@ namespace whiteice
 	  
 	  v = sqrt(v);
 
-	  if(v/m <= 0.001) 
-	    break; // stdev is less than 0.1% of mean
+	  if(v/m <= 0.05) 
+	    break; // stdev is less than 5% of mean
 	}
       }
       
@@ -471,20 +479,32 @@ namespace whiteice
       return false;
 
     // output layer dimensions
-    const unsigned int outputDimension = data.access(1,0).size();
+    const unsigned int outputDimension = data.dimension(1);
 
     // 1. process input data and calculates the deepest hidden values h
     // 2. optimizes hidden values h to map output values:
     //    min ||Ah + b - y||^2 (final linear layer)
-    // 3. creates lreg_nnetwork<T> and sets parameters (weights)
+    // 3. creates nnetwork<T> and sets parameters (weights)
     //    appropriately
 
     // calculates hidden values
     std::vector< math::vertex<T> > hidden;
+
+#if 0
+    std::cout << "size(data) = " << data.size(0) << std::endl;
+    std::cout << "x(0) = " << data.access(0,0) << std::endl;
+
+    if(binaryInput == false)
+      std::cout << "W = " << gb_input.getWeights() << std::endl;
+    else
+      std::cout << "W = " << bb_input.getWeights() << std::endl;
+#endif
     
     for(unsigned int i=0;i<data.size(0);i++){
       this->setVisible(data.access(0,i));
+
       this->reconstructData(1);
+      
       hidden.push_back(this->getHidden());
     }
 
@@ -511,6 +531,12 @@ namespace whiteice
     mh.zero();
     my.zero();
 
+#if 0
+    std::cout << "size(hidden) = " << hidden.size() << std::endl;
+    std::cout << "h(0) = " << hidden[0] << std::endl;
+    std::cout << "y(0) = " << data.access(1, 0) << std::endl;
+#endif
+
     for(unsigned int i=0;i<hidden.size();i++){
       const auto& h = hidden[i];
       const auto& y = data.access(1, i);
@@ -524,6 +550,11 @@ namespace whiteice
 
     Shh -= mh.outerproduct(mh);
     Syh -= my.outerproduct(mh);
+
+#if 0
+    std::cout << "Shh = " << Shh << std::endl;
+    std::cout << "Syh = " << Syh << std::endl;
+#endif
 
     // calculate inverse of Shh + regularizes it by adding terms
     // to diagonal if inverse fails
@@ -574,7 +605,7 @@ namespace whiteice
 
     arch.push_back(outputDimension);
 
-    net = new whiteice::nnetwork<T>(arch);
+    net->setArchitecture(arch); // we create new net with given architecture (resets all variables)
 
     // copies DBN parameters as nnetwork parameters..
     if(!binaryInput){
@@ -594,6 +625,12 @@ namespace whiteice
     if(net->setWeights(A, layers.size()+1) == false){ delete net; net = nullptr; return false; }
     if(net->setBias(b, layers.size()+1) == false){ delete net; net = nullptr; return false; }
 
+#if 0
+    std::cout << "DEBUG (last layer A and b)" << std::endl;
+    std::cout << "A = " << A << std::endl;
+    std::cout << "b = " << b << std::endl;
+#endif
+
     net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
     
     // sets all other layers to frozen (stochastic RBM output) except the final linear output layer!
@@ -608,6 +645,7 @@ namespace whiteice
       frozen[frozen.size()-1] = false;
       
       net->setFrozen(frozen);
+      net->setNonlinearity(frozen.size()-1, whiteice::nnetwork<T>::pureLinear); // last layer is always linear
     }
     
     

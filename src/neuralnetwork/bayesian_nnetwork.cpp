@@ -39,7 +39,17 @@ namespace whiteice
 
     nnets.clear();
   }
+  
 
+  template <typename T>
+  void bayesian_nnetwork<T>::printInfo() const // mostly for debugging.. prints NN information/data.
+  {
+    printf("BNN contains %d samples\n", (int)nnets.size());
+    
+    if(nnets.size() > 0)
+      nnets[0]->printInfo();
+  }
+  
 
   // number of samples in BNN
   template <typename T>
@@ -452,25 +462,6 @@ namespace whiteice
 	math::vertex<T> w;
 	
 	w = configuration.accessName(FNN_WEIGHTS_CFGSTR, index);
-	
-#if 0
-	char buffer[80];
-	
-	sprintf(buffer, FNN_WEIGHTS_CFGSTR, index);
-	
-	if(!configuration.get(buffer, floats)){
-	  for(unsigned int j=0;j<=index;j++)
-	    delete nets[j];
-	  return false;
-	}
-
-	w.resize(floats.size());
-	
-	for(unsigned int i=0;i<w.size();i++){
-	  w[i] = T(floats[i]);
-	}
-#endif
-	
 	
 	if(nets[index]->importdata(w) == false){
 	  for(unsigned int j=0;j<=index;j++)

@@ -61,6 +61,7 @@ public:
     		const std::vector< math::vertex<T> >& qparameters);
 
     bool reconstructDataHidden(unsigned int iters = 1);
+    bool reconstructDataHidden2Visible();
 
     bool sampleHidden(math::vertex<T>& h, const math::vertex<T>& v); // sample from p(h|v)
     bool sampleVisible(math::vertex<T>& v, const math::vertex<T>& h); // sample from p(v|h)
@@ -184,16 +185,32 @@ protected:
 
 
     math::vertex<T> reconstruct_gbrbm_data(const math::vertex<T>& v,
-    		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
-			unsigned int CDk) const;
+					   const math::matrix<T>& W,
+					   const math::vertex<T>& a,
+					   const math::vertex<T>& b,
+					   const math::vertex<T>& z,
+					   unsigned int CDk) const;
 
     math::vertex<T> reconstruct_gbrbm_hidden(const math::vertex<T>& v,
-    		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
-    		unsigned int CDk);
+					     const math::matrix<T>& W,
+					     const math::vertex<T>& a,
+					     const math::vertex<T>& b,
+					     const math::vertex<T>& z,
+					     unsigned int CDk);
 
-    T reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& samples, unsigned int N,
-    		const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& z,
-    		unsigned int CDk);
+    math::vertex<T> gbrbm_hidden2visible(const math::vertex<T>& h,
+					 const math::matrix<T>& W,
+					 const math::vertex<T>& a,
+					 const math::vertex<T>& b,
+					 const math::vertex<T>& z);
+
+    T reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& samples,
+				   unsigned int N,
+				   const math::matrix<T>& W,
+				   const math::vertex<T>& a,
+				   const math::vertex<T>& b,
+				   const math::vertex<T>& z,
+				   unsigned int CDk);
 private:
     // parameters of GB-RBM network
 

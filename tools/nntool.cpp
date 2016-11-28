@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     bool overfit = false;
     bool adaptive = false;
     bool negfeedback = false;
-    bool deep = false;
+    unsigned int deep = 0;
     bool pseudolinear = false;
     bool purelinear = false;
 
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     srand(time(0));
 
     if(secs <= 0 && samples <= 0) // no time limit
-      samples = 4000; // we take 4000 samples/tries as the default
+      samples = 2000; // we take 2000 samples/tries as the default
 
     if(help){ // prints command line usage information
       print_usage(true);
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
       exit(-1);
     }
 
-    if(pseudolinear && deep){
+    if(purelinear && deep){
       fprintf(stderr,"Cannot set both deep and purelinear options at the same time.\n");
       exit(-1);
     }
@@ -308,17 +308,19 @@ int main(int argc, char** argv)
       data.downsampleAll(dataSize);
     }
 
-    if((lmethod != "use" && lmethod != "minimize") && deep == true){
+    if((lmethod != "use" && lmethod != "minimize") && deep > 0){
       printf("Deep pretraining (stacked RBMs) of neural network weights (slow).\n");
 
-      const bool binary = false; // trains Gaussian-Bernoulli RBM at the first layer
+      bool binary = true;
+
+      if(deep == 1) binary = true; // full RBM network
+      else if(deep == 2) binary = false; // gaussian-bernoulli rbm input layer
       
       if(deep_pretrain_nnetwork(nn, data, binary, verbose) == false){
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
 	return -1;
       }
-
-      // nn->setStochastic(false); // do not use stochastic values
+      
     }
     /*
      * default: initializes nnetwork weight values using 
@@ -404,8 +406,14 @@ int main(int argc, char** argv)
       }
       
     }
-    
 
+    // prints nnetwork information (for debugging)
+    {
+      printf("DEBUG\n");
+
+      nn->printInfo();
+    }
+    
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // learning or activation
     if(lmethod == "mix"){
@@ -502,6 +510,9 @@ int main(int argc, char** argv)
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
 	return -1;
       }
+
+      printf("RBM LEARNED NETWORK\n");
+      nn->printInfo(); // prints general information about trained nnetwork
 
       if(bnn->importNetwork(*nn) == false){
 	std::cout << "ERROR: internal error cannot import optimized RBM to data structure" << std::endl;
@@ -1583,7 +1594,14 @@ int main(int argc, char** argv)
 	return -1;	    
       }
 	
-      
+      	{
+	  printf("DEBUG (USE)\n");
+	  
+	  bnn->printInfo();
+	}
+	
+
+
       
       if(compare_clusters == true){
 	math::blas_real<double> error1 = math::blas_real<double>(0.0f);
@@ -1641,7 +1659,6 @@ int main(int argc, char** argv)
 	  delete nn;
 	  exit(-1);
 	}
-	
 
 	whiteice::linear_ETA<double> eta;
 	
@@ -1858,7 +1875,7 @@ void print_usage(bool all)
   printf("--version      displays version and exits\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
-  printf("--deep         pretrains feedforward neural network weights using stacked RBMs (slow)\n");
+  printf("--deep=*       pretrains neural network as a RBM (* = binary or gaussian input layer)\n");
   printf("--pseudolinear sets nonlinears to be 50%% linear (--purelinear is 100%% linear)\n");
   printf("--recurrent N  simple recurrent network (simulates N steps) (lbfgs, use)\n");
   printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
@@ -1872,7 +1889,7 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, gbrbm, bbrbm, mix\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, (gbrbm, bbrbm, mix)\n");
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");

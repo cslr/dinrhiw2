@@ -6,7 +6,7 @@
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
  *           "--time" <number> | "--load" | "--samples <NUMBER>" | "--recurrent <NUMBER>"
- *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep | --pseudolinear | --purelinear
+ *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary | --deep=gaussian | --pseudolinear | --purelinear
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
@@ -39,7 +39,7 @@
     bool overfit;
     bool adaptive;
     bool negfeedback;
-    bool deep;
+    unsigned int deep;
     bool pseudolinear;
     bool purelinear;
     bool noinit;
@@ -89,7 +89,8 @@
 %token <str> OPT_OVERFIT
 %token <str> OPT_ADAPTIVE
 %token <str> OPT_NEGFEEDBACK
-%token <str> OPT_DEEP
+%token <str> OPT_DEEP_BINARY
+%token <str> OPT_DEEP_GAUSSIAN
 %token <str> OPT_PSEUDOLINEAR
 %token <str> OPT_PURELINEAR
 %token <str> OPT_LOAD
@@ -149,7 +150,8 @@ option:	OPT_NOINIT             { __info.noinit   = true; }
       | OPT_OVERFIT            { __info.overfit  = true; }
       | OPT_ADAPTIVE           { __info.adaptive = true; }
       | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
-      | OPT_DEEP               { __info.deep     = true; }
+      | OPT_DEEP_BINARY        { __info.deep     = 1; }
+      | OPT_DEEP_GAUSSIAN      { __info.deep     = 2; }      
       | OPT_PSEUDOLINEAR       { __info.pseudolinear = true; }
       | OPT_PURELINEAR         { __info.purelinear = true; }            
       | OPT_HELP               { __info.help     = true; }
@@ -256,7 +258,7 @@ void parse_commandline(int argc, char** argv,
 		       bool& overfit, 
 		       bool& adaptive,
 		       bool& negfeedback,
-		       bool& deep,
+		       unsigned int& deep,
 		       bool& pseudolinear,
 		       bool& purelinear,
 		       bool& help,
@@ -274,6 +276,7 @@ void parse_commandline(int argc, char** argv,
   SIMULATION_DEPTH = 1;
   purelinear = false;
   pseudolinear = false;
+  deep = 0;
   
   // handles simple params 
   // (not handled correctly by grammar which assumes network file
@@ -308,7 +311,9 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);    
     p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
     cmdparamslist.push_back(p);
-    p.name = "--deep"; p.code = OPT_DEEP;
+    p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
+    cmdparamslist.push_back(p);
+    p.name = "--deep=gaussian"; p.code = OPT_DEEP_GAUSSIAN;
     cmdparamslist.push_back(p);
     p.name = "--pseudolinear"; p.code = OPT_PSEUDOLINEAR;
     cmdparamslist.push_back(p);

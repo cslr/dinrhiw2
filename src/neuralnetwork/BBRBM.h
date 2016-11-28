@@ -52,10 +52,10 @@ class BBRBM {
   math::vertex<T> getAValue() const;
   math::matrix<T> getWeights() const;
   
-  bool reconstructData(unsigned int iters = 2); // 2 to v->h->h
+  bool reconstructData(unsigned int iters = 2); // 2 to v->h->v
   bool reconstructData(std::vector< math::vertex<T> >& samples,
 		       unsigned int iters = 1);
-  bool reconstructDataHidden(unsigned int iters = 2);
+  bool reconstructDataHidden(unsigned int iters = 2); // 2 to h->v->h
   
   void getParameters(math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b) const;
   

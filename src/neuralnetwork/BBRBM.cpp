@@ -196,8 +196,11 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
 {
   if(iters == 0) return false;
   
+#if 0
+  // FIXME/OPTIMIZE WE CREATE NEEDLESSLY Wt matrix!
   math::matrix<T> Wt = W;
   Wt.transpose();
+#endif
   
   while(iters > 0){
     h = W*v + b;
@@ -213,8 +216,11 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     
     iters--;
     if(iters <= 0) return true;
-    
+
+#if 0
     v = Wt*h + a;
+#endif
+    v = h*W + a;
     
     // 1. visible units: calculates sigma(a_j)
     for(unsigned int j=0;j<(v.size()-0);j++){
@@ -253,12 +259,17 @@ template <typename T>
 bool BBRBM<T>::reconstructDataHidden(unsigned int iters)
 {
   if(iters == 0) return false;
-  
-  math::matrix<T> Wt = W;
+
+#if 0
+  math::matrix<T> Wt = W; // OPTIMIZE ME/FIX ME creates Wt matrix
   Wt.transpose();
+#endif
   
   while(iters > 0){
+#if 0
     v = Wt*h + a;
+#endif
+    v = h*W + a;
     
     // 1. visible units: calculates sigma(a_j)
     for(unsigned int j=0;j<(v.size()-0);j++){
@@ -345,8 +356,10 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
   math::vertex<T> pa(a), na(a);
   math::vertex<T> pb(b), nb(b);
 
+#if 0
   math::matrix<T> Wt = W;
   Wt.transpose();
+#endif
 
   T latestError = reconstructionError(samples, 1000, a, b, W);
   
@@ -397,7 +410,10 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	for(unsigned int j=0;j<h.size();j++)
 	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
 	
-	PW += h.outerproduct(v)/T(NUMSAMPLES);
+	// PW += h.outerproduct(v)/T(NUMSAMPLES);
+	T scaling = T(1.0)/T(NUMSAMPLES);
+	addouterproduct(PW, scaling, h, v);
+	
 	pa += v/T(NUMSAMPLES);
 	pb += h/T(NUMSAMPLES);
       }
@@ -425,7 +441,10 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	
 	
 	for(unsigned int l=0;l<CDk;l++){
+#if 0
 	  v = Wt*h + a;
+#endif
+	  v = h*W + a;
 	  
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(v.size()-0);j++){
@@ -468,7 +487,11 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	for(unsigned int j=0;j<h.size();j++)
 	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
 	
-	NW += h.outerproduct(v)/T(NUMSAMPLES);
+	// NW += h.outerproduct(v)/T(NUMSAMPLES);
+	T scaling = T(1.0)/T(NUMSAMPLES);
+	addouterproduct(NW, scaling, h, v);
+	
+	
 	na += v/T(NUMSAMPLES);
 	nb += h/T(NUMSAMPLES);
       }
@@ -516,9 +539,11 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  lambda *= coef1;
 	}
       }
-    
+
+#if 0
       Wt = W;
       Wt.transpose();
+#endif
     }
   
     // calculates mean reconstruction error in samples and looks for convergence
@@ -571,8 +596,10 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 				const math::matrix<T>& W) const throw()
 {
   try{
+#if 0
     math::matrix<T> Wt = W;
     Wt.transpose();
+#endif
     
     math::vertex<T> v(this->v);
     math::vertex<T> h(this->h);
@@ -591,7 +618,10 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 	else       h[j] = T(0.0);
       }
 
+#if 0
       v = Wt*h + a;
+#endif
+      v = h*W + a;
       
       // 1. visible units: calculates sigma(a_j)
       for(unsigned int j=0;j<(v.size()-0);j++){
@@ -775,7 +805,10 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       for(unsigned int j=0;j<h.size();j++)
 	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
       
-      PW += h.outerproduct(v)/T(NUMSAMPLES);
+      // PW += h.outerproduct(v)/T(NUMSAMPLES);
+      T scaling = T(1.0)/T(NUMSAMPLES);
+      addouterproduct(PW, scaling, h, v);
+	
       pa += v/T(NUMSAMPLES);
       pb += h/T(NUMSAMPLES);
     }
@@ -845,7 +878,10 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       for(unsigned int j=0;j<h.size();j++)
 	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
       
-      NW += h.outerproduct(v)/T(NUMSAMPLES);
+      // NW += h.outerproduct(v)/T(NUMSAMPLES);
+      T scaling = T(1.0)/T(NUMSAMPLES);
+      addouterproduct(NW, scaling, h, v);
+      
       na += v/T(NUMSAMPLES);
       nb += h/T(NUMSAMPLES);
     }

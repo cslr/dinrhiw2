@@ -119,6 +119,7 @@
 #include "eig.h"
 #include "conversion.h"
 #include "correlation.h"
+#include "outerproduct.h"
 /// #include "BFGS.h"
 
 #include "bezier.h"

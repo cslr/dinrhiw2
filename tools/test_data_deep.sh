@@ -18,13 +18,15 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool --deep -v wine-test.ds 13-50-10-1 winenn.cfg grad
+ARCH=13-500-1
+
+./nntool --deep --samples 100 -v wine-test.ds $ARCH winenn.cfg grad
 
 # ./nntool -v --time 10 wine-test.ds 13-1 winenn.cfg random
 
 # testing
 
-./nntool -v wine-test.ds 13-50-10-1 winenn.cfg use
+./nntool -v wine-test.ds $ARCH winenn.cfg use
 
 # predicting [stores results to dataset]
 
@@ -32,10 +34,11 @@ cp -f wine-test.ds wine-pred.ds
 ./dstool -clear:1 wine-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v wine-pred.ds 13-50-10-1 winenn.cfg use
+./nntool -v wine-pred.ds $ARCH winenn.cfg use
 
 ./dstool -list wine-test.ds
 ./dstool -list wine-pred.ds
 
 ./dstool -print:1 wine-pred.ds
 tail wine_measurements.out
+

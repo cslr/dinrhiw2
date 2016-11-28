@@ -33,10 +33,10 @@ namespace whiteice
     public:
 
     enum nonLinearity {
-      sigmoid, // uses sigmoid non-linearity as the default
-      stochasticSigmoid, // clipped to 0/1 values..
-      halfLinear, // for deep networks
-      pureLinear  // for testing and comparing nnetworks (pure linear)
+      sigmoid, // uses sigmoid non-linearity as the default (0)
+      stochasticSigmoid, // clipped to 0/1 values.. (1)
+      halfLinear, // for deep networks (2)
+      pureLinear  // for testing and comparing nnetworks (pure linear) (3)
     };
 
 
@@ -53,6 +53,8 @@ namespace whiteice
 
     nnetwork<T>& operator=(const nnetwork<T>& nn);
 
+    void printInfo() const; // prints nnetwork information (mostly for debugging purposes)
+
     ////////////////////////////////////////////////////////////
     
     math::vertex<T>& input() throw(){ return inputValues; }
@@ -66,6 +68,11 @@ namespace whiteice
     unsigned int gradient_size() const throw();
 
     void getArchitecture(std::vector<unsigned int>& arch) const;
+
+    // invalidates all data and essentially creates a new network over previous one
+    bool setArchitecture(const std::vector<unsigned int>& arch,
+			 const nonLinearity nl = sigmoid); // all layers except the last one (linear) has this non-linearity
+    
     
     bool calculate(bool gradInfo = false, bool collectSamples = false);
     bool operator()(bool gradInfo = false, bool collectSamples = false){
@@ -84,7 +91,7 @@ namespace whiteice
     
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
-    ////////////////////////////////////////////////////////////
+     ////////////////////////////////////////////////////////////
     
     // load & saves neuralnetwork data from file
     bool load(const std::string& filename) throw();
@@ -102,6 +109,7 @@ namespace whiteice
     ////////////////////////////////////////////////////////////
     
     unsigned int getLayers() const throw();
+    unsigned int getInputs(unsigned int l) const throw(); // number of inputs per neuron for this layer
     unsigned int getNeurons(unsigned int l) const throw(); // number of neurons per layer
 
     // gets and sets network parameters: Weight matrixes and biases

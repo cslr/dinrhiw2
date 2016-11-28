@@ -21,6 +21,8 @@ namespace whiteice
     bayesian_nnetwork();
     virtual ~bayesian_nnetwork();
 
+    void printInfo() const; // mostly for debugging.. prints NN information/data.
+
     /*
      * imports and exports samples of p(w) to and from nnetwork
      */
