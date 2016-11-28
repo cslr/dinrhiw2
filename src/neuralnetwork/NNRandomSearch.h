@@ -8,10 +8,14 @@
  */
 
 
-#include <pthread.h>
+
 #include "dinrhiw_blas.h"
 #include "dataset.h"
 #include "dinrhiw.h"
+
+#include <thread>
+#include <mutex>
+
 
 #ifndef NNRandomSearch_h
 #define NNRandomSearch_h
@@ -71,17 +75,16 @@ namespace whiteice
 	T best_error;
 	unsigned int converged_solutions;
 
-	const whiteice::dataset<T>* data;
+        whiteice::dataset<T> const* data;
 	
 	unsigned int NTHREADS;
-	std::vector<pthread_t> optimizer_thread;
-	pthread_mutex_t solution_lock, start_lock;
-
+	std::vector<thread*> optimizer_thread;
+        std::mutex solution_lock, start_lock;
+        
         volatile bool running;
         volatile int thread_is_running;
 
-      public:
-	void __optimizerloop();
+        void optimizerloop();
 	
       };
         

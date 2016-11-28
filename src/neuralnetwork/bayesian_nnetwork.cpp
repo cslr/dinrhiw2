@@ -134,12 +134,13 @@ namespace whiteice
   }
 
   template <typename T>
-  typename nnetwork<T>::nonLinearity bayesian_nnetwork<T>::getNonlinearity(){ // returns sigmoid if there are no nnetworks
+  void bayesian_nnetwork<T>::getNonlinearity(std::vector< typename nnetwork<T>::nonLinearity >& nl)
+  { 
     if(nnets.size() > 0)
       if(nnets[0])
-	return nnets[0]->getNonlinearity();
+	return nnets[0]->getNonlinearity(nl);
 
-    return nnetwork<T>::sigmoidNonLinearity;
+    assert(0); // we should never reach here..
   }
   
   
@@ -280,7 +281,8 @@ namespace whiteice
 #define FNN_NUMWEIGHTS_CFGSTR       "FNN_NUM_WEIGHTS"
 #define FNN_ARCH_CFGSTR             "FNN_ARCH"
 #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"  
-#define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEARITY"  
+#define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEARITY"
+#define FNN_FROZEN_CFGSTR           "FNN_FROZEN"  
   
   // stores and loads bayesian nnetwork to a text file
   // (saves all samples into files)
@@ -348,9 +350,16 @@ namespace whiteice
       }
 
       // gets nonlinearity of nnetworks
-      typename whiteice::nnetwork<T>::nonLinearity nl =
-	whiteice::nnetwork<T>::sigmoidNonLinearity;
+      std::vector< typename whiteice::nnetwork<T>::nonLinearity > nl;
+      
       {
+	nl.resize(arch.size()-1);
+	for(unsigned int l=0;l<nl.size();l++){
+	  nl[l] = whiteice::nnetwork<T>::sigmoid;
+	}
+
+	nl[nl.size()-1] = whiteice::nnetwork<T>::pureLinear;
+	
 	data = configuration.accessName(FNN_NONLINEARITY_CFGSTR, 0);
 	ints.resize(data.size());
 	
@@ -358,17 +367,48 @@ namespace whiteice
 	  math::convert(ints[i], data[i]);
 	}
 	
-	if(ints.size() != 1)
+	if(ints.size() != nl.size())
 	  return false;
+
+	for(unsigned int l=0;l<nl.size();l++){
+	  if(ints[l] == 0)
+	    nl[l] = whiteice::nnetwork<T>::sigmoid;
+	  else if(ints[l] == 1)
+	    nl[l] = whiteice::nnetwork<T>::stochasticSigmoid;
+	  else if(ints[l] == 2)
+	    nl[l] = whiteice::nnetwork<T>::halfLinear;
+	  else if(ints[l] == 3)
+	    nl[l] = whiteice::nnetwork<T>::pureLinear;
+	  else
+	    return false; // bad data
+	}
+      }
+
+
+      // gets frozen layers of nnetwork
+      std::vector< bool > frozen;
+      {
+	frozen.resize(arch.size()-1);
+	for(unsigned int l=0;l<frozen.size();l++){
+	  frozen[l] = false;
+	}
 	
-	if(ints[0] == 0)
-	  nl = whiteice::nnetwork<T>::sigmoidNonLinearity;
-	else if(ints[0] == 1)
-	  nl = whiteice::nnetwork<T>::halfLinear;
-	else if(ints[0] == 2)
-	  nl = whiteice::nnetwork<T>::pureLinear;
-	else
-	  return false; // bad data
+	data = configuration.accessName(FNN_FROZEN_CFGSTR, 0);
+	ints.resize(data.size());
+	
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
+	if(ints.size() != frozen.size())
+	  return false;
+
+	for(unsigned int l=0;l<nl.size();l++){
+	  if(ints[l] == 0)
+	    frozen[l] = false;
+	  else
+	    frozen[l] = true;
+	}
       }
 
       
@@ -403,7 +443,11 @@ namespace whiteice
       for(unsigned int index=0;index<nets.size();index++)
       {
 	nets[index] = new nnetwork<T>(arch);
-	nets[index]->setNonlinearity(nl); // sets non-linearity
+	if(nets[index]->setNonlinearity(nl) == false)
+	  return false;
+	
+	if(nets[index]->setFrozen(frozen) == false)
+	  return false;
 	
 	math::vertex<T> w;
 	
@@ -454,18 +498,14 @@ namespace whiteice
     }
   }
 
-// #define FNN_VERSION_CFGSTR          "FNN_CONFIG_VERSION"
-// #define FNN_NUMWEIGHTS_CFGSTR       "FNN_NUM_WEIGHTS"
-// #define FNN_ARCH_CFGSTR             "FNN_ARCH"
-// #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"
-
+  
   
   template <typename T>
   bool bayesian_nnetwork<T>::save(const std::string& filename) const throw()
   {
     try{
       if(nnets.size() <= 0) return false;
-      
+
       // whiteice::conffile configuration;
       whiteice::dataset<T> configuration;
       math::vertex<T> data;
@@ -480,19 +520,20 @@ namespace whiteice
 	// version number = integer/1000
 	ints.push_back(3500); // 3.500
 
-    configuration.createCluster(FNN_VERSION_CFGSTR, ints.size());
-    data.resize(ints.size());
-    for(unsigned int i=0;i<ints.size();i++){
-    	data[i] = ints[i];
-    }
-    configuration.add(configuration.getCluster(FNN_VERSION_CFGSTR), data);
-
+	configuration.createCluster(FNN_VERSION_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++){
+	  data[i] = ints[i];
+	}
+	configuration.add(configuration.getCluster(FNN_VERSION_CFGSTR), data);
+	
 	//if(!configuration.set(FNN_VERSION_CFGSTR, ints))
 	//  return false;
 	
 	ints.clear();
       }
 
+      
       std::vector<unsigned int> arch;
 
       nnets[0]->getArchitecture(arch);
@@ -502,13 +543,13 @@ namespace whiteice
 	for(unsigned int i=0;i<arch.size();i++)
 	  ints.push_back(arch[i]);
 
-    configuration.createCluster(FNN_ARCH_CFGSTR, ints.size());
-    data.resize(ints.size());
-    for(unsigned int i=0;i<ints.size();i++){
-    	data[i] = ints[i];
-    }
-    configuration.add(configuration.getCluster(FNN_ARCH_CFGSTR), data);
-
+	configuration.createCluster(FNN_ARCH_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++){
+	  data[i] = ints[i];
+	}
+	configuration.add(configuration.getCluster(FNN_ARCH_CFGSTR), data);
+	
 	//if(!configuration.set(FNN_ARCH_CFGSTR, ints))
 	//  return false;
 	
@@ -529,23 +570,29 @@ namespace whiteice
 	ints.clear();
       }
 
-      // writes non-linearity information (assumes all have same nonlin)
+      
+      // writes non-linearity information (assumes all nets have same nonlinearities!)
       {
-	typename whiteice::nnetwork<T>::nonLinearity nl =
-	  whiteice::nnetwork<T>::sigmoidNonLinearity;
-
+	std::vector< typename whiteice::nnetwork<T>::nonLinearity > nl;
+	
 	if(nnets.size() > 0){
-	  nl = nnets[0]->getNonlinearity();
+	  nnets[0]->getNonlinearity(nl);
 
-	  if(nl == whiteice::nnetwork<T>::sigmoidNonLinearity)
-	    ints.push_back(0);
-	  else if(nl == whiteice::nnetwork<T>::halfLinear)
-	    ints.push_back(1);
-	  else if(nl == whiteice::nnetwork<T>::pureLinear)
-	    ints.push_back(2);
-	  else
-	    return false;
+	  for(unsigned int l=0;l<nl.size();l++){
+
+	    if(nl[l] == whiteice::nnetwork<T>::sigmoid)
+	      ints.push_back(0);
+	    else if(nl[l] == whiteice::nnetwork<T>::stochasticSigmoid)
+	      ints.push_back(1);
+	    else if(nl[l] == whiteice::nnetwork<T>::halfLinear)
+	      ints.push_back(2);
+	    else if(nl[l] == whiteice::nnetwork<T>::pureLinear)
+	      ints.push_back(3);
+	    else
+	      return false;
+	  }
 	}
+	else return false;
 
 	configuration.createCluster(FNN_NONLINEARITY_CFGSTR, ints.size());
 	data.resize(ints.size());
@@ -557,7 +604,33 @@ namespace whiteice
 	ints.clear();
       }
 
-// weights: we just convert everything to a big vertex vector and write it
+      // writes layer frozen information (assumes all nets have same nonlinearities!)
+      {
+	std::vector< bool > frozen;
+	
+	if(nnets.size() > 0){
+	  nnets[0]->getFrozen(frozen);
+
+	  for(unsigned int l=0;l<frozen.size();l++){
+	    if(frozen[l] == false)
+	      ints.push_back(0);
+	    else
+	      ints.push_back(1);
+	  }
+	}
+	else return false;
+
+	configuration.createCluster(FNN_FROZEN_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++){
+	  data[i] = ints[i];
+	}
+	configuration.add(configuration.getCluster(FNN_FROZEN_CFGSTR), data);
+	
+	ints.clear();
+      }
+
+      // weights: we just convert everything to a big vertex vector and write it
       math::vertex<T> w;
       if(nnets[0]->exportdata(w) == false)
     	  return false;
@@ -572,25 +645,7 @@ namespace whiteice
 	if(nnets[index]->exportdata(w) == false)
 	  return false;
 	
-
-#if 0
-	for(unsigned int i=0;i<w.size();i++){
-	  float f;
-	  math::convert(f, w[i]);
-	  floats.push_back(f);
-	}
-
-	sprintf(buffer, FNN_WEIGHTS_CFGSTR, index);
-	
-	if(!configuration.set(buffer, floats))
-	  return false;
-
-
-	floats.clear();
-#endif
-
-
-    configuration.add(configuration.getCluster(FNN_WEIGHTS_CFGSTR), w);
+	configuration.add(configuration.getCluster(FNN_WEIGHTS_CFGSTR), w);
 
       }      
       

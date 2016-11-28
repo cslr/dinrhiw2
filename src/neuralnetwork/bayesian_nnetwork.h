@@ -35,7 +35,7 @@ namespace whiteice
 		       int latestN = 0);
 
     bool setNonlinearity(typename nnetwork<T>::nonLinearity nl);
-    typename nnetwork<T>::nonLinearity getNonlinearity(); // returns sigmoid if there are no nnetworks
+    void getNonlinearity(std::vector< typename nnetwork<T>::nonLinearity >& nl);
     
     /*
      * downsamples number of neural networks down to N neural networks

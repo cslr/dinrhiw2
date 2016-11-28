@@ -7,7 +7,7 @@
 
 #include "BBRBM.h"
 #include "dataset.h"
-
+#include "linear_ETA.h"
 
 namespace whiteice {
 
@@ -364,11 +364,22 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
   const unsigned int NUMSAMPLES = 10;
   const unsigned int EPOCHSAMPLES = 1000;
-
+  
   
   for(unsigned int e=0;e<EPOCHS;e++){
 
+    whiteice::linear_ETA<double> eta;
+    eta.start(0.0, (double)EPOCHSAMPLES);
+    
     for(unsigned int es=0;es<EPOCHSAMPLES;es++){
+
+      eta.update(es);
+
+      if(verbose){
+	printf("\r                                                                             \r");
+	printf("EPOCH SAMPLES %d/%d [ETA: %.2f minutes]", es, EPOCHSAMPLES, eta.estimate()/60.0);
+	fflush(stdout);
+      }
 
       // calculates positive gradient from NUMSAMPLES examples Pdata(v))
       PW.zero();
@@ -516,8 +527,9 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
     if(verbose){
       double error = 0.0;
       math::convert(error, latestError);
-      
-      printf("%d/%d EPOCH. R: %f\n", e, EPOCHS, error);
+
+      printf("\n");
+      printf("%d/%d EPOCH. R: %f\n", e+1, EPOCHS, error);
       fflush(stdout);
     }
 

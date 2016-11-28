@@ -274,14 +274,14 @@ namespace whiteice
 		    << error << "/" << errorLevel 
 		    << std::endl;
 	
-	while(errors.size() > 10)
+	while(errors.size() > 5)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 10){
+	if(errors.size() >= 5){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -294,9 +294,12 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  std::cout << "RATIO: " << (v/m) << std::endl;
 	  
-	  if(v/m <= 1.01) 
-	    break; // stdev is less than 1% of mean
+	  if(v/m <= 0.001)
+	    break; // stdev is less than 0.1% of mean
+	    
 	}
       }
 
@@ -332,14 +335,14 @@ namespace whiteice
 		    << error << "/" << errorLevel 
 		    << std::endl;
 	
-	while(errors.size() > 10)
+	while(errors.size() > 5)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 10){
+	if(errors.size() >= 5){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -352,9 +355,11 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  std::cout << "RATIO: " << (v/m) << std::endl;
 	  
-	  if(v/m <= 1.01) 
-	    break; // stdev is less than 1% of mean
+	  if(v/m <= 0.001) 
+	    break; // stdev is less than 0.1% of mean
 	}
       }
 
@@ -395,14 +400,14 @@ namespace whiteice
 		    << error << "/" << errorLevel 
 		    << std::endl;
 	
-	while(errors.size() > 10)
+	while(errors.size() > 5)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 10){
+	if(errors.size() >= 5){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -415,9 +420,11 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  std::cout << "RATIO: " << (v/m) << std::endl;
 	  
-	  if(v/m <= 1.01) 
-	    break; // stdev is less than 1% of mean
+	  if(v/m <= 0.001) 
+	    break; // stdev is less than 0.1% of mean
 	}
       }
       
@@ -593,8 +600,22 @@ namespace whiteice
     if(net->setWeights(A, layers.size()+1) == false){ delete net; net = nullptr; return false; }
     if(net->setBias(b, layers.size()+1) == false){ delete net; net = nullptr; return false; }
 
-    net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
-    net->setStochastic(true); // stochastic DBN activation
+    net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+    
+    // sets all other layers to frozen (stochastic RBM output) except the final linear output layer!
+    {
+      std::vector<bool> frozen;
+
+      net->getFrozen(frozen);
+
+      for(unsigned int i=0;i<frozen.size();i++)
+	frozen[i] = true;
+
+      frozen[frozen.size()-1] = false;
+      
+      net->setFrozen(frozen);
+    }
+    
     
     return true;
   }
@@ -663,8 +684,7 @@ namespace whiteice
 	if(net->setWeights(gb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
 	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 	
-	net->setStochastic(true);
-	net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
+	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
       }
       catch(const char* msg){
 	printf("ERROR: %s\n", msg);
@@ -731,8 +751,7 @@ namespace whiteice
 	if(net->setWeights(bb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
 	if(net->setBias(bb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 	
-	net->setStochastic(true);
-	net->setNonlinearity(whiteice::nnetwork<T>::sigmoidNonLinearity);
+	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
       }
       catch(const char* msg){
 	printf("ERROR: %s\n", msg);

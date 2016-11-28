@@ -7,11 +7,6 @@
 #endif
 
 
-extern "C" {
-  static void* __nnrandom_optimizer_thread_init(void* param);
-};
-
-
 namespace whiteice
 {
   namespace math
@@ -27,30 +22,24 @@ namespace whiteice
 
       running = false;
       thread_is_running = 0;
-
-      pthread_mutex_init(&solution_lock, 0);
-      pthread_mutex_init(&start_lock, 0);
+      
     }
 
     
     template <typename T>
     NNRandomSearch<T>::~NNRandomSearch()
     {
-      pthread_mutex_lock( &start_lock );
+      start_lock.lock();
 
-      if(running)
+      if(running){
+	running = false;
 	for(unsigned int i=0;i<optimizer_thread.size();i++){
-	  pthread_cancel( optimizer_thread[i] );
+	  delete optimizer_thread[i];
 	}
+	optimizer_thread.resize(0);
+      }
 
-      running = false;
-      while(thread_is_running > 0)
-	sleep(1);
-
-      pthread_mutex_unlock( &start_lock );
-
-      pthread_mutex_destroy( &solution_lock );
-      pthread_mutex_destroy( &start_lock );
+      start_lock.unlock();
     }
     
     /*
@@ -63,8 +52,8 @@ namespace whiteice
      */
     template <typename T>
     bool NNRandomSearch<T>::startOptimize(const whiteice::dataset<T>& data,
-					 const std::vector<unsigned int>& arch, 
-					 unsigned int NTHREADS)
+					  const std::vector<unsigned int>& arch, 
+					  unsigned int NTHREADS)
     {
       if(arch.size() < 2) return false;
 
@@ -78,11 +67,11 @@ namespace whiteice
       if(data.dimension(0) != arch[0] ||
 	 data.dimension(1) != arch[arch.size()-1])
 	return false;
-      
-      pthread_mutex_lock( &start_lock );
+
+      start_lock.lock();
       
       if(running == true){
-	pthread_mutex_unlock( &start_lock );
+	start_lock.unlock();
 	return false;
       }
       
@@ -97,14 +86,14 @@ namespace whiteice
 
       optimizer_thread.resize(NTHREADS);
 
+      // FIXME new std::thread can throw exceptions?
+      
       for(unsigned int i=0;i<optimizer_thread.size();i++){
-	pthread_create(& (optimizer_thread[i]), 0,
-		       __nnrandom_optimizer_thread_init, (void*)this);
-	pthread_detach( optimizer_thread[i] );
+	optimizer_thread[i] =
+	  new std::thread(&NNRandomSearch<T>::optimizerloop, this);
       }
       
-      
-      pthread_mutex_unlock( &start_lock );
+      start_lock.unlock();
 
       return true;
     }
@@ -129,15 +118,13 @@ namespace whiteice
       for(unsigned int i=0;i<a.size();i++)
 	if(a[i] != nn_arch[i]) return false;
       
+      solution_lock.lock();
       
-      pthread_mutex_lock( &solution_lock );
-
       nn.importdata(bestx);
       error = best_error;
       Nconverged = converged_solutions;
 
-      
-      pthread_mutex_unlock( &solution_lock );
+      solution_lock.unlock();
 
       return true;
     }
@@ -147,26 +134,24 @@ namespace whiteice
     template <typename T>
     bool NNRandomSearch<T>::stopComputation()
     {
-      pthread_mutex_lock( &start_lock );
+      start_lock.lock();
 
       running = false;
       
-
       for(unsigned int i=0;i<optimizer_thread.size();i++){
-	pthread_cancel( optimizer_thread[i] );
+	if(optimizer_thread[i])
+	  optimizer_thread[i]->join();
       }
+      optimizer_thread.resize(0);
       
-      while(thread_is_running > 0)
-	sleep(1); // bad approach
-
-      pthread_mutex_unlock( &start_lock );
+      start_lock.unlock();
 
       return true;
     }
 
 
     template <typename T>
-    void NNRandomSearch<T>::__optimizerloop()
+    void NNRandomSearch<T>::optimizerloop()
     {
       if(data == NULL)
 	return; // silent failure if there is bad data
@@ -185,7 +170,6 @@ namespace whiteice
 	T alpha = 0.5f;
 	negative_feedback_between_neurons(nn, *data, alpha, true);
 
-	
 	T error = T(0.0f);
 	{
 	  // 1. calculates error
@@ -204,13 +188,13 @@ namespace whiteice
 	
 	// 2. checks if the result is better than the best one
 	if(error < best_error){
-	  pthread_mutex_lock( &solution_lock );
+	  solution_lock.lock();
 
 	  // improvement (smaller error with early stopping)
 	  best_error = error;
 	  nn.exportdata(bestx);
-	  
-	  pthread_mutex_unlock( &solution_lock);
+
+	  solution_lock.unlock();
 	}
 	
 	converged_solutions++;
@@ -231,17 +215,3 @@ namespace whiteice
   };
 };
 
-
-extern "C" {
-  void* __nnrandom_optimizer_thread_init(void *optimizer_ptr)
-  {
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
-    
-    if(optimizer_ptr)
-      ((whiteice::math::NNRandomSearch< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
-    
-    pthread_exit(0);
-
-    return 0;
-  }
-};

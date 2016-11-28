@@ -1,5 +1,11 @@
 /*
- * learns data using ultra-deep neural networks
+ * toy: learns data using "ultra-deep" neural networks
+ *
+ * iteratively adds extra layers/transformations 
+ * that improve results from the previous layer
+ * 
+ * AFAIK (remember) this aims to find non-linear 
+ * ICA like solutions from data but is "nonsense" / quick test to try some crazy ideas..
  */
 
 #ifndef __ultradeep_neuralnetwork__

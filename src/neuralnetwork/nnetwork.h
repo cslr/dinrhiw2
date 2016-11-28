@@ -33,7 +33,8 @@ namespace whiteice
     public:
 
     enum nonLinearity {
-      sigmoidNonLinearity, // uses sigmoid non-linearity as the default
+      sigmoid, // uses sigmoid non-linearity as the default
+      stochasticSigmoid, // clipped to 0/1 values..
       halfLinear, // for deep networks
       pureLinear  // for testing and comparing nnetworks (pure linear)
     };
@@ -45,7 +46,7 @@ namespace whiteice
     nnetwork(); 
     nnetwork(const nnetwork& nn);
     nnetwork(const std::vector<unsigned int>& nnarch,
-	     const nonLinearity nl = sigmoidNonLinearity) throw(std::invalid_argument);
+	     const nonLinearity nl = sigmoid) throw(std::invalid_argument);
     
     
     virtual ~nnetwork();
@@ -83,9 +84,6 @@ namespace whiteice
     
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
-    bool stochastic(); // return true if nnetwork has stochastic sigmoid activations (clipped to 0 or 1)
-    void setStochastic(bool stochastic); // sets stochastic sigmoid activations
-    
     ////////////////////////////////////////////////////////////
     
     // load & saves neuralnetwork data from file
@@ -112,8 +110,21 @@ namespace whiteice
     bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
     bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
 
-    nonLinearity getNonlinearity() const throw();
+    // whole network settings (except that the last layer is set to linear)
     bool setNonlinearity(nonLinearity nl);
+    
+    nonLinearity getNonlinearity(unsigned int layer) const throw(); 
+    bool setNonlinearity(unsigned int layer, nonLinearity nl);
+
+    void getNonlinearity(std::vector<nonLinearity>& nls) const throw();
+    bool setNonlinearity(const std::vector<nonLinearity>& nls) throw();
+    
+    bool setFrozen(unsigned int layer, bool frozen = true); // nnetwork layers can be set to be "frozen"
+    bool setFrozen(const std::vector<bool>& frozen);        // so that gradient for those parameters is 
+    bool getFrozen(unsigned int layer) const;               // always zero and optimization is restricted
+    void getFrozen(std::vector<bool>& frozen) const;        // to other parts of the network
+                                                            // FIXME currently frozen status is NOT saved to disk
+                                                                 
     
     unsigned int getSamplesCollected() const throw();
     bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
@@ -144,8 +155,10 @@ namespace whiteice
     
 
     bool hasValidBPData;
+    
     bool stochasticActivation;
-    nonLinearity nonlinearity; // which non-linearity to use (default: sigmoid)
+    std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer (default: sigmoid)
+    std::vector<bool> frozen;  // frozen layers (that are not optimized or set to some values otherwise)
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;

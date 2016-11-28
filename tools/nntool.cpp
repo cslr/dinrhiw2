@@ -275,7 +275,7 @@ int main(int argc, char** argv)
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else{
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoidNonLinearity);
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
     }
 
     
@@ -311,7 +311,7 @@ int main(int argc, char** argv)
     if((lmethod != "use" && lmethod != "minimize") && deep == true){
       printf("Deep pretraining (stacked RBMs) of neural network weights (slow).\n");
 
-      const bool binary = true; // trains full BINARY RBM!!! (FIXME)
+      const bool binary = false; // trains Gaussian-Bernoulli RBM at the first layer
       
       if(deep_pretrain_nnetwork(nn, data, binary, verbose) == false){
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
@@ -410,7 +410,7 @@ int main(int argc, char** argv)
     // learning or activation
     if(lmethod == "mix"){
       // mixture of experts
-      Mixture< whiteice::math::blas_real<double> > moe(5, SIMULATION_DEPTH, overfit, negfeedback); 
+      Mixture< whiteice::math::blas_real<double> > moe(2, SIMULATION_DEPTH, overfit, negfeedback); 
             
 
       time_t t0 = time(0);
@@ -476,6 +476,37 @@ int main(int argc, char** argv)
 
       if(moe.isRunning())
 	moe.stopComputation();
+
+      // TODO: copy majority expert as the predicting expert (so we just work against noise here..)
+      assert(0); // FIXME!
+      
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    else if(lmethod == "bbrbm" || lmethod == "gbrbm"){
+      // greedely learns Bernoulli-Bernoulli RBM or Gaussian-Bernoulli RBM
+      // where the last layer is linear predictor/regression layer
+
+      // the idea here is that we train N-M-output neural network where M is much larger than input
+      // RBM does non-linear transformation and calculates features which are then linearly combined.
+      // For example, optimize 2-layer  1207-10000-1 neural network where 10000 calculates
+      // 10.000 features from input space which are then linearly combined.
+
+      printf("Starting RBM neural network optimization (ignoring parameters)..\n");
+
+      bool binary = false; // as the default assumes the first layer is gaussian RBM
+
+      if(lmethod == "bbrbm") binary = true;  // trains full binary RBM (last layer is linear)
+      else binary = false;                   // trains gaussian-bernoully RBM (last layer is linear)
+      
+      if(deep_pretrain_nnetwork(nn, data, binary, verbose) == false){
+	printf("ERROR: deep pretraining of nnetwork failed.\n");
+	return -1;
+      }
+
+      if(bnn->importNetwork(*nn) == false){
+	std::cout << "ERROR: internal error cannot import optimized RBM to data structure" << std::endl;
+	return -1;
+      }
       
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -588,6 +619,7 @@ int main(int argc, char** argv)
 	  std::cout << "ERROR: internal error" << std::endl;
 	  return -1;
 	}
+	
 	if(bnn->importNetwork(*nn) == false){
 	  std::cout << "ERROR: internal error" << std::endl;
 	  return -1;
@@ -897,9 +929,13 @@ int main(int argc, char** argv)
 	search.stopComputation();
 	
 	// gets the final (optimum) solution
-	search.getSolution(*nn, error, solutions);
-	
-	bnn->importNetwork(*nn);
+	if(search.getSolution(*nn, error, solutions) == false){
+	  std::cout << "ERROR: Cannot get result from optimizer (internal error)." << std::endl;
+	}
+
+	if(bnn->importNetwork(*nn) == false){
+	  std::cout << "ERROR: Cannot transfer neural network data (internal error)." << std::endl;
+	}
       }
       
 
@@ -1836,7 +1872,7 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, mix\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, gbrbm, bbrbm, mix\n");
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");

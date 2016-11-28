@@ -38,7 +38,7 @@ namespace whiteice
     std::vector< math::vertex<T> > samples;
     data.getData(0, samples);
 
-    T minimumError = T(0.01);
+    T minimumError = T(0.001); // error requirements..
 
     // trains deep belief network DBN
     if(dbn.learnWeights(samples, minimumError, verbose) == false)

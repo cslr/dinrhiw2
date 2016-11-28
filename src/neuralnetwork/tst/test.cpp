@@ -121,8 +121,13 @@ int main()
   
   try{
     // mixture_nnetwork_test();
+
+    bayesian_nnetwork_test();
     
-    recurrent_nnetwork_test();
+    recurrent_nnetwork_test(); // DO NOT WORK?!?!
+
+    nnetwork_test();
+
     
     // dbn_test();
 #if 0
@@ -136,8 +141,6 @@ int main()
 #endif
     /////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////
-    
-    // nnetwork_test();
     
     // bayesian_nnetwork_test();
     
@@ -4117,10 +4120,21 @@ void bayesian_nnetwork_test()
     arch.push_back(10);
     arch.push_back(1);
 
-    typename nnetwork<>::nonLinearity nl = nnetwork<>::sigmoidNonLinearity;
+    std::vector< typename nnetwork<>::nonLinearity > nl;
+    nl.resize(arch.size()-1);
+
+    for(unsigned int l=0;l<nl.size();l++)
+      nl[l] = nnetwork<>::sigmoidNonLinearity;
+
+    std::vector<bool> frozenLayers;
+    frozenLayers.resize(arch.size()-1);
+
+    for(unsigned int l=0;l<frozenLayers.size();l++)
+      frozenLayers[l] = (bool)(rand()&1);
     
     nn = new nnetwork<>(arch);
     nn->setNonlinearity(nl);
+    nn->setFrozen(frozenLayers);
 
     std::vector< math::vertex<> > weights;
     weights.resize(10);
@@ -4152,7 +4166,8 @@ void bayesian_nnetwork_test()
 
     std::vector<unsigned int> loaded_arch;
     std::vector< math::vertex<> > loaded_weights;
-    nnetwork<>::nonLinearity loaded_nl;
+    std::vector< nnetwork<>::nonLinearity > loaded_nl;
+    std::vector<bool> loadedFrozenLayers;
 
     whiteice::nnetwork<> loaded_nn;
 
@@ -4162,7 +4177,8 @@ void bayesian_nnetwork_test()
     }
 
     loaded_nn.getArchitecture(loaded_arch);
-    loaded_nl = loaded_nn.getNonlinearity();
+    loaded_nn.getNonlinearity(loaded_nl);
+    loaded_nn.getFrozen(loadedFrozenLayers);
 
     if(loaded_arch.size() != arch.size()){
       std::cout << "ERROR: BNN save/load arch size mismatch"
@@ -4185,9 +4201,28 @@ void bayesian_nnetwork_test()
       }
     }
 
-    if(loaded_nl != nl){
-      std::cout << "ERROR: BNN nonlinearity settings mismatch" << std::endl;
+    if(loaded_nl.size() != nl.size()){
+      std::cout << "ERROR: BNN nonlinearity settings mismatch (1)" << std::endl;
       return;
+    }
+
+    for(unsigned int l=0;l<nl.size();l++){
+      if(loaded_nl[l] != nl[l]){
+	std::cout << "ERROR: BNN nonlinearity settings mismatch (2)" << std::endl;
+	return;
+      }
+    }
+
+    if(frozenLayers.size() != loadedFrozenLayers.size()){
+      std::cout << "ERROR: BNN frozen layers settings mismatch (1)" << std::endl;
+      return;
+    }
+
+    for(unsigned int l=0;l<frozenLayers.size();l++){
+      if(loadedFrozenLayers[l] != frozenLayers[l]){
+	std::cout << "ERROR: BNN frozen settings mismatch (2)" << std::endl;
+	return;
+      }
     }
 
     for(unsigned int i=0;i<loaded_weights.size();i++){

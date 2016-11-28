@@ -57,13 +57,15 @@ Grammar
    40       | LM_RANDOM
    41       | LM_BAYES
    42       | LM_MIX
+   43       | LM_GBRBM
+   44       | LM_BBRBM
 
-   43 mmodseq: %empty
-   44        | mmod mmodseq
+   45 mmodseq: %empty
+   46        | mmod mmodseq
 
-   45 mmod: MMOD_OVERTRAIN
-   46     | MMOD_PCA
-   47     | MMOD_ICA
+   47 mmod: MMOD_OVERTRAIN
+   48     | MMOD_PCA
+   49     | MMOD_ICA
 
 
 Terminals, with rules where they appear
@@ -101,40 +103,42 @@ LM_LBFGS (285) 38
 LM_RANDOM (286) 40
 LM_BAYES (287) 41
 LM_MIX (288) 42
-MMOD_OVERTRAIN (289) 45
-MMOD_PCA (290) 46
-MMOD_ICA (291) 47
+LM_GBRBM (289) 43
+LM_BBRBM (290) 44
+MMOD_OVERTRAIN (291) 47
+MMOD_PCA (292) 48
+MMOD_ICA (293) 49
 
 
 Nonterminals, with rules where they appear
 
-$accept (37)
+$accept (39)
     on left: 0
-arg (38)
+arg (40)
     on left: 1, on right: 0
-optseq (39)
+optseq (41)
     on left: 2 3, on right: 1 3
-anystring (40)
+anystring (42)
     on left: 4 5 6 7, on right: 30
-option (41)
+option (43)
     on left: 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23, on right:
     3
-endopt (42)
+endopt (44)
     on left: 24 25, on right: 1
-data (43)
+data (45)
     on left: 26 27, on right: 1
-arch (44)
+arch (46)
     on left: 28 29, on right: 1
-nnfile (45)
+nnfile (47)
     on left: 30, on right: 1
-lmethod (46)
+lmethod (48)
     on left: 31 32, on right: 1
-mbasic (47)
-    on left: 33 34 35 36 37 38 39 40 41 42, on right: 32
-mmodseq (48)
-    on left: 43 44, on right: 32 44
-mmod (49)
-    on left: 45 46 47, on right: 44
+mbasic (49)
+    on left: 33 34 35 36 37 38 39 40 41 42 43 44, on right: 32
+mmodseq (50)
+    on left: 45 46, on right: 32 46
+mmod (51)
+    on left: 47 48 49, on right: 46
 
 
 State 0
@@ -478,11 +482,13 @@ State 38
     LM_RANDOM        shift, and go to state 46
     LM_BAYES         shift, and go to state 47
     LM_MIX           shift, and go to state 48
+    LM_GBRBM         shift, and go to state 49
+    LM_BBRBM         shift, and go to state 50
 
     $default  reduce using rule 31 (lmethod)
 
-    lmethod  go to state 49
-    mbasic   go to state 50
+    lmethod  go to state 51
+    mbasic   go to state 52
 
 
 State 39
@@ -557,69 +563,83 @@ State 48
 
 State 49
 
+   43 mbasic: LM_GBRBM .
+
+    $default  reduce using rule 43 (mbasic)
+
+
+State 50
+
+   44 mbasic: LM_BBRBM .
+
+    $default  reduce using rule 44 (mbasic)
+
+
+State 51
+
     1 arg: optseq endopt data arch nnfile lmethod .
 
     $default  reduce using rule 1 (arg)
 
 
-State 50
+State 52
 
    32 lmethod: mbasic . mmodseq
 
-    MMOD_OVERTRAIN  shift, and go to state 51
-    MMOD_PCA        shift, and go to state 52
-    MMOD_ICA        shift, and go to state 53
+    MMOD_OVERTRAIN  shift, and go to state 53
+    MMOD_PCA        shift, and go to state 54
+    MMOD_ICA        shift, and go to state 55
 
-    $default  reduce using rule 43 (mmodseq)
+    $default  reduce using rule 45 (mmodseq)
 
-    mmodseq  go to state 54
-    mmod     go to state 55
-
-
-State 51
-
-   45 mmod: MMOD_OVERTRAIN .
-
-    $default  reduce using rule 45 (mmod)
-
-
-State 52
-
-   46 mmod: MMOD_PCA .
-
-    $default  reduce using rule 46 (mmod)
+    mmodseq  go to state 56
+    mmod     go to state 57
 
 
 State 53
 
-   47 mmod: MMOD_ICA .
+   47 mmod: MMOD_OVERTRAIN .
 
     $default  reduce using rule 47 (mmod)
 
 
 State 54
 
+   48 mmod: MMOD_PCA .
+
+    $default  reduce using rule 48 (mmod)
+
+
+State 55
+
+   49 mmod: MMOD_ICA .
+
+    $default  reduce using rule 49 (mmod)
+
+
+State 56
+
    32 lmethod: mbasic mmodseq .
 
     $default  reduce using rule 32 (lmethod)
 
 
-State 55
+State 57
 
-   44 mmodseq: mmod . mmodseq
+   46 mmodseq: mmod . mmodseq
 
-    MMOD_OVERTRAIN  shift, and go to state 51
-    MMOD_PCA        shift, and go to state 52
-    MMOD_ICA        shift, and go to state 53
+    MMOD_OVERTRAIN  shift, and go to state 53
+    MMOD_PCA        shift, and go to state 54
+    MMOD_ICA        shift, and go to state 55
 
-    $default  reduce using rule 43 (mmodseq)
+    $default  reduce using rule 45 (mmodseq)
 
-    mmodseq  go to state 56
-    mmod     go to state 55
+    mmodseq  go to state 58
+    mmod     go to state 57
 
 
-State 56
+State 58
 
-   44 mmodseq: mmod mmodseq .
+   46 mmodseq: mmod mmodseq .
 
-    $default  reduce using rule 44 (mmodseq)
+    $default  reduce using rule 46 (mmodseq)

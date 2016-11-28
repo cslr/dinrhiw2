@@ -21,9 +21,6 @@ namespace whiteice
   template <typename T>
   nnetwork<T>::nnetwork()
   {
-    stochasticActivation = false;
-    nonlinearity = sigmoidNonLinearity;
-    
     arch.resize(2);    
     
     arch[0] = 1;
@@ -41,15 +38,27 @@ namespace whiteice
 
     data.resize(size);
 
-    randomize();
-    
     state.resize(maxwidth);
     temp.resize(maxwidth);
     lgrad.resize(maxwidth);
+
+    // there are arch.size()-1 layers in our network
+    // which are all optimized as the default
+    frozen.resize(arch.size()-1);
+    for(unsigned int i=0;i<frozen.size();i++)
+      frozen[i] = false;
+
+    nonlinearity.resize(arch.size()-1);
+    for(unsigned int i=0;i<nonlinearity.size();i++)
+      nonlinearity[i] = sigmoid;
+    
+    nonlinearity[nonlinearity.size()-1] = pureLinear;
+
     
     inputValues.resize(1);
     outputValues.resize(1);
-    
+
+    randomize();
   }
   
   
@@ -63,8 +72,6 @@ namespace whiteice
     maxwidth = nn.maxwidth;
     size = nn.size;
 
-    stochasticActivation = nn.stochasticActivation;
-
     arch   = nn.arch;
     bpdata = nn.bpdata;
     data   = nn.data;
@@ -72,6 +79,7 @@ namespace whiteice
     temp   = nn.temp;
     lgrad  = nn.lgrad;
     nonlinearity = nn.nonlinearity;
+    frozen = nn.frozen;
   }
   
   
@@ -84,8 +92,6 @@ namespace whiteice
       throw std::invalid_argument("invalid network architecture");
 
     maxwidth = 0;
-    stochasticActivation = false;
-    nonlinearity = nl; // sigmoidNonLinearity; is the default
     
     for(unsigned int i=0;i<nnarch.size();i++){
       if(nnarch[i] <= 0)
@@ -96,6 +102,12 @@ namespace whiteice
 
     // sets up architecture
     arch = nnarch;
+
+    nonlinearity.resize(arch.size()-1);
+    for(unsigned int i=0;i<nonlinearity.size();i++)
+      nonlinearity[i] = nl;
+    
+    nonlinearity[nonlinearity.size()-1] = pureLinear; // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
     
     unsigned int memuse = 0;
     
@@ -108,15 +120,21 @@ namespace whiteice
     
     data.resize(size);
     
-    // intializes all layers (randomly)
-    randomize();
-
     state.resize(maxwidth);
     temp.resize(maxwidth);
     lgrad.resize(maxwidth);
      
     inputValues.resize(arch[0]);
     outputValues.resize(arch[arch.size()-1]);
+    
+    // there are arch.size()-1 layers in our network
+    // which are all optimized as the default
+    frozen.resize(arch.size()-1);
+    for(unsigned int i=0;i<frozen.size();i++)
+      frozen[i] = false;
+
+    // intializes all weights/layers (randomly)
+    randomize();
    
     hasValidBPData = false;
   }
@@ -137,8 +155,8 @@ namespace whiteice
     maxwidth = nn.maxwidth;
     size = nn.size;
 
-    stochasticActivation = nn.stochasticActivation;
     nonlinearity = nn.nonlinearity;
+    frozen = nn.frozen;
 
     data = nn.data;
     bpdata = nn.bpdata;
@@ -378,42 +396,45 @@ namespace whiteice
       for(unsigned int i=1;i<arch.size();i++){
 	end   += (arch[i-1] + 1)*arch[i];
 	
-	// this initialization is as described in the paper of Xavier Glorot
-	// Understanding the difficulty of training deep neural networks
-	
-	T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
-	T scaling = T(2.2);
-
+	if(frozen[i-1] == false){ // do not touch frozen layers when using randomize()
+	  
+	  // this initialization is as described in the paper of Xavier Glorot
+	  // Understanding the difficulty of training deep neural networks
+	  
+	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
+	  T scaling = T(2.2);
+	  
 	  // T(3.0f*((float)rand())/((float)RAND_MAX)); // different scaling for different nonlins
-
-	// std::cout << "random init 2 " << scaling << std::endl;
-      
-	var *= scaling;
-	
-	for(unsigned int j=start;j<end;j++){
-	  T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
-	  // data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
-	  data[j] = var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
-	}
-
+	  
+	  // std::cout << "random init 2 " << scaling << std::endl;
+	  
+	  var *= scaling;
+	  
+	  for(unsigned int j=start;j<end;j++){
+	    T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
+	    // data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	    data[j] = var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	  }
+	  
 #if 0
-	// sets bias terms to zero?
-	for(unsigned int l=0;l<getLayers();l++){
-	  whiteice::math::vertex<T> bias;
-	  if(getBias(bias, l)){
-	    bias.zero();
-	    setBias(bias,l);
+	  // sets bias terms to zero?
+	  for(unsigned int l=0;l<getLayers();l++){
+	    whiteice::math::vertex<T> bias;
+	    if(getBias(bias, l)){
+	      bias.zero();
+	      setBias(bias,l);
+	    }
 	  }
-	}
-	
-	whiteice::math::matrix<T> W;
-	for(unsigned int l=0;l<getLayers();l++){
-	  if(getWeights(W, l)){
-	    W.zero();
-	    setWeights(W,l);
+	  
+	  whiteice::math::matrix<T> W;
+	  for(unsigned int l=0;l<getLayers();l++){
+	    if(getWeights(W, l)){
+	      W.zero();
+	      setWeights(W,l);
+	    }
 	  }
-	}
 #endif
+	}
 	
 	start += (arch[i-1] + 1)*arch[i];
       }
@@ -506,8 +527,13 @@ namespace whiteice
 	  grad[gindex] = -lgrad[y];
 	  // dptr[y] += rate * lgrad[y];
 	}
-	
+
 	gindex -= rows*cols + rows;
+
+	// zeroes gradient for this layer (FIXME: optimize me and do not calculate the gradient at all!)
+	if(frozen[counter-1]){
+	  memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
+	}
       }
       
 
@@ -604,6 +630,14 @@ namespace whiteice
 	grad[gindex] = -lgrad[y];
 	// _data[y] += rate*lgrad[y];
       }
+
+      gindex -= rows*cols + rows;
+      assert(gindex == 0); // DEBUGGING REMOVE LATER
+      
+      // zeroes gradient for this layer (FIXME: optimize me and do not calculate the gradient!)
+      if(frozen[counter-1]){
+	memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
+      }
       
     }
     
@@ -612,35 +646,29 @@ namespace whiteice
   }
 
 
-  // return true if nnetwork has stochastic sigmoid activations (clipped to 0 or 1)
-  template <typename T>
-  bool nnetwork<T>::stochastic(){
-    return stochasticActivation;
-  }
-
-  template <typename T>
-  void nnetwork<T>::setStochastic(bool stochastic){ // sets stochastic sigmoid activations
-    stochasticActivation = stochastic;
-  }
-  
   
   template <typename T> // non-linearity used in neural network
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
-    if(nonlinearity == sigmoidNonLinearity){
+    assert(layer < getLayers());
+    
+    if(nonlinearity[layer] == sigmoid){
+      // non-linearity motivated by restricted boltzman machines..
+      T output = T(1.0) / (T(1.0) + math::exp(-input));
+      return output;
+    }
+    else if(nonlinearity[layer] == stochasticSigmoid){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) / (T(1.0) + math::exp(-input));
       
-      if(stochasticActivation){
-	T r = T(((double)rand())/((double)RAND_MAX));
-	
-	if(output > r){ output = T(1.0); }
-	else{ output = T(0.0); }
-      }
+      T r = T(((double)rand())/((double)RAND_MAX));
+      
+      if(output >= r){ output = T(1.0); }
+      else{ output = T(0.0); }
 
       return output;
     }
-    else if(nonlinearity == halfLinear){
+    else if(nonlinearity[layer] == halfLinear){
       // T output = T(0.0);
       
       if(neuron & 1){
@@ -667,7 +695,7 @@ namespace whiteice
 	return input; // half-the layers nodes are linear!
       }
     }
-    else if(nonlinearity == pureLinear){
+    else if(nonlinearity[layer] == pureLinear){
       return input; // all layers/neurons are linear..
     }
     else{
@@ -745,16 +773,29 @@ namespace whiteice
 #endif    
   }
   
+  
   template <typename T> // derivat of non-linearity used in neural network
   inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
-    if(nonlinearity == sigmoidNonLinearity){
+    assert(layer < getLayers());
+    
+    if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) + math::exp(-input);
       output = math::exp(-input) / (output*output);
       return output;
     }
-    else if(nonlinearity == halfLinear){
+    else if(nonlinearity[layer] == stochasticSigmoid){
+      // FIXME: what is "correct" derivate here? I guess we should calculate E{g'(x)} or something..
+      // in general stochastic layers should be frozen so that they are optimized
+      // through other means than following the gradient..
+      
+      // non-linearity motivated by restricted boltzman machines..
+      T output = T(1.0) + math::exp(-input);
+      output = math::exp(-input) / (output*output);
+      return output;
+    }
+    else if(nonlinearity[layer] == halfLinear){
       if(neuron & 1){
 #if 0
 	// softmax
@@ -782,7 +823,7 @@ namespace whiteice
 	return 1.0; // half-the layers nodes are linear!
       }
     }
-    else if(nonlinearity == pureLinear){
+    else if(nonlinearity[layer] == pureLinear){
       return 1.0; // all layers/neurons are linear..
     }
     else{
@@ -945,6 +986,7 @@ namespace whiteice
 
 #define FNN_STOCHASTIC_CFGSTR       "FNN_STOCHASTIC"
 #define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEAR"
+#define FNN_FROZEN_CFGSTR           "FNN_FROZEN"
 
   //////////////////////////////////////////////////////////////////////
 
@@ -997,33 +1039,43 @@ namespace whiteice
 	floats.clear();
       }
 
-      // stochastic activation
+      // used non-linearity
       {
-	if(stochasticActivation)
-	  ints.push_back(1); // true
-	else
-	  ints.push_back(0);
-	
-	if(!configuration.set(FNN_STOCHASTIC_CFGSTR, ints))
+	for(unsigned int l=0;l<nonlinearity.size();l++){
+	  if(nonlinearity[l] == sigmoid){
+	    ints.push_back(0);
+	  }
+	  else if(nonlinearity[l] == stochasticSigmoid){
+	    ints.push_back(1);
+	  }	  
+	  else if(nonlinearity[l] == halfLinear){
+	    ints.push_back(2);
+	  }
+	  else if(nonlinearity[l] == pureLinear){
+	    ints.push_back(3);
+	  }
+	  else return false; // error!
+	}
+
+	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints))
 	  return false;
-	
+
 	ints.clear();
       }
 
-      // used non-linearity
-      {
-	if(nonlinearity == sigmoidNonLinearity){
-	  ints.push_back(0);
-	}
-	else if(nonlinearity == halfLinear){
-	  ints.push_back(1);
-	}
-	else if(nonlinearity == pureLinear){
-	  ints.push_back(2);
-	}
-	else return false; // error!
 
-	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints))
+      // frozen status of each layer
+      {
+	for(unsigned int l=0;l<frozen.size();l++){
+	  if(frozen[l] == false){
+	    ints.push_back(0);
+	  }
+	  else{
+	    ints.push_back(1);
+	  }
+	}
+
+	if(!configuration.set(FNN_FROZEN_CFGSTR, ints))
 	  return false;
 
 	ints.clear();
@@ -1119,6 +1171,18 @@ namespace whiteice
 	
 	inputValues.resize(arch[0]);
 	outputValues.resize(arch[arch.size() - 1]);
+
+	frozen.resize(arch.size()-1);
+	
+	for(unsigned int i=0;i<frozen.size();i++)
+	  frozen[i] = false;
+
+	nonlinearity.resize(arch.size()-1);
+	
+	for(unsigned int i=0;i<nonlinearity.size();i++)
+	  nonlinearity[i] = sigmoid;
+
+	nonlinearity[nonlinearity.size()-1] = pureLinear;
 	
 	ints.clear();
       }
@@ -1159,19 +1223,44 @@ namespace whiteice
 	if(!configuration.get(FNN_NONLINEARITY_CFGSTR, ints))
 	  return false;
 
-	if(ints.size() != 1) return false;
+	if(ints.size() != nonlinearity.size()) return false;
 
-	if(ints[0] == 0){
-	  nonlinearity = sigmoidNonLinearity;
+	for(unsigned int l=0;l<nonlinearity.size();l++){
+	  if(ints[l] == 0){
+	    nonlinearity[l] = sigmoid;
+	  }
+	  else if(ints[l] == 1){
+	    nonlinearity[l] = stochasticSigmoid;
+	  }	  
+	  else if(ints[l] == 2){
+	    nonlinearity[l] = halfLinear;
+	  }
+	  else if(ints[l] == 3){
+	    nonlinearity[l] = pureLinear;
+	  }
+	  else{
+	    return false;
+	  }
 	}
-	else if(ints[0] == 1){
-	  nonlinearity = halfLinear;
-	}
-	else if(ints[0] == 2){
-	  nonlinearity = pureLinear;
-	}
-	else{
+	
+	ints.clear();
+      }
+
+
+      // frozen status of each nnetwork layer
+      {
+	if(!configuration.get(FNN_FROZEN_CFGSTR, ints))
 	  return false;
+
+	if(ints.size() != frozen.size()) return false;
+
+	for(unsigned int l=0;l<frozen.size();l++){
+	  if(ints[l] == 0){
+	    frozen[l] = false;
+	  }
+	  else{
+	    frozen[l] = true;
+	  }
 	}
 	
 	ints.clear();
@@ -1335,17 +1424,86 @@ namespace whiteice
   
 
   template <typename T>
-  typename nnetwork<T>::nonLinearity nnetwork<T>::getNonlinearity() const throw()
+  bool nnetwork<T>::setNonlinearity(nnetwork<T>::nonLinearity nl)
   {
-    return nonlinearity;
+    for(unsigned int l=0;l<nonlinearity.size();l++)
+      nonlinearity[l] = nl;
+
+    nonlinearity[nonlinearity.size()-1] = pureLinear; // last layer is always linear!! (for now)
+    
+    return true;
   }
 
   template <typename T>
-  bool nnetwork<T>::setNonlinearity(nnetwork<T>::nonLinearity nl)
+  typename nnetwork<T>::nonLinearity nnetwork<T>::getNonlinearity(unsigned int layer) const throw()
   {
-    nonlinearity = nl;
+    if(layer >= nonlinearity.size()) return pureLinear; // silent failure..
+
+    return nonlinearity[layer];
+  }
+
+  template <typename T>
+  bool nnetwork<T>::setNonlinearity(unsigned int layer, nonLinearity nl)
+  {
+    if(layer >= nonlinearity.size()) return false;
+
+    nonlinearity[layer] = nl;
+    
     return true;
   }
+  
+  template <typename T>
+  void nnetwork<T>::getNonlinearity(std::vector<nonLinearity>& nls) const throw()
+  {
+    nls = nonlinearity;
+  }
+
+  template <typename T>
+  bool nnetwork<T>::setNonlinearity(const std::vector<nonLinearity>& nls) throw()
+  {
+    if(nonlinearity.size() != nls.size()) return false;
+
+    nonlinearity = nls;
+    return true;
+  }
+
+  
+  template <typename T>
+  bool nnetwork<T>::setFrozen(unsigned int layer, bool f)
+  {
+    if(layer >= frozen.size())
+      return false;
+
+    frozen[layer] = f;
+    return true;
+  }
+
+  
+  template <typename T>
+  bool nnetwork<T>::setFrozen(const std::vector<bool>& f)
+  {
+    if(this->frozen.size() != f.size()) return false;
+
+    this->frozen = f;
+    
+    return true;
+  }
+
+  
+  template <typename T>
+  bool nnetwork<T>::getFrozen(unsigned int layer) const
+  {
+    if(layer < frozen.size()) return frozen[layer];
+    else return false; // silent error
+  }
+
+  
+  template <typename T>
+  void nnetwork<T>::getFrozen(std::vector<bool>& frozen) const
+  {
+    frozen = this->frozen;
+  }
+
   
   
   template <typename T>
