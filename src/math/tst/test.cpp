@@ -59,7 +59,10 @@ void own_unexpected();
 void rng_test();
 
 void vertex_test();
+void outerproduct_test();
+
 number <quaternion<double>, double, double, unsigned int> * quaternion_test();
+
 void matrix_test();
 void inter_test();
 void hermite_test();
@@ -265,6 +268,9 @@ int main()
     
     std::cout << "VERTEX TEST" << std::endl;
     vertex_test();
+
+    std::cout << "OUTERPRODUCT TEST" << std::endl;
+    outerproduct_test();
     
     /*
       std::cout << "QUATERNION TEST" << std::endl;  
@@ -1581,8 +1587,59 @@ void vertex_test()
   }
 }
 
+////////////////////////////////////////////////////////////
 
+void outerproduct_test()
+{
+  {
+    std::cout << "FAST OUTERPRODUCT TEST" << std::endl;
+    
+    matrix< blas_real<double> > R1, R2;
+    vertex< blas_real<double> > a, b;
+    blas_real<double> alpha = 1.0;
+    
+    const unsigned int rows = rand() % 100;
+    const unsigned int cols = rand() % 100;
 
+    a.resize(rows);
+    b.resize(cols);
+
+    R1.resize(rows, cols);
+    R2.resize(rows, cols);
+    R1.zero();
+    R2.zero();
+
+    for(unsigned int r=0;r<rows;r++) a[r] = rand() / ((double)RAND_MAX);
+    for(unsigned int c=0;c<cols;c++) b[c] = rand() / ((double)RAND_MAX);
+
+    R1 = a.outerproduct(b);
+    addouterproduct(R2, alpha, a, b);
+
+    R1 -= R2;
+
+    auto error = frobenius_norm(R1);
+
+    if(error > 0.01){
+      std::cout << "ERROR: in fast outerproduct computation" << std::endl;
+    }
+    else{
+      std::cout << "Error is within safe limits: " << error 
+		<< ". Good." << std::endl;
+    }
+
+    error = frobenius_norm(R2);
+
+    if(error <= 0.001){
+      std::cout << "ERROR: in fast outerproduct computation" << std::endl;
+    }
+    else{
+      std::cout << "Outer product produces non-zero matrix: " << error 
+		<< ". Good." << std::endl;
+    }
+    
+  }
+  
+}
 
 ////////////////////////////////////////////////////////////
 

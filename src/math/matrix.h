@@ -50,6 +50,14 @@ namespace whiteice
       (matrix<T>& A, const unsigned int i, const unsigned int M, const unsigned int k, vertex<T>& v);    
     template <typename T> bool rhouseholder_rightrot
       (matrix<T>& A, const unsigned int i, const unsigned int M, const unsigned int k, vertex<T>& v);
+
+    // outerproduct
+    template <typename T>
+      bool addouterproduct(matrix<T>& A,
+			   const T& scalar,
+			   const vertex<T>& a,
+			   const vertex<T>& b);
+    
        
     
     
@@ -254,6 +262,13 @@ namespace whiteice
 					   const unsigned int M,
 					   const unsigned int k,
 					   vertex<T>& v);
+
+      // outerproduct
+      friend bool addouterproduct<T>(matrix<T>& A,
+				     const T& scalar,
+				     const vertex<T>& a,
+				     const vertex<T>& b);
+      
       
       private:
       
@@ -302,7 +317,7 @@ namespace whiteice
 #include "neuronlayer.h"  
 #include "vertex.h"
 #include "norms.h"
-
+#include "outerproduct.h"
 
 namespace whiteice
 {

@@ -11,7 +11,7 @@ CFLAGS = @CFLAGS@ -Wall -g  -I. -I.. -I../.. -I../neuralnetwork -I../crypto \
 
 CXXFLAGS = $(CFLAGS)
 
-OBJECTS = blade_math.o ownexception.o \
+OBJECTS = blade_math.o ownexception.o outerproduct.o \
 	vertex.o quaternion.o matrix.o real.o \
 	matrix_rotations.o linear_equations.o linear_algebra.o \
 	hermite.o bezier.o bezier_surface.o bezier_density.o \
@@ -21,7 +21,7 @@ OBJECTS = blade_math.o ownexception.o \
 	../MemoryCompressor.o ../conffile.o ../dynamic_bitset.o
 
 
-SOURCES = blade_math.cpp ownexception.cpp \
+SOURCES = blade_math.cpp ownexception.cpp outerproduct.cpp \
 	vertex.cpp quaternion.cpp matrix.cpp real.cpp \
 	matrix_rotations.cpp linear_equations.cpp linear_algebra.cpp \
 	hermite.cpp bezier.cpp bezier_surface.cpp bezier_density.cpp \

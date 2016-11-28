@@ -56,7 +56,14 @@ namespace whiteice
     
     template <typename T> bool rhouseholder_rightrot
       (matrix<T>& A, const unsigned int i, const unsigned int M, const unsigned int k, vertex<T>& v);
-    
+
+
+    // outerproduct
+    template <typename T>
+      bool addouterproduct(matrix<T>& A,
+			   const T& scalar,
+			   const vertex<T>& a,
+			   const vertex<T>& b);
     
     
     template <typename T=blas_real<float> >
@@ -230,7 +237,12 @@ namespace whiteice
 					   const unsigned int M,
 					   const unsigned int k,
 					   vertex<T>& v);
-
+      // outerproduct
+      friend bool addouterproduct<T>(matrix<T>& A,
+				     const T& scalar,
+				     const vertex<T>& a,
+				     const vertex<T>& b);
+      
       private:
       
       T* data;      
@@ -276,7 +288,7 @@ namespace whiteice
 #include "linear_algebra.h"
 #include "correlation.h"
 #include "matrix_rotations.h"
-
+#include "outerproduct.h"
 
 namespace whiteice{
   namespace math{
