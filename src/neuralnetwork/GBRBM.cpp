@@ -1379,7 +1379,7 @@ template <typename T>
 T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 {
 	const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well
-
+	
 	try{
 		// converts q to parameters [a, b, z, W]
 		auto qa1 = a;
@@ -1504,6 +1504,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 template <typename T>
 whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
 {
+        const unsigned int CDk = 2; // was CD-25 !!
         const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well..
 	whiteice::math::vertex<T> grad(this->qsize());
 	grad.zero();
@@ -1636,7 +1637,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) th
 				const unsigned int index = rng.rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
 
-				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 25); // gets x ~ p(v) from the model (CD-25)
+				auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, CDk); // gets x ~ p(v) from the model (CD-k)
 
 #pragma omp critical
 				{
@@ -2047,7 +2048,9 @@ template <typename T>
 math::vertex<T> GBRBM<T>::negative_phase_q(const unsigned int SAMPLES,
 		const math::matrix<T>& qW, const math::vertex<T>& qa, const math::vertex<T>& qb, const math::vertex<T>& qz) const
 {
-	math::vertex<T> grad(qW.ysize()*qW.xsize()+qa.size()+qb.size()+qz.size());
+        const unsigned int CDk = 1;
+  
+        math::vertex<T> grad(qW.ysize()*qW.xsize()+qa.size()+qb.size()+qz.size());
 	grad.zero();
 
 	auto ga = qa;
@@ -2079,7 +2082,7 @@ math::vertex<T> GBRBM<T>::negative_phase_q(const unsigned int SAMPLES,
 			const unsigned int index = rng.rand() % Usamples.size();
 			const math::vertex<T>& v = Usamples[index]; // x = visible state
 
-			auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, 1); // gets x ~ p(v) from the model
+			auto xx = reconstruct_gbrbm_data(v, qW, qa, qb, qz, CDk); // gets x ~ p(v) from the model
 			vs.push_back(xx);
 		}
 

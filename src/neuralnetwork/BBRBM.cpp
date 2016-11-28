@@ -333,11 +333,11 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			 const unsigned int EPOCHS,
 			 bool verbose)
 {
-  // implements traditional CD-k (k=10) learning algorithm,
+  // implements traditional CD-k (k=2) learning algorithm,
   // which can be used as a reference point
   // and returns reconstruction error as the modelling error..
   
-  const unsigned int CDk = 10; // CD-10 algorithm
+  const unsigned int CDk = 2;  // CD-k algorithm (was 10!)
   T lambda = T(0.01);          // initial learning rate
     
   math::matrix<T> PW(W);

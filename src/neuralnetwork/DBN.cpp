@@ -357,8 +357,9 @@ namespace whiteice
 	  v = sqrt(v);
 
 	  std::cout << "RATIO: " << (v/m) << std::endl;
+	  std::cout << ((v/m) <= T(0.001)) << std::endl;
 	  
-	  if(v/m <= 0.001) 
+	  if((v/m) <= T(0.001))
 	    break; // stdev is less than 0.1% of mean
 	}
       }
