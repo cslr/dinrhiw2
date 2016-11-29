@@ -38,6 +38,8 @@ namespace whiteice
 
       
       bool createCluster(const std::string& name, const unsigned int dimension);
+
+      bool resetCluster(const unsigned int index, const std::string& name, const unsigned int dimension);
       
       bool getClusterNames(std::vector<std::string>& names) const;
       

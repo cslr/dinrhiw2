@@ -137,7 +137,34 @@ namespace whiteice
     
     return true;
   }
-  
+
+  template <typename T>
+  bool dataset<T>::resetCluster(const unsigned int index, const std::string& name, const unsigned int dimension)
+  {
+    if(index >= clusters.size()) return false;
+
+    if(name.length() <= 0)
+      return false;
+
+    auto it = namemapping.find(name);
+    
+    if(it != namemapping.end())
+      if(it->second != index)
+	return false;
+    
+    clusters[index].cname = name;
+    clusters[index].cindex = index;
+    clusters[index].data_dimension = dimension;
+    clusters[index].preprocessings.clear();
+    namemapping[name] = index;
+
+    // removes data and preprocessing information
+    clusters[index].data.clear();
+    clusters[index].preprocessings.clear();
+
+    return true;
+  }
+
   
   template <typename T>
   bool dataset<T>::getClusterNames(std::vector<std::string>& names) const

@@ -110,7 +110,7 @@ namespace whiteice
     
     unsigned int getLayers() const throw();
     unsigned int getInputs(unsigned int l) const throw(); // number of inputs per neuron for this layer
-    unsigned int getNeurons(unsigned int l) const throw(); // number of neurons per layer
+    unsigned int getNeurons(unsigned int l) const throw(); // number of neurons (outputs) per layer
 
     // gets and sets network parameters: Weight matrixes and biases
     bool getBias(math::vertex<T>& b, unsigned int layer) const throw();
@@ -131,8 +131,9 @@ namespace whiteice
     bool setFrozen(const std::vector<bool>& frozen);        // so that gradient for those parameters is 
     bool getFrozen(unsigned int layer) const;               // always zero and optimization is restricted
     void getFrozen(std::vector<bool>& frozen) const;        // to other parts of the network
-                                                            // FIXME currently frozen status is NOT saved to disk
-                                                                 
+
+    nnetwork<T>* createSubnet(const unsigned int fromLayer);          // creates subnet starting from fromLayer:th layer to the output
+    bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); // injects (if possible) subnet into net starting from fromLayer:th layer
     
     unsigned int getSamplesCollected() const throw();
     bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
@@ -164,7 +165,6 @@ namespace whiteice
 
     bool hasValidBPData;
     
-    bool stochasticActivation;
     std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer (default: sigmoid)
     std::vector<bool> frozen;  // frozen layers (that are not optimized or set to some values otherwise)
     

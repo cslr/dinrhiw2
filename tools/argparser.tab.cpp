@@ -66,6 +66,7 @@
   struct arg_info
   {
     bool verbose;
+    bool info;
     bool load;
     bool help;
     bool version;
@@ -83,7 +84,7 @@
 
     bool isRecurrent;
     unsigned int SIMULATION_DEPTH;
-
+        
     unsigned int threads;
 
     unsigned int dataSize;
@@ -99,7 +100,7 @@
   static struct arg_info __info;
   
 
-#line 103 "argparser.tab.cpp" /* glr.c:240  */
+#line 104 "argparser.tab.cpp" /* glr.c:240  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -126,40 +127,41 @@ extern int yydebug;
     STRING = 259,
     FILENAME = 260,
     ARCHSTRING = 261,
-    OPT_NOINIT = 262,
-    OPT_OVERFIT = 263,
-    OPT_ADAPTIVE = 264,
-    OPT_NEGFEEDBACK = 265,
-    OPT_DEEP_BINARY = 266,
-    OPT_DEEP_GAUSSIAN = 267,
-    OPT_PSEUDOLINEAR = 268,
-    OPT_PURELINEAR = 269,
-    OPT_LOAD = 270,
-    OPT_HELP = 271,
-    OPT_VERBOSE = 272,
-    OPT_VERSION = 273,
-    OPT_TIME = 274,
-    OPT_SAMPLES = 275,
-    OPT_THREADS = 276,
-    OPT_DATASIZE = 277,
-    OPT_RECURRENT = 278,
-    OPT_ENDOPT = 279,
-    LM_USE = 280,
-    LM_MINIMIZE = 281,
-    LM_PARALLELGRAD = 282,
-    LM_GRAD = 283,
-    LM_PBFGS = 284,
-    LM_PLBFGS = 285,
-    LM_LBFGS = 286,
-    LM_RANDOM = 287,
-    LM_BAYES = 288,
-    LM_EDIT = 289,
-    LM_MIX = 290,
-    LM_GBRBM = 291,
-    LM_BBRBM = 292,
-    MMOD_OVERTRAIN = 293,
-    MMOD_PCA = 294,
-    MMOD_ICA = 295
+    OPT_INFO = 262,
+    OPT_NOINIT = 263,
+    OPT_OVERFIT = 264,
+    OPT_ADAPTIVE = 265,
+    OPT_NEGFEEDBACK = 266,
+    OPT_DEEP_BINARY = 267,
+    OPT_DEEP_GAUSSIAN = 268,
+    OPT_PSEUDOLINEAR = 269,
+    OPT_PURELINEAR = 270,
+    OPT_LOAD = 271,
+    OPT_HELP = 272,
+    OPT_VERBOSE = 273,
+    OPT_VERSION = 274,
+    OPT_TIME = 275,
+    OPT_SAMPLES = 276,
+    OPT_THREADS = 277,
+    OPT_DATASIZE = 278,
+    OPT_RECURRENT = 279,
+    OPT_ENDOPT = 280,
+    LM_USE = 281,
+    LM_MINIMIZE = 282,
+    LM_PARALLELGRAD = 283,
+    LM_GRAD = 284,
+    LM_PBFGS = 285,
+    LM_PLBFGS = 286,
+    LM_LBFGS = 287,
+    LM_RANDOM = 288,
+    LM_BAYES = 289,
+    LM_EDIT = 290,
+    LM_MIX = 291,
+    LM_GBRBM = 292,
+    LM_BBRBM = 293,
+    MMOD_OVERTRAIN = 294,
+    MMOD_PCA = 295,
+    MMOD_ICA = 296
   };
 #endif
 
@@ -168,12 +170,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 70 "argparser.ypp" /* glr.c:244  */
+#line 71 "argparser.ypp" /* glr.c:244  */
 
   unsigned int val;
   char* str;
 
-#line 177 "argparser.tab.cpp" /* glr.c:244  */
+#line 179 "argparser.tab.cpp" /* glr.c:244  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -203,7 +205,7 @@ static YYSTYPE yyval_default;
 
 /* Copy the second part of user declarations.  */
 
-#line 207 "argparser.tab.cpp" /* glr.c:263  */
+#line 209 "argparser.tab.cpp" /* glr.c:263  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -308,18 +310,18 @@ static YYSTYPE yyval_default;
 #endif
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  26
+#define YYFINAL  27
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   47
+#define YYLAST   48
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  41
+#define YYNTOKENS  42
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  13
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  52
+#define YYNRULES  53
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  61
+#define YYNSTATES  62
 /* YYMAXRHS -- Maximum number of symbols on right-hand side of rule.  */
 #define YYMAXRHS 6
 /* YYMAXLEFT -- Maximum number of symbols to the left of a handle
@@ -328,7 +330,7 @@ static YYSTYPE yyval_default;
 
 /* YYTRANSLATE(X) -- Bison symbol number corresponding to X.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   295
+#define YYMAXUTOK   296
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -365,19 +367,19 @@ static const unsigned char yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    40
+      35,    36,    37,    38,    39,    40,    41
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned char yyrline[] =
 {
-       0,   137,   137,   140,   141,   144,   145,   146,   147,   150,
-     151,   152,   153,   154,   155,   156,   157,   158,   159,   160,
-     161,   162,   163,   164,   165,   166,   171,   172,   176,   177,
-     180,   181,   185,   188,   189,   192,   193,   194,   195,   196,
-     197,   198,   199,   200,   201,   202,   203,   204,   207,   208,
-     211,   212,   213
+       0,   139,   139,   142,   143,   146,   147,   148,   149,   152,
+     153,   154,   155,   156,   157,   158,   159,   160,   161,   162,
+     163,   164,   165,   166,   167,   168,   169,   173,   174,   178,
+     179,   182,   183,   187,   190,   191,   194,   195,   196,   197,
+     198,   199,   200,   201,   202,   203,   204,   205,   206,   209,
+     210,   213,   214,   215
 };
 #endif
 
@@ -387,7 +389,7 @@ static const unsigned char yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "NUMBER", "STRING", "FILENAME",
-  "ARCHSTRING", "OPT_NOINIT", "OPT_OVERFIT", "OPT_ADAPTIVE",
+  "ARCHSTRING", "OPT_INFO", "OPT_NOINIT", "OPT_OVERFIT", "OPT_ADAPTIVE",
   "OPT_NEGFEEDBACK", "OPT_DEEP_BINARY", "OPT_DEEP_GAUSSIAN",
   "OPT_PSEUDOLINEAR", "OPT_PURELINEAR", "OPT_LOAD", "OPT_HELP",
   "OPT_VERBOSE", "OPT_VERSION", "OPT_TIME", "OPT_SAMPLES", "OPT_THREADS",
@@ -408,12 +410,12 @@ static const char *const yytname[] =
 static const signed char yypact[] =
 {
       -7,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,
-     -13,   -13,   -13,    34,    35,    36,    37,    38,    42,    19,
-      -7,   -13,   -13,   -13,   -13,   -13,   -13,   -13,    39,   -13,
-     -13,    40,   -13,    27,   -13,   -13,   -13,   -13,   -13,    -8,
-     -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,
-     -13,   -13,   -13,   -13,    -4,   -13,   -13,   -13,   -13,    -4,
-     -13
+     -13,   -13,   -13,   -13,    35,    36,    37,    38,    39,    43,
+      19,    -7,   -13,   -13,   -13,   -13,   -13,   -13,   -13,    40,
+     -13,   -13,    41,   -13,    28,   -13,   -13,   -13,   -13,   -13,
+      -8,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,   -13,
+     -13,   -13,   -13,   -13,   -13,    -4,   -13,   -13,   -13,   -13,
+      -4,   -13
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -421,13 +423,13 @@ static const signed char yypact[] =
      means the default is an error.  */
 static const unsigned char yydefact[] =
 {
-       3,     9,    10,    11,    12,    13,    14,    15,    16,    18,
-      17,    19,    20,     0,     0,     0,     0,     0,     0,    26,
-       3,    23,    24,    21,    22,    25,     1,    27,    28,     4,
-      29,    30,    31,     0,     8,     5,     7,     6,    32,    33,
-      35,    36,    41,    37,    38,    39,    40,    42,    43,    44,
-      45,    46,    47,     2,    48,    50,    51,    52,    34,    48,
-      49
+       3,    10,     9,    11,    12,    13,    14,    15,    16,    17,
+      19,    18,    20,    21,     0,     0,     0,     0,     0,     0,
+      27,     3,    24,    25,    22,    23,    26,     1,    28,    29,
+       4,    30,    31,    32,     0,     8,     5,     7,     6,    33,
+      34,    36,    37,    42,    38,    39,    40,    41,    43,    44,
+      45,    46,    47,    48,     2,    49,    51,    52,    53,    35,
+      49,    50
 };
 
   /* YYPGOTO[NTERM-NUM].  */
@@ -440,8 +442,8 @@ static const signed char yypgoto[] =
   /* YYDEFGOTO[NTERM-NUM].  */
 static const signed char yydefgoto[] =
 {
-      -1,    18,    19,    38,    20,    28,    31,    33,    39,    53,
-      54,    58,    59
+      -1,    19,    20,    39,    21,    29,    32,    34,    40,    54,
+      55,    59,    60
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -450,19 +452,19 @@ static const signed char yydefgoto[] =
 static const unsigned char yytable[] =
 {
        1,     2,     3,     4,     5,     6,     7,     8,     9,    10,
-      11,    12,    13,    14,    15,    16,    17,    40,    41,    42,
+      11,    12,    13,    14,    15,    16,    17,    18,    41,    42,
       43,    44,    45,    46,    47,    48,    49,    50,    51,    52,
-      34,    35,    36,    37,    55,    56,    57,    21,    22,    23,
-      24,    25,    26,    27,    30,    29,    32,    60
+      53,    35,    36,    37,    38,    56,    57,    58,    22,    23,
+      24,    25,    26,    27,    28,    31,    30,    33,    61
 };
 
 static const unsigned char yycheck[] =
 {
        7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-      17,    18,    19,    20,    21,    22,    23,    25,    26,    27,
+      17,    18,    19,    20,    21,    22,    23,    24,    26,    27,
       28,    29,    30,    31,    32,    33,    34,    35,    36,    37,
-       3,     4,     5,     6,    38,    39,    40,     3,     3,     3,
-       3,     3,     0,    24,     5,    20,     6,    59
+      38,     3,     4,     5,     6,    39,    40,    41,     3,     3,
+       3,     3,     3,     0,    25,     5,    21,     6,    60
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -470,23 +472,23 @@ static const unsigned char yycheck[] =
 static const unsigned char yystos[] =
 {
        0,     7,     8,     9,    10,    11,    12,    13,    14,    15,
-      16,    17,    18,    19,    20,    21,    22,    23,    42,    43,
-      45,     3,     3,     3,     3,     3,     0,    24,    46,    43,
-       5,    47,     6,    48,     3,     4,     5,     6,    44,    49,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    50,    51,    38,    39,    40,    52,    53,
-      52
+      16,    17,    18,    19,    20,    21,    22,    23,    24,    43,
+      44,    46,     3,     3,     3,     3,     3,     0,    25,    47,
+      44,     5,    48,     6,    49,     3,     4,     5,     6,    45,
+      50,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    51,    52,    39,    40,    41,    53,
+      54,    53
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const unsigned char yyr1[] =
 {
-       0,    41,    42,    43,    43,    44,    44,    44,    44,    45,
-      45,    45,    45,    45,    45,    45,    45,    45,    45,    45,
-      45,    45,    45,    45,    45,    45,    46,    46,    47,    47,
-      48,    48,    49,    50,    50,    51,    51,    51,    51,    51,
-      51,    51,    51,    51,    51,    51,    51,    51,    52,    52,
-      53,    53,    53
+       0,    42,    43,    44,    44,    45,    45,    45,    45,    46,
+      46,    46,    46,    46,    46,    46,    46,    46,    46,    46,
+      46,    46,    46,    46,    46,    46,    46,    47,    47,    48,
+      48,    49,    49,    50,    51,    51,    52,    52,    52,    52,
+      52,    52,    52,    52,    52,    52,    52,    52,    52,    53,
+      53,    54,    54,    54
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -494,10 +496,10 @@ static const unsigned char yyr2[] =
 {
        0,     2,     6,     0,     2,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     2,     2,     2,     2,     2,     0,     1,     0,     1,
-       0,     1,     1,     0,     2,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     0,     2,
-       1,     1,     1
+       1,     1,     2,     2,     2,     2,     2,     0,     1,     0,
+       1,     0,     1,     1,     0,     2,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     0,
+       2,     1,     1,     1
 };
 
 
@@ -509,7 +511,7 @@ static const unsigned char yydprec[] =
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0
+       0,     0,     0,     0
 };
 
 /* YYMERGER[RULE-NUM] -- Index of merging function for rule #RULE-NUM.  */
@@ -520,7 +522,7 @@ static const unsigned char yymerger[] =
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0
+       0,     0,     0,     0
 };
 
 /* YYIMMEDIATE[RULE-NUM] -- True iff rule #RULE-NUM is not to be deferred, as
@@ -532,7 +534,7 @@ static const yybool yyimmediate[] =
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0
+       0,     0,     0,     0
 };
 
 /* YYCONFLP[YYPACT[STATE-NUM]] -- Pointer into YYCONFL of start of
@@ -545,14 +547,14 @@ static const unsigned char yyconflp[] =
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     1,     0,     3,     0
+       0,     0,     0,     0,     0,     1,     0,     3,     0
 };
 
 /* YYCONFL[I] -- lists of conflicting rule numbers, each terminated by
    0, pointed into by YYCONFLP.  */
 static const short int yyconfl[] =
 {
-       0,    28,     0,    30,     0
+       0,    29,     0,    31,     0
 };
 
 /* Error token number */
@@ -963,247 +965,253 @@ yyuserAction (yyRuleNum yyn, size_t yyrhslen, yyGLRStackItem* yyvsp,
   switch (yyn)
     {
         case 5:
-#line 144 "argparser.ypp" /* glr.c:816  */
+#line 146 "argparser.ypp" /* glr.c:816  */
     { ((*yyvalp).str) = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 969 "argparser.tab.cpp" /* glr.c:816  */
+#line 971 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 6:
-#line 145 "argparser.ypp" /* glr.c:816  */
+#line 147 "argparser.ypp" /* glr.c:816  */
     { ((*yyvalp).str) = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 975 "argparser.tab.cpp" /* glr.c:816  */
+#line 977 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 7:
-#line 146 "argparser.ypp" /* glr.c:816  */
+#line 148 "argparser.ypp" /* glr.c:816  */
     { ((*yyvalp).str) = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 981 "argparser.tab.cpp" /* glr.c:816  */
+#line 983 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 8:
-#line 147 "argparser.ypp" /* glr.c:816  */
+#line 149 "argparser.ypp" /* glr.c:816  */
     { char tmp[80]; sprintf(tmp, "%d", (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val)); ((*yyvalp).str) = strdup(tmp); }
-#line 987 "argparser.tab.cpp" /* glr.c:816  */
+#line 989 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 9:
-#line 150 "argparser.ypp" /* glr.c:816  */
+#line 152 "argparser.ypp" /* glr.c:816  */
     { __info.noinit   = true; }
-#line 993 "argparser.tab.cpp" /* glr.c:816  */
+#line 995 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 10:
-#line 151 "argparser.ypp" /* glr.c:816  */
-    { __info.overfit  = true; }
-#line 999 "argparser.tab.cpp" /* glr.c:816  */
+#line 153 "argparser.ypp" /* glr.c:816  */
+    { __info.info     = true; }
+#line 1001 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 11:
-#line 152 "argparser.ypp" /* glr.c:816  */
-    { __info.adaptive = true; }
-#line 1005 "argparser.tab.cpp" /* glr.c:816  */
+#line 154 "argparser.ypp" /* glr.c:816  */
+    { __info.overfit  = true; }
+#line 1007 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 12:
-#line 153 "argparser.ypp" /* glr.c:816  */
-    { __info.negfeedback  = true; }
-#line 1011 "argparser.tab.cpp" /* glr.c:816  */
+#line 155 "argparser.ypp" /* glr.c:816  */
+    { __info.adaptive = true; }
+#line 1013 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 13:
-#line 154 "argparser.ypp" /* glr.c:816  */
-    { __info.deep     = 1; }
-#line 1017 "argparser.tab.cpp" /* glr.c:816  */
+#line 156 "argparser.ypp" /* glr.c:816  */
+    { __info.negfeedback  = true; }
+#line 1019 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 14:
-#line 155 "argparser.ypp" /* glr.c:816  */
-    { __info.deep     = 2; }
-#line 1023 "argparser.tab.cpp" /* glr.c:816  */
+#line 157 "argparser.ypp" /* glr.c:816  */
+    { __info.deep     = 1; }
+#line 1025 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 15:
-#line 156 "argparser.ypp" /* glr.c:816  */
-    { __info.pseudolinear = true; }
-#line 1029 "argparser.tab.cpp" /* glr.c:816  */
+#line 158 "argparser.ypp" /* glr.c:816  */
+    { __info.deep     = 2; }
+#line 1031 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 16:
-#line 157 "argparser.ypp" /* glr.c:816  */
-    { __info.purelinear = true; }
-#line 1035 "argparser.tab.cpp" /* glr.c:816  */
+#line 159 "argparser.ypp" /* glr.c:816  */
+    { __info.pseudolinear = true; }
+#line 1037 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 17:
-#line 158 "argparser.ypp" /* glr.c:816  */
-    { __info.help     = true; }
-#line 1041 "argparser.tab.cpp" /* glr.c:816  */
+#line 160 "argparser.ypp" /* glr.c:816  */
+    { __info.purelinear = true; }
+#line 1043 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 18:
-#line 159 "argparser.ypp" /* glr.c:816  */
-    { __info.load     = true; }
-#line 1047 "argparser.tab.cpp" /* glr.c:816  */
+#line 161 "argparser.ypp" /* glr.c:816  */
+    { __info.help     = true; }
+#line 1049 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 19:
-#line 160 "argparser.ypp" /* glr.c:816  */
-    { __info.verbose  = true; }
-#line 1053 "argparser.tab.cpp" /* glr.c:816  */
+#line 162 "argparser.ypp" /* glr.c:816  */
+    { __info.load     = true; }
+#line 1055 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 20:
-#line 161 "argparser.ypp" /* glr.c:816  */
-    { __info.version  = true; }
-#line 1059 "argparser.tab.cpp" /* glr.c:816  */
+#line 163 "argparser.ypp" /* glr.c:816  */
+    { __info.verbose  = true; }
+#line 1061 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 21:
-#line 162 "argparser.ypp" /* glr.c:816  */
-    { __info.threads  = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1065 "argparser.tab.cpp" /* glr.c:816  */
+#line 164 "argparser.ypp" /* glr.c:816  */
+    { __info.version  = true; }
+#line 1067 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 22:
-#line 163 "argparser.ypp" /* glr.c:816  */
-    { __info.dataSize = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1071 "argparser.tab.cpp" /* glr.c:816  */
+#line 165 "argparser.ypp" /* glr.c:816  */
+    { __info.threads  = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
+#line 1073 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 23:
-#line 164 "argparser.ypp" /* glr.c:816  */
-    { __info.hasTIME  = true; __info.secs = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1077 "argparser.tab.cpp" /* glr.c:816  */
+#line 166 "argparser.ypp" /* glr.c:816  */
+    { __info.dataSize = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
+#line 1079 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 24:
-#line 165 "argparser.ypp" /* glr.c:816  */
-    { __info.hasSAMPLES = true; __info.samples = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1083 "argparser.tab.cpp" /* glr.c:816  */
+#line 167 "argparser.ypp" /* glr.c:816  */
+    { __info.hasTIME  = true; __info.secs = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
+#line 1085 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 25:
-#line 166 "argparser.ypp" /* glr.c:816  */
+#line 168 "argparser.ypp" /* glr.c:816  */
+    { __info.hasSAMPLES = true; __info.samples = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
+#line 1091 "argparser.tab.cpp" /* glr.c:816  */
+    break;
+
+  case 26:
+#line 169 "argparser.ypp" /* glr.c:816  */
     { __info.isRecurrent = true; __info.SIMULATION_DEPTH = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1089 "argparser.tab.cpp" /* glr.c:816  */
+#line 1097 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
-  case 29:
-#line 177 "argparser.ypp" /* glr.c:816  */
+  case 30:
+#line 179 "argparser.ypp" /* glr.c:816  */
     { __info.datafile = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1095 "argparser.tab.cpp" /* glr.c:816  */
-    break;
-
-  case 31:
-#line 181 "argparser.ypp" /* glr.c:816  */
-    { __info.arch = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1101 "argparser.tab.cpp" /* glr.c:816  */
+#line 1103 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 32:
-#line 185 "argparser.ypp" /* glr.c:816  */
-    { __info.nnfile = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1107 "argparser.tab.cpp" /* glr.c:816  */
+#line 183 "argparser.ypp" /* glr.c:816  */
+    { __info.arch = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
+#line 1109 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
-  case 35:
-#line 192 "argparser.ypp" /* glr.c:816  */
-    { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1113 "argparser.tab.cpp" /* glr.c:816  */
+  case 33:
+#line 187 "argparser.ypp" /* glr.c:816  */
+    { __info.nnfile = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
+#line 1115 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 36:
-#line 193 "argparser.ypp" /* glr.c:816  */
+#line 194 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1119 "argparser.tab.cpp" /* glr.c:816  */
+#line 1121 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 37:
-#line 194 "argparser.ypp" /* glr.c:816  */
+#line 195 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1125 "argparser.tab.cpp" /* glr.c:816  */
+#line 1127 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 38:
-#line 195 "argparser.ypp" /* glr.c:816  */
+#line 196 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1131 "argparser.tab.cpp" /* glr.c:816  */
+#line 1133 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 39:
-#line 196 "argparser.ypp" /* glr.c:816  */
+#line 197 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1137 "argparser.tab.cpp" /* glr.c:816  */
+#line 1139 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 40:
-#line 197 "argparser.ypp" /* glr.c:816  */
+#line 198 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1143 "argparser.tab.cpp" /* glr.c:816  */
+#line 1145 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 41:
-#line 198 "argparser.ypp" /* glr.c:816  */
+#line 199 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1149 "argparser.tab.cpp" /* glr.c:816  */
+#line 1151 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 42:
-#line 199 "argparser.ypp" /* glr.c:816  */
+#line 200 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1155 "argparser.tab.cpp" /* glr.c:816  */
+#line 1157 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 43:
-#line 200 "argparser.ypp" /* glr.c:816  */
+#line 201 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1161 "argparser.tab.cpp" /* glr.c:816  */
+#line 1163 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 44:
-#line 201 "argparser.ypp" /* glr.c:816  */
+#line 202 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1167 "argparser.tab.cpp" /* glr.c:816  */
+#line 1169 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 45:
-#line 202 "argparser.ypp" /* glr.c:816  */
+#line 203 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1173 "argparser.tab.cpp" /* glr.c:816  */
+#line 1175 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 46:
-#line 203 "argparser.ypp" /* glr.c:816  */
+#line 204 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1179 "argparser.tab.cpp" /* glr.c:816  */
+#line 1181 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 47:
-#line 204 "argparser.ypp" /* glr.c:816  */
+#line 205 "argparser.ypp" /* glr.c:816  */
     { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1185 "argparser.tab.cpp" /* glr.c:816  */
+#line 1187 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
-  case 50:
-#line 211 "argparser.ypp" /* glr.c:816  */
-    { __info.mods.push_back((((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1191 "argparser.tab.cpp" /* glr.c:816  */
+  case 48:
+#line 206 "argparser.ypp" /* glr.c:816  */
+    { __info.method = (((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
+#line 1193 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 51:
-#line 212 "argparser.ypp" /* glr.c:816  */
+#line 213 "argparser.ypp" /* glr.c:816  */
     { __info.mods.push_back((((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1197 "argparser.tab.cpp" /* glr.c:816  */
+#line 1199 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
   case 52:
-#line 213 "argparser.ypp" /* glr.c:816  */
+#line 214 "argparser.ypp" /* glr.c:816  */
     { __info.mods.push_back((((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1203 "argparser.tab.cpp" /* glr.c:816  */
+#line 1205 "argparser.tab.cpp" /* glr.c:816  */
+    break;
+
+  case 53:
+#line 215 "argparser.ypp" /* glr.c:816  */
+    { __info.mods.push_back((((yyGLRStackItem const *)yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
+#line 1211 "argparser.tab.cpp" /* glr.c:816  */
     break;
 
 
-#line 1207 "argparser.tab.cpp" /* glr.c:816  */
+#line 1215 "argparser.tab.cpp" /* glr.c:816  */
       default: break;
     }
 
@@ -2885,7 +2893,7 @@ yypdumpstack (yyGLRStack* yystackp)
 
 
 
-#line 216 "argparser.ypp" /* glr.c:2584  */
+#line 218 "argparser.ypp" /* glr.c:2584  */
 
 
 
@@ -2936,6 +2944,7 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& deep,
 		       bool& pseudolinear,
 		       bool& purelinear,
+		       bool& info,
 		       bool& help,
 		       bool& verbose)
 {
@@ -2985,6 +2994,8 @@ void parse_commandline(int argc, char** argv,
     p.name = "--adaptive"; p.code = OPT_ADAPTIVE;
     cmdparamslist.push_back(p);    
     p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
+    cmdparamslist.push_back(p);
+    p.name = "--info"; p.code = OPT_INFO;
     cmdparamslist.push_back(p);
     p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
     cmdparamslist.push_back(p);
@@ -3064,6 +3075,7 @@ void parse_commandline(int argc, char** argv,
   __info.SIMULATION_DEPTH = 1;
   __info.isRecurrent = false;
   __info.method     = "use";
+  __info.info       = false;
   
   
   if(yyparse() == 0){
@@ -3169,7 +3181,8 @@ void parse_commandline(int argc, char** argv,
     }
     
     // sets output variables
-    
+
+    info    = __info.info;
     no_init = __info.noinit;
     load    = __info.load;
     help    = __info.help;

@@ -67,6 +67,9 @@ int main(int argc, char** argv)
     bool pseudolinear = false;
     bool purelinear = false;
 
+    bool info;
+    bool subnet;
+
     // should we use recurent neural network or not..
     unsigned int SIMULATION_DEPTH = 1;
     
@@ -107,6 +110,7 @@ int main(int argc, char** argv)
 		      deep,
 		      pseudolinear,
 		      purelinear,
+		      info,
 		      help,
 		      verbose);
     srand(time(0));
@@ -264,8 +268,7 @@ int main(int argc, char** argv)
     }
     
 
-    nnetwork< whiteice::math::blas_real<double> >* nn = NULL;
-    nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
+    nnetwork< whiteice::math::blas_real<double> >* nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
@@ -352,7 +355,7 @@ int main(int argc, char** argv)
       }
       
     }
-    else if(load == true){
+    else if(load == true || info == true){
       if(verbose)
 	std::cout << "Loading the previous network data from the disk." << std::endl;
 
@@ -413,18 +416,55 @@ int main(int argc, char** argv)
       
     }
 
-    // prints nnetwork information (for debugging)
-#if 0
+    // checks if we only need to calculate subnet (if there are frozen layers before the first non-frozen layer)
+    
+    nnetwork< whiteice::math::blas_real<double> >* parent_nn = NULL;
+    bayesian_nnetwork< whiteice::math::blas_real<double> >* parent_bnn = NULL;
+    dataset< whiteice::math::blas_real<double> >* parent_data = NULL;
+    unsigned int initialFrozen = 0;
+    
+    if(load == true)
     {
-      printf("DEBUG\n");
+      std::vector<bool> frozen;
+      nn->getFrozen(frozen);
+      
+      while(frozen[initialFrozen] == true) initialFrozen++;
 
-      nn->printInfo();
+      if(initialFrozen > 0){
+	subnet = true;
+	parent_nn = nn;
+	parent_bnn = bnn;
+
+	nn = nn->createSubnet(initialFrozen); // create subnet by skipping the first N layers
+	bnn = bnn->createSubnet(initialFrozen); // create subnet by skipping the firsst N layers
+
+	parent_data = new dataset< whiteice::math::blas_real<double> >(data);
+
+	const unsigned int newInputDimension = nn->getInputs(0);
+	std::vector< math::vertex< math::blas_real<double> > > samples; // new input samples
+
+	for(unsigned int i=0;i<data.size(0);i++){
+	  parent_nn->input() = data.access(0, i);
+	  parent_nn->calculate(false, true); // collect samples per each layer
+	}
+
+	parent_nn->getSamples(samples, initialFrozen);
+
+	data.resetCluster(0, "input", newInputDimension);
+	data.add(0, samples);
+      }
+      
     }
-#endif
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // learning or activation
-    if(lmethod == "mix"){
+    if(lmethod == "info"){
+
+      nn->printInfo();
+      
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    else if(lmethod == "mix"){
       // mixture of experts
       Mixture< whiteice::math::blas_real<double> > moe(2, SIMULATION_DEPTH, overfit, negfeedback); 
             
@@ -1865,9 +1905,28 @@ int main(int argc, char** argv)
 	  std::cout << "Storing results to dataset file FAILED." << std::endl;
       }
     }
+
+    // we have processed subnet and not the real data, we inject subnet data back into the master data structures
+    if(subnet)
+    {
+      // we attempt to inject subnet data structure starting from initialFrozen:th layer to parent net
+      parent_nn->injectSubnet(initialFrozen, nn);
+      parent_bnn->injectSubnet(initialFrozen, bnn);
+      
+      delete nn;
+      delete bnn;
+      nn = parent_nn;
+      bnn = parent_bnn;
+
+      parent_nn = nullptr;
+      parent_bnn = nullptr;
+
+      delete parent_data; // we do not need to keep parent data structure
+      parent_data = nullptr;
+    }
     
         
-    if(lmethod != "use" && lmethod != "minimize"){
+    if(lmethod != "use" && lmethod != "minimize" && lmethod != "info"){
       if(bnn){
 	if(bnn->save(nnfn) == false){
 	  std::cout << "Saving neural network data failed." << std::endl;
@@ -1889,7 +1948,7 @@ int main(int argc, char** argv)
     return 0;
   }
   catch(std::exception& e){
-    std::cout << "Fatal error: unexpected exception. Reason: " 
+    std::cout << "FATAL ERROR: unexpected exception. Reason: " 
 	      << e.what() << std::endl;
     return -1;
   }
@@ -1944,6 +2003,7 @@ void print_usage(bool all)
   printf("-v             shows ETA and other details\n");
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
+  printf("--info         prints network architecture information\n");
   printf("--no-init      do not use heuristics when initializing nn weights\n");
   printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
   printf("--deep=*       pretrains neural network as a RBM (* = binary or gaussian input layer)\n");
@@ -1956,6 +2016,7 @@ void print_usage(bool all)
   printf("--samples N    samples N samples or defines max iterations (eg. 2500) to be used in optimization/sampling\n");
   printf("--threads N    uses N parallel threads when looking for solution\n");
   printf("--data N       takes randomly N samples of data for the learning process (N/2 used in training)\n");
+  printf("--subnet       trains only subnet starting from the first non-frozen layer of the network\n");  
   printf("[data]         a source file for inputs or i/o examples (binary file)\n");
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");

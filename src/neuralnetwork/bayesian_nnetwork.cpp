@@ -195,6 +195,43 @@ namespace whiteice
       
   }
 
+  template <typename T>
+  bayesian_nnetwork<T>* bayesian_nnetwork<T>::createSubnet(const unsigned int fromLayer)
+  {
+    std::vector<whiteice::nnetwork<T>*> nets;
+
+    for(unsigned int i=0;i<nnets.size();i++){
+      // creates new network 
+      whiteice::nnetwork<T>* nn = nnets[i]->createSubnet(fromLayer);      
+      nets.push_back(nn);
+    }
+
+    auto bn = new bayesian_nnetwork<T>();
+
+    bn->nnets = nets;
+
+    return bn;
+  }
+
+  
+  template <typename T>
+  bool bayesian_nnetwork<T>::injectSubnet(const unsigned int fromLayer,
+					  bayesian_nnetwork<T>* bnn)
+  {
+    if(nnets.size() != bnn->nnets.size()) return false;
+    if(nnets.size() <= 0) return true; // nothing to do
+
+    if(nnets[0]->getLayers() != bnn->nnets[0]->getLayers() + fromLayer)
+      return false;
+
+    for(unsigned int i=0;i<nnets.size();i++){
+      if(nnets[i]->injectSubnet(fromLayer, bnn->nnets[i]) == false)
+	return false;
+    }
+
+    return true;
+  }
+
   
   template <typename T>
   bool bayesian_nnetwork<T>::setNonlinearity(typename nnetwork<T>::nonLinearity nl){

@@ -1300,17 +1300,6 @@ namespace whiteice
 	floats.clear();
       }
 
-      // stochastic activation
-      {
-	if(!configuration.get(FNN_STOCHASTIC_CFGSTR, ints))
-	  return false;
-
-	if(ints.size() != 1) return false;
-
-	stochasticActivation = (bool)ints[0];
-	
-	ints.clear();
-      }
       
       // used nonlinearity
       {
@@ -1606,6 +1595,65 @@ namespace whiteice
     frozen = this->frozen;
   }
 
+  // creates subnet starting from fromLayer:th layer to the output
+  template <typename T>
+  nnetwork<T>* nnetwork<T>::createSubnet(const unsigned int fromLayer)
+  {
+    if(fromLayer >= getLayers()) return nullptr;
+
+    std::vector<unsigned int> a;
+
+    for(unsigned int i=fromLayer;i<arch.size();i++)
+      a.push_back(arch[i]);
+
+    nnetwork<T>* nn = new nnetwork<T>(a);
+
+    math::matrix<T> W;
+    math::vertex<T> b;
+
+    // sets parameters of the network
+    for(unsigned int i=fromLayer;i<arch.size();i++){
+      nn->frozen[i-fromLayer] = this->frozen[fromLayer];
+      nn->nonlinearity[i-fromLayer] = this->nonlinearity[fromLayer];
+      
+      this->getWeights(W, i);
+      nn->setWeights(W, i - fromLayer);
+      
+      this->getBias(b, i);
+      nn->setBias(b, i - fromLayer);
+    }
+
+    return nn;
+  }
+
+  // injects (if possible) subnet into net starting from fromLayer:th layer
+  template <typename T>
+  bool nnetwork<T>::injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn)
+  {
+    // check if architecture matches exactly
+    if(this->arch.size() != nn->arch.size() + fromLayer)
+      return false;
+    
+    for(unsigned int i=0;i<nn->arch.size();i++){
+      if(arch[fromLayer+i] != nn->arch[i])
+	return false;
+      if(nonlinearity[fromLayer+i] != nn->nonlinearity[i])
+	return false;
+    }
+
+    math::matrix<T> W;
+    math::vertex<T> b;
+    
+    for(unsigned int i=0;i<nn->getLayers();i++){
+      nn->getBias(b, i);
+      this->setBias(b, fromLayer + i);
+
+      nn->getWeights(W, i);
+      this->setWeights(W, fromLayer + i);
+    }
+
+    return true;
+  }
   
   
   template <typename T>

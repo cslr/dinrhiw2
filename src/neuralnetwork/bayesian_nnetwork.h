@@ -37,9 +37,15 @@ namespace whiteice
 		       int latestN = 0);
     
     bool getArchitecture(std::vector<unsigned int>& arch) const;
+
+    // alters architecture to target and keeps initial unchanged layers (unaltered arch) if possible
     bool editArchitecture(std::vector<unsigned int>& arch,
 			  typename nnetwork<T>::nonLinearity nl);
 
+    // creates and injects subnets starting from n:th layer
+    bayesian_nnetwork<T>* createSubnet(const unsigned int fromLayer);
+    bool injectSubnet(const unsigned int fromLayer, bayesian_nnetwork<T>* nn);
+    
     bool setNonlinearity(typename nnetwork<T>::nonLinearity nl);
     void getNonlinearity(std::vector< typename nnetwork<T>::nonLinearity >& nl);
     

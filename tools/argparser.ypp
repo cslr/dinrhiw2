@@ -33,6 +33,7 @@
   struct arg_info
   {
     bool verbose;
+    bool info;
     bool load;
     bool help;
     bool version;
@@ -50,7 +51,7 @@
 
     bool isRecurrent;
     unsigned int SIMULATION_DEPTH;
-
+        
     unsigned int threads;
 
     unsigned int dataSize;
@@ -85,6 +86,7 @@
 %token <str> ARCHSTRING
 
 /* OPTIONS */
+%token <str> OPT_INFO
 %token <str> OPT_NOINIT
 %token <str> OPT_OVERFIT
 %token <str> OPT_ADAPTIVE
@@ -148,6 +150,7 @@ anystring: STRING     { $$ = $1; }
 ;
 
 option:	OPT_NOINIT             { __info.noinit   = true; }
+      | OPT_INFO	       { __info.info     = true; }
       | OPT_OVERFIT            { __info.overfit  = true; }
       | OPT_ADAPTIVE           { __info.adaptive = true; }
       | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
@@ -164,7 +167,6 @@ option:	OPT_NOINIT             { __info.noinit   = true; }
       | OPT_TIME NUMBER        { __info.hasTIME  = true; __info.secs = $2; }
       | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
       | OPT_RECURRENT NUMBER   { __info.isRecurrent = true; __info.SIMULATION_DEPTH = $2; }
-
 ;
 
 
@@ -263,6 +265,7 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& deep,
 		       bool& pseudolinear,
 		       bool& purelinear,
+		       bool& info,
 		       bool& help,
 		       bool& verbose)
 {
@@ -312,6 +315,8 @@ void parse_commandline(int argc, char** argv,
     p.name = "--adaptive"; p.code = OPT_ADAPTIVE;
     cmdparamslist.push_back(p);    
     p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
+    cmdparamslist.push_back(p);
+    p.name = "--info"; p.code = OPT_INFO;
     cmdparamslist.push_back(p);
     p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
     cmdparamslist.push_back(p);
@@ -391,6 +396,7 @@ void parse_commandline(int argc, char** argv,
   __info.SIMULATION_DEPTH = 1;
   __info.isRecurrent = false;
   __info.method     = "use";
+  __info.info       = false;
   
   
   if(yyparse() == 0){
@@ -496,7 +502,8 @@ void parse_commandline(int argc, char** argv,
     }
     
     // sets output variables
-    
+
+    info    = __info.info;
     no_init = __info.noinit;
     load    = __info.load;
     help    = __info.help;
