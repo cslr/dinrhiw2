@@ -4124,7 +4124,7 @@ void bayesian_nnetwork_test()
     nl.resize(arch.size()-1);
 
     for(unsigned int l=0;l<nl.size();l++)
-      nl[l] = nnetwork<>::sigmoidNonLinearity;
+      nl[l] = nnetwork<>::sigmoid;
 
     std::vector<bool> frozenLayers;
     frozenLayers.resize(arch.size()-1);
