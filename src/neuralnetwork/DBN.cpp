@@ -258,7 +258,7 @@ namespace whiteice
     if(errorLevel < T(0.0)) return false;
 
     // increase after the whole learning process works..
-    const unsigned int ITERLIMIT = 25; // FIXME BACK TO 25!!!
+    const unsigned int ITERLIMIT = 25;
     const unsigned int EPOCH_STEPS = 2;
     
     std::vector< math::vertex<T> > in = samples;

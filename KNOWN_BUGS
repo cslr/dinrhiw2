@@ -7,6 +7,10 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
    I have no idea where those infinites come from)
      THIS IS PROBABLY RELATED TO OpenBLAS bugs
 
+* NNGradDescent and all other pthread based parallel code
+  do not work (with new gcc). Fix this by changing to
+  C++ theads and mutexes
+
 * HMC (bayes nnetwork) do not work properly on more that
   one dimension nnetwork..
   
@@ -14,8 +18,6 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
   when optimizing large nnetworks
   (vertex dimension mismatch with large nnetworks)
 
-* NNGradDescent DO NOT SEEM TO WORK..
-  
 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.

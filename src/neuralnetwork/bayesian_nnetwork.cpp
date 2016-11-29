@@ -134,6 +134,69 @@ namespace whiteice
   }
 
   template <typename T>
+  bool bayesian_nnetwork<T>::getArchitecture(std::vector<unsigned int>& arch) const
+  {
+    if(nnets.size() <= 0) return false;
+
+    nnets[0]->getArchitecture(arch);
+
+    return true;
+  }
+
+  template <typename T>
+  bool bayesian_nnetwork<T>::editArchitecture(std::vector<unsigned int>& arch,
+					      typename nnetwork<T>::nonLinearity nl)
+  {
+    if(nnets.size() <= 0) return true; // nothing to do..
+
+    std::vector<whiteice::nnetwork<T>*> nets;
+
+    for(unsigned int i=0;i<nnets.size();i++){
+      // creates new network with given arch
+      whiteice::nnetwork<T>* nn = new nnetwork<T>(arch, nl);
+      
+      std::vector<unsigned int> oldarch;
+      nnets[i]->getArchitecture(oldarch);
+      
+      for(unsigned int l=0;l<nn->getLayers()&&l<nnets[i]->getLayers();l++)
+      {
+	if(arch[l] == oldarch[l] && arch[l+1] == oldarch[l+1]){
+	  nn->setNonlinearity(l, nnets[i]->getNonlinearity(l));
+	  nn->setFrozen(l, true);
+
+	  whiteice::math::matrix<T> W;
+	  whiteice::math::vertex<T> b;
+
+	  nnets[i]->getWeights(W, l);
+	  nnets[i]->getBias(b, l);
+
+	  nn->setWeights(W, l);
+	  nn->setBias(b, l);
+	}
+	else{
+	  break; // archtecture stops matching the new one
+	}
+      }
+
+      nn->randomize(); // sets (new) weights to random values
+      nets.push_back(nn);
+    }
+
+    
+    if(nets.size() == nnets.size()){
+      for(auto p : nnets) delete p;
+      nnets = nets;
+      return true;
+    }
+    else{
+      for(auto p : nets) delete p;
+      return false;
+    }
+      
+  }
+
+  
+  template <typename T>
   bool bayesian_nnetwork<T>::setNonlinearity(typename nnetwork<T>::nonLinearity nl){
     for(unsigned int i=0;i<nnets.size();i++)
       if(nnets[i])

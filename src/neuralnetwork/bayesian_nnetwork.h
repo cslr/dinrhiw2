@@ -35,6 +35,10 @@ namespace whiteice
     bool exportSamples(whiteice::nnetwork<T>& nn, 
 		       std::vector< math::vertex<T> >& weights,
 		       int latestN = 0);
+    
+    bool getArchitecture(std::vector<unsigned int>& arch) const;
+    bool editArchitecture(std::vector<unsigned int>& arch,
+			  typename nnetwork<T>::nonLinearity nl);
 
     bool setNonlinearity(typename nnetwork<T>::nonLinearity nl);
     void getNonlinearity(std::vector< typename nnetwork<T>::nonLinearity >& nl);
@@ -44,7 +48,6 @@ namespace whiteice
      * or if N > number of neural networks/samples does nothing
      */
     bool downsample(unsigned int N);
-    
 
     // calculates E[f(input,w)] = E[y|x] and Var[f(x,w)] = Var[y|x] for given input
     bool calculate(const math::vertex<T>& input,

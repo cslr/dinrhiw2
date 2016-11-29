@@ -268,13 +268,19 @@ int main(int argc, char** argv)
     nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+
     if(pseudolinear){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear);
     }
     else if(purelinear){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else{
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
     }
 
@@ -408,11 +414,13 @@ int main(int argc, char** argv)
     }
 
     // prints nnetwork information (for debugging)
+#if 0
     {
       printf("DEBUG\n");
 
       nn->printInfo();
     }
+#endif
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     // learning or activation
@@ -511,9 +519,11 @@ int main(int argc, char** argv)
 	return -1;
       }
 
+#if 0
       printf("RBM LEARNED NETWORK\n");
       nn->printInfo(); // prints general information about trained nnetwork
-
+#endif
+      
       if(bnn->importNetwork(*nn) == false){
 	std::cout << "ERROR: internal error cannot import optimized RBM to data structure" << std::endl;
 	return -1;
@@ -1510,6 +1520,68 @@ int main(int argc, char** argv)
       std::cout << "Best solution found (" << r << "): " << s << std::endl;
       
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    else if(lmethod == "edit"){
+      if(verbose)
+	std::cout << "Editing neural network architecture (except input/output dimensions)" << std::endl;
+
+      if(SIMULATION_DEPTH > 1){
+	printf("ERROR: recurrent nnetwork not supported\n");
+	exit(-1);
+      }
+
+      if(bnn->load(nnfn) == false){
+	std::cout << "Loading neural network failed." << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	nn = NULL;
+	return -1;
+      }
+
+      std::vector<unsigned int> oldArch;
+      bnn->getArchitecture(oldArch);
+
+      if(arch[0] != oldArch[0] ||
+	 arch[arch.size()-1] != oldArch[oldArch.size()-1])
+      {
+	std::cout << "ERROR: new architecture input/output mismatch\n"
+		  << std::endl;
+	if(nn) delete nn;
+	if(bnn) delete bnn;
+	return -1;
+      }
+
+      bool same = false;
+
+      if(arch.size() == oldArch.size())
+      {
+	unsigned int counter = 0;
+	
+	for(unsigned int i=0;i<arch.size();i++){
+	  if(arch[i] == oldArch[i]) counter++;
+	}
+
+	if(counter == arch.size()){
+	  same = true;
+	}
+      }
+
+      // transform architecture to given arch and add given
+      // nonlinenarity as a new nonlinearity for the changed
+      // layers (except the final linear one)
+      
+      if(same == false){
+	if(bnn->editArchitecture(arch, nl) == false){
+	  std::cout << "ERROR: Cannot transform network" << std::endl;
+	  if(nn) delete nn;
+	  if(bnn) delete bnn;
+	  return -1;
+	}
+      }
+      
+      
+    }
+    //////////////////////////////////////////////////////////////
     else if(lmethod == "use"){
       if(verbose)
 	std::cout << "Activating loaded neural network configuration.."
@@ -1593,16 +1665,15 @@ int main(int argc, char** argv)
 	delete nn;
 	return -1;	    
       }
-	
-      	{
-	  printf("DEBUG (USE)\n");
-	  
-	  bnn->printInfo();
-	}
-	
 
-
-      
+#if 0
+      {
+	printf("DEBUG (USE)\n");
+	
+	bnn->printInfo();
+      }
+#endif
+	
       if(compare_clusters == true){
 	math::blas_real<double> error1 = math::blas_real<double>(0.0f);
 	math::blas_real<double> error2 = math::blas_real<double>(0.0f);
@@ -1889,12 +1960,14 @@ void print_usage(bool all)
   printf("               (whiteice data file format created by dstool)\n");
   printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
   printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallelbfgs, parallellbfgs, (gbrbm, bbrbm, mix)\n");
+  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallellbfgs, edit, (gbrbm, bbrbm, mix)\n");
   printf("               parallel methods use random location multistart/restart parallel search\n");
   printf("               until timeout or the number of samples has been reached\n");
   printf("               additionally: minimize method finds input that minimizes the neural network output\n");
   printf("               gradient descent algorithms can use negative feedback heuristic\n");
   printf("               mix uses mixture of neural networks\n");
+  printf("               edit edits network to have new given architecture, previous network weights\n");
+  printf("               are preserved and set as frozen (layers before the first change in network)\n");
   printf("\n");
   printf("               Ctrl-C shutdowns the program.\n");
   printf("\n");
