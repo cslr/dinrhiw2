@@ -1613,8 +1613,8 @@ namespace whiteice
 
     // sets parameters of the network
     for(unsigned int i=fromLayer;i<arch.size();i++){
-      nn->frozen[i-fromLayer] = this->frozen[fromLayer];
-      nn->nonlinearity[i-fromLayer] = this->nonlinearity[fromLayer];
+      nn->frozen[i-fromLayer] = this->frozen[i];
+      nn->nonlinearity[i-fromLayer] = this->nonlinearity[i];
       
       this->getWeights(W, i);
       nn->setWeights(W, i - fromLayer);
@@ -1630,14 +1630,19 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn)
   {
+    if(nn == nullptr) return false;
+
     // check if architecture matches exactly
     if(this->arch.size() != nn->arch.size() + fromLayer)
       return false;
-    
+
     for(unsigned int i=0;i<nn->arch.size();i++){
       if(arch[fromLayer+i] != nn->arch[i])
 	return false;
-      if(nonlinearity[fromLayer+i] != nn->nonlinearity[i])
+    }
+
+    for(unsigned int l=0;l<nn->getLayers();l++){
+      if(nonlinearity[fromLayer+l] != nn->nonlinearity[l])
 	return false;
     }
 

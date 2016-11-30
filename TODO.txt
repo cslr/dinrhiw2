@@ -1,15 +1,16 @@
 TODO
 
-* implement recurrent neural networks
+ * test RBM optimization, set them frozen and edit to add extra layers, and optimize non-frozen layers
 
-  * RUN/TEST RECURRENT NNTOOL TESTS IN TOOLS DIRECTORY
-
-  * AFTER TESTING CHECK ALLSTATES COMPO RESULTS
-
-
+ * improve stochastic gradient descent optimization to use slightly better?
+   ADAM optimizer with adaptive learning rates
 
 
 LATER (multistep optimization):
+
+* implement recurrent neural networks
+
+  * RUN/TEST RECURRENT NNTOOL TESTS IN TOOLS DIRECTORY
 
 * HMM (hidden markov models)
 

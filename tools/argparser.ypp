@@ -13,7 +13,7 @@
  * AC      = <number> | "?"
  * NNFILE  = <filename>
  * LMETHOD = MBASIC 
- * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs | minimize | mix | bbrbm | gbrbm | edit
+ * MBASIC  = use | random | grad | lbfgs | bayes | parallelgrad | parallellbfgs | parallellbfgs | minimize | mix | bbrbm | gbrbm | edit | info
  * 
  */
 
@@ -33,7 +33,6 @@
   struct arg_info
   {
     bool verbose;
-    bool info;
     bool load;
     bool help;
     bool version;
@@ -86,7 +85,6 @@
 %token <str> ARCHSTRING
 
 /* OPTIONS */
-%token <str> OPT_INFO
 %token <str> OPT_NOINIT
 %token <str> OPT_OVERFIT
 %token <str> OPT_ADAPTIVE
@@ -107,6 +105,7 @@
 %token <str> OPT_ENDOPT
 
 /* LMETHOD */
+%token <str> LM_INFO
 %token <str> LM_USE
 %token <str> LM_MINIMIZE
 %token <str> LM_PARALLELGRAD
@@ -150,7 +149,6 @@ anystring: STRING     { $$ = $1; }
 ;
 
 option:	OPT_NOINIT             { __info.noinit   = true; }
-      | OPT_INFO	       { __info.info     = true; }
       | OPT_OVERFIT            { __info.overfit  = true; }
       | OPT_ADAPTIVE           { __info.adaptive = true; }
       | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
@@ -192,6 +190,7 @@ lmethod: /* empty */
 ;
 
 mbasic: LM_USE      { __info.method = $1; }
+      | LM_INFO     { __info.method = $1; }
       | LM_MINIMIZE { __info.method = $1; }
       | LM_GRAD     { __info.method = $1; }
       | LM_PBFGS    { __info.method = $1; }
@@ -265,7 +264,6 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& deep,
 		       bool& pseudolinear,
 		       bool& purelinear,
-		       bool& info,
 		       bool& help,
 		       bool& verbose)
 {
@@ -316,8 +314,6 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);    
     p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
     cmdparamslist.push_back(p);
-    p.name = "--info"; p.code = OPT_INFO;
-    cmdparamslist.push_back(p);
     p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
     cmdparamslist.push_back(p);
     p.name = "--deep=gaussian"; p.code = OPT_DEEP_GAUSSIAN;
@@ -346,7 +342,9 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
 
     p.name = "use"; p.code = LM_USE;
-    cmdparamslist.push_back(p);    
+    cmdparamslist.push_back(p);
+    p.name = "info"; p.code = LM_INFO;
+    cmdparamslist.push_back(p);        
     p.name = "minimize"; p.code = LM_MINIMIZE;
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
@@ -396,7 +394,6 @@ void parse_commandline(int argc, char** argv,
   __info.SIMULATION_DEPTH = 1;
   __info.isRecurrent = false;
   __info.method     = "use";
-  __info.info       = false;
   
   
   if(yyparse() == 0){
@@ -503,7 +500,6 @@ void parse_commandline(int argc, char** argv,
     
     // sets output variables
 
-    info    = __info.info;
     no_init = __info.noinit;
     load    = __info.load;
     help    = __info.help;

@@ -25,7 +25,6 @@ void parse_commandline(int argc, char** argv,
 		       unsigned int& deep,
 		       bool& pseudolinear,
 		       bool& purelinear,
-		       bool& info,
 		       bool& help, 
 		       bool& verbose);
 

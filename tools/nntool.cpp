@@ -67,8 +67,7 @@ int main(int argc, char** argv)
     bool pseudolinear = false;
     bool purelinear = false;
 
-    bool info;
-    bool subnet;
+    bool subnet = false;
 
     // should we use recurent neural network or not..
     unsigned int SIMULATION_DEPTH = 1;
@@ -110,7 +109,6 @@ int main(int argc, char** argv)
 		      deep,
 		      pseudolinear,
 		      purelinear,
-		      info,
 		      help,
 		      verbose);
     srand(time(0));
@@ -355,7 +353,7 @@ int main(int argc, char** argv)
       }
       
     }
-    else if(load == true || info == true){
+    else if(load == true || lmethod  == "info"){
       if(verbose)
 	std::cout << "Loading the previous network data from the disk." << std::endl;
 
@@ -423,7 +421,7 @@ int main(int argc, char** argv)
     dataset< whiteice::math::blas_real<double> >* parent_data = NULL;
     unsigned int initialFrozen = 0;
     
-    if(load == true)
+    if(load == true && lmethod != "use" && lmethod != "minimize" && lmethod != "info")
     {
       std::vector<bool> frozen;
       nn->getFrozen(frozen);
@@ -437,6 +435,9 @@ int main(int argc, char** argv)
 
 	nn = nn->createSubnet(initialFrozen); // create subnet by skipping the first N layers
 	bnn = bnn->createSubnet(initialFrozen); // create subnet by skipping the firsst N layers
+
+	if(verbose)
+	  printf("Optimizing subnet (%d parameters in neural network)..\n", nn->exportdatasize());
 
 	parent_data = new dataset< whiteice::math::blas_real<double> >(data);
 
@@ -1906,12 +1907,30 @@ int main(int argc, char** argv)
       }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
     // we have processed subnet and not the real data, we inject subnet data back into the master data structures
     if(subnet)
     {
       // we attempt to inject subnet data structure starting from initialFrozen:th layer to parent net
-      parent_nn->injectSubnet(initialFrozen, nn);
-      parent_bnn->injectSubnet(initialFrozen, bnn);
+      if(parent_nn->injectSubnet(initialFrozen, nn) == false){
+	printf("ERROR: injecting subnet into larger master network FAILED (1).\n");
+	
+	delete nn; delete bnn;
+	delete parent_nn; delete parent_bnn;
+	delete parent_data;
+	
+	return -1;
+      }
+
+      if(parent_bnn->injectSubnet(initialFrozen, bnn) == false){
+	printf("ERROR: injecting subnet into larger master network FAILED (2).\n");
+	
+	delete nn; delete bnn;
+	delete parent_nn; delete parent_bnn;
+	delete parent_data;
+	
+	return -1;
+      }
       
       delete nn;
       delete bnn;

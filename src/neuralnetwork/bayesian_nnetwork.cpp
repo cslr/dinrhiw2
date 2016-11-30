@@ -219,6 +219,7 @@ namespace whiteice
 					  bayesian_nnetwork<T>* bnn)
   {
     if(nnets.size() != bnn->nnets.size()) return false;
+
     if(nnets.size() <= 0) return true; // nothing to do
 
     if(nnets[0]->getLayers() != bnn->nnets[0]->getLayers() + fromLayer)
