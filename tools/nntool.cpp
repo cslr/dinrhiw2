@@ -1115,7 +1115,8 @@ int main(int argc, char** argv)
 	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;
 	  
 	  math::vertex< whiteice::math::blas_real<double> > best_weights;
-	  
+
+	  time_t t0 = time(0);
 	  unsigned int counter = 0;
 	  math::blas_real<double> error, mean_ratio;
 	  math::blas_real<double> prev_error;
@@ -1128,18 +1129,22 @@ int main(int argc, char** argv)
 	  
 	  error = 1000.0f;
 	  prev_error = 1000.0f;
-	  mean_ratio = 1.0f;
-	  
-
-	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
+	  mean_ratio = 1.0f;	 	  
 
 	  whiteice::linear_ETA<double> eta;
 	  if(samples > 0)
 	    eta.start(0.0f, (double)samples);
 	  
 	  const unsigned int SAMPLE_SIZE = 500;
+	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
+
+	  // forgetting factors for ADAM stochastic gradient descent parameters
+	  whiteice::math::blas_real<double> f1 = 0.8, f2 = 0.8, v = 0.0, vprev = 0.0, one = 1.0, epsilon = 10e-10;
+	  math::vertex< whiteice::math::blas_real<double> > m, mprev;
 	  
-	  while(counter < samples && !stopsignal)
+	  
+	  
+	  while(((counter < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal)
 	  {
 	    
 	    while(ratios.size() > 10)
@@ -1223,12 +1228,22 @@ int main(int argc, char** argv)
 	      w = weights;
 	      
 	      if(prev_sumgrad.size() <= 1){
-		w -= lrate * sumgrad;
+		m = (one - f1)*sumgrad;
+		v = (one - f2)*(sumgrad * sumgrad)[0];
+		
+		// w -= lrate * sumgrad;
 	      }
 	      else{
-		math::blas_real<double> momentum = 0.0f; // 0.8f
-		w -= lrate * sumgrad + momentum*prev_sumgrad;
+		m = f1*mprev + (one - f1)*sumgrad;
+		v = f2*vprev + (one - f2)*(sumgrad * sumgrad)[0];
+
+		//math::blas_real<double> momentum = 0.0f; // 0.8f
+		//w -= lrate * sumgrad + momentum*prev_sumgrad;
 	      }
+
+	      w -= (lrate / (math::sqrt(v/(one - f2)) + epsilon))* m / (one - f1);
+	      mprev = m;
+	      vprev = v;
 	      
 	      nn->importdata(w);
 	      
@@ -1286,16 +1301,28 @@ int main(int argc, char** argv)
 	    }
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
-	    ratios.push_back(ratio);	    
+	    ratios.push_back(ratio);
+
+	    if(secs > 0){
+	      time_t t1 = time(0);
+	      counter = (unsigned int)(t1 - t0);
+	    }
+	    else{
+	      counter++;
+	      eta.update((double)counter);
+	    }
 
 	    printf("\r                                                            \r");
-	    printf("%d/%d iterations: %f (%f) [%.1f minutes]",
-		   counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	    if(samples > 0){
+	      printf("%d/%d iterations: %f (%f) [%.1f minutes]",
+		     counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	    }
+	    else{ // secs
+	      printf("%d iterations: %f (%f) [%.1f minutes]",
+		     counter, error.c[0], mean_ratio.c[0], (secs - counter)/60.0);
+	    }
 	    
-	    fflush(stdout);
-	    
-	    counter++;
-	    eta.update((double)counter);
+	    fflush(stdout);	  
 	  }
 
 
@@ -1564,7 +1591,7 @@ int main(int argc, char** argv)
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "edit"){
       if(verbose)
-	std::cout << "Editing neural network architecture (except input/output dimensions)" << std::endl;
+	std::cout << "Editing neural network architecture.." << std::endl;
 
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");

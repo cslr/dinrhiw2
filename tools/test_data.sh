@@ -4,41 +4,46 @@ rm -f wine-test.ds
 
 # creates training dataset for nntool
 
-./dstool -create wine-test.ds
-./dstool -create:13:input wine-test.ds
-./dstool -create:1:output wine-test.ds
-./dstool -list wine-test.ds
-./dstool -import:0 wine-test.ds wine_measurements.in
-./dstool -import:1 wine-test.ds wine_measurements.out
-./dstool -padd:0:meanvar wine-test.ds
-# ./dstool -padd:0:pca wine-test.ds
-./dstool -padd:1:meanvar wine-test.ds
+NNTOOL="./nntool"
+DSTOOL="./dstool"
 
-./dstool -list wine-test.ds
+$DSTOOL -create wine-test.ds
+$DSTOOL -create:13:input wine-test.ds
+$DSTOOL -create:1:output wine-test.ds
+$DSTOOL -list wine-test.ds
+$DSTOOL -import:0 wine-test.ds wine_measurements.in
+$DSTOOL -import:1 wine-test.ds wine_measurements.out
+$DSTOOL -padd:0:meanvar wine-test.ds
+# $DSTOOL -padd:0:pca wine-test.ds
+$DSTOOL -padd:1:meanvar wine-test.ds
+
+$DSTOOL -list wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-#./nntool -v wine-test.ds 13-20-1 winenn.cfg mix
-# ./nntool -v wine-test.ds 13-20-1 winenn.cfg lbfgs
+ARCH="13-20-1"
 
-./nntool -v --time 10 wine-test.ds 13-20-1 winenn.cfg lbfgs
+#$NNTOOL -v wine-test.ds $ARCH winenn.cfg mix
+# $NNTOOL -v wine-test.ds $ARCH winenn.cfg lbfgs
 
-# ./nntool -v --time 10 wine-test.ds 13-20-1 winenn.cfg random
+$NNTOOL -v --time 60 wine-test.ds $ARCH winenn.cfg grad
+
+# $NNTOOL -v --time 10 wine-test.ds $ARCH winenn.cfg random
 
 # testing
 
-./nntool -v wine-test.ds 13-20-1 winenn.cfg use
+$NNTOOL -v wine-test.ds $ARCH winenn.cfg use
 
 # predicting [stores results to dataset]
 
 cp -f wine-test.ds wine-pred.ds
-./dstool -clear:1 wine-pred.ds
-# ./dstool -remove:1 wine-pred.ds
+$DSTOOL -clear:1 wine-pred.ds
+# $DSTOOL -remove:1 wine-pred.ds
 
-./nntool -v wine-pred.ds 13-13-1 winenn.cfg use
+$NNTOOL -v wine-pred.ds 13-13-1 winenn.cfg use
 
-./dstool -list wine-test.ds
-./dstool -list wine-pred.ds
+$DSTOOL -list wine-test.ds
+$DSTOOL -list wine-pred.ds
 
-./dstool -print:1 wine-pred.ds
+$DSTOOL -print:1 wine-pred.ds
 tail wine_measurements.out
