@@ -136,6 +136,9 @@ int main(int argc, char** argv)
       printf("Daemon and 'send command' modes aren't supported yet.\n");
       return 0;
     }
+
+    // we load network data from disc if we want information
+    if(lmethod == "info") load = true;
     
     // tries to open data and nnfile
     
@@ -376,27 +379,28 @@ int main(int argc, char** argv)
 	return -1;
       }
 
-      std::vector<unsigned int> loadedArch;
-      nnParams.getArchitecture(loadedArch);
-
-      if(arch.size() != loadedArch.size()){
-	std::cout << "ERROR: Mismatch between loaded network architecture and parameter architecture." << std::endl;
-	if(nn) delete nn;
-	if(bnn) delete bnn;
-	nn = NULL;
-	return -1;
-      }
-
-      for(unsigned int i=0;i<arch.size();i++){
-	if(arch[i] != loadedArch[i]){
+      if(lmethod != "info"){
+	std::vector<unsigned int> loadedArch;
+	nnParams.getArchitecture(loadedArch);
+	
+	if(arch.size() != loadedArch.size()){
 	  std::cout << "ERROR: Mismatch between loaded network architecture and parameter architecture." << std::endl;
 	  if(nn) delete nn;
 	  if(bnn) delete bnn;
 	  nn = NULL;
 	  return -1;
 	}
+	
+	for(unsigned int i=0;i<arch.size();i++){
+	  if(arch[i] != loadedArch[i]){
+	    std::cout << "ERROR: Mismatch between loaded network architecture and parameter architecture." << std::endl;
+	    if(nn) delete nn;
+	    if(bnn) delete bnn;
+	    nn = NULL;
+	    return -1;
+	  }
+	}
       }
-      
 
       *nn = nnParams;
 
@@ -461,7 +465,7 @@ int main(int argc, char** argv)
     // learning or activation
     if(lmethod == "info"){
 
-      nn->printInfo();
+      bnn->printInfo();
       
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1076,6 +1080,11 @@ int main(int argc, char** argv)
 	if(overfit == false)
 	  std::cout << "Early stopping (testing dataset)." << std::endl;
       }
+
+      // heuristic from HMC samplers: keeps TOPSIZE best results and
+      // calculate E[f(w)]
+      const unsigned int TOPSIZE = 50;
+      std::multimap<double, math::vertex< whiteice::math::blas_real<double> > > top;
       
 
       {
@@ -1108,14 +1117,12 @@ int main(int argc, char** argv)
 	    dtest.add(1, out, true);	    
 	  }
 	}
+
 	
 	// 1. normal gradient descent optimization using dtrain dataset
-	// 2. after each iteration calculate the actual error terms from dtest dataset
 	{
-	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;
-	  
+	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;	  
 	  math::vertex< whiteice::math::blas_real<double> > best_weights;
-
 	  time_t t0 = time(0);
 	  unsigned int counter = 0;
 	  math::blas_real<double> error, mean_ratio;
@@ -1138,8 +1145,8 @@ int main(int argc, char** argv)
 	  const unsigned int SAMPLE_SIZE = 100; // was 500
 	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
 
-	  // forgetting factors for ADAM stochastic gradient descent parameters
-	  whiteice::math::blas_real<double> f1 = 0.8, f2 = 0.8, v = 0.0, vprev = 0.0, one = 1.0, epsilon = 10e-10;
+	  // forgetting factors for ADAM stochastic gradient descent parameters (we follow the current gradient (was 0.8))
+	  whiteice::math::blas_real<double> f1 = 0.90, f2 = 0.90, v = 0.0, vprev = 0.0, one = 1.0, epsilon = 10e-10;
 	  math::vertex< whiteice::math::blas_real<double> > m, mprev;
 	  
 	  
@@ -1289,10 +1296,29 @@ int main(int argc, char** argv)
 	    
 
 	    prev_sumgrad = lrate * sumgrad;
+
+	    // keeps top best results
+	    {
+	      std::pair<double, math::vertex< whiteice::math::blas_real<double> > > p;
+	      // negative error so we always remove largest error
+	      p.first = -error.c[0]; 
+	      p.second = w;
+	      
+	      top.insert(p);
+	      if(top.size() > TOPSIZE){
+		std::cout << "Inserting error: "
+			  << -(p.first) << std::endl;
+		std::cout << "Removing error: "
+			  << -(top.begin()->first) << std::endl;
+		top.erase(top.begin());
+	      }
+	      
+	    }
+
 	    
 	    if(error < minimum_error){
 	      best_weights = w;
-	      minimum_error = error;
+	      minimum_error = error;	      
 	    }
 	    else if((rand() & 0xFF) == 0xFF){ // on averare every 128th iteration reset back to the known best solution
 	      w = best_weights;
@@ -1337,8 +1363,18 @@ int main(int argc, char** argv)
 	}
 	
       }
+
+      // storing now multiple results (best TOPSIZE results)
+      // so that E[f(w)] contains most likely results
+      {
+	std::vector< math::vertex< math::blas_real<double> > > weights; \
+	for(auto i = top.begin();i != top.end();i++){
+	  weights.push_back(i->second);
+	}
+
+	bnn->importSamples(*nn, weights);
+      }
       
-      bnn->importNetwork(*nn);
       
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2050,35 +2086,31 @@ void print_usage(bool all)
   printf("--help         shows this help\n");
   printf("--version      displays version and exits\n");
   printf("--info         prints network architecture information\n");
-  printf("--no-init      do not use heuristics when initializing nn weights\n");
-  printf("--overfit      do not use early stopping (bfgs,lbfgs)\n");
-  printf("--deep=*       pretrains neural network as a RBM (* = binary or gaussian input layer)\n");
-  printf("--pseudolinear sets nonlinears to be 50%% linear (--purelinear is 100%% linear)\n");
-  printf("--recurrent N  simple recurrent network (simulates N steps) (lbfgs, use)\n");
-  printf("--adaptive     use adaptive step length in bayesian hamiltonian monte carlo (bayes)\n");
-  printf("--negfb        use negative feedback between neurons (grad,parallelgrad,bfgs,lbfgs)\n");
-  printf("--load         use previously computed network weights as the starting point (grad,bfgs,lbfgs,bayes)\n");
-  printf("--time TIME    sets time limit for multistart optimization and bayesian inference\n");
-  printf("--samples N    samples N samples or defines max iterations (eg. 2500) to be used in optimization/sampling\n");
-  printf("--threads N    uses N parallel threads when looking for solution\n");
-  printf("--data N       takes randomly N samples of data for the learning process (N/2 used in training)\n");
-  printf("--subnet       trains only subnet starting from the first non-frozen layer of the network\n");  
-  printf("[data]         a source file for inputs or i/o examples (binary file)\n");
-  printf("               (whiteice data file format created by dstool)\n");
-  printf("[arch]         the architecture of a new nn. Eg. 3-10-9 or ?-10-?\n");
-  printf("<nnfile>       input/output neural networks weights file\n");
-  printf("[lmethod]      method: use, random, grad, parallelgrad, bayes, lbfgs, parallellbfgs, edit, (gbrbm, bbrbm, mix)\n");
-  printf("               parallel methods use random location multistart/restart parallel search\n");
-  printf("               until timeout or the number of samples has been reached\n");
-  printf("               additionally: minimize method finds input that minimizes the neural network output\n");
-  printf("               gradient descent algorithms can use negative feedback heuristic\n");
-  printf("               mix uses mixture of neural networks\n");
-  printf("               edit edits network to have new given architecture, previous network weights\n");
-  printf("               are preserved and set as frozen (layers before the first change in network)\n");
+  printf("--no-init      don't use heuristics when initializing net");
+  printf("--overfit      do not use early stopping (grad,lbfgs)\n");
+  printf("--deep=*       pretrains neural network as a RBM\n");
+  printf("               (* = binary or gaussian input layer)\n");
+  printf("--pseudolinear sets nonlinearity to be 50%% linear\n");
+  printf("--recurrent N  simple recurrent network (lbfgs, use)\n");
+  printf("--adaptive     adaptive step in bayesian HMC (bayes)\n");
+  printf("--negfb        use negative feedback between neurons\n");
+  printf("--load         use previously computed weights (grad,lbfgs,bayes)\n");
+  printf("--time TIME    sets time limit for computations\n");
+  printf("--samples N    use N samples or optimize for N iterations\n");
+  printf("--threads N    uses N parallel threads (pgrad, plbfgs)\n");
+  printf("--data N       only use N random samples of data\n");
+  printf("[data]         dstool file containing data (binary file)\n");
+  printf("[arch]         architecture of net (Eg. 3-10-9)\n");
+  printf("<nnfile>       used/loaded/saved neural network weights file\n");
+  printf("[lmethod]      method: use, random, grad, pgrad, bayes,"); 
+  printf("               lbfgs, plbfgs, edit, (gbrbm, bbrbm, mix)\n");
+  printf("               edit edits net to have new architecture\n");
+  printf("               previous weights are preserved if possible\n");
   printf("\n");
   printf("               Ctrl-C shutdowns the program.\n");
   printf("\n");
-  printf("This program is distributed under GPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
+  printf("This program is distributed under GPL license.\n");
+  printf("<tomas.ukkonen@iki.fi> (commercial license available).\n");
   
 }
 

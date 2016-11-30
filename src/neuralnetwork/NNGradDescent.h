@@ -8,7 +8,9 @@
  */
 
 
-#include <pthread.h>
+#include <thread>
+#include <mutex>
+
 #include "dinrhiw_blas.h"
 #include "dataset.h"
 #include "dinrhiw.h"
@@ -72,14 +74,13 @@ namespace whiteice
 	
 	unsigned int NTHREADS;
         unsigned int MAXITERS;
-	std::vector<pthread_t> optimizer_thread;
-	pthread_mutex_t solution_lock, start_lock;
+        std::vector<std::thread*> optimizer_thread;
+        std::mutex solution_lock, start_lock;
 
         volatile bool running;
         volatile int thread_is_running;
-
-      public:
-	void __optimizerloop();
+      
+        void optimizer_loop();
 	
       };
         

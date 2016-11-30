@@ -218,17 +218,26 @@ namespace whiteice
   bool bayesian_nnetwork<T>::injectSubnet(const unsigned int fromLayer,
 					  bayesian_nnetwork<T>* bnn)
   {
-    if(nnets.size() != bnn->nnets.size()) return false;
+    if(nnets.size() == 0 || bnn->nnets.size() == 0) return false;
 
     if(nnets.size() <= 0) return true; // nothing to do
 
     if(nnets[0]->getLayers() != bnn->nnets[0]->getLayers() + fromLayer)
       return false;
 
-    for(unsigned int i=0;i<nnets.size();i++){
-      if(nnets[i]->injectSubnet(fromLayer, bnn->nnets[i]) == false)
+    std::vector<whiteice::nnetwork<T>*> nets;
+
+    for(unsigned int i=0;i<bnn->nnets.size();i++){
+      nets.push_back(new nnetwork<T>(*nnets[rand() % nnets.size()]));
+      if(nets[i]->injectSubnet(fromLayer, bnn->nnets[i]) == false)
 	return false;
     }
+
+    // delete old nnets data
+    for(unsigned int i=0;i<nnets.size();i++)
+      delete nnets[i];
+
+    nnets = nets;
 
     return true;
   }

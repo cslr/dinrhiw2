@@ -7,10 +7,6 @@
 #endif
 
 
-extern "C" {
-  static void* __nngrad_optimizer_thread_init(void* param);
-};
-
 
 namespace whiteice
 {
@@ -28,31 +24,27 @@ namespace whiteice
 
       running = false;
       nn = NULL;
-
-      pthread_mutex_init(&solution_lock, 0);
-      pthread_mutex_init(&start_lock, 0);
     }
 
     
     template <typename T>
     NNGradDescent<T>::~NNGradDescent()
     {
-      pthread_mutex_lock( &start_lock );
+      start_lock.lock();
 
-      if(running)
+      if(running){
+	running = false;
 	for(unsigned int i=0;i<optimizer_thread.size();i++){
-	  pthread_cancel( optimizer_thread[i] );
+	  optimizer_thread[i]->join();
+	  delete optimizer_thread[i];
+	  optimizer_thread[i] = nullptr;
 	}
+      }
 
-      running = false;
-      
       if(nn) delete nn;
-      nn = NULL;
+      nn = nullptr;
 
-      pthread_mutex_unlock( &start_lock );
-
-      pthread_mutex_destroy( &solution_lock );
-      pthread_mutex_destroy( &start_lock );
+      start_lock.unlock();
     }
     
     /*
@@ -78,11 +70,11 @@ namespace whiteice
       if(data.dimension(0) != nn.input_size() ||
 	 data.dimension(1) != nn.output_size())
 	return false;
-      
-      pthread_mutex_lock( &start_lock );
+
+      start_lock.lock();
       
       if(running == true){
-	pthread_mutex_unlock( &start_lock );
+	start_lock.unlock();
 	return false;
       }
       
@@ -101,13 +93,12 @@ namespace whiteice
       optimizer_thread.resize(NTHREADS);
 
       for(unsigned int i=0;i<optimizer_thread.size();i++){
-	pthread_create(& (optimizer_thread[i]), 0,
-		       __nngrad_optimizer_thread_init, (void*)this);
-	pthread_detach( optimizer_thread[i] );
+	optimizer_thread[i] =
+	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
+			       this));
       }
       
-      
-      pthread_mutex_unlock( &start_lock );
+      start_lock.unlock();
 
       return true;
     }
@@ -121,20 +112,21 @@ namespace whiteice
      */
     template <typename T>
     bool NNGradDescent<T>::getSolution(whiteice::nnetwork<T>& nn,
-				       T& error, unsigned int& Nconverged)
+				       T& error,
+				       unsigned int& Nconverged)
     {
       // checks if the neural network architecture is the correct one
       if(this->nn == NULL) return false;
 
-      pthread_mutex_lock( &solution_lock );
-
+      solution_lock.lock();
+      
       nn = *(this->nn);
       nn.importdata(bestx);
 	    
       error = best_error;
       Nconverged = converged_solutions;
 
-      pthread_mutex_unlock( &solution_lock );
+      solution_lock.unlock();
 
       return true;
     }
@@ -144,31 +136,32 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::stopComputation()
     {
-      pthread_mutex_lock( &solution_lock );
-      pthread_mutex_lock( &start_lock );
+      start_lock.lock();
+      solution_lock.lock();
+
+      if(running == false){
+	solution_lock.unlock();
+	start_lock.unlock();
+	return false; // not running
+      }
 
       running = false;
       
-      
-      for(unsigned int i=0;i<optimizer_thread.size();i++){
-	pthread_cancel( optimizer_thread[i] );
-      }
-      
       while(thread_is_running > 0){
-	pthread_mutex_unlock( &solution_lock );
+	solution_lock.unlock();
 	sleep(1); // waits for threads to stop running
-	pthread_mutex_lock( &solution_lock );
+	solution_lock.lock();
       }
-      
-      pthread_mutex_unlock( &start_lock );
-      pthread_mutex_unlock( &solution_lock );
+
+      solution_lock.unlock();
+      start_lock.unlock();
 
       return true;
     }
 
 
     template <typename T>
-    void NNGradDescent<T>::__optimizerloop()
+    void NNGradDescent<T>::optimizer_loop()
     {
       if(data == NULL)
 	return; // silent failure if there is bad data
@@ -273,7 +266,10 @@ namespace whiteice
 	    // cancellation point
 	    {
 	      thread_is_running--;
-	      pthread_testcancel();
+
+	      if(running == false){
+		return; // cancels execution
+	      }
 	      thread_is_running++;
 	    }
 	    	      
@@ -336,7 +332,10 @@ namespace whiteice
 	    // cancellation point
 	    {
 	      thread_is_running--;
-	      pthread_testcancel();
+
+	      if(running == false)
+		return; // stops execution
+	      
 	      thread_is_running++;
 	    }
 
@@ -352,18 +351,18 @@ namespace whiteice
 
 	  // 3. after convergence checks if the result is better
 	  //    than the earlier one
-	  pthread_mutex_lock( &solution_lock );
+	  
+	  solution_lock.lock();
 
 	  if(error < best_error){
 	    // improvement (smaller error with early stopping)
 	    best_error = error;
 	    nn.exportdata(bestx);
 	  }
-
+	  
 	  converged_solutions++;
 
-	  pthread_mutex_unlock( &solution_lock);
-
+	  solution_lock.unlock();
 	}
 	
 	
@@ -380,19 +379,4 @@ namespace whiteice
     template class NNGradDescent< blas_real<double> >;    
     
   };
-};
-
-
-extern "C" {
-  void* __nngrad_optimizer_thread_init(void *optimizer_ptr)
-  {
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0);
-    
-    if(optimizer_ptr)
-      ((whiteice::math::NNGradDescent< whiteice::math::blas_real<float> >*)optimizer_ptr)->__optimizerloop();
-    
-    pthread_exit(0);
-
-    return 0;
-  }
 };

@@ -349,13 +349,13 @@ void parse_commandline(int argc, char** argv,
     cmdparamslist.push_back(p);
     p.name = "grad"; p.code = LM_GRAD;
     cmdparamslist.push_back(p);
-    p.name = "parallelbfgs"; p.code = LM_PBFGS;
+    p.name = "pbfgs"; p.code = LM_PBFGS;
     cmdparamslist.push_back(p);
-    p.name = "parallellbfgs"; p.code = LM_PLBFGS;
+    p.name = "plbfgs"; p.code = LM_PLBFGS;
     cmdparamslist.push_back(p);
     p.name = "lbfgs"; p.code = LM_LBFGS;
     cmdparamslist.push_back(p);    
-    p.name = "parallelgrad"; p.code = LM_PARALLELGRAD;
+    p.name = "pgrad"; p.code = LM_PARALLELGRAD;
     cmdparamslist.push_back(p);
     p.name = "random"; p.code = LM_RANDOM;
     cmdparamslist.push_back(p);
@@ -368,7 +368,7 @@ void parse_commandline(int argc, char** argv,
     p.name = "gbrbm"; p.code = LM_GBRBM;
     cmdparamslist.push_back(p);
     p.name = "bbrbm"; p.code = LM_BBRBM;
-    cmdparamslist.push_back(p);    
+    cmdparamslist.push_back(p);
     
     p.name = "+ot"; p.code = MMOD_OVERTRAIN;
     cmdparamslist.push_back(p);    

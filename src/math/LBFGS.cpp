@@ -82,7 +82,10 @@ namespace whiteice
     	thread_is_running = 0;
 
     	try{
-    		optimizer_thread = new thread(std::bind(&LBFGS<T>::optimizer_loop, this));
+    		optimizer_thread =
+		  new thread(std::bind(&LBFGS<T>::optimizer_loop,
+				       this));
+		
     		// optimizer_thread->detach();
     	}
     	catch(std::exception& e){
