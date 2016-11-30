@@ -2102,7 +2102,7 @@ void print_usage(bool all)
   printf("[data]         dstool file containing data (binary file)\n");
   printf("[arch]         architecture of net (Eg. 3-10-9)\n");
   printf("<nnfile>       used/loaded/saved neural network weights file\n");
-  printf("[lmethod]      method: use, random, grad, pgrad, bayes,"); 
+  printf("[lmethod]      method: use, random, grad, pgrad, bayes,\n"); 
   printf("               lbfgs, plbfgs, edit, (gbrbm, bbrbm, mix)\n");
   printf("               edit edits net to have new architecture\n");
   printf("               previous weights are preserved if possible\n");
