@@ -1135,7 +1135,7 @@ int main(int argc, char** argv)
 	  if(samples > 0)
 	    eta.start(0.0f, (double)samples);
 	  
-	  const unsigned int SAMPLE_SIZE = 500;
+	  const unsigned int SAMPLE_SIZE = 100; // was 500
 	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
 
 	  // forgetting factors for ADAM stochastic gradient descent parameters
@@ -1178,13 +1178,13 @@ int main(int argc, char** argv)
 	    sumgrad.resize(nn->gradient_size());
 	    sumgrad.zero();
 
-//#pragma omp parallel shared(sumgrad)
+	    // #pragma omp parallel shared(sumgrad)
 	    {
 	      nnetwork< math::blas_real<double> > net(*nn);
 	      math::vertex< whiteice::math::blas_real<double> > sgrad(sumgrad.size());
 	      sgrad.zero();
 
-//#pragma omp for nowait schedule(dynamic)
+	      // #pragma omp for nowait schedule(dynamic)
 	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
 		const unsigned index = rand() % dtrain.size(0);
 		
@@ -1198,7 +1198,7 @@ int main(int argc, char** argv)
 		sgrad += ninv*grad;
 	      }
 
-//#pragma omp critical
+	      // #pragma omp critical
 	      {
 		sumgrad += sgrad;
 	      }
@@ -1294,7 +1294,7 @@ int main(int argc, char** argv)
 	      best_weights = w;
 	      minimum_error = error;
 	    }
-	    else if((rand() & 0xFF) == 0xFF){ // on averare every 128th iteration reset back to known best solution
+	    else if((rand() & 0xFF) == 0xFF){ // on averare every 128th iteration reset back to the known best solution
 	      w = best_weights;
 	      error = minimum_error;
 	      prev_sumgrad.zero();
