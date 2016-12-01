@@ -761,7 +761,7 @@ namespace whiteice
 	    for(unsigned int c=0;c<W.xsize();c++)
 	      W(r,c) = v[r] * W(r,c);
 	  
-	  if(net->setWeights(W, 0) == false) throw "error setting decoder output layer W^t ";
+	  if(net->setWeights(W, ll+1) == false) throw "error setting decoder output layer W^t ";
 	}
 	
 	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
