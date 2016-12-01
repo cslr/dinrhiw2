@@ -615,7 +615,7 @@ namespace whiteice
       gb_input.getVariance(v);
 
       for(unsigned int i=0;i<v.size();i++)
-	v[i] = T(1.0)/(math::sqrt(v) + T(10e-10)); // no div by zeros..
+	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
 
       assert(v.size() == W.xsize());
 
@@ -720,7 +720,7 @@ namespace whiteice
 	  gb_input.getVariance(v);
 	  
 	  for(unsigned int i=0;i<v.size();i++)
-	    v[i] = T(1.0)/(math::sqrt(v) + T(10e-10)); // no div by zeros..
+	    v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
 
 	  assert(v.size() == W.xsize());
 	  
@@ -753,7 +753,7 @@ namespace whiteice
 	  gb_input.getVariance(v);
 	  
 	  for(unsigned int i=0;i<v.size();i++)
-	    v[i] = math::sqrt(v);
+	    v[i] = math::sqrt(v[i]);
 
 	  assert(v.size() == W.ysize());
 	  
