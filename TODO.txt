@@ -3,12 +3,16 @@ TODO
  * improve and fix and test parallel gradient descent to work again
    (pgrad and plbfgs)
 
+* DBN.toNNetwork() code must use W.transpose() when transferring
+  weights between DBN and nnetwork<> is this a bug??
+
  * test RBM optimization, set them frozen and edit
    to add extra layers, and optimize non-frozen layers
    (Kaggle)
 
 * throughly test HMC further.
   Does negative phase improve results or not?
+  - does TOP gradient results work better or worse?
 
 
 LATER (multistep optimization):

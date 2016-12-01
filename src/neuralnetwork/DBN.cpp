@@ -609,7 +609,21 @@ namespace whiteice
 
     // copies DBN parameters as nnetwork parameters..
     if(!binaryInput){
-      if(net->setWeights(gb_input.getWeights().transpose(), 0) == false){ delete net; net = nullptr; return false; }
+      auto W = gb_input.getWeights().transpose();
+
+      math::vertex<T> v;
+      gb_input.getVariance(v);
+
+      for(unsigned int i=0;i<v.size();i++)
+	v[i] = T(1.0)/(math::sqrt(v) + T(10e-10)); // no div by zeros..
+
+      assert(v.size() == W.xsize());
+
+      for(unsigned int r=0;r<W.ysize();r++)
+	for(unsigned int c=0;c<W.xsize();c++)
+	  W(r,c) *= v[c];
+	
+      if(net->setWeights(W, 0) == false){ delete net; net = nullptr; return false; }
       if(net->setBias(gb_input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
     }
     else{
@@ -697,7 +711,25 @@ namespace whiteice
       
       try {
 	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
-	if(net->setWeights(gb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	{	  
+	  // if(net->setWeights(gb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	  
+	  auto W = gb_input.getWeights().transpose();
+
+	  math::vertex<T> v;
+	  gb_input.getVariance(v);
+	  
+	  for(unsigned int i=0;i<v.size();i++)
+	    v[i] = T(1.0)/(math::sqrt(v) + T(10e-10)); // no div by zeros..
+
+	  assert(v.size() == W.xsize());
+	  
+	  for(unsigned int r=0;r<W.ysize();r++)
+	    for(unsigned int c=0;c<W.xsize();c++)
+	      W(r,c) *= v[c];
+	  
+	  if(net->setWeights(W, 0) == false) throw "error setting input layer W";
+	}
 	
 	if(net->setBias(gb_input.getBValue(), 0) == false) throw "error setting input layer b";
 	
@@ -713,7 +745,25 @@ namespace whiteice
 	  if(net->setBias(layers[l].getAValue(), ll+1) == false) throw "error setting decoder layer a";
 	}
 	
-	if(net->setWeights(gb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
+	{
+	  // if(net->setWeights(gb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
+	  auto W = gb_input.getWeights();
+	  
+	  math::vertex<T> v;
+	  gb_input.getVariance(v);
+	  
+	  for(unsigned int i=0;i<v.size();i++)
+	    v[i] = math::sqrt(v);
+
+	  assert(v.size() == W.ysize());
+	  
+	  for(unsigned int r=0;r<W.ysize();r++)
+	    for(unsigned int c=0;c<W.xsize();c++)
+	      W(r,c) = v[r] * W(r,c);
+	  
+	  if(net->setWeights(W, 0) == false) throw "error setting decoder output layer W^t ";
+	}
+	
 	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 	
 	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
@@ -764,7 +814,8 @@ namespace whiteice
       
       try {
 	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
-	if(net->setWeights(bb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	// if(net->setWeights(bb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
+	if(net->setWeights(bb_input.getWeights(), 0) == false) throw "error setting input layer W";
 	
 	if(net->setBias(bb_input.getBValue(), 0) == false) throw "error setting input layer b";
 	

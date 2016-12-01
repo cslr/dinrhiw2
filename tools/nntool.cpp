@@ -41,7 +41,8 @@ void print_usage(bool all);
 void sleepms(unsigned int ms);
 
 
-volatile bool stopsignal = false; // is set true if receives CRTL-C or some other signal
+// is set true if receives CRTL-C or some other signal
+volatile bool stopsignal = false; 
 void install_signal_handler();
 
 
@@ -694,7 +695,7 @@ int main(int argc, char** argv)
       
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    else if(lmethod == "parallelbfgs"){
+    else if(lmethod == "pbfgs"){
 
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");
@@ -808,7 +809,7 @@ int main(int argc, char** argv)
       
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    else if(lmethod == "parallellbfgs"){
+    else if(lmethod == "plbfgs"){
 
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");
@@ -1007,7 +1008,7 @@ int main(int argc, char** argv)
 
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    else if(lmethod == "parallelgrad"){
+    else if(lmethod == "pgrad"){
       
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");
@@ -1187,7 +1188,8 @@ int main(int argc, char** argv)
 
 	    // #pragma omp parallel shared(sumgrad)
 	    {
-	      nnetwork< math::blas_real<double> > net(*nn);
+	      //nnetwork< math::blas_real<double> > net(*nn);
+	      nnetwork< math::blas_real<double> >& net = *nn;
 	      math::vertex< whiteice::math::blas_real<double> > sgrad(sumgrad.size());
 	      sgrad.zero();
 
@@ -1263,14 +1265,14 @@ int main(int argc, char** argv)
 	      error = 0.0;
 
 	      
-	      // calculates error from the testing dataset
+	      // calculates error from the testing dataset (should use train?)
 #pragma omp parallel shared(error)
 	      {
 		math::blas_real<double> e = 0.0;
 		
 #pragma omp for nowait schedule(dynamic)		
-		for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-		  const unsigned int index = rand() % dtest.size(0);
+		for(unsigned int i=0;i<dtest.size(0);i++){
+		  const unsigned int index = i; // rand() % dtest.size(0);
 		  auto input = dtest.access(0, index);
 		  auto output = dtest.access(1, index);
 		  
@@ -1340,12 +1342,16 @@ int main(int argc, char** argv)
 
 	    printf("\r                                                            \r");
 	    if(samples > 0){
-	      printf("%d/%d iterations: %f (%f) [%.1f minutes]",
-		     counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	      printf("%d/%d iterations: %f (%f) <%f> [%.1f minutes]",
+		     counter, samples, error.c[0], mean_ratio.c[0],
+		     -(top.begin()->first),
+		     eta.estimate()/60.0);
 	    }
 	    else{ // secs
-	      printf("%d iterations: %f (%f) [%.1f minutes]",
-		     counter, error.c[0], mean_ratio.c[0], (secs - counter)/60.0);
+	      printf("%d iterations: %f (%f) <%f> [%.1f minutes]",
+		     counter, error.c[0], mean_ratio.c[0],
+		     -(top.begin()->first),
+		     (secs - counter)/60.0);
 	    }
 	    
 	    fflush(stdout);	  
@@ -1357,8 +1363,10 @@ int main(int argc, char** argv)
 	    nn->importdata(best_weights);
 
 	  printf("\r                                                            \r");
-	  printf("%d/%d : %f (%f) [%.1f minutes]\n",
-		 counter, samples, error.c[0], mean_ratio.c[0], eta.estimate()/60.0);
+	  printf("%d/%d : %f (%f) <%f> [%.1f minutes]\n",
+		 counter, samples, error.c[0], mean_ratio.c[0],
+		 -(top.begin()->first),
+		 eta.estimate()/60.0);
 	  fflush(stdout);
 	}
 	
