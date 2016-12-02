@@ -234,7 +234,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /usr/local/include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi
 fi
 
 AC_MSG_CHECKING([for OpenBLAS library (2)])
@@ -247,7 +249,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi
 fi
 
 AC_MSG_CHECKING([for OpenBLAS library (3)])
@@ -260,7 +264,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /usr/include/openblas/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi   
 fi
 
 AC_MSG_CHECKING([for OpenBLAS library (4)])
@@ -273,7 +279,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /usr/local/include/openblas/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi
 fi
 
 AC_MSG_CHECKING([for OpenBLAS library (5)])
@@ -286,7 +294,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /opt/OpenBLAS/include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi
 fi
 
 AC_MSG_CHECKING([for OpenBLAS library (6)])
@@ -299,7 +309,9 @@ if [[ $? -eq 0 ]]; then
    AC_MSG_RESULT([yes, headers in /opt/include/])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
-   OPENBLAS="no"
+   if [[ "x$OPENBLAS" != "xyes" ]]; then
+      OPENBLAS="no"
+   fi
 fi
 
 

@@ -5,7 +5,7 @@ CC = gcc
 CXX= g++
 
 OPTIMIZE=-fPIC -O3 -g -DAMD64 -ffast-math -fopenmp -mtune=native -march=native
-CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include -DOPENBLAS -I/opt/include/ 
+CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/local/include -DOPENBLAS -I/usr/include/openblas/ 
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 
 
@@ -20,7 +20,7 @@ SOURCES = AssociationRuleFinder.cpp test/tst.cpp \
 
 TARGET  = tst
 
-LIBS= -L/usr/local/lib -lz -lgmp  -L/opt/lib/ -lopenblas
+LIBS= -L/usr/local/lib -lz -lgmp  -L/lib/ -lopenblas
 
 ##################################################
 

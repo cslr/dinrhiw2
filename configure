@@ -4155,7 +4155,9 @@ $as_echo "yes, headers in /usr/local/include/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (2)" >&5
@@ -4171,7 +4173,9 @@ $as_echo "yes, headers in /include/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (3)" >&5
@@ -4187,7 +4191,9 @@ $as_echo "yes, headers in /usr/include/openblas/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (4)" >&5
@@ -4203,7 +4209,9 @@ $as_echo "yes, headers in /usr/local/include/openblas/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (5)" >&5
@@ -4219,7 +4227,9 @@ $as_echo "yes, headers in /opt/OpenBLAS/include/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (6)" >&5
@@ -4235,7 +4245,9 @@ $as_echo "yes, headers in /opt/include/" >&6; }
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
-   OPENBLAS="no"
+   if [ "x$OPENBLAS" != "xyes" ]; then
+      OPENBLAS="no"
+   fi
 fi
 
 

@@ -1307,13 +1307,8 @@ int main(int argc, char** argv)
 	      p.second = w;
 	      
 	      top.insert(p);
-	      if(top.size() > TOPSIZE){
-		std::cout << "Inserting error: "
-			  << -(p.first) << std::endl;
-		std::cout << "Removing error: "
-			  << -(top.begin()->first) << std::endl;
+	      while(top.size() > TOPSIZE)
 		top.erase(top.begin());
-	      }
 	      
 	    }
 
