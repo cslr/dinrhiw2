@@ -700,14 +700,7 @@ namespace whiteice
       arch.push_back(gb_input.getVisibleNodes());
       
       net = new whiteice::nnetwork<T>(arch);
-      
-      for(unsigned int l=0;l<net->getLayers();l++){
-	whiteice::math::matrix< T > W;
-	whiteice::math::vertex< T > bias;
-	
-	net->getBias(bias, l);
-	net->getWeights(W, l);      
-      }
+
       
       try {
 	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
@@ -803,14 +796,6 @@ namespace whiteice
       arch.push_back(bb_input.getVisibleNodes());
       
       net = new whiteice::nnetwork<T>(arch);
-      
-      for(unsigned int l=0;l<net->getLayers();l++){
-	whiteice::math::matrix< T > W;
-	whiteice::math::vertex< T > bias;
-	
-	net->getBias(bias, l);
-	net->getWeights(W, l);      
-      }
       
       try {
 	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]

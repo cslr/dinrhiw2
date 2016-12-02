@@ -356,7 +356,8 @@ namespace whiteice
 		  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
 
 		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    state[i] = nonlin(state[i], aindex + 1, i);
+		    // state[i] = nonlin(state[i], aindex + 1, i);
+		    state[i] = nonlin(state[i], aindex, i);
 		  }
 		}
 
@@ -393,7 +394,8 @@ namespace whiteice
 		  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
 
 		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    state[i] = nonlin(state[i], aindex + 1, i);
+		    // state[i] = nonlin(state[i], aindex + 1, i);
+		    state[i] = nonlin(state[i], aindex, i);
 		  }
 		}
 
@@ -450,7 +452,8 @@ namespace whiteice
 				  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
 
 				  for(unsigned int i=0;i<arch[aindex+1];i++){
-				    state[i] = nonlin(state[i], aindex + 1, i);
+				    // state[i] = nonlin(state[i], aindex + 1, i);
+				    state[i] = nonlin(state[i], aindex, i);
 				  }
 			  }
 
@@ -745,7 +748,7 @@ namespace whiteice
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
     assert(layer < getLayers());
-    
+
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) / (T(1.0) + math::exp(-input));
@@ -755,11 +758,11 @@ namespace whiteice
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) / (T(1.0) + math::exp(-input));
       
-      T r = T(((double)rand())/((double)RAND_MAX));
+      const T r = T(((double)rand())/((double)RAND_MAX));
       
       if(output >= r){ output = T(1.0); }
       else{ output = T(0.0); }
-
+      
       return output;
     }
     else if(nonlinearity[layer] == halfLinear){
@@ -872,7 +875,7 @@ namespace whiteice
   inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
     assert(layer < getLayers());
-    
+
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) + math::exp(-input);
