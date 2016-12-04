@@ -93,13 +93,10 @@ bool BBRBM<T>::operator==(const BBRBM<T>& rbm) const
 template <typename T>
 bool BBRBM<T>::operator!=(const BBRBM<T>& rbm) const
 {
-  if(this->v == rbm.v) return false;
-  if(this->h == rbm.h) return false;
-
-  if(this->W == rbm.W) return false;
-  if(this->a == rbm.a) return false;
-  if(this->b == rbm.b) return false;
-  if(this->Usamples == rbm.Usamples) return false;
+  if(this->v == rbm.v && this->h == rbm.h && 
+     this->W == rbm.W && this->a == rbm.a &&
+     this->b == rbm.b && this->Usamples == rbm.Usamples)
+    return false;
 
   return true;
 }
@@ -934,7 +931,7 @@ bool BBRBM<T>::load(const std::string& filename) throw()
   if(file.getData(1, data) == false) return false;
   b = data[0];
   if(file.getData(2, data) == false) return false;
-  W.resize(a.size(), b.size());
+  W.resize(b.size(), a.size());
   if(W.load_from_vertex(data[0]) == false)
     return false;
   if(file.getData(3, data) == false) return false;

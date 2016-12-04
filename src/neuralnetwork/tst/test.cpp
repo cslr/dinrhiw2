@@ -36,6 +36,7 @@
 #include "CRBM.h"
 #include "LBFGS_GBRBM.h"
 #include "LBFGS_BBRBM.h"
+#include "BBRBM.h"
 
 #include "LBFGS_nnetwork.h"
 #include "rLBFGS_nnetwork.h"
@@ -120,6 +121,8 @@ int main()
   srand(seed);
   
   try{
+    bbrbm_test();
+    
     // mixture_nnetwork_test();
 
     bayesian_nnetwork_test();
@@ -134,8 +137,6 @@ int main()
     lbfgs_rbm_test();
 
     ensemble_means_test();
-
-    bbrbm_test();
 
     rbm_test();
 #endif
@@ -525,7 +526,17 @@ void bbrbm_test()
     if(rbm2.save("rbmparams.dat") == false) std::cout << "BBRBM::save() FAILED." << std::endl;
     if(rbm1.load("rbmparams.dat") == false) std::cout << "BBRBM::load() FAILED." << std::endl;
     
-    if(rbm2 != rbm1) std::cout << "BBRBM load() FAILED to create identical BBRBM." << std::endl;
+    if(rbm2 != rbm1){
+      std::cout << "BBRBM load() FAILED to create identical BBRBM." << std::endl;
+      
+      auto Wdiff = rbm1.getWeights() - rbm2.getWeights();
+      auto bdiff = rbm1.getBValue() - rbm2.getBValue();
+      auto adiff = rbm1.getAValue() - rbm2.getAValue();
+      
+      if(math::frobenius_norm(Wdiff) < 10e-6 && bdiff.norm() < 10e-6 && adiff.norm() < 10e-6){
+	std::cout << "But weights difference of less than 10e-6.. OK" << std::endl;
+      }
+    }
     
   }
   
