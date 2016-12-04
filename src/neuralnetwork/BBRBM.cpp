@@ -193,12 +193,6 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
 {
   if(iters == 0) return false;
   
-#if 0
-  // FIXME/OPTIMIZE WE CREATE NEEDLESSLY Wt matrix!
-  math::matrix<T> Wt = W;
-  Wt.transpose();
-#endif
-  
   while(iters > 0){
     h = W*v + b;
     
@@ -206,7 +200,7 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     for(unsigned int j=0;j<(h.size()-0);j++){
       T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
       T r = rng.uniform();
-      
+
       if(aj > r) h[j] = T(1.0); // discretization step
       else       h[j] = T(0.0);
     }
@@ -214,9 +208,6 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     iters--;
     if(iters <= 0) return true;
 
-#if 0
-    v = Wt*h + a;
-#endif
     v = h*W + a;
     
     // 1. visible units: calculates sigma(a_j)

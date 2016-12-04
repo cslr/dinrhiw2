@@ -759,8 +759,8 @@ namespace whiteice
       T output = T(1.0) / (T(1.0) + math::exp(-input));
       
       const T r = T(((double)rand())/((double)RAND_MAX));
-      
-      if(output >= r){ output = T(1.0); }
+
+      if(output > r){ output = T(1.0); }
       else{ output = T(0.0); }
       
       return output;

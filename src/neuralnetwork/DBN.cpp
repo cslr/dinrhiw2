@@ -314,7 +314,8 @@ namespace whiteice
       
       for(auto v : in){
 	gb_input.setVisible(v);
-	gb_input.reconstructData(1);
+	// gb_input.reconstructData(1); 
+	gb_input.reconstructDataHidden(1);
 	
 	math::vertex<T> h;
 	gb_input.getHidden(h);

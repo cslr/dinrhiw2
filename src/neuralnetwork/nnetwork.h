@@ -33,10 +33,10 @@ namespace whiteice
     public:
 
     enum nonLinearity {
-      sigmoid, // uses sigmoid non-linearity as the default (0)
-      stochasticSigmoid, // clipped to 0/1 values.. (1)
-      halfLinear, // for deep networks (2)
-      pureLinear  // for testing and comparing nnetworks (pure linear) (3)
+      sigmoid = 0, // uses sigmoid non-linearity as the default (0)
+      stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
+      halfLinear = 2, // for deep networks (2)
+      pureLinear = 3  // for testing and comparing nnetworks (pure linear) (3)
     };
 
 

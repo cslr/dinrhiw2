@@ -534,7 +534,7 @@ void bbrbm_test()
       auto adiff = rbm1.getAValue() - rbm2.getAValue();
       
       if(math::frobenius_norm(Wdiff) < 10e-6 && bdiff.norm() < 10e-6 && adiff.norm() < 10e-6){
-	std::cout << "But weights difference of less than 10e-6.. OK" << std::endl;
+	std::cout << "But weights difference is less than 10e-6.. OK" << std::endl;
       }
     }
     
@@ -587,7 +587,7 @@ void bbrbm_test()
     }
   }
 
-#if 0
+#if 1
   // learns weights given training data (gradient descent)
   {
 
@@ -600,6 +600,8 @@ void bbrbm_test()
     
   }
 #endif
+
+#if 0
   // learns parameters using LBFGS second order optimizer
   {
     whiteice::dataset< math::blas_real<double> > ds;
@@ -640,9 +642,69 @@ void bbrbm_test()
       
       sleep(1);
     }
+  }
+#endif
+
+  
+  // after we have trained BBRBM we transform it to nnetwork manually and see we get the same results (hidden layer)!
+  {
+    whiteice::nnetwork< math::blas_real<double> > net;
+    std::vector<unsigned int> arch;
+
+    arch.push_back(DIMENSION);
+    arch.push_back(DIMENSION); // 1st layer is BBRBM non-linearity
+    arch.push_back(DIMENSION); // 2nd layer is identity layer because last layer of net is pureLinear
+
+    if(net.setArchitecture
+       (arch, nnetwork< math::blas_real<double> >::stochasticSigmoid) == false)
+      std::cout << "ERROR: could not set architecture of nnetwork"
+		<< std::endl;
+    
+    math::matrix< math::blas_real<double> > W;
+    math::vertex< math::blas_real<double> > b;
+
+    W = bbrbm.getWeights();
+    b = bbrbm.getBValue();
+
+    if(net.setWeights(W, 0) == false){
+      std::cout << "Nnetwork: Cannot set weights (0)" << std::endl;
+    }
+    
+    if(net.setBias(b, 0) == false){
+      std::cout << "Nnetwork: Cannot set bias (0)" << std::endl;
+    }
+
+    W.identity();
+    b.zero();
+
+    if(net.setWeights(W, 1) == false){
+      std::cout << "Nnetwork: Cannot set weights (1)" << std::endl;
+    }
+    
+    if(net.setBias(b, 1) == false){
+      std::cout << "Nnetwork: Cannot set bias (1)" << std::endl;
+    }
+
+    // compares stimulation of BBRBM and nnetwork
+    {
+      auto& s = samples[0];
+
+      math::vertex< math::blas_real<double> > out1, out2;
+
+      bbrbm.setVisible(s);
+      bbrbm.reconstructData(1);
+      bbrbm.getHidden(out1);
+
+      net.calculate(s, out2);
+
+      std::cout << "THESE SHOULD BE MORE OR LESS SAME:" << std::endl;
+      std::cout << "BBRBM    output: " << out1 << std::endl;
+      std::cout << "nnetwork output: " << out2 << std::endl;
+    }
     
     
   }
+  
   
 }
 
