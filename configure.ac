@@ -315,17 +315,25 @@ else
 fi
 
 
+AC_ARG_ENABLE([mkl],
+	AS_HELP_STRING([--disable-mkl],[Disable Intel MKL library]))
+
 MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
 
 AC_MSG_CHECKING([for Intel MKL library])
 `g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
 
-
 if [[ $? -eq 0 ]]; then
-   INTELMKL="yes"
-   BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
-   BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
-   AC_MSG_RESULT([yes, installed in $MKLROOT])
+  AS_IF([test "x$enable_mkl" == "xno"],[
+     INTELMKL="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     INTELMKL="yes"
+     BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+     BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+     AC_MSG_RESULT([yes, installed in $MKLROOT])
+  ])
 else
    AC_MSG_RESULT([no Intel MKL detected])
    INTELMKL="no"

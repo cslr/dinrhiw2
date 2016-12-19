@@ -687,6 +687,7 @@ ac_user_opts='
 enable_option_checking
 enable_optimize
 enable_openmp
+enable_mkl
 with_atlaslpath
 enable_native
 enable_cppdebug
@@ -1326,6 +1327,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-optimize      Disable optimization
   --disable-openmp        Disable OpenMP
+  --disable-mkl           Disable Intel MKL library
   --enable-native         Enable native optimization
   --enable-cppdebug       Enable C++ debugging mode (stdc++)
 
@@ -4251,19 +4253,34 @@ $as_echo "no OpenBLAS detected" >&6; }
 fi
 
 
+# Check whether --enable-mkl was given.
+if test "${enable_mkl+set}" = set; then :
+  enableval=$enable_mkl;
+fi
+
+
 MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Intel MKL library" >&5
 $as_echo_n "checking for Intel MKL library... " >&6; }
 `g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
 
-
 if [ $? -eq 0 ]; then
-   INTELMKL="yes"
-   BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
-   BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, installed in $MKLROOT" >&5
+  if test "x$enable_mkl" == "xno"; then :
+
+     INTELMKL="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     INTELMKL="yes"
+     BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+     BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, installed in $MKLROOT" >&5
 $as_echo "yes, installed in $MKLROOT" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no Intel MKL detected" >&5
 $as_echo "no Intel MKL detected" >&6; }
