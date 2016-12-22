@@ -1849,7 +1849,7 @@ int main(int argc, char** argv)
 	  math::vertex< whiteice::math::blas_real<double> > out1;
 	  math::matrix< whiteice::math::blas_real<double> > cov;
 
-	  bnn->calculate(data.access(0, i), out1, cov, SIMULATION_DEPTH);
+	  bnn->calculate(data.access(0, i), out1, cov, SIMULATION_DEPTH, 0);
 	  err = data.access(1,i) - out1;
 	  
 	  for(unsigned int i=0;i<err.size();i++)
@@ -1922,7 +1922,7 @@ int main(int argc, char** argv)
 	    printf("%d/%d (%.1f%%) [ETA %.1f minutes]", i+1, data.size(0), percent, etamin);
 	    fflush(stdout);
 	    
-	    bnn->calculate(data.access(0, i),  out, cov, SIMULATION_DEPTH);
+	    bnn->calculate(data.access(0, i),  out, cov, SIMULATION_DEPTH, 0);
 	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
@@ -1945,7 +1945,7 @@ int main(int argc, char** argv)
 	    math::vertex< whiteice::math::blas_real<double> > var;
 	    math::matrix< whiteice::math::blas_real<double> > cov;
 	    
-	    bnn->calculate(data.access(0, i), out, cov, SIMULATION_DEPTH);
+	    bnn->calculate(data.access(0, i), out, cov, SIMULATION_DEPTH, 0);
 	    
 	    // we do NOT preprocess the output but inject it directly into dataset
 	    data.add(1, out, true);
