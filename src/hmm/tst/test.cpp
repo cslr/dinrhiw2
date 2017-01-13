@@ -27,6 +27,8 @@ void hmm_test()
   printf("HIDDEN MARKOV MODEL (HMM) TESTS\n");
 
   {
+    printf("HMM - LEARNING TEST\n");
+    
     // we hand set a simple two hidden state markov model emitting 3 different symbols and test if we can learn it 
     
     whiteice::HMM hmm(3, 2);
@@ -63,7 +65,7 @@ void hmm_test()
     // generates "string" of observations from hand-set HMM
     std::vector<unsigned int> data;
     
-    assert(hmm.sample(1024, data) == true);
+    assert(hmm.sample(10000, data) == true);
 
     
     whiteice::HMM hmm2(3, 2);
@@ -71,9 +73,201 @@ void hmm_test()
 
     printf("MODEL FIT (logp): %f\n", r);
     fflush(stdout);
+
+    printf("NEW PARAMETERS\n");
+    {
+      unsigned int i = 0;
+      unsigned int j = 0;
+      unsigned int k = 0;
+      
+      auto pi = hmm2.getPI();
+      printf("PI\n");
+      for(auto& p : pi){
+	printf("[%d] %f ", i, p.getDouble());
+	i++;
+      }
+      printf("\n\n");
+
+      i = 0;
+      j = 0;
+      k = 0;
+      
+      auto A = hmm2.getA();
+      
+      printf("A\n");
+      for(auto& ai : A){
+	j = 0;
+	for(auto& aij : ai){
+	  printf("[%d,%d] %f ", i, j, aij.getDouble());
+	  j++;
+	}
+	printf("\n");
+	i++;
+      }
+      printf("\n");
+
+      i = 0;
+      j = 0;
+      k = 0;
+
+      auto B = hmm2.getB();
+      
+      printf("B\n");
+      for(auto& bi : B){
+	j = 0;
+	for(auto& bij : bi){
+	  k = 0;
+	  for(auto& bijo : bij){
+	    printf("[%d,%d,%d] %f ", i,j,k, bijo.getDouble());
+	    k++;
+	  }
+	  printf("\n");
+	  j++;
+	}
+	printf("\n");
+	i++;
+      }
+      printf("\n");
+      
+    }
+
+    
+    printf("REFERENCE PARAMETERS\n");
+        {
+      unsigned int i = 0;
+      unsigned int j = 0;
+      unsigned int k = 0;
+      
+      auto pi = hmm.getPI();
+      printf("PI\n");
+      for(auto& p : pi){
+	printf("[%d] %f ", i, p.getDouble());
+	i++;
+      }
+      printf("\n\n");
+
+      i = 0;
+      j = 0;
+      k = 0;
+      
+      auto A = hmm.getA();
+      
+      printf("A\n");
+      for(auto& ai : A){
+	j = 0;
+	for(auto& aij : ai){
+	  printf("[%d,%d] %f ", i, j, aij.getDouble());
+	  j++;
+	}
+	printf("\n");
+	i++;
+      }
+      printf("\n");
+
+      i = 0;
+      j = 0;
+      k = 0;
+
+      auto B = hmm.getB();
+      
+      printf("B\n");
+      for(auto& bi : B){
+	j = 0;
+	for(auto& bij : bi){
+	  k = 0;
+	  for(auto& bijo : bij){
+	    printf("[%d,%d,%d] %f ", i,j,k, bijo.getDouble());
+	    k++;
+	  }
+	  printf("\n");
+	  j++;
+	}
+	printf("\n");
+	i++;
+      }
+      printf("\n");
+      
+    }
+	
     
   }
 
-  
+
+  {
+    printf("HMM - SAVE() & LOAD() TEST\n");
+
+    unsigned int v = rand() % 64 + 10;
+    unsigned int h = rand() % 64 + 10;
+
+    whiteice::HMM hmm1(v, h);
+    whiteice::HMM hmm2(v + 1, h + 2);
+
+    hmm1.randomize();
+
+    assert(hmm1.save("hmm1.dat") == true);
+    assert(hmm2.load("hmm1.dat") == true);
+
+    // compares parameters
+    {
+      auto pi1 = hmm1.getPI();
+      auto pi2 = hmm2.getPI();
+      
+      whiteice::math::realnumber error(0.0, 128);
+
+      for(unsigned int i=0;i<pi1.size();i++)
+	error += abs(pi1[i] - pi2[i]);
+
+      error /= ((double)pi1.size());
+
+      if(error.getDouble() > 0.001){
+	printf("ERROR: pi parameter mismatch after save()&load()\n");
+	return;
+      }
+
+      auto A1 = hmm1.getA();
+      auto A2 = hmm2.getA();
+
+      error = 0.0;
+
+      for(unsigned int i=0;i<A1.size();i++){
+	for(unsigned int j=0;j<A1[i].size();j++){
+	  error += abs(A1[i][j] - A2[i][j]);
+	}
+      }
+
+      error /= ((double)(A1.size()*A1[0].size()));
+      
+      if(error.getDouble() > 0.001){
+	printf("ERROR: A parameter mismatch after save()&load(): %f\n",
+	       error.getDouble());
+	return;
+      }
+
+      
+      auto B1 = hmm1.getB();
+      auto B2 = hmm2.getB();
+
+      error = 0.0;
+
+      for(unsigned int i=0;i<B1.size();i++){
+	for(unsigned int j=0;j<B1[i].size();j++){
+	  for(unsigned int k=0;k<B1[i][j].size();k++){
+	    error += abs(B1[i][j][k] - B2[i][j][k]);
+	  }
+	}
+      }
+
+      error /= ((double)(B1.size()*B1[0].size()*B1[0][0].size()));
+      
+      if(error.getDouble() > 0.001){
+	printf("ERROR: B parameter mismatch after save()&load(): %f\n",
+	       error.getDouble());
+	return;
+      }
+      
+    }
+    
+    printf("HMM LOAD() & SAVE() TESTS PASSED\n");
+  }
   
 }

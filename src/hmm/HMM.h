@@ -71,7 +71,7 @@ namespace whiteice {
     /*
      * calculations log(probability) of observations
      */
-    double logprobability(std::vector<unsigned int>& observations) const
+    double logprobability(const std::vector<unsigned int>& observations) const
       throw (std::invalid_argument);
 
     
@@ -83,10 +83,18 @@ namespace whiteice {
 
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
     const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
+
+
+    // saves and loads HMM to binary file
+    bool load(const std::string& filename) throw();
+    bool save(const std::string& filename) const throw();
     
   private:
+    // normalizes parameters by ordering hidden states according to probabilities
+    void normalize_parameters();
+    
     // number of visible and hidden states
-    const unsigned int numVisible, numHidden;
+    unsigned int numVisible, numHidden;
     unsigned int precision; // precision of computations
     
     // parameters of HMM:

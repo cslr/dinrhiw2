@@ -6,16 +6,24 @@
  */
 
 #include "HMM.h"
+
 #include <vector>
 #include <list>
+#include <set>
+
+#include "dataset.h"
+
+
 
 using namespace whiteice::math;
 
 namespace whiteice {
 
-  HMM::HMM(unsigned int visStates, unsigned int hidStates) throw(std::logic_error) :
-    numVisible(visStates), numHidden(hidStates)
+  HMM::HMM(unsigned int visStates, unsigned int hidStates) throw(std::logic_error)
   {
+    this->numVisible = visStates;
+    this->numHidden  = hidStates;
+
     if(numVisible == 0 || numHidden == 0)
       throw std::logic_error("whiteice::HMM ctor - number of visible or hidden states cannot be zero");
     
@@ -143,7 +151,8 @@ namespace whiteice {
 
       }
     }
-    
+
+    normalize_parameters();
   }
   
   
@@ -160,9 +169,13 @@ namespace whiteice {
     
     bool converged = false;
     std::list<realnumber> pdata;
-    
+    unsigned int iteration = 0;
     realnumber plast(0.0, precision);
-    
+
+    {
+      printf("ITER %d. Log(probability) = %f\n", iteration, logprobability(observations));
+    }
+
     
     while(!converged) // keeps calculating EM-algorithm for parameter estimation
     {
@@ -217,16 +230,7 @@ namespace whiteice {
 	    
 	    if(o >= B[i][j].size())
 	      throw std::invalid_argument("HMM::train() - beta calculations: observed state out of range");
-#if 0
-	    printf("%d\n", t);
-	    printf("%d %d %d %d %d %d %d %d %d\n",
-		   i, j, o,
-		   (int)A.size(), (int)A[0].size(),
-		   (int)B.size(), (int)B[0].size(),
-		   (int)bp.size(), 
-		   (int)b.size());
-#endif
-	    
+
 	    bp[i] += A[i][j] * B[i][j][o] * b[j];
 	  }
 	}
@@ -348,15 +352,17 @@ namespace whiteice {
       plast = po;
       pdata.push_back(po);
       
+      iteration++;
       
-      std::cout << "Observations log(probability): " << log(po).getDouble() << std::endl;
+      printf("ITER %d. Log(probability) = %f\n", iteration, log(po).getDouble());
+      
       
       // estimates convergence
       {
 	if(pdata.size() < 10)
 	  continue; // needs at least 10 data points
 	
-	while(pdata.size() > 20)
+	while(pdata.size() > 30)
 	  pdata.pop_front();
 	
 	// calculates mean and st.dev. and decides for convergence if st.dev/mean <= 0.05
@@ -380,13 +386,15 @@ namespace whiteice {
 	
 	auto r = s/m;
 	
-	if(r.getDouble() <= 0.01){
+	if(r.getDouble() <= 0.00001){
 	  converged = true;
 	}
 	
       }
       
     }
+
+    normalize_parameters();
     
     
     if(plast > 0.0)
@@ -496,7 +504,7 @@ namespace whiteice {
   /*
    * calculations log(probability) of observations
    */
-  double HMM::logprobability(std::vector<unsigned int>& observations) const throw (std::invalid_argument)
+  double HMM::logprobability(const std::vector<unsigned int>& observations) const throw (std::invalid_argument)
   {
     // uses forward procedure
     
@@ -526,11 +534,332 @@ namespace whiteice {
     for(auto& a : alpha)
       po += a;
     
+    po = pow(po, 1.0/((double)observations.size()));
+    
     po = log(po);
     
     return po.getDouble();
   }
 
+#define HMM_VERSION_CFGSTR "HMM_VERSION"
+#define HMM_ARCH_CFGSTR    "HMM_ARCH"
+#define HMM_PI_CFGSTR      "HMM_PARAM_PI"
+#define HMM_PARAM_A_CFGSTR "HMM_PARAM_A"
+#define HMM_PARAM_B_CFGSTR "HMM_PARAM_B"
 
+  bool HMM::load(const std::string& filename) throw()
+  {
+    try{
+      whiteice::dataset<double> configuration;
+      math::vertex<double> data;
+
+      std::vector<int> ints;
+      std::vector<float> floats;
+      std::vector<std::string> strings;
+      
+      if(configuration.load(filename) == false)
+	return false;
+
+      int versionid = 0;
+      
+      // checks version
+      {
+	data = configuration.accessName(HMM_VERSION_CFGSTR, 0);
+	ints.resize(data.size());
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
+	if(ints.size() != 1)
+	  return false;
+	
+	versionid = ints[0];
+	
+	ints.clear();
+      } 
+      
+      if(versionid != 1000) // v1.0 datafile
+	return false;
+
+      // gets architecture
+      std::vector<unsigned int> arch;
+      
+      {
+	data = configuration.accessName(HMM_ARCH_CFGSTR, 0);
+	ints.resize(data.size());
+	for(unsigned int i=0;i<data.size();i++){
+	  math::convert(ints[i], data[i]);
+	}
+	
+	if(ints.size() < 3)
+	  return false;
+	
+	arch.resize(ints.size());
+	
+	for(unsigned int i=0;i<ints.size();i++){
+	  if(ints[i] <= 0) return false;
+	  arch[i] = (unsigned int)ints[i];
+	}
+      }
+
+      // gets PI parameter
+      std::vector<double> PI; 
+      
+      {
+	data = configuration.accessName(HMM_PI_CFGSTR, 0);
+	
+	if(data.size() != arch[1])
+	  return false; // arch[1] == numHidden states
+
+	PI.resize(arch[1]);
+	for(unsigned int i=0;i<arch[1];i++)
+	  PI[i] = data[i];
+      }
+
+      // gets A parameter
+      std::vector< std::vector< double > > loadA;
+
+      {
+	data = configuration.accessName(HMM_PARAM_A_CFGSTR, 0);
+
+	if(data.size() != arch[1]*arch[1])
+	  return false;
+
+	unsigned int index = 0;
+
+	loadA.resize(arch[1]);
+	for(unsigned int j=0;j<arch[1];j++){
+	  loadA[j].resize(arch[1]);
+	  for(unsigned int i=0;i<arch[1];i++,index++){
+	    loadA[j][i] = data[index];
+	  }
+	}
+	  
+      }
+
+      // gets B parameter
+      std::vector< std::vector< std::vector< double > > > loadB;
+      
+      {
+	data = configuration.accessName(HMM_PARAM_B_CFGSTR, 0);
+
+	if(data.size() != arch[1]*arch[1]*arch[0])
+	  return false;
+
+	unsigned int index = 0;
+
+	loadB.resize(arch[1]);
+	for(unsigned int j=0;j<arch[1];j++){
+	  loadB[j].resize(arch[1]);
+	  for(unsigned int i=0;i<arch[1];i++){
+	    loadB[j][i].resize(arch[0]);
+	    for(unsigned int k=0;k<arch[0];k++, index++){
+	      loadB[j][i][k] = data[index];
+	    }
+	  }
+	}
+      }
+
+
+      // now we have all parameters, copies them to actual parameters
+      numVisible = arch[0];
+      numHidden  = arch[1];
+      precision  = arch[2];
+
+      ph.resize(numHidden);
+      for(unsigned int i=0;i<ph.size();i++){
+	ph[i].setPrecision(precision);
+	ph[i] = PI[i];
+      }
+
+      A.resize(numHidden);
+      for(unsigned int j=0;j<numHidden;j++){       
+	A[j].resize(numHidden);
+	for(unsigned int i=0;i<numHidden;i++){
+	  A[j][i].setPrecision(precision);
+	  A[j][i] = loadA[j][i];
+	}
+      }
+
+      B.resize(numHidden);
+      for(unsigned int j=0;j<numHidden;j++){
+	B[j].resize(numHidden);
+	for(unsigned int i=0;i<numHidden;i++){
+	  B[j][i].resize(numVisible);
+	  for(unsigned int k=0;k<numVisible;k++){
+	    B[j][i][k].setPrecision(precision);
+	    B[j][i][k] = loadB[j][i][k];
+	  }
+	}
+      }
+      
+      
+      return true;
+      
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      return false;
+    }
+  }
+
+  
+  bool HMM::save(const std::string& filename) const throw()
+  {
+    try{
+      whiteice::dataset<double> configuration;
+      math::vertex<double> data;
+      
+      std::vector<int> ints;
+      std::vector<float> floats;
+      std::vector<std::string> strings;
+      
+      // writes version information
+      {
+	ints.push_back(1000);
+	
+	configuration.createCluster(HMM_VERSION_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++)
+	  data[i] = ints[i];
+	
+	configuration.add(configuration.getCluster(HMM_VERSION_CFGSTR), data);
+	
+	ints.clear();
+      }
+      
+      
+      // writes architecture information
+      {
+	ints.push_back(numVisible);
+	ints.push_back(numHidden);
+	ints.push_back(precision);
+	
+	configuration.createCluster(HMM_ARCH_CFGSTR, ints.size());
+	data.resize(ints.size());
+	for(unsigned int i=0;i<ints.size();i++)
+	  data[i] = ints[i];
+	
+	configuration.add(configuration.getCluster(HMM_ARCH_CFGSTR), data);
+	
+	ints.clear();
+      }
+      
+      // writes parameter PI
+      {
+	configuration.createCluster(HMM_PI_CFGSTR, ph.size());
+	data.resize(ph.size());
+	for(unsigned int i=0;i<ph.size();i++)
+	  data[i] = ph[i].getDouble();
+	
+	configuration.add(configuration.getCluster(HMM_PI_CFGSTR), data);
+      }
+      
+      // writes parameter vec(A)
+      {
+	const unsigned int size = numHidden*numHidden;
+	
+	configuration.createCluster(HMM_PARAM_A_CFGSTR, size);
+	data.resize(size);
+	unsigned int index = 0;
+	for(unsigned int j=0;j<numHidden;j++)
+	  for(unsigned int i=0;i<numHidden;i++, index++)
+	    data[index] = A[j][i].getDouble();
+	
+	configuration.add(configuration.getCluster(HMM_PARAM_A_CFGSTR), data);
+      }
+      
+      // writes parameter vec(B)
+      {
+	const unsigned int size = numHidden*numHidden*numVisible;
+	
+	configuration.createCluster(HMM_PARAM_B_CFGSTR, size);
+	data.resize(size);
+	unsigned int index = 0;
+	for(unsigned int j=0;j<numHidden;j++)
+	  for(unsigned int i=0;i<numHidden;i++)
+	    for(unsigned int k=0;k<numVisible;k++,index++)
+	      data[index] = B[j][i][k].getDouble();
+	
+	configuration.add(configuration.getCluster(HMM_PARAM_B_CFGSTR), data);
+      }
+
+      return configuration.save(filename);
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      
+      return false;
+    }
+  }
+    
+
+  // normalizes parameters by ordering hidden states according to probabilities
+  void HMM::normalize_parameters()
+  {
+    auto newA = A;
+    auto newP = ph;
+    auto newB = B;
+
+    // uses hidden state transitions to order states
+    std::vector<unsigned int> order;
+    std::set<unsigned int> states;
+
+    for(unsigned int i=0;i<numHidden;i++)
+      states.insert(i);
+
+    while(states.size() > 0){
+      realnumber max = 0.0;
+      unsigned int state = 0;
+
+      for(auto s : states){
+	if(A[s][s] > max){
+	  max = A[s][s];
+	  state = s;
+	}
+      }
+
+      states.erase(states.find(state));
+      order.push_back(state);
+    }
+
+    // PI
+    for(unsigned int i=0;i<order.size();i++){
+      newP[i] = ph[order[i]];
+    }
+
+    // A
+    for(unsigned int i=0;i<order.size();i++){
+      for(unsigned int j=0;j<numHidden;j++){
+	for(unsigned int i=0;i<numHidden;i++){
+	  newA[j][i] = A[order[j]][order[i]];
+	}
+      }
+    }
+
+    // B
+    for(unsigned int i=0;i<order.size();i++){
+      for(unsigned int j=0;j<numHidden;j++){
+	for(unsigned int i=0;i<numHidden;i++){
+	  for(unsigned int k=0;k<numVisible;k++){
+	    newB[j][i][k] = B[order[j]][order[i]][k];
+	  }
+	}
+      }
+    }
+    
+
+    ph = newP;
+    A = newA;
+    B = newB;
+    
+  }
+  
 
 } /* namespace whiteice */
