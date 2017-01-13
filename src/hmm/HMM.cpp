@@ -48,7 +48,8 @@ namespace whiteice {
 	}
       }
     }
-    
+
+    this->randomize();
   }
   
   HMM::~HMM()
@@ -168,7 +169,7 @@ namespace whiteice {
 	
       // first calculates alpha and beta
       const unsigned int T = observations.size();
-      std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
+      std::vector< std::vector<realnumber> > alpha(T+1), beta(T+2);
       
       for(auto& a : alpha){
 	a.resize(numHidden);
@@ -216,6 +217,15 @@ namespace whiteice {
 	    
 	    if(o >= B[i][j].size())
 	      throw std::invalid_argument("HMM::train() - beta calculations: observed state out of range");
+#if 0
+	    printf("%d\n", t);
+	    printf("%d %d %d %d %d %d %d %d %d\n",
+		   i, j, o,
+		   (int)A.size(), (int)A[0].size(),
+		   (int)B.size(), (int)B[0].size(),
+		   (int)bp.size(), 
+		   (int)b.size());
+#endif
 	    
 	    bp[i] += A[i][j] * B[i][j][o] * b[j];
 	  }
@@ -299,7 +309,7 @@ namespace whiteice {
 	  
 	  for(unsigned int t=1;t<=T;t++){
 	    sp += p[t-1][i][j];
-	    sy += y[t-1][t];
+	    sy += y[t-1][i];
 	  }
 	  
 	  A[i][j] = sp/sy;
@@ -333,7 +343,7 @@ namespace whiteice {
 	const unsigned int t = T+1;
 	po += alpha[t-1][i];
       }
-      po = pow(po, 1.0/observations.size());
+      po = pow(po, 1.0/((double)observations.size()));
       
       plast = po;
       pdata.push_back(po);
@@ -356,16 +366,21 @@ namespace whiteice {
 	realnumber s(0.0, precision);
 	
 	for(auto& p : pdata){
-	  m += p/pdata.size();
-	  s += (p*p)/pdata.size();
+	  m += p;
+	  s += (p*p);
 	}
-	
+
+	m /= (double)pdata.size();
+	s /= (double)pdata.size();
+
 	s -= m*m;
+
+	s = abs(s);
 	s = sqrt(s);
 	
 	auto r = s/m;
 	
-	if(r.getDouble() <= 0.05){
+	if(r.getDouble() <= 0.01){
 	  converged = true;
 	}
 	

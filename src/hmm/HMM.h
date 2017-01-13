@@ -73,6 +73,16 @@ namespace whiteice {
      */
     double logprobability(std::vector<unsigned int>& observations) const
       throw (std::invalid_argument);
+
+    
+    std::vector< whiteice::math::realnumber >& getPI(){ return ph; }
+    const std::vector< whiteice::math::realnumber >& getPI() const { return ph; }
+
+    std::vector< std::vector< whiteice::math::realnumber > >& getA(){ return A; }
+    const std::vector< std::vector< whiteice::math::realnumber > >& getA() const { return A; }
+
+    std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
+    const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
     
   private:
     // number of visible and hidden states
