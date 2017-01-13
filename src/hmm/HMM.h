@@ -19,7 +19,7 @@
 namespace whiteice {
 
   /*
-   * discrete Hidden Markov Model using arbitrary precision numbers (templated)
+   * discrete Hidden Markov Model using arbitrary precision numbers (realnumber)
    * for analyzing and generating neuromancer/resonanz stimulation sequences
    *
    * TODO this will be initially non-threaded version but will be

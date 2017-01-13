@@ -1,0 +1,52 @@
+# dinrhiw2 basic/generic classes
+##################################################
+
+CC = @CC@
+CXX= @CXX@
+
+OBJECTS = hmm.o
+
+EXTRA_OBJECTS = math/vertex.o math/matrix.o math/ownexception.o \
+	math/integer.o math/correlation.o math/matrix_rotations.o \
+	math/eig.o math/blade_math.o math/real.o math/ica.o
+
+TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
+
+
+SOURCES = hmm.cpp tst/test.cpp
+
+OPTIMIZE=@optimization_flags@
+CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
+
+TARGET= testsuite
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -I../math -I../neuralnetwork $(OPTIMIZE)
+
+LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
+
+CD = cd
+
+
+##################################################
+
+all: $(TEST_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(TEST_OBJECTS) $(LIBS)
+
+clean:
+	$(RM) $(TEST_OBJECTS)
+	$(RM) $(TARGET)
+	$(RM) *~
+
+realclean: clean
+
+depend:
+	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend
+
+
+##################################################
+
+include Makefile.depend
+
+
+
+
+
