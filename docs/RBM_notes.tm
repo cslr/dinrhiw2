@@ -109,9 +109,9 @@
   The energy of the restricted boltzman machine is:\ 
 
   <\math>
-    E<rsub|B*B><around|(|v,h|)>=a<rsup|T>v+v<rsup|T>W*h+b<rsup|T>h
+    E<rsub|B*B><around|(|v,h|)>=-a<rsup|T>v-v<rsup|T>W*h-b<rsup|T>h
 
-    E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>+v<rsup|T>W*h+b<rsup|T>h
+    E<rsub|G*B><around|(|v,h|)>=<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsup|2>-v<rsup|T>W*-b<rsup|T>h
   </math>
 
   Note that we could have added additional constant <math|c> term to these
@@ -191,20 +191,20 @@
 
   First we further simplify the <math|F<around|(|v|)>> terms
 
-  <math|F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|B*B><around|(|v,h|)>>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>v*+b|)><rsup|T>h>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<big|sum><rsub|i,j>h<rsub|i><around|(|v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>>
+  <math|F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|B*B><around|(|v,h|)>>=-a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>v*+b|)><rsup|T>h>=a<rsup|T>v-log<big|sum><rsub|h>e<rsup|<big|sum><rsub|i>h<rsub|i><around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>>
 
-  <math|F<around|(|v|)>=-a<rsup|T>v-log<big|sum><rsub|h><big|prod><rsub|i>e<rsup|*h<rsub|i><around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>=-a<rsup|T>v-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|*h<rsub|i><around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>>
+  <math|F<around|(|v|)>=-a<rsup|T>v-log<big|sum><rsub|h><big|prod><rsub|i>e<rsup|h<rsub|i><around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>=a<rsup|T>v-<big|sum><rsub|i>log<big|sum><rsub|h<rsub|i>>e<rsup|*h<rsub|i><around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>>
 
   If we decide <math|h=<around|{|0,1|}>> then the equation simplifies further
   into
 
-  <math|F<around|(|v|)>=-a<rsup|T>v-<big|sum><rsub|i>log<around|(|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>|)>>
+  <math|F<around|(|v|)>=-a<rsup|T>v-<big|sum><rsub|i>log<around|(|1+e<rsup|<around*|(|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>|)>>
 
   Calculating gradients leads into eqs:
 
   <math|<frac|\<partial\>F<around|(|v|)>|\<partial\>a>=-v>
 
-  <math|<frac|\<partial\>F<around|(|v|)>|\<partial\>b<rsub|i>>=-<frac|e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*><rsup|*>*|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-sigmoid<around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>>
+  <math|<frac|\<partial\>F<around|(|v|)>|\<partial\>b<rsub|i>>=-<frac|e<rsup|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>**><rsup|*>*|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-sigmoid<around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>>
 
   <math|<frac|\<partial\>*F<around|(|v|)>|\<partial\>*w<rsub|i*j>>=-<frac|e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>*v<rsub|j>|1+e<rsup|*<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>*>>=-v<rsub|j>*sigmoid<around|(|<big|sum><rsub|j>v<rsub|j>*w<rsub|i*j>*+b<rsub|i>|)>*>
 
@@ -349,27 +349,27 @@
   \;
 
   <\math>
-    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsub|\<Sigma\>><rsup|2>+<around|(|\<Sigma\>*<rsup|-0.5>v|)><rsup|T>W*h+b<rsup|T>h+log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>-<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>>
+    F<around|(|v|)>=-log<big|sum><rsub|h>e<rsup|-E<rsub|G*B><around|(|v,h|)>>=-log<big|sum><rsub|h>e<rsup|-<frac|1|2><around|\<\|\|\>|v-a|\<\|\|\>><rsub|\<Sigma\>><rsup|2>+<around|(|\<Sigma\>*<rsup|-0.5>v|)><rsup|T>W*h+b<rsup|T>h>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsup|T>h>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<big|sum><rsub|h>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsup|T>h>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<around*|(|<around*|\||\<Sigma\>|\|><rsup|-<around*|(|v+p+1|)>/2>|)>+<frac|1|2>tr<around*|(|\<Sigma\><rsup|-1>|)>-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*h<rsub|i>>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-log<big|prod><rsub|i><big|sum><rsub|h<rsub|i>>e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*h<rsub|i>>
 
-    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>+<around*|(|<around*|(|v+p+1|)>/2|)>*log<around*|(|<around*|\||\<Sigma\>|\|>|)>+<frac|1|2><big|sum><rsub|i><frac|1|\<sigma\><rsup|2><rsub|i>>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
+    =<frac|1|2><around|(|v-a|)><rsup|T>\<Sigma\><rsup|-1><around|(|v-a|)>-<big|sum><rsub|i>log<around|(|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|)>
   </math>
 
   Its derivate, assuming the covariance matrix is diagonal, is:\ 
 
   <\math>
-    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+<around*|(|v+p+1|)><big|sum><rsub|i><frac|\<partial\>|\<partial\>\<sigma\><rsub|k>>log*<around*|(|\<sigma\><rsub|i>|)>-<frac|1|\<sigma\><rsub|k><rsup|3>>-<big|sum><rsub|i><frac|e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>><around|(|<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>|)>
+    <frac|\<partial\>F|\<partial\>\<sigma\><rsub|k>>=-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+<big|sum><rsub|i><frac|e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>|1+e<rsup|<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>*>>*<frac|\<partial\>|\<partial\>\<sigma\><rsub|k>><around|(|<big|sum><rsub|k>w<rsub|k*i>*<frac|v<rsub|k>|\<sigma\><rsub|k>>|)>
 
-    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+<around*|(|v+p+1|)><frac|1|\<sigma\><rsub|k>>-<frac|1|\<sigma\><rsub|k><rsup|3>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k>*<big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
+    =-<frac|<around|(|v<rsub|k>-a<rsub|k>|)><rsup|2>|\<sigma\><rsup|3><rsub|k>>+v<rsub|k>/\<sigma\><rsup|2><rsub|k>*<big|sum><rsub|i>w<rsub|k*i>*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v*+b|)><rsub|i>**
   </math>
 
   <\math>
     <rsup|>diag<around|[|<frac|\<partial\>*F|\<partial\>*\<Sigma\>>|]>=
 
-    diag[-\<Sigma\><rsup|-3/2><around*|(|<around|(|v-a|)>*<around|(|v-a|)><rsup|T>+I|)>+<around*|(|v+p+1|)>\<Sigma\><rsup|-1/2>+*<around|(|\<Sigma\><rsup|-1>v|)>*<around|(|W*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v+b|)>|)><rsup|T>]
+    diag[-\<Sigma\><rsup|-3/2><around|(|v-a|)>*<around|(|v-a|)><rsup|T>+*<around|(|\<Sigma\><rsup|-1>v|)>*<around|(|W*sigmoid<around|(|W<rsup|T>\<Sigma\><rsup|-0.5>v+b|)>|)><rsup|T>]
   </math>
 
   \;

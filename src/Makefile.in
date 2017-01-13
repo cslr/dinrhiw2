@@ -46,7 +46,7 @@ OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
 
 TARGET= testsuite
-CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -Imath -Ineuralnetwork -Icrypto $(OPTIMIZE)
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -Imath -Ineuralnetwork -Icrypto -Ihmm $(OPTIMIZE)
 
 LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 

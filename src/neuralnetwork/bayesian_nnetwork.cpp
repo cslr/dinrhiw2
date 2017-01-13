@@ -450,8 +450,6 @@ namespace whiteice
       
       // gets architecture
       {
-	//if(!configuration.get(FNN_ARCH_CFGSTR,ints))
-	// return false;
 	data = configuration.accessName(FNN_ARCH_CFGSTR, 0);
 	ints.resize(data.size());
 	for(unsigned int i=0;i<data.size();i++){

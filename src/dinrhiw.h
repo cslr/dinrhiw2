@@ -52,6 +52,9 @@
 #include "nnetwork_function.h"
 
 
+#include "HMM.h"
+
+
 #include "array.h"
 #include "static_array.h"
 #include "dynamic_array.h"

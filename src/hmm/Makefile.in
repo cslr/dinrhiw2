@@ -42,6 +42,7 @@ clean:
 	$(RM) *~
 
 realclean: clean
+	$(RM) hmm1.dat
 
 depend:
 	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend

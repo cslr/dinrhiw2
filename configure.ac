@@ -417,7 +417,7 @@ AC_SUBST([conf_libs], [$conf_libs])
 AC_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/math/Makefile])
 AC_CONFIG_FILES([src/crypto/Makefile src/neuralnetwork/Makefile])
-AC_CONFIG_FILES([src/datamining/Makefile])
+AC_CONFIG_FILES([src/datamining/Makefile src/hmm/Makefile])
 AC_CONFIG_FILES([tools/Makefile])
 AC_CONFIG_FILES([dinrhiw.pc])
 AC_OUTPUT

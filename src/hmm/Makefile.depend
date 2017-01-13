@@ -298,3 +298,4 @@ real.o: ../math/real.cpp ../math/real.h ../math/number.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/quaternion.h ../math/gvertex.cpp
+ownexception.o: ../math/ownexception.cpp ../math/ownexception.h
