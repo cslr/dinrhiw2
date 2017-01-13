@@ -4,16 +4,17 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = hmm.o
+OBJECTS = HMM.o
 
-EXTRA_OBJECTS = math/vertex.o math/matrix.o math/ownexception.o \
-	math/integer.o math/correlation.o math/matrix_rotations.o \
-	math/eig.o math/blade_math.o math/real.o math/ica.o
+EXTRA_OBJECTS = ../math/integer.o ../math/blade_math.o ../math/real.o \
+	../math/ownexception.o
 
 TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
 
-SOURCES = hmm.cpp tst/test.cpp
+SOURCES = HMM.cpp tst/test.cpp \
+	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
+	../math/ownexception.o
 
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@

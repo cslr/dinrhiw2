@@ -168,7 +168,7 @@ namespace whiteice {
 	
       // first calculates alpha and beta
       const unsigned int T = observations.size();
-      set::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
+      std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
       
       for(auto& a : alpha){
 	a.resize(numHidden);
@@ -271,7 +271,7 @@ namespace whiteice {
 	}
       }
       
-      for(unsigned unsigned int t=1;t<=T;t++){
+      for(unsigned int t=1;t<=T;t++){
 	for(unsigned int i=0;i<numHidden;i++){
 	  auto& yti = y[t-1][i];
 	  yti = 0.0;
@@ -365,7 +365,7 @@ namespace whiteice {
 	
 	auto r = s/m;
 	
-	if(r.toDouble() <= 0.05){
+	if(r.getDouble() <= 0.05){
 	  converged = true;
 	}
 	
@@ -441,6 +441,8 @@ namespace whiteice {
     std::vector<realnumber> dnext(ph);
     
     realnumber phidden(0.0, precision);
+
+    const unsigned int T = observations.size()-1;
     
     for(unsigned int t=1;t<=(T+1);t++){
       for(unsigned int j=0;j<numHidden;j++){
@@ -448,10 +450,11 @@ namespace whiteice {
 	unsigned int max_i = 0;
 	auto& o = observations[t-1];
 
-	if(o >= B[hh][h].size())
-	  throw std::invalid_argument("HMM::ml_states() - observed state out of range");
-
 	for(unsigned int i=0;i<numHidden;i++){
+	  
+	  if(o >= B[i][j].size())
+	    throw std::invalid_argument("HMM::ml_states() - observed state out of range");
+	  
 	  auto t = d[i] * A[i][j] * B[i][j][o];
 
 	  // NOTE: this does not properly handle ties so the first best path found is used.

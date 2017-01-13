@@ -19,7 +19,7 @@
 namespace whiteice {
 
   /*
-   * discrete Hidden Markov Model using arbitrary precision numbers (realnumber)
+   * discrete Hidden Markov Model using arbitrary precision numbers (math::realnumber)
    * for analyzing and generating neuromancer/resonanz stimulation sequences
    *
    * TODO this will be initially non-threaded version but will be
@@ -66,7 +66,7 @@ namespace whiteice {
      * returns log(probability) of the optimum hidden states
      */
     double ml_states(std::vector<unsigned int>& hidden,
-		     const std::vector<unsigned int>& observations) const;
+		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
     
     /*
      * calculations log(probability) of observations
@@ -93,7 +93,7 @@ namespace whiteice {
     whiteice::RNG<double> rng; // random number generator used by HMM for simulations
     
     // samples variable i according to probability p(i)
-    unsigned int sample(const std::vector<realnumber>& p) const;
+    unsigned int sample(const std::vector<math::realnumber>& p) const;
     
   };
   
