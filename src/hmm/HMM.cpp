@@ -201,8 +201,12 @@ namespace whiteice {
 	  an[j] = 0.0;
 	  for(unsigned int i=0;i<a.size();i++){
 	    
-	    if(o >= B[i][j].size())
-	      throw std::invalid_argument("HMM::train() - alpha calculations: observed state out of range");
+	    if(o >= B[i][j].size()){
+	      char buffer[128];
+	      sprintf(buffer,
+		      "HMM::train() - alpha calculations: observed state out range (%d)", o);
+	      throw std::invalid_argument(buffer);
+	    }
 	    
 	    an[j] += a[i]*A[i][j]*B[i][j][o];
 	  }
@@ -228,8 +232,12 @@ namespace whiteice {
 	  bp[i] = 0.0;
 	  for(unsigned int j=0;j<numHidden;j++){
 	    
-	    if(o >= B[i][j].size())
-	      throw std::invalid_argument("HMM::train() - beta calculations: observed state out of range");
+	    if(o >= B[i][j].size()){
+	      char buffer[128];
+	      sprintf(buffer,
+		      "HMM::train() - beta calculations: observed state out range (%d)", o);
+	      throw std::invalid_argument(buffer);
+	    }
 
 	    bp[i] += A[i][j] * B[i][j][o] * b[j];
 	  }
@@ -261,7 +269,7 @@ namespace whiteice {
 	realnumber zero(0.0, precision);
 
 	if(ab == zero){
-	  throw std::invalid_argument("HMM::train() - out of floating point precisision\n");
+	  throw std::invalid_argument("HMM::train() - out of floating point precision\n");
 	}
 	
 	auto& pt = p[t-1];
@@ -270,8 +278,12 @@ namespace whiteice {
 	for(unsigned int i=0;i<numHidden;i++){
 	  for(unsigned int j=0;j<numHidden;j++){
 	    
-	    if(o >= B[i][j].size())
-	      throw std::invalid_argument("HMM::train() - p(i,j) calculations: observed state out of range");
+	    if(o >= B[i][j].size()){
+	      char buffer[128];
+	      sprintf(buffer,
+		      "HMM::train() - p(i,j) calculations: observed state out range (%d)", o);
+	      throw std::invalid_argument(buffer);
+	    }
 	    
 	    pt[i][j] = alpha[t-1][i] * A[i][j] * B[i][j][o] * beta[t][j];
 	    pt[i][j] /= ab;
@@ -519,14 +531,18 @@ namespace whiteice {
     
     const unsigned int T = observations.size();
     
-    for(unsigned int t=1;t<=(T+1);t++){
+    for(unsigned int t=1;t<=(T);t++){
       for(unsigned int h=0;h<numHidden;h++){
 	anext[h] = 0.0f;
 	for(unsigned int hh=0;hh<numHidden;hh++){
 	  auto& o = observations[t-1];
 	  
-	  if(o >= B[hh][h].size())
-	    throw std::invalid_argument("HMM::logprobability() - observed state out of range");
+	  if(o >= B[hh][h].size()){
+	    char buffer[128];
+	    sprintf(buffer,
+		    "HMM::logprobability() - observed state out of range (%d)", o);
+	    throw std::invalid_argument(buffer);
+	  }
 	  
 	  anext[h] += alpha[hh]*A[hh][h]*B[hh][h][o];
 	}
@@ -657,7 +673,7 @@ namespace whiteice {
 	loadB.resize(arch[1]);
 	for(unsigned int j=0;j<arch[1];j++){
 	  loadB[j].resize(arch[1]);
-	  for(unsigned int i=0;i<arch[1];i++){
+	  for( unsigned int i=0;i<arch[1];i++){
 	    loadB[j][i].resize(arch[0]);
 	    for(unsigned int k=0;k<arch[0];k++, index++){
 	      loadB[j][i][k] = data[index];
