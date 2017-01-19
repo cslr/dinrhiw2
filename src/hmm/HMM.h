@@ -67,6 +67,17 @@ namespace whiteice {
      */
     double ml_states(std::vector<unsigned int>& hidden,
 		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
+
+    /**
+     * finds maximum likelihood hidden states describing observation
+     * using viterbi algorithm. Current hidden probabilities is known and provided
+     * by caller.
+     *
+     * returns log(probability) of the optimum hidden states
+     */
+    double ml_states(std::vector<double>& currentState,
+		     std::vector<unsigned int>& hidden,
+		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
     
     /*
      * calculations log(probability) of observations
@@ -84,7 +95,7 @@ namespace whiteice {
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
     const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
 
-
+    
     // saves and loads HMM to binary file
     bool load(const std::string& filename) throw();
     bool save(const std::string& filename) const throw();
@@ -109,7 +120,7 @@ namespace whiteice {
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > > B;
     
     whiteice::RNG<double> rng; // random number generator used by HMM for simulations
-    
+
     // samples variable i according to probability p(i)
     unsigned int sample(const std::vector<math::realnumber>& p) const;
     
