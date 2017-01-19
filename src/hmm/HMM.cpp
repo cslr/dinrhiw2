@@ -27,7 +27,7 @@ namespace whiteice {
     if(numVisible == 0 || numHidden == 0)
       throw std::logic_error("whiteice::HMM ctor - number of visible or hidden states cannot be zero");
     
-    precision = 128; // 128 bits [2 x double]
+    precision = 256; // 128 bits [2 x double]
     
     ph.resize(numHidden);
     
@@ -257,6 +257,12 @@ namespace whiteice {
 	// divisor
 	for(unsigned int m=0;m<numHidden;m++)
 	  ab += alpha[t-1][m]*beta[t-1][m];
+
+	realnumber zero(0.0, precision);
+
+	if(ab == zero){
+	  throw std::invalid_argument("HMM::train() - out of floating point precisision\n");
+	}
 	
 	auto& pt = p[t-1];
 	auto& o  = observations[t-1];
