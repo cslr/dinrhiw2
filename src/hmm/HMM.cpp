@@ -546,10 +546,21 @@ namespace whiteice {
       sum += t;
     }
 
-    for(unsigned int j=0;j<numHidden;j++){
-      dnext[j] /= sum;
+    realnumber zero(0.0, precision);
+    
+    if(sum != zero){
+      for(unsigned int j=0;j<numHidden;j++){
+	dnext[j] /= sum;
+      }
     }
-
+    else{
+      double p = 1.0/((double)numHidden);
+      
+      for(unsigned int j=0;j<numHidden;j++){
+	dnext[j] = p;
+      }
+    }
+    
     nextState = sample(dnext);
 
     auto logp = log(dnext[nextState]);

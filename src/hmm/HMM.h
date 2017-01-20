@@ -93,6 +93,9 @@ namespace whiteice {
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
     const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
 
+    unsigned int getNumVisibleStates() const throw() { return numVisible; }
+    unsigned int getNumHiddenStates() const throw() { return numHidden; }
+
     
     // saves and loads HMM to binary file
     bool load(const std::string& filename) throw();
