@@ -69,15 +69,13 @@ namespace whiteice {
 		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
 
     /**
-     * finds maximum likelihood hidden states describing observation
-     * using viterbi algorithm. Current hidden probabilities is known and provided
-     * by caller.
-     *
-     * returns log(probability) of the optimum hidden states
+     * predicts the next hidden state given observation and current known state.
+     * 
+     * returns log(probability) of the chosen next state
      */
-    double ml_states(std::vector<double>& currentState,
-		     std::vector<unsigned int>& hidden,
-		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
+    double next_state(const unsigned int currentState,
+		      unsigned int& nextState,
+		      const unsigned int observation) const throw (std::invalid_argument);
     
     /*
      * calculations log(probability) of observations

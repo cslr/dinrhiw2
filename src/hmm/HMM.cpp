@@ -520,58 +520,39 @@ namespace whiteice {
 
 
 
-  double HMM::ml_states(std::vector<double>& currentState,
-			std::vector<unsigned int>& hidden,
-			const std::vector<unsigned int>& observations) const throw (std::invalid_argument)
+  double HMM::next_state(const unsigned int currentState,
+			 unsigned int& nextState,
+			 const unsigned int observation) const
+    throw (std::invalid_argument)
   {
-    if(currentState.size() != ph.size()){
-      throw std::invalid_argument("HMM::ml_states() - currentState dimension mismatch");
+    if(currentState > ph.size()){
+      throw std::invalid_argument("HMM::next_state() - currentState out of bounds");
     }
     
-    std::vector<realnumber> d(ph);
+    std::vector<realnumber> dnext(numHidden);
+    realnumber sum(0.0, precision);
 
-    for(unsigned int i=0;i<currentState.size();i++){
-      d[i] = currentState[i];
-    }
-    
-    std::vector<realnumber> dnext(ph);
-    
-    realnumber phidden(0.0, precision);
-
-    const unsigned int T = observations.size()-1;
-    
-    for(unsigned int t=1;t<=(T+1);t++){
-      for(unsigned int j=0;j<numHidden;j++){
-	realnumber max(0.0, precision);
-	unsigned int max_i = 0;
-	auto& o = observations[t-1];
-
-	for(unsigned int i=0;i<numHidden;i++){
+    for(unsigned int j=0;j<numHidden;j++){
+      const auto& o = observation;
+      const unsigned int i = currentState;
 	  
-	  if(o >= B[i][j].size())
-	    throw std::invalid_argument("HMM::ml_states() - observed state out of range");
-	  
-	  auto t = d[i] * A[i][j] * B[i][j][o];
+      if(o >= B[i][j].size())
+	throw std::invalid_argument("HMM::next_state() - observed state out of range");
+      realnumber t(0.0, precision);
+      t = A[i][j] * B[i][j][o];
 
-	  // NOTE: this does not properly handle ties so the first best path found is used.
-	  
-	  if(t > max){
-	    max = t;
-	    max_i = i;
-	  }
-	}
-	
-	dnext[j] = max;
-	phidden  = max;
-	hidden.push_back(max_i);
-      }
+      dnext[j].setPrecision(precision);
+      dnext[j] = t;
+      sum += t;
     }
 
-    auto logp = log(phidden);
-
-    for(unsigned int i=0;i<currentState.size();i++){
-      currentState[i] = dnext[i].getDouble();
+    for(unsigned int j=0;j<numHidden;j++){
+      dnext[j] /= sum;
     }
+
+    nextState = sample(dnext);
+
+    auto logp = log(dnext[nextState]);
     
     return logp.getDouble();
   }
