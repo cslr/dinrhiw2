@@ -119,6 +119,8 @@ namespace whiteice {
     
     whiteice::RNG<double> rng; // random number generator used by HMM for simulations
 
+  public:
+
     // samples variable i according to probability p(i)
     unsigned int sample(const std::vector<math::realnumber>& p) const;
     
