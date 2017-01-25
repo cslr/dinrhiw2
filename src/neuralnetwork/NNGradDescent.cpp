@@ -200,34 +200,37 @@ namespace whiteice
 	  dtest.add(1, out, true);	    
 	}
       }
+
+      bool first_time = true;
       
       
       while(running){
 	// keep looking for solution forever
-
+	
 	// starting location for neural network
 	nnetwork<T> nn(*(this->nn));
 	
-	// use heuristic to normalize weights to unity (keep input weights)
-	if(0){
+	// use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
+	if(first_time == false){
 	  nn.randomize();
 	  normalize_weights_to_unity(nn); 
 	  T alpha = T(0.5f);
 	  negative_feedback_between_neurons(nn, dtrain, alpha);
 	}
+	else{
+	  first_time = true;
+	}
 
 	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
-	
+	unsigned int counter = 0;
 	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
 	{
-	  math::vertex<T> grad, err, weights;
+	  math::vertex<T> grad, err, weights, w0;
 	  math::vertex<T> prev_sumgrad;
-	  
-	  unsigned int counter = 0;
-	  T prev_error, error, ratio;
-	  T lrate = T(0.05f);
+	  	  
+	  T prev_error, error, ratio;	  
 	  T delta_error = 0.0f;
 	  
 	  error = T(1000.0f);
@@ -240,6 +243,8 @@ namespace whiteice
 	  {
 	    prev_error = error;
 	    error = T(0.0f);
+
+	    T lrate = T(0.01f);
 	    
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
@@ -276,58 +281,77 @@ namespace whiteice
 	    if(nn.exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 
+	    w0 = weights;
+
 #if 0
 	    // ADDS STRONG REGULARIZER TERM TO GRADIENT!
 	    sumgrad += regularizer*weights;
 #endif
 
-	    if(prev_sumgrad.size() <= 1){
-	      weights -= lrate * sumgrad;
-	    }
-	    else{
-	      T momentum = T(0.8f); // MOMENTUM TERM!
-	      
-	      weights -= lrate * sumgrad + momentum*prev_sumgrad;
-	      prev_sumgrad = lrate * sumgrad;
-	    }
-	      
-	    if(nn.importdata(weights) == false)
-	      std::cout << "import failed." << std::endl;
-	    
+	    do{
+	      nn.importdata(w0);
+	      weights = w0;
 
-	    if(negativefeedback){
-	      // using negative feedback heuristic 
-	      T alpha = T(0.5f); // lrate;
-	      negative_feedback_between_neurons(nn, dtrain, alpha);
-	    }
-	    
-	    // calculates error from the testing dataset
-	    for(unsigned int i=0;i<dtest.size(0);i++){
-	      nn.input() = dtest.access(0, i);
-	      nn.calculate(false);
-	      err = dtest.access(1,i) - nn.output();
+	      if(prev_sumgrad.size() <= 1){
+		weights -= lrate * sumgrad;
+	      }
+	      else{
+		T momentum = T(0.8f); // MOMENTUM TERM!
+		
+		weights -= lrate * sumgrad + momentum*prev_sumgrad;
+		prev_sumgrad = lrate * sumgrad;
+	      }
 	      
-	      for(unsigned int i=0;i<err.size();i++)
-		error += (err[i]*err[i]) / T((float)err.size());
-	    }
-	    
-	    error /= T((float)dtest.size(0));
-	    
-	    delta_error = (prev_error - error);
-	    ratio = delta_error / error;
+	      if(nn.importdata(weights) == false)
+		std::cout << "import failed." << std::endl;
+	      
+	      
+	      if(negativefeedback){
+		// using negative feedback heuristic 
+		T alpha = T(0.5f); // lrate;
+		negative_feedback_between_neurons(nn, dtrain, alpha);
+	      }
 
-	    std::cout << "DELTA = " << delta_error << std::endl;
+
+	      // calculates error from the testing dataset
+	      for(unsigned int i=0;i<dtest.size(0);i++){
+		nn.input() = dtest.access(0, i);
+		nn.calculate(false);
+		err = dtest.access(1,i) - nn.output();
+		
+		for(unsigned int i=0;i<err.size();i++)
+		  error += (err[i]*err[i]) / T((float)err.size());
+	      }
+	    
+	      error /= T((float)dtest.size(0));
+	    
+	      delta_error = (prev_error - error);
+	      ratio = delta_error / error;
+
 #if 0
-	    if(delta_error < T(0.0)){ // if error grows we reduce learning rate
-	      lrate *= T(0.90);
-	      std::cout << "NEW LRATE= " << lrate << std::endl;
-	    }
-	    else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
-	      lrate *= T(1.0/0.90);
-	      std::cout << "NEW LRATE= " << lrate << std::endl;
-	    }
+	      std::cout << "ERROR = " << error << std::endl;
+	      std::cout << "DELTA = " << delta_error << std::endl;
+	      std::cout << "RATIO = " << ratio << std::endl;
+#endif
+	      
+#if 1
+	      if(delta_error < T(0.0)){ // if error grows we reduce learning rate
+		lrate *= T(0.50);
+		// std::cout << "NEW LRATE= " << lrate << std::endl;
+	      }
+	      else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
+		lrate *= T(1.0/0.50);
+		// std::cout << "NEW LRATE= " << lrate << std::endl;
+	      }
 #endif
 
+	    }
+	    while(delta_error < T(0.0) && lrate != T(0.0));
+
+	    // std::cout << "*******************************************************************" << error << std::endl;
+
+	    w0 = weights;
+	    nn.importdata(w0);
 	    
 	    // cancellation point
 	    {
@@ -358,9 +382,12 @@ namespace whiteice
 	    // improvement (smaller error with early stopping)
 	    best_error = error;
 	    nn.exportdata(bestx);
+
+	    // std::cout << "BEST ERROR = " << best_error << std::endl;
 	  }
 	  
-	  converged_solutions++;
+	  // converged_solutions++;
+	  converged_solutions += counter;
 
 	  solution_lock.unlock();
 	}
