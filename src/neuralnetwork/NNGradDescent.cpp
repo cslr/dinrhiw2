@@ -166,6 +166,9 @@ namespace whiteice
       if(data == NULL)
 	return; // silent failure if there is bad data
       
+      if(data->size(0) <= 1 || running == false)
+	return;
+
       thread_is_running++;
       
       // 1. divides data to to training and testing sets
@@ -180,24 +183,33 @@ namespace whiteice
       dtrain.clearData(1);
       dtest.clearData(0);
       dtest.clearData(1);
+
+      while(dtrain.size(0) == 0 || dtrain.size(1) == 0 ||
+	    dtest.size(0)  == 0 || dtest.size(1)  == 0){
+
+	dtrain.clearData(0);
+	dtrain.clearData(1);
+	dtest.clearData(0);
+	dtest.clearData(1);
       
-      
-      for(unsigned int i=0;i<data->size(0);i++){
-	const unsigned int r = (rand() & 1);
+	for(unsigned int i=0;i<data->size(0);i++){
+	  const unsigned int r = (rand() & 1);
 	
-	if(r == 0){
-	  math::vertex<T> in  = data->access(0,i);
-	  math::vertex<T> out = data->access(1,i);
+	  if(r == 0){
+	    math::vertex<T> in  = data->access(0,i);
+	    math::vertex<T> out = data->access(1,i);
 	  
-	  dtrain.add(0, in,  true);
-	  dtrain.add(1, out, true);
-	}
-	else{
-	  math::vertex<T> in  = data->access(0,i);
-	  math::vertex<T> out = data->access(1,i);
+	    dtrain.add(0, in,  true);
+	    dtrain.add(1, out, true);
+	  }
+	  else{
+	    math::vertex<T> in  = data->access(0,i);
+	    math::vertex<T> out = data->access(1,i);
 	  
-	  dtest.add(0, in,  true);
-	  dtest.add(1, out, true);	    
+	    dtest.add(0, in,  true);
+	    dtest.add(1, out, true);	    
+	  }
+
 	}
       }
 
@@ -218,7 +230,7 @@ namespace whiteice
 	  negative_feedback_between_neurons(nn, dtrain, alpha);
 	}
 	else{
-	  first_time = true;
+	  first_time = false;
 	}
 
 	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
@@ -270,12 +282,10 @@ namespace whiteice
 	    
 	    // cancellation point
 	    {
-	      thread_is_running--;
-
 	      if(running == false){
+		thread_is_running--;
 		return; // cancels execution
 	      }
-	      thread_is_running++;
 	    }
 	    	      
 	    if(nn.exportdata(weights) == false)
@@ -355,12 +365,11 @@ namespace whiteice
 	    
 	    // cancellation point
 	    {
-	      thread_is_running--;
-
-	      if(running == false)
+	      if(running == false){
+		thread_is_running--;
+		// printf("3: THEAD IS RUNNING: %d\n", thread_is_running);
 		return; // stops execution
-	      
-	      thread_is_running++;
+	      }
 	    }
 
 	    // printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
@@ -396,6 +405,8 @@ namespace whiteice
       }
       
       thread_is_running--;
+      // printf("4: THEAD IS RUNNING: %d\n", thread_is_running);
+      return;
     }
 
 
