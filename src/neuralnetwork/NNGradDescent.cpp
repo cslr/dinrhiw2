@@ -330,7 +330,7 @@ namespace whiteice
 		err = dtest.access(1,i) - nn.output();
 		
 		for(unsigned int i=0;i<err.size();i++)
-		  error += (err[i]*err[i]) / T((float)err.size());
+		  error += T(0.5)*(err[i]*err[i]);
 	      }
 	    
 	      error /= T((float)dtest.size(0));
