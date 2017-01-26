@@ -114,7 +114,7 @@ namespace whiteice
   template <typename T>
   bool bayesian_nnetwork<T>::exportSamples(whiteice::nnetwork<T>& nn, 
 					   std::vector< math::vertex<T> >& weights,
-					   int latestN)
+					   int latestN) const
   {
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;

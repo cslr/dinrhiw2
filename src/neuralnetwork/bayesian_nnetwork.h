@@ -34,7 +34,7 @@ namespace whiteice
 
     bool exportSamples(whiteice::nnetwork<T>& nn, 
 		       std::vector< math::vertex<T> >& weights,
-		       int latestN = 0);
+		       int latestN = 0) const;
     
     bool getArchitecture(std::vector<unsigned int>& arch) const;
 
