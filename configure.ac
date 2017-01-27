@@ -392,6 +392,7 @@ AC_ARG_ENABLE([cppdebug],
 
 AS_IF([test "x$enable_cppdebug" = "xyes"],[
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+  conf_flags="$conf_flags -D_GLIBCXX_DEBUG"
 ])
 
 dnl 

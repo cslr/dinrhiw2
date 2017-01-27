@@ -4343,6 +4343,7 @@ fi
 if test "x$enable_cppdebug" = "xyes"; then :
 
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
+  conf_flags="$conf_flags -D_GLIBCXX_DEBUG"
 
 fi
 

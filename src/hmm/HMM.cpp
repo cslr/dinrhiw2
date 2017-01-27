@@ -177,12 +177,14 @@ namespace whiteice {
     }
 
     
-    while(!converged) // keeps calculating EM-algorithm for parameter estimation
+    while(!converged && iteration < 50) // keeps calculating EM-algorithm for parameter estimation
     {
+
+      // printf("AA\n"); fflush(stdout);
 	
       // first calculates alpha and beta
       const unsigned int T = observations.size();
-      std::vector< std::vector<realnumber> > alpha(T+1), beta(T+2);
+      std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
       
       for(auto& a : alpha){
 	a.resize(numHidden);
@@ -190,6 +192,8 @@ namespace whiteice {
 	  ai.setPrecision(precision);
 	a = ph;
       }
+
+      // printf("AA\n"); fflush(stdout);
       
       // forward procedure (alpha)
       for(unsigned int t=1;t<=T;t++){
@@ -212,7 +216,8 @@ namespace whiteice {
 	  }
 	}
       }
-      
+
+      // printf("BB\n"); fflush(stdout);
       
       for(auto& b : beta){
 	b.resize(numHidden);
@@ -223,7 +228,7 @@ namespace whiteice {
       }
       
       // backward procedure (beta)
-      for(unsigned int t=(T+1);t>=1;t--){
+      for(unsigned int t=T;t>=1;t--){
 	auto& b  = beta[t];
 	auto& bp = beta[t-1];
 	auto& o  = observations[t-1];
@@ -243,6 +248,8 @@ namespace whiteice {
 	  }
 	}
       }
+
+      // printf("CC\n"); fflush(stdout);
       
       // now we have both alpha and beta and we calculate p
       std::vector< std::vector < std::vector<realnumber> > > p(T);
@@ -258,7 +265,7 @@ namespace whiteice {
 	}
       }
       
-      
+#pragma omp parallel for schedule(dynamic)
       for(unsigned int t=1;t<=T;t++){
 	realnumber ab(0.0, precision);
 	
@@ -290,11 +297,14 @@ namespace whiteice {
 	  }
 	}
       }
+
+      
+      // printf("DD\n"); fflush(stdout);
       
       
       // now we have p[t][i][j] and we calculate y[t][i]
       std::vector< std::vector<realnumber> > y(T);
-      
+
       for(auto& yt : y){
 	yt.resize(numHidden);
 	for(auto& yti : yt){
@@ -302,27 +312,35 @@ namespace whiteice {
 	  yti = 0.0;
 	}
       }
-      
+
+      // printf("DDD\n");
+
+#pragma omp parallel for schedule(dynamic)
       for(unsigned int t=1;t<=T;t++){
 	for(unsigned int i=0;i<numHidden;i++){
 	  auto& yti = y[t-1][i];
 	  yti = 0.0;
 	  
-	  for(unsigned int j=0;j<numHidden;j++)
+	  for(unsigned int j=0;j<numHidden;j++){
 	    yti += p[t-1][i][j];
+	  }
 	}
       }
+
+      // printf("EE\n"); fflush(stdout);
       
       //////////////////////////////////////////////////////////////////////
       // now we can calculate new parameter values based on EM
       
       // pi
+#pragma omp parallel for schedule(dynamic)
       for(unsigned int i=0;i<numHidden;i++){
 	const unsigned int t = 1;
 	ph[i] = y[t-1][i];
       }
       
       // state transitions A[i][j]
+#pragma omp parallel for schedule(dynamic)
       for(unsigned int i=0;i<numHidden;i++){
 	for(unsigned int j=0;j<numHidden;j++){
 	  
@@ -339,6 +357,7 @@ namespace whiteice {
       }
       
       // visible state probabilities B[i][j][k]
+#pragma omp parallel for schedule(dynamic)
       for(unsigned int i=0;i<numHidden;i++){
 	for(unsigned int j=0;j<numHidden;j++){
 	  for(unsigned int k=0;k<numVisible;k++){
@@ -354,7 +373,8 @@ namespace whiteice {
 	  }
 	}
       }
-      
+
+      // printf("MM\n"); fflush(stdout);
       
       // now we have new parameters: A, B, ph
       // still calculates probability of observations [using previous parameter values]
@@ -407,16 +427,26 @@ namespace whiteice {
 	if(r.getDouble() <= 0.00001){
 	  converged = true;
 	}
+
+	// printf("A\n"); fflush(stdout);
 	
       }
+
+      // printf("B\n"); fflush(stdout);
       
     }
 
+    // printf("C\n"); fflush(stdout);
+
     normalize_parameters();
+
+    // printf("D\n"); fflush(stdout);
     
     
     if(plast > 0.0)
       plast = log(plast);
+
+    // printf("E\n"); fflush(stdout);
     
     return plast.getDouble();
   }

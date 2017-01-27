@@ -712,7 +712,7 @@ void test_realnumber()
 	if(b[i] > 0.0){
 	  a[k] = whiteice::math::sqrt(a[i]);
 	  b[k] = whiteice::math::sqrt(b[i]);
-	  std::cout << "IN: " << a[i] << " OUT: " << a[k] << std::endl;
+	  // std::cout << "IN: " << a[i] << " OUT: " << a[k] << std::endl;
 	}	
 	break;
       case 5: // pow()

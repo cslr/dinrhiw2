@@ -59,9 +59,12 @@ namespace whiteice
       mpf_set_str(data, s.c_str(), 10);
     }
     
-    
     realnumber::realnumber(const mpf_t& d){
-      data[0] = d[0];
+      mpf_init2(data, mpf_get_prec(d));
+      mpf_set(data, d);
+      
+      // data[0] = d[0];
+      
       // memcpy(data, d, sizeof(mpf_t));
     }
     
@@ -91,7 +94,11 @@ namespace whiteice
       else mpf_init2(rval, p2);
       
       mpf_add(rval, data, r.data);
-      return realnumber(rval);
+      
+      auto ret = realnumber(rval);
+      mpf_clear(rval);
+      
+      return ret;
     }
     
     
@@ -103,7 +110,11 @@ namespace whiteice
       else mpf_init2(rval, p2);
       
       mpf_sub(rval, data, r.data);
-      return realnumber(rval);
+
+      auto ret = realnumber(rval);
+      mpf_clear(rval);
+      
+      return ret;
     }
     
     
@@ -115,7 +126,11 @@ namespace whiteice
       else mpf_init2(rval, p2);
       
       mpf_mul(rval, data, r.data);
-      return realnumber(rval);
+
+      auto ret = realnumber(rval);
+      mpf_clear(rval);
+      
+      return ret;
     }
     
     
@@ -131,7 +146,11 @@ namespace whiteice
       }
       
       mpf_div(rval, data, r.data);
-      return realnumber(rval);
+      
+      auto ret = realnumber(rval);
+      mpf_clear(rval);
+      
+      return ret;
     }
     
     
@@ -145,8 +164,11 @@ namespace whiteice
       mpf_t rval;
       mpf_init2(rval, mpf_get_prec(data));
       mpf_neg(rval, data);
+
+      auto ret = realnumber(rval);
+      mpf_clear(rval);
       
-      return realnumber(rval);
+      return ret;
     }
     
     
@@ -243,8 +265,11 @@ namespace whiteice
       mpf_set_d(ss, s);
       mpf_add(temp, data, ss);
       mpf_clear(ss);
+
+      auto ret = realnumber(temp);
+      mpf_clear(temp);
       
-      return realnumber(temp);
+      return ret;
     }
     
     
@@ -255,8 +280,11 @@ namespace whiteice
       mpf_set_d(ss, s);
       mpf_sub(temp, data, ss);
       mpf_clear(ss);
+
+      auto ret = realnumber(temp);
+      mpf_clear(temp);
       
-      return realnumber(temp);
+      return ret;
     }
     
     
@@ -295,8 +323,11 @@ namespace whiteice
       mpf_set_d(ss, s);
       mpf_mul(res, ss, data);
       mpf_clear(ss);
+
+      auto ret = realnumber(res);
+      mpf_clear(res);
       
-      return realnumber(res);
+      return ret;
     }
     
     realnumber  realnumber::operator/ (const double& s) const throw(std::invalid_argument){
@@ -306,8 +337,11 @@ namespace whiteice
       mpf_set_d(ss, s);
       mpf_div(res, ss, data);
       mpf_clear(ss);
+
+      auto ret = realnumber(res);
+      mpf_clear(res);
       
-      return realnumber(res);
+      return ret;
     }
     
     
