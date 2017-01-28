@@ -1,5 +1,5 @@
 /*
- * data set
+ * dataset
  * for learning data
  * has data preprocessing code
  *

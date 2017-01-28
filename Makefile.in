@@ -19,7 +19,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@/dinrhiw
 
-LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o src/hmm/*.o
+LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o src/hmm/*.o \
+	src/reinforcement/*.o
 LIBNAME = libdinrhiw.a
 BASESOLIBNAME = libdinrhiw.so
 SOLIBNAME = libdinrhiw.so
@@ -35,6 +36,7 @@ depend:
 	$(CD) src/crypto && $(MAKE) depend
 	$(CD) src/neuralnetwork && $(MAKE) depend
 	$(CD) src/hmm && $(MAKE) depend
+	$(CD) src/reinforcement && $(MAKE) depend
 
 make_objects:
 	$(CD) src && $(MAKE) all
@@ -42,6 +44,7 @@ make_objects:
 	$(CD) src/crypto && $(MAKE) all
 	$(CD) src/neuralnetwork && $(MAKE) all
 	$(CD) src/hmm && $(MAKE) all
+	$(CD) src/reinforcement && $(MAKE) all
 
 clean: 
 	$(CD) src && $(MAKE) clean
@@ -50,6 +53,7 @@ clean:
 	$(CD) src/neuralnetwork && $(MAKE) clean
 	$(CD) tools && $(MAKE) clean
 	$(CD) src/hmm && $(MAKE) clean
+	$(CD) src/reinforcement && $(MAKE) clean
 	$(RM) *~
 
 realclean: clean removelib
@@ -58,11 +62,13 @@ realclean: clean removelib
 	$(CD) src/crypto && $(MAKE) realclean
 	$(CD) src/neuralnetwork && $(MAKE) realclean
 	$(CD) src/hmm && $(MAKE) realclean
+	$(CD) src/reinforcement && $(MAKE) realclean
 	$(CD) tools && $(MAKE) clean
 	$(RM) dinrhiw.pc
 	$(RM) Makefile 
 	$(RM) src/Makefile src/math/Makefile src/crypto/Makefile
-	$(RM) src/neuralnetwork/Makefile	
+	$(RM) src/neuralnetwork/Makefile src/hmm/Makefile
+	$(RM) src/reinforcement/Makefile
 	$(RM) config.log
 	$(RM) config.status
 	$(RM) -rf autom4te.cache
@@ -84,6 +90,7 @@ makelib:
 	$(CP) src/crypto/*.h lib/
 	$(CP) src/neuralnetwork/*.h lib/
 	$(CP) src/hmm/*.h lib/
+	$(CP) src/reinforcement/*.h lib/
 	$(CP) config.h lib/
 	chmod a+x ./copy_cpp_templates.sh
 	./copy_cpp_templates.sh
