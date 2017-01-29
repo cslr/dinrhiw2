@@ -51,17 +51,18 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
- ../math/real.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../array.h ../container.h ../static_array.h ../static_array.cpp \
+ ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
+ ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
+ ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
+ ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
  ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -85,9 +86,9 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -1102,17 +1103,18 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
- ../math/real.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../array.h ../container.h ../static_array.h ../static_array.cpp \
+ ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
+ ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
+ ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
+ ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
  ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -1136,9 +1138,9 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -1196,17 +1198,18 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
- ../math/real.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../array.h ../container.h ../static_array.h ../static_array.cpp \
+ ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
+ ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
+ ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
+ ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
  ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -1230,9 +1233,9 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h
@@ -1289,17 +1292,18 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
- ../math/real.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../array.h ../container.h ../static_array.h ../static_array.cpp \
+ ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
+ ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
+ ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
+ ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
  ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -1323,9 +1327,9 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
@@ -1536,7 +1540,8 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
  LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
  Mixture.h EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h \
- optimized_function.h ../hmm/HMM.h ../math/real.h ../array.h \
+ optimized_function.h ../hmm/HMM.h ../math/real.h \
+ ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h ../array.h \
  ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
  ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
  ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
@@ -1571,9 +1576,9 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h nnetwork.h
@@ -1631,7 +1636,8 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h \
  LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
  Mixture.h EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h \
- optimized_function.h ../hmm/HMM.h ../math/real.h ../array.h \
+ optimized_function.h ../hmm/HMM.h ../math/real.h \
+ ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h ../array.h \
  ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
  ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
  ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
@@ -1666,9 +1672,9 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -1725,7 +1731,8 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
  pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
  EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
- ../hmm/HMM.h ../math/real.h ../array.h ../container.h ../static_array.h \
+ ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
+ bayesian_nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
  ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
@@ -1759,9 +1766,9 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h UHMC.h bayesian_nnetwork.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h
@@ -3020,7 +3027,8 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
  pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
  EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
- ../hmm/HMM.h ../math/real.h ../array.h ../container.h ../static_array.h \
+ ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
+ bayesian_nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
  ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
@@ -3054,9 +3062,9 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
  multidimensional_gaussian.h gaussian.h HMC.h bayesian_nnetwork.h UHMC.h \
- PTHMC.h HMC.h HMCconvergencecheck.h bayesian_nnetwork.h GA3.h rbf.h \
- rbf.cpp multidimensional_gaussian.h hypervolume.h hypervolume.cpp \
- hypervolume.h ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
+ PTHMC.h HMC.h HMCconvergencecheck.h GA3.h rbf.h rbf.cpp \
+ multidimensional_gaussian.h hypervolume.h hypervolume.cpp hypervolume.h \
+ ../math/pdftree.h ../math/simplex.h ../timed_boolean.h \
  ../math/superresolution.h ../math/superresolution.cpp \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h

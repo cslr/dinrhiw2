@@ -285,7 +285,8 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/rLBFGS_nnetwork.h neuralnetwork/Mixture.h \
  neuralnetwork/EnsembleMeans.h neuralnetwork/lreg_nnetwork.h \
  neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
- hmm/HMM.h math/real.h array.h container.h static_array.h \
+ hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
+ neuralnetwork/bayesian_nnetwork.h array.h container.h static_array.h \
  static_array.cpp dynamic_array.h stack.h queue.h dynamic_array.cpp \
  search_array.h compressable.h printable.h data_source.h chainhash.h \
  hash_table.h chainhash.cpp dummystack.h priority_queue.h \
@@ -324,8 +325,8 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/multidimensional_gaussian.h neuralnetwork/gaussian.h \
  neuralnetwork/HMC.h neuralnetwork/bayesian_nnetwork.h \
  neuralnetwork/UHMC.h neuralnetwork/PTHMC.h neuralnetwork/HMC.h \
- neuralnetwork/HMCconvergencecheck.h neuralnetwork/bayesian_nnetwork.h \
- neuralnetwork/GA3.h neuralnetwork/rbf.h neuralnetwork/rbf.cpp \
+ neuralnetwork/HMCconvergencecheck.h neuralnetwork/GA3.h \
+ neuralnetwork/rbf.h neuralnetwork/rbf.cpp \
  neuralnetwork/multidimensional_gaussian.h neuralnetwork/hypervolume.h \
  neuralnetwork/hypervolume.cpp neuralnetwork/hypervolume.h math/pdftree.h \
  math/simplex.h timed_boolean.h math/superresolution.h \

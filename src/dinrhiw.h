@@ -54,6 +54,8 @@
 
 #include "HMM.h"
 
+#include "RIFL_abstract.h"
+
 
 #include "array.h"
 #include "static_array.h"
