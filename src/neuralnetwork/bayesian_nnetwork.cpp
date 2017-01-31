@@ -476,7 +476,7 @@ namespace whiteice
 	  nl[l] = whiteice::nnetwork<T>::sigmoid;
 	}
 
-	nl[nl.size()-1] = whiteice::nnetwork<T>::pureLinear;
+	// nl[nl.size()-1] = whiteice::nnetwork<T>::pureLinear;
 	
 	data = configuration.accessName(FNN_NONLINEARITY_CFGSTR, 0);
 	ints.resize(data.size());

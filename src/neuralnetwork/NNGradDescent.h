@@ -48,7 +48,11 @@ namespace whiteice
 			   const whiteice::nnetwork<T>& nn,
 			   unsigned int NTHREADS,
 			   unsigned int MAXITERS = 10000);
-      
+
+        /*
+         * Returns true if optimizer is running
+	 */
+        bool isRunning();
 
 	/*
 	 * returns the best NN solution found so far and

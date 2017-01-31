@@ -106,8 +106,9 @@ namespace whiteice
     nonlinearity.resize(arch.size()-1);
     for(unsigned int i=0;i<nonlinearity.size();i++)
       nonlinearity[i] = nl;
-    
-    nonlinearity[nonlinearity.size()-1] = pureLinear; // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
+
+    // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
+    // nonlinearity[nonlinearity.size()-1] = pureLinear; 
     
     unsigned int memuse = 0;
     
@@ -263,8 +264,9 @@ namespace whiteice
     nonlinearity.resize(arch.size()-1);
     for(unsigned int i=0;i<nonlinearity.size();i++)
       nonlinearity[i] = nl;
-    
-    nonlinearity[nonlinearity.size()-1] = pureLinear; // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
+
+    // HERE WE ALWAYS SET LAST LAYERS NONLINEARITY TO BE LINEAR FOR NOW..
+    // nonlinearity[nonlinearity.size()-1] = pureLinear; 
     
     unsigned int memuse = 0;
     
@@ -1279,7 +1281,7 @@ namespace whiteice
 	for(unsigned int i=0;i<nonlinearity.size();i++)
 	  nonlinearity[i] = sigmoid;
 
-	nonlinearity[nonlinearity.size()-1] = pureLinear;
+	// nonlinearity[nonlinearity.size()-1] = pureLinear;
 	
 	ints.clear();
       }
@@ -1523,7 +1525,8 @@ namespace whiteice
     for(unsigned int l=0;l<nonlinearity.size();l++)
       nonlinearity[l] = nl;
 
-    nonlinearity[nonlinearity.size()-1] = pureLinear; // last layer is always linear!! (for now)
+    // last layer is always linear!! (for now)
+    // nonlinearity[nonlinearity.size()-1] = pureLinear; 
     
     return true;
   }

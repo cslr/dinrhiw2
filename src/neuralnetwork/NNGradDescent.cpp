@@ -103,7 +103,11 @@ namespace whiteice
       return true;
     }
     
-
+    template <typename T>
+    bool NNGradDescent<T>::isRunning()
+    {
+      return running;
+    }
     
     /*
      * returns the best NN solution found so far and
@@ -215,8 +219,7 @@ namespace whiteice
 
       bool first_time = true;
       
-      
-      while(running){
+      while(running && converged_solutions < MAXITERS){
 	// keep looking for solution forever
 	
 	// starting location for neural network
@@ -233,8 +236,9 @@ namespace whiteice
 	  first_time = false;
 	}
 
-	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
 	unsigned int counter = 0;
+	      
+	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
 	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
@@ -403,9 +407,18 @@ namespace whiteice
 	
 	
       }
+
+      start_lock.lock();
+      {
+	thread_is_running--;
+	
+	if(thread_is_running <= 0)
+	  running = false;
+      }
+      start_lock.unlock();
       
-      thread_is_running--;
       // printf("4: THEAD IS RUNNING: %d\n", thread_is_running);
+      
       return;
     }
 

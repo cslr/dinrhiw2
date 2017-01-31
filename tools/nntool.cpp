@@ -279,14 +279,20 @@ int main(int argc, char** argv)
     if(pseudolinear){
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else if(purelinear){
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else{
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
 
     

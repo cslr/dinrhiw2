@@ -1,8 +1,9 @@
 
 #include "RIFL_abstract.h"
+#include "NNGradDescent.h"
 
 #include <assert.h>
-
+#include <list>
 
 namespace whiteice
 {
@@ -24,22 +25,19 @@ namespace whiteice
     
     // initializes neural network architecture and weights randomly
     {
-      models.resize(numActions);
 
       std::vector<unsigned int> arch;
       arch.push_back(numStates);
-      arch.push_back(numStates*10);
-      arch.push_back(numStates*10);
-      arch.push_back(numStates*10);
-      arch.push_back(numStates*10);      
-      arch.push_back(1);
+      arch.push_back(numStates*100);
+      arch.push_back(numStates*100);
+      arch.push_back(numStates*100);
+      arch.push_back(numActions);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+      nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+      nn.randomize();
 
-      for(unsigned int i=0;i<models.size();i++){
-	nn.randomize();
-	models[i].importNetwork(nn);
-      }
+      model.importNetwork(nn);
     }
     
     
@@ -141,6 +139,11 @@ namespace whiteice
   template <typename T>
   void RIFL_abstract<T>::loop()
   {
+    std::vector< rifl_datapoint<T> > database;
+    whiteice::dataset<T> data;
+    whiteice::math::NNGradDescent<T> grad;
+    unsigned int epoch = 0;
+    
 
     bool firstTime = true;
     whiteice::math::vertex<T> state;
@@ -166,33 +169,59 @@ namespace whiteice
 	whiteice::math::vertex<T> u;
 	whiteice::math::matrix<T> e;
 
-	for(unsigned int i=0;i<models.size();i++){
-	  if(models[i].calculate(state, u, e, 1, 0) == true){
-	    if(u.size() == 0){
-	      u.resize(1);
-	      u[0] = -INFINITY;
+	if(model.calculate(state, u, e, 1, 0) == true){
+	  if(u.size() != numActions){
+	    u.resize(numActions);
+	    for(unsigned int i=0;i<numActions;i++){
+	      u[i] = T(0.0);
 	    }
-
-	    U.push_back(u[0]);
-	  }
-	  else{
-	    u.resize(1);
-	    u[0] = -INFINITY;
-	    U.push_back(u[0]);
 	  }
 	}
+	else{
+	  u.resize(numActions);
+	  for(unsigned int i=0;i<numActions;i++){
+	    u[i] = T(0.0);
+	  }
+	}
+
+	for(unsigned int i=0;i<u.size();i++){
+	  U.push_back(u[i]);
+	}
+	
+	for(auto& ui : U){
+	  printf("%f ", ui.c[0]);
+	}
+	printf("\n");
       }
 
       // 3. selects action according to probabilities
       unsigned int action = 0;
-      
+
       {
+	T epsilon = rng.uniform();
+
+	if(epsilon < T(0.33)){ // 33% selects the largest value
+	  T maxv = U[action];
+	  
+	  for(unsigned int i=0;i<U.size();i++){
+	    if(maxv < U[i]){
+	      action = i;
+	      maxv = U[i];
+	    }
+	  }
+	}
+	else{ // 66% select action randomly
+	  action = rng.rand() % U.size();
+	}
+      }
+      
+      if(0){
 	std::vector<T> p;
 
 	T psum = T(0.0);
 
 	for(unsigned int i=0;i<U.size();i++){
-	  T expm = whiteice::math::exp(U[i])/temperature;
+	  T expm = whiteice::math::exp(U[i]/temperature);
 	  psum += expm;
 	  p.push_back(psum);
 	}
@@ -217,38 +246,130 @@ namespace whiteice
       // 4. perform action 
       {
 	if(performAction(action, newstate, reinforcement) == false){
-	  assert(0); // silent failure
+	  continue;
 	}
       }
 
-      // 5. calculate updated utility value
-      T unew = T(0.0);
-      
+
+
+      // 6. updates database
       {
-	T maxvalue = T(-INFINITY);
+	struct rifl_datapoint<T> data;
 
-	whiteice::math::vertex<T> u;
-	whiteice::math::matrix<T> e;
+	data.state = state;
+	data.newstate = newstate;
+	data.reinforcement = reinforcement;
+	data.action = action;
 
-	for(unsigned int i=0;i<models.size();i++){
-	  if(models[i].calculate(newstate, u, e, 1, 0) == true){
-	    if(maxvalue < u[0]){
-	      maxvalue = u[0];
+	database.push_back(data);
+
+	printf("DATABASE SIZE: %d\n", (int)database.size());
+
+	while(database.size() >= 10000){
+	  const unsigned int index = rng.rand() % database.size();
+
+	  database[index] = database[database.size()-1];
+	  database.erase(std::prev(database.end()));
+	}
+      }
+
+
+      // activates minibatch learning if it is not running
+      if(database.size() > 1000)
+      {
+	if(grad.isRunning() == false){
+	  printf("*************************************************************\n");
+	  
+	  whiteice::nnetwork<T> nn;
+	  T error;
+	  unsigned int iters;
+
+	  if(grad.getSolution(nn, error, iters) == false){
+	    std::vector< math::vertex<T> > weights;
+	    
+	    if(model.exportSamples(nn, weights, 1) == false){
+	      assert(0);
+	    }
+	    
+	    assert(weights.size() > 0);
+	    
+	    if(nn.importdata(weights[0]) == false){
+	      assert(0);
 	    }
 	  }
-	}
+	  else{
+	    model.importNetwork(nn);
+	  }
 
-	unew = reinforcement + gamma*maxvalue;
+	  epoch++;
+	    
+	  const unsigned int BATCHSIZE = database.size()/2;
+
+	  data.clear();
+	  data.createCluster("input-state", numStates);
+	  data.createCluster("output-action", numActions);
+	  
+	  for(unsigned int i=0;i<BATCHSIZE;i++){
+	    const unsigned int index = rng.rand() % database.size();
+
+	    whiteice::math::vertex<T> in = database[index].state;
+	    whiteice::math::vertex<T> out(numActions);
+	    out.zero();
+	    
+	    // calculates updated utility value
+	    
+	    whiteice::math::vertex<T> u;
+	    T u_value = T(0.0);
+	    
+	    {
+	      nn.calculate(database[index].state, u);
+
+	      u_value = u[database[index].action];
+	    }
+
+	    
+	    T unew_value = T(0.0);
+	    
+	    {
+	      T maxvalue = T(-INFINITY);
+	      
+	      if(nn.calculate(database[index].newstate, u)){
+		for(unsigned int i=0;i<u.size();i++){
+		  if(maxvalue < u[i]){
+		    maxvalue = u[i];
+		  }
+		}
+	      }
+	      
+	      unew_value = database[index].reinforcement + gamma*maxvalue;
+	    }
+	    
+	    out[database[index].action] = unew_value - u_value;
+
+	    data.add(0, in);
+	    data.add(1, out);
+	  }
+
+	  grad.startOptimize(data, nn, 2, 25);
+	}
+	else{
+	  whiteice::nnetwork<T> nn;
+	  T error = T(0.0);
+	  unsigned int iters = 0;
+
+	  if(grad.getSolution(nn, error, iters)){
+	    printf("EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n", epoch, iters, error.c[0]);
+	  }
+	}
       }
 
-
-      // 6. update neural network weights for the given network
-      {
+#if 0
+      if(0){
 	whiteice::nnetwork<T> nn;
 	std::vector< math::vertex<T> > weights;
 	
 	{
-	  if(models[action].exportSamples(nn, weights, 1) == false){
+	  if(model.exportSamples(nn, weights, 1) == false){
 	    assert(0);
 	  }
 
@@ -260,12 +381,13 @@ namespace whiteice
 	}
 
 	nn.input() = state;
-	nn.calculate(true, false);
+	nn.calculate(true);
 
 	whiteice::math::vertex<T> grad;
 	whiteice::math::vertex<T> error;
-	error.resize(1);
-	error[0] = unew - U[action];
+	error.resize(numActions);
+	error.zero();
+	error[action] = (unew - nn.output()[0]);
 
 	if(nn.gradient(error, grad) == false)
 	  assert(0);
@@ -274,11 +396,11 @@ namespace whiteice
 
 	nn.importdata(weights[0]);
 
-	if(models[action].importNetwork(nn) == false){
+	if(model.importNetwork(nn) == false){
 	  assert(0);
 	}
       }
-      
+#endif 
       
     }
     
@@ -287,8 +409,6 @@ namespace whiteice
     
 
 
-  template class RIFL_abstract< float >;
-  template class RIFL_abstract< double >;
   template class RIFL_abstract< math::blas_real<float> >;
   template class RIFL_abstract< math::blas_real<double> >;
   

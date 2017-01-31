@@ -61,9 +61,9 @@ namespace whiteice
     
     virtual bool performAction(const unsigned int action,
 			       whiteice::math::vertex<T>& newstate,
-			       T& r) = 0;
+			       T& reinforcement) = 0;
 
-    std::vector< whiteice::bayesian_nnetwork<T> > models;
+    whiteice::bayesian_nnetwork<T> model;
     
     T temperature;
     T gamma;
@@ -81,9 +81,15 @@ namespace whiteice
     
     };
 
+  template <typename T>
+    struct rifl_datapoint
+    {
+      whiteice::math::vertex<T> state, newstate;
+      unsigned int action;
+      T reinforcement;
+    };
 
-  extern template class RIFL_abstract< float >;
-  extern template class RIFL_abstract< double >;
+
   extern template class RIFL_abstract< math::blas_real<float> >;
   extern template class RIFL_abstract< math::blas_real<double> >;
 };

@@ -11,7 +11,8 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/bayesian_nnetwork.o \
-	../conffile.o
+	../conffile.o ../neuralnetwork/NNGradDescent.o \
+	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o
 
 TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
@@ -22,13 +23,15 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp tst/test.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
 	../math/ownexception.cpp \
 	../neuralnetwork/nnetwork.cpp ../neuralnetwork/bayesian_nnetwork.cpp \
-	../conffile.cpp
+	../conffile.cpp ../neuralnetwork/NNGradDescent.cpp \
+	../neuralnetwork/deep_ica_network_priming.cpp \
+	../math/linear_equations.o
 
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
 
 TARGET= testsuite
-CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork $(OPTIMIZE)
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../crypto $(OPTIMIZE)
 
 LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 
@@ -46,7 +49,6 @@ clean:
 	$(RM) *~
 
 realclean: clean
-	$(RM) hmm1.dat
 
 depend:
 	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend

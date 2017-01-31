@@ -14,6 +14,7 @@
 
 #include "RIFL_abstract.h"
 
+#include <condition_variable>
 
 namespace whiteice
 {
@@ -32,9 +33,12 @@ namespace whiteice
       
       virtual bool performAction(const unsigned int action,
 				 whiteice::math::vertex<T>& newstate,
-				 T& r);
+				 T& reinforcement);
 
     protected:
+
+      // resets cart-pole variables
+      void reset();
 
       T sign(T value);
 
@@ -48,8 +52,10 @@ namespace whiteice
 
       T F;
       std::mutex F_change;
+      bool F_processed;
 
       T dt;
+      int iteration;
 
       volatile bool running;
       std::thread* physics_thread;
