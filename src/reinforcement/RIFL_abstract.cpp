@@ -14,9 +14,8 @@ namespace whiteice
   {
     // initializes parameters
     {
-      temperature = T(1.0);
       gamma = T(0.8);
-      lrate = T(0.01);
+      epsilon = T(0.33);
 
       this->numActions = numActions;
       this->numStates  = numStates;
@@ -25,6 +24,7 @@ namespace whiteice
     
     // initializes neural network architecture and weights randomly
     {
+      std::lock_guard<std::mutex> lock(model_mutex);
 
       std::vector<unsigned int> arch;
       arch.push_back(numStates);
@@ -120,19 +120,41 @@ namespace whiteice
     return (thread_is_running > 0);
   }
 
+
+  // epsilon E [0,1] percentage of actions are chosen according to model
+  //                 1-e percentage of actions are random (exploration)
+  template <typename T>
+  bool RIFL_abstract<T>::setEpsilon(T epsilon) throw()
+  {
+    if(epsilon < T(0.0) || epsilon > T(1.0)) return false;
+    this->epsilon = epsilon;
+    return true;
+  }
+  
+
+  template <typename T>
+  T RIFL_abstract<T>::getEpsilon() const throw()
+  {
+    return epsilon;
+  }
+
   
   // saves learnt Reinforcement Learning Model to file
   template <typename T>
   bool RIFL_abstract<T>::save(const std::string& filename) const
   {
-    return false;
+    std::lock_guard<std::mutex> lock(model_mutex);
+
+    return model.save(filename);
   }
   
   // loads learnt Reinforcement Learning Model from file
   template <typename T>
   bool RIFL_abstract<T>::load(const std::string& filename)
   {
-    return false;
+    std::lock_guard<std::mutex> lock(model_mutex);
+    
+    return model.load(filename);
   }
   
 
@@ -166,6 +188,8 @@ namespace whiteice
       std::vector<T> U;
       
       {
+	std::lock_guard<std::mutex> lock(model_mutex);
+	
 	whiteice::math::vertex<T> u;
 	whiteice::math::matrix<T> e;
 
@@ -198,9 +222,9 @@ namespace whiteice
       unsigned int action = 0;
 
       {
-	T epsilon = rng.uniform();
+	T r = rng.uniform();
 
-	if(epsilon < T(0.33)){ // 33% selects the largest value
+	if(r < epsilon){ // EPSILON% selects the largest value
 	  T maxv = U[action];
 	  
 	  for(unsigned int i=0;i<U.size();i++){
@@ -210,36 +234,11 @@ namespace whiteice
 	    }
 	  }
 	}
-	else{ // 66% select action randomly
+	else{ // (100 - EPSILON)% select action randomly
 	  action = rng.rand() % U.size();
 	}
       }
       
-      if(0){
-	std::vector<T> p;
-
-	T psum = T(0.0);
-
-	for(unsigned int i=0;i<U.size();i++){
-	  T expm = whiteice::math::exp(U[i]/temperature);
-	  psum += expm;
-	  p.push_back(psum);
-	}
-
-	for(unsigned int i=0;i<p.size();i++){
-	  p[i] = p[i] / psum;
-	}
-
-	T v = rng.uniform();
-	unsigned int index = 0;
-
-	while(p[index] < v)
-	  index++;
-
-	action = index;
-      }
-
-
       whiteice::math::vertex<T> newstate;
       T reinforcement = T(0.0);
 
@@ -274,7 +273,7 @@ namespace whiteice
       }
 
 
-      // activates minibatch learning if it is not running
+      // activates batch learning if it is not running
       if(database.size() > 1000)
       {
 	if(grad.isRunning() == false){
@@ -286,6 +285,8 @@ namespace whiteice
 
 	  if(grad.getSolution(nn, error, iters) == false){
 	    std::vector< math::vertex<T> > weights;
+
+	    std::lock_guard<std::mutex> lock(model_mutex);
 	    
 	    if(model.exportSamples(nn, weights, 1) == false){
 	      assert(0);
@@ -298,6 +299,7 @@ namespace whiteice
 	    }
 	  }
 	  else{
+	    std::lock_guard<std::mutex> lock(model_mutex);
 	    model.importNetwork(nn);
 	  }
 
@@ -350,7 +352,7 @@ namespace whiteice
 	    data.add(1, out);
 	  }
 
-	  grad.startOptimize(data, nn, 2, 25);
+	  grad.startOptimize(data, nn, 2, 200);
 	}
 	else{
 	  whiteice::nnetwork<T> nn;
@@ -362,52 +364,10 @@ namespace whiteice
 	  }
 	}
       }
-
-#if 0
-      if(0){
-	whiteice::nnetwork<T> nn;
-	std::vector< math::vertex<T> > weights;
-	
-	{
-	  if(model.exportSamples(nn, weights, 1) == false){
-	    assert(0);
-	  }
-
-	  assert(weights.size() > 0);
-
-	  if(nn.importdata(weights[0]) == false){
-	    assert(0);
-	  }
-	}
-
-	nn.input() = state;
-	nn.calculate(true);
-
-	whiteice::math::vertex<T> grad;
-	whiteice::math::vertex<T> error;
-	error.resize(numActions);
-	error.zero();
-	error[action] = (unew - nn.output()[0]);
-
-	if(nn.gradient(error, grad) == false)
-	  assert(0);
-
-	weights[0] -= lrate*grad;
-
-	nn.importdata(weights[0]);
-
-	if(model.importNetwork(nn) == false){
-	  assert(0);
-	}
-      }
-#endif 
       
     }
     
-    
   }
-    
-
 
   template class RIFL_abstract< math::blas_real<float> >;
   template class RIFL_abstract< math::blas_real<double> >;

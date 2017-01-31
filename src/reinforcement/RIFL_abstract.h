@@ -47,6 +47,12 @@ namespace whiteice
     
     bool isRunning() const;
 
+    // epsilon E [0,1] percentage of actions are chosen according to model
+    //                 1-e percentage of actions are random (exploration)
+    bool setEpsilon(T epsilon) throw();
+
+    T getEpsilon() const throw();
+
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;
     
@@ -64,12 +70,11 @@ namespace whiteice
 			       T& reinforcement) = 0;
 
     whiteice::bayesian_nnetwork<T> model;
-    
-    T temperature;
+    mutable std::mutex model_mutex;
+
+    T epsilon;
     T gamma;
     
-    T lrate; // learning rate
-
     RNG<T> rng;
 
     volatile int thread_is_running;
