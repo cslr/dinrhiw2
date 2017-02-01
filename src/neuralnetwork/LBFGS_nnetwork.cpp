@@ -231,7 +231,7 @@ namespace whiteice
     
 
     // negative phase/gradient
-    #pragma omp parallel shared(sumgrad)
+#pragma omp parallel shared(sumgrad)
     {
       whiteice::nnetwork<T> nnet(this->net);
       nnet.importdata(x);

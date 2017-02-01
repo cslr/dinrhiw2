@@ -12,7 +12,7 @@ namespace whiteice
 {
 
   template <typename T>
-  CartPole<T>::CartPole() : RIFL_abstract<T>(7, 4)
+  CartPole<T>::CartPole() : RIFL_abstract<T>(21, 4)
   {
     {
       g = T(9.81); // gravity
@@ -29,8 +29,8 @@ namespace whiteice
       reset();
       
       // simulatiom timestep
-      dt = T(0.100); // 100ms
-
+      dt = T(0.010); // 10ms
+      
       iteration = 0;
     }
 
@@ -99,32 +99,8 @@ namespace whiteice
     // printf("%d action\n", action);
     double Fstep = 0.0;
 
-    switch(action){
-    case 0:
-      Fstep = -10.0;
-      break;
-    case 1:
-      Fstep = -5.0;
-      break;
-    case 2:
-      Fstep = -1.0;
-      break;
-    case 3:
-      Fstep = 0.0;
-      break;
-    case 4:
-      Fstep = +1.0;
-      break;
-    case 5:
-      Fstep = +5.0;
-      break;
-    case 6:
-      Fstep = +10.0;
-      break;
-    default:
-      Fstep = 0.0;
-      break;
-    };
+    double a = (((double)action) - 10.0)/10.0; // [-1,+1] (0.1 step length)
+    Fstep = 5.0*a; // [-5, +5]
 
     printf("%d FORCE: %f\n", iteration, Fstep);
     
@@ -148,6 +124,14 @@ namespace whiteice
 	  T a = theta/T(2.0*M_PI);
 	  a = a - floor(a);
 	  a = T(2.0*M_PI)*a;
+
+	  // converts range between [-pi, pi]
+	  if(a > T(M_PI)){
+	    a = T(-1.0)*(T(2.0*M_PI) - a);
+	  }
+
+	  // converts range between [-1.0, +1.0]
+	  a = a / T(M_PI);
 	  
 	  newstate.resize(4);
 	  newstate[0] = a;
@@ -168,10 +152,17 @@ namespace whiteice
 	    a = T(-1.0)*(T(2.0*M_PI) - a);
 	  }
 
-	  // converts range between [-1.0, +1.0]
-	  a = a / T(M_PI);
+	  // converts range between [-180.0, +180.0]
+	  a = T(180.0)* a / T(M_PI);
+
+	  if(a <= T(5.0)){
+	    a = T(0.4);
+	  }
+	  else{ // range is ] -5/180, -1.0];
+	    a = -T(1.0)*abs(a)/T(180.0);
+	  }
 	  
-	  reinforcement = -T(1.0)*abs(a);
+	  reinforcement = a;
 	}
       }
 	

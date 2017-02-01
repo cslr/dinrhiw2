@@ -21,12 +21,18 @@ int main(int argc, char** argv)
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
     system.setEpsilon(0.33); // 33% of examples are selected accoring to model
-    system.start();
+    system.load("rifl.dat");
     
-    sleep(3600); // 1 hour
+    system.start();
+
+    while(1){
+      sleep(180); // saved model file every 3 minutes
+      system.save("rifl.dat");
+      printf("MODEL FILE SAVED\n");
+    }
     
     system.stop();
-    system.save("rifl.dat");
+    
   }
   else if(strcmp(argv[1], "use") == 0){
 

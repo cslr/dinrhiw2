@@ -15,7 +15,7 @@ namespace whiteice
     // initializes parameters
     {
       gamma = T(0.8);
-      epsilon = T(0.33);
+      epsilon = T(0.66);
 
       this->numActions = numActions;
       this->numStates  = numStates;
@@ -28,9 +28,9 @@ namespace whiteice
 
       std::vector<unsigned int> arch;
       arch.push_back(numStates);
-      arch.push_back(numStates*100);
-      arch.push_back(numStates*100);
-      arch.push_back(numStates*100);
+      arch.push_back(numStates*20);
+      arch.push_back(numStates*20);
+      //arch.push_back(numStates*100);
       arch.push_back(numActions);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
@@ -165,6 +165,9 @@ namespace whiteice
     whiteice::dataset<T> data;
     whiteice::math::NNGradDescent<T> grad;
     unsigned int epoch = 0;
+
+    T temperature = T(0.010);
+
     
 
     bool firstTime = true;
@@ -222,6 +225,30 @@ namespace whiteice
       unsigned int action = 0;
 
       {
+#if 0
+	T psum = T(0.0);
+
+	std::vector<T> p;
+
+	for(unsigned int i=0;i<U.size();i++){
+	  psum += exp(U[i]/temperature);
+	  p.push_back(psum);
+	}
+
+	for(unsigned int i=0;i<U.size();i++){
+	  p[i] /= psum;
+	}
+
+	T r = rng.uniform();
+	
+	unsigned int index = 0;
+
+	while(p[index] < r) index++;
+
+	action = index;
+#endif	
+	
+#if 1
 	T r = rng.uniform();
 
 	if(r < epsilon){ // EPSILON% selects the largest value
@@ -237,6 +264,7 @@ namespace whiteice
 	else{ // (100 - EPSILON)% select action randomly
 	  action = rng.rand() % U.size();
 	}
+#endif
       }
       
       whiteice::math::vertex<T> newstate;
@@ -260,15 +288,12 @@ namespace whiteice
 	data.reinforcement = reinforcement;
 	data.action = action;
 
-	database.push_back(data);
-
-	printf("DATABASE SIZE: %d\n", (int)database.size());
-
-	while(database.size() >= 10000){
+	if(database.size() >= 10000){
 	  const unsigned int index = rng.rand() % database.size();
-
-	  database[index] = database[database.size()-1];
-	  database.erase(std::prev(database.end()));
+	  database[index] = data;
+	}
+	else{
+	  database.push_back(data);
 	}
       }
 
@@ -311,7 +336,7 @@ namespace whiteice
 	  data.createCluster("input-state", numStates);
 	  data.createCluster("output-action", numActions);
 	  
-	  for(unsigned int i=0;i<BATCHSIZE;i++){
+	  for(unsigned int i=0;i<BATCHSIZE;){
 	    const unsigned int index = rng.rand() % database.size();
 
 	    whiteice::math::vertex<T> in = database[index].state;
@@ -327,6 +352,28 @@ namespace whiteice
 	      nn.calculate(database[index].state, u);
 
 	      u_value = u[database[index].action];
+
+#if 0
+	      // calculates p-value of index:th action
+	      {
+		std::vector<T> p;
+		T psum = T(0.0);
+
+		for(unsigned int i=0;i<U.size();i++){
+		  psum += exp(U[i]/temperature);
+		  p.push_back(exp(U[i]/temperature));
+		}
+
+		for(unsigned int i=0;i<U.size();i++){
+		  p[i] /= psum;
+		}
+
+		if(p[database[index].action] < T(0.001)){
+		  continue; // skip this action
+		}
+	      }
+#endif
+	      
 	    }
 
 	    
@@ -350,9 +397,11 @@ namespace whiteice
 
 	    data.add(0, in);
 	    data.add(1, out);
+
+	    i++;
 	  }
 
-	  grad.startOptimize(data, nn, 2, 200);
+	  grad.startOptimize(data, nn, 2, 150);
 	}
 	else{
 	  whiteice::nnetwork<T> nn;
@@ -366,7 +415,8 @@ namespace whiteice
       }
       
     }
-    
+
+    grad.stopComputation();
   }
 
   template class RIFL_abstract< math::blas_real<float> >;

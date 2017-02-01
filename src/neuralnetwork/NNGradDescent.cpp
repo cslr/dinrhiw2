@@ -82,7 +82,7 @@ namespace whiteice
       this->data = &data;
       this->NTHREADS = NTHREADS;
       this->MAXITERS = MAXITERS;
-      best_error = T(1000.0f);
+      best_error = T(INFINITY);
       converged_solutions = 0;
       running = true;
       thread_is_running = 0;
@@ -152,9 +152,14 @@ namespace whiteice
       running = false;
       
       while(thread_is_running > 0){
+	running = true;
 	solution_lock.unlock();
+	start_lock.unlock();
 	sleep(1); // waits for threads to stop running
+	start_lock.lock();
 	solution_lock.lock();
+	running = false;
+	sleep(1);
       }
 
       solution_lock.unlock();
@@ -238,50 +243,95 @@ namespace whiteice
 
 	unsigned int counter = 0;
 	      
-	T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
+	// T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
 	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
 	{
-	  math::vertex<T> grad, err, weights, w0;
+	  math::vertex<T> weights, w0;
 	  math::vertex<T> prev_sumgrad;
 	  	  
 	  T prev_error, error, ratio;	  
 	  T delta_error = 0.0f;
 	  
-	  error = T(1000.0f);
-	  prev_error = T(1000.0f);
 	  ratio = T(1000.0f);
+	  error = T(0.0f);
+
+	  // calculates initial error
+#pragma omp parallel
+	  {
+	    T esum = T(0.0f);
+
+	    whiteice::nnetwork<T> nnet(nn);
+	    math::vertex<T> err;
+
+	    // calculates error from the testing dataset
+#pragma omp for nowait schedule(dynamic)	    	    
+	    for(unsigned int i=0;i<dtest.size(0);i++){
+	      nnet.input() = dtest.access(0, i);
+	      nnet.calculate(false);
+	      err = dtest.access(1,i) - nnet.output();
+	      
+	      for(unsigned int i=0;i<err.size();i++)
+		esum += T(0.5)*(err[i]*err[i]);
+	    }
+	    
+	    esum /= T((float)dtest.size(0));
+	    
+#pragma omp critical
+	    {
+	      error += esum;
+	    }
+	  }
+
+	  prev_error = error;
+
+	  T lrate = T(0.01f);
 	  
 	  while(error > T(0.001f) && 
-		ratio > T(0.000001f) && 
+		// ratio > T(0.00001f) && 
 		counter < MAXITERS)
 	  {
 	    prev_error = error;
-	    error = T(0.0f);
 
-	    T lrate = T(0.01f);
+	    // std::cout << "*********************** RATIO " << ratio << std::endl;
+	    // fflush(stdout);
 	    
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
 
-	    T ninv = T(1.0f/dtrain.size(0));
 	    math::vertex<T> sumgrad;
-	    
+	    sumgrad.resize(nn.exportdatasize());
+	    sumgrad.zero();
 
-	    for(unsigned int i=0;i<dtrain.size(0);i++){
-	      nn.input() = dtrain.access(0, i);
-	      nn.calculate(true);
-	      err = dtrain.access(1,i) - nn.output();
+#pragma omp parallel shared(sumgrad)
+	    {
+	      T ninv = T(1.0f/dtrain.size(0));
+	      math::vertex<T> sgrad, grad;
+	      sgrad.resize(nn.exportdatasize());
+	      sgrad.zero();
+
+	      whiteice::nnetwork<T> nnet(nn);
+	      math::vertex<T> err;
+
+#pragma omp for nowait schedule(dynamic)
+	      for(unsigned int i=0;i<dtrain.size(0);i++){
+		nnet.input() = dtrain.access(0, i);
+		nnet.calculate(true);
+		err = dtrain.access(1,i) - nnet.output();
+		
+		if(nnet.gradient(err, grad) == false)
+		  std::cout << "gradient failed." << std::endl;
+		
+		sgrad += ninv*grad;
+	      }
+
+#pragma omp critical
+	      {
+		sumgrad += sgrad;
+	      }
 	      
-	      if(nn.gradient(err, grad) == false)
-		std::cout << "gradient failed." << std::endl;
-
-	      if(i == 0)
-		sumgrad = ninv*grad;
-	      else
-		sumgrad += ninv*grad;
 	    }
 	    
 	    // cancellation point
@@ -302,19 +352,24 @@ namespace whiteice
 	    sumgrad += regularizer*weights;
 #endif
 
+	    lrate *= 4;
+	    
 	    do{
 	      nn.importdata(w0);
 	      weights = w0;
 
+	      weights -= lrate * sumgrad;
+
+#if 0
 	      if(prev_sumgrad.size() <= 1){
 		weights -= lrate * sumgrad;
 	      }
 	      else{
 		T momentum = T(0.8f); // MOMENTUM TERM!
 		
-		weights -= lrate * sumgrad + momentum*prev_sumgrad;
-		prev_sumgrad = lrate * sumgrad;
+		weights -= lrate * sumgrad + momentum*prev_sumgrad;		
 	      }
+#endif
 	      
 	      if(nn.importdata(weights) == false)
 		std::cout << "import failed." << std::endl;
@@ -326,18 +381,33 @@ namespace whiteice
 		negative_feedback_between_neurons(nn, dtrain, alpha);
 	      }
 
+	      error = T(0.0f);
 
-	      // calculates error from the testing dataset
-	      for(unsigned int i=0;i<dtest.size(0);i++){
-		nn.input() = dtest.access(0, i);
-		nn.calculate(false);
-		err = dtest.access(1,i) - nn.output();
+#pragma omp parallel
+	      {
+		T esum = T(0.0f);
+
+		whiteice::nnetwork<T> nnet(nn);
+		math::vertex<T> err;
 		
-		for(unsigned int i=0;i<err.size();i++)
-		  error += T(0.5)*(err[i]*err[i]);
+		// calculates error from the testing dataset
+#pragma omp for nowait schedule(dynamic)
+		for(unsigned int i=0;i<dtest.size(0);i++){
+		  nnet.input() = dtest.access(0, i);
+		  nnet.calculate(false);
+		  err = dtest.access(1,i) - nnet.output();
+		  
+		  for(unsigned int i=0;i<err.size();i++)
+		    esum += T(0.5)*(err[i]*err[i]);
+		}
+		
+		esum /= T((float)dtest.size(0));
+
+#pragma omp critical
+		{
+		  error += esum;
+		}
 	      }
-	    
-	      error /= T((float)dtest.size(0));
 	    
 	      delta_error = (prev_error - error);
 	      ratio = delta_error / error;
@@ -364,8 +434,25 @@ namespace whiteice
 
 	    // std::cout << "*******************************************************************" << error << std::endl;
 
+	    prev_sumgrad = lrate * sumgrad;
+	    
 	    w0 = weights;
 	    nn.importdata(w0);
+
+	    {
+	      solution_lock.lock();
+	      
+	      if(error < best_error){
+		// improvement (smaller error with early stopping)
+		best_error = error;
+		nn.exportdata(bestx);
+		
+		// std::cout << "BEST ERROR = " << best_error << std::endl;
+	      }
+	    
+	      solution_lock.unlock();
+	    }
+
 	    
 	    // cancellation point
 	    {
