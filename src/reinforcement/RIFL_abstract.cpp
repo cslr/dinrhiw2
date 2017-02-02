@@ -182,6 +182,7 @@ namespace whiteice
     unsigned int epoch = 0;
 
     const unsigned int DATASIZE = 50000;
+    const unsigned int SAMPLESIZE = 1000;
     T temperature = T(0.010);
 
     
@@ -230,11 +231,13 @@ namespace whiteice
 	for(unsigned int i=0;i<u.size();i++){
 	  U.push_back(u[i]);
 	}
-	
+
+#if 0
 	for(auto& ui : U){
 	  printf("%f ", ui.c[0]);
 	}
 	printf("\n");
+#endif
       }
 
       // 3. selects action according to probabilities
@@ -316,11 +319,14 @@ namespace whiteice
 	else{
 	  database.push_back(data);
 	}
+
+	printf("DATABASE SIZE: %d\n", (int)database.size());
+	fflush(stdout);
       }
 
 
       // activates batch learning if it is not running
-      if(database.size() >= DATASIZE)
+      if(database.size() >= SAMPLESIZE)
       {
 	if(grad.isRunning() == false){
 	  printf("*************************************************************\n");
@@ -352,7 +358,7 @@ namespace whiteice
 	  epoch++;
 	    
 	  const unsigned int BATCHSIZE = database.size()/2;
-
+	  
 	  data.clear();
 	  data.createCluster("input-state", numStates);
 	  data.createCluster("output-action", numActions);
