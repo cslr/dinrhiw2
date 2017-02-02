@@ -20,7 +20,9 @@ int main(int argc, char** argv)
   if(argc <= 1){
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.33); // 33% of examples are selected accoring to model
+    system.setEpsilon(0.90); // 90% of examples are selected accoring to model
+    system.setLearningMode(true);
+    
     system.load("rifl.dat");
     
     system.start();
@@ -39,6 +41,8 @@ int main(int argc, char** argv)
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
     system.setEpsilon(1.00); // 100% of examples are selected accoring to model
+    system.setLearningMode(false);
+    
     if(system.load("rifl.dat") == false){
       printf("ERROR: loading model file failed.\n");
       return -1;

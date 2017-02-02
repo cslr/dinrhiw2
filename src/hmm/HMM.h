@@ -27,8 +27,12 @@ namespace whiteice {
    */
   class HMM {
   public:
+    HMM();
     HMM(unsigned int visibleStates, unsigned int hiddenStates) throw(std::logic_error);
+    HMM(const HMM& hmm);
     virtual ~HMM();
+
+    HMM& operator=(const HMM& hmm);
     
     /**
      * Sets arbitrary precision number's

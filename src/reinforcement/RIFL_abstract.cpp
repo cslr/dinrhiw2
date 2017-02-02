@@ -17,6 +17,8 @@ namespace whiteice
       gamma = T(0.8);
       epsilon = T(0.66);
 
+      learningMode = true;
+
       this->numActions = numActions;
       this->numStates  = numStates;
     }
@@ -138,6 +140,19 @@ namespace whiteice
     return epsilon;
   }
 
+
+  template <typename T>
+  void RIFL_abstract<T>::setLearningMode(bool learn) throw()
+  {
+    learningMode = learn;
+  }
+
+  template <typename T>
+  bool RIFL_abstract<T>::getLearningMode() const throw()
+  {
+    return learningMode;
+  }
+
   
   // saves learnt Reinforcement Learning Model to file
   template <typename T>
@@ -166,6 +181,7 @@ namespace whiteice
     whiteice::math::NNGradDescent<T> grad;
     unsigned int epoch = 0;
 
+    const unsigned int DATASIZE = 50000;
     T temperature = T(0.010);
 
     
@@ -251,6 +267,9 @@ namespace whiteice
 #if 1
 	T r = rng.uniform();
 
+	if(learningMode == false)
+	  r = T(0.0); // always selects the largest value
+
 	if(r < epsilon){ // EPSILON% selects the largest value
 	  T maxv = U[action];
 	  
@@ -277,7 +296,9 @@ namespace whiteice
 	}
       }
 
-
+      if(learningMode == false){
+	continue; // we do not do learning
+      }
 
       // 6. updates database
       {
@@ -288,7 +309,7 @@ namespace whiteice
 	data.reinforcement = reinforcement;
 	data.action = action;
 
-	if(database.size() >= 10000){
+	if(database.size() >= DATASIZE){
 	  const unsigned int index = rng.rand() % database.size();
 	  database[index] = data;
 	}
@@ -299,7 +320,7 @@ namespace whiteice
 
 
       // activates batch learning if it is not running
-      if(database.size() > 1000)
+      if(database.size() >= DATASIZE)
       {
 	if(grad.isRunning() == false){
 	  printf("*************************************************************\n");

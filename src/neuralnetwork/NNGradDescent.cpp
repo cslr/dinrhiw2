@@ -89,6 +89,7 @@ namespace whiteice
       
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
+      best_error = getError(nn, data);
 
       optimizer_thread.resize(NTHREADS);
 
@@ -166,6 +167,44 @@ namespace whiteice
       start_lock.unlock();
 
       return true;
+    }
+
+
+    template <typename T>
+    T NNGradDescent<T>::getError(const whiteice::nnetwork<T>& net,
+				 const whiteice::dataset<T>& dtest)
+    {
+      T error = T(0.0);
+      
+      // calculates initial error
+#pragma omp parallel
+      {
+	T esum = T(0.0f);
+	
+	const whiteice::nnetwork<T>& nnet = net;
+	math::vertex<T> err;
+
+	// calculates error from the testing dataset
+#pragma omp for nowait schedule(dynamic)	    	    
+	for(unsigned int i=0;i<dtest.size(0);i++){
+	  math::vertex<T> out;
+	  
+	  nnet.calculate(dtest.access(0, i), out);
+	  err = dtest.access(1,i) - out;
+
+	  for(unsigned int i=0;i<err.size();i++)
+	    esum += T(0.5)*(err[i]*err[i]);
+	}
+	
+	esum /= T((float)dtest.size(0));
+	
+#pragma omp critical
+	{
+	  error += esum;
+	}
+      }
+
+      return error;
     }
 
 
@@ -251,37 +290,21 @@ namespace whiteice
 	  math::vertex<T> weights, w0;
 	  math::vertex<T> prev_sumgrad;
 	  	  
-	  T prev_error, error, ratio;	  
+	  T prev_error, error;	  
 	  T delta_error = 0.0f;
 	  
-	  ratio = T(1000.0f);
-	  error = T(0.0f);
+	  error = getError(nn, dtest);
 
-	  // calculates initial error
-#pragma omp parallel
 	  {
-	    T esum = T(0.0f);
-
-	    whiteice::nnetwork<T> nnet(nn);
-	    math::vertex<T> err;
-
-	    // calculates error from the testing dataset
-#pragma omp for nowait schedule(dynamic)	    	    
-	    for(unsigned int i=0;i<dtest.size(0);i++){
-	      nnet.input() = dtest.access(0, i);
-	      nnet.calculate(false);
-	      err = dtest.access(1,i) - nnet.output();
-	      
-	      for(unsigned int i=0;i<err.size();i++)
-		esum += T(0.5)*(err[i]*err[i]);
+	    solution_lock.lock();
+	    
+	    if(error < best_error){
+	      // improvement (smaller error with early stopping)
+	      best_error = error;
+	      nn.exportdata(bestx);
 	    }
 	    
-	    esum /= T((float)dtest.size(0));
-	    
-#pragma omp critical
-	    {
-	      error += esum;
-	    }
+	    solution_lock.unlock();
 	  }
 
 	  prev_error = error;
@@ -381,36 +404,10 @@ namespace whiteice
 		negative_feedback_between_neurons(nn, dtrain, alpha);
 	      }
 
-	      error = T(0.0f);
+	      error = getError(nn, dtest);
 
-#pragma omp parallel
-	      {
-		T esum = T(0.0f);
-
-		whiteice::nnetwork<T> nnet(nn);
-		math::vertex<T> err;
-		
-		// calculates error from the testing dataset
-#pragma omp for nowait schedule(dynamic)
-		for(unsigned int i=0;i<dtest.size(0);i++){
-		  nnet.input() = dtest.access(0, i);
-		  nnet.calculate(false);
-		  err = dtest.access(1,i) - nnet.output();
-		  
-		  for(unsigned int i=0;i<err.size();i++)
-		    esum += T(0.5)*(err[i]*err[i]);
-		}
-		
-		esum /= T((float)dtest.size(0));
-
-#pragma omp critical
-		{
-		  error += esum;
-		}
-	      }
-	    
 	      delta_error = (prev_error - error);
-	      ratio = delta_error / error;
+	      // ratio = delta_error / error;
 
 #if 0
 	      std::cout << "ERROR = " << error << std::endl;

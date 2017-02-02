@@ -19,6 +19,45 @@ using namespace whiteice::math;
 
 namespace whiteice {
 
+  HMM::HMM()
+  {
+    this->numVisible = 1;
+    this->numHidden  = 1;
+
+    precision = 256; // 256 bits [4 x double]
+	
+    ph.resize(numHidden);
+    
+    for(auto& i : ph){
+      i.setPrecision(precision);
+      i = 0.0;
+    }
+    
+    A.resize(numHidden);
+    for(auto& a : A){
+      a.resize(numHidden);
+      for(auto& aa : a){
+	aa.setPrecision(precision);
+	aa = 0.0;
+      }
+    }
+    
+    B.resize(numHidden);
+    for(auto& b : B){
+      b.resize(numHidden);
+      for(auto& c : b){
+	c.resize(numVisible);
+	for(auto& d: c){
+	  d.setPrecision(precision);
+	  d = 0.0;
+	}
+      }
+    }
+
+    this->randomize();
+  }
+
+  
   HMM::HMM(unsigned int visStates, unsigned int hidStates) throw(std::logic_error)
   {
     this->numVisible = visStates;
@@ -27,7 +66,7 @@ namespace whiteice {
     if(numVisible == 0 || numHidden == 0)
       throw std::logic_error("whiteice::HMM ctor - number of visible or hidden states cannot be zero");
     
-    precision = 256; // 128 bits [2 x double]
+    precision = 256; // 256 bits [4 x double]
     
     ph.resize(numHidden);
     
@@ -59,11 +98,39 @@ namespace whiteice {
 
     this->randomize();
   }
+
+
+  HMM::HMM(const HMM& hmm)
+  {
+    this->numVisible = hmm.numVisible;
+    this->numHidden  = hmm.numHidden;
+    this->precision  = hmm.precision;
+
+    this->ph = hmm.ph;
+    this->A  = hmm.A;
+    this->B  = hmm.B;
+  }
+  
   
   HMM::~HMM()
   {
     // nothing to do
   }
+
+
+  HMM& HMM::operator=(const HMM& hmm)
+  {
+    this->numVisible = hmm.numVisible;
+    this->numHidden  = hmm.numHidden;
+    this->precision  = hmm.precision;
+
+    this->ph = hmm.ph;
+    this->A  = hmm.A;
+    this->B  = hmm.B;
+    
+    return (*this);
+  }
+		 
   
 
   /**

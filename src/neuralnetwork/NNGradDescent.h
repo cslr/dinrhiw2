@@ -66,6 +66,10 @@ namespace whiteice
 	bool stopComputation();
 
       private:
+        T getError(const whiteice::nnetwork<T>& net,
+		   const whiteice::dataset<T>& dtest);
+
+      
         whiteice::nnetwork<T>* nn; // network architecture and settings
       
         bool negativefeedback;

@@ -53,6 +53,13 @@ namespace whiteice
 
     T getEpsilon() const throw();
 
+    /*
+     * sets/gets learning mode 
+     * (do we do just control or also try to learn from data)
+     */
+    void setLearningMode(bool learn) throw();
+    bool getLearningMode() const throw();
+
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;
     
@@ -72,6 +79,7 @@ namespace whiteice
     whiteice::bayesian_nnetwork<T> model;
     mutable std::mutex model_mutex;
 
+    bool learningMode;
     T epsilon;
     T gamma;
     
