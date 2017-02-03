@@ -18,6 +18,7 @@ namespace whiteice
       epsilon = T(0.66);
 
       learningMode = true;
+      hasModel = false;
 
       this->numActions = numActions;
       this->numStates  = numStates;
@@ -151,6 +152,19 @@ namespace whiteice
   bool RIFL_abstract<T>::getLearningMode() const throw()
   {
     return learningMode;
+  }
+
+
+  template <typename T>
+  void RIFL_abstract<T>::setHasModel(bool hasModel) throw()
+  {
+    this->hasModel = hasModel;
+  }
+
+  template <typename T>
+  bool RIFL_abstract<T>::getHasModel() throw()
+  {
+    return hasModel;
   }
 
   
@@ -287,6 +301,10 @@ namespace whiteice
 	  action = rng.rand() % U.size();
 	}
 #endif
+
+	// if we don't have not yet optimized model, then we make random choices
+	if(hasModel == false)
+	  action = rng.rand() % U.size();
       }
       
       whiteice::math::vertex<T> newstate;
@@ -353,6 +371,7 @@ namespace whiteice
 	  else{
 	    std::lock_guard<std::mutex> lock(model_mutex);
 	    model.importNetwork(nn);
+	    hasModel = true;
 	  }
 
 	  epoch++;

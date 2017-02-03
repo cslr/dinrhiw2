@@ -79,6 +79,10 @@ namespace whiteice
         unsigned int converged_solutions;
 
 	const whiteice::dataset<T>* data;
+
+        // flag to indicate this is the first thread to start optimization
+        bool first_time;
+        std::mutex first_time_lock;
 	
 	unsigned int NTHREADS;
         unsigned int MAXITERS;

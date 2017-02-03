@@ -86,6 +86,11 @@ namespace whiteice
       converged_solutions = 0;
       running = true;
       thread_is_running = 0;
+
+      {
+	std::lock_guard<std::mutex> lock(first_time_lock);
+	first_time = true; // first thread uses weights from user supplied NN
+      }
       
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
@@ -261,23 +266,25 @@ namespace whiteice
 	}
       }
 
-      bool first_time = true;
-      
       while(running && converged_solutions < MAXITERS){
 	// keep looking for solution forever
 	
 	// starting location for neural network
 	nnetwork<T> nn(*(this->nn));
-	
-	// use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
-	if(first_time == false){
-	  nn.randomize();
-	  normalize_weights_to_unity(nn); 
-	  T alpha = T(0.5f);
-	  negative_feedback_between_neurons(nn, dtrain, alpha);
-	}
-	else{
-	  first_time = false;
+
+	{
+	  std::lock_guard<std::mutex> lock(first_time_lock);
+	  
+	  // use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
+	  if(first_time == false){
+	    nn.randomize();
+	    normalize_weights_to_unity(nn); 
+	    T alpha = T(0.5f);
+	    negative_feedback_between_neurons(nn, dtrain, alpha);
+	  }
+	  else{
+	    first_time = false;
+	  }
 	}
 
 	unsigned int counter = 0;

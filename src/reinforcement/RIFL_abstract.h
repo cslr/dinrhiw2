@@ -60,6 +60,16 @@ namespace whiteice
     void setLearningMode(bool learn) throw();
     bool getLearningMode() const throw();
 
+    /*
+     * hasModel flag means we have a proper model
+     * (from optimization or from load)
+     *
+     * as long as we don't have a proper model
+     * we make random actions (initially) 
+     */
+    void setHasModel(bool hasModel) throw();
+    bool getHasModel() throw();
+
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;
     
@@ -79,7 +89,9 @@ namespace whiteice
     whiteice::bayesian_nnetwork<T> model;
     mutable std::mutex model_mutex;
 
+    bool hasModel;
     bool learningMode;
+    
     T epsilon;
     T gamma;
     
