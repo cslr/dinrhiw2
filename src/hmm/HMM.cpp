@@ -12,7 +12,7 @@
 #include <set>
 
 #include "dataset.h"
-
+#include "linear_ETA.h"
 
 
 using namespace whiteice::math;
@@ -230,21 +230,30 @@ namespace whiteice {
    *
    * returns log(probability) of training data
    */
-  double HMM::train(const std::vector<unsigned int>& observations) throw (std::invalid_argument)
+  double HMM::train(const std::vector<unsigned int>& observations,
+		    const unsigned int MAXITERS)
+    throw (std::invalid_argument)
   {
     // uses Baum-Welch algorithm
+
+    if(MAXITERS == 0) return 0.0;
     
     bool converged = false;
     std::list<realnumber> pdata;
     unsigned int iteration = 0;
+    
     realnumber plast(0.0, precision);
 
+    linear_ETA<float> eta;
+    eta.start((float)iteration, (float)MAXITERS);
+
     {
-      printf("ITER %d. Log(probability) = %f\n", iteration, logprobability(observations));
+      printf("ITER %d. Log(probability) = %f\n",
+	     iteration, logprobability(observations));
     }
 
     
-    while(!converged && iteration < 50) // keeps calculating EM-algorithm for parameter estimation
+    while(!converged && iteration < MAXITERS) // keeps calculating EM-algorithm for parameter estimation
     {
 
       // printf("AA\n"); fflush(stdout);
@@ -458,8 +467,10 @@ namespace whiteice {
       pdata.push_back(po);
       
       iteration++;
+      eta.update((float)iteration);
       
-      printf("ITER %d. Log(probability) = %f\n", iteration, log(po).getDouble());
+      printf("ITER %d. Log(probability) = %f\n [ETA %f minutes]",
+	     iteration, log(po).getDouble(), eta.estimate()/60.0f);
       
       
       // estimates convergence

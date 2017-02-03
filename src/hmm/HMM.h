@@ -28,7 +28,9 @@ namespace whiteice {
   class HMM {
   public:
     HMM();
-    HMM(unsigned int visibleStates, unsigned int hiddenStates) throw(std::logic_error);
+    HMM(unsigned int visibleStates, unsigned int hiddenStates)
+      throw(std::logic_error);
+    
     HMM(const HMM& hmm);
     virtual ~HMM();
 
@@ -53,7 +55,9 @@ namespace whiteice {
      *
      * returns log(probability) of training data
      */
-    double train(const std::vector<unsigned int>& observations) throw (std::invalid_argument);
+    double train(const std::vector<unsigned int>& observations,
+		 const unsigned int MAXITERS = 1000)
+      throw (std::invalid_argument);
 
     
     /**

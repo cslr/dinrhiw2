@@ -188,7 +188,8 @@ somtest.o: tst/somtest.cpp SOM2D.h ../math/vertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h ../data_source.h ../ETA.h KMeans.h
+ activation_function.h function.h ../data_source.h ../ETA.h KMeans.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
  ../dynamic_bitset.h ../math/integer.h ../math/number.h \
@@ -1048,8 +1049,8 @@ KMeans.o: KMeans.cpp KMeans.h ../math/dinrhiw_blas.h \
  ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp function.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
- ../math/outerproduct.h activation_function.h function.h ../conffile.h \
- ../math/blade_math.h
+ ../math/outerproduct.h activation_function.h function.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h ../conffile.h ../math/blade_math.h
 HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -1429,7 +1430,8 @@ somtest.o: tst/somtest.cpp SOM2D.h ../math/vertex.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h ../data_source.h ../ETA.h KMeans.h
+ activation_function.h function.h ../data_source.h ../ETA.h KMeans.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  GeneticAlgorithm.cpp GeneticAlgorithm.h GeneticAlgorithm2.h \
  ../dynamic_bitset.h ../math/integer.h ../math/number.h \
