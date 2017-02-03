@@ -16,6 +16,11 @@
 #ifndef KMeans_h
 #define KMeans_h
 
+#include <exception>
+#include <stdexcept>
+
+#include "RNG.h"
+
 namespace whiteice
 {
   
@@ -42,6 +47,12 @@ namespace whiteice
     
     std::vector<T>& operator[](unsigned int index);
     const std::vector<T>& operator[](unsigned int index) const;
+
+    unsigned int getClusterIndex(const whiteice::math::vertex<T>& x) const
+      throw(std::logic_error);
+    unsigned int getClusterIndex(const std::vector<T>& x) const
+      throw(std::logic_error);
+    
     
     unsigned int size() const throw();
     
@@ -74,6 +85,8 @@ namespace whiteice
     
     std::vector<std::vector<T> > kmeans;
     T learning_rate;
+
+    whiteice::RNG<T> rng;
   };
   
   

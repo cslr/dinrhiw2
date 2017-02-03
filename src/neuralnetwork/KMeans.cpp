@@ -125,31 +125,19 @@ namespace whiteice
       if(data.size() < 1) return false;
       kmeans.resize(k);
       
-      // random initialization of k-means into range [-1, 1]^dim
-      // with unit length
+      // initialization of k-means by picking one
+      // one data vector randomly
       
       for(unsigned int i=0;i<kmeans.size();i++){
 	kmeans[i].resize(data[0].size());
+	
+	const unsigned int index = rng.rand() % data.size();
+	
 	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  kmeans[i][j] = T(T(2.0f)*((double)rand() / ((double)RAND_MAX)) - T(1.0f));
-	}
-	
-	
-	T len = T(0.0f);
-	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  len += (kmeans[i][j] * kmeans[i][j]);
-	}
-	
-	len = sqrt(len);
-	
-	if(len != T(0.0f)){
-	  for(unsigned int j=0;j<kmeans[i].size();j++){
-	    kmeans[i][j] /= len;
-	  }
+	  kmeans[i][j] = data[index][j];
 	}
       } // random initialization done
-      
-      
+
       
       unsigned int maxstep = 100*data.size();
       
@@ -272,32 +260,20 @@ namespace whiteice
     try{
       if(data.size() < 1) return false;
       kmeans.resize(k);
-      
-      // random initialization of k-means into range [-1, 1]^dim
-      // with unit length
+
+      // initialization of k-means by picking one
+      // one data vector randomly
       
       for(unsigned int i=0;i<kmeans.size();i++){
 	kmeans[i].resize(data[0].size());
+
+	const unsigned int index = rng.rand() % data.size();
+
 	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  kmeans[i][j] = T(T(2.0f)*((double)rand() / ((double)RAND_MAX)) - T(1.0f));
-	}
-	
-	
-	T len = T(0.0f);
-	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  len += (kmeans[i][j] * kmeans[i][j]);
-	}
-	
-	len = sqrt(len);
-	
-	if(len != T(0.0f)){
-	  for(unsigned int j=0;j<kmeans[i].size();j++){
-	    kmeans[i][j] /= len;
-	  }
+	  kmeans[i][j] = data[index][j];
 	}
       } // random initialization done
-      
-      
+
       
       unsigned int maxstep = 100*data.size();
       
@@ -430,7 +406,60 @@ namespace whiteice
   {
     return kmeans[index];
   }
+
+  template <typename T>
+  unsigned int KMeans<T>::getClusterIndex(const whiteice::math::vertex<T>& x) const
+    throw(std::logic_error)
+  {
+    if(kmeans.size() <= 0)
+      throw std::logic_error("KMeans: No clustering available");
+
+    T best_distance = T(INFINITY);
+    unsigned int best_index = 0;
+
+    for(unsigned int i=0;i<kmeans.size();i++){
+
+      T distance = T(0.0);
+      
+      for(unsigned int j=0;j<kmeans[i].size();j++){
+	distance += (x[j] - kmeans[i][j])*(x[j] - kmeans[i][j]);
+      }
+
+      if(distance < best_distance){
+	best_distance = distance;
+	best_index = i;
+      }
+    }
+
+    return best_index;
+  }
   
+  template <typename T>
+  unsigned int KMeans<T>::getClusterIndex(const std::vector<T>& x) const
+    throw(std::logic_error)
+  {
+    if(kmeans.size() <= 0)
+      throw std::logic_error("KMeans: No clustering available");
+
+    T best_distance = T(INFINITY);
+    unsigned int best_index = 0;
+
+    for(unsigned int i=0;i<kmeans.size();i++){
+
+      T distance = T(0.0);
+      
+      for(unsigned int j=0;j<kmeans[i].size();j++){
+	distance += (x[j] - kmeans[i][j])*(x[j] - kmeans[i][j]);
+      }
+
+      if(distance < best_distance){
+	best_distance = distance;
+	best_index = i;
+      }
+    }
+
+    return best_index;
+  }
   
   // calculates squared distance
   template <typename T>
