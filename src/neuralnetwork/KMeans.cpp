@@ -20,11 +20,31 @@ namespace whiteice
     this->learning_rate = learning_rate;
     this->goodmode = optimalmode;
   }
+
+  template <typename T>
+  KMeans<T>::KMeans(const KMeans<T>& model)
+  {
+    this->goodmode = model.goodmode;
+    this->samplesetsize = model.samplesetsize;
+    this->learning_rate = model.learning_rate;
+
+    this->kmeans = model.kmeans;
+  }
   
   template <typename T>
   KMeans<T>::~KMeans(){  }
-  
-  
+
+  template <typename T>
+  KMeans<T>& KMeans<T>::operator=(const KMeans<T>& model)
+  {
+    this->goodmode = model.goodmode;
+    this->samplesetsize = model.samplesetsize;
+    this->learning_rate = model.learning_rate;
+
+    this->kmeans = model.kmeans;
+
+    return (*this);
+  }
   
   template <typename T>
   T KMeans<T>::error(const std::vector< std::vector<T> >& data) const
@@ -50,7 +70,7 @@ namespace whiteice
     }
     else{
       for(unsigned int i=0;i<1000;i++){
-	unsigned int index = rand() % data.size();
+	unsigned int index = rng.rand() % data.size();
 	unsigned int j=0;
 	
 	e = calc_distance(kmeans[j], data[index]);
@@ -95,7 +115,7 @@ namespace whiteice
     }
     else{
       for(unsigned int i=0;i<1000;i++){
-	unsigned int index = rand() % data.size();
+	unsigned int index = rng.rand() % data.size();
 	unsigned int j=0;
 	
 	e = calc_distance(kmeans[j], data[index]);
@@ -167,7 +187,7 @@ namespace whiteice
 	  
 	  for(unsigned int i=0;i<100;i++){
 	    // uses only the first part of data 
-	    unsigned int index = rand() % (data.size()/2);
+	    unsigned int index = rng.rand() % (data.size()/2);
 	    
 	    // finds closest k-mean vector
 	    min_error = calc_distance(kmeans[0], data[index]);
@@ -211,7 +231,7 @@ namespace whiteice
       else{
 
 	for(unsigned int i=0;i<maxstep;i++){
-	  unsigned int index = rand() % data.size();
+	  unsigned int index = rng.rand() % data.size();
 	  
 	  // finds closest k-mean vector
 	  
@@ -301,7 +321,7 @@ namespace whiteice
 	  
 	  for(unsigned int i=0;i<100;i++){
 	    // uses the first part of data 
-	    unsigned int index = rand() % (data.size()/2);
+	    unsigned int index = rng.rand() % (data.size()/2);
 	    
 	    // finds closest k-mean vector
 	    min_error = calc_distance(kmeans[0], data[index]);
@@ -345,7 +365,7 @@ namespace whiteice
       else{
 
 	for(unsigned int i=0;i<maxstep;i++){
-	  unsigned int index = rand() % data.size();
+	  unsigned int index = rng.rand() % data.size();
 	  
 	  // finds closest k-mean vector
 	  
@@ -629,7 +649,7 @@ namespace whiteice
     }
     else{
       for(unsigned int i=0;i<1000;i++){
-	unsigned int index = (rand() % (data.size()/2)) + (data.size()/2);
+	unsigned int index = (rng.rand() % (data.size()/2)) + (data.size()/2);
 	unsigned int j=0;
 	
 	e = calc_distance(kmeans[j], data[index]);
@@ -675,7 +695,7 @@ namespace whiteice
     }
     else{
       for(unsigned int i=0;i<1000;i++){
-	unsigned int index = (rand() % (data.size()/2)) + (data.size()/2);
+	unsigned int index = (rng.rand() % (data.size()/2)) + (data.size()/2);
 	unsigned int j=0;
 	
 	e = calc_distance(kmeans[j], data[index]);

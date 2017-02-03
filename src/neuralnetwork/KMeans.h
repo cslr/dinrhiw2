@@ -30,8 +30,11 @@ namespace whiteice
   {
   public:
     KMeans(T learning_rate=T(0.1), // TODO: good default learning rate?
-	   bool optimalmode = false); 
+	   bool optimalmode = false);
+    KMeans(const KMeans<T>& model);
     ~KMeans();
+
+    KMeans<T>& operator=(const KMeans<T>& model);
     
     bool learn(unsigned int k,
 	       std::vector< std::vector<T> >& data) throw();
@@ -53,7 +56,7 @@ namespace whiteice
     unsigned int getClusterIndex(const std::vector<T>& x) const
       throw(std::logic_error);
     
-    
+    // number of clusters
     unsigned int size() const throw();
     
     // reads/saves k-means clustering to a file
