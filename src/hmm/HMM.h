@@ -19,11 +19,10 @@
 namespace whiteice {
 
   /*
-   * discrete Hidden Markov Model using arbitrary precision numbers (math::realnumber)
-   * for analyzing and generating neuromancer/resonanz stimulation sequences
+   * discrete Hidden Markov Model using arbitrary precision numbers 
+   * (math::realnumber)
+   * for analyzing and generating neuromancer/resonanz eeg sequences
    *
-   * TODO this will be initially non-threaded version but will be
-   * threaded after the code has been tested
    */
   class HMM {
   public:
@@ -56,7 +55,8 @@ namespace whiteice {
      * returns log(probability) of training data
      */
     double train(const std::vector<unsigned int>& observations,
-		 const unsigned int MAXITERS = 1000)
+		 const unsigned int MAXITERS = 1000,
+		 const bool verbose = true)
       throw (std::invalid_argument);
 
     
@@ -74,7 +74,8 @@ namespace whiteice {
      * returns log(probability) of the optimum hidden states
      */
     double ml_states(std::vector<unsigned int>& hidden,
-		     const std::vector<unsigned int>& observations) const throw (std::invalid_argument);
+		     const std::vector<unsigned int>& observations) const
+      throw (std::invalid_argument);
 
     /**
      * predicts the next hidden state given observation and current known state.
@@ -83,7 +84,8 @@ namespace whiteice {
      */
     double next_state(const unsigned int currentState,
 		      unsigned int& nextState,
-		      const unsigned int observation) const throw (std::invalid_argument);
+		      const unsigned int observation) const
+      throw (std::invalid_argument);
     
     /*
      * calculations log(probability) of observations

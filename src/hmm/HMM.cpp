@@ -231,7 +231,7 @@ namespace whiteice {
    * returns log(probability) of training data
    */
   double HMM::train(const std::vector<unsigned int>& observations,
-		    const unsigned int MAXITERS)
+		    const unsigned int MAXITERS, const bool verbose)
     throw (std::invalid_argument)
   {
     // uses Baum-Welch algorithm
@@ -247,6 +247,7 @@ namespace whiteice {
     linear_ETA<float> eta;
     eta.start((float)iteration, (float)MAXITERS);
 
+    if(verbose)
     {
       printf("ITER %d. Log(probability) = %f\n",
 	     iteration, logprobability(observations));
@@ -256,8 +257,6 @@ namespace whiteice {
     while(!converged && iteration < MAXITERS) // keeps calculating EM-algorithm for parameter estimation
     {
 
-      // printf("AA\n"); fflush(stdout);
-	
       // first calculates alpha and beta
       const unsigned int T = observations.size();
       std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
@@ -269,8 +268,6 @@ namespace whiteice {
 	a = ph;
       }
 
-      // printf("AA\n"); fflush(stdout);
-      
       // forward procedure (alpha)
       for(unsigned int t=1;t<=T;t++){
 	auto& a  = alpha[t-1];
@@ -293,8 +290,6 @@ namespace whiteice {
 	}
       }
 
-      // printf("BB\n"); fflush(stdout);
-      
       for(auto& b : beta){
 	b.resize(numHidden);
 	for(auto& bi : b){
@@ -325,8 +320,6 @@ namespace whiteice {
 	}
       }
 
-      // printf("CC\n"); fflush(stdout);
-      
       // now we have both alpha and beta and we calculate p
       std::vector< std::vector < std::vector<realnumber> > > p(T);
       
@@ -375,9 +368,6 @@ namespace whiteice {
       }
 
       
-      // printf("DD\n"); fflush(stdout);
-      
-      
       // now we have p[t][i][j] and we calculate y[t][i]
       std::vector< std::vector<realnumber> > y(T);
 
@@ -388,8 +378,6 @@ namespace whiteice {
 	  yti = 0.0;
 	}
       }
-
-      // printf("DDD\n");
 
 #pragma omp parallel for schedule(dynamic)
       for(unsigned int t=1;t<=T;t++){
@@ -403,8 +391,6 @@ namespace whiteice {
 	}
       }
 
-      // printf("EE\n"); fflush(stdout);
-      
       //////////////////////////////////////////////////////////////////////
       // now we can calculate new parameter values based on EM
       
@@ -450,8 +436,6 @@ namespace whiteice {
 	}
       }
 
-      // printf("MM\n"); fflush(stdout);
-      
       // now we have new parameters: A, B, ph
       // still calculates probability of observations [using previous parameter values]
       // as E[p(o)] = p(observations)**(1/length(observations)) is used to measure convergence
@@ -468,9 +452,12 @@ namespace whiteice {
       
       iteration++;
       eta.update((float)iteration);
-      
-      printf("ITER %d. Log(probability) = %f\n [ETA %f minutes]",
-	     iteration, log(po).getDouble(), eta.estimate()/60.0f);
+
+      if(verbose)
+      {
+	printf("ITER %d. Log(probability) = %f [ETA %f minutes]\n",
+	       iteration, log(po).getDouble(), eta.estimate()/60.0f);
+      }
       
       
       // estimates convergence
@@ -506,26 +493,15 @@ namespace whiteice {
 	  converged = true;
 	}
 
-	// printf("A\n"); fflush(stdout);
-	
       }
 
-      // printf("B\n"); fflush(stdout);
-      
     }
-
-    // printf("C\n"); fflush(stdout);
 
     normalize_parameters();
 
-    // printf("D\n"); fflush(stdout);
-    
-    
     if(plast > 0.0)
       plast = log(plast);
 
-    // printf("E\n"); fflush(stdout);
-    
     return plast.getDouble();
   }
   
