@@ -26,6 +26,19 @@ namespace whiteice
     
   }
 
+  template <typename T>
+  bayesian_nnetwork<T>::bayesian_nnetwork(const bayesian_nnetwork<T>& bnet)
+  {
+    this->nnets.resize(bnet.nnets.size());
+
+    for(unsigned int i=0;i<nnets.size();i++){
+      if(bnet.nnets[i] != NULL)
+	nnets[i] = new whiteice::nnetwork<T>(*(bnet.nnets[i]));
+      else
+	nnets[i] = NULL;
+    }
+  }
+
   
   template <typename T>
   bayesian_nnetwork<T>::~bayesian_nnetwork()
@@ -38,6 +51,22 @@ namespace whiteice
     }
 
     nnets.clear();
+  }
+
+  
+  template <typename T>
+  bayesian_nnetwork<T>& bayesian_nnetwork<T>::operator=(const bayesian_nnetwork<T>& bnet)
+  {
+    this->nnets.resize(bnet.nnets.size());
+
+    for(unsigned int i=0;i<nnets.size();i++){
+      if(bnet.nnets[i] != NULL)
+	nnets[i] = new whiteice::nnetwork<T>(*(bnet.nnets[i]));
+      else
+	nnets[i] = NULL;
+    }
+    
+    return (*this);
   }
   
 

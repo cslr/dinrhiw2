@@ -5,7 +5,7 @@
  * utility function which is used to select 
  * the next action.
  * 
- * Implementation is based on the following paper:
+ * Implementation is mostly based on the following paper:
  * 
  * Self-Improving Reactive Agents Based On 
  * Reinforcement Learning, Planning and Teaching
@@ -95,7 +95,7 @@ namespace whiteice
     T epsilon;
     T gamma;
     
-    RNG<T> rng;
+    whiteice::RNG<T> rng;
 
     volatile int thread_is_running;
     std::thread* rifl_thread;

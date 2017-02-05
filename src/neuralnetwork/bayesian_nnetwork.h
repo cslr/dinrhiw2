@@ -19,7 +19,10 @@ namespace whiteice
     public:
 
     bayesian_nnetwork();
+    bayesian_nnetwork(const bayesian_nnetwork<T>& bnet);
     virtual ~bayesian_nnetwork();
+
+    bayesian_nnetwork<T>& operator=(const bayesian_nnetwork<T>& bnet);
 
     void printInfo() const; // mostly for debugging.. prints NN information/data.
 

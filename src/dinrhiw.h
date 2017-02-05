@@ -55,7 +55,7 @@
 #include "HMM.h"
 
 #include "RIFL_abstract.h"
-
+#include "CartPole.h" // test problem
 
 #include "array.h"
 #include "static_array.h"

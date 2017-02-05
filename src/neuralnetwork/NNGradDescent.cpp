@@ -14,13 +14,14 @@ namespace whiteice
   {
 
     template <typename T>
-    NNGradDescent<T>::NNGradDescent(bool negativefeedback)
+    NNGradDescent<T>::NNGradDescent(bool negativefeedback, bool errorTerms)
     {
       best_error = T(1000.0f);
       converged_solutions = 0;
       data = NULL;
       NTHREADS = 0;
       this->negativefeedback = negativefeedback;
+      this->errorTerms = errorTerms;
 
       running = false;
       nn = NULL;
@@ -97,7 +98,7 @@ namespace whiteice
       best_error = getError(nn, data);
 
       optimizer_thread.resize(NTHREADS);
-
+      
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	optimizer_thread[i] =
 	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
@@ -193,9 +194,23 @@ namespace whiteice
 #pragma omp for nowait schedule(dynamic)	    	    
 	for(unsigned int i=0;i<dtest.size(0);i++){
 	  math::vertex<T> out;
+	  const auto& doi = dtest.access(1, i);
 	  
 	  nnet.calculate(dtest.access(0, i), out);
-	  err = dtest.access(1,i) - out;
+
+	  if(errorTerms == false){
+	    err = doi - out;
+	  }
+	  else{
+	    err.resize(out.size());
+	    err.zero();
+
+	    for(unsigned int k=0;k<doi.size();k++){
+	      // NaNs are used to signal as not used fields/dimensions
+	      if(whiteice::math::isnan(doi[k]) == false)
+		err[k] = doi[k] - out[k];
+	    }
+	  }
 
 	  for(unsigned int i=0;i<err.size();i++)
 	    esum += T(0.5)*(err[i]*err[i]);
@@ -278,9 +293,12 @@ namespace whiteice
 	  // use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
 	  if(first_time == false){
 	    nn.randomize();
-	    normalize_weights_to_unity(nn); 
-	    T alpha = T(0.5f);
-	    negative_feedback_between_neurons(nn, dtrain, alpha);
+	    
+	    if(negativefeedback){
+	      normalize_weights_to_unity(nn);
+	      T alpha = T(0.5f);
+	      negative_feedback_between_neurons(nn, dtrain, alpha);
+	    }
 	  }
 	  else{
 	    first_time = false;
@@ -317,9 +335,11 @@ namespace whiteice
 	  prev_error = error;
 
 	  T lrate = T(0.01f);
+	  T ratio = T(1.0f);
+
 	  
 	  while(error > T(0.001f) && 
-		// ratio > T(0.00001f) && 
+		ratio > T(0.00001f) && 
 		counter < MAXITERS)
 	  {
 	    prev_error = error;
@@ -349,7 +369,19 @@ namespace whiteice
 	      for(unsigned int i=0;i<dtrain.size(0);i++){
 		nnet.input() = dtrain.access(0, i);
 		nnet.calculate(true);
-		err = dtrain.access(1,i) - nnet.output();
+
+		if(errorTerms == false){
+		  err = dtrain.access(1,i) - nnet.output();
+		}
+		else{
+		  const auto& doi = dtrain.access(1,i);
+		  err.resize(doi.size());
+		  err.zero();
+		  
+		  for(unsigned int k=0;k<doi.size();k++)
+		    if(whiteice::math::isnan(doi[k]) == false)
+		      err[k] = doi[k] - nnet.output()[k];
+		}
 		
 		if(nnet.gradient(err, grad) == false)
 		  std::cout << "gradient failed." << std::endl;
@@ -414,7 +446,7 @@ namespace whiteice
 	      error = getError(nn, dtest);
 
 	      delta_error = (prev_error - error);
-	      // ratio = delta_error / error;
+	      ratio = abs(delta_error) / error;
 
 #if 0
 	      std::cout << "ERROR = " << error << std::endl;

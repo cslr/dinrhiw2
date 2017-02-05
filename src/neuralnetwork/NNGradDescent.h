@@ -28,8 +28,10 @@ namespace whiteice
       class NNGradDescent
       {
       public:
-      
-	NNGradDescent(bool negativefeedback = false);
+
+      // if errorTerms is true then dataset output values are actual
+      // errors rather than correct values
+        NNGradDescent(bool negativefeedback = false, bool errorTerms = false);
 	~NNGradDescent();
 
 	/*
@@ -83,6 +85,12 @@ namespace whiteice
         // flag to indicate this is the first thread to start optimization
         bool first_time;
         std::mutex first_time_lock;
+
+        bool errorTerms; // dataset output values are
+                         // delta error values rather than correct outputs
+                         // (needed by reinforcement learning)
+      
+        std::vector<unsigned int> currentIterations;
 	
 	unsigned int NTHREADS;
         unsigned int MAXITERS;

@@ -192,7 +192,7 @@ namespace whiteice
   {
     std::vector< rifl_datapoint<T> > database;
     whiteice::dataset<T> data;
-    whiteice::math::NNGradDescent<T> grad;
+    whiteice::math::NNGradDescent<T> grad(false, true);
     unsigned int epoch = 0;
 
     const unsigned int DATASIZE = 50000;
@@ -338,8 +338,8 @@ namespace whiteice
 	  database.push_back(data);
 	}
 
-	printf("DATABASE SIZE: %d\n", (int)database.size());
-	fflush(stdout);
+	// printf("DATABASE SIZE: %d\n", (int)database.size());
+	// fflush(stdout);
       }
 
 
@@ -392,36 +392,15 @@ namespace whiteice
 	    // calculates updated utility value
 	    
 	    whiteice::math::vertex<T> u;
+#if 0
 	    T u_value = T(0.0);
 	    
 	    {
 	      nn.calculate(database[index].state, u);
-
 	      u_value = u[database[index].action];
-
-#if 0
-	      // calculates p-value of index:th action
-	      {
-		std::vector<T> p;
-		T psum = T(0.0);
-
-		for(unsigned int i=0;i<U.size();i++){
-		  psum += exp(U[i]/temperature);
-		  p.push_back(exp(U[i]/temperature));
-		}
-
-		for(unsigned int i=0;i<U.size();i++){
-		  p[i] /= psum;
-		}
-
-		if(p[database[index].action] < T(0.001)){
-		  continue; // skip this action
-		}
-	      }
-#endif
-	      
 	    }
-
+#endif
+	    
 	    
 	    T unew_value = T(0.0);
 	    
@@ -439,7 +418,12 @@ namespace whiteice
 	      unew_value = database[index].reinforcement + gamma*maxvalue;
 	    }
 	    
-	    out[database[index].action] = unew_value - u_value;
+	    // out[database[index].action] = unew_value - u_value;
+
+	    for(unsigned int i=0;i<out.size();i++)
+	      out[i] = T(NAN);
+	    
+	    out[database[index].action] = unew_value;
 
 	    data.add(0, in);
 	    data.add(1, out);

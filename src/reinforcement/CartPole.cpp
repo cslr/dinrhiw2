@@ -62,7 +62,7 @@ namespace whiteice
   void CartPole<T>::reset()
   {
     // cart-pole system system state
-    theta = T(0.1);
+    theta = this->rng.uniform()*T(2.0*M_PI) - T(M_PI); // angle is [-PI, PI]
     theta_dot = T(0.0);
     theta_dotdot = T(0.0);
     
@@ -251,9 +251,9 @@ namespace whiteice
 
 	  auto degrees = 360.0*(a.c[0]/(2.0*M_PI));
 
-	  thetas.push_back(degrees);
+	  thetas.push_back(abs(degrees));
 
-	  auto temp = abs(mth) + sth;
+	  auto temp = abs(mth); //  + sth; [DO NOT ADD STANDARD DEVIATION]
 	  
 	  printf("TIME %f theta = %f deg [%f]\n",
 		 t, degrees, temp.c[0]);
