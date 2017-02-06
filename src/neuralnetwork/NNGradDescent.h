@@ -34,7 +34,7 @@ namespace whiteice
         NNGradDescent(bool negativefeedback = false, bool errorTerms = false);
 	~NNGradDescent();
 
-	/*
+        /*
 	 * starts the optimization process using data as 
 	 * the dataset as a training and testing data 
 	 * (implements early stopping)
@@ -45,11 +45,14 @@ namespace whiteice
 	 * the optimal solution and goes max to 
 	 * MAXITERS iterations when looking for gradient
 	 * descent solution
+	 * 
+	 * dropout - whether to use dropout heuristics when training
 	 */
 	bool startOptimize(const whiteice::dataset<T>& data,
 			   const whiteice::nnetwork<T>& nn,
 			   unsigned int NTHREADS,
-			   unsigned int MAXITERS = 10000);
+			   unsigned int MAXITERS = 10000,
+			   bool dropout = false);
 
         /*
          * Returns true if optimizer is running
@@ -75,10 +78,11 @@ namespace whiteice
         whiteice::nnetwork<T>* nn; // network architecture and settings
       
         bool negativefeedback;
+        bool dropout; // use dropout heuristics when training
       
         vertex<T> bestx;
         T best_error;
-        unsigned int converged_solutions;
+        unsigned int iterations;
 
 	const whiteice::dataset<T>* data;
 
@@ -90,9 +94,7 @@ namespace whiteice
                          // delta error values rather than correct outputs
                          // (needed by reinforcement learning)
       
-        std::vector<unsigned int> currentIterations;
-	
-	unsigned int NTHREADS;
+        unsigned int NTHREADS;
         unsigned int MAXITERS;
         std::vector<std::thread*> optimizer_thread;
         std::mutex solution_lock, start_lock;

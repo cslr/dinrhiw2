@@ -30,10 +30,16 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp tst/test.cpp \
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
 
+# -DUSE_SDL `/usr/local/bin/sdl2-config --cflags`
+
 TARGET= testsuite
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../crypto $(OPTIMIZE)
 
+# `/usr/local/bin/sdl2-config --cflags`
+
 LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
+
+# `/usr/local/bin/sdl2-config --libs`
 
 CD = cd
 

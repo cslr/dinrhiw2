@@ -23,15 +23,23 @@ int main(int argc, char** argv)
     system.setEpsilon(0.90); // 90% of examples are selected accoring to model
     system.setLearningMode(true);
     
-    system.load("rifl.dat");
+    // system.load("rifl.dat");
     
     system.start();
 
-    while(1){
-      sleep(180); // saved model file every 3 minutes
-      system.save("rifl.dat");
-      printf("MODEL FILE SAVED\n");
+    unsigned int counter = 0;
+
+    while(system.physicsIsRunning()){
+      sleep(1); 
+      if(counter % 180 == 0){ // saved model file every 3 minutes
+	if(system.save("rifl.dat"))
+	  printf("MODEL FILE SAVED\n");
+      }
+      
+      counter++;
     }
+
+    
     
     system.stop();
     
@@ -49,8 +57,9 @@ int main(int argc, char** argv)
     }
     
     system.start();
-    
-    sleep(3600); // 1 hour
+
+    while(system.physicsIsRunning())
+      sleep(1);
     
     system.stop();
   }

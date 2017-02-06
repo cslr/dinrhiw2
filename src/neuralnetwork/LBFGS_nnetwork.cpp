@@ -154,12 +154,14 @@ namespace whiteice
     sumgrad = x;
     sumgrad.zero();
 
+#if 0
     math::matrix<T> sigma2;
     sigma2.resize(net.output_size(), net.output_size());
     sigma2.zero();
 
     math::vertex<T> m(net.output_size());
     m.zero();
+#endif
 
     // positive phase/gradient
 #pragma omp parallel shared(sumgrad)
@@ -169,12 +171,14 @@ namespace whiteice
       
       math::vertex<T> sgrad, grad, err;
 
+#if 0
       math::matrix<T> sum_sigma2;
       sum_sigma2.resize(net.output_size(), net.output_size());
       sum_sigma2.zero();
       
       math::vertex<T> sum_m(net.output_size());
       sum_m.zero();
+#endif
       
       sgrad = x;
       sgrad.zero();
@@ -190,8 +194,10 @@ namespace whiteice
 	  assert(0); // FIXME
 	}
 
+#if 0
 	sum_sigma2 += err.outerproduct(err);
 	// sum_m += err;
+#endif
 	
 	sgrad += grad; // /T(dtrain.size(0));
       }
@@ -199,12 +205,15 @@ namespace whiteice
 #pragma omp critical
       {
 	sumgrad += sgrad;
+#if 0
 	sigma2 += sum_sigma2;
 	m += sum_m;
+#endif
       }
 
     }
 
+#if 0
     sigma2 /= T((double)dtrain.size(0));
     m /= T((double)dtrain.size(0));
     sigma2 -= m.outerproduct(m);
@@ -270,6 +279,7 @@ namespace whiteice
       }
 
     }
+#endif
 
 #if 1
     {

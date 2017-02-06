@@ -1033,10 +1033,12 @@ int main(int argc, char** argv)
       
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
 
+      const bool dropout = false;
+
       if(samples > 0)
-	grad.startOptimize(data, *nn, threads, samples);
+	grad.startOptimize(data, *nn, threads, samples, dropout);
       else
-	grad.startOptimize(data, *nn, threads);
+	grad.startOptimize(data, *nn, threads, 10000, dropout);
 
       
       {
@@ -1075,7 +1077,7 @@ int main(int argc, char** argv)
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "grad"){
-      
+
       if(SIMULATION_DEPTH > 1){
 	printf("ERROR: recurrent nnetwork not supported\n");
 	exit(-1);
@@ -1125,7 +1127,6 @@ int main(int argc, char** argv)
 	  }
 	}
 
-	
 	// 1. normal gradient descent optimization using dtrain dataset
 	{
 	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;	  
@@ -1150,17 +1151,12 @@ int main(int argc, char** argv)
 	    eta.start(0.0f, (double)samples);
 	  
 	  const unsigned int SAMPLE_SIZE = 100; // was 500
-	  math::vertex< whiteice::math::blas_real<double> > prev_sumgrad;
 
-	  // forgetting factors for ADAM stochastic gradient descent parameters (we follow the current gradient (was 0.8))
-	  whiteice::math::blas_real<double> f1 = 0.90, f2 = 0.90, v = 0.0, vprev = 0.0, one = 1.0, epsilon = 10e-10;
-	  math::vertex< whiteice::math::blas_real<double> > m, mprev;
 	  
-	  
-	  
-	  while(((counter < samples && samples > 0) || (counter < secs && secs > 0)) && !stopsignal)
+	  while(((counter < samples && samples > 0) ||
+		 (counter < secs && secs > 0)) && !stopsignal)
 	  {
-	    
+
 	    while(ratios.size() > 10)
 	      ratios.pop_front();
 	    
@@ -1175,7 +1171,7 @@ int main(int argc, char** argv)
 	    // mean_ratio = math::pow(mean_ratio, inv);
 	    
 	    if(overfit == false){
-	      if(mean_ratio > 1.30f)
+	      if(mean_ratio > 3.0f)
 		if(counter > 10) break; // do not stop immediately
 	    }
 	    
@@ -1191,7 +1187,10 @@ int main(int argc, char** argv)
 
 	    sumgrad.resize(nn->gradient_size());
 	    sumgrad.zero();
+	    
+	    const bool dropout = false; // drop out code do NOT work
 
+	    
 	    // #pragma omp parallel shared(sumgrad)
 	    {
 	      //nnetwork< math::blas_real<double> > net(*nn);
@@ -1201,67 +1200,48 @@ int main(int argc, char** argv)
 
 	      // #pragma omp for nowait schedule(dynamic)
 	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
+		if(dropout) net.setDropOut();
+		
 		const unsigned index = rand() % dtrain.size(0);
 		
 		net.input() = dtrain.access(0, index);
 		net.calculate(true);
 		err = dtrain.access(1, index) - net.output();
-		
+
 		if(net.gradient(err, grad) == false)
 		  std::cout << "gradient failed." << std::endl;
 		
 		sgrad += ninv*grad;
 	      }
-
+	      
 	      // #pragma omp critical
 	      {
 		sumgrad += sgrad;
 	      }
 	    }
-	    
+
 	    
 	    if(nn->exportdata(weights) == false){
 	      std::cout << "FATAL: export failed." << std::endl;
 	      exit(-1);
 	    }
-
-	    // adds regularizer to gradient descent
-#if 0
-	    {
-	      whiteice::math::blas_real<double>
-		regularizer = 1.0;
-	      
-	      sumgrad += regularizer*weights;
-	    }
-#endif
 	    
-	    lrate = 0.15;
+	    
+	    lrate = 1.0;
 	    math::vertex< whiteice::math::blas_real<double> > w;
-	    
+
 	    do{	      
 	      lrate = 0.5*lrate;
 	      w = weights;
-	      
-	      if(prev_sumgrad.size() <= 1){
-		m = (one - f1)*sumgrad;
-		v = (one - f2)*(sumgrad * sumgrad)[0];
-		
-		// w -= lrate * sumgrad;
-	      }
-	      else{
-		m = f1*mprev + (one - f1)*sumgrad;
-		v = f2*vprev + (one - f2)*(sumgrad * sumgrad)[0];
+	      w -= lrate*sumgrad;
 
-		//math::blas_real<double> momentum = 0.0f; // 0.8f
-		//w -= lrate * sumgrad + momentum*prev_sumgrad;
-	      }
-
-	      w -= (lrate / (math::sqrt(v/(one - f2)) + epsilon))* m / (one - f1);
-	      mprev = m;
-	      vprev = v;
-	      
 	      nn->importdata(w);
-	      
+
+	      if(dropout){
+		nn->removeDropOut();
+		nn->exportdata(w);
+	      }
+
 	      if(negfeedback){
 		// using negative feedback heuristic
 		math::blas_real<double> alpha = 0.5f;
@@ -1270,7 +1250,6 @@ int main(int argc, char** argv)
 	      
 	      error = 0.0;
 
-	      
 	      // calculates error from the testing dataset (should use train?)
 #pragma omp parallel shared(error)
 	      {
@@ -1295,16 +1274,17 @@ int main(int argc, char** argv)
 	      }
 	      
 	      
-	      error /= SAMPLE_SIZE;
+	      error /= dtest.size(0);
 	      error *= math::blas_real<double>(0.5f); // missing scaling constant
+
+	      // if the error is negative (error increases)
+	      // we try again with smaller lrate
 	      
-	      delta_error = (prev_error - error); // if the error is negative (error increases) we try again
+	      delta_error = (prev_error - error);
 	    }
 	    while(delta_error < 0.0f && lrate > 10e-20);
+
 	    
-
-	    prev_sumgrad = lrate * sumgrad;
-
 	    // keeps top best results
 	    {
 	      std::pair<double, math::vertex< whiteice::math::blas_real<double> > > p;
@@ -1323,10 +1303,10 @@ int main(int argc, char** argv)
 	      best_weights = w;
 	      minimum_error = error;	      
 	    }
-	    else if((rand() & 0xFF) == 0xFF){ // on averare every 128th iteration reset back to the known best solution
+	    // on averare every 128th iteration reset back to the known best solution
+	    else if((rand() & 0xFF) == 0xFF){ 
 	      w = best_weights;
 	      error = minimum_error;
-	      prev_sumgrad.zero();
 	    }
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
@@ -1341,21 +1321,21 @@ int main(int argc, char** argv)
 	      eta.update((double)counter);
 	    }
 
-	    printf("\r                                                            \r");
+	    printf("\r                                                                                   \r");
 	    if(samples > 0){
 	      printf("%d/%d iterations: %f (%f) <%f> [%.1f minutes]",
 		     counter, samples, error.c[0], mean_ratio.c[0],
-		     -(top.begin()->first),
-		     eta.estimate()/60.0);
+		     -std::prev(top.end())->first,
+		     eta.estimate()/60.0);	      
 	    }
 	    else{ // secs
 	      printf("%d iterations: %f (%f) <%f> [%.1f minutes]",
 		     counter, error.c[0], mean_ratio.c[0],
-		     -(top.begin()->first),
+		     -std::prev(top.end())->first,
 		     (secs - counter)/60.0);
 	    }
 	    
-	    fflush(stdout);	  
+	    fflush(stdout);
 	  }
 
 
@@ -1363,7 +1343,7 @@ int main(int argc, char** argv)
 	  if(best_weights.size() > 1)
 	    nn->importdata(best_weights);
 
-	  printf("\r                                                            \r");
+	  printf("\r                                                                                   \r");
 	  printf("%d/%d : %f (%f) <%f> [%.1f minutes]\n",
 		 counter, samples, error.c[0], mean_ratio.c[0],
 		 -(top.begin()->first),

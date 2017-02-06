@@ -21,6 +21,8 @@
 #include "conffile.h"
 #include "compressable.h"
 #include "MemoryCompressor.h"
+#include "RNG.h"
+
 #include <vector>
 
 
@@ -53,7 +55,12 @@ namespace whiteice
 
     nnetwork<T>& operator=(const nnetwork<T>& nn);
 
-    void printInfo() const; // prints nnetwork information (mostly for debugging purposes)
+    // prints nnetwork information (mostly for debugging purposes)
+    void printInfo() const; 
+
+    // prints nnetwork parameters statistics per layer
+    // (used to notice largest/smallest element in nnetwork)
+    void diagnosticsInfo() const;
 
     ////////////////////////////////////////////////////////////
     
@@ -140,12 +147,24 @@ namespace whiteice
     unsigned int getSamplesCollected() const throw();
     bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
     void clearSamples() throw();
+
+    // drop out support:
+
+    // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
+    bool setDropOut(T retain_p = T(0.6)) throw();
+
+    // clears drop out but scales weights according to retain_probability
+    bool removeDropOut(T retain_p = T(0.6)) throw();
+    
+    void clearDropOut() throw(); // remove all drop-out without changing weights
     
     ////////////////////////////////////////////////////////////
     public:
     
     T nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // non-linearity used in neural network
     T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // derivate of non-linearity used in neural network
+
+    
     T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // inverse of non-linearity used [not really used]
     
     private:
@@ -169,6 +188,14 @@ namespace whiteice
     
     std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer (default: sigmoid)
     std::vector<bool> frozen;  // frozen layers (that are not optimized or set to some values otherwise)
+
+    // stochastic retain probability during activation [feedforward]
+    T retain_probability;
+
+    // drop-out configuration for each layer [if neuron is dropout neuron its non-linearity is zero]
+    std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
+
+    whiteice::RNG<T> rng;
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;
@@ -179,8 +206,8 @@ namespace whiteice
     std::vector<T> bpdata;
     
     std::vector<T> state;
-    std::vector<T> temp;
-    std::vector<T> lgrad;
+    mutable std::vector<T> temp;
+    mutable std::vector<T> lgrad;
     
     // used to collect samples about data passing through the network,
     // this will then be used later to do unsupervised regularization of training data

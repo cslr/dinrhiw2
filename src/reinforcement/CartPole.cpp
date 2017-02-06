@@ -7,6 +7,10 @@
 
 #include <unistd.h>
 
+#ifdef USE_SDL
+#include <SDL.h>
+#endif
+
 
 namespace whiteice
 {
@@ -21,8 +25,8 @@ namespace whiteice
       mc = T(2.000); // cart weight (2.0 kg)
       mp = T(0.200); // pole weight (200g)
       
-      up = T(0.1);  // friction forces
-      uc = T(0.05);
+      up = T(0.01);  // friction forces [pole]
+      uc = T(0.1);   // friction between track and a cart
       
       Nc = T(0.0);
       
@@ -33,6 +37,30 @@ namespace whiteice
       
       iteration = 0;
     }
+
+    
+#ifdef USE_SDL
+    // create SDL display
+    {
+      SDL_Init(SDL_INIT_VIDEO);
+
+      window = NULL;
+      renderer = NULL;
+      
+      W = 800;
+      H = 600;
+
+      SDL_DisplayMode mode;
+
+      if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
+	W = (4*mode.w)/5;
+	H = (3*mode.h)/4;
+      }
+      
+      
+      SDL_CreateWindowAndRenderer(W, H, 0, &window, &renderer);
+    }
+#endif
 
     // starts physics thread
     {
@@ -48,6 +76,18 @@ namespace whiteice
   template <typename T>
   CartPole<T>::~CartPole()
   {
+#ifdef USE_SDL
+    {
+      if(renderer)
+	SDL_DestroyRenderer(renderer);
+      
+      if(window)
+	SDL_DestroyWindow(window);
+      
+      SDL_Quit();
+    }
+#endif
+    
     // stops physics thread
     {
       std::lock_guard<std::mutex> lock(physics_mutex);
@@ -86,6 +126,41 @@ namespace whiteice
     state[2] = x;
     state[3] = x_dot;
 
+#ifdef USE_SDL
+    {
+      auto theta = state[0];
+      auto x     = state[2];
+      
+      SDL_Event event;
+      while(SDL_PollEvent(&event)){
+	if(event.type == SDL_QUIT){
+	  this->running = false;
+	}
+      }
+
+      // drawing
+      {
+	// black background
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	// SDL_RenderFillRect(renderer, NULL);
+	SDL_RenderClear(renderer);
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+	double y0 = H/2.0;
+	double x0 = W/2.0 + x.c[0];
+
+	double l = 100.0; // line length
+
+	double y1 = y0 - l*cos(theta.c[0]);
+	double x1 = x0 + l*sin(theta.c[0]);
+
+	SDL_RenderDrawLine(renderer, (int)x0, (int)y0, (int)x1, (int)y1);
+	SDL_RenderPresent(renderer);
+      }
+    }
+#endif
+
     return true;
   }
 
@@ -100,7 +175,7 @@ namespace whiteice
     double Fstep = 0.0;
 
     double a = (((double)action) - 10.0)/10.0; // [-1,+1] (0.1 step length)
-    Fstep = 5.0*a; // [-5, +5]
+    Fstep = 100.0*a; // [-100, +100]
 
     printf("%d FORCE: %f\n", iteration, Fstep);
     

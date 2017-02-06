@@ -14,6 +14,10 @@
 
 #include "RIFL_abstract.h"
 
+#ifdef USE_SDL
+#include <SDL.h>
+#endif
+
 #include <condition_variable>
 
 namespace whiteice
@@ -25,7 +29,8 @@ namespace whiteice
     public:
       CartPole();
       ~CartPole();
-      
+
+      bool physicsIsRunning(){ return this->running; }
       
     protected:
 
@@ -36,6 +41,13 @@ namespace whiteice
 				 T& reinforcement);
 
     protected:
+
+#ifdef USE_SDL
+      int W, H;
+      
+      SDL_Window* window;
+      SDL_Renderer* renderer;
+#endif
 
       // resets cart-pole variables
       void reset();

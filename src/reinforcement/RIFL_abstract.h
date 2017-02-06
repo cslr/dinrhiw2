@@ -25,6 +25,7 @@
 #include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "bayesian_nnetwork.h"
+#include "dataset.h"
 #include "RNG.h"
 
 
@@ -87,6 +88,7 @@ namespace whiteice
 			       T& reinforcement) = 0;
 
     whiteice::bayesian_nnetwork<T> model;
+    whiteice::dataset<T> preprocess;
     mutable std::mutex model_mutex;
 
     bool hasModel;

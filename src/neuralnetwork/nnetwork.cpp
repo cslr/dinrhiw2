@@ -58,6 +58,8 @@ namespace whiteice
     inputValues.resize(1);
     outputValues.resize(1);
 
+    retain_probability = T(1.0);
+
     randomize();
   }
   
@@ -80,6 +82,8 @@ namespace whiteice
     lgrad  = nn.lgrad;
     nonlinearity = nn.nonlinearity;
     frozen = nn.frozen;
+    retain_probability = nn.retain_probability;
+    dropout = nn.dropout;
   }
   
   
@@ -138,6 +142,8 @@ namespace whiteice
     randomize();
    
     hasValidBPData = false;
+
+    retain_probability = T(1.0);
   }
   
   
@@ -158,16 +164,18 @@ namespace whiteice
 
     nonlinearity = nn.nonlinearity;
     frozen = nn.frozen;
-
+    retain_probability = nn.retain_probability;
+    dropout = nn.dropout;
+    
     data = nn.data;
     bpdata = nn.bpdata;
 
     state = nn.state;
     temp = nn.temp;
     lgrad = nn.lgrad;
-    
-    inputValues.resize(nn.inputValues.size());
-    outputValues.resize(nn.outputValues.size());
+
+    inputValues = nn.inputValues;
+    outputValues = nn.outputValues;
     
     return (*this);
   }
@@ -205,6 +213,35 @@ namespace whiteice
     std::cout << "W = " << W << std::endl;
     std::cout << "b = " << b << std::endl;
     
+  }
+
+  
+  template <typename T>
+  void nnetwork<T>::diagnosticsInfo() const
+  {
+    printf("NETWORK MAXVALUE (%d layers): \n", getLayers());
+
+    T maxvalue = T(-INFINITY);
+
+    for(unsigned int l=0;l<getLayers();l++){
+      math::matrix<T> W;
+      math::vertex<T> b;
+      
+      this->getBias(b, l);
+      this->getWeights(W, l);
+
+      for(unsigned int i=0;i<b.size();i++){
+	if(maxvalue < b[i])
+	  maxvalue = b[i];
+      }
+
+      for(unsigned int j=0;j<W.ysize();j++)
+	for(unsigned int i=0;i<W.xsize();i++)
+	  if(maxvalue < W(j, i))
+	    maxvalue = W(j, i);
+    }
+
+    std::cout << "NETWORK MAXIMUM VALUE: " << maxvalue << std::endl;
   }
 
   
@@ -307,116 +344,131 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::calculate(bool gradInfo, bool collectSamples)
   {
-	    if(!inputValues.exportData(&(state[0])))
-	      return false;
+    if(!inputValues.exportData(&(state[0])))
+      return false;
+    
+    if(collectSamples)
+      samples.resize(arch.size()-1);
+    
+    
+    // unsigned int* a = &(arch[0]);
+    unsigned int aindex = 0;
+    
+    
+    if(gradInfo){ // saves bpdata
 
-	    if(collectSamples)
-	      samples.resize(arch.size()-1);
+      T* bpptr = NULL;
+      
+      {
+	unsigned int bpsize = 0;
+	
+	for(unsigned int i=0;i<arch.size();i++)
+	  bpsize += arch[i];
+	
+	bpdata.resize(bpsize);
+	memset(&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
+      }
 
+      bpptr = &(bpdata[0]);
 
-	    // unsigned int* a = &(arch[0]);
-	    unsigned int aindex = 0;
+      // saves input to backprogation data
+      {
+	memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
+	bpptr += arch[aindex];
+      }
 
-	    if(gradInfo){ // saves bpdata
+      
+      T* dptr = &(data[0]);
+      
+      while(aindex+1 < arch.size()){
+	
+	if(collectSamples){
+	  math::vertex<T> x;
+	  x.resize(arch[aindex]);
+	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  samples[aindex].push_back(x);
+	}
+	
+	// gemv(a[1], a[0], dptr, state, state); // s = W*s
+	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+	
+	// s = b + W*s
+	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
 
-	      if(bpdata.size() <= 0){
-		unsigned int bpsize = 0;
+	
+	// COPIES LOCAL FIELD v FROM state TO BACKPROGRAGATION DATA
+	{
+	  memcpy(bpptr, &(state[0]), arch[aindex+1]*sizeof(T));
+	  bpptr += arch[aindex+1];
+	}
 
-		for(unsigned int i=0;i<arch.size();i++)
-		  bpsize += arch[i];
+	// s = g(v)
 
-		bpdata.resize(bpsize);
-	      }
+	for(unsigned int i=0;i<arch[aindex+1];i++){
+	  state[i] = nonlin(state[i], aindex, i);
+	}
+	
+	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
+	
+	aindex++; // next layer
+      }
+      
+    }
+    else{
+      T* dptr = &(data[0]);
+      
+      while(aindex+1 < arch.size()){
+	
+	if(collectSamples){
+	  math::vertex<T> x;
+	  x.resize(arch[aindex]);
+	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  samples[aindex].push_back(x);
+	}
+	
+	// gemv(a[1], a[0], dptr, state, state); // s = W*s
+	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+	
+	// s = b + W*s
+	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+	
+	// s = g(v)
 
-	      T* bpptr = &(bpdata[0]);
-	      T* dptr = &(data[0]);
+	for(unsigned int i=0;i<arch[aindex+1];i++){
+	  state[i] = nonlin(state[i], aindex, i);
+	}
 
-
-	      while(aindex+1 < arch.size()){
-		// copies layer input x to bpdata
-		memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
-		bpptr += arch[aindex];
-
-		if(collectSamples){
-		  math::vertex<T> x;
-		  x.resize(arch[aindex]);
-		  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
-		  samples[aindex].push_back(x);
-		}
-
-		// gemv(a[1], a[0], dptr, state, state); // s = W*s
-		// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-
-		// s = b + W*s
-		gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-			   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
-
-	      	// s = g(v)
-
-		if(aindex+2 < arch.size()){ // not the last layer
-		  // f(x) = b * ( (1 - Exp[-ax]) / (1 + Exp[-ax]) )
-		  //      = b * ( 2 / (1 + Exp[-ax]) - 1)
-
-		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    // state[i] = nonlin(state[i], aindex + 1, i);
-		    state[i] = nonlin(state[i], aindex, i);
-		  }
-		}
-
-
-		dptr += (arch[aindex] + 1)*arch[aindex+1];
-
-		aindex++; // next layer
-	      }
-
-	    }
-	    else{
-	      T* dptr = &(data[0]);
-
-	      while(aindex+1 < arch.size()){
-
-		if(collectSamples){
-		  math::vertex<T> x;
-		  x.resize(arch[aindex]);
-		  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
-		  samples[aindex].push_back(x);
-		}
-
-		// gemv(a[1], a[0], dptr, state, state); // s = W*s
-		// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-
-		// s = b + W*s
-		gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-			   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
-
-		// s = g(v)
-
-		if(aindex+2 < arch.size()){ // not the last layer
-		  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
-		  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
-
-		  for(unsigned int i=0;i<arch[aindex+1];i++){
-		    // state[i] = nonlin(state[i], aindex + 1, i);
-		    state[i] = nonlin(state[i], aindex, i);
-		  }
-		}
-
-		dptr += (arch[aindex] + 1)*arch[aindex+1];
-		aindex++; // next layer
-	      }
-
-	    }
-
-
-	    if(!outputValues.importData(&(state[0]))){
-	      std::cout << "Failed to import data to vertex from memory." << std::endl;
-	      return false;
-	    }
-
-
-	    hasValidBPData = gradInfo;
-
-	    return true;
+	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
+	aindex++; // next layer
+      }
+      
+    }
+    
+    
+    if(!outputValues.importData(&(state[0]))){
+      std::cout << "Failed to import data to vertex from memory." << std::endl;
+      return false;
+    }
+    
+    // FIXME (remove) debugging checks bpdata structure
+    if(bpdata.size() > 0)
+    {
+      T maxvalue = bpdata[0];
+      
+      for(const auto& v : bpdata){
+	if(v > maxvalue)
+	  maxvalue = v;
+      }
+      
+      // std::cout << "MAX BPDATA: " << maxvalue << std::endl;
+    }
+    
+    
+    hasValidBPData = gradInfo;
+    
+    return true;
   }
   
   
@@ -424,56 +476,51 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output) const
   {
-	  std::vector<T> state;
-	  state.resize(maxwidth);
-
-	  if(input.size() != arch[0])
-		  return false; // input vector has wrong dimension
-
-	  if(!input.exportData(&(state[0])))
-		  return false;
-
-	  // unsigned int* a = &(arch[0]);
-	  unsigned int aindex = 0;
-
-	  {
-		  const T* dptr = &(data[0]);
-
-		  while(aindex+1 < arch.size()){
-			  // gemv(a[1], a[0], dptr, state, state); // s = W*s
-			  // gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-
-			  // s = b + W*s
-			  gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-				     arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
-
-			  // s = g(v)
-
-			  if(aindex+2 < arch.size()){ // not the last layer
-				  // f(x)  = a * (1 - Exp[-bx]) / (1 + Exp[-bx])
-				  // f'(x) = (0.5*a*b) * ( 1 + f(x)/a ) * ( 1 - f(x)/a )
-
-				  for(unsigned int i=0;i<arch[aindex+1];i++){
-				    // state[i] = nonlin(state[i], aindex + 1, i);
-				    state[i] = nonlin(state[i], aindex, i);
-				  }
-			  }
-
-			  dptr += (arch[aindex] + 1)*arch[aindex+1];
-			  aindex++; // next layer
-		  }
-	  }
-
-	  output.resize(arch[arch.size()-1]); // resizes output to have correct size
-
-	  if(!output.importData(&(state[0]))){
-		  std::cout << "Failed to import data to vertex from memory." << std::endl;
-	      return false;
-	  }
-
-	  // hasValidBPData = false;
-
-	  return true;
+    std::vector<T> state;
+    state.resize(maxwidth);
+    
+    if(input.size() != arch[0])
+      return false; // input vector has wrong dimension
+    
+    if(!input.exportData(&(state[0])))
+      return false;
+    
+    // unsigned int* a = &(arch[0]);
+    unsigned int aindex = 0;
+    
+    {
+      const T* dptr = &(data[0]);
+      
+      while(aindex+1 < arch.size()){
+	// gemv(a[1], a[0], dptr, state, state); // s = W*s
+	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
+	
+	// s = b + W*s
+	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
+		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
+	
+	// s = g(v)
+	  
+	for(unsigned int i=0;i<arch[aindex+1];i++){
+	  // state[i] = nonlin(state[i], aindex + 1, i);
+	  state[i] = nonlin(state[i], aindex, i);
+	}
+	
+	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
+	aindex++; // next layer
+      }
+    }
+    
+    output.resize(arch[arch.size()-1]); // resizes output to have correct size
+    
+    if(!output.importData(&(state[0]))){
+      std::cout << "Failed to import data to vertex from memory." << std::endl;
+      return false;
+    }
+    
+    // hasValidBPData = false;
+    
+    return true;
   }
 
 
@@ -486,7 +533,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::randomize()
   {
-    // memset(data.data(), 0, sizeof(T)*data.size()); // debugging..
+    memset(data.data(), 0, sizeof(T)*data.size()); // TODO remove after debugging
     
     {
       unsigned int start = 0;
@@ -558,31 +605,46 @@ namespace whiteice
   {
     if(!hasValidBPData)
       return false;
+
+    // TODO remove later: for debugging 
+    {
+      memset(lgrad.data(), 0, lgrad.size()*sizeof(T));
+      memset(temp.data(), 0 , temp.size()*sizeof(T));
+    }
     
     T* lgrad = (T*)this->lgrad.data();
     T* temp  = (T*)this->temp.data();
   
     // initial (last layer gradient)
-    // error[i] * NONLIN'(v) (last layer NONLIN = id(x), id(x)' = 1)
-    // => last layer local gradient is error[i]
-    // also for logistic/sigmoidal g(v), g'(v) = y*(1-y) this means
-    // local field v doesn't have to be saved.
-    //
-    // in practice I use modified sigmoidal (scale + e(-bx) term)
-    // so this is not that simple but outputs can be still used
-  
+    // error[i] * NONLIN'(v) 
     
-    unsigned int counter = arch.size() - 1;
+    int layer = arch.size() - 2;
     const unsigned int *a = &(arch[arch.size()-1]);
-    
-    if(!error.exportData(lgrad))
+
+    assert(error.size() == *a);
+
+    if(!error.exportData(lgrad, error.size(), 0)){
+      assert(0); // TODO: remove after debugging
       return false;
-    
+    }
+
     const T* _bpdata = &(bpdata[0]);
     
     // goes to end of bpdata input lists
-    for(unsigned int i=0;i<(arch.size() - 1);i++)
+    for(unsigned int i=0;i<arch.size();i++)
       _bpdata += arch[i];
+
+    const unsigned int rows = *a;
+    // const unsigned int cols = *(a - 1);
+    
+    _bpdata -= rows;
+    const T* bptr = _bpdata;
+
+    // calculates local gradient
+    for(unsigned int i=0;i<arch[arch.size()-1];i++){
+      lgrad[i] *= Dnonlin(*bptr, layer , i);
+      bptr++;
+    }
   
     const T* _data = &(data[0]);
     
@@ -593,9 +655,10 @@ namespace whiteice
     
     grad.resize(size);
     unsigned int gindex = grad.size(); // was "unsigned gindex" ..
+
     
     
-    while(counter > 1){
+    while(layer > 0){
       // updates W and b in this layer
       
       // delta W = (lgrad * input^T)
@@ -603,48 +666,47 @@ namespace whiteice
       
       const unsigned int rows = *a;
       const unsigned int cols = *(a - 1);
+
+      _bpdata -= cols;
+      _data -= rows*cols + rows;
+      gindex -= rows*cols + rows;
       
-      _bpdata -= *(a - 1);
-      _data -= (*a) * (*(a - 1)) + *a;
-      gindex -= (*a) * (*(a - 1)) + *a;
       const T* dptr = _data;
       
       {
+	// matrix W gradients
 	for(unsigned int y=0;y<rows;y++){
 	  const T* bptr = _bpdata;
 	  for(unsigned int x=0;x<cols;x++,gindex++){
-	    // dptr[x + y*cols] += rate * lgrad[y] * (*bptr);
-	    grad[gindex] = -lgrad[y] * (*bptr);
+	    grad[gindex] = -lgrad[y] * nonlin(*bptr, layer-1, x);
 	    bptr++;
 	  }
 	}
 	
-	dptr += rows*cols;
+	dptr += (rows*cols);
 	
-	
+	// bias b gradients
 	for(unsigned int y=0;y<rows;y++,gindex++){
 	  grad[gindex] = -lgrad[y];
-	  // dptr[y] += rate * lgrad[y];
 	}
 
-	gindex -= rows*cols + rows;
+	gindex -= (rows*cols + rows);
 
-	// zeroes gradient for this layer (FIXME: optimize me and do not calculate the gradient at all!)
-	if(frozen[counter-1]){
+	// zeroes gradient for this layer
+	// (FIXME: optimize me and do not calculate the gradient at all!)
+	if(frozen[layer]){
 	  memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
 	}
       }
       
 
-      
       // calculates next lgrad
       
       // for hidden layers: local gradient is:
-      // grad[n] = diag(..g'(v[i])..)*(W^t * grad[n+1])
+      // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
 
-      // FIXME: THERE IS A BUG IN BPTR handling???
       const T* bptr = _bpdata;
-    
+
       if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
 	
 	cblas_sgemv(CblasRowMajor, CblasTrans,
@@ -653,7 +715,7 @@ namespace whiteice
 		    0.0f, (float*)temp, 1);
 	
 	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, counter - 1, x);
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
 	  bptr++;
 	}
 	
@@ -666,18 +728,19 @@ namespace whiteice
 		    0.0f, (double*)temp, 1);
 	
 	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, counter - 1, x);
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
 	  bptr++;
 	}
 	
       }
-      else{
+      else
+      {
 	for(unsigned int x=0;x<cols;x++){
 	  T sum = T(0.0f);
 	  for(unsigned int y=0;y<rows;y++)
 	    sum += lgrad[y]*_data[x + y*cols];
 	  
-	  sum *= Dnonlin(*bptr, counter - 1, x);
+	  sum *= Dnonlin(*bptr, layer - 1, x);
 	  
 	  temp[x] = sum;
 	  bptr++;
@@ -691,7 +754,7 @@ namespace whiteice
 	lgrad = ptr;
       }
       
-      counter--;
+      layer--;
       a--;
     }
     
@@ -704,20 +767,19 @@ namespace whiteice
       
       const unsigned int rows = *a;
       const unsigned int cols = *(a - 1);
+
+      _bpdata -= cols;
+      _data -= rows*cols + rows;
+      gindex -= rows*cols + rows;
       
-      _bpdata -= *(a - 1);
-      _data -= (*a) * (*(a - 1)) + *a;
-      gindex -= (*a) * (*(a - 1)) + *a;
-      
-      // assert(_bpdata == &(bpdata[0]));
-      // assert(_data == &(data[0]));
-      // assert(gindex == 0);
+      assert(_bpdata == &(bpdata[0]));
+      assert(_data == &(data[0]));
+      assert(gindex == 0);
       
       for(unsigned int y=0;y<rows;y++){
 	const T* bptr = _bpdata;
 	for(unsigned int x=0;x<cols;x++,gindex++){
-	  //_data[x + y*cols] += rate * lgrad[y] * (*bptr);
-	  grad[gindex] = -lgrad[y] * (*bptr);
+	  grad[gindex] = -lgrad[y] * (*bptr); // bp data is here the input x !!
 	  bptr++;
 	}
       }
@@ -733,8 +795,9 @@ namespace whiteice
       gindex -= rows*cols + rows;
       assert(gindex == 0); // DEBUGGING REMOVE LATER
       
-      // zeroes gradient for this layer (FIXME: optimize me and do not calculate the gradient!)
-      if(frozen[counter-1]){
+      // zeroes gradient for this layer
+      // (FIXME: optimize me and do not calculate the gradient!)
+      if(frozen[layer]){
 	memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
       }
       
@@ -750,6 +813,25 @@ namespace whiteice
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
     assert(layer < getLayers());
+    assert(neuron < getNeurons(layer));
+
+    if(dropout.size() > 0){
+      if(dropout[layer][neuron])
+	return T(0.0);
+    }
+
+#if 0
+    if(rng.uniform() > retain_probability){
+      if(dropout.size() > 0){
+	dropout[layer][neuron] = true;
+	return T(0.0);
+      }
+    }
+    else{
+      if(dropout.size() > 0)
+	dropout[layer][neuron] = false;
+    }
+#endif
 
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
@@ -877,6 +959,12 @@ namespace whiteice
   inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
   {
     assert(layer < getLayers());
+    assert(neuron < getNeurons(layer));
+
+    if(dropout.size() > 0){ // drop out is activated
+      if(dropout[layer][neuron])
+	return T(0.0); // this neuron is disabled 
+    }
 
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
@@ -1056,6 +1144,8 @@ namespace whiteice
       for(unsigned int i=0;i<x.size();i++){
 	x[i] *= Dnonlin(x[i], l, i);
       }
+
+      // FIXME is this really correct? (we should use non-linearities to alter gradient?)
     }
     
     getWeights(A, L-1);
@@ -1353,6 +1443,9 @@ namespace whiteice
 	
 	ints.clear();
       }
+
+      retain_probability = T(1.0);
+      dropout.clear(); // drop out is disabled in saved networks (disabled after load)
       
       return true;
     }
@@ -1689,6 +1782,75 @@ namespace whiteice
   {
     for(auto& s : samples)
       s.clear();
+  }
+
+  template <typename T>
+  bool nnetwork<T>::setDropOut(T probability) throw()
+  {
+    if(probability <= T(0.0) || probability > T(1.0))
+      return false; // we cannot set all neurons to be dropout neurons
+
+    retain_probability = probability;
+    dropout.resize(getLayers());
+    
+    for(unsigned int l=0;l<dropout.size();l++){
+      dropout[l].resize(getNeurons(l));
+      if(l != (dropout.size()-1)){
+	unsigned int numdropped = 0;
+
+	for(unsigned int i=0;i<dropout[l].size();i++){
+	  if(rng.uniform() > retain_probability){
+	    dropout[l][i] = true;
+	    numdropped++;
+	  }
+	  else{
+	    dropout[l][i] = false;
+	  }
+	}
+
+	// if we are about to drop all nodes we always
+	// randomly keep at least one node
+	if(numdropped == dropout[l].size()){
+	  const unsigned int index = rng.rand() % dropout[l].size();
+	  dropout[l][index] = false;
+	}
+      }
+      else{ // we always keep all last layer nodes
+	for(unsigned int i=0;i<dropout[l].size();i++){
+	  dropout[l][i] = false;
+	}
+      }
+    }
+
+    return true;
+  }
+
+  template <typename T>
+  bool nnetwork<T>::removeDropOut(T probability) throw()
+  {
+    // scales weights according to retain_probability
+    // (except the first layer and last layer where we keep all input/outputs)
+
+    for(unsigned int l=1;l<(getLayers()-1);l++){
+      math::matrix<T> w;
+      getWeights(w, l);
+      w = probability*w;
+      setWeights(w, l);
+    }
+
+    dropout.clear();
+
+    retain_probability = T(1.0);
+
+    return true;
+  }
+
+  // remove all drop-out
+  template <typename T>
+  void nnetwork<T>::clearDropOut() throw()
+  {
+    retain_probability = T(1.0);
+    dropout.clear();
   }
 
   /////////////////////////////////////////////////////////////////////////////

@@ -31,16 +31,21 @@ namespace whiteice
 
       std::vector<unsigned int> arch;
       arch.push_back(numStates);
+      // arch.push_back(numStates*100);
       arch.push_back(numStates*20);
       arch.push_back(numStates*20);
-      //arch.push_back(numStates*100);
       arch.push_back(numActions);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+      // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
       nn.randomize();
 
       model.importNetwork(nn);
+
+      // creates empty preprocessing
+      preprocess.createCluster("input-state", numStates);
+      preprocess.createCluster("output-action", numActions);
     }
     
     
@@ -174,7 +179,9 @@ namespace whiteice
   {
     std::lock_guard<std::mutex> lock(model_mutex);
 
-    return model.save(filename);
+    std::string pfilename = filename + ".preprocess";
+
+    return model.save(filename) && preprocess.save(pfilename);
   }
   
   // loads learnt Reinforcement Learning Model from file
@@ -182,8 +189,10 @@ namespace whiteice
   bool RIFL_abstract<T>::load(const std::string& filename)
   {
     std::lock_guard<std::mutex> lock(model_mutex);
+
+    std::string pfilename = filename + ".preprocess";
     
-    return model.load(filename);
+    return model.load(filename) && preprocess.load(pfilename);
   }
   
 
@@ -191,6 +200,7 @@ namespace whiteice
   void RIFL_abstract<T>::loop()
   {
     std::vector< rifl_datapoint<T> > database;
+    
     whiteice::dataset<T> data;
     whiteice::math::NNGradDescent<T> grad(false, true);
     unsigned int epoch = 0;
@@ -227,7 +237,11 @@ namespace whiteice
 	whiteice::math::vertex<T> u;
 	whiteice::math::matrix<T> e;
 
-	if(model.calculate(state, u, e, 1, 0) == true){
+	whiteice::math::vertex<T> input = state;
+
+	preprocess.preprocess(0, input);
+
+	if(model.calculate(input, u, e, 1, 0) == true){
 	  if(u.size() != numActions){
 	    u.resize(numActions);
 	    for(unsigned int i=0;i<numActions;i++){
@@ -371,6 +385,12 @@ namespace whiteice
 	  else{
 	    std::lock_guard<std::mutex> lock(model_mutex);
 	    model.importNetwork(nn);
+	    
+	    data.clearData(0);
+	    data.clearData(1);
+
+	    preprocess = data;
+	    
 	    hasModel = true;
 	  }
 
@@ -430,6 +450,9 @@ namespace whiteice
 
 	    i++;
 	  }
+	  
+	  // add preprocessing to dataset
+	  data.preprocess(0, whiteice::dataset<T>::dnMeanVarianceNormalization);
 
 	  grad.startOptimize(data, nn, 2, 150);
 	}

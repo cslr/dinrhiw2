@@ -17,11 +17,13 @@ namespace whiteice
     NNGradDescent<T>::NNGradDescent(bool negativefeedback, bool errorTerms)
     {
       best_error = T(1000.0f);
-      converged_solutions = 0;
+      iterations = 0;
       data = NULL;
       NTHREADS = 0;
       this->negativefeedback = negativefeedback;
       this->errorTerms = errorTerms;
+
+      dropout = false;
 
       running = false;
       nn = NULL;
@@ -60,7 +62,8 @@ namespace whiteice
     bool NNGradDescent<T>::startOptimize(const whiteice::dataset<T>& data,
 					 const whiteice::nnetwork<T>& nn,
 					 unsigned int NTHREADS,
-					 unsigned int MAXITERS)
+					 unsigned int MAXITERS,
+					 bool dropout)
     {
       if(data.getNumberOfClusters() != 2) return false;
       if(data.size(0) != data.size(1)) return false;
@@ -74,7 +77,7 @@ namespace whiteice
 
       start_lock.lock();
       
-      if(running == true){
+      if(thread_is_running > 0){
 	start_lock.unlock();
 	return false;
       }
@@ -84,7 +87,7 @@ namespace whiteice
       this->NTHREADS = NTHREADS;
       this->MAXITERS = MAXITERS;
       best_error = T(INFINITY);
-      converged_solutions = 0;
+      iterations = 0;
       running = true;
       thread_is_running = 0;
 
@@ -92,10 +95,12 @@ namespace whiteice
 	std::lock_guard<std::mutex> lock(first_time_lock);
 	first_time = true; // first thread uses weights from user supplied NN
       }
-      
+
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
       best_error = getError(nn, data);
+      
+      this->dropout = dropout;
 
       optimizer_thread.resize(NTHREADS);
       
@@ -113,7 +118,7 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::isRunning()
     {
-      return running;
+      return running && (thread_is_running > 0);
     }
     
     /*
@@ -124,7 +129,7 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::getSolution(whiteice::nnetwork<T>& nn,
 				       T& error,
-				       unsigned int& Nconverged)
+				       unsigned int& iterations)
     {
       // checks if the neural network architecture is the correct one
       if(this->nn == NULL) return false;
@@ -135,7 +140,7 @@ namespace whiteice
       nn.importdata(bestx);
 	    
       error = best_error;
-      Nconverged = converged_solutions;
+      iterations = this->iterations;
 
       solution_lock.unlock();
 
@@ -148,28 +153,18 @@ namespace whiteice
     bool NNGradDescent<T>::stopComputation()
     {
       start_lock.lock();
-      solution_lock.lock();
 
-      if(running == false){
-	solution_lock.unlock();
+      if(thread_is_running == 0 || running == false){
 	start_lock.unlock();
-	return false; // not running
+	return false; // not running (anymore)
       }
 
       running = false;
       
       while(thread_is_running > 0){
-	running = true;
-	solution_lock.unlock();
-	start_lock.unlock();
 	sleep(1); // waits for threads to stop running
-	start_lock.lock();
-	solution_lock.lock();
-	running = false;
-	sleep(1);
       }
-
-      solution_lock.unlock();
+      
       start_lock.unlock();
 
       return true;
@@ -281,7 +276,7 @@ namespace whiteice
 	}
       }
 
-      while(running && converged_solutions < MAXITERS){
+      while(running && iterations < MAXITERS){
 	// keep looking for solution forever
 	
 	// starting location for neural network
@@ -305,8 +300,6 @@ namespace whiteice
 	  }
 	}
 
-	unsigned int counter = 0;
-	      
 	// T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
 	  
 	// 2. normal gradient descent
@@ -317,7 +310,7 @@ namespace whiteice
 	  	  
 	  T prev_error, error;	  
 	  T delta_error = 0.0f;
-	  
+
 	  error = getError(nn, dtest);
 
 	  {
@@ -340,7 +333,8 @@ namespace whiteice
 	  
 	  while(error > T(0.001f) && 
 		ratio > T(0.00001f) && 
-		counter < MAXITERS)
+		iterations < MAXITERS &&
+		running)
 	  {
 	    prev_error = error;
 
@@ -364,9 +358,12 @@ namespace whiteice
 
 	      whiteice::nnetwork<T> nnet(nn);
 	      math::vertex<T> err;
-
+	      
 #pragma omp for nowait schedule(dynamic)
 	      for(unsigned int i=0;i<dtrain.size(0);i++){
+
+		if(dropout) nnet.setDropOut();
+		
 		nnet.input() = dtrain.access(0, i);
 		nnet.calculate(true);
 
@@ -409,33 +406,17 @@ namespace whiteice
 
 	    w0 = weights;
 
-#if 0
-	    // ADDS STRONG REGULARIZER TERM TO GRADIENT!
-	    sumgrad += regularizer*weights;
-#endif
-
+	    
 	    lrate *= 4;
 	    
 	    do{
-	      nn.importdata(w0);
 	      weights = w0;
-
 	      weights -= lrate * sumgrad;
 
-#if 0
-	      if(prev_sumgrad.size() <= 1){
-		weights -= lrate * sumgrad;
-	      }
-	      else{
-		T momentum = T(0.8f); // MOMENTUM TERM!
-		
-		weights -= lrate * sumgrad + momentum*prev_sumgrad;		
-	      }
-#endif
-	      
 	      if(nn.importdata(weights) == false)
 		std::cout << "import failed." << std::endl;
-	      
+
+	      if(dropout) nn.removeDropOut();
 	      
 	      if(negativefeedback){
 		// using negative feedback heuristic 
@@ -443,37 +424,29 @@ namespace whiteice
 		negative_feedback_between_neurons(nn, dtrain, alpha);
 	      }
 
-	      error = getError(nn, dtest);
+	      error = getError(nn, dtrain);
 
 	      delta_error = (prev_error - error);
 	      ratio = abs(delta_error) / error;
 
-#if 0
-	      std::cout << "ERROR = " << error << std::endl;
-	      std::cout << "DELTA = " << delta_error << std::endl;
-	      std::cout << "RATIO = " << ratio << std::endl;
-#endif
-	      
-#if 1
 	      if(delta_error < T(0.0)){ // if error grows we reduce learning rate
 		lrate *= T(0.50);
-		// std::cout << "NEW LRATE= " << lrate << std::endl;
 	      }
 	      else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
 		lrate *= T(1.0/0.50);
-		// std::cout << "NEW LRATE= " << lrate << std::endl;
 	      }
-#endif
-
+	      
 	    }
-	    while(delta_error < T(0.0) && lrate != T(0.0));
-
-	    // std::cout << "*******************************************************************" << error << std::endl;
+	    while(delta_error < T(0.0) && lrate != T(0.0) &&
+		  ratio > T(0.00001f) && running);
 
 	    prev_sumgrad = lrate * sumgrad;
 	    
 	    w0 = weights;
 	    nn.importdata(w0);
+
+	    if(dropout) nn.removeDropOut();
+	    
 
 	    {
 	      solution_lock.lock();
@@ -502,7 +475,7 @@ namespace whiteice
 	    // printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
 	    // fflush(stdout);
 	    
-	    counter++;
+	    iterations++;
 	  }
 	
 	  // printf("\r%d : %f (%f)                  \n", counter, error.c[0], ratio.c[0]);
@@ -523,7 +496,7 @@ namespace whiteice
 	  }
 	  
 	  // converged_solutions++;
-	  converged_solutions += counter;
+	  // converged_solutions += counter;
 
 	  solution_lock.unlock();
 	}
@@ -531,16 +504,9 @@ namespace whiteice
 	
       }
 
-      start_lock.lock();
-      {
-	thread_is_running--;
-	
-	if(thread_is_running <= 0)
-	  running = false;
-      }
-      start_lock.unlock();
       
-      // printf("4: THEAD IS RUNNING: %d\n", thread_is_running);
+      thread_is_running--;
+      
       
       return;
     }
