@@ -9,8 +9,9 @@ namespace whiteice
 {
 
   template <typename T>
-  RIFL_abstract<T>::RIFL_abstract(unsigned int numActions,
-				  unsigned int numStates)
+  RIFL_abstract<T>::RIFL_abstract(const unsigned int numActions,
+				  const unsigned int numStates,
+				  const unsigned int dimActionFeatures)
   {
     // initializes parameters
     {
@@ -20,26 +21,16 @@ namespace whiteice
       learningMode = true;
       hasModel = false;
       
-      this->numActions = numActions;
-      this->numStates  = numStates;
-
-      model_mutex.resize(numActions);
-      
-      for(auto& m : model_mutex)
-	m = new std::mutex;
+      this->numActions        = numActions;
+      this->numStates         = numStates;
+      this->dimActionFeatures = dimActionFeatures;
     }
 
     
     // initializes neural network architecture and weights randomly
     {
-      model.resize(numActions);
-      preprocess.resize(numActions);
-
-      updatedModel.resize(numActions);
-      updatedPreprocess.resize(numActions);
-      
       std::vector<unsigned int> arch;
-      arch.push_back(numStates);
+      arch.push_back(numStates + dimActionFeatures);
       // arch.push_back(numStates*100);
       // arch.push_back(numStates*100);
       arch.push_back(20);
@@ -50,18 +41,15 @@ namespace whiteice
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
 
-      for(unsigned int i=0;i<numActions;i++){
-	std::lock_guard<std::mutex> lock(*model_mutex[i]);
+      {
+	std::lock_guard<std::mutex> lock(model_mutex);
 	
 	nn.randomize();
-	model[i].importNetwork(nn);
+	model.importNetwork(nn);
 	
 	// creates empty preprocessing
-	preprocess[i].createCluster("input-state", numStates);
-	preprocess[i].createCluster("output-action", 1);
-
-	updatedModel[i] = model[i];
-	updatedPreprocess[i] = preprocess[i];
+	preprocess.createCluster("input-state", numStates + dimActionFeatures);
+	preprocess.createCluster("output-action", 1);
       }
     }
     
@@ -90,9 +78,7 @@ namespace whiteice
 
       rifl_thread = nullptr;
     }
-
-    for(auto& m : model_mutex)
-      delete m;
+    
   }
 
   
@@ -198,18 +184,18 @@ namespace whiteice
   bool RIFL_abstract<T>::save(const std::string& filename) const
   {    
 
-    for(unsigned int i=0;i<model.size();i++){
-      std::lock_guard<std::mutex> lock(*model_mutex[i]);
+    {
+      std::lock_guard<std::mutex> lock(model_mutex);
       
       char buffer[256];
 
-      snprintf(buffer, 256, "%d-%s", i, filename.c_str());
+      snprintf(buffer, 256, "model-%s", filename.c_str());
 
-      if(model[i].save(buffer) == false) return false;
+      if(model.save(buffer) == false) return false;
 
-      snprintf(buffer, 256, "%d-preprocess-%s", i, filename.c_str());
+      snprintf(buffer, 256, "preprocess-%s", filename.c_str());
 
-      if(preprocess[i].save(buffer) == false) return false;
+      if(preprocess.save(buffer) == false) return false;
     }
 
     return true;
@@ -219,18 +205,18 @@ namespace whiteice
   template <typename T>
   bool RIFL_abstract<T>::load(const std::string& filename)
   {
-    for(unsigned int i=0;i<model.size();i++){
-      std::lock_guard<std::mutex> lock(*model_mutex[i]);
+    {
+      std::lock_guard<std::mutex> lock(model_mutex);
       
       char buffer[256];
 	  
-      snprintf(buffer, 256, "%d-%s", i, filename.c_str());
+      snprintf(buffer, 256, "model-%s", filename.c_str());
 
-      if(model[i].load(buffer) == false) return false;
+      if(model.load(buffer) == false) return false;
 
-      snprintf(buffer, 256, "%d-preprocess-%s", i, filename.c_str());
+      snprintf(buffer, 256, "preprocess-%s", filename.c_str());
 
-      if(preprocess[i].load(buffer) == false) return false;
+      if(preprocess.load(buffer) == false) return false;
     }
 
     return true;
@@ -239,7 +225,8 @@ namespace whiteice
 
   // helper function, returns minimum value in v
   template <typename T>
-  unsigned int RIFL_abstract<T>::min(const std::vector<unsigned int>& vec) const throw()
+  unsigned int RIFL_abstract<T>::min(const std::vector<unsigned int>& vec)
+    const throw()
   {
     if(vec.size() <= 0) return 0;
     unsigned int min = vec[0];
@@ -253,22 +240,13 @@ namespace whiteice
   template <typename T>
   void RIFL_abstract<T>::loop()
   {
-    std::vector< std::vector< rifl_datapoint<T> > > database;
-    std::vector< whiteice::dataset<T> > data;
-    std::vector< whiteice::math::NNGradDescent<T> > grad;
+    std::vector< rifl_datapoint<T> > database;
+    whiteice::dataset<T> data;
+    whiteice::math::NNGradDescent<T> grad;
 
-    std::vector<unsigned int> epoch;
-    unsigned int updates = 0;
+    unsigned int epoch = 0;
     
 
-    database.resize(model.size());
-    data.resize(model.size());
-    grad.resize(model.size());
-    epoch.resize(model.size());
-
-    for(unsigned int i=0;i<epoch.size();i++)
-      epoch[i] = 0;
-    
     const unsigned int DATASIZE = 50000;
     const unsigned int SAMPLESIZE = 100;
     T temperature = T(0.010);
@@ -296,25 +274,34 @@ namespace whiteice
       std::vector<T> U;
       
       {	
-	U.resize(model.size());
+	U.resize(numActions);
 
-	for(unsigned int i=0;i<model.size();i++){
-	  std::lock_guard<std::mutex> lock(*model_mutex[i]);
+	for(unsigned int i=0;i<numActions;i++){
+	  std::lock_guard<std::mutex> lock(model_mutex);
 	  
 	  whiteice::math::vertex<T> u;
 	  whiteice::math::matrix<T> e;
 	  
-	  whiteice::math::vertex<T> input = state;
+	  whiteice::math::vertex<T> input;
+	  whiteice::math::vertex<T> feature(dimActionFeatures);
+	  
+	  feature.zero();
+	  getActionFeature(i, feature);
 
-	  preprocess[i].preprocess(0, input);
+	  input.resize(numStates + dimActionFeatures);
+	  input.zero();
+	  input.write_subvertex(state, 0);
+	  input.write_subvertex(feature, numStates);
 
-	  if(model[i].calculate(input, u, e, 1, 0) == true){
+	  preprocess.preprocess(0, input);
+	  
+	  if(model.calculate(input, u, e, 1, 0) == true){
 	    if(u.size() != 1){
 	      u.resize(1);
 	      u[0] = T(0.0);
 	    }
 	    else
-	      preprocess[i].invpreprocess(1, u);
+	      preprocess.invpreprocess(1, u);
 	  }
 	  else{
 	    u.resize(1);
@@ -365,6 +352,7 @@ namespace whiteice
 	  }
 	}
 
+	
 	{
 	  printf("U = ");
 	  for(unsigned int i=0;i<U.size();i++){
@@ -410,81 +398,39 @@ namespace whiteice
 	data.state = state;
 	data.newstate = newstate;
 	data.reinforcement = reinforcement;
+	data.action = action;
 
-	if(database[action].size() >= DATASIZE){
-	  const unsigned int index = rng.rand() % database[action].size();
-	  database[action][index] = data;
+	if(database.size() >= DATASIZE){
+	  const unsigned int index = rng.rand() % database.size();
+	  database[index] = data;
 	}
 	else{
-	  database[action].push_back(data);
+	  database.push_back(data);
 	}
-
-	// printf("DATABASE SIZE: %d\n", (int)database.size());
-	// fflush(stdout);
+	printf("DATABASE SIZE: %d\n", (int)database.size());
       }
       
 
       // activates batch learning if it is not running
-      for(unsigned int action=0;action<numActions;action++){
-	if(database[action].size() >= SAMPLESIZE)
+      {
+	if(database.size() >= SAMPLESIZE)
 	{
 	  // printf("[%d/%d] EPOCH %d ABOUT TO START ACTION OPTIMIZER *********\n",
 	  // action, (int)model.size(), epoch[action]);
 	  
-	  // only trains single action at the same time
-	  {
-	    bool oneIsRunning = false;
-	    unsigned int index = 0;
-	    
-	    for(unsigned int i=0;i<grad.size();i++){
-	      if(grad[i].isRunning()){
-		index = i;
-		oneIsRunning = true;
-	      }
-	    }
-
-	    if(oneIsRunning){
-	      if(action == 0){
-		// get temporary solutions
-		whiteice::nnetwork<T> nn;
-		T error = T(0.0);
-		unsigned int iters = 0;
-		
-		if(grad[index].getSolution(nn, error, iters)){
-		  printf("[%d/%d] EPOCH %d OPTIMIZER %d ITERS: ERROR %f HASMODEL: %d\n",
-			 index, (int)model.size(), 
-			 epoch[index], iters, error.c[0], (int)hasModel);
-		}
-		else{
-		  printf("[%d/%d] EPOCH %d GETSOLUTION() FAILED\n",
-			 index, (int)model.size(), 
-			 epoch[index]);
-		}
-		
-	      }
-	      
-	      continue;
-	    }
-	  }
+	  whiteice::nnetwork<T> nn;
+	  T error;
+	  unsigned int iters;
 	  
-	  if(grad[action].isRunning() == false){
-	    
-	    if(epoch[action] > min(epoch))
-	      continue; // do not start execution until we have minimum epoch
-
-	    if(epoch[action] > 0 && hasModel == false)
-	      continue; // do not go the next epochs until we have a model..
 	  
-	    whiteice::nnetwork<T> nn;
-	    T error;
-	    unsigned int iters;
+	  if(grad.isRunning() == false){
 	    
-	    if(grad[action].getSolution(nn, error, iters) == false){
+	    if(grad.getSolution(nn, error, iters) == false){
 	      std::vector< math::vertex<T> > weights;
 
-	      std::lock_guard<std::mutex> lock(*model_mutex[action]);
+	      std::lock_guard<std::mutex> lock(model_mutex);
 	      
-	      if(model[action].exportSamples(nn, weights, 1) == false){
+	      if(model.exportSamples(nn, weights, 1) == false){
 		assert(0);
 	      }
 	      
@@ -495,17 +441,17 @@ namespace whiteice
 	      }
 	    }
 	    else{
-	      std::lock_guard<std::mutex> lock(*model_mutex[action]);
+	      std::lock_guard<std::mutex> lock(model_mutex);
 
 	      // we keep previous network to some degree
 	      // (interpolation between networks)
-	      if(hasModel){
+	      if(epoch > 0){
 		T tau = T(0.3);
 		{
 		  whiteice::nnetwork<T> nnprev = nn;
 		  std::vector< whiteice::math::vertex<T> > prevweights;
 		  
-		  if(model[action].exportSamples(nnprev, prevweights)){
+		  if(model.exportSamples(nnprev, prevweights)){
 		    whiteice::math::vertex<T> newweights;
 		    
 		    if(nn.exportdata(newweights)){
@@ -515,67 +461,57 @@ namespace whiteice
 		    }
 		  }
 		  
-		  
-		  updatedModel[action].importNetwork(nn);
+		  model.importNetwork(nn);
 		}
 	      }
 	      else{
-		updatedModel[action].importNetwork(nn);
+		model.importNetwork(nn);
 	      }
 
 	      
 	      {
-		data[action].clearData(0);
-		data[action].clearData(1);
+		data.clearData(0);
+		data.clearData(1);
 		
-		updatedPreprocess[action] = data[action];
+		preprocess = data;
 	      }
 
-	      epoch[action]++;
-
-	      updates++; // action has updated model [for this epoch]
+	      epoch++;
+	      hasModel = true;
 	    }
 
 
-	    // when all actions have updated model update the data structures
-	    if(updates == updatedModel.size()){
-	      printf("*** MODEL UPDATE ***\n");
-	      
-	      for(unsigned int i=0;i<updatedModel.size();i++){
-		std::lock_guard<std::mutex> lock(*model_mutex[i]);
-		model[i] = updatedModel[i];
-		preprocess[i] = updatedPreprocess[i];
-	      }
-
-	      // all actions has processed at least one epoch
-	      if(min(epoch) >= 1) 
-		hasModel = true;
-
-	      updates = 0;
-	    }
 	    
-
-	    const unsigned int BATCHSIZE = database[action].size()/2;
+	    const unsigned int BATCHSIZE = database.size()/2;
 
 	    bool newPreprocess = false;
 
-	    if(data[action].getNumberOfClusters() != 2){
-	      data[action].clear();
-	      data[action].createCluster("input-state", numStates);
-	      data[action].createCluster("output-action", 1);
+	    if(data.getNumberOfClusters() != 2){
+	      data.clear();
+	      data.createCluster("input-state", numStates + dimActionFeatures);
+	      data.createCluster("output-action", 1);
 	      newPreprocess = true;
 	    }
 	    else{
-	      data[action].clearData(0);
-	      data[action].clearData(1);
+	      data.clearData(0);
+	      data.clearData(1);
 	      newPreprocess = false;
 	    }
 	    
 	    
 	    for(unsigned int i=0;i<BATCHSIZE;){
-	      const unsigned int index = rng.rand() % database[action].size();
+	      const unsigned int index = rng.rand() % database.size();
 	      
-	      whiteice::math::vertex<T> in = database[action][index].state;
+	      whiteice::math::vertex<T> in;
+	      whiteice::math::vertex<T> feature;
+
+	      getActionFeature(database[index].action, feature);
+
+	      in.resize(numStates + dimActionFeatures);
+	      in.zero();
+	      in.write_subvertex(database[index].state, 0);
+	      in.write_subvertex(feature, numStates);
+	      
 	      whiteice::math::vertex<T> out(1);
 	      out.zero();
 	      
@@ -588,23 +524,30 @@ namespace whiteice
 	      {
 		T maxvalue = T(-INFINITY);
 
-		for(unsigned int j=0;j<model.size();j++){
-		  std::lock_guard<std::mutex> lock(*model_mutex[j]);
+		for(unsigned int j=0;j<numActions;j++){
+		  std::lock_guard<std::mutex> lock(model_mutex);
 		  
 		  whiteice::math::vertex<T> u;
 		  whiteice::math::matrix<T> e;
 		  
-		  whiteice::math::vertex<T> input = newstate;
+		  whiteice::math::vertex<T> input(numStates + dimActionFeatures);
+		  whiteice::math::vertex<T> f;
+		  
+		  input.zero();
+		  input.write_subvertex(database[index].newstate, 0);
 
-		  preprocess[j].preprocess(0, input);
+		  getActionFeature(database[index].action, f);
+		  input.write_subvertex(f, numStates);
 
-		  if(model[j].calculate(input, u, e, 1, 0) == true){
+		  preprocess.preprocess(0, input);
+
+		  if(model.calculate(input, u, e, 1, 0) == true){
 		    if(u.size() != 1){
 		      u.resize(1);
 		      u[0] = T(0.0);
 		    }
 		    else
-		      preprocess[j].invpreprocess(1, u);
+		      preprocess.invpreprocess(1, u);
 		  }
 		  else{
 		    u.resize(1);
@@ -615,49 +558,57 @@ namespace whiteice
 		    maxvalue = u[0];
 		}
 
-		if(hasModel == true){
+		if(epoch > 0){
 		  unew_value =
-		    database[action][index].reinforcement + gamma*maxvalue;
+		    database[index].reinforcement + gamma*maxvalue;
 		}
-		else{ // first iteration uses raw reinforcement values
+		else{ // first iteration always uses raw reinforcement values
 		  unew_value =
-		    database[action][index].reinforcement;
+		    database[index].reinforcement;
 		}
 	      }
 	      
 	      out[0] = unew_value;
 	      
-	      data[action].add(0, in);
-	      data[action].add(1, out);
+	      data.add(0, in);
+	      data.add(1, out);
 	      
 	      i++;
 	    }
 	    
 	    // add preprocessing to dataset (only at epoch 0)
 	    if(newPreprocess){
-	      data[action].preprocess
+	      data.preprocess
 		(0, whiteice::dataset<T>::dnMeanVarianceNormalization);
 
 #if 0
-	      data[action].preprocess
+	      data.preprocess
 		(1, whiteice::dataset<T>::dnMeanVarianceNormalization);
 #endif
 	    }
 
 	    const bool dropout = false;
 	    
-	    if(grad[action].startOptimize(data[action], nn, 2, 250,
-					  dropout) == false){
-	      printf("[%d/%d] STARTING GRAD OPTIMIZATION FAILED\n",
-		     action, (int)model.size());
+	    if(grad.startOptimize(data, nn, 2, 250,
+				  dropout) == false){
+	      printf("STARTING GRAD OPTIMIZATION FAILED\n");
 	    }
 	    else{
-	      printf("[%d/%d] STARTED GRAD OPTIMIZER EPOCH %d\n",
-		     action, (int)model.size(), epoch[action]);
+	      printf("STARTED GRAD OPTIMIZER EPOCH %d\n", epoch);
 	    }
 	    
 	  }
 	  else{
+
+	    if(grad.getSolution(nn, error, iters)){
+	      printf("EPOCH %d OPTIMIZER %d ITERS: ERROR %f HASMODEL: %d\n",
+		     epoch, iters, error.c[0], (int)hasModel);
+	    }
+	    else{
+	      printf("EPOCH %d GETSOLUTION() FAILED\n",
+		     epoch);
+	    }
+	    
 	    
 	  }
 	}
@@ -667,8 +618,9 @@ namespace whiteice
       
     }
 
-    for(unsigned int i=0;i<grad.size();i++)
-      grad[i].stopComputation();
+
+    grad.stopComputation();
+    
   }
 
   template class RIFL_abstract< math::blas_real<float> >;

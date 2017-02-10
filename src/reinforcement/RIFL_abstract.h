@@ -36,8 +36,16 @@ namespace whiteice
     class RIFL_abstract
     {
     public:
-    
-    RIFL_abstract(unsigned int numActions, unsigned int numStates);
+
+    /*
+     * numActions        - the number of discrete different actions
+     * numStates         - the number of dimensions in state vectors
+     * dimActionFeatures - the number of dimensoins in action vectors
+     *                     (numActions different feature vectors)
+     */
+    RIFL_abstract(const unsigned int numActions,
+		  const unsigned int numStates,
+		  const unsigned int dimActionFeatures);
     ~RIFL_abstract() throw();
 
     // starts Reinforcement Learning thread
@@ -79,7 +87,7 @@ namespace whiteice
 
     protected:
 
-    unsigned int numActions, numStates;
+    unsigned int numActions, numStates, dimActionFeatures;
 
     virtual bool getState(whiteice::math::vertex<T>& state) = 0;
     
@@ -87,17 +95,17 @@ namespace whiteice
 			       whiteice::math::vertex<T>& newstate,
 			       T& reinforcement) = 0;
 
+    virtual bool getActionFeature(const unsigned int action,
+				  whiteice::math::vertex<T>& feature) = 0;
+
     // helper function, returns minimum value in vec
     unsigned int min(const std::vector<unsigned int>& vec) const throw();
 
     // separate network for each action
-    std::vector< whiteice::bayesian_nnetwork<T> > model;
-    std::vector< whiteice::dataset<T> > preprocess;
-    mutable std::vector<std::mutex*> model_mutex;
+    whiteice::bayesian_nnetwork<T> model;
+    whiteice::dataset<T> preprocess;
+    mutable std::mutex model_mutex;
 
-    std::vector< whiteice::bayesian_nnetwork<T> > updatedModel;
-    std::vector< whiteice::dataset<T> > updatedPreprocess;
-    
     bool hasModel;
     bool learningMode;
     
@@ -119,6 +127,7 @@ namespace whiteice
     struct rifl_datapoint
     {
       whiteice::math::vertex<T> state, newstate;
+      unsigned int action;
       T reinforcement;
     };
 

@@ -19,7 +19,7 @@ namespace whiteice
 {
 
   template <typename T>
-  CartPole<T>::CartPole() : RIFL_abstract<T>(5, 4)
+  CartPole<T>::CartPole() : RIFL_abstract<T>(5, 4, 1)
   {
     {
       g = T(9.81); // gravity
@@ -201,6 +201,27 @@ namespace whiteice
     // printf("T: %f\n", temp.c[0]);
 
     return a;
+  }
+
+
+  template <typename T>
+  bool CartPole<T>::getActionFeature(const unsigned int action,
+				     whiteice::math::vertex<T>& feature)
+  {
+    feature.resize(1);
+    feature.zero();
+
+    if(action >= this->numActions) return false;
+
+    // force value F
+
+    double a = ((double)action)/((double)(this->numActions - 1)); // [0,1]
+    a = 2.0*a - 1.0; // [-1.0,+1.0]
+    double Fstep = 25.0*a; // [-25, +25]
+
+    feature[0] = Fstep;
+
+    return true;
   }
 
   
