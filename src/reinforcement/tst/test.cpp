@@ -20,18 +20,20 @@ int main(int argc, char** argv)
   if(argc <= 1){
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.90); // 90% of examples are selected accoring to model
+    system.setEpsilon(0.50); // 50% of examples are selected accoring to model
     system.setLearningMode(true);
     
     // system.load("rifl.dat");
     
     system.start();
 
-    unsigned int counter = 0;
+    sleep(1);
+
+    unsigned int counter = 1;
 
     while(system.physicsIsRunning()){
       sleep(1); 
-      if(counter % 180 == 0){ // saved model file every 3 minutes
+      if((counter % 180) == 0){ // saved model file every 3 minutes
 	if(system.save("rifl.dat"))
 	  printf("MODEL FILE SAVED\n");
       }
@@ -50,6 +52,7 @@ int main(int argc, char** argv)
 
     system.setEpsilon(1.00); // 100% of examples are selected accoring to model
     system.setLearningMode(false);
+    system.setHasModel(true);
     
     if(system.load("rifl.dat") == false){
       printf("ERROR: loading model file failed.\n");

@@ -87,10 +87,17 @@ namespace whiteice
 			       whiteice::math::vertex<T>& newstate,
 			       T& reinforcement) = 0;
 
-    whiteice::bayesian_nnetwork<T> model;
-    whiteice::dataset<T> preprocess;
-    mutable std::mutex model_mutex;
+    // helper function, returns minimum value in vec
+    unsigned int min(const std::vector<unsigned int>& vec) const throw();
 
+    // separate network for each action
+    std::vector< whiteice::bayesian_nnetwork<T> > model;
+    std::vector< whiteice::dataset<T> > preprocess;
+    mutable std::vector<std::mutex*> model_mutex;
+
+    std::vector< whiteice::bayesian_nnetwork<T> > updatedModel;
+    std::vector< whiteice::dataset<T> > updatedPreprocess;
+    
     bool hasModel;
     bool learningMode;
     
@@ -112,7 +119,6 @@ namespace whiteice
     struct rifl_datapoint
     {
       whiteice::math::vertex<T> state, newstate;
-      unsigned int action;
       T reinforcement;
     };
 

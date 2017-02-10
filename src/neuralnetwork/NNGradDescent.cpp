@@ -1,6 +1,7 @@
 
 #include "NNGradDescent.h"
 #include <time.h>
+#include <pthread.h>
 
 #ifdef WINOS
 #include <windows.h>
@@ -16,10 +17,12 @@ namespace whiteice
     template <typename T>
     NNGradDescent<T>::NNGradDescent(bool negativefeedback, bool errorTerms)
     {
-      best_error = T(1000.0f);
+      best_error = T(INFINITY);
       iterations = 0;
       data = NULL;
       NTHREADS = 0;
+      thread_is_running = 0;
+      
       this->negativefeedback = negativefeedback;
       this->errorTerms = errorTerms;
 
@@ -27,6 +30,38 @@ namespace whiteice
 
       running = false;
       nn = NULL;
+    }
+
+
+    template <typename T>
+    NNGradDescent<T>::NNGradDescent(const NNGradDescent<T>& grad)
+    {
+      best_error = grad.best_error;
+      iterations = grad.iterations;
+      data = grad.data;
+      NTHREADS = grad.NTHREADS;
+      MAXITERS = grad.MAXITERS;      
+      
+      this->negativefeedback = grad.negativefeedback;
+      this->errorTerms = grad.errorTerms;
+
+      dropout = grad.dropout;
+
+      running = grad.running;
+
+      bestx = grad.bestx;
+
+      if(grad.nn)
+	nn = new whiteice::nnetwork<T>(*grad.nn);
+      else
+	nn = grad.nn;
+
+      data = grad.data;
+
+      first_time = grad.first_time;
+
+      thread_is_running = 0;
+      running = false;
     }
 
     
@@ -65,21 +100,26 @@ namespace whiteice
 					 unsigned int MAXITERS,
 					 bool dropout)
     {
+
       if(data.getNumberOfClusters() != 2) return false;
+
       if(data.size(0) != data.size(1)) return false;
 
-      // need at least 50 datapoints
-      if(data.size(0) <= 50) return false;
+      // need at least 10 datapoints
+      if(data.size(0) <= 10) return false;
 
       if(data.dimension(0) != nn.input_size() ||
 	 data.dimension(1) != nn.output_size())
 	return false;
 
       start_lock.lock();
-      
-      if(thread_is_running > 0){
-	start_lock.unlock();
-	return false;
+
+      {
+	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
+	if(thread_is_running > 0){
+	  start_lock.unlock();
+	  return false;
+	}
       }
       
       
@@ -108,7 +148,30 @@ namespace whiteice
 	optimizer_thread[i] =
 	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
 			       this));
+
+	// NON-STANDARD WAY TO SET THREAD PRIORITY (POSIX)
+	{
+	  sched_param sch_params;
+	  int policy = SCHED_RR;
+	  
+	  pthread_getschedparam(optimizer_thread[i]->native_handle(),
+				&policy, &sch_params);
+	  
+	  sch_params.sched_priority = 20;
+	  if(pthread_setschedparam(optimizer_thread[i]->native_handle(),
+				   SCHED_RR, &sch_params) != 0){
+	    // printf("* SETTING LOW PRIORITY THREAD FAILED\n");
+	  }
+	}
       }
+
+      {
+	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+	
+	while(thread_is_running == 0)
+	  thread_is_running_cond.wait(lock);
+      }
+
       
       start_lock.unlock();
 
@@ -118,6 +181,8 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::isRunning()
     {
+      std::lock_guard<std::mutex>  lock1(start_lock);
+      std::unique_lock<std::mutex> lock2(thread_is_running_mutex);
       return running && (thread_is_running > 0);
     }
     
@@ -160,9 +225,12 @@ namespace whiteice
       }
 
       running = false;
-      
-      while(thread_is_running > 0){
-	sleep(1); // waits for threads to stop running
+
+      {
+	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+
+	while(thread_is_running > 0)
+	  thread_is_running_cond.wait(lock);
       }
       
       start_lock.unlock();
@@ -226,13 +294,37 @@ namespace whiteice
     template <typename T>
     void NNGradDescent<T>::optimizer_loop()
     {
-      if(data == NULL)
-	return; // silent failure if there is bad data
-      
-      if(data->size(0) <= 1 || running == false)
-	return;
+      {
+	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
+	thread_is_running++;
+	thread_is_running_cond.notify_all();
+      }
 
-      thread_is_running++;
+      {
+	sched_param sch_params;
+	int policy = SCHED_RR;
+	  
+	pthread_getschedparam(pthread_self(),
+			      &policy, &sch_params);
+	
+	sch_params.sched_priority = 20;
+	if(pthread_setschedparam(pthread_self(),
+				 SCHED_RR, &sch_params) != 0){
+	  // printf("! SETTING LOW PRIORITY THREAD FAILED\n");
+	}
+      }
+
+      if(data == NULL){
+	assert(0);
+	return; // silent failure if there is bad data
+      }
+      
+      if(data->size(0) <= 1 || running == false){
+	assert(0);
+	return;
+      }
+
+      
       
       // 1. divides data to to training and testing sets
       ///////////////////////////////////////////////////
@@ -300,7 +392,7 @@ namespace whiteice
 	  }
 	}
 
-	// T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting)
+	const T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting and large values that seem to appear into weights sometimes..)
 	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
@@ -338,9 +430,6 @@ namespace whiteice
 	  {
 	    prev_error = error;
 
-	    // std::cout << "*********************** RATIO " << ratio << std::endl;
-	    // fflush(stdout);
-	    
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
@@ -392,11 +481,14 @@ namespace whiteice
 	      }
 	      
 	    }
-	    
+
+
 	    // cancellation point
 	    {
 	      if(running == false){
+		std::lock_guard<std::mutex> lock(thread_is_running_mutex);
 		thread_is_running--;
+		thread_is_running_cond.notify_all();
 		return; // cancels execution
 	      }
 	    }
@@ -406,6 +498,12 @@ namespace whiteice
 
 	    w0 = weights;
 
+	    
+	    // adds regularizer to gradient (1/2*||w||^2)
+	    {
+	      sumgrad += regularizer*w0;
+	    }
+	    
 	    
 	    lrate *= 4;
 	    
@@ -466,7 +564,10 @@ namespace whiteice
 	    // cancellation point
 	    {
 	      if(running == false){
+		std::lock_guard<std::mutex> lock(thread_is_running_mutex);
 		thread_is_running--;
+		thread_is_running_cond.notify_all();
+		
 		// printf("3: THEAD IS RUNNING: %d\n", thread_is_running);
 		return; // stops execution
 	      }
@@ -505,8 +606,9 @@ namespace whiteice
       }
 
       
+      std::lock_guard<std::mutex> lock(thread_is_running_mutex);
       thread_is_running--;
-      
+      thread_is_running_cond.notify_all();
       
       return;
     }

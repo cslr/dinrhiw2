@@ -548,18 +548,16 @@ namespace whiteice
 	  // Understanding the difficulty of training deep neural networks
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
-	  T scaling = T(2.2);
-	  
-	  // T(3.0f*((float)rand())/((float)RAND_MAX)); // different scaling for different nonlins
-	  
-	  // std::cout << "random init 2 " << scaling << std::endl;
+	  // T scaling = T(2.2);
+	  T scaling = T(1.0);
 	  
 	  var *= scaling;
 	  
 	  for(unsigned int j=start;j<end;j++){
-	    T r = T( 2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f ); // [-1,1]
-	    // data[j] = T(3.0f)*var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
-	    data[j] = var*r; // asinh(x) requires aprox 3x bigger values before reaching saturation than tanh(x)
+	    T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
+	    data[j] = var*r;
+	    // NOTE: asinh(x) requires aprox 3x bigger values before
+	    // reaching saturation than tanh(x)
 	  }
 	  
 #if 0
@@ -820,19 +818,7 @@ namespace whiteice
 	return T(0.0);
     }
 
-#if 0
-    if(rng.uniform() > retain_probability){
-      if(dropout.size() > 0){
-	dropout[layer][neuron] = true;
-	return T(0.0);
-      }
-    }
-    else{
-      if(dropout.size() > 0)
-	dropout[layer][neuron] = false;
-    }
-#endif
-
+    
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) / (T(1.0) + math::exp(-input));
@@ -853,23 +839,8 @@ namespace whiteice
       // T output = T(0.0);
       
       if(neuron & 1){
-#if 0
-	// softmax function
-	T a = T(5.0);
-	output = log(T(1.0) + exp(a*input));
-	return output;
-#endif
-#if 0
-	// rectifier non-linearity
-	output = T(0.0);
-	if(input >= T(0.0)) output = input;
-	return output;
-#endif
-	const T af = T(1.7159f);
-	const T bf = T(0.6666f);
-	
-	T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
-	T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
+	// non-linearity motivated by restricted boltzman machines..
+	T output = T(1.0) / (T(1.0) + math::exp(-input));
 	return output;
       }
       else{
@@ -882,76 +853,6 @@ namespace whiteice
     else{
       assert(0);
     }
-    
-
-    
-#if 0
-    const T af = T(1.7159f);
-    const T bf = T(0.6666f);
-    
-    T expbx = math::exp(-bf*input ); // numerically more stable (no NaNs)
-    T output = af * ( T(2.0f) / (T(1.0f) + expbx) - T(1.0f) );
-#endif
-#if 0        
-    T output = input;
-    if(output > T(0.999f)) output = T(0.999f);
-    else if(output < T(-0.999f)) output = T(-0.999f);
-    output = math::atanh(output);
-#endif
-#if 0
-    // T output = math::asinh(input);
-
-    // tanh(x) - 0.5x non-linearity as proposed by a research paper [statistically better gradients]
-    // T output = math::tanh(input) - T(0.5)*input;
-
-    // rectifier non-linearity
-    T output = T(0.0);
-    if(input >= T(0.0))
-      output = input;
-
-    // T output = -math::exp(T(-0.5)*input*input);
-#endif
-#if 0
-    // non-linearity motivated by restricted boltzman machines..
-    T output = T(1.0) / (T(1.0) + math::exp(-input));
-
-    if(stochasticActivation){
-      T r = T(((double)rand())/((double)RAND_MAX));
-      
-      if(output > r){ output = T(1.0); }
-      else{ output = T(0.0); }
-    }
-    
-#endif
-#if 0
-    T output;
-
-    if(neuron & 1){ // alternates between sigmoid and rectifier non-linearities within each layer
-      // rectifier
-      output = T(0.0);
-      if(input >= T(0.0))
-	output = input;
-    }
-    else{
-      // non-linearity motivated by restricted boltzman machines..
-      output = T(1.0) / (T(1.0) + math::exp(-input));
-    }
-#endif
-#if 0
-    T output;
-    
-    if(neuron & 1){
-      // rectifier non-linearity
-      output = T(0.0);
-      if(input >= T(0.0))
-	output = input;
-    }
-    else{
-      return input; // half-the layers nodes are linear!
-    }
-
-    return output;
-#endif    
   }
   
   
@@ -984,26 +885,9 @@ namespace whiteice
     }
     else if(nonlinearity[layer] == halfLinear){
       if(neuron & 1){
-#if 0
-	// softmax
-	T a = T(5.0);
-	T output = a/(T(1.0) + exp(-a*input));
-	return output;
-#endif
-#if 0
-	// rectifier non-linearity
-	T output = T(0.0);
-	if(input >= T(0.0))
-	  output = T(1.0);
-	return output;
-#endif
-	const T af = T(1.7159f);
-	const T bf = T(0.6666f);
-	//const T af = T(1.0f);
-	//const T bf = T(1.0f);
-	
-	T fxa = input/af;
-	T output = (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
+	// non-linearity motivated by restricted boltzman machines..
+	T output = T(1.0) + math::exp(-input);
+	output = math::exp(-input) / (output*output);
 	return output;
       }
       else{
@@ -1016,105 +900,24 @@ namespace whiteice
     else{
       assert(0);
     }
-
     
-#if 0
-    const T af = T(1.7159f);
-    const T bf = T(0.6666f);
-    //const T af = T(1.0f);
-    //const T bf = T(1.0f);
-    
-    T fxa = input/af;
-    T output = (T(0.50f)*af*bf) * ((T(1.0f) + fxa)*(T(1.0f) - fxa));
-#endif
-#if 0    
-    T output = input;
-    if(output > T(0.999f)) output = T(0.999f);
-    else if(output < T(-0.999f)) output = T(-0.999f);
-    output = T(1.0f)/(T(1.0f) - output*output);
-#endif
-#if 0
-    // T output = T(1.0f)/math::sqrt(input*input + T(1.0f));
-    
-    // T output = input*math::exp(T(-0.5)*input*input);
-
-    // statistically better gradients?
-    // T t = math::tanh(input);
-    // T output = T(1.0f) - t*t - T(0.5); // statistically better non-linearity?
-
-    // rectifier non-linearity
-    T output = T(0.0);
-    if(input >= T(0.0))
-      output = 1.0;
-    
-#endif
-#if 0
-    // non-linearity motivated by restricted boltzman machines..
-    T output = T(1.0) + math::exp(-input);
-    
-    output = math::exp(-input) / (output*output);
-#endif
-#if 0
-    T output;
-    
-    if(neuron & 1){
-      // rectifier non-linearity
-      output = T(0.0);
-      if(input >= T(0.0))
-	output = 1.0;
-    }
-    else{
-      // non-linearity motivated by restricted boltzman machines..
-      output = T(1.0) + math::exp(-input);
-      
-      output = math::exp(-input) / (output*output);
-    }
-#endif
-#if 0
-    T output;
-    
-    if(neuron & 1){
-      // rectifier non-linearity
-      output = T(0.0);
-      if(input >= T(0.0))
-	output = 1.0;
-    }
-    else{
-      return 1.0; // half-the layers nodes are linear!
-    }
-    return output;
-#endif
   }
 
   
   template <typename T>
-  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(){ // inverse of non-linearity used
+  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  {
+    // inverse of non-linearity used
 #if 0
-    const T af = T(1.7159f);
-    const T bf = T(0.6666f);
-    
-    T output = T(2.0f)*af/(input + T(1.0f)) - T(1.0f);
-    if(output < T(0.001)) output = T(0.001);
-    output = -math::log(output)/bf;
-    
-#endif
-#if 0
-    T output = math::sinh(input); // sinh non-linearity.. (sinh()) non-linearity is maybe a bit better non-linearity..
+    // sinh non-linearity..
+    // (sinh()) non-linearity is maybe a bit better non-linearity..
+    T output = math::sinh(input); 
 #endif
     // THIS DO NOT WORK CURRENTLY
     
-    T output = 0.0f; assert(0); // there is NO inverse function
-    
-    
-    // T output;
-    //
-    //if(input > T(+0.999f))
-    //  output = math::atanh(T(+0.999));
-    //else if(input < T(-0.999f))
-    //  output = math::atanh(T(-0.999));
-    //else
-    //  output = math::atanh(input);
-      
+    T output = 0.0f;
+
+    assert(0); // there is NO inverse function
     
     return output;
   }

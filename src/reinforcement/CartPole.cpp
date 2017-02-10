@@ -5,18 +5,21 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <chrono>
+
 #include <unistd.h>
 
 #ifdef USE_SDL
 #include <SDL.h>
 #endif
 
+using namespace std::chrono_literals;
 
 namespace whiteice
 {
 
   template <typename T>
-  CartPole<T>::CartPole() : RIFL_abstract<T>(21, 4)
+  CartPole<T>::CartPole() : RIFL_abstract<T>(5, 4)
   {
     {
       g = T(9.81); // gravity
@@ -55,6 +58,7 @@ namespace whiteice
       if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
 	W = (4*mode.w)/5;
 	H = (3*mode.h)/4;
+	H = H/2;
       }
       
       
@@ -121,14 +125,14 @@ namespace whiteice
   {
     state.resize(4);
 
-    state[0] = theta;
+    state[0] = normalizeTheta(theta)/T(M_PI);
     state[1] = theta_dot;
     state[2] = x;
     state[3] = x_dot;
 
 #ifdef USE_SDL
     {
-      auto theta = state[0];
+      auto theta = this->theta;
       auto x     = state[2];
       
       SDL_Event event;
@@ -148,7 +152,7 @@ namespace whiteice
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
 	double y0 = H/2.0;
-	double x0 = W/2.0 + x.c[0];
+	double x0 = W/2.0 + x.c[0]/2;
 
 	double l = 100.0; // line length
 
@@ -164,6 +168,41 @@ namespace whiteice
     return true;
   }
 
+
+  template <typename T>
+  T CartPole<T>::normalizeTheta(const T t) const throw()
+  {
+    // sets range between [-2*pi, +2*pi]
+    T a = t/T(2.0*M_PI);
+
+    // printf("N: %f\n", a.c[0]);
+
+    // take the fractional part 2.3 -> 0.3, -2.3 -> -0.3
+    if(a >= T(0.0)){
+      a = a - floor(a);
+    }
+    else{
+      a = -(abs(a) - floor(abs(a)));
+    }
+
+    // printf("A: %f\n", a.c[0]); // debugging..
+
+    a = T(2.0*M_PI)*a; // [-2*pi, 2*pi]
+
+    // converts range between [-pi, pi]
+    if(a > T(M_PI)){
+      a = T(-1.0)*(T(2.0*M_PI) - a);
+    }
+    else if(a < T(-M_PI)){
+      a = T(2.0*M_PI) + a;
+    }
+
+    // auto temp = a / T(2.0*M_PI);
+    // printf("T: %f\n", temp.c[0]);
+
+    return a;
+  }
+
   
   template <typename T>
   bool CartPole<T>::performAction(const unsigned int action,
@@ -174,42 +213,29 @@ namespace whiteice
     // printf("%d action\n", action);
     double Fstep = 0.0;
 
-    double a = (((double)action) - 10.0)/10.0; // [-1,+1] (0.1 step length)
-    Fstep = 100.0*a; // [-100, +100]
+    double a = ((double)action)/((double)(this->numActions - 1)); // [0,1]
+    a = 2.0*a - 1.0; // [-1.0,+1.0]
+    Fstep = 25.0*a; // [-25, +25]
 
     printf("%d FORCE: %f\n", iteration, Fstep);
     
     {
       {
-	std::lock_guard<std::mutex> lock(F_change);
+	std::unique_lock<std::mutex> lock(F_change);
 	F = Fstep;
 	F_processed = false;
-      }
+	F_processed_cond.notify_all();
 
-      while(F_processed == false){
-	usleep(1); // waits till F is processed
-	if(running == false) return false;
-      }
-
-      {
-	std::lock_guard<std::mutex> lock(F_change);
-
+	while(F_processed == false){
+	  auto now = std::chrono::system_clock::now();
+	  F_processed_cond.wait_until(lock, now + 10*100ms);
+	  if(running == false)
+	    return false;
+	}
+	
 	{
-	  // keeps range between [-2*pi, +2*pi]
-	  T a = theta/T(2.0*M_PI);
-	  a = a - floor(a);
-	  a = T(2.0*M_PI)*a;
-
-	  // converts range between [-pi, pi]
-	  if(a > T(M_PI)){
-	    a = T(-1.0)*(T(2.0*M_PI) - a);
-	  }
-
-	  // converts range between [-1.0, +1.0]
-	  a = a / T(M_PI);
-	  
 	  newstate.resize(4);
-	  newstate[0] = a;
+	  newstate[0] = normalizeTheta(theta)/T(M_PI);
 	  newstate[1] = theta_dot;
 	  newstate[2] = x;
 	  newstate[3] = x_dot;
@@ -217,27 +243,40 @@ namespace whiteice
 	
 	// our target is to keep theta at zero (the largest reinforcement value)
 	{
-	  // keeps range between [-2*pi, +2*pi]
-	  T a = theta/T(2.0*M_PI);
-	  a = a - floor(a);
-	  a = T(2.0*M_PI)*a;
-
-	  // converts range between [-pi, pi]
-	  if(a > T(M_PI)){
-	    a = T(-1.0)*(T(2.0*M_PI) - a);
-	  }
-
 	  // converts range between [-180.0, +180.0]
-	  a = T(180.0)* a / T(M_PI);
+	  T a = T(180.0)* normalizeTheta(theta) / T(M_PI);
 
-	  if(a <= T(5.0)){
-	    a = T(0.4);
-	  }
-	  else{ // range is ] -5/180, -1.0];
-	    a = -T(1.0)*abs(a)/T(180.0);
-	  }
+	  // range is ] -1.0, 0.0]; // bigger is better (closer to zero)
+	  a = -T(1.0)*abs(a)/T(180.0);
+
 	  
-	  reinforcement = a;
+	  // additionally we add minus term for being too far from zero (W)
+
+#if 1
+	  T x_reinforcement = abs(x);
+	  {
+	    if(x_reinforcement > T(W/2.0)){
+	      // [0,1] (within screen boundaries)
+	      x_reinforcement = (x_reinforcement - T(W/2.0))/T(W/2.0);
+	    }
+	    else{
+	      x_reinforcement = T(0.0);
+	    }
+	    
+	    // (closer to zero is better) [-1.0, 0]
+	    x_reinforcement = -abs(x_reinforcement);
+	    
+	  
+	    reinforcement = T(0.5)*(a + x_reinforcement); // [-1.0, 0]
+	  }
+#endif
+	    
+	  reinforcement = T(1.0) + a; // we keep things between [0,1]
+
+	  reinforcement = T(0.5)*reinforcement; // keep at scale [0.0,0.5]
+
+	  printf("REINFORCEMENT: %f\n", reinforcement.c[0]);
+	  fflush(stdout);
 	}
       }
 	
@@ -268,13 +307,15 @@ namespace whiteice
     while(running){
       
       {
+	std::unique_lock<std::mutex> lock(F_change);
+
 	while(F_processed == true){
-	  usleep(1); // waits for new F
+	  auto now = std::chrono::system_clock::now();
+	  F_processed_cond.wait_until(lock, now + 10*100ms);
 	  if(running == false) return;
 	}
-	
-	std::lock_guard<std::mutex> lock(F_change);
 
+	
 	theta_dotdot =
 	  g*sin(theta) +
 	  cos(theta) * ( (-F - mp*l*theta_dot*theta_dot*
@@ -337,6 +378,7 @@ namespace whiteice
 	}
 	
 	F_processed = true;
+	F_processed_cond.notify_all();
       }
 
       if(t >= 20.0){

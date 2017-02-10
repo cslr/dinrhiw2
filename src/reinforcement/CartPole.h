@@ -40,6 +40,9 @@ namespace whiteice
 				 whiteice::math::vertex<T>& newstate,
 				 T& reinforcement);
 
+      // helper function: normalizes theta values back into [-pi, pi] range
+      T normalizeTheta(const T t) const throw();
+
     protected:
 
 #ifdef USE_SDL
@@ -65,6 +68,7 @@ namespace whiteice
       T F;
       std::mutex F_change;
       bool F_processed;
+      std::condition_variable F_processed_cond;
 
       T dt;
       int iteration;

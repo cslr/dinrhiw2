@@ -10,6 +10,7 @@
 
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 #include "dinrhiw_blas.h"
 #include "dataset.h"
@@ -32,6 +33,7 @@ namespace whiteice
       // if errorTerms is true then dataset output values are actual
       // errors rather than correct values
         NNGradDescent(bool negativefeedback = false, bool errorTerms = false);
+        NNGradDescent(const NNGradDescent<T>& grad);
 	~NNGradDescent();
 
         /*
@@ -100,7 +102,10 @@ namespace whiteice
         std::mutex solution_lock, start_lock;
 
         volatile bool running;
+      
         volatile int thread_is_running;
+        std::mutex thread_is_running_mutex;
+        std::condition_variable thread_is_running_cond;
       
         void optimizer_loop();
 	
