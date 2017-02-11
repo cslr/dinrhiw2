@@ -45,7 +45,8 @@ namespace whiteice
       arch.push_back(L2);
       arch.push_back(1);
 
-      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
+      // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
 
@@ -250,12 +251,12 @@ namespace whiteice
   {
     std::vector< std::vector< rifl_datapoint<T> > > database;
     whiteice::dataset<T> data;
-    whiteice::math::NNGradDescent<T> grad;
+    whiteice::math::NNGradDescent<T> grad(true); // negative feedback?
 
     unsigned int epoch = 0;
     
 
-    const unsigned int DATASIZE = 50000;
+    const unsigned int DATASIZE = 10000;
     const unsigned int SAMPLESIZE = 100;
     T temperature = T(0.010);
 
