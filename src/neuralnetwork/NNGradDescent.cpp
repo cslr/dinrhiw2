@@ -100,7 +100,6 @@ namespace whiteice
 					 unsigned int MAXITERS,
 					 bool dropout)
     {
-
       if(data.getNumberOfClusters() != 2) return false;
 
       if(data.size(0) != data.size(1)) return false;

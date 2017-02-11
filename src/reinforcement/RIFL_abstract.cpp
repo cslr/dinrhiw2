@@ -33,8 +33,16 @@ namespace whiteice
       arch.push_back(numStates + dimActionFeatures);
       // arch.push_back(numStates*100);
       // arch.push_back(numStates*100);
-      arch.push_back(20);
-      arch.push_back(20);
+
+      unsigned int L1 = (numStates + dimActionFeatures)/2;
+      if(L1 < 20) L1 = 20;
+      
+      arch.push_back(L1);
+
+      unsigned int L2 = sqrt(numStates + dimActionFeatures);
+      if(L2 < 20) L2 = 20;
+      
+      arch.push_back(L2);
       arch.push_back(1);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
@@ -240,7 +248,7 @@ namespace whiteice
   template <typename T>
   void RIFL_abstract<T>::loop()
   {
-    std::vector< rifl_datapoint<T> > database;
+    std::vector< std::vector< rifl_datapoint<T> > > database;
     whiteice::dataset<T> data;
     whiteice::math::NNGradDescent<T> grad;
 
@@ -251,7 +259,7 @@ namespace whiteice
     const unsigned int SAMPLESIZE = 100;
     T temperature = T(0.010);
 
-    
+    database.resize(numActions);
 
     bool firstTime = true;
     whiteice::math::vertex<T> state;
@@ -369,12 +377,12 @@ namespace whiteice
 	  r = T(0.0); // always selects the largest value
 
 	if(r > epsilon){
-	  action = rng.rand() % U.size();
+	  action = rng.rand() % (numActions);
 	}
 
 	// if we don't have not yet optimized model, then we make random choices
 	if(hasModel == false)
-	  action = rng.rand() % U.size();
+	  action = rng.rand() % (numActions);
       }
       
       whiteice::math::vertex<T> newstate;
@@ -398,22 +406,46 @@ namespace whiteice
 	data.state = state;
 	data.newstate = newstate;
 	data.reinforcement = reinforcement;
-	data.action = action;
-
-	if(database.size() >= DATASIZE){
-	  const unsigned int index = rng.rand() % database.size();
-	  database[index] = data;
+	
+	if(database[action].size() >= DATASIZE){
+	  const unsigned int index = rng.rand() % database[action].size();
+	  database[action][index] = data;
 	}
 	else{
-	  database.push_back(data);
+	  database[action].push_back(data);
 	}
-	printf("DATABASE SIZE: %d\n", (int)database.size());
+
+	unsigned int min_database_size = database[action].size();
+	unsigned int total_database_size = 0;
+
+	for(unsigned int i=0;i<database.size();i++){
+	  if(min_database_size > database[i].size())
+	    min_database_size = (unsigned int)database[i].size();
+	  total_database_size += database[i].size();
+	}
+	
+	printf("%d SAMPLES TOTAL. MIN ACTION DATABASE SIZE: %d\n",
+	       total_database_size, min_database_size);
       }
       
 
       // activates batch learning if it is not running
       {
-	if(database.size() >= SAMPLESIZE)
+	unsigned int samples = 0;
+	bool allHasSamples = true;
+
+	for(unsigned int i=0;i<database.size();i++){
+	  samples += database[i].size();
+	  if(database[i].size() == 0){
+	    allHasSamples = false;
+	  }
+	}
+
+	// debugging..
+	printf("%d SAMPLES. ALL HAS SAMPLES %d\n", samples, (int)allHasSamples);
+
+	
+	if(samples >= SAMPLESIZE && allHasSamples)
 	{
 	  // printf("[%d/%d] EPOCH %d ABOUT TO START ACTION OPTIMIZER *********\n",
 	  // action, (int)model.size(), epoch[action]);
@@ -481,8 +513,16 @@ namespace whiteice
 	    }
 
 
+	    // uses half the samples in database
+	    unsigned int BATCHSIZE = 0;
 	    
-	    const unsigned int BATCHSIZE = database.size()/2;
+	    {
+	      for(unsigned int i=0;i<database.size();i++){
+		BATCHSIZE += database[i].size();
+	      }
+
+	      BATCHSIZE /= 2;
+	    }
 
 	    bool newPreprocess = false;
 
@@ -498,18 +538,20 @@ namespace whiteice
 	      newPreprocess = false;
 	    }
 	    
-	    
-	    for(unsigned int i=0;i<BATCHSIZE;){
-	      const unsigned int index = rng.rand() % database.size();
+
+#pragma omp parallel for schedule(dynamic)
+	    for(unsigned int i=0;i<BATCHSIZE;i++){
+	      const unsigned int action = rng.rand() % numActions;
+	      const unsigned int index = rng.rand() % database[action].size();
 	      
 	      whiteice::math::vertex<T> in;
 	      whiteice::math::vertex<T> feature;
 
-	      getActionFeature(database[index].action, feature);
-
+	      getActionFeature(action, feature);
+	      
 	      in.resize(numStates + dimActionFeatures);
 	      in.zero();
-	      in.write_subvertex(database[index].state, 0);
+	      in.write_subvertex(database[action][index].state, 0);
 	      in.write_subvertex(feature, numStates);
 	      
 	      whiteice::math::vertex<T> out(1);
@@ -534,9 +576,9 @@ namespace whiteice
 		  whiteice::math::vertex<T> f;
 		  
 		  input.zero();
-		  input.write_subvertex(database[index].newstate, 0);
+		  input.write_subvertex(database[action][index].newstate, 0);
 
-		  getActionFeature(database[index].action, f);
+		  getActionFeature(j, f);
 		  input.write_subvertex(f, numStates);
 
 		  preprocess.preprocess(0, input);
@@ -560,20 +602,22 @@ namespace whiteice
 
 		if(epoch > 0){
 		  unew_value =
-		    database[index].reinforcement + gamma*maxvalue;
+		    database[action][index].reinforcement + gamma*maxvalue;
 		}
 		else{ // first iteration always uses raw reinforcement values
 		  unew_value =
-		    database[index].reinforcement;
+		    database[action][index].reinforcement;
 		}
 	      }
 	      
 	      out[0] = unew_value;
+
+#pragma omp critical
+	      {
+		data.add(0, in);
+		data.add(1, out);
+	      }
 	      
-	      data.add(0, in);
-	      data.add(1, out);
-	      
-	      i++;
 	    }
 	    
 	    // add preprocessing to dataset (only at epoch 0)
@@ -589,8 +633,8 @@ namespace whiteice
 
 	    const bool dropout = false;
 	    
-	    if(grad.startOptimize(data, nn, 2, 250,
-				  dropout) == false){
+	    if(grad.startOptimize(data, nn, 2, 250, dropout) == false){
+				  
 	      printf("STARTING GRAD OPTIMIZATION FAILED\n");
 	    }
 	    else{

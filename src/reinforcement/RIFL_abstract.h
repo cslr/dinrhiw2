@@ -127,7 +127,6 @@ namespace whiteice
     struct rifl_datapoint
     {
       whiteice::math::vertex<T> state, newstate;
-      unsigned int action;
       T reinforcement;
     };
 

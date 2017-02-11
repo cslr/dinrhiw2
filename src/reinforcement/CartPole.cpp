@@ -107,6 +107,7 @@ namespace whiteice
   {
     // cart-pole system system state
     theta = this->rng.uniform()*T(2.0*M_PI) - T(M_PI); // angle is [-PI, PI]
+    theta = theta / T(100.0); 
     theta_dot = T(0.0);
     theta_dotdot = T(0.0);
     
@@ -274,6 +275,7 @@ namespace whiteice
 	  // additionally we add minus term for being too far from zero (W)
 
 #if 1
+#ifdef USE_SDL
 	  T x_reinforcement = abs(x);
 	  {
 	    if(x_reinforcement > T(W/2.0)){
@@ -290,6 +292,7 @@ namespace whiteice
 	  
 	    reinforcement = T(0.5)*(a + x_reinforcement); // [-1.0, 0]
 	  }
+#endif
 #endif
 	    
 	  reinforcement = T(1.0) + a; // we keep things between [0,1]

@@ -502,7 +502,7 @@ namespace whiteice
       {
 	nl.resize(arch.size()-1);
 	for(unsigned int l=0;l<nl.size();l++){
-	  nl[l] = whiteice::nnetwork<T>::sigmoid;
+	  nl[l] = whiteice::nnetwork<T>::tanh;
 	}
 
 	// nl[nl.size()-1] = whiteice::nnetwork<T>::pureLinear;
@@ -526,6 +526,8 @@ namespace whiteice
 	    nl[l] = whiteice::nnetwork<T>::halfLinear;
 	  else if(ints[l] == 3)
 	    nl[l] = whiteice::nnetwork<T>::pureLinear;
+	  else if(ints[l] == 4)
+	    nl[l] = whiteice::nnetwork<T>::tanh;
 	  else
 	    return false; // bad data
 	}
@@ -716,6 +718,8 @@ namespace whiteice
 	      ints.push_back(2);
 	    else if(nl[l] == whiteice::nnetwork<T>::pureLinear)
 	      ints.push_back(3);
+	    else if(nl[l] == whiteice::nnetwork<T>::tanh)
+	      ints.push_back(4);
 	    else
 	      return false;
 	  }

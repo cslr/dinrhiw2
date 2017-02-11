@@ -50,7 +50,7 @@ namespace whiteice
 
     nonlinearity.resize(arch.size()-1);
     for(unsigned int i=0;i<nonlinearity.size();i++)
-      nonlinearity[i] = sigmoid;
+      nonlinearity[i] = tanh;
     
     nonlinearity[nonlinearity.size()-1] = pureLinear;
 
@@ -549,7 +549,7 @@ namespace whiteice
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
 	  // T scaling = T(2.2);
-	  T scaling = T(1.0);
+	  T scaling = T(0.1);
 	  
 	  var *= scaling;
 	  
@@ -835,13 +835,36 @@ namespace whiteice
       
       return output;
     }
+    else if(nonlinearity[layer] == tanh){
+      const T a = T(1.7159);
+      const T b = T(2.0/3.0);
+      
+      if(input > T(50.0)) return a;
+      else if(input < T(-50.0)) return -a;
+      
+      const T e2x = whiteice::math::exp(T(2.0)*b*input);
+      const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+      const T output = a*tanhbx;
+
+      return output;
+    }
     else if(nonlinearity[layer] == halfLinear){
       // T output = T(0.0);
       
       if(neuron & 1){
-	// non-linearity motivated by restricted boltzman machines..
-	T output = T(1.0) / (T(1.0) + math::exp(-input));
-	return output;
+	{
+	  const T a = T(1.7159);
+	  const T b = T(2.0/3.0);
+	  
+	  if(input > T(50.0)) return a;
+	  else if(input < T(-50.0)) return -a;
+	  
+	  const T e2x = whiteice::math::exp(T(2.0)*b*input);
+	  const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+	  const T output = a*tanhbx;
+	  
+	  return output;
+	}
       }
       else{
 	return input; // half-the layers nodes are linear!
@@ -883,11 +906,33 @@ namespace whiteice
       output = math::exp(-input) / (output*output);
       return output;
     }
+    else if(nonlinearity[layer] == tanh){
+      if(input > T(50.0)) return T(0.0);
+      else if(input < T(-50.0)) return T(0.0);
+      
+      const T a = T(1.7159);
+      const T b = T(2.0/3.0);
+
+      const T e2x = whiteice::math::exp(T(2.0)*b*input);
+      const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+
+      T output = a*b*(T(1.0) - tanhbx*tanhbx);
+      
+      return output;
+    }
     else if(nonlinearity[layer] == halfLinear){
       if(neuron & 1){
-	// non-linearity motivated by restricted boltzman machines..
-	T output = T(1.0) + math::exp(-input);
-	output = math::exp(-input) / (output*output);
+	if(input > T(50.0)) return T(0.0);
+	else if(input < T(-50.0)) return T(0.0);
+	
+	const T a = T(1.7159);
+	const T b = T(2.0/3.0);
+
+	const T e2x = whiteice::math::exp(T(2.0)*b*input);
+	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+	
+	T output = a*b*(T(1.0) - tanhbx*tanhbx);
+	
 	return output;
       }
       else{
@@ -1046,6 +1091,9 @@ namespace whiteice
 	  else if(nonlinearity[l] == pureLinear){
 	    ints.push_back(3);
 	  }
+	  else if(nonlinearity[l] == tanh){
+	    ints.push_back(4);
+	  }
 	  else return false; // error!
 	}
 
@@ -1172,7 +1220,7 @@ namespace whiteice
 	nonlinearity.resize(arch.size()-1);
 	
 	for(unsigned int i=0;i<nonlinearity.size();i++)
-	  nonlinearity[i] = sigmoid;
+	  nonlinearity[i] = tanh;
 
 	// nonlinearity[nonlinearity.size()-1] = pureLinear;
 	
@@ -1218,6 +1266,9 @@ namespace whiteice
 	  }
 	  else if(ints[l] == 3){
 	    nonlinearity[l] = pureLinear;
+	  }
+	  else if(ints[l] == 4){
+	    nonlinearity[l] = tanh;
 	  }
 	  else{
 	    return false;
