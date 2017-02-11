@@ -15,7 +15,7 @@ namespace whiteice
   {
 
     template <typename T>
-    NNGradDescent<T>::NNGradDescent(bool negativefeedback, bool errorTerms)
+    NNGradDescent<T>::NNGradDescent(bool heuristics, bool errorTerms)
     {
       best_error = T(INFINITY);
       iterations = 0;
@@ -23,7 +23,7 @@ namespace whiteice
       NTHREADS = 0;
       thread_is_running = 0;
       
-      this->negativefeedback = negativefeedback;
+      this->heuristics = heuristics;
       this->errorTerms = errorTerms;
 
       dropout = false;
@@ -42,7 +42,7 @@ namespace whiteice
       NTHREADS = grad.NTHREADS;
       MAXITERS = grad.MAXITERS;      
       
-      this->negativefeedback = grad.negativefeedback;
+      this->heuristics = grad.heuristics;
       this->errorTerms = grad.errorTerms;
 
       dropout = grad.dropout;
@@ -380,10 +380,18 @@ namespace whiteice
 	  if(first_time == false){
 	    nn.randomize();
 	    
-	    if(negativefeedback){
+	    if(heuristics){
+	      normalize_weights_to_unity(nn);
+	      
+#if 0
+	      if(whiten1d_nnetwork(nn, dtrain) == false)
+		printf("ERROR: whiten1d_nnetwork failed\n");
+#endif
+#if 0
 	      normalize_weights_to_unity(nn);
 	      T alpha = T(0.5f);
 	      negative_feedback_between_neurons(nn, dtrain, alpha);
+#endif
 	    }
 	  }
 	  else{
@@ -397,8 +405,7 @@ namespace whiteice
 	///////////////////////////////////////
 	{
 	  math::vertex<T> weights, w0;
-	  math::vertex<T> prev_sumgrad;
-	  	  
+	  
 	  T prev_error, error;	  
 	  T delta_error = 0.0f;
 
@@ -422,10 +429,7 @@ namespace whiteice
 	  T ratio = T(1.0f);
 
 	  
-	  while(error > T(0.001f) && 
-		ratio > T(0.00001f) && 
-		iterations < MAXITERS &&
-		running)
+	  do
 	  {
 	    prev_error = error;
 
@@ -515,10 +519,19 @@ namespace whiteice
 
 	      if(dropout) nn.removeDropOut();
 	      
-	      if(negativefeedback){
+	      if(heuristics){
+		normalize_weights_to_unity(nn);
+#if 0
+		if(whiten1d_nnetwork(nn, dtrain) == false)
+		  printf("ERROR: whiten1d_nnetwork failed\n");
+#endif
+		
+#if 0
 		// using negative feedback heuristic 
 		T alpha = T(0.5f); // lrate;
 		negative_feedback_between_neurons(nn, dtrain, alpha);
+#endif
+		printf("HEURISTICS DONE\n");
 	      }
 
 	      error = getError(nn, dtrain);
@@ -537,14 +550,11 @@ namespace whiteice
 	    while(delta_error < T(0.0) && lrate != T(0.0) &&
 		  ratio > T(0.00001f) && running);
 
-	    prev_sumgrad = lrate * sumgrad;
 	    
+	    nn.exportdata(weights);
 	    w0 = weights;
-	    nn.importdata(w0);
 
-	    if(dropout) nn.removeDropOut();
 	    
-
 	    {
 	      solution_lock.lock();
 	      
@@ -552,13 +562,12 @@ namespace whiteice
 		// improvement (smaller error with early stopping)
 		best_error = error;
 		nn.exportdata(bestx);
-		
-		// std::cout << "BEST ERROR = " << best_error << std::endl;
 	      }
 	    
 	      solution_lock.unlock();
 	    }
 
+	    iterations++;
 	    
 	    // cancellation point
 	    {
@@ -566,39 +575,32 @@ namespace whiteice
 		std::lock_guard<std::mutex> lock(thread_is_running_mutex);
 		thread_is_running--;
 		thread_is_running_cond.notify_all();
-		
-		// printf("3: THEAD IS RUNNING: %d\n", thread_is_running);
 		return; // stops execution
 	      }
 	    }
 
-	    // printf("\r%d : %f (%f)                  ", counter, error.c[0], ratio.c[0]);
-	    // fflush(stdout);
 	    
-	    iterations++;
 	  }
+	  while(error > T(0.001f) && 
+		ratio > T(0.00001f) && 
+		iterations < MAXITERS &&
+		running);
+
 	
-	  // printf("\r%d : %f (%f)                  \n", counter, error.c[0], ratio.c[0]);
-	  // fflush(stdout);
-
-
+	  
 	  // 3. after convergence checks if the result is better
 	  //    than the earlier one
-	  
-	  solution_lock.lock();
-
-	  if(error < best_error){
-	    // improvement (smaller error with early stopping)
-	    best_error = error;
-	    nn.exportdata(bestx);
-
-	    // std::cout << "BEST ERROR = " << best_error << std::endl;
+	  {
+	    solution_lock.lock();
+	    
+	    if(error < best_error){
+	      // improvement (smaller error with early stopping)
+	      best_error = error;
+	      nn.exportdata(bestx);
+	    }
+	    
+	    solution_lock.unlock();
 	  }
-	  
-	  // converged_solutions++;
-	  // converged_solutions += counter;
-
-	  solution_lock.unlock();
 	}
 	
 	

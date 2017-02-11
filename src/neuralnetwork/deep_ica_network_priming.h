@@ -76,6 +76,24 @@ namespace whiteice
    */
   bool initialize_nnetwork(const std::vector<deep_ica_parameters>& parameters,
 			   nnetwork<>& nnet);
+
+
+  /*
+   * adds normalization to each layer which forces local field's
+   * v = Wx + b which are fed to non-linearities to have 
+   * zero mean and unit variance. E[v] = 0, Var[v] = 1.0.
+   * It has been reported that such normalizations are very beneficial
+   * to neural network layers ability to process data.
+   *
+   * This normalization is added to all non-frozen layers except
+   * to the last layer.
+   */
+   template <typename T>
+     bool whiten1d_nnetwork(nnetwork<T>& nnet, const dataset<T>& data);
+   
+   template <typename T>
+     bool whiten1d_neuronlayer(nnetwork<T>& net, const unsigned int l);
+  
   
   /**
    * function to cause negative feedback between neurons of 
@@ -118,8 +136,27 @@ namespace whiteice
    *          the problem to be "nice"
    */
   template <typename T>
-    bool normalize_weights_to_unity(nnetwork<T>& nnet, bool normalizeLastLayer = false);
+    bool normalize_weights_to_unity(nnetwork<T>& nnet,
+				    bool normalizeLastLayer = false);
+
+
+  extern template bool whiten1d_nnetwork(nnetwork<float>& nnet,
+					 const dataset<float>& data);
+  extern template bool whiten1d_nnetwork(nnetwork<double>& nnet,
+					 const dataset<double>& data);
+  extern template bool whiten1d_nnetwork(nnetwork< math::blas_real<float> >& nnet,
+					 const dataset< math::blas_real<float> >& data);
+  extern template bool whiten1d_nnetwork(nnetwork< math::blas_real<double> >& nnet,
+					 const dataset< math::blas_real<double> >& data);
   
+  extern template bool whiten1d_neuronlayer(nnetwork<float>& net,
+					    const unsigned int l);
+  extern template bool whiten1d_neuronlayer(nnetwork<double>& net,
+					    const unsigned int l);
+  extern template bool whiten1d_neuronlayer(nnetwork< math::blas_real<float> >& net,
+					    const unsigned int l);
+  extern template bool whiten1d_neuronlayer(nnetwork< math::blas_real<double> >& net,
+					    const unsigned int l); 
   
   extern template bool neuronlast_layer_mse<float>(nnetwork<float>& nnet, const dataset<float>& data, unsigned int layer);
   extern template bool neuronlast_layer_mse<double>(nnetwork<double>& nnet, const dataset<double>& data, unsigned int layer);

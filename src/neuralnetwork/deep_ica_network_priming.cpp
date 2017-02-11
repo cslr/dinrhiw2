@@ -357,6 +357,100 @@ namespace whiteice
 
     return true;
   }
+
+
+  template <typename T>
+  bool whiten1d_nnetwork(nnetwork<T>& nnet, const dataset<T>& data)
+  {
+    if(data.getNumberOfClusters() <= 1)
+      return false;
+    if(data.size(0) <= 0)
+      return false;
+    
+    const unsigned int L = nnet.getLayers() - 1;
+
+    const unsigned int SAMPLES = ((data.size(0) > 1000) ? 1000 : data.size(0));
+
+    for(unsigned int l=0;l<L;l++){
+
+      // goes through the data and collects samples per layer
+      for(unsigned int i=0;i<SAMPLES;i++){
+	const unsigned int index = rand() % data.size(0);
+	nnet.input() = data.access(0, index);
+	nnet.calculate(false, true);
+      }
+
+      if(whiten1d_neuronlayer(nnet, l) == false)
+	return false;
+    }
+
+    return true;
+  }
+
+  
+  template <typename T>
+  bool whiten1d_neuronlayer(nnetwork<T>& nnet, const unsigned int l)
+  {
+
+    // calculates mean and variance of each dimension
+    {
+      math::vertex<T> m(nnet.getInputs(l));
+      math::vertex<T> s(nnet.getInputs(l));
+      
+      const T epsilon = T(10e-3);
+      
+      const unsigned int SAMPLES = 1000; // 1000 sample random selection
+      
+      std::vector< math::vertex<T> > samples;
+      if(nnet.getSamples(samples, l, SAMPLES) == false)
+	return false;
+
+      m.zero();
+      s.zero();
+
+      for(unsigned int j=0;j<samples.size();j++){
+	const auto& v = samples[j];
+	m += v;
+	for(unsigned int i=0;i<s.size();i++)
+	  s[i] += v[i]*v[i];
+      }
+
+      m /= T(samples.size()); // E[x]
+      s /= T(samples.size()); // E[x^2]
+
+      for(unsigned int i=0;i<s.size();i++)
+	s[i] = sqrt(abs(s[i] - m[i]*m[i])); // StDev[x]
+
+      // calculates scalings
+
+      for(unsigned int i=0;i<m.size();i++){
+	m[i] = -m[i] / (s[i] + epsilon);
+	s[i] = T(1.0) / (s[i] + epsilon);
+      }
+
+      math::matrix<T> W;
+      math::vertex<T> b;
+
+      if(nnet.getWeights(W, l) == false) return false;
+      if(nnet.getBias(b, l) == false) return false;
+
+      // scales weight vectors and bias to process zero mean unit variance data
+      b = W*m + b;
+
+      assert(s.size() == W.xsize());
+
+      for(unsigned int j=0;j<W.ysize();j++){
+	for(unsigned int i=0;i<W.xsize();i++){
+	  W(j,i) = W(j,i)*s[i];
+	}
+      }
+
+      if(nnet.setWeights(W, l) == false) return false;
+      // if(nnet.setBias(b, l) == false) return false;
+    }
+
+    return true;
+  }
   
   
   /**
@@ -694,7 +788,7 @@ namespace whiteice
   
   /**
    * helper function to normalize neural network weight vectors 
-   * ||w|| = 1 and ||b|| = 1 for each layer
+   * ||w_i|| = 1 and for each layer
    * 
    * (forcing this between every gradient descent steps in directly
    *  forces neural network weights to COMPETE against each other,
@@ -726,14 +820,18 @@ namespace whiteice
     for(unsigned int i=0;i<N;i++){
       math::matrix<T> W;
       math::vertex<T> b;
-     
+
+      // skip layers that are set to be "frozen"
+      if(nnet.getFrozen(i)) 
+	continue;
+
       if(!nnet.getWeights(W, i)) return false;
 
       for(unsigned int j=0;j<W.ysize();j++){
 	W.rowcopyto(b, j);
 	b.normalize();
 	
-	b *= T(2.0f); // scaling
+	// b *= T(2.0f); // scaling
 	
 	W.rowcopyfrom(b, j);
       }
@@ -745,6 +843,25 @@ namespace whiteice
 
     return true;
   }
+
+
+  template bool whiten1d_nnetwork(nnetwork<float>& nnet,
+				  const dataset<float>& data);
+  template bool whiten1d_nnetwork(nnetwork<double>& nnet,
+				  const dataset<double>& data);
+  template bool whiten1d_nnetwork(nnetwork< math::blas_real<float> >& nnet,
+				  const dataset< math::blas_real<float> >& data);
+  template bool whiten1d_nnetwork(nnetwork< math::blas_real<double> >& nnet,
+				  const dataset< math::blas_real<double> >& data);
+  
+  template bool whiten1d_neuronlayer(nnetwork<float>& net,
+				     const unsigned int l);
+  template bool whiten1d_neuronlayer(nnetwork<double>& net,
+				     const unsigned int l);
+  template bool whiten1d_neuronlayer(nnetwork< math::blas_real<float> >& net,
+				     const unsigned int l);
+  template bool whiten1d_neuronlayer(nnetwork< math::blas_real<double> >& net,
+				     const unsigned int l); 
   
   
   template bool neuronlast_layer_mse<float>(nnetwork<float>& nnet, const dataset<float>& data, unsigned int layer);

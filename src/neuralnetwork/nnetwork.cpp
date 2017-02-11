@@ -1624,10 +1624,20 @@ namespace whiteice
   }
   
   template <typename T>
-  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw()
+  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer, unsigned int MAXSAMPLES) const throw()
   {
     if(layer >= this->samples.size()) return false;
-    samples = this->samples[layer];
+
+    if(MAXSAMPLES == 0 || MAXSAMPLES >= this->samples[layer].size()){
+      samples = this->samples[layer];
+      return true;
+    }
+
+    for(unsigned int i=0;i<MAXSAMPLES;i++){
+      const unsigned int index = rng.rand() % this->samples[layer].size();
+      samples.push_back(this->samples[layer][index]);
+    }
+    
     return true;
   }
   

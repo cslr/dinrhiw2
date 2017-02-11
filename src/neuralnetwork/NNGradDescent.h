@@ -32,7 +32,7 @@ namespace whiteice
 
       // if errorTerms is true then dataset output values are actual
       // errors rather than correct values
-        NNGradDescent(bool negativefeedback = false, bool errorTerms = false);
+        NNGradDescent(bool heuristics = false, bool errorTerms = false);
         NNGradDescent(const NNGradDescent<T>& grad);
 	~NNGradDescent();
 
@@ -79,7 +79,7 @@ namespace whiteice
       
         whiteice::nnetwork<T>* nn; // network architecture and settings
       
-        bool negativefeedback;
+        bool heuristics;
         bool dropout; // use dropout heuristics when training
       
         vertex<T> bestx;

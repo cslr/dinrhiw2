@@ -146,7 +146,11 @@ namespace whiteice
     bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); // injects (if possible) subnet into net starting from fromLayer:th layer
     
     unsigned int getSamplesCollected() const throw();
-    bool getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer) const throw();
+
+    /* gets MAXSAMPLES samples or getSamplesCollected() number of samples whichever
+     * if smaller. if MAXSAMPLES = 0 gets getSamplesCollected() number of samples */
+    bool getSamples(std::vector< math::vertex<T> >& samples,
+		    unsigned int layer, const unsigned int MAXSAMPLES=0) const throw();
     void clearSamples() throw();
 
     // drop out support:
