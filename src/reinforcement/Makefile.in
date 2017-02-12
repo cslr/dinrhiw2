@@ -4,7 +4,7 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o
+OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o
 
 EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
@@ -14,11 +14,13 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../conffile.o ../neuralnetwork/NNGradDescent.o \
 	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o
 
-TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
+TEST1_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
+
+TEST2_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test2.o
 
 
 SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp \
-	tst/test.cpp \
+	CartPole2.cpp tst/test.cpp tst/test2.cpp \
 	../dataset.cpp \
 	../math/vertex.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
@@ -33,7 +35,9 @@ CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPA
 
 # -DUSE_SDL `/usr/local/bin/sdl2-config --cflags`
 
-TARGET= testsuite
+TARGET1=testsuite
+TARGET2=testsuite2
+
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../crypto $(OPTIMIZE)
 
 # `/usr/local/bin/sdl2-config --cflags`
@@ -47,12 +51,15 @@ CD = cd
 
 ##################################################
 
-all: $(TEST_OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(TEST_OBJECTS) $(LIBS)
+all: $(TEST1_OBJECTS) $(TEST2_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET1) $(TEST1_OBJECTS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET2) $(TEST2_OBJECTS) $(LIBS)
 
 clean:
-	$(RM) $(TEST_OBJECTS)
-	$(RM) $(TARGET)
+	$(RM) $(TEST1_OBJECTS)
+	$(RM) $(TARGET1)
+	$(RM) $(TEST2_OBJECTS)
+	$(RM) $(TARGET2)
 	$(RM) *~
 
 realclean: clean

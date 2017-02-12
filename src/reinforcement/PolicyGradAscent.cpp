@@ -408,7 +408,7 @@ namespace whiteice
 #endif
 
       
-      // 2. normal gradient descent
+      // 2. normal gradient ascent
       ///////////////////////////////////////
       {
 	math::vertex<T> weights, w0;
@@ -533,7 +533,7 @@ namespace whiteice
 	    
 	    do{
 	      weights = w0;
-	      weights -= lrate * sumgrad;
+	      weights += lrate * sumgrad;
 
 	      if(policy.importdata(weights) == false)
 		std::cout << "import failed." << std::endl;

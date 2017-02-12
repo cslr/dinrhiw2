@@ -27,7 +27,7 @@ int main(int argc, char** argv)
   }
 
   if(argc <= 1){
-    whiteice::CartPole< whiteice::math::blas_real<double> > system;
+    whiteice::CartPole2< whiteice::math::blas_real<double> > system;
 
     system.setEpsilon(0.50); // 50% of examples are selected accoring to model
     system.setLearningMode(true);
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
   }
   else if(strcmp(argv[1], "use") == 0){
 
-    whiteice::CartPole< whiteice::math::blas_real<double> > system;
+    whiteice::CartPole2< whiteice::math::blas_real<double> > system;
 
     system.setEpsilon(1.00); // 100% of examples are selected accoring to model
     system.setLearningMode(false);

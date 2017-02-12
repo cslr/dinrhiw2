@@ -36,7 +36,8 @@ namespace whiteice
     class RIFL_abstract2
     {
     public:
-    
+
+    // parameters are dimensions of vectors dimActions and dimStates: R^d
     RIFL_abstract2(unsigned int numActions, unsigned int numStates);
     ~RIFL_abstract2() throw();
 
