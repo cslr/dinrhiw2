@@ -31,18 +31,8 @@ namespace whiteice
     {
       std::vector<unsigned int> arch;
       arch.push_back(numStates + dimActionFeatures);
-      // arch.push_back(numStates*100);
-      // arch.push_back(numStates*100);
-
-      unsigned int L1 = (numStates + dimActionFeatures)/2;
-      if(L1 < 20) L1 = 20;
-      
-      arch.push_back(L1);
-
-      unsigned int L2 = sqrt(numStates + dimActionFeatures);
-      if(L2 < 20) L2 = 20;
-      
-      arch.push_back(L2);
+      arch.push_back(20);
+      arch.push_back(20);
       arch.push_back(1);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);

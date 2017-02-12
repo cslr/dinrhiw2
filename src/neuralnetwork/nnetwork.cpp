@@ -967,7 +967,10 @@ namespace whiteice
     return output;
   }
   
-  
+
+  /*
+   * calculates gradient of input value GRAD[f(v|w)] while keeping weights w constant
+   */
   template <typename T>
   bool nnetwork<T>::gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const
   {
@@ -979,27 +982,27 @@ namespace whiteice
     math::vertex<T> x = input;
 
     math::matrix<T> A;
-    math::vertex<T> a;
+    math::vertex<T> b;
     
-    for(unsigned int l=0;l<(L-1);l++){
+    for(unsigned int l=0;l<L;l++){
       getWeights(A, l);
-      getBias(a, l);
+      getBias(b, l);
       
       grad = A*grad;
       
-      x = A*x + a;
-      
-      for(unsigned int i=0;i<x.size();i++){
-	x[i] *= Dnonlin(x[i], l, i);
+      x = A*x + b;
+
+      for(unsigned int j=0;j<A.ysize();j++){
+	for(unsigned int i=0;i<A.xsize();i++){
+	  A(j,i) *= Dnonlin(x[j], l, j);
+	}
       }
 
-      // FIXME is this really correct? (we should use non-linearities to alter gradient?)
+      for(unsigned int i=0;i<x.size();i++){
+	x[i] = nonlin(x[i], l, i);
+      }
+      
     }
-    
-    getWeights(A, L-1);
-    getBias(a, L-1);
-    
-    grad = A*grad;
     
     return true;
   }
