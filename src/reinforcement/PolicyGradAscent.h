@@ -1,5 +1,5 @@
 /*
- * Parallel Policy gradient ascent optimizer 
+ * Parallel Policy maximizer (gradient ascent) 
  * (maximizes Q(state, action=policy(state)))
  * 
  */
@@ -20,7 +20,7 @@
 namespace whiteice
 {
   
-  template <typename T=blas_real<float> >
+  template <typename T=whiteice::math::blas_real<float> >
     class PolicyGradAscent
     {
     public:
@@ -44,7 +44,7 @@ namespace whiteice
      * 
      * dropout - whether to use dropout heuristics when training
      */
-    bool startOptimize(const whiteice::dataset<T>& data,
+    bool startOptimize(const whiteice::dataset<T>* data,
 		       const whiteice::nnetwork<T>& Q,
 		       const whiteice::nnetwork<T>& policy, // optimized policy
 		       unsigned int NTHREADS,
@@ -61,35 +61,35 @@ namespace whiteice
      * its average error in testing dataset and the number
      * of converged solutions so far.
      */
-    bool getSolution(whiteice::nnetwork<T>& nn,
-		     T& error, unsigned int& iterations);
+    bool getSolution(whiteice::nnetwork<T>& policy,
+		     T& value, unsigned int& iterations);
     
     /* used to stop the optimization process */
     bool stopComputation();
     
     private:
-    T getError(const whiteice::nnetwork<T>& net,
-	       const whiteice::dataset<T>& dtest);
+    // calculates mean Q-value of the policy in dtest dataset (states are inputs)
+    T getValue(const whiteice::nnetwork<T>& policy,
+	       const whiteice::nnetwork<T>& Q, 
+	       const whiteice::dataset<T>& dtest) const;
 
+
+    const whiteice::nnetwork<T>* Q;
+    const whiteice::dataset<T>* data;
     
-    whiteice::nnetwork<T>* nn; // network architecture and settings
+    whiteice::nnetwork<T>* policy; // network architecture and settings
+    
     
     bool heuristics;
     bool dropout; // use dropout heuristics when training
     
-        vertex<T> bestx;
-    T best_error;
-    unsigned int iterations;
-    
-    const whiteice::dataset<T>* data;
+    whiteice::math::vertex<T> bestx; // best policy weights
+    T best_value;
+    unsigned int iterations;        
     
     // flag to indicate this is the first thread to start optimization
     bool first_time;
     std::mutex first_time_lock;
-    
-    bool errorTerms; // dataset output values are
-    // delta error values rather than correct outputs
-    // (needed by reinforcement learning)
     
     unsigned int NTHREADS;
     unsigned int MAXITERS;
@@ -105,7 +105,12 @@ namespace whiteice
     void optimizer_loop();
     
     };
+
   
+  extern template class PolicyGradAscent< float >;
+  extern template class PolicyGradAscent< double >;
+  extern template class PolicyGradAscent< whiteice::math::blas_real<float> >;
+  extern template class PolicyGradAscent< whiteice::math::blas_real<double> >;
 };
 
 

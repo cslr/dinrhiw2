@@ -37,8 +37,8 @@ namespace whiteice
     {
     public:
     
-    RIFL_abstract(unsigned int numActions, unsigned int numStates);
-    ~RIFL_abstract() throw();
+    RIFL_abstract2(unsigned int numActions, unsigned int numStates);
+    ~RIFL_abstract2() throw();
 
     // starts Reinforcement Learning thread
     bool start();
@@ -95,7 +95,7 @@ namespace whiteice
     whiteice::bayesian_nnetwork<T> policy;
     mutable std::mutex policy_mutex;
 
-    bool hasModel;
+    std::vector<bool> hasModel;
     bool learningMode;
     
     T epsilon;

@@ -2,10 +2,13 @@
 
 
 #include "RIFL_abstract2.h"
+
 #include "NNGradDescent.h"
+#include "PolicyGradAscent.h"
 
 #include <assert.h>
 #include <list>
+
 
 namespace whiteice
 {
@@ -20,8 +23,11 @@ namespace whiteice
       epsilon = T(0.66);
 
       learningMode = true;
-      hasModel = false;
 
+      hasModel.resize(2);
+      hasModel[0] = false; // Q-network
+      hasModel[1] = false; // policy-network
+      
       this->numActions = numActions;
       this->numStates  = numStates;
     }
@@ -29,35 +35,42 @@ namespace whiteice
     
     // initializes neural network architecture and weights randomly
     {
-      std::lock_guard<std::mutex> lock(model_mutex);
-
       std::vector<unsigned int> arch;
-      arch.push_back(numStates + numActions);
-      arch.push_back(numStates*20);
-      arch.push_back(numStates*20);
-      //arch.push_back(numStates*100);
-      arch.push_back(1);
-
+      
       {
-	whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
-	nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
-	nn.randomize();
+	std::lock_guard<std::mutex> lock(Q_mutex);
 	
-	Q.importNetwork(nn);
+	arch.push_back(numStates + numActions);
+	arch.push_back(numStates*20);
+	arch.push_back(numStates*20);
+	//arch.push_back(numStates*100);
+	arch.push_back(1);
+	
+	{
+	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.randomize();
+	  
+	  Q.importNetwork(nn);
+	}
       }
 
-      arch.clear();
-      arch.push_back(numStates);
-      arch.push_back(numStates*20);
-      arch.push_back(numStates*20);
-      arch.push_back(numActions);
-
       {
-	whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
-	nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
-	nn.randomize();
+	std::lock_guard<std::mutex> lock(policy_mutex);
 	
-	policy.importNetwork(nn);
+	arch.clear();
+	arch.push_back(numStates);
+	arch.push_back(numStates*20);
+	arch.push_back(numStates*20);
+	arch.push_back(numActions);
+	
+	{
+	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.randomize();
+	  
+	  policy.importNetwork(nn);
+	}
       }
       
     }
@@ -177,13 +190,14 @@ namespace whiteice
   template <typename T>
   void RIFL_abstract2<T>::setHasModel(bool hasModel) throw()
   {
-    this->hasModel = hasModel;
+    this->hasModel[0] = hasModel;
+    this->hasModel[1] = hasModel;
   }
 
   template <typename T>
   bool RIFL_abstract2<T>::getHasModel() throw()
   {
-    return hasModel;
+    return (hasModel[0] && hasModel[1]);
   }
 
   
@@ -191,28 +205,56 @@ namespace whiteice
   template <typename T>
   bool RIFL_abstract2<T>::save(const std::string& filename) const
   {
-    std::lock_guard<std::mutex> lock(model_mutex);
+    std::lock_guard<std::mutex> lock1(Q_mutex);
+    std::lock_guard<std::mutex> lock2(policy_mutex);
 
-    return model.save(filename);
+    char buffer[256];
+    
+    snprintf(buffer, 256, "q-%s", filename.c_str());    
+    if(Q.save(buffer) == false) return false;
+
+    snprintf(buffer, 256, "policy-%s", filename.c_str());
+    if(policy.save(buffer) == false) return false;
+
+    return true;
   }
+
   
   // loads learnt Reinforcement Learning Model from file
   template <typename T>
   bool RIFL_abstract2<T>::load(const std::string& filename)
   {
-    std::lock_guard<std::mutex> lock(model_mutex);
+    std::lock_guard<std::mutex> lock1(Q_mutex);
+    std::lock_guard<std::mutex> lock2(policy_mutex);
+
+    char buffer[256];
+        
+    snprintf(buffer, 256, "q-%s", filename.c_str());    
+    if(Q.load(buffer) == false) return false;
+
+    snprintf(buffer, 256, "policy-%s", filename.c_str());
+    if(policy.load(buffer) == false) return false;
     
-    return model.load(filename);
+    return true;
   }
   
 
   template <typename T>
   void RIFL_abstract2<T>::loop()
   {
-    std::vector< rifl_datapoint<T> > database;
-    whiteice::dataset<T> data;
-    whiteice::math::NNGradDescent<T> grad;
-    unsigned int epoch = 0;
+    std::vector< rifl2_datapoint<T> > database;
+    
+    whiteice::dataset<T> data;    
+    whiteice::math::NNGradDescent<T> grad; // Q(state,action) model optimizer
+
+    whiteice::dataset<T> data2;
+    whiteice::PolicyGradAscent<T> grad2;   // policy(state)=action model optimizer
+    
+    std::vector<unsigned int> epoch;
+
+    epoch.resize(2);
+    epoch[0] = 0;
+    epoch[1] = 0;
 
     const unsigned int DATASIZE = 50000;
     const unsigned int SAMPLESIZE = 1000;
@@ -264,6 +306,11 @@ namespace whiteice
 	// TODO add random normally distributed noise (exploration)
 	if(learningMode){
 	  
+	}
+
+	// if have no model then make random selections (normally distributed)
+	if(hasModel[0] == false || hasModel[1] == false){
+	  rng.normal(u);
 	}
 
 	action = u;
@@ -334,10 +381,10 @@ namespace whiteice
 	  else{
 	    std::lock_guard<std::mutex> lock(Q_mutex);
 	    Q.importNetwork(nn);
-	    hasModel = true;
+	    hasModel[0] = true;
 	  }
 
-	  epoch++;
+	  epoch[0]++;
 	    
 	  const unsigned int BATCHSIZE = database.size()/2;
 	  
@@ -348,8 +395,6 @@ namespace whiteice
 	  for(unsigned int i=0;i<BATCHSIZE;){
 	    const unsigned int index = rng.rand() % database.size();
 
-	    whiteice::math::vertex<T> in = database[index].state;
-	    
 	    whiteice::math::vertex<T> in(numStates + numActions);
 	    in.zero();
 	    in.write_subvertex(database[index].state, 0);
@@ -397,7 +442,8 @@ namespace whiteice
 	  unsigned int iters = 0;
 
 	  if(grad.getSolution(nn, error, iters)){
-	    printf("EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n", epoch, iters, error.c[0]);
+	    printf("Q-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
+		   epoch[0], iters, error.c[0]);
 	  }
 	}
       }
@@ -407,7 +453,83 @@ namespace whiteice
       // activates batch learning if it is not running
       if(database.size() >= SAMPLESIZE)
       {
-	if(grad2.isRunning())
+
+	if(grad2.isRunning() == false){
+	  whiteice::nnetwork<T> nn;
+	  T meanq;
+	  unsigned int iters;
+
+	  if(grad2.getSolution(nn, meanq, iters) == false){
+	    std::vector< math::vertex<T> > weights;
+
+	    std::lock_guard<std::mutex> lock(policy_mutex);
+	    
+	    if(policy.exportSamples(nn, weights, 1) == false){
+	      assert(0);
+	    }
+	    
+	    assert(weights.size() > 0);
+	    
+	    if(nn.importdata(weights[0]) == false){
+	      assert(0);
+	    }
+	  }
+	  else{
+	    std::lock_guard<std::mutex> lock(policy_mutex);
+	    policy.importNetwork(nn);
+	    hasModel[1] = true;
+	  }
+
+	  epoch[1]++;
+	    
+	  const unsigned int BATCHSIZE = database.size()/2;
+	  
+	  data2.clear();
+	  data2.createCluster("input-state", numStates);
+	  
+	  for(unsigned int i=0;i<BATCHSIZE;){
+	    const unsigned int index = rng.rand() % database.size();
+
+	    whiteice::math::vertex<T> in = database[index].state;
+
+	    data.add(0, in);
+	    
+	    i++;
+	  }
+
+	  {
+	    whiteice::nnetwork<T> q_nn;	    
+
+	    {
+	      std::lock_guard<std::mutex> lock(Q_mutex);
+	      std::vector< math::vertex<T> > weights;
+	      
+	      if(Q.exportSamples(q_nn, weights, 1) == false){
+		assert(0);
+	      }
+	      
+	      assert(weights.size() > 0);
+	      
+	      if(q_nn.importdata(weights[0]) == false){
+		assert(0);
+	      }
+	    }
+	    
+	    grad2.startOptimize(&data2, q_nn, nn, 2, 150);
+	  }
+	}
+	else{
+	  whiteice::nnetwork<T> nn;
+	  T error = T(0.0);
+	  unsigned int iters = 0;
+
+	  if(grad.getSolution(nn, error, iters)){
+	    printf("POLICY-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
+		   epoch[1], iters, error.c[0]);
+	  }
+	}
+
+	
 	
       }
       
