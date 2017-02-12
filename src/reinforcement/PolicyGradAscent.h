@@ -1,0 +1,113 @@
+/*
+ * Parallel Policy gradient ascent optimizer 
+ * (maximizes Q(state, action=policy(state)))
+ * 
+ */
+
+
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
+#include "dinrhiw_blas.h"
+#include "dataset.h"
+#include "dinrhiw.h"
+#include "nnetwork.h"
+
+#ifndef __whiteice__PolicyGradAscent_h
+#define __whiteice__PolicyGradAscent_h
+
+namespace whiteice
+{
+  
+  template <typename T=blas_real<float> >
+    class PolicyGradAscent
+    {
+    public:
+    
+    // if errorTerms is true then dataset output values are actual
+    // errors rather than correct values
+    PolicyGradAscent();
+    PolicyGradAscent(const PolicyGradAscent<T>& grad);
+    ~PolicyGradAscent();
+    
+    /*
+     * starts the optimization process using data as 
+     * the dataset as a training data
+     *
+     * Uses neural network with architecture arch.
+     *
+     * Executes NTHREADS in parallel when looking for
+     * the optimal solution and goes max to 
+     * MAXITERS iterations when looking for gradient
+     * descent solution
+     * 
+     * dropout - whether to use dropout heuristics when training
+     */
+    bool startOptimize(const whiteice::dataset<T>& data,
+		       const whiteice::nnetwork<T>& Q,
+		       const whiteice::nnetwork<T>& policy, // optimized policy
+		       unsigned int NTHREADS,
+		       unsigned int MAXITERS = 10000,
+		       bool dropout = false);
+    
+    /*
+     * Returns true if optimizer is running
+     */
+    bool isRunning();
+    
+    /*
+     * returns the best NN solution found so far and
+     * its average error in testing dataset and the number
+     * of converged solutions so far.
+     */
+    bool getSolution(whiteice::nnetwork<T>& nn,
+		     T& error, unsigned int& iterations);
+    
+    /* used to stop the optimization process */
+    bool stopComputation();
+    
+    private:
+    T getError(const whiteice::nnetwork<T>& net,
+	       const whiteice::dataset<T>& dtest);
+
+    
+    whiteice::nnetwork<T>* nn; // network architecture and settings
+    
+    bool heuristics;
+    bool dropout; // use dropout heuristics when training
+    
+        vertex<T> bestx;
+    T best_error;
+    unsigned int iterations;
+    
+    const whiteice::dataset<T>* data;
+    
+    // flag to indicate this is the first thread to start optimization
+    bool first_time;
+    std::mutex first_time_lock;
+    
+    bool errorTerms; // dataset output values are
+    // delta error values rather than correct outputs
+    // (needed by reinforcement learning)
+    
+    unsigned int NTHREADS;
+    unsigned int MAXITERS;
+    std::vector<std::thread*> optimizer_thread;
+    std::mutex solution_lock, start_lock;
+    
+    volatile bool running;
+    
+    volatile int thread_is_running;
+    std::mutex thread_is_running_mutex;
+    std::condition_variable thread_is_running_cond;
+    
+    void optimizer_loop();
+    
+    };
+  
+};
+
+
+
+#endif
