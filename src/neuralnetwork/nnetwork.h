@@ -94,9 +94,12 @@ namespace whiteice
     
     bool randomize();
     
-    // calculates gradient of parameter weights w f(v|w):
+    // calculates gradient of parameter weights w f(v|w) when using squared error: 
     // grad(0,5*error^2) = grad(right - output)
     bool gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+
+    // calculates gradient of parameter weights w f(v|w)
+    bool gradient(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;

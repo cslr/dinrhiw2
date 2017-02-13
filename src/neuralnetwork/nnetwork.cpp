@@ -806,6 +806,174 @@ namespace whiteice
   }
 
 
+  /* 
+   * calculates gradient of parameter weights w f(v|w)
+   *
+   * For math documentation read docs/neural_network_gradient.tm
+   *
+   */
+  template <typename T>
+  bool nnetwork<T>::gradient(const math::vertex<T>& input,
+			     math::matrix<T>& grad) const
+  {
+    if(input.size() != this->input_size()) return false;
+    
+    // local fields for each layer and input
+    std::vector< whiteice::math::vertex<T> > v;
+
+    auto x = input;
+
+    // forward pass: calculates local fields
+    int l = 0;
+    
+    for(l=0;l<(signed)getLayers();l++){
+      whiteice::math::matrix<T> W;
+      whiteice::math::vertex<T> b;
+
+      getWeights(W, l);
+      getBias(b, l);
+      
+      x = W*x + b;
+
+      v.push_back(x); // stores local field
+
+      for(unsigned int i=0;i<getNeurons(l);i++){
+	x[i] = nonlin(x[i], l, i);
+      }
+    }
+
+    /////////////////////////////////////////////////
+    // backward pass: calculates gradients
+
+    l--;
+
+    grad.resize(output_size(), gradient_size());
+    grad.zero(); // REMOVE ME: for debugging..
+
+    whiteice::math::matrix<T> lgrad; // calculates local gradient
+    lgrad.resize(output_size(), output_size());
+    lgrad.zero();
+
+    for(unsigned int i=0;i<output_size();i++){
+      lgrad(i,i) = Dnonlin(v[l][i], l, i);
+    }
+
+    unsigned int index = gradient_size();
+
+    for(;l>0;l--){
+      whiteice::math::matrix<T> W;
+      whiteice::math::vertex<T> b;
+
+      getWeights(W, l);
+      getBias(b, l);
+
+      // calculates gradient
+      {
+	whiteice::math::vertex<T> u(getNeurons(l));
+	
+	index -= W.ysize()*W.xsize() + b.size();
+
+	// weight matrix gradient
+	for(unsigned int j=0;j<W.ysize();j++){
+	  for(unsigned int i=0;i<W.xsize();i++){
+	    u.resize(getNeurons(l));
+	    u.zero();
+	    u[j] = nonlin(v[l-1][i], l-1, i);
+
+	    u = lgrad*u;
+
+	    for(unsigned int k=0;k<grad.ysize();k++)
+	      grad(k, index) = u[k];
+
+	    index++;
+	  }
+	}
+
+	// bias vector gradient
+	for(unsigned int i=0;i<b.size();i++){
+	  u.resize(getNeurons(l));
+	  u.zero();
+	  u[i] = T(1.0);
+
+	  u = lgrad*u;
+
+	  for(unsigned int k=0;k<grad.ysize();k++)
+	    grad(k, index) = u[k];
+
+	  index++;
+	}
+
+	index -= W.ysize()*W.xsize() + b.size();
+      }
+
+
+      // updates gradient
+      auto temp = lgrad * W;
+      lgrad.resize(temp.ysize(), getNeurons(l-1));
+      
+      for(unsigned int j=0;j<lgrad.ysize();j++)
+	for(unsigned int i=0;i<lgrad.xsize();i++)
+	  lgrad(j,i) = temp(j,i)*nonlin(v[l-1][i], l-1, i);
+      
+    }
+
+
+    // l = 0 layer (input layer)
+    {
+      whiteice::math::matrix<T> W;
+      whiteice::math::vertex<T> b;
+
+      getWeights(W, l);
+      getBias(b, l);
+      
+      // calculates gradient
+      {
+	whiteice::math::vertex<T> u(getNeurons(l));
+	
+	index -= W.ysize()*W.xsize() + b.size();
+
+	// weight matrix gradient
+	for(unsigned int j=0;j<W.ysize();j++){
+	  for(unsigned int i=0;i<W.xsize();i++){
+	    u.resize(getNeurons(l));
+	    u.zero();
+	    u[j] = input[i];
+
+	    u = lgrad*u;
+
+	    for(unsigned int k=0;k<grad.ysize();k++)
+	      grad(k, index) = u[k];
+
+	    index++;
+	  }
+	}
+
+	// bias vector gradient
+	for(unsigned int i=0;i<b.size();i++){
+	  u.resize(getNeurons(l));
+	  u.zero();
+	  u[i] = T(1.0);
+
+	  u = lgrad*u;
+
+	  for(unsigned int k=0;k<grad.ysize();k++)
+	    grad(k, index) = u[k];
+
+	  index++;
+	}
+
+	index -= W.ysize()*W.xsize() + b.size();
+      }
+      
+    }
+
+    
+    
+    assert(index == 0);
+
+    return true;
+  }
+  
   
   template <typename T> // non-linearity used in neural network
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
@@ -981,20 +1149,20 @@ namespace whiteice
     
     math::vertex<T> x = input;
 
-    math::matrix<T> A;
+    math::matrix<T> W;
     math::vertex<T> b;
     
     for(unsigned int l=0;l<L;l++){
-      getWeights(A, l);
+      getWeights(W, l);
       getBias(b, l);
       
-      grad = A*grad;
+      grad = W*grad;
       
-      x = A*x + b;
+      x = W*x + b;
 
-      for(unsigned int j=0;j<A.ysize();j++){
-	for(unsigned int i=0;i<A.xsize();i++){
-	  A(j,i) *= Dnonlin(x[j], l, j);
+      for(unsigned int j=0;j<grad.ysize();j++){
+	for(unsigned int i=0;i<grad.xsize();i++){
+	  grad(j,i) *= Dnonlin(x[j], l, j);
 	}
       }
 

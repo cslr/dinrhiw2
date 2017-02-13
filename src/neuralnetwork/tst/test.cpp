@@ -80,6 +80,8 @@ void lreg_nnetwork_test();
 void recurrent_nnetwork_test();
 void mixture_nnetwork_test();
 void ensemble_means_test();
+
+void nnetwork_gradient_test();
   
 void rbm_test();
 
@@ -121,6 +123,8 @@ int main()
   srand(seed);
   
   try{
+    nnetwork_gradient_test();
+    
     bbrbm_test();
     
     // mixture_nnetwork_test();
@@ -237,6 +241,76 @@ private:
   char* reason;
   
 };
+
+/************************************************************/
+
+void nnetwork_gradient_test()
+{
+  std::cout << "NNewtwork gradient() calculations test" << std::endl;
+
+  whiteice::RNG< whiteice::math::blas_real<double> > rng;
+
+  for(unsigned int e=0;e<10;e++) // number of tests
+  {
+    std::vector<unsigned int> arch;
+
+    const unsigned int dimInput = rng.rand() % 10 + 3;
+    const unsigned int dimOutput = rng.rand() % 10 + 3;
+    const unsigned int layers = rng.rand() % 5 + 2;
+
+    arch.push_back(dimInput);
+    for(unsigned int i=0;i<layers;i++)
+      arch.push_back(rng.rand() % 10 + 1);
+    arch.push_back(dimOutput);
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch);
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
+    whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
+
+    rng.normal(x);
+    rng.exp(y);
+
+    nn.input() = x;
+    nn.calculate(true, false);
+
+    auto error = y - nn.output();
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > grad;
+
+    if(nn.gradient(error, grad) == false){
+      printf("ERROR: nn::gradient(1) FAILED.\n");
+      continue;
+    }
+    
+    whiteice::math::matrix< whiteice::math::blas_real<double> > grad2;
+
+    if(nn.gradient(x, grad2) == false){
+      printf("ERROR: nn::gradient(2) FAILED.\n");
+      continue;
+    }
+
+    auto delta = -error;
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > g = delta*grad2;
+
+    if(grad.size() != g.size()){
+      printf("ERROR: nn::gradient sizes mismatch!\n");
+      continue;
+    }
+
+    whiteice::math::blas_real<double> err = 0.0;
+
+    for(unsigned int i=0;i<g.size();i++)
+      err += abs(grad[i] - g[i]);
+
+    if(err > 0.01)
+      printf("ERROR: gradient difference is too large!\n");
+    
+  }
+  
+}
+
 
 /************************************************************/
 

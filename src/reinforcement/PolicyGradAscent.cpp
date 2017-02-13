@@ -442,14 +442,14 @@ namespace whiteice
 	  // imports weights back
 
 	  math::vertex<T> sumgrad;
-	  sumgrad.resize(policy.input_size());
+	  sumgrad.resize(policy.exportdatasize());
 	  sumgrad.zero();
 
 #pragma omp parallel shared(sumgrad)
 	  {
 	    T ninv = T(1.0f/dtrain.size(0));
 	    math::vertex<T> sgrad, grad;
-	    sgrad.resize(policy.input_size());
+	    sgrad.resize(policy.exportdatasize());
 	    sgrad.zero();
 
 	    whiteice::nnetwork<T> pnet(policy);
@@ -477,21 +477,23 @@ namespace whiteice
 		{
 		  whiteice::math::matrix<T> full_gradQ;
 		  Q->gradient_value(in, full_gradQ);
+
 		  full_gradQ.submatrix(gradQ,
-				       state.size(), action.size()+state.size(),
-				       0, 1);
+				       state.size(), 0,
+				       action.size(), 1);
 		}
 
 		whiteice::math::matrix<T> gradP;
 
 		pnet.gradient(state, gradP);
 
-		whiteice::math::vertex<T> grad(action.size());
+		whiteice::math::vertex<T> grad(policy.exportdatasize());
 		{
 		  whiteice::math::matrix<T> g;
+
 		  g = gradQ * gradP;
 
-		  for(unsigned int i=0;i<action.size();i++)
+		  for(unsigned int i=0;i<policy.exportdatasize();i++)
 		    grad[i] = g(0, i);
 		}
 		

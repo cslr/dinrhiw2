@@ -384,6 +384,10 @@ namespace whiteice
 	    hasModel[0] = true;
 	  }
 
+	  // skip if other optimization step is behind us
+	  if(epoch[0] > epoch[1])
+	    goto q_optimization_done;
+	  
 	  epoch[0]++;
 	    
 	  const unsigned int BATCHSIZE = database.size()/2;
@@ -447,10 +451,12 @@ namespace whiteice
 	  }
 	}
       }
-
-
+      
+    q_optimization_done:
+      
       // 6. update/optimize policy(state) network
       // activates batch learning if it is not running
+      
       if(database.size() >= SAMPLESIZE)
       {
 
@@ -480,6 +486,10 @@ namespace whiteice
 	    hasModel[1] = true;
 	  }
 
+	  // skip if other optimization step is behind us
+	  if(epoch[1] > epoch[0])
+	    goto policy_optimization_done; 
+	  
 	  epoch[1]++;
 	    
 	  const unsigned int BATCHSIZE = database.size()/2;
@@ -487,14 +497,9 @@ namespace whiteice
 	  data2.clear();
 	  data2.createCluster("input-state", numStates);
 	  
-	  for(unsigned int i=0;i<BATCHSIZE;){
+	  for(unsigned int i=0;i<BATCHSIZE;i++){
 	    const unsigned int index = rng.rand() % database.size();
-
-	    whiteice::math::vertex<T> in = database[index].state;
-
-	    data.add(0, in);
-	    
-	    i++;
+	    data2.add(0, database[index].state);
 	  }
 
 	  {
@@ -523,19 +528,22 @@ namespace whiteice
 	  T error = T(0.0);
 	  unsigned int iters = 0;
 
-	  if(grad.getSolution(nn, error, iters)){
+	  if(grad2.getSolution(nn, error, iters)){
 	    printf("POLICY-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
 		   epoch[1], iters, error.c[0]);
 	  }
 	}
-
-	
-	
       }
+      
+    policy_optimization_done:
+      
+      (1 == 1); // dummy [work-around bug/feature goto requiring expression]
       
     }
 
     grad.stopComputation();
+    grad2.stopComputation();
+    
   }
 
   template class RIFL_abstract2< math::blas_real<float> >;

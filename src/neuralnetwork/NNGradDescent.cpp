@@ -159,14 +159,15 @@ namespace whiteice
 	  sch_params.sched_priority = 20;
 	  if(pthread_setschedparam(optimizer_thread[i]->native_handle(),
 				   SCHED_RR, &sch_params) != 0){
-	    // printf("* SETTING LOW PRIORITY THREAD FAILED\n");
 	  }
 	}
       }
 
       {
 	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
-	
+
+	// there is a bug if thread manages to notify and then continue and
+	// reduce variable back to zero before this get chance to execute again
 	while(thread_is_running == 0)
 	  thread_is_running_cond.wait(lock);
       }
@@ -188,7 +189,7 @@ namespace whiteice
     /*
      * returns the best NN solution found so far and
      * its average error in testing dataset and the number
-     * of converged solutions so far.
+     * iterations optimizer has executed so far
      */
     template <typename T>
     bool NNGradDescent<T>::getSolution(whiteice::nnetwork<T>& nn,
@@ -297,6 +298,12 @@ namespace whiteice
 	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
 	thread_is_running++;
 	thread_is_running_cond.notify_all();
+      }
+
+      // acquires lock temporally to wait for startOptimizer() to finish
+      {
+	start_lock.lock();
+	start_lock.unlock();
       }
 
       {
