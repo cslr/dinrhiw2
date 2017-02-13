@@ -54,8 +54,13 @@
 
 #include "HMM.h"
 
+// discrete state reinforcement problem (but with continuous features of actions)
 #include "RIFL_abstract.h"
 #include "CartPole.h" // test problem
+
+// continuous state reinforcement problem
+#include "RIFL_abstract2.h"
+#include "CartPole2.h" // test problem
 
 #include "array.h"
 #include "static_array.h"
