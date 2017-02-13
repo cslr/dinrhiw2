@@ -43,7 +43,6 @@ namespace whiteice
 	arch.push_back(numStates + numActions);
 	arch.push_back(numStates*20);
 	arch.push_back(numStates*20);
-	//arch.push_back(numStates*100);
 	arch.push_back(1);
 	
 	{
@@ -63,9 +62,11 @@ namespace whiteice
 	arch.push_back(numStates*20);
 	arch.push_back(numStates*20);
 	arch.push_back(numActions);
-	
+
+	// policy outputs action is (should be) [0,1]^D vector
 	{
 	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::sigmoid);
 	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
 	  nn.randomize();
 	  
@@ -256,9 +257,11 @@ namespace whiteice
     epoch[0] = 0;
     epoch[1] = 0;
 
-    const unsigned int DATASIZE = 50000;
-    const unsigned int SAMPLESIZE = 1000;
-    T temperature = T(0.010);
+    const unsigned int DATASIZE = 10000;
+    const unsigned int SAMPLESIZE = 100;
+
+    // const T tau = T(0.30); // we keep 30% of the new networks weights (60% old)
+    const T tau = T(1.00); // we keep 100% of the new networks weights (0% old)
 
     
 
@@ -303,14 +306,33 @@ namespace whiteice
 	  }
 	}
 
-	// TODO add random normally distributed noise (exploration)
+	// it is assumed that action data should have zero mean and is roughly
+	// normally distributed (with StDev[n] = 1) so data is close to zero
+
+	// FIXME add better random normally distributed noise (exploration)
 	if(learningMode){
-	  
+	  auto noise = u;
+	  rng.normal(noise); // Normal E[n]=0 StDev[n]=1
+	  u += noise;
+
+#if 0
+	  for(unsigned int i=0;i<u.size();i++){
+	    if(u[i] < T(0.0)) u[i] = T(0.0); // [keep things between [0,1]
+	    else if(u[i] > T(1.0)) u[i] = T(1.0);
+	  }
+#endif
 	}
 
 	// if have no model then make random selections (normally distributed)
 	if(hasModel[0] == false || hasModel[1] == false){
 	  rng.normal(u);
+
+#if 0
+	  for(unsigned int i=0;i<u.size();i++){
+	    if(u[i] < T(0.0)) u[i] = T(0.0); // [keep things between [0,1]
+	    else if(u[i] > T(1.0)) u[i] = T(1.0);
+	  }
+#endif
 	}
 
 	action = u;
@@ -358,6 +380,11 @@ namespace whiteice
       // activates batch learning if it is not running
       if(database.size() >= SAMPLESIZE)
       {
+	// skip if other optimization step is behind us
+	if(epoch[0] > epoch[1])
+	  goto q_optimization_done;
+	
+	
 	if(grad.isRunning() == false){
 	  whiteice::nnetwork<T> nn;
 	  T error;
@@ -379,18 +406,39 @@ namespace whiteice
 	    }
 	  }
 	  else{
-	    std::lock_guard<std::mutex> lock(Q_mutex);
-	    Q.importNetwork(nn);
-	    hasModel[0] = true;
+	    if(epoch[0] > 0){
+	      std::lock_guard<std::mutex> lock(Q_mutex);
+	      
+	      // we keep previous network to some degree
+	      {
+		whiteice::nnetwork<T> nnprev = nn;
+		std::vector< whiteice::math::vertex<T> > prevweights;
+		
+		if(Q.exportSamples(nnprev, prevweights)){
+		  whiteice::math::vertex<T> newweights;
+		  
+		  if(nn.exportdata(newweights)){
+		    newweights = tau*newweights + (T(1.0)-tau)*prevweights[0];
+		    
+		    nn.importdata(newweights);
+		  }
+		}
+		
+		Q.importNetwork(nn);
+		hasModel[0] = true;
+	      }
+	    }
+	    else{
+	      std::lock_guard<std::mutex> lock(Q_mutex);
+	      Q.importNetwork(nn);
+	      hasModel[0] = true;
+	    }
+
+	    epoch[0]++;
 	  }
 
-	  // skip if other optimization step is behind us
-	  if(epoch[0] > epoch[1])
-	    goto q_optimization_done;
-	  
-	  epoch[0]++;
-	    
-	  const unsigned int BATCHSIZE = database.size()/2;
+	  // const unsigned int BATCHSIZE = database.size()/2;
+	  const unsigned int BATCHSIZE = 1000;
 	  
 	  data.clear();
 	  data.createCluster("input-state", numStates + numActions);
@@ -407,8 +455,6 @@ namespace whiteice
 	    whiteice::math::vertex<T> out(1);
 	    out.zero();
 
-	    out[0] = database[index].reinforcement;
-	    
 	    // calculates updated utility value
 	    whiteice::math::vertex<T> y(1);
 	    
@@ -428,8 +474,14 @@ namespace whiteice
 	      }
 	      
 	      nn.calculate(tmp, y);
+	      
+	      if(epoch[0] > 0){
+		out[0] = database[index].reinforcement + gamma*y[0];
+	      }
+	      else{ // the first iteration of reinforcement learning do not use Q
+		out[0] = database[index].reinforcement;
+	      }
 
-	      out[0] += gamma*y[0];
 	    }
 
 	    data.add(0, in);
@@ -459,7 +511,11 @@ namespace whiteice
       
       if(database.size() >= SAMPLESIZE)
       {
+	// skip if other optimization step is behind us
+	if(epoch[1] > epoch[0])
+	  goto policy_optimization_done; 
 
+	
 	if(grad2.isRunning() == false){
 	  whiteice::nnetwork<T> nn;
 	  T meanq;
@@ -481,18 +537,39 @@ namespace whiteice
 	    }
 	  }
 	  else{
-	    std::lock_guard<std::mutex> lock(policy_mutex);
-	    policy.importNetwork(nn);
-	    hasModel[1] = true;
+	    if(epoch[1] > 0){
+	      std::lock_guard<std::mutex> lock(policy_mutex);
+	      
+	      // we keep previous network to some degree
+	      {
+		whiteice::nnetwork<T> nnprev = nn;
+		std::vector< whiteice::math::vertex<T> > prevweights;
+		
+		if(policy.exportSamples(nnprev, prevweights)){
+		  whiteice::math::vertex<T> newweights;
+		  
+		  if(nn.exportdata(newweights)){
+		    newweights = tau*newweights + (T(1.0)-tau)*prevweights[0];
+		    
+		    nn.importdata(newweights);
+		  }
+		}
+		
+		policy.importNetwork(nn);
+		hasModel[1] = true;
+	      }
+	    }
+	    else{
+	      std::lock_guard<std::mutex> lock(policy_mutex);
+	      policy.importNetwork(nn);
+	      hasModel[1] = true;
+	    }
 	  }
 
-	  // skip if other optimization step is behind us
-	  if(epoch[1] > epoch[0])
-	    goto policy_optimization_done; 
-	  
 	  epoch[1]++;
 	    
-	  const unsigned int BATCHSIZE = database.size()/2;
+	  // const unsigned int BATCHSIZE = database.size()/2;
+	  const unsigned int BATCHSIZE = 1000;
 	  
 	  data2.clear();
 	  data2.createCluster("input-state", numStates);
@@ -525,12 +602,12 @@ namespace whiteice
 	}
 	else{
 	  whiteice::nnetwork<T> nn;
-	  T error = T(0.0);
+	  T value = T(0.0);
 	  unsigned int iters = 0;
 
-	  if(grad2.getSolution(nn, error, iters)){
-	    printf("POLICY-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
-		   epoch[1], iters, error.c[0]);
+	  if(grad2.getSolution(nn, value, iters)){
+	    printf("POLICY-EPOCH %d OPTIMIZER %d ITERS: MEAN Q-VALUE %f\n",
+		   epoch[1], iters, value.c[0]);
 	  }
 	}
       }

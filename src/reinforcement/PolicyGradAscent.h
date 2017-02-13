@@ -71,7 +71,8 @@ namespace whiteice
     // calculates mean Q-value of the policy in dtest dataset (states are inputs)
     T getValue(const whiteice::nnetwork<T>& policy,
 	       const whiteice::nnetwork<T>& Q, 
-	       const whiteice::dataset<T>& dtest) const;
+	       const whiteice::dataset<T>& dtest,
+	       bool regularize = true) const;
 
 
     const whiteice::nnetwork<T>* Q;
@@ -82,10 +83,13 @@ namespace whiteice
     
     bool heuristics;
     bool dropout; // use dropout heuristics when training
+    T regularizer;
     
     whiteice::math::vertex<T> bestx; // best policy weights
     T best_value;
-    unsigned int iterations;        
+    T best_q_value; // without regularizer term
+    unsigned int iterations;
+    
     
     // flag to indicate this is the first thread to start optimization
     bool first_time;

@@ -9,6 +9,7 @@ namespace whiteice
   PolicyGradAscent<T>::PolicyGradAscent()
   {
     best_value = T(-INFINITY);
+    best_q_value = T(-INFINITY);
     iterations = 0;
 
     Q = NULL;
@@ -25,13 +26,16 @@ namespace whiteice
 
     running = false;
     thread_is_running = 0;
-    
+
+    regularizer = T(0.0001); // 1/10.000
+    // regularizer = T(0.0); // regularization DISABLED
   }
 
   template <typename T>
   PolicyGradAscent<T>::PolicyGradAscent(const PolicyGradAscent<T>& grad)
   {
     best_value = grad.best_value;
+    best_q_value = grad.best_q_value;
     iterations = grad.iterations;
 
     if(grad.Q)
@@ -48,6 +52,7 @@ namespace whiteice
 
     heuristics = grad.heuristics;
     dropout = grad.dropout;
+    regularizer = grad.regularizer;
 
     first_time = true;
 
@@ -132,6 +137,7 @@ namespace whiteice
     this->NTHREADS = NTHREADS;
     this->MAXITERS = MAXITERS;
     best_value = T(-INFINITY);
+    best_q_value = T(-INFINITY);
     iterations = 0;
     running = true;
     thread_is_running = 0;
@@ -155,6 +161,7 @@ namespace whiteice
 
     policy.exportdata(bestx);
     best_value = getValue(policy, Q, *data);
+    best_q_value = getValue(policy, Q, *data, false);
     
     this->dropout = dropout;
     
@@ -224,7 +231,7 @@ namespace whiteice
     policy = *(this->policy);
     policy.importdata(bestx);
     
-    value = best_value;
+    value = best_q_value;
     iterations = this->iterations;
     
     solution_lock.unlock();
@@ -264,7 +271,8 @@ namespace whiteice
   template <typename T>
   T PolicyGradAscent<T>::getValue(const whiteice::nnetwork<T>& policy,
 				  const whiteice::nnetwork<T>& Q, 
-				  const whiteice::dataset<T>& dtest) const
+				  const whiteice::dataset<T>& dtest,
+				  bool regularize) const
   {
     T value = T(0.0);
       
@@ -296,12 +304,22 @@ namespace whiteice
 	vsum += q[0];
       }
 	
-      vsum /= T((float)dtest.size(0));
+      vsum /= T((double)dtest.size(0));
       
 #pragma omp critical
       {
 	value += vsum;
       }
+    }
+
+    
+    if(regularize){
+      // adds regularizer term (-0.5*||w||^2)
+      whiteice::math::vertex<T> w;
+
+      policy.exportdata(w);
+
+      value -= regularizer * T(0.5) * (w*w)[0];
     }
     
     return value;
@@ -385,6 +403,10 @@ namespace whiteice
       // starting position for neural network
       whiteice::nnetwork<T> policy(*(this->policy));
 
+      
+      std::cout << "************ RESET POLICY NETWORK" << std::endl;
+
+
       {
 	std::lock_guard<std::mutex> lock(first_time_lock);
 	
@@ -400,12 +422,6 @@ namespace whiteice
 	  first_time = false;
 	}
       }
-
-#if 0
-      // adds regularizer term to gradient (to work against overfitting and
-      // large values that seem to appear into weights sometimes..)
-      const T regularizer = T(1.0);
-#endif
 
       
       // 2. normal gradient ascent
@@ -424,14 +440,14 @@ namespace whiteice
 	  if(value > best_value){
 	    // improvement (larger mean q-value of the policy)
 	      best_value = value;
+	      best_q_value = getValue(policy, *Q, dtest, false);
 	      policy.exportdata(bestx);
 	  }
 	  
 	  solution_lock.unlock();
 	}
 
-	T lrate = T(0.01f);
-	T ratio = T(1.0f);
+	T lrate = T(0.01);
 	
 	
 	do{
@@ -449,6 +465,7 @@ namespace whiteice
 	  {
 	    T ninv = T(1.0f/dtrain.size(0));
 	    math::vertex<T> sgrad, grad;
+	    grad.resize(policy.exportdatasize());
 	    sgrad.resize(policy.exportdatasize());
 	    sgrad.zero();
 
@@ -487,7 +504,6 @@ namespace whiteice
 
 		pnet.gradient(state, gradP);
 
-		whiteice::math::vertex<T> grad(policy.exportdatasize());
 		{
 		  whiteice::math::matrix<T> g;
 
@@ -523,12 +539,11 @@ namespace whiteice
 
 	    w0 = weights;
 
-#if 0
-	    // adds regularizer to gradient (1/2*||w||^2)
+
+	    // adds regularizer to gradient -(1/2*||w||^2)
 	    {
-	      sumgrad += regularizer*w0;
+	      sumgrad -= regularizer*w0;
 	    }
-#endif
 	    
 	    
 	    lrate *= 4;
@@ -549,7 +564,12 @@ namespace whiteice
 	      value = getValue(policy, *Q, dtrain);
 
 	      delta_value = (prev_value - value);
-	      ratio = abs(delta_value) / value;
+	      
+	      std::cout << "POLICY VALUE: " << value
+			<< " PREV VALUE: " << prev_value
+			<< " DELTA: " << delta_value
+			<< " LRATE: " << lrate << std::endl;
+
 
 	      // if value becomes smaller we reduce learning rate
 	      if(delta_value >= T(0.0)){ 
@@ -561,13 +581,20 @@ namespace whiteice
 	      }
 	      
 	    }
-	    while(delta_value >= T(0.0) && lrate != T(0.0) &&
-		  ratio > T(0.00001f) && running);
+	    while(delta_value >= T(0.0) && lrate >= T(10e-30) &&
+		  abs(delta_value) > T(10e-12f) && running);
 
+	    std::cout << "POLICY UPDATED."
+		      << "VALUE: " << value 
+		      << " DELTA: " << delta_value
+		      << " LRATE: " << lrate
+		      << std::endl;
+	    
 	    
 	    policy.exportdata(weights);
 	    w0 = weights;
 
+	    iterations++;
 	    
 	    {
 	      solution_lock.lock();
@@ -575,14 +602,17 @@ namespace whiteice
 	      if(value > best_value){
 		// improvement (larger mean q-value of the policy)
 		best_value = value;
+		best_q_value = getValue(policy, *Q, dtest, false);
 		policy.exportdata(bestx);
+		
+		std::cout << "************ BETTER POLICY FOUND: "
+			  << best_q_value
+			  << " ITER " << iterations << std::endl;
 	      }
 	    
 	      solution_lock.unlock();
 	    }
 
-	    iterations++;
-	    
 	    // cancellation point
 	    {
 	      if(running == false){
@@ -594,10 +624,11 @@ namespace whiteice
 	    }
 
 	    
-	  }
-	  while(ratio > T(0.00001f) && 
-		iterations < MAXITERS &&
-		running);
+	}
+	while(abs(delta_value) > T(10e-12f) &&
+	      lrate >= T(10e-30) && 
+	      iterations < MAXITERS &&
+	      running);
 
 	
 	  
@@ -609,7 +640,12 @@ namespace whiteice
 	    if(value > best_value){
 	      // improvement (larger mean q-value of the policy)
 	      best_value = value;
+	      best_q_value = getValue(policy, *Q, dtest, false);
 	      policy.exportdata(bestx);
+
+	      std::cout << "************ BETTER POLICY FOUND: "
+			<< best_q_value
+			<< " ITER " << iterations << std::endl;
 	    }
 	    
 	    solution_lock.unlock();

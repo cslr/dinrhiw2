@@ -1004,8 +1004,10 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == tanh){
-      const T a = T(1.7159);
-      const T b = T(2.0/3.0);
+      // const T a = T(1.7159);
+      // const T b = T(2.0/3.0);
+      const T a = T(1.0);
+      const T b = T(1.0);
       
       if(input > T(50.0)) return a;
       else if(input < T(-50.0)) return -a;
@@ -1017,6 +1019,25 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == halfLinear){
+      // tanh(x) + 0.5x: from a research paper statistically
+      // better gradiets for deep neural networks
+      {
+	// const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
+	// const T b = T(2.0/3.0);
+	const T a = T(1.0);
+	const T b = T(1.0);
+	
+	if(input > T(50.0)) return a + T(0.5)*a*b*input;
+	else if(input < T(-50.0)) return -a + T(0.5)*a*b*input;
+	
+	const T e2x = whiteice::math::exp(T(2.0)*b*input);
+	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+	const T output = a*tanhbx;
+	
+	return (output + T(0.5)*a*b*input);
+      }
+            
+#if 0
       // T output = T(0.0);
       
       if(neuron & 1){
@@ -1037,6 +1058,7 @@ namespace whiteice
       else{
 	return input; // half-the layers nodes are linear!
       }
+#endif
     }
     else if(nonlinearity[layer] == pureLinear){
       return input; // all layers/neurons are linear..
@@ -1075,12 +1097,14 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == tanh){
+      // const T a = T(1.7159);
+      // const T b = T(2.0/3.0);
+      const T a = T(1.0);
+      const T b = T(1.0);
+      
       if(input > T(50.0)) return T(0.0);
       else if(input < T(-50.0)) return T(0.0);
       
-      const T a = T(1.7159);
-      const T b = T(2.0/3.0);
-
       const T e2x = whiteice::math::exp(T(2.0)*b*input);
       const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
 
@@ -1089,6 +1113,27 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == halfLinear){
+
+      // tanh(x) + 0.5x: from a research paper statistically
+      // better gradiets for deep neural networks
+      {
+	// const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
+	// const T b = T(2.0/3.0);
+	const T a = T(1.0);
+	const T b = T(1.0);      
+	
+	if(input > T(50.0)) return T(0.0) + T(0.5)*a*b;
+	else if(input < T(-50.0)) return T(0.0) + T(0.5)*a*b;
+	
+	const T e2x = whiteice::math::exp(T(2.0)*b*input);
+	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+	
+	T output = a*b*(T(1.0) - tanhbx*tanhbx);
+	
+	return (output + T(0.5)*a*b);
+      }
+      
+#if 0
       if(neuron & 1){
 	if(input > T(50.0)) return T(0.0);
 	else if(input < T(-50.0)) return T(0.0);
@@ -1106,6 +1151,7 @@ namespace whiteice
       else{
 	return 1.0; // half-the layers nodes are linear!
       }
+#endif
     }
     else if(nonlinearity[layer] == pureLinear){
       return 1.0; // all layers/neurons are linear..

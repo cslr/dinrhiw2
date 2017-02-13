@@ -74,16 +74,19 @@ namespace whiteice
 
       private:
         T getError(const whiteice::nnetwork<T>& net,
-		   const whiteice::dataset<T>& dtest);
+		   const whiteice::dataset<T>& dtest,
+		   bool regularize = true);
 
       
         whiteice::nnetwork<T>* nn; // network architecture and settings
       
         bool heuristics;
         bool dropout; // use dropout heuristics when training
+        T regularizer;
       
         vertex<T> bestx;
         T best_error;
+        T best_pure_error;
         unsigned int iterations;
 
 	const whiteice::dataset<T>* data;

@@ -20,11 +20,13 @@ int main(int argc, char** argv)
 
   srand(time(0));
 
+
   // enable floating point exceptions (for debugging)
   {
     // FE_UNDERFLOW | FE_OVERFLOW | FE_INEXACT
     feenableexcept(FE_DIVBYZERO | FE_INVALID);
   }
+  
 
   if(argc <= 1){
     whiteice::CartPole< whiteice::math::blas_real<double> > system;

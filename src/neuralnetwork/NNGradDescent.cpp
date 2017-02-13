@@ -18,6 +18,7 @@ namespace whiteice
     NNGradDescent<T>::NNGradDescent(bool heuristics, bool errorTerms)
     {
       best_error = T(INFINITY);
+      best_pure_error = T(INFINITY);
       iterations = 0;
       data = NULL;
       NTHREADS = 0;
@@ -30,6 +31,9 @@ namespace whiteice
 
       running = false;
       nn = NULL;
+
+      // regularizer = T(0.0001); // 1/10.000 (to keep weights from become very large)
+      regularizer = T(1.0); // this works for "standard" cases
     }
 
 
@@ -37,6 +41,7 @@ namespace whiteice
     NNGradDescent<T>::NNGradDescent(const NNGradDescent<T>& grad)
     {
       best_error = grad.best_error;
+      best_pure_error = grad.best_pure_error;
       iterations = grad.iterations;
       data = grad.data;
       NTHREADS = grad.NTHREADS;
@@ -46,6 +51,7 @@ namespace whiteice
       this->errorTerms = grad.errorTerms;
 
       dropout = grad.dropout;
+      regularizer = grad.regularizer;
 
       running = grad.running;
 
@@ -126,6 +132,7 @@ namespace whiteice
       this->NTHREADS = NTHREADS;
       this->MAXITERS = MAXITERS;
       best_error = T(INFINITY);
+      best_pure_error = T(INFINITY);
       iterations = 0;
       running = true;
       thread_is_running = 0;
@@ -138,6 +145,7 @@ namespace whiteice
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
       best_error = getError(nn, data);
+      best_pure_error = getError(nn, data, false);
       
       this->dropout = dropout;
 
@@ -204,7 +212,7 @@ namespace whiteice
       nn = *(this->nn);
       nn.importdata(bestx);
 	    
-      error = best_error;
+      error = best_pure_error;
       iterations = this->iterations;
 
       solution_lock.unlock();
@@ -232,7 +240,7 @@ namespace whiteice
 	while(thread_is_running > 0)
 	  thread_is_running_cond.wait(lock);
       }
-      
+
       start_lock.unlock();
 
       return true;
@@ -241,7 +249,8 @@ namespace whiteice
 
     template <typename T>
     T NNGradDescent<T>::getError(const whiteice::nnetwork<T>& net,
-				 const whiteice::dataset<T>& dtest)
+				 const whiteice::dataset<T>& dtest,
+				 bool regularize)
     {
       T error = T(0.0);
       
@@ -285,6 +294,14 @@ namespace whiteice
 	{
 	  error += esum;
 	}
+      }
+
+      if(regularize){
+	whiteice::math::vertex<T> w;
+
+	net.exportdata(w);
+
+	error += regularizer * T(0.5) * (w*w)[0];
       }
 
       return error;
@@ -406,8 +423,6 @@ namespace whiteice
 	  }
 	}
 
-	const T regularizer = T(1.0); // adds regularizer term to gradient (to work against overfitting and large values that seem to appear into weights sometimes..)
-	  
 	// 2. normal gradient descent
 	///////////////////////////////////////
 	{
@@ -424,6 +439,7 @@ namespace whiteice
 	    if(error < best_error){
 	      // improvement (smaller error with early stopping)
 	      best_error = error;
+	      best_pure_error = getError(nn, dtest, false);
 	      nn.exportdata(bestx);
 	    }
 	    
@@ -544,7 +560,7 @@ namespace whiteice
 	      error = getError(nn, dtrain);
 
 	      delta_error = (prev_error - error);
-	      ratio = abs(delta_error) / error;
+	      ratio = abs(delta_error) / abs(error);
 
 	      if(delta_error < T(0.0)){ // if error grows we reduce learning rate
 		lrate *= T(0.50);
@@ -568,6 +584,7 @@ namespace whiteice
 	      if(error < best_error){
 		// improvement (smaller error with early stopping)
 		best_error = error;
+		best_pure_error = getError(nn, dtrain, false);
 		nn.exportdata(bestx);
 	      }
 	    
@@ -603,6 +620,7 @@ namespace whiteice
 	    if(error < best_error){
 	      // improvement (smaller error with early stopping)
 	      best_error = error;
+	      best_pure_error = getError(nn, dtrain, false);
 	      nn.exportdata(bestx);
 	    }
 	    

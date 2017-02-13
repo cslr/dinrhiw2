@@ -241,7 +241,9 @@ namespace whiteice
   {
     std::vector< std::vector< rifl_datapoint<T> > > database;
     whiteice::dataset<T> data;
-    whiteice::math::NNGradDescent<T> grad(true); // negative feedback?
+
+    // negative feedback? FIXME/DEBUG disable???
+    whiteice::math::NNGradDescent<T> grad(true); 
 
     unsigned int epoch = 0;
     

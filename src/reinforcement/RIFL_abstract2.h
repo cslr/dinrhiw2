@@ -83,7 +83,8 @@ namespace whiteice
     unsigned int numActions, numStates; // dimensions of R^d vectors
 
     virtual bool getState(whiteice::math::vertex<T>& state) = 0;
-    
+
+    // action vector is [0,1]^d (output of sigmoid non-linearity)
     virtual bool performAction(const whiteice::math::vertex<T>& action,
 			       whiteice::math::vertex<T>& newstate,
 			       T& reinforcement) = 0;

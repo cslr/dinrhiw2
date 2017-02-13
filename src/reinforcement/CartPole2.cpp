@@ -214,10 +214,23 @@ namespace whiteice
     // converts action to control in newtons
     double Fstep = 0.0;
 
+    if(action.size() > 0){
+      Fstep = 25.0*action[0].c[0];
+
+      // keeps Fsteps within "SANE" values which is needed for numerical stability
+      if(Fstep >= 25.0) Fstep = 25.0;
+      else if(Fstep <= -25.0) Fstep = -25.0;
+    }
+
+#if 0
     // assumes action values are between [-1.0, +1.0]
     if(action.size() > 0){
-      Fstep = 25.0*action[0].c[0]; // [-25, +25]
+      // double a = (action[0].c[0]*2.0 - 1.0); // to interval [-1.0, +1.0]
+      double a = action[0].c[0];
+      
+      Fstep = 25.0*a; // [-25, +25]
     }
+#endif
 
     printf("%d FORCE: %f\n", iteration, Fstep);
     
