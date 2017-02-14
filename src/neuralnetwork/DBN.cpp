@@ -606,6 +606,7 @@ namespace whiteice
 
     arch.push_back(outputDimension);
 
+    net = new whiteice::nnetwork<T>();
     net->setArchitecture(arch); // we create new net with given architecture (resets all variables)
 
     // copies DBN parameters as nnetwork parameters..
@@ -663,6 +664,78 @@ namespace whiteice
       net->setNonlinearity(frozen.size()-1, whiteice::nnetwork<T>::pureLinear); // last layer is always linear
     }
     
+    
+    return true;
+  }
+
+  
+  template <typename T>
+  bool DBN<T>::convertToNNetwork(whiteice::nnetwork<T>*& net)
+  {
+    std::vector<unsigned int> arch; // architecture
+
+    if(!binaryInput)
+      arch.push_back(gb_input.getVisibleNodes());
+    else
+      arch.push_back(bb_input.getVisibleNodes());
+
+    if(layers.size() > 0){
+      for(unsigned int i=0;i<layers.size();i++)
+	arch.push_back(layers[i].getVisibleNodes());
+
+      arch.push_back(layers[layers.size()-1].getHiddenNodes());
+    }
+    else{
+      if(!binaryInput)
+	arch.push_back(gb_input.getHiddenNodes());
+      else
+	arch.push_back(bb_input.getHiddenNodes());
+    }
+
+    net = new whiteice::nnetwork<T>();
+    net->setArchitecture(arch); // we create new net with given architecture (resets all variables)
+
+    // copies DBN parameters as nnetwork parameters..
+    if(!binaryInput){
+      auto W = gb_input.getWeights().transpose();
+
+      math::vertex<T> v;
+      gb_input.getVariance(v);
+
+      for(unsigned int i=0;i<v.size();i++)
+	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
+
+      assert(v.size() == W.xsize());
+
+      for(unsigned int r=0;r<W.ysize();r++)
+	for(unsigned int c=0;c<W.xsize();c++)
+	  W(r,c) *= v[c];
+	
+      if(net->setWeights(W, 0) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(gb_input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+    }
+    else{
+      if(net->setWeights(bb_input.getWeights(), 0) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(bb_input.getBValue(), 0) == false){ delete net; net = nullptr; return false; }
+    }
+
+    for(unsigned int l=0;l<layers.size();l++){
+      if(net->setWeights(layers[l].getWeights(), l+1) == false){ delete net; net = nullptr; return false; }
+      if(net->setBias(layers[l].getBValue(), l+1) == false){ delete net; net = nullptr; return false; }
+    }
+
+    
+    net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+    
+    // sets all other layers to frozen (stochastic RBM output)
+    {
+      std::vector<bool> frozen;
+
+      net->getFrozen(frozen);
+
+      for(unsigned int i=0;i<frozen.size();i++)
+	frozen[i] = true;
+    }
     
     return true;
   }

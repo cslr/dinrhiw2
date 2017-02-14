@@ -57,14 +57,21 @@ namespace whiteice
 
     // converts DBN to supervised nnetwork by using training samples
     // (cluster 0 = input) and (cluster 1 = output) and
-    // by adding linear outputlayer which is optimized locally using linear optimization
+    // by adding linear outputlayer which is optimized locally
+    // using linear optimization
     // returned nnetwork contains layer by layer optimized values which
     // can be further optimized across all layers using nnetwork optimizers
     // returns supervised neural network with extra output layer
     //
     // net - allocates new nnetwork and overwrites pointer to it as a return value
     // 
-    bool convertToNNetwork(const whiteice::dataset<T>& data, whiteice::nnetwork<T>*& net);
+    bool convertToNNetwork(const whiteice::dataset<T>& data,
+			   whiteice::nnetwork<T>*& net);
+
+    // converts DBN to supervised nnetwork without using training samples
+    // this nnetwork can then be saved or otherwise used
+    // (currently DBN does not support saving of RBM stack directly)
+    bool convertToNNetwork(whiteice::nnetwork<T>*& net);
 
     // converts trained DBN to autoencoder which can be trained using LBFGS
     bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
