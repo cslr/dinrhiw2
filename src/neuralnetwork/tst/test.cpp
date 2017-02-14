@@ -304,8 +304,10 @@ void nnetwork_gradient_test()
     for(unsigned int i=0;i<g.size();i++)
       err += abs(grad[i] - g[i]);
 
+    err /= ((double)g.size());
+
     if(err > 0.01)
-      printf("ERROR: gradient difference is too large!\n");
+      printf("ERROR: gradient difference is too large (%f)!\n", err.c[0]);
     
   }
   
@@ -596,9 +598,14 @@ void bbrbm_test()
     
     rbm2 = rbm1;
     if(rbm2 != rbm1) std::cout << "BBRBM comparison ERROR." << std::endl;
+
+    rbm2.initializeWeights();
+    rbm1.initializeWeights();
     
-    if(rbm2.save("rbmparams.dat") == false) std::cout << "BBRBM::save() FAILED." << std::endl;
-    if(rbm1.load("rbmparams.dat") == false) std::cout << "BBRBM::load() FAILED." << std::endl;
+    if(rbm2.save("rbmparams.dat") == false)
+      std::cout << "BBRBM::save() FAILED." << std::endl;
+    if(rbm1.load("rbmparams.dat") == false)
+      std::cout << "BBRBM::load() FAILED." << std::endl;
     
     if(rbm2 != rbm1){
       std::cout << "BBRBM load() FAILED to create identical BBRBM." << std::endl;

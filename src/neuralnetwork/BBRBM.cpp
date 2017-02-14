@@ -44,7 +44,6 @@ BBRBM<T>::BBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_ar
   if(visible == 0 || hidden == 0)
     throw std::invalid_argument("invalid network architecture");
     
-  // the last term is always constant: 1 (one)
   v.resize(visible);
   h.resize(hidden);
   
@@ -936,8 +935,8 @@ bool BBRBM<T>::load(const std::string& filename) throw()
     Usamples.clear();
 
   // some sanity checks..
-  if(a.size() != W.ysize()) return false;
-  if(b.size() != W.xsize()) return false;
+  if(b.size() != W.ysize()) return false;
+  if(a.size() != W.xsize()) return false;
   if(a.size() != v.size())  return false;
   if(b.size() != h.size())  return false;
   
