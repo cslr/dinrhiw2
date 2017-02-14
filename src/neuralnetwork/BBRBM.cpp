@@ -930,7 +930,10 @@ bool BBRBM<T>::load(const std::string& filename) throw()
   if(file.getData(4, data) == false) return false;
   v = data[0];
   if(file.getData(5, data) == false) return false;
-  Usamples = data;
+  if(data.size() > 0)
+    Usamples = data;
+  else
+    Usamples.clear();
 
   // some sanity checks..
   if(a.size() != W.ysize()) return false;

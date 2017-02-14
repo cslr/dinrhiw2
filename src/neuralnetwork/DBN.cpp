@@ -1,5 +1,7 @@
 
 #include "DBN.h"
+#include "dataset.h"
+
 #include <list>
 
 
@@ -727,16 +729,122 @@ namespace whiteice
     
     net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
     
-    // sets all other layers to frozen (stochastic RBM output)
-    {
-      std::vector<bool> frozen;
+    return true;
+  }
 
-      net->getFrozen(frozen);
 
-      for(unsigned int i=0;i<frozen.size();i++)
-	frozen[i] = true;
+  // converts inverse (from hidden to visible) DBN to nnetwork
+  template <typename T>
+  bool DBN<T>::convertInverseToNNetwork(whiteice::nnetwork<T>*& net)
+  {
+
+    if(!binaryInput){
+      //////////////////////////////////////////////////////////
+      // creates feedforward neural network
+      
+      std::vector<unsigned int> arch; // architecture
+
+      if(layers.size() > 0)
+	arch.push_back(layers[layers.size()-1].getHiddenNodes());
+      else
+	arch.push_back(gb_input.getHiddenNodes());
+      
+      // inverted network
+      if(layers.size() > 0){
+	for(int i=layers.size()-1;i>=0;i--)
+	  arch.push_back(layers[i].getVisibleNodes());
+      }
+      
+      arch.push_back(gb_input.getVisibleNodes()); // output
+      
+      net = new whiteice::nnetwork<T>(arch);
+      
+      try {
+	
+	// copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
+	int ll = 0;
+	for(int l=layers.size()-1;l>=0;l--,ll++){
+	  if(net->setWeights(layers[l].getWeights().transpose(), ll) == false) throw "error setting decoder layer W^t";
+	  if(net->setBias(layers[l].getAValue(), ll) == false) throw "error setting decoder layer a";
+	}
+	
+	{
+	  auto W = gb_input.getWeights();
+	  
+	  math::vertex<T> v;
+	  gb_input.getVariance(v);
+	  
+	  for(unsigned int i=0;i<v.size();i++)
+	    v[i] = math::sqrt(v[i]);
+
+	  assert(v.size() == W.ysize());
+	  
+	  for(unsigned int r=0;r<W.ysize();r++)
+	    for(unsigned int c=0;c<W.xsize();c++)
+	      W(r,c) = v[r] * W(r,c);
+	  
+	  if(net->setWeights(W, ll) == false) throw "error setting decoder output layer W^t ";
+	}
+	
+	if(net->setBias(gb_input.getAValue(), ll) == false) throw "error setting decoder output layer a";
+	
+	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+
+	// output layer is not stochastic sigmoid but pure linear (gaussian output) ???
+	net->setNonlinearity(ll, whiteice::nnetwork<T>::pureLinear);
+      }
+      catch(const char* msg){
+	printf("ERROR: %s\n", msg);
+	return false;
+      }
+      
+      return true;
     }
-    
+    else{ // binary input
+
+      //////////////////////////////////////////////////////////
+      // creates feedforward neural network
+      
+      std::vector<unsigned int> arch; // architecture
+      
+      if(layers.size() > 0){
+	arch.push_back(layers[layers.size()-1].getHiddenNodes());
+      }
+      else{
+	arch.push_back(bb_input.getHiddenNodes());
+      }
+      
+      // we have arch all the way to hidden layer, now we invert it back
+      if(layers.size() > 0 ){
+	for(int i=layers.size()-1;i>=0;i--)
+	  arch.push_back(layers[i].getVisibleNodes());
+      }
+      
+      arch.push_back(bb_input.getVisibleNodes());
+      
+      net = new whiteice::nnetwork<T>(arch);
+      
+      try {
+	// copies DBN parameters as nnetwork parameters.. (forward step) [decoder]
+	int ll = 0;
+	for(int l=layers.size()-1;l>=0;l--,ll++){
+	  if(net->setWeights(layers[l].getWeights().transpose(), ll) == false) throw "error setting decoder layer W^t";
+	  if(net->setBias(layers[l].getAValue(), ll) == false) throw "error setting decoder layer a";
+	}
+	
+	if(net->setWeights(bb_input.getWeights(), ll) == false) throw "error setting decoder output layer W^t ";
+	if(net->setBias(bb_input.getAValue(), ll) == false) throw "error setting decoder output layer a";
+	
+	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+      }
+      catch(const char* msg){
+	printf("ERROR: %s\n", msg);
+	return false;
+      }
+      
+      return true;
+    }
+
     return true;
   }
 
@@ -778,6 +886,7 @@ namespace whiteice
       
       try {
 	// copies DBN parameters as nnetwork parameters.. (forward step) [encoder]
+
 	{	  
 	  // if(net->setWeights(gb_input.getWeights().transpose(), 0) == false) throw "error setting input layer W";
 	  
@@ -834,6 +943,9 @@ namespace whiteice
 	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 	
 	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+
+	// output layer is not stochastic sigmoid but pure linear (gaussian output) ???
+	net->setNonlinearity(ll+1, whiteice::nnetwork<T>::pureLinear);
       }
       catch(const char* msg){
 	printf("ERROR: %s\n", msg);
@@ -904,6 +1016,143 @@ namespace whiteice
       
     }
     
+  }
+
+  
+  template <typename T>
+  bool DBN<T>::save(const std::string& basefilename) const
+  {
+    char buffer[256];
+
+    // saves metadata
+    {
+      snprintf(buffer, 256, "%s", basefilename.c_str());
+
+      whiteice::dataset<T> conf;
+
+      conf.createCluster("DBN type", 1);
+
+      whiteice::math::vertex<T> v;
+      v.resize(1);
+
+      if(binaryInput) v[0] = 1.0f;
+      else v[0] = 0.0f;
+
+      conf.add(0, v);
+
+      conf.createCluster("DBN layers", 1);
+      v[0] = layers.size();
+
+      conf.add(1, v);
+
+      if(conf.save(buffer) == false) return false;
+    }
+
+
+    // saves input layer
+    {
+      snprintf(buffer, 256, "%s-input", basefilename.c_str());
+      
+      if(binaryInput == false){      
+	if(gb_input.save(buffer) == false)
+	  return false;
+      }
+      else{
+	if(bb_input.save(buffer) == false)
+	  return false;
+      }
+    }
+    
+    // saves other layers
+    for(unsigned int i=0;i<layers.size();i++){
+      snprintf(buffer, 256, "%s-layer-%d", basefilename.c_str(), i);
+      if(layers[i].save(buffer) == false)
+	return false;
+    }
+
+    return true;
+  }
+
+  
+  template <typename T>
+  bool DBN<T>::load(const std::string& basefilename)
+  {
+    bool loadedBinaryInput;
+    unsigned int numLayers;
+
+    char buffer[256];
+    
+    // loads metadata
+    {
+      snprintf(buffer, 256, "%s", basefilename.c_str());
+
+      whiteice::dataset<T> conf;
+
+      if(conf.load(buffer) == false)
+	return false;
+
+      if(conf.getNumberOfClusters() != 2)
+	return false;
+
+      if(conf.size(0) != conf.size(1) && conf.size(0) != 1)
+	return false;
+
+      whiteice::math::vertex<T> v;
+
+      v = conf.access(0, 0);
+
+      if(v[0] > 0.5f) loadedBinaryInput = true;
+      else loadedBinaryInput = false;
+
+      v = conf.access(1, 0);
+
+      auto tmp = floor(v[0]);
+
+      whiteice::math::convert(numLayers, tmp);
+
+      if(numLayers < 0) return false;
+    }
+
+    whiteice::GBRBM<T> gb;
+    whiteice::BBRBM<T> bb;
+
+    std::vector< whiteice::BBRBM<T> > bb_layers;
+    bb_layers.resize(numLayers);
+
+    
+    // tries to load input layer
+    {
+      snprintf(buffer, 256, "%s-input", basefilename.c_str());
+      
+      if(loadedBinaryInput == false){      
+	if(gb.load(buffer) == false)
+	  return false;
+      }
+      else{
+	if(bb.load(buffer) == false)
+	  return false;
+      }
+    }
+    
+    // loads other layers
+    for(unsigned int i=0;i<bb_layers.size();i++){
+      snprintf(buffer, 256, "%s-layer-%d", basefilename.c_str(), i);
+      if(bb_layers[i].load(buffer) == false)
+	return false;
+    }
+
+
+    // finally copies loaded data structures from temporal data structures
+    {
+      binaryInput = loadedBinaryInput;
+      
+      if(binaryInput) bb_input = bb;
+      else gb_input = gb;
+      
+      layers = bb_layers;
+    }
+
+    return true;
   }
 
 

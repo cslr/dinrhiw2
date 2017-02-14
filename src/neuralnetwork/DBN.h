@@ -64,17 +64,25 @@ namespace whiteice
     // returns supervised neural network with extra output layer
     //
     // net - allocates new nnetwork and overwrites pointer to it as a return value
+    //
+    // all but last added layer is set to frozen using nnetowkr
     // 
     bool convertToNNetwork(const whiteice::dataset<T>& data,
 			   whiteice::nnetwork<T>*& net);
 
-    // converts DBN to supervised nnetwork without using training samples
-    // this nnetwork can then be saved or otherwise used
-    // (currently DBN does not support saving of RBM stack directly)
+    // converts DBN to supervised nnetwork
+    // (allocated using new (caller must delete)
     bool convertToNNetwork(whiteice::nnetwork<T>*& net);
 
-    // converts trained DBN to autoencoder which can be trained using LBFGS
+    // converts inverse (from hidden to visible) DBN to nnetwork
+    // net is allocated using new (caller must delete)
+    bool convertInverseToNNetwork(whiteice::nnetwork<T>*& net);
+
+    // converts trained DBN to autoencoder which can be trained using LBFGS etc
     bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
+
+    bool save(const std::string& basefilename) const;
+    bool load(const std::string& basefilename);
     
     private:
     
