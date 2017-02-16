@@ -48,6 +48,7 @@ class BBRBM {
   void getHidden(math::vertex<T>& h) const;
   bool setHidden(const math::vertex<T>& h);
 
+  // h = s(W*v + b), v = s(h*W + a)
   math::vertex<T> getBValue() const;
   math::vertex<T> getAValue() const;
   math::matrix<T> getWeights() const;

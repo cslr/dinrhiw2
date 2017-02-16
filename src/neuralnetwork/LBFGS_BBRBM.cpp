@@ -30,9 +30,15 @@ namespace whiteice
   template <typename T>
   T LBFGS_BBRBM<T>::getError(const math::vertex<T>& x) const
   {
+    // error is modified to be same as BBRBM::reconstructionError()
+    
     // return -this->net.U(x);
     
     T e = T(0.0f);
+    T DIM = T(1.0);
+
+    if(data.size(0) > 0)
+      DIM = T(data[0].size());
     
 #pragma omp parallel shared(e)
     {
@@ -57,8 +63,7 @@ namespace whiteice
 	nnet.getVisible(v);
 	err = data.access(0, index) - v;
 	
-	err = (err*err);
-	esum += T(0.5f)*err[0];
+	esum += err.norm();
       }
 
 #pragma omp critical
@@ -68,7 +73,7 @@ namespace whiteice
 
     }
     
-    e /= T( (double)1000 ); // per N
+    e /= T( T(1000.0)*DIM ); // per N per element
     
     return e;
   }

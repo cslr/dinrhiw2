@@ -196,7 +196,7 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     h = W*v + b;
     
     // 1. hidden units: calculates sigma(a_j)
-    for(unsigned int j=0;j<(h.size()-0);j++){
+    for(unsigned int j=0;j<h.size();j++){
       T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
       T r = rng.uniform();
 
@@ -247,15 +247,7 @@ bool BBRBM<T>::reconstructDataHidden(unsigned int iters)
 {
   if(iters == 0) return false;
 
-#if 0
-  math::matrix<T> Wt = W; // OPTIMIZE ME/FIX ME creates Wt matrix
-  Wt.transpose();
-#endif
-  
   while(iters > 0){
-#if 0
-    v = Wt*h + a;
-#endif
     v = h*W + a;
     
     // 1. visible units: calculates sigma(a_j)
@@ -305,20 +297,23 @@ bool BBRBM<T>::initializeWeights() // initialize weights to small values
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
       T r = rng.uniform();
-      r   = T(0.02)*r - T(0.01);
+      // r   = T(0.02)*r - T(0.01);
+      r = T(2.0)*r - T(1.0);
       W(j,i) = r;
     }
   }
     
   for(unsigned int j=0;j<a.size();j++){
-    T r = rng.uniform();
-    r   = T(0.02)*r - T(0.01);
+    T r = rng.uniform();    
+    // r   = T(0.02)*r - T(0.01);
+    r = T(2.0)*r - T(1.0);
     a[j] = r;
   }
   
   for(unsigned int j=0;j<b.size();j++){
     T r = rng.uniform();
-    r   = T(0.02)*r - T(0.01);
+    // r   = T(0.02)*r - T(0.01);
+    r = T(2.0)*r - T(1.0);
     b[j] = r;
   }
 
@@ -336,18 +331,14 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
   // and returns reconstruction error as the modelling error..
   
   const unsigned int CDk = 2;  // CD-k algorithm (was 10!)
-  T lambda = T(0.01);          // initial learning rate
+  T lambda = T(0.005);          // initial learning rate (was 0.01)
     
   math::matrix<T> PW(W);
   math::matrix<T> NW(W);
   math::vertex<T> pa(a), na(a);
   math::vertex<T> pb(b), nb(b);
 
-#if 0
-  math::matrix<T> Wt = W;
-  Wt.transpose();
-#endif
-
+  
   T latestError = reconstructionError(samples, 1000, a, b, W);
   
   if(verbose){
@@ -394,12 +385,20 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	auto h = W*v + b;
 	
 	// hidden units
-	for(unsigned int j=0;j<h.size();j++)
+	for(unsigned int j=0;j<h.size();j++){
 	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+
+	  // added discretization DEBUG
+#if 1
+	  T r = rng.uniform();
+	  if(h[j] > r) h[j] = T(1.0);
+	  else         h[j] = T(0.0);
+#endif
+	}
 	
 	// PW += h.outerproduct(v)/T(NUMSAMPLES);
 	T scaling = T(1.0)/T(NUMSAMPLES);
-	addouterproduct(PW, scaling, h, v);
+	assert(addouterproduct(PW, scaling, h, v) == true);
 	
 	pa += v/T(NUMSAMPLES);
 	pb += h/T(NUMSAMPLES);
@@ -418,7 +417,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	auto h = W*v + b;
 	
 	// 1. hidden units: calculates sigma(a_j)
-	for(unsigned int j=0;j<(h.size()-0);j++){
+	for(unsigned int j=0;j<h.size();j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
 	  T r = rng.uniform();
 	  
@@ -428,13 +427,10 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	
 	
 	for(unsigned int l=0;l<CDk;l++){
-#if 0
-	  v = Wt*h + a;
-#endif
 	  v = h*W + a;
 	  
 	  // 1. visible units: calculates sigma(a_j)
-	  for(unsigned int j=0;j<(v.size()-0);j++){
+	  for(unsigned int j=0;j<v.size();j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
 	    T r = rng.uniform();
 	    
@@ -465,18 +461,27 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       
       // Pmodel
       for(unsigned int i=0;i<NUMSAMPLES;i++){
-	const unsigned int index = rng.rand() % modelsamples.size();
+	// const unsigned int index = rng.rand() % modelsamples.size();
+	const unsigned int index = i;
 	auto v = modelsamples[index];
 	
 	auto h = W*v + b;
 	
 	// hidden units
-	for(unsigned int j=0;j<h.size();j++)
+	for(unsigned int j=0;j<h.size();j++){
 	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+
+	  // added discretization DEBUG
+#if 1
+	  T r = rng.uniform();
+	  if(h[j] > r) h[j] = T(1.0);
+	  else         h[j] = T(0.0);
+#endif
+	}
 	
 	// NW += h.outerproduct(v)/T(NUMSAMPLES);
 	T scaling = T(1.0)/T(NUMSAMPLES);
-	addouterproduct(NW, scaling, h, v);
+	assert(addouterproduct(NW, scaling, h, v) == true);
 	
 	
 	na += v/T(NUMSAMPLES);
@@ -486,7 +491,12 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       // updates weights according to CD rule + ADAPTIVE LEARNING RATE
       {
 	// W += lambda*(P - N);
-	
+
+	W += lambda*(PW - NW);
+	a += lambda*(pa - na);
+	b += lambda*(pb - nb);
+
+#if 0
 	T coef1 = T(1.0);
 	T coef2 = T(1.0/0.9);
 	T coef3 = T(0.9);
@@ -525,12 +535,9 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  b = b1;
 	  lambda *= coef1;
 	}
-      }
-
-#if 0
-      Wt = W;
-      Wt.transpose();
 #endif
+	
+      }
     }
   
     // calculates mean reconstruction error in samples and looks for convergence
@@ -557,10 +564,13 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 template <typename T>
 T BBRBM<T>::reconstructionError(const std::vector< math::vertex<T> >& samples,
-				unsigned int N, // number of samples to use from samples to estimate reconstruction error
+				// number of samples to use
+				// from samples to estimate reconstruction error
+				unsigned int N, 
 				const math::vertex<T>& a,
-				const math::vertex<T>& b,			
-				const math::matrix<T>& W) const throw() // weight matrix (parameters) to use
+				const math::vertex<T>& b,
+				// weight matrix (parameters) to use
+				const math::matrix<T>& W) const throw()
 {
   T error = T(0.0);
 
@@ -583,11 +593,6 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 				const math::matrix<T>& W) const throw()
 {
   try{
-#if 0
-    math::matrix<T> Wt = W;
-    Wt.transpose();
-#endif
-    
     math::vertex<T> v(this->v);
     math::vertex<T> h(this->h);
 
@@ -605,9 +610,6 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 	else       h[j] = T(0.0);
       }
 
-#if 0
-      v = Wt*h + a;
-#endif
       v = h*W + a;
       
       // 1. visible units: calculates sigma(a_j)
@@ -789,13 +791,21 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       auto h = W*v + b;
       
       // hidden units
-      for(unsigned int j=0;j<h.size();j++)
+      for(unsigned int j=0;j<h.size();j++){
 	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+
+	// added discretization DEBUG
+#if 1
+	T r = rng.uniform();
+	if(h[j] > r) h[j] = T(1.0);
+	else         h[j] = T(0.0);
+#endif
+      }
       
       // PW += h.outerproduct(v)/T(NUMSAMPLES);
       T scaling = T(1.0)/T(NUMSAMPLES);
-      addouterproduct(PW, scaling, h, v);
-	
+      assert(addouterproduct(PW, scaling, h, v) == true);
+      
       pa += v/T(NUMSAMPLES);
       pb += h/T(NUMSAMPLES);
     }
@@ -862,12 +872,20 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       auto h = W*v + b;
       
       // hidden units
-      for(unsigned int j=0;j<h.size();j++)
+      for(unsigned int j=0;j<h.size();j++){
 	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	
+	// added discretization DEBUG
+#if 1
+	T r = rng.uniform();
+	if(h[j] > r) h[j] = T(1.0);
+	else         h[j] = T(0.0);
+#endif
+      }
       
       // NW += h.outerproduct(v)/T(NUMSAMPLES);
       T scaling = T(1.0)/T(NUMSAMPLES);
-      addouterproduct(NW, scaling, h, v);
+      assert(addouterproduct(NW, scaling, h, v) == true);
       
       na += v/T(NUMSAMPLES);
       nb += h/T(NUMSAMPLES);

@@ -60,6 +60,84 @@ namespace whiteice
 
 
   template <typename T>
+  unsigned int DBN<T>::getInputDimension() const
+  {
+    if(binaryInput) return bb_input.getVisibleNodes();
+    else return gb_input.getVisibleNodes();
+  }
+
+  
+  template <typename T>
+  unsigned int DBN<T>::getHiddenDimension() const
+  {
+    if(layers.size() == 0){
+      if(binaryInput) return bb_input.getHiddenNodes();
+      else return gb_input.getHiddenNodes();
+    }
+    else{
+      return layers[layers.size()-1].getHiddenNodes();
+    }
+  }
+
+  template <typename T>
+  whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() throw(std::invalid_argument)
+  {
+    if(binaryInput)
+      throw std::invalid_argument("DBN<T>::getInputGBRBM() - but network is BBRBM network");
+    return gb_input;
+  }
+
+  template <typename T>
+  whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() throw(std::invalid_argument)
+  {
+    if(binaryInput == false)
+      throw std::invalid_argument("DBN<T>::getInputBBRBM() - but network is GBRBM network");
+    return bb_input;
+  }
+
+  template <typename T>
+  const whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() const throw(std::invalid_argument)
+  {
+    if(binaryInput)
+      throw std::invalid_argument("DBN<T>::getInputGBRBM() - but network is BBRBM network");
+    return gb_input;
+  }
+
+  template <typename T>
+  const whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() const throw(std::invalid_argument)
+  {
+    if(binaryInput == false)
+      throw std::invalid_argument("DBN<T>::getInputBBRBM() - but network is GBRBM network");
+    return bb_input;
+  }
+  
+  // true if GBRBM<T> is used as input otherwise BBRBM<T>
+  template <typename T>
+  bool DBN<T>::getGaussianInput() const
+  {
+    return (binaryInput == false);
+  }
+  
+  // layer is [0..getNumberOfLayers-2]
+  template <typename T>
+  whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) throw(std::invalid_argument)
+  {
+    if(layer >= layers.size())
+      throw std::invalid_argument("DBN<T>::getHiddenLayer() - layer out of range");
+    return layers[layer];
+  }
+
+
+  template <typename T>
+  const whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) const throw(std::invalid_argument)
+  {
+    if(layer >= layers.size())
+      throw std::invalid_argument("DBN<T>::getHiddenLayer() - layer out of range");
+    return layers[layer];
+  }
+
+
+  template <typename T>
   unsigned int DBN<T>::getNumberOfLayers() const
   {
     return (1 + layers.size());
@@ -316,7 +394,6 @@ namespace whiteice
       
       for(auto v : in){
 	gb_input.setVisible(v);
-	// gb_input.reconstructData(1); 
 	gb_input.reconstructDataHidden(1);
 	
 	math::vertex<T> h;

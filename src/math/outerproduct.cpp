@@ -8,7 +8,8 @@ namespace whiteice
 {
   namespace math
   {
-    
+
+    // calculates A = A + scalar*a*b^T
     template <typename T>
       bool addouterproduct(matrix<T>& A,
 			   const T& scalar,
@@ -36,7 +37,7 @@ namespace whiteice
       else{
 	for(unsigned int r=0;r<A.numRows;r++){
 	  for(unsigned int c=0;c<A.numCols;c++){
-	    A[r*A.numCols + c] = scalar*a[r]*b[c];
+	    A[r*A.numCols + c] += scalar*a[r]*b[c];
 	  }
 	}
 	

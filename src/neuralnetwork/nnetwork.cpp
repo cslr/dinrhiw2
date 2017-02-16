@@ -1009,8 +1009,8 @@ namespace whiteice
       const T a = T(1.0);
       const T b = T(1.0);
       
-      if(input > T(50.0)) return a;
-      else if(input < T(-50.0)) return -a;
+      if(input > T(10.0)) return a;
+      else if(input < T(-10.0)) return -a;
       
       const T e2x = whiteice::math::exp(T(2.0)*b*input);
       const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
@@ -1027,8 +1027,8 @@ namespace whiteice
 	const T a = T(1.0);
 	const T b = T(1.0);
 	
-	if(input > T(50.0)) return a + T(0.5)*a*b*input;
-	else if(input < T(-50.0)) return -a + T(0.5)*a*b*input;
+	if(input > T(10.0)) return a + T(0.5)*a*b*input;
+	else if(input < T(-10.0)) return -a + T(0.5)*a*b*input;
 	
 	const T e2x = whiteice::math::exp(T(2.0)*b*input);
 	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
@@ -1045,8 +1045,8 @@ namespace whiteice
 	  const T a = T(1.7159);
 	  const T b = T(2.0/3.0);
 	  
-	  if(input > T(50.0)) return a;
-	  else if(input < T(-50.0)) return -a;
+	  if(input > T(10.0)) return a;
+	  else if(input < T(-10.0)) return -a;
 	  
 	  const T e2x = whiteice::math::exp(T(2.0)*b*input);
 	  const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
@@ -1102,8 +1102,8 @@ namespace whiteice
       const T a = T(1.0);
       const T b = T(1.0);
       
-      if(input > T(50.0)) return T(0.0);
-      else if(input < T(-50.0)) return T(0.0);
+      if(input > T(10.0)) return T(0.0);
+      else if(input < T(-10.0)) return T(0.0);
       
       const T e2x = whiteice::math::exp(T(2.0)*b*input);
       const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
@@ -1122,8 +1122,8 @@ namespace whiteice
 	const T a = T(1.0);
 	const T b = T(1.0);      
 	
-	if(input > T(50.0)) return T(0.0) + T(0.5)*a*b;
-	else if(input < T(-50.0)) return T(0.0) + T(0.5)*a*b;
+	if(input > T(10.0)) return T(0.0) + T(0.5)*a*b;
+	else if(input < T(-10.0)) return T(0.0) + T(0.5)*a*b;
 	
 	const T e2x = whiteice::math::exp(T(2.0)*b*input);
 	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
@@ -1135,8 +1135,8 @@ namespace whiteice
       
 #if 0
       if(neuron & 1){
-	if(input > T(50.0)) return T(0.0);
-	else if(input < T(-50.0)) return T(0.0);
+	if(input > T(10.0)) return T(0.0);
+	else if(input < T(-10.0)) return T(0.0);
 	
 	const T a = T(1.7159);
 	const T b = T(2.0/3.0);

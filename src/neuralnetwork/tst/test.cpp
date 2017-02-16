@@ -622,8 +622,9 @@ void bbrbm_test()
   }
   
   
-  // use high number of dimensions 16x16 = 256
+  // use higher number of dimensions 16x16 = 256
   const unsigned int DIMENSION = 256;
+  const unsigned int HIDDEN_DIMENSION = 10;
   const unsigned int SAMPLES = 10000;
 
   whiteice::BBRBM< math::blas_real<double> > bbrbm;
@@ -672,24 +673,24 @@ void bbrbm_test()
   // learns weights given training data (gradient descent)
   {
 
-    bbrbm.resize(DIMENSION, DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
+    bbrbm.resize(DIMENSION, HIDDEN_DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
     
-    auto error = bbrbm.learnWeights(samples, 10, true);
+    auto error = bbrbm.learnWeights(samples, 50, true);
 
     std::cout << "BBRBM final reconstruction error = "
 	      << error << std::endl;
     
   }
-#endif
+  
+#else
 
-#if 0
   // learns parameters using LBFGS second order optimizer
   {
     whiteice::dataset< math::blas_real<double> > ds;
     ds.createCluster("input", DIMENSION);
     ds.add(0, samples);
 
-    bbrbm.resize(DIMENSION, DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
+    bbrbm.resize(DIMENSION, HIDDEN_DIMENSION); // only 8x8=64 sized image as a hidden vector (NOW: check that we can learn identity)
     if(bbrbm.setUData(samples) == false)
       printf("Setting samples FAILED!\n");
 
@@ -723,6 +724,10 @@ void bbrbm_test()
       
       sleep(1);
     }
+
+    assert(optimizer.getSolution(x, error, iters) == true);
+
+    bbrbm.setParametersQ(x0);
   }
 #endif
 
@@ -733,13 +738,15 @@ void bbrbm_test()
     std::vector<unsigned int> arch;
 
     arch.push_back(DIMENSION);
-    arch.push_back(DIMENSION); // 1st layer is BBRBM non-linearity
-    arch.push_back(DIMENSION); // 2nd layer is identity layer because last layer of net is pureLinear
+    arch.push_back(HIDDEN_DIMENSION); // 1st layer is BBRBM non-linearity
+    arch.push_back(HIDDEN_DIMENSION); // 2nd layer is identity layer because last layer of net is pureLinear
 
     if(net.setArchitecture
        (arch, nnetwork< math::blas_real<double> >::stochasticSigmoid) == false)
       std::cout << "ERROR: could not set architecture of nnetwork"
 		<< std::endl;
+    net.setNonlinearity(net.getLayers()-1,
+			nnetwork< math::blas_real<double> >::pureLinear);
     
     math::matrix< math::blas_real<double> > W;
     math::vertex< math::blas_real<double> > b;
@@ -755,7 +762,9 @@ void bbrbm_test()
       std::cout << "Nnetwork: Cannot set bias (0)" << std::endl;
     }
 
+    W.resize(HIDDEN_DIMENSION, HIDDEN_DIMENSION);
     W.identity();
+    b.resize(HIDDEN_DIMENSION);
     b.zero();
 
     if(net.setWeights(W, 1) == false){
@@ -769,7 +778,6 @@ void bbrbm_test()
     // compares stimulation of BBRBM and nnetwork
     {
       auto& s = samples[0];
-
       math::vertex< math::blas_real<double> > out1, out2;
 
       bbrbm.setVisible(s);
@@ -781,6 +789,14 @@ void bbrbm_test()
       std::cout << "THESE SHOULD BE MORE OR LESS SAME:" << std::endl;
       std::cout << "BBRBM    output: " << out1 << std::endl;
       std::cout << "nnetwork output: " << out2 << std::endl;
+
+      for(unsigned int i=0;i<samples.size();i++){
+	bbrbm.setVisible(samples[i]);
+	bbrbm.reconstructData(1);
+	bbrbm.getHidden(out1);
+
+	std::cout << "BBRBM : " << out1 << std::endl;
+      }
     }
     
     

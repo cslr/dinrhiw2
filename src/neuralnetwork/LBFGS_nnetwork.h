@@ -28,6 +28,7 @@ namespace whiteice
     protected:
 
       // optimized function
+
       virtual T U(const math::vertex<T>& x) const;
       virtual math::vertex<T> Ugrad(const math::vertex<T>& x) const;
     
