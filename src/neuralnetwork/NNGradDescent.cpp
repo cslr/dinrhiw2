@@ -400,7 +400,8 @@ namespace whiteice
 	{
 	  std::lock_guard<std::mutex> lock(first_time_lock);
 	  
-	  // use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
+	  // use heuristic to normalize weights to unity
+	  // (keep input weights) [the first try is always given imported weights]
 	  if(first_time == false){
 	    nn.randomize();
 	    
@@ -554,7 +555,6 @@ namespace whiteice
 		T alpha = T(0.5f); // lrate;
 		negative_feedback_between_neurons(nn, dtrain, alpha);
 #endif
-		printf("HEURISTICS DONE\n");
 	      }
 
 	      error = getError(nn, dtrain);
@@ -570,14 +570,14 @@ namespace whiteice
 	      }
 	      
 	    }
-	    while(delta_error < T(0.0) && lrate != T(0.0) &&
+	    while(delta_error < T(0.0) && lrate != T(0.0) && 
 		  ratio > T(0.00001f) && running);
-
+	    
+	    
 	    
 	    nn.exportdata(weights);
 	    w0 = weights;
 
-	    
 	    {
 	      solution_lock.lock();
 	      
@@ -607,7 +607,7 @@ namespace whiteice
 	  }
 	  while(error > T(0.001f) && 
 		ratio > T(0.00001f) && 
-		iterations < MAXITERS &&
+		iterations < MAXITERS && 
 		running);
 
 	

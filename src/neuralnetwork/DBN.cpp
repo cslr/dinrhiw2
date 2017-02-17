@@ -544,8 +544,11 @@ namespace whiteice
     if(data.getNumberOfClusters() < 2)
       return false;
 
+    if(data.size(0) <= 0)
+      return false;
+
     // cluster 0 input values must match input layer dimensions
-    if(!binaryInput){
+    if(binaryInput == false){
       if(data.access(0,0).size() != gb_input.getVisibleNodes()) 
 	return false;
     }
@@ -571,7 +574,7 @@ namespace whiteice
     std::vector< math::vertex<T> > hidden;
 
 #if 0
-    std::cout << "size(data) = " << data.size(0) << std::endl;
+    std::cout << "size(visible) = " << data.size(0) << std::endl;
     std::cout << "x(0) = " << data.access(0,0) << std::endl;
 
     if(binaryInput == false)
@@ -639,22 +642,30 @@ namespace whiteice
     // calculate inverse of Shh + regularizes it by adding terms
     // to diagonal if inverse fails
     // (TODO calculate pseudoinverse instead)
-    
-    T mindiagonal = Shh(0,0);
 
-    for(unsigned int i=0;i<outputDimension;i++)
-      if(Shh(i,i) < mindiagonal)
-	mindiagonal = Shh(i, i);
+    {
+      T mindiagonal = abs(Shh(0,0));
 
-    double k = 0.01;
-
-    while(Shh.inv() == false){
-      for(unsigned int i=0;i<outputDimension;i++){
-	T p = T(pow(2.0, k));
-	Shh(i,i) += p*mindiagonal;
+      for(unsigned int i=0;i<hDimension;i++)
+	if(abs(Shh(i,i)) < abs(mindiagonal))
+	  mindiagonal = abs(Shh(i, i));
+      
+      if(mindiagonal <= T(0.0))
+	mindiagonal = T(0.0001); // happens rarely or not at all..
+      
+      double k = 0.01;
+      auto temp = Shh;
+      
+      while(Shh.inv() == false){
+	Shh = temp;
+	
+	for(unsigned int i=0;i<hDimension;i++){
+	  T p = T(pow(2.0, k));
+	  Shh(i,i) += p*mindiagonal;
+	}
+	
+	k = 2.0*k;
       }
-
-      k = 2.0*k;
     }
 
     A = Syh*Shh;
@@ -726,22 +737,13 @@ namespace whiteice
     std::cout << "b = " << b << std::endl;
 #endif
 
-    net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+    // net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+    net->setNonlinearity(whiteice::nnetwork<T>::sigmoid); // mean-field activation
+    // last layer is always linear
+    net->setNonlinearity(net->getLayers()-1, whiteice::nnetwork<T>::pureLinear);
     
-    // sets all other layers to frozen (stochastic RBM output) except the final linear output layer!
-    {
-      std::vector<bool> frozen;
-
-      net->getFrozen(frozen);
-
-      for(unsigned int i=0;i<frozen.size();i++)
-	frozen[i] = true;
-
-      frozen[frozen.size()-1] = false;
-      
-      net->setFrozen(frozen);
-      net->setNonlinearity(frozen.size()-1, whiteice::nnetwork<T>::pureLinear); // last layer is always linear
-    }
+    // printf("DBN convertNNetwork() exit\n");
+    // fflush(stdout);
     
     
     return true;
@@ -804,7 +806,7 @@ namespace whiteice
     }
 
     
-    net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+    net->setNonlinearity(whiteice::nnetwork<T>::sigmoid);
     
     return true;
   }
@@ -912,7 +914,7 @@ namespace whiteice
 	if(net->setWeights(bb_input.getWeights(), ll) == false) throw "error setting decoder output layer W^t ";
 	if(net->setBias(bb_input.getAValue(), ll) == false) throw "error setting decoder output layer a";
 	
-	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoid);
       }
       catch(const char* msg){
 	printf("ERROR: %s\n", msg);
@@ -1014,10 +1016,12 @@ namespace whiteice
 	    for(unsigned int c=0;c<W.xsize();c++)
 	      W(r,c) = v[r] * W(r,c);
 	  
-	  if(net->setWeights(W, ll+1) == false) throw "error setting decoder output layer W^t ";
+	  if(net->setWeights(W, ll+1) == false)
+	    throw "error setting decoder output layer W^t ";
 	}
 	
-	if(net->setBias(gb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
+	if(net->setBias(gb_input.getAValue(), ll+1) == false)
+	  throw "error setting decoder output layer a";
 	
 	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
 

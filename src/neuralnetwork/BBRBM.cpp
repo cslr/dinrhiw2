@@ -331,7 +331,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
   // and returns reconstruction error as the modelling error..
   
   const unsigned int CDk = 2;  // CD-k algorithm (was 10!)
-  T lambda = T(0.005);          // initial learning rate (was 0.01)
+  T lambda = T(0.00001);       // initial learning rate (was 0.01)
     
   math::matrix<T> PW(W);
   math::matrix<T> NW(W);
@@ -491,12 +491,12 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       // updates weights according to CD rule + ADAPTIVE LEARNING RATE
       {
 	// W += lambda*(P - N);
-
+#if 0
 	W += lambda*(PW - NW);
 	a += lambda*(pa - na);
 	b += lambda*(pb - nb);
 
-#if 0
+#else
 	T coef1 = T(1.0);
 	T coef2 = T(1.0/0.9);
 	T coef3 = T(0.9);

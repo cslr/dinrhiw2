@@ -76,24 +76,28 @@ namespace whiteice
     // using linear optimization
     // returned nnetwork contains layer by layer optimized values which
     // can be further optimized across all layers using nnetwork optimizers
-    // returns supervised neural network with extra output layer
+    // 
+    // returns supervised mean-field (non-stochastic)
+    // neural network with extra output layer
+    // (sigmoid non-linearity except the last layer which is pureLinear)
     //
     // net - allocates new nnetwork and overwrites pointer to it as a return value
     //
-    // all but last added layer is set to frozen using nnetowkr
-    // 
     bool convertToNNetwork(const whiteice::dataset<T>& data,
 			   whiteice::nnetwork<T>*& net);
 
-    // converts DBN to supervised nnetwork
-    // (allocated using new (caller must delete)
+    // converts DBN to supervised (mean-field) nnetwork
+    // allocated using new (caller must delete)
+    // returns sigmoid mean-field network
     bool convertToNNetwork(whiteice::nnetwork<T>*& net);
 
     // converts inverse (from hidden to visible) DBN to nnetwork
     // net is allocated using new (caller must delete)
+    // returns sigmoid mean-field network
     bool convertInverseToNNetwork(whiteice::nnetwork<T>*& net);
 
     // converts trained DBN to autoencoder which can be trained using LBFGS etc
+    // returns stochastic neural network
     bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
 
     bool save(const std::string& basefilename) const;
