@@ -236,10 +236,12 @@ namespace whiteice
     if(iters == 0) return false;
     
     while(iters > 0){
-      if(!binaryInput)
+      if(binaryInput == false){
 	gb_input.reconstructDataHidden(1); //GBRBM: from visible to hidden
-      else
+      }
+      else{
 	bb_input.reconstructData(1);  // BBRBM: v->h
+      }
 
       for(unsigned int i=0;i<layers.size();i++){
 	math::vertex<T> h;
@@ -311,6 +313,20 @@ namespace whiteice
       if(!setVisible(s)) return false;
       if(!reconstructData(2)) return false;
       s = getVisible();
+    }
+
+    return true;
+  }
+
+
+  // calculates hidden responses (v->h)
+  template <typename T>
+  bool DBN<T>::calculateHidden(std::vector< math::vertex<T> >& samples)
+  {
+    for(auto& s : samples){
+      if(!setVisible(s)) return false;
+      if(!reconstructData(1)) return false;
+      s = getHidden();
     }
 
     return true;

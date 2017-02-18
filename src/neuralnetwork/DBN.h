@@ -58,10 +58,14 @@ namespace whiteice
     math::vertex<T> getHidden() const;
     bool setHidden(const math::vertex<T>& h);
     
-    // number of iterations to simulate the system 
+    // number of iterations to simulate the system (v->h, h->v)
     bool reconstructData(unsigned int iters = 2);
 
+    // v->h, h->v
     bool reconstructData(std::vector< math::vertex<T> >& samples);
+
+    // calculates hidden responses (v->h)
+    bool calculateHidden(std::vector< math::vertex<T> >& samples);
     
     bool initializeWeights(); // initialize weights to small values
     
