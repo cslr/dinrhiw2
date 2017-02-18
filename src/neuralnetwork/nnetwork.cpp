@@ -1082,6 +1082,9 @@ namespace whiteice
 
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
+      if(input <= T(-60.0)){ return T(0.0); }
+      else if(input >= T(+60.0)){ return T(0.0); }
+      
       T output = T(1.0) + math::exp(-input);
       output = math::exp(-input) / (output*output);
       return output;
@@ -1090,6 +1093,9 @@ namespace whiteice
       // FIXME: what is "correct" derivate here? I guess we should calculate E{g'(x)} or something..
       // in general stochastic layers should be frozen so that they are optimized
       // through other means than following the gradient..
+
+      if(input <= T(-60.0)){ return T(0.0); }
+      else if(input >= T(+60.0)){ return T(0.0); }
       
       // non-linearity motivated by restricted boltzman machines..
       T output = T(1.0) + math::exp(-input);
