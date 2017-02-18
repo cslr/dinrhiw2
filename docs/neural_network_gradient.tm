@@ -92,4 +92,45 @@
   <center|<math|\<nabla\><rsub|\<b-x\>>*\<b-g\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|L|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|L|)>>|)>|)>\<b-W\><rsup|*<around*|(|L|)>>\<ldots\>*diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|2|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|)>\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|1|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|)>\<b-W\><rsup|<around*|(|1|)>>>>
 
   \;
+
+  <strong|Recurrent Neural Networks and Backpropagation Through Time (BPTT)>
+
+  The basic learning algorithm for recurrent neural networks (RNN) is
+  <with|font-series|bold|backpropagation through time>
+  (<with|font-shape|italic|BPTT>). This is done by unfolding neural net in
+  time an computing the gradients. The recurrent neural network is
+
+  <center|<math|\<b-z\><around*|(|n+1|)>=<matrix|<tformat|<table|<row|<cell|\<b-y\><around*|(|n+1|)>>>|<row|<cell|\<b-r\><around*|(|n+1|)>>>>>>=\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-r\><around*|(|n|)>|)>>>
+
+  The error function to minimize is:
+
+  <center|<math|E<around*|(|N|)>=<frac|1|2><big|sum><rsup|N><rsub|n=0><around*|\<\|\|\>|\<b-d\><around*|(|n+1|)>-\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n+1|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n|)><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
+
+  In which <math|\<b-Gamma\>> matrices are used to select
+  <math|\<b-y\><around*|(|n|)>> and <math|\<b-r\><around*|(|n|)>> vectors
+  from generic output vector and the initial input to feedforward neural
+  network is zero <math|\<b-z\><around*|(|0|)>=\<b-0\>>.
+
+  It is possible to calculate gradient of <math|\<b-f\>> using the chain rule
+
+  <center|<math|<frac|\<partial\>E<around*|(|N|)>|\<partial\>\<b-w\>>=<big|sum><rsup|N><rsub|n=0><around*|(|\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n+1|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n|)><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-d\><around*|(|n+1|)>|)><rsup|T>*\<b-Gamma\><rsub|\<b-y\>>*\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n+1|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n|)><around*|\||\<b-w\>|\<nobracket\>>|)>>>
+
+  To calculate the gradient <math|\<nabla\><rsub|\<b-w\>>\<b-f\>> one must
+  remember that <math|\<b-z\><around*|(|n|)>> now also depends on
+  <math|\<b-w\>> resulting into eq:
+
+  <center|<math|\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n+1|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n|)>|)>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>><frac|\<partial\>\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>*<rsub|>>>
+
+  To further compute gradients we get a generic update rule
+
+  <center|<math|<frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>>*<frac|\<partial\>\<b-z\><around*|(|n-1|)>|\<partial\>\<b-w\>>>>
+
+  The computation of gradients can be therefore bootstrapped by setting
+  <math|<frac|\<partial\>\<b-z\><around*|(|1|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-0\>,\<b-0\>|)>|\<partial\>\<b-w\>>>
+  and iteratively updating <math|\<b-z\>> gradient while computing the
+  current error for the timestep.
+
+  \;
+
+  \;
 </body>
