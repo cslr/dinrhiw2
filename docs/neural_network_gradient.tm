@@ -223,8 +223,21 @@
   5. Repeat steps 2-4 for each song <math| i> (time series) of visible notes
   <math|<around*|{|\<b-v\><rsub|i><around*|(|n|)>|}>> and use the sum of all
   songs gradients to move parameters <math|\<b-W\>> and <math|\<b-w\>>
-  towards (hopefully) higher probability. (IMPLEMENTATION NOTE: concatenate
-  all songs as a single time-serie and try to learn it).
+  towards (hopefully) higher probability of data. (IMPLEMENTATION NOTE:
+  concatenate all songs as a single time-serie and try to learn it).
+
+  <strong|BB-RBM>
+
+  Instead of GB-RBM which variance learning is complicated. I initially (and
+  also) implement and test BB-RBM implementation as the RBM part of the
+  RNN-RBM. In this case there is no variance terms <math|\<b-z\><rsub|i>> to
+  worry about.
+
+  <math|<frac|\<partial\>F|\<partial\>\<b-a\>>=-\<b-v\>>
+
+  <math|<frac|\<partial\>F|\<partial\>\<b-b\>>=-sigmoid<around*|(|\<b-W\>*\<b-v\>+\<b-b\>|)>>
+
+  <math|<frac|\<partial\>F|\<partial\>\<b-W\>>=-sigmoid<around*|(|\<b-W\>*\<b-v\>+\<b-b\>|)>\<b-v\><rsup|T>>
 
   \;
 </body>
