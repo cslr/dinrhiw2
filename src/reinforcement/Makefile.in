@@ -38,7 +38,7 @@ CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPA
 TARGET1=testsuite
 TARGET2=testsuite2
 
-CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../crypto $(OPTIMIZE)
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../rnn -I../crypto $(OPTIMIZE)
 
 # `/usr/local/bin/sdl2-config --cflags`
 

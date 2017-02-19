@@ -188,6 +188,39 @@ math::matrix<T> BBRBM<T>::getWeights() const
 }
 
 template <typename T>
+bool BBRBM<T>::setBValue(const math::vertex<T>& b)
+{
+  if(b.size() != this->b.size())
+    return false;
+
+  this->b = b;
+  
+  return true;
+}
+
+template <typename T>
+bool BBRBM<T>::setAValue(const math::vertex<T>& a)
+{
+  if(a.size() != this->a.size())
+    return false;
+
+  this->a = a;
+
+  return true;
+}
+
+template <typename T>  
+bool BBRBM<T>::setWeights(const math::matrix<T>& W)
+{
+  if(W.ysize() != this->W.ysize() ||
+     W.xsize() != this->W.xsize())
+    return false;
+
+  this->W = W;
+  return true;
+}
+
+template <typename T>
 bool BBRBM<T>::reconstructData(unsigned int iters)
 {
   if(iters == 0) return false;

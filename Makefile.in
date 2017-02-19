@@ -20,7 +20,7 @@ libdir=@libdir@
 includedir=@includedir@/dinrhiw
 
 LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o src/hmm/*.o \
-	src/reinforcement/*.o
+	src/reinforcement/*.o src/rnn/*.o
 LIBNAME = libdinrhiw.a
 BASESOLIBNAME = libdinrhiw.so
 SOLIBNAME = libdinrhiw.so
@@ -37,6 +37,7 @@ depend:
 	$(CD) src/neuralnetwork && $(MAKE) depend
 	$(CD) src/hmm && $(MAKE) depend
 	$(CD) src/reinforcement && $(MAKE) depend
+	$(CD) src/rnn && $(MAKE) depend
 
 make_objects:
 	$(CD) src && $(MAKE) all
@@ -45,6 +46,7 @@ make_objects:
 	$(CD) src/neuralnetwork && $(MAKE) all
 	$(CD) src/hmm && $(MAKE) all
 	$(CD) src/reinforcement && $(MAKE) all
+	$(CD) src/rnn && $(MAKE) all
 
 clean: 
 	$(CD) src && $(MAKE) clean
@@ -54,6 +56,7 @@ clean:
 	$(CD) tools && $(MAKE) clean
 	$(CD) src/hmm && $(MAKE) clean
 	$(CD) src/reinforcement && $(MAKE) clean
+	$(CD) src/rnn && $(MAKE) clean
 	$(RM) *~
 
 realclean: clean removelib
@@ -63,6 +66,7 @@ realclean: clean removelib
 	$(CD) src/neuralnetwork && $(MAKE) realclean
 	$(CD) src/hmm && $(MAKE) realclean
 	$(CD) src/reinforcement && $(MAKE) realclean
+	$(CD) src/rnn && $(MAKE) realclean
 	$(CD) tools && $(MAKE) clean
 	$(RM) dinrhiw.pc
 	$(RM) Makefile 

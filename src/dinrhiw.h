@@ -62,6 +62,9 @@
 #include "RIFL_abstract2.h"
 #include "CartPole2.h" // test problem
 
+// recurrent networks
+#include "RNN_RBM.h"
+
 #include "array.h"
 #include "static_array.h"
 #include "dynamic_array.h"

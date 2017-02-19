@@ -52,6 +52,10 @@ class BBRBM {
   math::vertex<T> getBValue() const;
   math::vertex<T> getAValue() const;
   math::matrix<T> getWeights() const;
+
+  bool setBValue(const math::vertex<T>& b);
+  bool setAValue(const math::vertex<T>& a);
+  bool setWeights(const math::matrix<T>& W);
   
   bool reconstructData(unsigned int iters = 2); // 2 to v->h->v
   bool reconstructData(std::vector< math::vertex<T> >& samples,

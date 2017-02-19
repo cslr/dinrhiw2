@@ -104,11 +104,11 @@
   (<with|font-shape|italic|BPTT>). This is done by unfolding neural net in
   time an computing the gradients. The recurrent neural network is
 
-  <center|<math|\<b-z\><around*|(|n+1|)>=<matrix|<tformat|<table|<row|<cell|\<b-y\><around*|(|n+1|)>>>|<row|<cell|\<b-r\><around*|(|n+1|)>>>>>>=\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-r\><around*|(|n|)>|)>>>
+  <center|<math|\<b-u\><around*|(|n+1|)>=<matrix|<tformat|<table|<row|<cell|\<b-y\><around*|(|n+1|)>>>|<row|<cell|\<b-r\><around*|(|n+1|)>>>>>>=\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-r\><around*|(|n|)>|)>>>
 
   The error function to minimize is:
 
-  <center|<math|E<around*|(|N|)>=<frac|1|2><big|sum><rsup|N><rsub|n=1><around*|\<\|\|\>|\<b-d\><around*|(|n+1|)>-\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
+  <center|<math|E<around*|(|N|)>=<frac|1|2><big|sum><rsup|N><rsub|n=1><around*|\<\|\|\>|\<b-d\><around*|(|n+1|)>-\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-u\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
 
   In which <math|\<b-Gamma\>> matrices are used to select
   <math|\<b-y\><around*|(|n|)>> and <math|\<b-r\><around*|(|n|)>> vectors
@@ -117,20 +117,20 @@
 
   It is possible to calculate gradient of <math|\<b-f\>> using the chain rule
 
-  <center|<math|<frac|\<partial\>E<around*|(|N|)>|\<partial\>\<b-w\>>=<big|sum><rsup|N><rsub|n=0><around*|(|\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-d\><around*|(|n+1|)>|)><rsup|T>*\<b-Gamma\><rsub|\<b-y\>>*\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>>>
+  <center|<math|<frac|\<partial\>E<around*|(|N|)>|\<partial\>\<b-w\>>=<big|sum><rsup|N><rsub|n=0><around*|(|\<b-Gamma\><rsub|\<b-y\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-u\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-d\><around*|(|n+1|)>|)><rsup|T>*\<b-Gamma\><rsub|\<b-y\>>*\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-u\><around*|(|n-1|)><around*|\||\<b-w\>|\<nobracket\>>|)>>>
 
   To calculate the gradient <math|\<nabla\><rsub|\<b-w\>>\<b-f\>> one must
-  remember that <math|\<b-z\><around*|(|n|)>> now also depends on
+  remember that <math|\<b-u\><around*|(|n|)>> now also depends on
   <math|\<b-w\>> resulting into eq:
 
-  <center|<math|\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-z\><around*|(|n-1|)>|)>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>><frac|\<partial\>\<b-z\><around*|(|n-1|)>|\<partial\>\<b-w\>>*<rsub|>>>
+  <center|<math|\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-Gamma\><rsub|\<b-r\>>\<b-u\><around*|(|n-1|)>|)>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>><frac|\<partial\>\<b-u\><around*|(|n-1|)>|\<partial\>\<b-w\>>*<rsub|>>>
 
   To further compute gradients we get a generic update rule
 
-  <center|<math|<frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>>*<frac|\<partial\>\<b-z\><around*|(|n-1|)>|\<partial\>\<b-w\>>>>
+  <center|<math|<frac|\<partial\>*\<b-u\><around*|(|n|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>>*<frac|\<partial\>\<b-u\><around*|(|n-1|)>|\<partial\>\<b-w\>>>>
 
   The computation of gradients can be therefore bootstrapped by setting
-  <math|<frac|\<partial\>\<b-z\><around*|(|0|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-0\>,\<b-0\>|)>|\<partial\>\<b-w\>>>
+  <math|<frac|\<partial\>\<b-u\><around*|(|0|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-0\>,\<b-0\>|)>|\<partial\>\<b-w\>>>
   and iteratively updating <math|\<b-z\>> gradient while computing the
   current error for the timestep.
 
@@ -179,14 +179,14 @@
   for variance parameter of GB-RBM and other for recurrent neural networks
   output]. Our gradients therefore are (<verbatim|see RBM_notes.tm>):
 
-  <math|<frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><around*|(|n|)>|)>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>>*<frac|\<partial\>\<b-z\><around*|(|n-1|)>|\<partial\>\<b-w\>>>,
-  <math|\<b-z\><around*|(|n|)>=<matrix|<tformat|<table|<row|<cell|\<b-a\><around*|(|n|)>>>|<row|<cell|\<b-b\><around*|(|n|)>>>|<row|<cell|\<b-z\><around*|(|n|)>>>|<row|<cell|\<b-r\><around*|(|n|)>>>>>>>
+  <math|<frac|\<partial\>*\<b-u\><around*|(|n|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><around*|(|n|)>|)>|\<partial\>\<b-w\>>+<frac|\<partial\>\<b-f\>|\<partial\>\<b-r\>>*\<b-Gamma\><rsub|\<b-r\>>*<frac|\<partial\>\<b-u\><around*|(|n-1|)>|\<partial\>\<b-w\>>>,
+  <math|\<b-u\><around*|(|n|)>=<matrix|<tformat|<table|<row|<cell|\<b-a\><around*|(|n|)>>>|<row|<cell|\<b-b\><around*|(|n|)>>>|<row|<cell|\<b-z\><around*|(|n|)>>>|<row|<cell|\<b-r\><around*|(|n|)>>>>>>>
 
-  <math|<frac|\<partial\>\<b-a\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-a\>><frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>>
+  <math|<frac|\<partial\>\<b-a\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-a\>><frac|\<partial\>*\<b-u\><around*|(|n|)>|\<partial\>\<b-w\>>>
 
-  <math|<frac|\<partial\>\<b-b\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-b\>><frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>>
+  <math|<frac|\<partial\>\<b-b\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-b\>><frac|\<partial\>*\<b-u\><around*|(|n|)>|\<partial\>\<b-w\>>>
 
-  <math|<frac|\<partial\>\<b-z\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-z\>><frac|\<partial\>*\<b-z\><around*|(|n|)>|\<partial\>\<b-w\>>>
+  <math|<frac|\<partial\>\<b-z\>|\<partial\>\<b-w\>>=\<b-Gamma\><rsub|\<b-z\>><frac|\<partial\>*\<b-u\><around*|(|n|)>|\<partial\>\<b-w\>>>
 
   <math|<frac|\<partial\>F|\<partial\>\<b-a\>>=-\<b-Sigma\><rsup|-1><around*|(|\<b-v\>-\<b-a\>|)>>
 
@@ -215,7 +215,7 @@
   in order to calculate gradient of free energy <math|\<nabla\>\<b-F\>>.
 
   4. Calculate the gradient of the recurrent neural network
-  <math|\<nabla\><rsub|\<b-w\>>\<b-z\><around*|(|n|)>> and use
+  <math|\<nabla\><rsub|\<b-w\>>\<b-u\><around*|(|n|)>> and use
   <math|\<nabla\>\<b-F\>> to calculate gradient of the probability
   <math|p<around*|(|\<b-v\>|)>> with respect to <math|\<b-W\>> and
   <math|\<b-w\>>.
