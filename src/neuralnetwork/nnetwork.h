@@ -38,7 +38,7 @@ namespace whiteice
       sigmoid = 0, // uses sigmoid non-linearity as the default (0)
       stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
       halfLinear = 2, // for deep networks (2) [half are tanh]
-      pureLinear = 3, // for testing and comparing nnetworks (pure linear) (3)
+      pureLinear = 3, // for last-layer and comparing nnetworks (pure linear) (3)
       tanh = 4 // tanh non-linearity
     };
 
