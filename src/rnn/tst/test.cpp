@@ -142,9 +142,27 @@ void rnn_bbrbm_test()
     
   }
 
-  if(rbm.optimize(timeseries) == false)
-    printf("ERROR: optimizing RNN-RBM failed.\n");
+  if(rbm.startOptimize(timeseries) == false){
+    printf("ERROR: starting RNN-RBM optimization\n");
+  }
+
+  unsigned int iters = 0;
+
   
+  while(rbm.isRunning()){
+    whiteice::math::blas_real<float> e;
+    const unsigned int old_iters = iters;
+
+    if(rbm.getOptimizeError(iters, e)){
+      if(iters != old_iters){
+	printf("ITER %d. RNN-RBM ERROR: %f\n", iters, e.c[0]);
+      }
+    }
+
+    sleep(1);
+  }
+
+  rbm.stopOptimize();
 }
 
 
@@ -185,8 +203,8 @@ void rnn_bbrbm_save_load_test()
     whiteice::math::vertex<> rnn_params1;
     whiteice::math::vertex<> rnn_params2;
 
-    nn1 = rbm.getRNN();
-    nn2 = rbm2.getRNN();
+    rbm.getRNN(nn1);
+    rbm2.getRNN(nn2);
 
     if(nn1.exportdata(rnn_params1) == false){
       printf("ERROR: exportting RNN parameters FAILED (1)\n");
@@ -211,8 +229,8 @@ void rnn_bbrbm_save_load_test()
   {
     whiteice::BBRBM<> bbrbm1, bbrbm2;
 
-    bbrbm1 = rbm.getRBM();
-    bbrbm2 = rbm2.getRBM();
+    rbm.getRBM(bbrbm1);
+    rbm2.getRBM(bbrbm2);
 
     auto delta =
       whiteice::math::frobenius_norm( bbrbm1.getWeights() - bbrbm2.getWeights() );

@@ -24,6 +24,13 @@ namespace whiteice
     if(dimVisible == 0 || dimHidden == 0 || dimRecurrent == 0)
       throw std::invalid_argument("RNN_RBM ctor: zero dimension not possible");
 
+    this->running = false;
+    this->optimization_thread = nullptr;
+    this->optimization_threads = 0;
+    this->best_error = T(INFINITY);
+    this->iterations = 0;
+    
+
     // initializes neural network
     {
       // NN inputs are visible elements v and recurrent elements
@@ -61,6 +68,8 @@ namespace whiteice
   template <typename T>
   RNN_RBM<T>::RNN_RBM(const whiteice::RNN_RBM<T>& rbm)
   {
+    std::lock_guard<std::mutex> lock(rbm.model_mutex);
+    
     this->dimVisible = rbm.dimVisible;
     this->dimHidden  = rbm.dimHidden;
     this->dimRecurrent = rbm.dimRecurrent;
@@ -71,6 +80,13 @@ namespace whiteice
     this->synthIsInitialized = rbm.synthIsInitialized;
     this->vprev = rbm.vprev;
     this->rprev = rbm.rprev;
+
+    this->best_error = rbm.best_error;
+    this->iterations = rbm.iterations;
+
+    this->running = false;
+    this->optimization_threads = 0;
+    this->optimization_thread = nullptr;
   }
   
   
@@ -78,12 +94,30 @@ namespace whiteice
   RNN_RBM<T>::~RNN_RBM()
   {
     synthIsInitialized = false;
+
+    std::lock_guard<std::mutex> lock(thread_mutex);
+
+    running = false;
+    
+    if(optimization_thread){
+      optimization_thread->join();
+      delete optimization_thread;
+    }
+
+    optimization_thread = nullptr;
   }
   
 
   template <typename T>
-  RNN_RBM<T>& RNN_RBM<T>::operator=(const whiteice::RNN_RBM<T>& rbm)
+  RNN_RBM<T>& RNN_RBM<T>::operator=(const whiteice::RNN_RBM<T>& rbm) throw(std::invalid_argument)
   {
+    std::lock_guard<std::mutex> lock1(thread_mutex);
+
+    if(optimization_threads > 0)
+      throw std::invalid_argument("RNN_RBM::operator= cannot assign while optimization is running");
+
+    std::lock_guard<std::mutex> lock2(rbm.model_mutex);
+
     this->dimVisible = rbm.dimVisible;
     this->dimHidden  = rbm.dimHidden;
     this->dimRecurrent = rbm.dimRecurrent;
@@ -94,6 +128,13 @@ namespace whiteice
     this->synthIsInitialized = rbm.synthIsInitialized;
     this->vprev = rbm.vprev;
     this->rprev = rbm.rprev;
+
+    this->best_error = rbm.best_error;
+    this->iterations = rbm.iterations;
+
+    this->running = false;
+    this->optimization_threads = 0;
+    this->optimization_thread = nullptr;
 
     return (*this);
   }
@@ -121,37 +162,517 @@ namespace whiteice
 
 
   template <typename T>
-  const whiteice::nnetwork<T>& RNN_RBM<T>::getRNN() const
+  void RNN_RBM<T>::getRNN(whiteice::nnetwork<T>& nn) const
   {
-    return nn;
+    std::lock_guard<std::mutex> lock(model_mutex);
+    nn = this->nn;
   }
 
 
   template <typename T>
-  const whiteice::BBRBM<T>& RNN_RBM<T>::getRBM() const
+  void RNN_RBM<T>::getRBM(whiteice::BBRBM<T>& rbm) const
   {
-    return rbm;
+    std::lock_guard<std::mutex> lock(model_mutex);
+    rbm = this->rbm;
   }
   
   
-  // optimizes data likelihood using N-timseries,
-  // which are i step long and have dimVisible elements e
-  // timeseries[N][i][e]
   template <typename T>
-  bool RNN_RBM<T>::optimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries)
+  bool RNN_RBM<T>::startOptimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries)
   {
-    // some checks for input validity
+    if(running) return false; // already running
+
     if(timeseries.size() <= 0) return false;
     if(timeseries[0].size() <= 0) return false;
-    if(timeseries[0][0].size() != dimVisible) return false;
+
+    for(unsigned int i=0;i<timeseries.size();i++)
+      for(unsigned int j=0;j<timeseries[i].size();j++)
+	if(timeseries[i][j].size() != dimVisible)
+	  return false;
     
-    bool running = true;
+    
+    std::lock_guard<std::mutex> lock(thread_mutex);
+    
+    if(running || optimization_threads > 0) return false;
+
+    try{
+      
+      {
+	std::lock_guard<std::mutex> lock(model_mutex);
+	nn.randomize();
+	rbm.initializeWeights();
+
+	best_error = this->reconstructionError(rbm, nn, timeseries);
+
+	if(best_error == T(0.0) || best_error == T(INFINITY))
+	  return false;
+      }
+
+      this->timeseries = timeseries;
+      
+      iterations = 0;
+      running = true;
+
+      std::unique_lock<std::mutex> lock2(optimize_mutex);
+      
+      optimization_thread = new thread(std::bind(&RNN_RBM<T>::optimize_loop, this));
+
+      // do not exit startOptimize() until thread has started
+      while(optimization_threads == 0){
+	optimization_threads_cond.wait(lock2);
+      }
+      
+    }
+    catch(std::exception& e){
+      running = false;
+      optimization_thread = nullptr;
+      
+      return false;
+    }
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool RNN_RBM<T>::getOptimizeError(unsigned int& iterations, T& error)
+  {
+    std::lock_guard<std::mutex> lock(model_mutex);
+
+    error = best_error;
+    iterations = this->iterations;
+
+    return true;
+  }
+
+  
+  template <typename T>
+  bool RNN_RBM<T>::isRunning() // optimization loop is running
+  {
+    return (running && optimization_threads > 0);
+  }
+
+  
+  template <typename T>
+  bool RNN_RBM<T>::stopOptimize()
+  {
+    if(running == false) return false; // already (being) stopped
+
+    std::lock_guard<std::mutex> lock(thread_mutex);
+
+    if(running == false || optimization_threads == 0)
+      return false; // already stopped
+
+    running = false;
+
+    if(optimization_thread){
+      optimization_thread->join();
+      delete optimization_thread;
+    }
+
+    optimization_thread = nullptr;
+    timeseries.clear();
+    
+    return true;
+  }
+  
+  
+  // resets timeseries synthetization parameters
+  template <typename T>
+  void RNN_RBM<T>::synthStart()
+  {
+    std::lock_guard<std::mutex> lock(synth_mutex);
+    
+    vprev.resize(dimVisible);
+    rprev.resize(dimRecurrent);
+    vprev.zero();
+    rprev.zero();
+
+    synthIsInitialized = true;
+  }
+
+  
+  // synthesizes next timestep by using the model
+  template <typename T>
+  bool RNN_RBM<T>::synthNext(whiteice::math::vertex<T>& vnext)
+  {
+    std::lock_guard<std::mutex> lock1(synth_mutex);
+    std::lock_guard<std::mutex> lock2(model_mutex);
+    
+    if(synthIsInitialized == false) return false;
+	
+    const unsigned int CDk = 4;
+    
+    
+    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+    input.write_subvertex(vprev, 0);
+    input.write_subvertex(rprev, dimVisible);
+    
+    whiteice::math::vertex<T> output;
+    
+    nn.calculate(input, output);
+    
+    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+    
+    output.subvertex(a, 0, dimVisible);
+    output.subvertex(b, dimVisible, dimHidden);
+
+    whiteice::math::vertex<T> vstar(dimVisible);
+    
+    // uses CD-k to calculate v* (CD-k estimate)
+    {
+      rbm.setBValue(b);
+      rbm.setAValue(a);
+
+
+      rbm.setVisible(vprev);
+      rbm.reconstructData(2*CDk);
+      
+      rbm.getVisible(vstar);
+      
+      vnext = vstar;
+    }
+
+    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
+
+    synthIsInitialized = false;
+    
+    return true;
+  }
+
+  
+  // synthesizes N next candidates using the probabilistic model
+  template <typename T>
+  bool RNN_RBM<T>::synthNext(unsigned int N, std::vector< whiteice::math::vertex<T> >& vnext)
+  {
+    std::lock_guard<std::mutex> lock1(synth_mutex);
+    std::lock_guard<std::mutex> lock2(model_mutex);
+    
+    if(synthIsInitialized == false) return false;
+    
+    const unsigned int CDk = 4;
+    
+    
+    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+    input.write_subvertex(vprev, 0);
+    input.write_subvertex(rprev, dimVisible);
+    
+    whiteice::math::vertex<T> output;
+    
+    nn.calculate(input, output);
+    
+    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+    
+    output.subvertex(a, 0, dimVisible);
+    output.subvertex(b, dimVisible, dimHidden);
+
+    whiteice::math::vertex<T> vstar(dimVisible);
+    
+    // uses CD-k to calculate v* (CD-k estimate)
+    {
+      rbm.setBValue(b);
+      rbm.setAValue(a);
+
+      for(unsigned int i=0;i<N;i++){
+	rbm.setVisible(vprev);
+	rbm.reconstructData(2*CDk);
+	
+	rbm.getVisible(vstar);
+
+	vnext.push_back(vstar);
+      }
+    }
+
+    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
+
+    synthIsInitialized = false;
+    
+    return true;
+  }
+
+  
+  // selects given v as the next step in time-series
+  // (needed to be called before calling again synthNext())
+  template <typename T>
+  bool RNN_RBM<T>::synthSetNext(whiteice::math::vertex<T>& v)
+  {
+    std::lock_guard<std::mutex> lock(synth_mutex);
+    
+    vprev = v;
+    synthIsInitialized = true;
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool RNN_RBM<T>::save(const std::string& basefilename) const
+  {
+    // model cannot change while saving..
+    std::lock_guard<std::mutex> lock(model_mutex); 
+
+    
+    // saves generic variables
+    {
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> v;
+
+      if(conf.createCluster("dimensions", 1) == false) return false;
+      v.resize(1);
+      v.zero();
+
+      v[0] = T(this->dimVisible);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T(this->dimHidden);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T(this->dimRecurrent);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T((int)(this->synthIsInitialized));
+      if(conf.add(0, v) == false) return false;
+
+      if(conf.createCluster("vprev", this->dimVisible) == false) return false;
+      if(conf.add(1, this->vprev) == false) return false;
+
+      if(conf.createCluster("rprev", this->dimRecurrent) == false) return false;
+      if(conf.add(2, this->rprev) == false) return false;
+
+      if(conf.save(basefilename) == false) return false;
+    }
+
+    // saves model data
+    {
+      char buffer[256];
+      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
+
+      whiteice::bayesian_nnetwork<T> bnet;
+      if(bnet.importNetwork(this->nn) == false) return false;
+
+      if(bnet.save(buffer) == false) return false;
+
+      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
+
+      if(this->rbm.save(buffer) == false) return false;
+    }
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool RNN_RBM<T>::load(const std::string& basefilename)
+  {
+    // tries to load RNN_RBM
+    std::lock_guard<std::mutex> lock1(thread_mutex);
+    std::lock_guard<std::mutex> lock2(optimize_mutex);
+
+    // cannot load while optimization thread is running..
+    if(optimization_threads > 0) 
+      return false; 
+
+    unsigned int dimVisible;
+    unsigned int dimHidden;
+    unsigned int dimRecurrent;
+    bool synthIsInitialized;
+
+    whiteice::math::vertex<T> vprev;
+    whiteice::math::vertex<T> rprev;
+
+    // generic variables
+    {
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> v;
+
+      if(conf.load(basefilename) == false) return false;
+      if(conf.getNumberOfClusters() != 3) return false;
+
+      if(conf.size(0) != 4) return false;
+      if(conf.dimension(0) != 1) return false;
+
+      v.resize(1);
+      v.zero();
+
+      v = conf.access(0, 0); // dimVisible
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimVisible, floor(v[0]));
+
+      v = conf.access(0, 1); // dimHidden
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimHidden, floor(v[0]));
+      
+      v = conf.access(0, 2); // dimRecurrent
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimRecurrent, floor(v[0]));
+      
+      v = conf.access(0, 3); // synthIsInitialized
+      if(v[0] < T(0.0)) return false;
+      int tmp = 0;
+      whiteice::math::convert(tmp, floor(v[0]));
+      synthIsInitialized = (bool)tmp;
+
+      v.resize(dimVisible); // vprev
+      if(conf.dimension(1) != dimVisible) return false;
+      v = conf.access(1, 0);
+      vprev = v;
+
+      v.resize(dimRecurrent); // vprev
+      if(conf.dimension(2) != dimRecurrent) return false;
+      v = conf.access(2, 0);
+      rprev = v;
+    }
+
+    // tries to load model data
+    whiteice::nnetwork<T> nn;
+    whiteice::BBRBM<T> rbm;
+    
+    {
+      whiteice::bayesian_nnetwork<T> bnet;
+      std::vector< whiteice::math::vertex<T> > weights;
+
+      char buffer[256];
+      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
+
+      if(bnet.load(buffer) == false) return false;
+
+      if(bnet.exportSamples(nn, weights, 0) == false) return false;
+      if(weights.size() <= 0) return false;
+
+      if(nn.input_size() != dimVisible + dimRecurrent) return false;
+      if(nn.output_size() != dimVisible + dimHidden + dimRecurrent) return false;
+
+      if(nn.importdata(weights[0]) == false) return false;
+
+      
+      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
+
+      if(rbm.load(buffer) == false) return false;
+
+      if(rbm.getVisibleNodes() != dimVisible) return false;
+      if(rbm.getHiddenNodes() != dimHidden) return false;
+    }
+
+    // data loaded successfully: sets global variables
+    {
+      std::lock_guard<std::mutex> lock(model_mutex);
+      
+      this->dimVisible = dimVisible;
+      this->dimHidden  = dimHidden;
+      this->dimRecurrent = dimRecurrent;
+      
+      this->synthIsInitialized = synthIsInitialized;      
+      this->vprev = vprev;
+      this->rprev = rprev;
+
+      this->nn = nn;
+      this->rbm = rbm;
+
+      this->running = false;
+      this->optimization_threads = 0;
+      this->timeseries.clear();
+      this->iterations = 0;
+      this->best_error = T(0.0);
+    }
+
+    return true;
+  }
+  
+
+  template <typename T>
+  T RNN_RBM<T>::reconstructionError(whiteice::BBRBM<T>& rbm,
+				    whiteice::nnetwork<T>& nn, 
+				    const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries) const
+  {
+    if(timeseries.size() <= 0) return T(0.0);
+    if(timeseries[0].size() <= 0) return T(0.0);
+    if(timeseries[0][0].size() != dimVisible) return T(INFINITY);
+
+    T error = T(0.0);
+    unsigned int counter = 0;
     const unsigned int CDk = 1;
-    T epsilon = T(0.01); // step length
     
-    unsigned int iterations = 0;
+
+    for(unsigned int n=0;n<timeseries.size();n++){
+      
+      whiteice::math::vertex<T> r(dimRecurrent);
+      r.zero();
+      
+      whiteice::math::vertex<T> v(dimVisible);
+      v.zero();
+      
+      for(unsigned int i=0;i<timeseries[n].size();i++){
+	whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+	input.write_subvertex(v, 0);
+	input.write_subvertex(r, dimVisible);
+
+	whiteice::math::vertex<T> output;
+	
+	nn.calculate(input, output);
+
+	whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+	
+	output.subvertex(a, 0, dimVisible);
+	output.subvertex(b, dimVisible, dimHidden);
+
+	v = timeseries[n][i]; // visible element
+
+	whiteice::math::vertex<T> vstar(dimVisible);
+	
+	// uses CD-k to calculate v* (CD-k estimate)
+	{
+	  rbm.setBValue(b);
+	  rbm.setAValue(a);
+	  
+	  rbm.setVisible(v);
+	  rbm.reconstructData(2*CDk);
+	  
+	  rbm.getVisible(vstar);
+	}
+
+	error += (v - vstar).norm();
+	counter++;
+	  
+	output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	
+      }
+    }
+
+    error /= T(counter);
+
+    return error;
+  }
+
+
+  template <typename T>
+  void RNN_RBM<T>::optimize_loop()
+  {
+    {
+      std::unique_lock<std::mutex> lock(optimize_mutex);
+      
+      optimization_threads++;
+      optimization_threads_cond.notify_all();
+    }
+
+    const unsigned int CDk = 1;
+    bool verbose = false;
+    
+    T epsilon = T(0.01); // initial step length
+    
     std::list<T> errors;
 
+    
+    whiteice::nnetwork<T> nn;
+    whiteice::BBRBM<T> rbm;
+
+    // gets local copy of model
+    {
+      std::lock_guard<std::mutex> lock(model_mutex);
+
+      nn = this->nn;
+      rbm = this->rbm;
+    }
+
+    
     
     while(running){
 
@@ -341,15 +862,34 @@ namespace whiteice
 	  rbm.setWeights(W);
 	}
 
-	printf("RNN_RBM ITER %d RECONSTRUCTION ERROR: %f EPSILON: %f\n",
-	       iterations, error.c[0], epsilon.c[0]);
-	fflush(stdout);
+	if(verbose){
+	  printf("RNN_RBM ITER %d RECONSTRUCTION ERROR: %f EPSILON: %f\n",
+		 iterations, error.c[0], epsilon.c[0]);
+	  fflush(stdout);
+	}
+	  
+	{
+	  std::lock_guard<std::mutex> lock(model_mutex);
+
+	  if(error < best_error){
+	    best_error = error;
+	    this->rbm = rbm;
+	    this->nn  = nn;
+	  }
+	}
 
 	errors.push_back(error);
 	
       }
       else{
-	return false; // something is wrong..
+	{
+	  std::unique_lock<std::mutex> lock(optimize_mutex);
+	  
+	  optimization_threads--;
+	  optimization_threads_cond.notify_all();
+	}
+
+	return; // something is wrong (no gradients : no data to calculate)
       }
 
       
@@ -371,11 +911,19 @@ namespace whiteice
 
 	  T ratio = se / (me + T(10e-10));
 
-	  printf("STOPPING CRITERIA RATIO: %f\n", ratio.c[0]);
-	  fflush(stdout);
+	  if(verbose){
+	    printf("STOPPING CRITERIA RATIO: %f\n", ratio.c[0]);
+	    fflush(stdout);
+	  }
 
-	  if(ratio <= T(0.001)*epsilon){
-	    running = false; // stop computation
+	  if(ratio <= T(0.001)*epsilon || epsilon < T(0.0000001)){
+
+	    std::unique_lock<std::mutex> lock(optimize_mutex);
+	    
+	    optimization_threads--;
+	    optimization_threads_cond.notify_all();
+
+	    return; // stops computation
 	  }
 	  
 	}
@@ -385,350 +933,15 @@ namespace whiteice
     }
 
     
-    return (iterations > 0);
+    {
+      std::unique_lock<std::mutex> lock(optimize_mutex);
+      
+      optimization_threads--;
+      optimization_threads_cond.notify_all();
+    }
   }
 
   
-  // resets timeseries synthetization parameters
-  template <typename T>
-  void RNN_RBM<T>::synthStart()
-  {
-    vprev.resize(dimVisible);
-    rprev.resize(dimRecurrent);
-    vprev.zero();
-    rprev.zero();
-
-    synthIsInitialized = true;
-  }
-
-  
-  // synthesizes next timestep by using the model
-  template <typename T>
-  bool RNN_RBM<T>::synthNext(whiteice::math::vertex<T>& vnext)
-  {
-    if(synthIsInitialized == false) return false;
-	
-    const unsigned int CDk = 4;
-    
-    
-    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
-    input.write_subvertex(vprev, 0);
-    input.write_subvertex(rprev, dimVisible);
-    
-    whiteice::math::vertex<T> output;
-    
-    nn.calculate(input, output);
-    
-    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
-    
-    output.subvertex(a, 0, dimVisible);
-    output.subvertex(b, dimVisible, dimHidden);
-
-    whiteice::math::vertex<T> vstar(dimVisible);
-    
-    // uses CD-k to calculate v* (CD-k estimate)
-    {
-      rbm.setBValue(b);
-      rbm.setAValue(a);
-
-
-      rbm.setVisible(vprev);
-      rbm.reconstructData(2*CDk);
-      
-      rbm.getVisible(vstar);
-      
-      vnext = vstar;
-    }
-
-    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
-
-    synthIsInitialized = false;
-    
-    return true;
-  }
-
-  
-  // synthesizes N next candidates using the probabilistic model
-  template <typename T>
-  bool RNN_RBM<T>::synthNext(unsigned int N, std::vector< whiteice::math::vertex<T> >& vnext)
-  {
-  if(synthIsInitialized == false) return false;
-    
-    const unsigned int CDk = 4;
-    
-    
-    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
-    input.write_subvertex(vprev, 0);
-    input.write_subvertex(rprev, dimVisible);
-    
-    whiteice::math::vertex<T> output;
-    
-    nn.calculate(input, output);
-    
-    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
-    
-    output.subvertex(a, 0, dimVisible);
-    output.subvertex(b, dimVisible, dimHidden);
-
-    whiteice::math::vertex<T> vstar(dimVisible);
-    
-    // uses CD-k to calculate v* (CD-k estimate)
-    {
-      rbm.setBValue(b);
-      rbm.setAValue(a);
-
-      for(unsigned int i=0;i<N;i++){
-	rbm.setVisible(vprev);
-	rbm.reconstructData(2*CDk);
-	
-	rbm.getVisible(vstar);
-
-	vnext.push_back(vstar);
-      }
-    }
-
-    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
-
-    synthIsInitialized = false;
-    
-    return true;
-  }
-
-  
-  // selects given v as the next step in time-series
-  // (needed to be called before calling again synthNext())
-  template <typename T>
-  bool RNN_RBM<T>::synthSetNext(whiteice::math::vertex<T>& v)
-  {
-    vprev = v;
-    synthIsInitialized = true;
-
-    return true;
-  }
-
-
-  template <typename T>
-  bool RNN_RBM<T>::save(const std::string& basefilename) const
-  {
-    
-    // saves generic variables
-    {
-      whiteice::dataset<T> conf;
-      whiteice::math::vertex<T> v;
-
-      if(conf.createCluster("dimensions", 1) == false) return false;
-      v.resize(1);
-      v.zero();
-
-      v[0] = T(this->dimVisible);
-      if(conf.add(0, v) == false) return false;
-
-      v[0] = T(this->dimHidden);
-      if(conf.add(0, v) == false) return false;
-
-      v[0] = T(this->dimRecurrent);
-      if(conf.add(0, v) == false) return false;
-
-      v[0] = T((int)(this->synthIsInitialized));
-      if(conf.add(0, v) == false) return false;
-
-      if(conf.createCluster("vprev", this->dimVisible) == false) return false;
-      if(conf.add(1, this->vprev) == false) return false;
-
-      if(conf.createCluster("rprev", this->dimRecurrent) == false) return false;
-      if(conf.add(2, this->rprev) == false) return false;
-
-      if(conf.save(basefilename) == false) return false;
-    }
-
-    // saves model data
-    {
-      char buffer[256];
-      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
-
-      whiteice::bayesian_nnetwork<T> bnet;
-      if(bnet.importNetwork(this->nn) == false) return false;
-
-      if(bnet.save(buffer) == false) return false;
-
-      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
-
-      if(this->rbm.save(buffer) == false) return false;
-    }
-
-    return true;
-  }
-
-
-  template <typename T>
-  bool RNN_RBM<T>::load(const std::string& basefilename)
-  {
-    // tries to load RNN_RBM
-
-    unsigned int dimVisible;
-    unsigned int dimHidden;
-    unsigned int dimRecurrent;
-    bool synthIsInitialized;
-
-    whiteice::math::vertex<T> vprev;
-    whiteice::math::vertex<T> rprev;
-
-    // generic variables
-    {
-      whiteice::dataset<T> conf;
-      whiteice::math::vertex<T> v;
-
-      if(conf.load(basefilename) == false) return false;
-      if(conf.getNumberOfClusters() != 3) return false;
-
-      if(conf.size(0) != 4) return false;
-      if(conf.dimension(0) != 1) return false;
-
-      v.resize(1);
-      v.zero();
-
-      v = conf.access(0, 0); // dimVisible
-      if(v[0] < T(0.0)) return false;
-      whiteice::math::convert(dimVisible, floor(v[0]));
-
-      v = conf.access(0, 1); // dimHidden
-      if(v[0] < T(0.0)) return false;
-      whiteice::math::convert(dimHidden, floor(v[0]));
-      
-      v = conf.access(0, 2); // dimRecurrent
-      if(v[0] < T(0.0)) return false;
-      whiteice::math::convert(dimRecurrent, floor(v[0]));
-      
-      v = conf.access(0, 3); // synthIsInitialized
-      if(v[0] < T(0.0)) return false;
-      int tmp = 0;
-      whiteice::math::convert(tmp, floor(v[0]));
-      synthIsInitialized = (bool)tmp;
-
-      v.resize(dimVisible); // vprev
-      if(conf.dimension(1) != dimVisible) return false;
-      v = conf.access(1, 0);
-      vprev = v;
-
-      v.resize(dimRecurrent); // vprev
-      if(conf.dimension(2) != dimRecurrent) return false;
-      v = conf.access(2, 0);
-      rprev = v;
-    }
-
-    // tries to load model data
-    whiteice::nnetwork<T> nn;
-    whiteice::BBRBM<T> rbm;
-    
-    {
-      whiteice::bayesian_nnetwork<T> bnet;
-      std::vector< whiteice::math::vertex<T> > weights;
-
-      char buffer[256];
-      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
-
-      if(bnet.load(buffer) == false) return false;
-
-      if(bnet.exportSamples(nn, weights, 0) == false) return false;
-      if(weights.size() <= 0) return false;
-
-      if(nn.input_size() != dimVisible + dimRecurrent) return false;
-      if(nn.output_size() != dimVisible + dimHidden + dimRecurrent) return false;
-
-      if(nn.importdata(weights[0]) == false) return false;
-
-      
-      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
-
-      if(rbm.load(buffer) == false) return false;
-
-      if(rbm.getVisibleNodes() != dimVisible) return false;
-      if(rbm.getHiddenNodes() != dimHidden) return false;
-    }
-
-    // data loaded successfully: sets global variables
-    {
-      this->dimVisible = dimVisible;
-      this->dimHidden  = dimHidden;
-      this->dimRecurrent = dimRecurrent;
-      
-      this->synthIsInitialized = synthIsInitialized;      
-      this->vprev = vprev;
-      this->rprev = rprev;
-
-      this->nn = nn;
-      this->rbm = rbm;
-    }
-
-    return true;
-  }
-  
-
-  template <typename T>
-  T RNN_RBM<T>::reconstructionError(whiteice::BBRBM<T>& rbm,
-				    whiteice::nnetwork<T>& nn, 
-				    const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries) const
-  {
-    if(timeseries.size() <= 0) return T(0.0);
-    if(timeseries[0].size() <= 0) return T(0.0);
-    if(timeseries[0][0].size() != dimVisible) return T(INFINITY);
-
-    T error = T(0.0);
-    unsigned int counter = 0;
-    const unsigned int CDk = 1;
-    
-
-    for(unsigned int n=0;n<timeseries.size();n++){
-      
-      whiteice::math::vertex<T> r(dimRecurrent);
-      r.zero();
-      
-      whiteice::math::vertex<T> v(dimVisible);
-      v.zero();
-      
-      for(unsigned int i=0;i<timeseries[n].size();i++){
-	whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
-	input.write_subvertex(v, 0);
-	input.write_subvertex(r, dimVisible);
-
-	whiteice::math::vertex<T> output;
-	
-	nn.calculate(input, output);
-
-	whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
-	
-	output.subvertex(a, 0, dimVisible);
-	output.subvertex(b, dimVisible, dimHidden);
-
-	v = timeseries[n][i]; // visible element
-
-	whiteice::math::vertex<T> vstar(dimVisible);
-	
-	// uses CD-k to calculate v* (CD-k estimate)
-	{
-	  rbm.setBValue(b);
-	  rbm.setAValue(a);
-	  
-	  rbm.setVisible(v);
-	  rbm.reconstructData(2*CDk);
-	  
-	  rbm.getVisible(vstar);
-	}
-
-	error += (v - vstar).norm();
-	counter++;
-	  
-	output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	
-      }
-    }
-
-    error /= T(counter);
-
-    return error;
-  }
-
-
-
   template class RNN_RBM< whiteice::math::blas_real<float> >;
   template class RNN_RBM< whiteice::math::blas_real<double> >;
 }
