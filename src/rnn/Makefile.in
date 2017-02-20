@@ -10,9 +10,10 @@ EXTRA_OBJECTS =	../dataset.o ../MemoryCompressor.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
-	../math/outerproduct.o \
+	../math/outerproduct.o ../math/norms.o \
 	../linear_ETA.o ../conffile.o \
-	../neuralnetwork/nnetwork.o ../neuralnetwork/BBRBM.o
+	../neuralnetwork/nnetwork.o ../neuralnetwork/BBRBM.o \
+	../neuralnetwork/bayesian_nnetwork.o
 
 TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 

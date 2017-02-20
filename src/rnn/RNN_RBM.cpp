@@ -2,6 +2,10 @@
 #include "RNN_RBM.h"
 #include "matrix.h"
 #include "vertex.h"
+#include "dataset.h"
+#include "bayesian_nnetwork.h"
+
+#include <stdio.h>
 
 
 namespace whiteice
@@ -40,15 +44,95 @@ namespace whiteice
       
       rbm.initializeWeights();
     }
+
+    // sets synthesization variables
+    {
+      synthIsInitialized = false;
+      vprev.resize(dimVisible);
+      rprev.resize(dimRecurrent);
+      
+      vprev.zero();
+      rprev.zero();
+    }
     
+  }
+  
+
+  template <typename T>
+  RNN_RBM<T>::RNN_RBM(const whiteice::RNN_RBM<T>& rbm)
+  {
+    this->dimVisible = rbm.dimVisible;
+    this->dimHidden  = rbm.dimHidden;
+    this->dimRecurrent = rbm.dimRecurrent;
+
+    this->nn = rbm.nn;
+    this->rbm = rbm.rbm;
+
+    this->synthIsInitialized = rbm.synthIsInitialized;
+    this->vprev = rbm.vprev;
+    this->rprev = rbm.rprev;
   }
   
   
   template <typename T>
   RNN_RBM<T>::~RNN_RBM()
   {
+    synthIsInitialized = false;
+  }
+  
+
+  template <typename T>
+  RNN_RBM<T>& RNN_RBM<T>::operator=(const whiteice::RNN_RBM<T>& rbm)
+  {
+    this->dimVisible = rbm.dimVisible;
+    this->dimHidden  = rbm.dimHidden;
+    this->dimRecurrent = rbm.dimRecurrent;
+
+    this->nn = rbm.nn;
+    this->rbm = rbm.rbm;
+
+    this->synthIsInitialized = rbm.synthIsInitialized;
+    this->vprev = rbm.vprev;
+    this->rprev = rbm.rprev;
+
+    return (*this);
   }
 
+
+  template <typename T>
+  unsigned int RNN_RBM<T>::getVisibleDimensions() const
+  {
+    return dimVisible;
+  }
+
+  
+  template <typename T>
+  unsigned int RNN_RBM<T>::getHiddenDimensions() const
+  {
+    return dimHidden;
+  }
+
+
+  template <typename T>
+  unsigned int RNN_RBM<T>::getRecurrentDimensions() const
+  {
+    return dimRecurrent;
+  }
+
+
+  template <typename T>
+  const whiteice::nnetwork<T>& RNN_RBM<T>::getRNN() const
+  {
+    return nn;
+  }
+
+
+  template <typename T>
+  const whiteice::BBRBM<T>& RNN_RBM<T>::getRBM() const
+  {
+    return rbm;
+  }
+  
   
   // optimizes data likelihood using N-timseries,
   // which are i step long and have dimVisible elements e
@@ -63,7 +147,7 @@ namespace whiteice
     
     bool running = true;
     const unsigned int CDk = 1;
-    const T epsilon = T(0.0001);
+    T epsilon = T(0.01); // step length
     
     unsigned int iterations = 0;
     std::list<T> errors;
@@ -104,6 +188,8 @@ namespace whiteice
 
 	  output.subvertex(a, 0, dimVisible);
 	  output.subvertex(b, dimVisible, dimHidden);
+
+	  v = timeseries[n][i]; // visible element
 
 	  whiteice::math::vertex<T> vstar(dimVisible), hstar(dimHidden);
 	  whiteice::math::vertex<T> h(dimHidden);
@@ -187,8 +273,7 @@ namespace whiteice
 	    numgradients++;
 	  }
 	  
-	  output.subvertex(r, dimVisible + dimHidden, dimRecurrent);
-	  v = timeseries[n][i]; // visible element for the next timestep
+	  output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	  
 	}
 
       }
@@ -201,21 +286,63 @@ namespace whiteice
 	grad_W /= T(numgradients);
 	grad_w /= T(numgradients);
 
-	whiteice::math::matrix<T> W;
-	whiteice::math::vertex<T> w;
-	
-	W = rbm.getWeights();
-	W += epsilon*grad_W;
-	rbm.setWeights(W);
+	T error = T(0.0);
 
-	nn.exportdata(w);
-	w += epsilon*grad_w;
-	nn.importdata(w);
+	{
+	  whiteice::math::matrix<T> W;
+	  whiteice::math::vertex<T> w;
 
-	T error = reconstructionError(timeseries);
+	  whiteice::BBRBM<T> rbm1(rbm), rbm2(rbm), rbm3(rbm);
+	  whiteice::nnetwork<T> nn1(nn), nn2(nn), nn3(nn);
 
-	printf("RNN_RBM ITER %d RECONSTRUCTION ERROR: %f\n",
-	       iterations, error.c[0]);
+	  W = rbm.getWeights();
+	  W += epsilon*grad_W;
+	  rbm1.setWeights(W);
+
+	  W = rbm.getWeights();
+	  W += T(0.90)*epsilon*grad_W;
+	  rbm2.setWeights(W);
+
+	  W = rbm.getWeights();
+	  W += T(1.0/0.90)*epsilon*grad_W;
+	  rbm3.setWeights(W);
+	  
+	  nn.exportdata(w);
+	  w += epsilon*grad_w;
+	  nn1.importdata(w);
+
+	  nn.exportdata(w);
+	  w += T(0.90)*epsilon*grad_w;
+	  nn2.importdata(w);
+
+	  nn.exportdata(w);
+	  w += T(1.0/0.9)*epsilon*grad_w;
+	  nn3.importdata(w);
+	  
+	  T error1 = reconstructionError(rbm1, nn1, timeseries);
+	  T error2 = reconstructionError(rbm2, nn2, timeseries);
+	  T error3 = reconstructionError(rbm3, nn3, timeseries);
+
+	  if(error1 <= error2 && error1 <= error3){
+	    error = error1;
+	  }
+	  else if(error2 <= error1 && error2 <= error3){
+	    error = error2;
+	    epsilon = T(0.90)*epsilon;
+	  }
+	  else{ // error3 is the smallest
+	    error = error3;
+	    epsilon = T(1.0/0.90)*epsilon;
+	  }
+
+	  
+	  W = rbm.getWeights();
+	  W += epsilon*grad_W;
+	  rbm.setWeights(W);
+	}
+
+	printf("RNN_RBM ITER %d RECONSTRUCTION ERROR: %f EPSILON: %f\n",
+	       iterations, error.c[0], epsilon.c[0]);
 	fflush(stdout);
 
 	errors.push_back(error);
@@ -247,10 +374,10 @@ namespace whiteice
 	  printf("STOPPING CRITERIA RATIO: %f\n", ratio.c[0]);
 	  fflush(stdout);
 
-	  if(ratio <= T(0.01)){
+	  if(ratio <= T(0.001)*epsilon){
 	    running = false; // stop computation
 	  }
-
+	  
 	}
       }
       
@@ -266,7 +393,12 @@ namespace whiteice
   template <typename T>
   void RNN_RBM<T>::synthStart()
   {
-    // TODO implement me!
+    vprev.resize(dimVisible);
+    rprev.resize(dimRecurrent);
+    vprev.zero();
+    rprev.zero();
+
+    synthIsInitialized = true;
   }
 
   
@@ -274,7 +406,45 @@ namespace whiteice
   template <typename T>
   bool RNN_RBM<T>::synthNext(whiteice::math::vertex<T>& vnext)
   {
-    return false; // TODO implement me!
+    if(synthIsInitialized == false) return false;
+	
+    const unsigned int CDk = 4;
+    
+    
+    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+    input.write_subvertex(vprev, 0);
+    input.write_subvertex(rprev, dimVisible);
+    
+    whiteice::math::vertex<T> output;
+    
+    nn.calculate(input, output);
+    
+    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+    
+    output.subvertex(a, 0, dimVisible);
+    output.subvertex(b, dimVisible, dimHidden);
+
+    whiteice::math::vertex<T> vstar(dimVisible);
+    
+    // uses CD-k to calculate v* (CD-k estimate)
+    {
+      rbm.setBValue(b);
+      rbm.setAValue(a);
+
+
+      rbm.setVisible(vprev);
+      rbm.reconstructData(2*CDk);
+      
+      rbm.getVisible(vstar);
+      
+      vnext = vstar;
+    }
+
+    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
+
+    synthIsInitialized = false;
+    
+    return true;
   }
 
   
@@ -282,7 +452,46 @@ namespace whiteice
   template <typename T>
   bool RNN_RBM<T>::synthNext(unsigned int N, std::vector< whiteice::math::vertex<T> >& vnext)
   {
-    return false; // TODO implement me!
+  if(synthIsInitialized == false) return false;
+    
+    const unsigned int CDk = 4;
+    
+    
+    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+    input.write_subvertex(vprev, 0);
+    input.write_subvertex(rprev, dimVisible);
+    
+    whiteice::math::vertex<T> output;
+    
+    nn.calculate(input, output);
+    
+    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+    
+    output.subvertex(a, 0, dimVisible);
+    output.subvertex(b, dimVisible, dimHidden);
+
+    whiteice::math::vertex<T> vstar(dimVisible);
+    
+    // uses CD-k to calculate v* (CD-k estimate)
+    {
+      rbm.setBValue(b);
+      rbm.setAValue(a);
+
+      for(unsigned int i=0;i<N;i++){
+	rbm.setVisible(vprev);
+	rbm.reconstructData(2*CDk);
+	
+	rbm.getVisible(vstar);
+
+	vnext.push_back(vstar);
+      }
+    }
+
+    output.subvertex(rprev, dimVisible + dimHidden, dimRecurrent);
+
+    synthIsInitialized = false;
+    
+    return true;
   }
 
   
@@ -291,12 +500,174 @@ namespace whiteice
   template <typename T>
   bool RNN_RBM<T>::synthSetNext(whiteice::math::vertex<T>& v)
   {
-    return false; // TODO implement me!
+    vprev = v;
+    synthIsInitialized = true;
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool RNN_RBM<T>::save(const std::string& basefilename) const
+  {
+    
+    // saves generic variables
+    {
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> v;
+
+      if(conf.createCluster("dimensions", 1) == false) return false;
+      v.resize(1);
+      v.zero();
+
+      v[0] = T(this->dimVisible);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T(this->dimHidden);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T(this->dimRecurrent);
+      if(conf.add(0, v) == false) return false;
+
+      v[0] = T((int)(this->synthIsInitialized));
+      if(conf.add(0, v) == false) return false;
+
+      if(conf.createCluster("vprev", this->dimVisible) == false) return false;
+      if(conf.add(1, this->vprev) == false) return false;
+
+      if(conf.createCluster("rprev", this->dimRecurrent) == false) return false;
+      if(conf.add(2, this->rprev) == false) return false;
+
+      if(conf.save(basefilename) == false) return false;
+    }
+
+    // saves model data
+    {
+      char buffer[256];
+      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
+
+      whiteice::bayesian_nnetwork<T> bnet;
+      if(bnet.importNetwork(this->nn) == false) return false;
+
+      if(bnet.save(buffer) == false) return false;
+
+      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
+
+      if(this->rbm.save(buffer) == false) return false;
+    }
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool RNN_RBM<T>::load(const std::string& basefilename)
+  {
+    // tries to load RNN_RBM
+
+    unsigned int dimVisible;
+    unsigned int dimHidden;
+    unsigned int dimRecurrent;
+    bool synthIsInitialized;
+
+    whiteice::math::vertex<T> vprev;
+    whiteice::math::vertex<T> rprev;
+
+    // generic variables
+    {
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> v;
+
+      if(conf.load(basefilename) == false) return false;
+      if(conf.getNumberOfClusters() != 3) return false;
+
+      if(conf.size(0) != 4) return false;
+      if(conf.dimension(0) != 1) return false;
+
+      v.resize(1);
+      v.zero();
+
+      v = conf.access(0, 0); // dimVisible
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimVisible, floor(v[0]));
+
+      v = conf.access(0, 1); // dimHidden
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimHidden, floor(v[0]));
+      
+      v = conf.access(0, 2); // dimRecurrent
+      if(v[0] < T(0.0)) return false;
+      whiteice::math::convert(dimRecurrent, floor(v[0]));
+      
+      v = conf.access(0, 3); // synthIsInitialized
+      if(v[0] < T(0.0)) return false;
+      int tmp = 0;
+      whiteice::math::convert(tmp, floor(v[0]));
+      synthIsInitialized = (bool)tmp;
+
+      v.resize(dimVisible); // vprev
+      if(conf.dimension(1) != dimVisible) return false;
+      v = conf.access(1, 0);
+      vprev = v;
+
+      v.resize(dimRecurrent); // vprev
+      if(conf.dimension(2) != dimRecurrent) return false;
+      v = conf.access(2, 0);
+      rprev = v;
+    }
+
+    // tries to load model data
+    whiteice::nnetwork<T> nn;
+    whiteice::BBRBM<T> rbm;
+    
+    {
+      whiteice::bayesian_nnetwork<T> bnet;
+      std::vector< whiteice::math::vertex<T> > weights;
+
+      char buffer[256];
+      snprintf(buffer, 256, "%s.rnn", basefilename.c_str());
+
+      if(bnet.load(buffer) == false) return false;
+
+      if(bnet.exportSamples(nn, weights, 0) == false) return false;
+      if(weights.size() <= 0) return false;
+
+      if(nn.input_size() != dimVisible + dimRecurrent) return false;
+      if(nn.output_size() != dimVisible + dimHidden + dimRecurrent) return false;
+
+      if(nn.importdata(weights[0]) == false) return false;
+
+      
+      snprintf(buffer, 256, "%s.bbrbm", basefilename.c_str());
+
+      if(rbm.load(buffer) == false) return false;
+
+      if(rbm.getVisibleNodes() != dimVisible) return false;
+      if(rbm.getHiddenNodes() != dimHidden) return false;
+    }
+
+    // data loaded successfully: sets global variables
+    {
+      this->dimVisible = dimVisible;
+      this->dimHidden  = dimHidden;
+      this->dimRecurrent = dimRecurrent;
+      
+      this->synthIsInitialized = synthIsInitialized;      
+      this->vprev = vprev;
+      this->rprev = rprev;
+
+      this->nn = nn;
+      this->rbm = rbm;
+    }
+
+    return true;
   }
   
 
   template <typename T>
-  T RNN_RBM<T>::reconstructionError(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries)
+  T RNN_RBM<T>::reconstructionError(whiteice::BBRBM<T>& rbm,
+				    whiteice::nnetwork<T>& nn, 
+				    const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries) const
   {
     if(timeseries.size() <= 0) return T(0.0);
     if(timeseries[0].size() <= 0) return T(0.0);
@@ -329,8 +700,10 @@ namespace whiteice
 	output.subvertex(a, 0, dimVisible);
 	output.subvertex(b, dimVisible, dimHidden);
 
-	whiteice::math::vertex<T> vstar(dimVisible);
+	v = timeseries[n][i]; // visible element
 
+	whiteice::math::vertex<T> vstar(dimVisible);
+	
 	// uses CD-k to calculate v* (CD-k estimate)
 	{
 	  rbm.setBValue(b);
@@ -345,8 +718,7 @@ namespace whiteice
 	error += (v - vstar).norm();
 	counter++;
 	  
-	output.subvertex(r, dimVisible + dimHidden, dimRecurrent);
-	v = timeseries[n][i]; // visible element for the next timestep
+	output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	
       }
     }
 
