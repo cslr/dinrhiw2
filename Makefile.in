@@ -95,6 +95,7 @@ makelib:
 	$(CP) src/neuralnetwork/*.h lib/
 	$(CP) src/hmm/*.h lib/
 	$(CP) src/reinforcement/*.h lib/
+	$(CP) src/rnn/*.h lib/
 	$(CP) config.h lib/
 	chmod a+x ./copy_cpp_templates.sh
 	./copy_cpp_templates.sh
@@ -107,6 +108,7 @@ removelib:
 	$(CD) lib && $(RM) */.c
 	$(CD) lib && $(RM) */.cpp
 	$(CD) lib && $(RM) */.a
+	$(CD) lib && $(RM) */.so
 	chmod a+r lib/*
 
 ############################################################
