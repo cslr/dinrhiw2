@@ -304,7 +304,7 @@ namespace whiteice
     
     if(synthIsInitialized == false) return false;
 	
-    const unsigned int CDk = 4;
+    // const unsigned int CDk = 10;
     
     
     whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
@@ -326,8 +326,7 @@ namespace whiteice
     {
       rbm.setBValue(b);
       rbm.setAValue(a);
-
-
+      
       rbm.setVisible(vprev);
       rbm.reconstructData(2*CDk);
       
@@ -353,7 +352,7 @@ namespace whiteice
     
     if(synthIsInitialized == false) return false;
     
-    const unsigned int CDk = 4;
+    // const unsigned int CDk = 10;
     
     
     whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
@@ -593,7 +592,8 @@ namespace whiteice
 
     T error = T(0.0);
     unsigned int counter = 0;
-    const unsigned int CDk = 1;
+    
+    // const unsigned int CDk = 1;
     
 
     for(unsigned int n=0;n<timeseries.size();n++){
@@ -656,7 +656,8 @@ namespace whiteice
       optimization_threads_cond.notify_all();
     }
 
-    const unsigned int CDk = 1;
+    // const unsigned int CDk = 1;
+    
     bool verbose = false;
     
     T epsilon = T(0.01); // initial step length

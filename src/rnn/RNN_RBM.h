@@ -91,6 +91,8 @@ namespace whiteice
     unsigned int dimVisible;
     unsigned int dimHidden;
     unsigned int dimRecurrent;
+
+    const unsigned int CDk = 1;
     
     whiteice::nnetwork<T> nn; // recurrent neural network
     whiteice::BBRBM<T> rbm;   // rbm part
