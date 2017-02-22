@@ -60,7 +60,7 @@ namespace whiteice
     void getRBM(whiteice::BBRBM<T>& model) const;
 
 
-    bool startOptimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries);
+    bool startOptimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries, bool randomize=true);
 
     bool getOptimizeError(unsigned int& iterations, T& error);
 

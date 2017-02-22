@@ -178,7 +178,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool RNN_RBM<T>::startOptimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries)
+  bool RNN_RBM<T>::startOptimize(const std::vector< std::vector< whiteice::math::vertex<T> > >& timeseries, bool randomize)
   {
     if(running) return false; // already running
 
@@ -199,8 +199,11 @@ namespace whiteice
       
       {
 	std::lock_guard<std::mutex> lock(model_mutex);
-	nn.randomize();
-	rbm.initializeWeights();
+
+	if(randomize){
+	  nn.randomize();
+	  rbm.initializeWeights();
+	}
 
 	best_error = this->reconstructionError(rbm, nn, timeseries);
 
@@ -889,6 +892,11 @@ namespace whiteice
 	  optimization_threads_cond.notify_all();
 	}
 
+	{
+	  std::lock_guard<std::mutex> lock(thread_mutex);
+	  running = false;
+	}
+
 	return; // something is wrong (no gradients : no data to calculate)
       }
 
@@ -916,7 +924,7 @@ namespace whiteice
 	    fflush(stdout);
 	  }
 
-	  if(ratio <= T(0.001)*epsilon || epsilon < T(0.0000001)){
+	  if(ratio <= T(0.0001)*epsilon){
 
 	    std::unique_lock<std::mutex> lock(optimize_mutex);
 	    
@@ -938,6 +946,11 @@ namespace whiteice
       
       optimization_threads--;
       optimization_threads_cond.notify_all();
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(thread_mutex);
+      running = false;
     }
   }
 
