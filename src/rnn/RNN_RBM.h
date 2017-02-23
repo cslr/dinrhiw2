@@ -66,6 +66,9 @@ namespace whiteice
 
     bool isRunning(); // optimization loop is running
 
+    // NOTE: due to current bug stopOptimize() must be always called
+    //       before new call startOptimize() [running variable might be
+    //                                        left in on position after thread exit]
     bool stopOptimize();
 			  
     

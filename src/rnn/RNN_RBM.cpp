@@ -659,11 +659,9 @@ namespace whiteice
     // const unsigned int CDk = 1;
     
     bool verbose = false;
-    
     T epsilon = T(0.01); // initial step length
-    
-    std::list<T> errors;
 
+    std::list<T> errors;
     
     whiteice::nnetwork<T> nn;
     whiteice::BBRBM<T> rbm;
@@ -675,6 +673,28 @@ namespace whiteice
       nn = this->nn;
       rbm = this->rbm;
     }
+
+    // negative gradient heuristics
+    // [we use random samples to form another negative grad not related to CD algo]
+    const bool negative_gradient = true;
+    const T p_negative = 0.50; // 50% change of being 0 or 1 (random noise)
+    
+    auto negativeseries = timeseries;
+    
+    for(unsigned int n=0;n<negativeseries.size();n++){
+      for(unsigned int t=0;t<negativeseries[n].size();t++){
+	for(unsigned int k=0;k<negativeseries[n][t].size();k++){
+	  if(rbm.rng.uniform() <= p_negative){
+	    negativeseries[n][t][k] = T(1.0);
+	  }
+	  else{
+	    negativeseries[n][t][k] = T(0.0);
+	  }
+	}
+      }
+    }
+    
+
 
     
     
@@ -688,7 +708,7 @@ namespace whiteice
       grad_w.zero();
       
 
-      for(unsigned int n=0;n<timeseries.size();n++){
+      for(unsigned int n=0;n<timeseries.size() && running;n++){
 
 	whiteice::math::vertex<T> r(dimRecurrent);
 	r.zero();
@@ -700,7 +720,7 @@ namespace whiteice
 					nn.exportdatasize());
 	ugrad.zero();
 
-	for(unsigned int i=0;i<timeseries[n].size();i++){
+	for(unsigned int i=0;i<timeseries[n].size() && running;i++){
 	  whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
 	  input.write_subvertex(v, 0);
 	  input.write_subvertex(r, dimVisible);
@@ -803,14 +823,156 @@ namespace whiteice
 
       }
 
+      if(numgradients > 0){
+	grad_W /= T(numgradients);
+	grad_w /= T(numgradients);
+      }
+
+
+      if(negative_gradient){
+
+	// negative gradient for minimizing probability of randomized data
+	whiteice::math::matrix<T> n_grad_W(dimHidden, dimVisible);
+	whiteice::math::vertex<T> n_grad_w(nn.exportdatasize());
+	unsigned int n_numgradients = 0;
+	
+	n_grad_W.zero();
+	n_grad_w.zero();
+      
+	// calculates normal log probability gradient but changes gradient sign
+	// so we reduce probability of randomly generated time-series
+
+	for(unsigned int n=0;n<negativeseries.size() && running;n++){
+		
+	  whiteice::math::vertex<T> r(dimRecurrent);
+	  r.zero();
+	
+	  whiteice::math::vertex<T> v(dimVisible);
+	  v.zero();
+
+	  whiteice::math::matrix<T> ugrad(dimVisible + dimHidden + dimRecurrent,
+					nn.exportdatasize());
+	  ugrad.zero();
+
+	  for(unsigned int i=0;i<negativeseries[n].size() && running;i++){
+	    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+	    input.write_subvertex(v, 0);
+	    input.write_subvertex(r, dimVisible);
+	    
+	    whiteice::math::vertex<T> output;
+	    
+	    nn.calculate(input, output);
+	    
+	    whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+	    
+	    output.subvertex(a, 0, dimVisible);
+	    output.subvertex(b, dimVisible, dimHidden);
+
+	    v = negativeseries[n][i]; // visible element
+
+	    whiteice::math::vertex<T> vstar(dimVisible), hstar(dimHidden);
+	    whiteice::math::vertex<T> h(dimHidden);
+	    
+	    // uses CD-k to calculate v* and h* (CD-k estimates) and h response to v
+	    {
+	      rbm.setBValue(b);
+	      rbm.setAValue(a);
+	      
+	      rbm.setVisible(v);
+	      rbm.reconstructData(1);
+	      rbm.getHidden(h);
+	    
+	      rbm.setVisible(v);
+	      rbm.reconstructData(2*CDk);
+	      
+	      rbm.getVisible(vstar);
+	      rbm.getHidden(hstar);
+	    }
+	  
+
+	    // calculates error gradients of recurrent neural network
+	    {
+	      // du(n)/dw = df/dw + df/dr * Gr * du(n-1)/dw, Gr matrix selects r
+	      
+	      whiteice::math::matrix<T> fgrad_w;
+	      
+	      nn.gradient(input, fgrad_w);
+	      
+	      whiteice::math::matrix<T> fgrad_input;
+	      
+	      nn.gradient_value(input, fgrad_input);
+	      
+	      whiteice::math::matrix<T> fgrad_r(nn.output_size(), dimRecurrent);
+	      
+	      fgrad_input.submatrix(fgrad_r,
+				    dimVisible+dimHidden, 0,
+				    dimRecurrent, nn.output_size());
+
+	      whiteice::math::matrix<T> ugrad_r(dimRecurrent, nn.exportdatasize());
+	      
+	      ugrad.submatrix(ugrad_r,
+			      0, dimVisible+dimHidden,
+			      nn.exportdatasize(), dimRecurrent);
+	      
+	      ugrad = fgrad_w + fgrad_r * ugrad_r;
+	    }
+
+	  
+	    // calculates gradients of log(probability)
+	    {
+	      // calculates rbm W weights gradient: h*v^T - E[h*v^T]
+	      // TODO optimize computations
+	      auto gW = (h.outerproduct(v) - hstar.outerproduct(vstar)); 
+	      
+	      // calculates RNN weights gradient:
+	      // dlog(p)/dw = dlog(p)/da * da/dw + dlog(p)/db * db/dw
+	      
+	      // da/dw
+	      whiteice::math::matrix<T> ugrad_a(dimVisible, nn.exportdatasize());
+	      
+	      ugrad.submatrix(ugrad_a,
+			      0, 0,
+			      nn.exportdatasize(), dimVisible);
+	      
+	      // db/dw
+	      whiteice::math::matrix<T> ugrad_b(dimHidden, nn.exportdatasize());
+	      
+	      ugrad.submatrix(ugrad_b,
+			      0, dimVisible,
+			      nn.exportdatasize(), dimHidden);
+	      
+	      auto dlogp_a = v - vstar;
+	      auto dlogp_b = h - hstar;
+	      
+	      auto dlogp_w = dlogp_a * ugrad_a + dlogp_b * ugrad_b;
+	      
+	      n_grad_W += gW;
+	      n_grad_w += dlogp_w;
+	      
+	      n_numgradients++;
+	    }
+	    
+	    output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	  
+	  }
+	  
+	}
+
+
+	if(n_numgradients > 0){
+	  n_grad_W /= T(n_numgradients);
+	  n_grad_w /= T(n_numgradients);
+
+	  grad_W = T(0.5)*(grad_W - n_grad_W);
+	  grad_w = T(0.5)*(grad_w - n_grad_w);
+	}
+      }
+      
+      
 
       // after we have calculated gradients through time-series
       // updates parameters can computes reconstruction error and reports it
-      if(numgradients > 0)
+      if(numgradients > 0 && running)
       {
-	grad_W /= T(numgradients);
-	grad_w /= T(numgradients);
-
 	T error = T(0.0);
 
 	{
@@ -893,11 +1055,6 @@ namespace whiteice
 	  optimization_threads_cond.notify_all();
 	}
 
-	{
-	  std::lock_guard<std::mutex> lock(thread_mutex);
-	  running = false;
-	}
-
 	return; // something is wrong (no gradients : no data to calculate)
       }
 
@@ -948,11 +1105,7 @@ namespace whiteice
       optimization_threads--;
       optimization_threads_cond.notify_all();
     }
-
-    {
-      std::lock_guard<std::mutex> lock(thread_mutex);
-      running = false;
-    }
+    
   }
 
   

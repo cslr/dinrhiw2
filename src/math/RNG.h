@@ -2,7 +2,7 @@
  * RNG.h
  *
  *  Created on: 28.6.2015
- *      Author: Tomas
+ *      Author: Tomas Ukkonen
  */
 
 #ifndef MATH_RNG_H_

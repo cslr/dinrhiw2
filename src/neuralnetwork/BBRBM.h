@@ -129,6 +129,8 @@ class BBRBM {
 
   std::vector< math::vertex<T> > Usamples;
 
+ public:
+
   RNG<T> rng;
 };
 

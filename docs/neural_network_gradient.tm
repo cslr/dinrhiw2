@@ -97,12 +97,12 @@
 
   \;
 
-  <strong|Recurrent Neural Networks and Backpropagation (Similar to BPTT)>
+  <strong|Recurrent Neural Networks and Backpropagation (Similar to RTRL)>
 
-  The basic learning algorithm for recurrent neural networks (RNN) is
-  <with|font-series|bold|backpropagation through time>
-  (<with|font-shape|italic|BPTT>). This is done by unfolding neural net in
-  time an computing the gradients. The recurrent neural network is
+  The basic learning algorithm for recurrent neural networks (RNN) is BPTT
+  but I use modified RTRL instead. (RTRL - real time recurrent learning).
+  This is done by unfolding neural net in time an computing the gradients.
+  The recurrent neural network is
 
   <center|<math|\<b-u\><around*|(|n+1|)>=<matrix|<tformat|<table|<row|<cell|\<b-y\><around*|(|n+1|)>>>|<row|<cell|\<b-r\><around*|(|n+1|)>>>>>>=\<b-f\><around*|(|\<b-x\><around*|(|n|)>,\<b-r\><around*|(|n|)>|)>>>
 
@@ -113,7 +113,7 @@
   In which <math|\<b-Gamma\>> matrices are used to select
   <math|\<b-y\><around*|(|n|)>> and <math|\<b-r\><around*|(|n|)>> vectors
   from generic output vector and the initial input to feedforward neural
-  network is zero <math|\<b-z\><around*|(|0|)>=\<b-0\>>.
+  network is zero <math|\<b-u\><around*|(|0|)>=\<b-0\>>.
 
   It is possible to calculate gradient of <math|\<b-f\>> using the chain rule
 
@@ -131,13 +131,13 @@
 
   The computation of gradients can be therefore bootstrapped by setting
   <math|<frac|\<partial\>\<b-u\><around*|(|0|)>|\<partial\>\<b-w\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-0\>,\<b-0\>|)>|\<partial\>\<b-w\>>>
-  and iteratively updating <math|\<b-z\>> gradient while computing the
+  and iteratively updating <math|\<b-u\>> gradient while computing the
   current error for the timestep.
 
   <strong|RNN-RBM>
 
   RNN-RBM was described on the web to create learn creating ``music'' by
-  using BPTT.
+  using BPTT but I use extended RTRL approach instead.
 
   (<verbatim|http://danshiebler.com/2016-08-17-musical-tensorflow-part-two-the-rnn-rbm/>)
 
@@ -149,7 +149,7 @@
   and visible units (MIDI notes) are fed to be <strong|>inputs of recurrent
   neural network <math|\<b-x\><around*|(|n|)>=\<b-v\><around*|(|n|)>>.
 
-  One then can compute RBM's log-likelihood gradient with respect to
+  One can then compute RBM's log-likelihood gradient with respect to
   recurrent neural networks weights <math|\<b-w\>> maximizing probability of
   ``semi'' independent MIDI notes observations\ 
 
@@ -240,4 +240,18 @@
   <math|<frac|\<partial\>F|\<partial\>\<b-W\>>=-sigmoid<around*|(|\<b-W\>*\<b-v\>+\<b-b\>|)>\<b-v\><rsup|T>>
 
   \;
+
+  NOTE: initial use of RNN-RBM outlined here seem to diverge quickly to chaos
+  (many random notes played at once) when applying RNN-RBM to classical MIDI
+  notes data (note range: C-4 .. B-6). It seems problem should be regularized
+  somehow to limit number of on notes played at once.
+
+  In practice it seems to be difficult to regularize RNN-RBM because of the
+  special form of the error function (log probability). I suggest the use of
+  ``negative gradient''. In addition to training samples which probability
+  should be maximized, artificial songs are created where each note has
+  random probability <math|p\<gtr\>0.50> of being in on position and gradient
+  of these additional training samples is calculated normally but the
+  calculated gradient is substracted from the positive gradient so that
+  probability of those ``random songs'' is greatly reduced.
 </body>
