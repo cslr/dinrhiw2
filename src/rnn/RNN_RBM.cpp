@@ -677,7 +677,7 @@ namespace whiteice
     // negative gradient heuristics
     // [we use random samples to form another negative grad not related to CD algo]
     const bool negative_gradient = true;
-    const T p_negative = 0.50; // 50% change of being 0 or 1 (random noise)
+    const T p_negative = 0.70; // 50% change of being 0 or 1 (random noise) [was 70%]
     
     auto negativeseries = timeseries;
     
@@ -695,7 +695,6 @@ namespace whiteice
     }
     
 
-
     
     
     while(running){
@@ -706,155 +705,35 @@ namespace whiteice
 
       grad_W.zero();
       grad_w.zero();
-      
 
-      for(unsigned int n=0;n<timeseries.size() && running;n++){
 
-	whiteice::math::vertex<T> r(dimRecurrent);
-	r.zero();
+#pragma omp parallel shared(grad_W) shared(grad_w) shared(numgradients)
+      {
+	whiteice::math::matrix<T> th_grad_W(dimHidden, dimVisible);
+	whiteice::math::vertex<T> th_grad_w(nn.exportdatasize());
+	unsigned int th_numgradients = 0;
+
+	th_grad_W.zero();
+	th_grad_w.zero();
+
+	whiteice::BBRBM<T> rbm(this->rbm);
 	
-	whiteice::math::vertex<T> v(dimVisible);
-	v.zero();
+#pragma omp for nowait schedule(dynamic)
+	for(unsigned int n=0;n<timeseries.size();n++){
 
-	whiteice::math::matrix<T> ugrad(dimVisible + dimHidden + dimRecurrent,
-					nn.exportdatasize());
-	ugrad.zero();
-
-	for(unsigned int i=0;i<timeseries[n].size() && running;i++){
-	  whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
-	  input.write_subvertex(v, 0);
-	  input.write_subvertex(r, dimVisible);
-
-	  whiteice::math::vertex<T> output;
+	  if(running == false) continue;
 	  
-	  nn.calculate(input, output);
-
-	  whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
-
-	  output.subvertex(a, 0, dimVisible);
-	  output.subvertex(b, dimVisible, dimHidden);
-
-	  v = timeseries[n][i]; // visible element
-
-	  whiteice::math::vertex<T> vstar(dimVisible), hstar(dimHidden);
-	  whiteice::math::vertex<T> h(dimHidden);
-
-	  // uses CD-k to calculate v* and h* (CD-k estimates) and h response to v
-	  {
-	    rbm.setBValue(b);
-	    rbm.setAValue(a);
-
-	    rbm.setVisible(v);
-	    rbm.reconstructData(1);
-	    rbm.getHidden(h);
-	    
-	    rbm.setVisible(v);
-	    rbm.reconstructData(2*CDk);
-
-	    rbm.getVisible(vstar);
-	    rbm.getHidden(hstar);
-	  }
-	  
-
-	  // calculates error gradients of recurrent neural network
-	  {
-	    // du(n)/dw = df/dw + df/dr * Gr * du(n-1)/dw, Gr matrix selects r
-	    
-	    whiteice::math::matrix<T> fgrad_w;
-	    
-	    nn.gradient(input, fgrad_w);
-
-	    whiteice::math::matrix<T> fgrad_input;
-
-	    nn.gradient_value(input, fgrad_input);
-
-	    whiteice::math::matrix<T> fgrad_r(nn.output_size(), dimRecurrent);
-
-	    fgrad_input.submatrix(fgrad_r,
-				  dimVisible+dimHidden, 0,
-				  dimRecurrent, nn.output_size());
-
-	    whiteice::math::matrix<T> ugrad_r(dimRecurrent, nn.exportdatasize());
-
-	    ugrad.submatrix(ugrad_r,
-			    0, dimVisible+dimHidden,
-			    nn.exportdatasize(), dimRecurrent);
-	    
-	    ugrad = fgrad_w + fgrad_r * ugrad_r;
-	  }
-
-	  
-	  // calculates gradients of log(probability)
-	  {
-	    // calculates rbm W weights gradient: h*v^T - E[h*v^T]
-	    // TODO optimize computations
-	    auto gW = (h.outerproduct(v) - hstar.outerproduct(vstar)); 
-
-	    // calculates RNN weights gradient:
-	    // dlog(p)/dw = dlog(p)/da * da/dw + dlog(p)/db * db/dw
-
-	    // da/dw
-	    whiteice::math::matrix<T> ugrad_a(dimVisible, nn.exportdatasize());
-
-	    ugrad.submatrix(ugrad_a,
-			    0, 0,
-			    nn.exportdatasize(), dimVisible);
-
-	    // db/dw
-	    whiteice::math::matrix<T> ugrad_b(dimHidden, nn.exportdatasize());
-
-	    ugrad.submatrix(ugrad_b,
-			    0, dimVisible,
-			    nn.exportdatasize(), dimHidden);
-
-	    auto dlogp_a = v - vstar;
-	    auto dlogp_b = h - hstar;
-
-	    auto dlogp_w = dlogp_a * ugrad_a + dlogp_b * ugrad_b;
-
-	    grad_W += gW;
-	    grad_w += dlogp_w;
-	    
-	    numgradients++;
-	  }
-	  
-	  output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	  
-	}
-
-      }
-
-      if(numgradients > 0){
-	grad_W /= T(numgradients);
-	grad_w /= T(numgradients);
-      }
-
-
-      if(negative_gradient){
-
-	// negative gradient for minimizing probability of randomized data
-	whiteice::math::matrix<T> n_grad_W(dimHidden, dimVisible);
-	whiteice::math::vertex<T> n_grad_w(nn.exportdatasize());
-	unsigned int n_numgradients = 0;
-	
-	n_grad_W.zero();
-	n_grad_w.zero();
-      
-	// calculates normal log probability gradient but changes gradient sign
-	// so we reduce probability of randomly generated time-series
-
-	for(unsigned int n=0;n<negativeseries.size() && running;n++){
-		
 	  whiteice::math::vertex<T> r(dimRecurrent);
 	  r.zero();
-	
+	  
 	  whiteice::math::vertex<T> v(dimVisible);
 	  v.zero();
-
+	  
 	  whiteice::math::matrix<T> ugrad(dimVisible + dimHidden + dimRecurrent,
-					nn.exportdatasize());
+					  nn.exportdatasize());
 	  ugrad.zero();
-
-	  for(unsigned int i=0;i<negativeseries[n].size() && running;i++){
+	  
+	  for(unsigned int i=0;i<timeseries[n].size() && running;i++){
 	    whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
 	    input.write_subvertex(v, 0);
 	    input.write_subvertex(r, dimVisible);
@@ -867,9 +746,9 @@ namespace whiteice
 	    
 	    output.subvertex(a, 0, dimVisible);
 	    output.subvertex(b, dimVisible, dimHidden);
-
-	    v = negativeseries[n][i]; // visible element
-
+	    
+	    v = timeseries[n][i]; // visible element
+	    
 	    whiteice::math::vertex<T> vstar(dimVisible), hstar(dimHidden);
 	    whiteice::math::vertex<T> h(dimHidden);
 	    
@@ -881,15 +760,15 @@ namespace whiteice
 	      rbm.setVisible(v);
 	      rbm.reconstructData(1);
 	      rbm.getHidden(h);
-	    
+	      
 	      rbm.setVisible(v);
 	      rbm.reconstructData(2*CDk);
 	      
 	      rbm.getVisible(vstar);
 	      rbm.getHidden(hstar);
 	    }
-	  
-
+	    
+	    
 	    // calculates error gradients of recurrent neural network
 	    {
 	      // du(n)/dw = df/dw + df/dr * Gr * du(n-1)/dw, Gr matrix selects r
@@ -907,7 +786,7 @@ namespace whiteice
 	      fgrad_input.submatrix(fgrad_r,
 				    dimVisible+dimHidden, 0,
 				    dimRecurrent, nn.output_size());
-
+	      
 	      whiteice::math::matrix<T> ugrad_r(dimRecurrent, nn.exportdatasize());
 	      
 	      ugrad.submatrix(ugrad_r,
@@ -916,8 +795,8 @@ namespace whiteice
 	      
 	      ugrad = fgrad_w + fgrad_r * ugrad_r;
 	    }
-
-	  
+	    
+	    
 	    // calculates gradients of log(probability)
 	    {
 	      // calculates rbm W weights gradient: h*v^T - E[h*v^T]
@@ -946,10 +825,10 @@ namespace whiteice
 	      
 	      auto dlogp_w = dlogp_a * ugrad_a + dlogp_b * ugrad_b;
 	      
-	      n_grad_W += gW;
-	      n_grad_w += dlogp_w;
+	      th_grad_W += gW;
+	      th_grad_w += dlogp_w;
 	      
-	      n_numgradients++;
+	      th_numgradients++;
 	    }
 	    
 	    output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	  
@@ -957,11 +836,185 @@ namespace whiteice
 	  
 	}
 
+#pragma omp critical
+	{
+	  numgradients += th_numgradients;
+	  grad_W += th_grad_W;
+	  grad_w += th_grad_w;
+	}
+	
+      }
 
+      if(numgradients > 0){
+	grad_W /= T(numgradients);
+	grad_w /= T(numgradients);
+      }
+
+
+      if(negative_gradient && running){
+
+	// negative gradient for minimizing probability of randomized data
+	whiteice::math::matrix<T> n_grad_W(dimHidden, dimVisible);
+	whiteice::math::vertex<T> n_grad_w(nn.exportdatasize());
+	unsigned int n_numgradients = 0;
+	
+	n_grad_W.zero();
+	n_grad_w.zero();
+
+
+#pragma omp parallel shared(n_grad_W) shared(n_grad_w) shared(n_numgradients)
+	{
+	  whiteice::math::matrix<T> th_grad_W(dimHidden, dimVisible);
+	  whiteice::math::vertex<T> th_grad_w(nn.exportdatasize());
+	  unsigned int th_numgradients = 0;
+	  
+	  th_grad_W.zero();
+	  th_grad_w.zero();
+
+	  whiteice::BBRBM<T> rbm(this->rbm);
+
+	  // calculates normal log probability gradient but changes gradient sign
+	  // so we reduce probability of randomly generated time-series
+
+#pragma omp for nowait schedule(dynamic)
+	  for(unsigned int n=0;n<negativeseries.size();n++){
+
+	    if(running == false) continue;
+	    
+	    whiteice::math::vertex<T> r(dimRecurrent);
+	    r.zero();
+	    
+	    whiteice::math::vertex<T> v(dimVisible);
+	    v.zero();
+	    
+	    whiteice::math::matrix<T> ugrad(dimVisible + dimHidden + dimRecurrent,
+					    nn.exportdatasize());
+	    ugrad.zero();
+	    
+	    for(unsigned int i=0;i<negativeseries[n].size() && running;i++){
+	      whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+	      input.write_subvertex(v, 0);
+	      input.write_subvertex(r, dimVisible);
+	      
+	      whiteice::math::vertex<T> output;
+	      
+	      nn.calculate(input, output);
+	      
+	      whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+	      
+	      output.subvertex(a, 0, dimVisible);
+	      output.subvertex(b, dimVisible, dimHidden);
+	      
+	      v = negativeseries[n][i]; // visible element
+	      
+	      whiteice::math::vertex<T> vstar(dimVisible), hstar(dimHidden);
+	      whiteice::math::vertex<T> h(dimHidden);
+	      
+	      // uses CD-k to calculate v* and h* (CD-k estimates) and h response to v
+	      {
+		rbm.setBValue(b);
+		rbm.setAValue(a);
+		
+		rbm.setVisible(v);
+		rbm.reconstructData(1);
+		rbm.getHidden(h);
+		
+		rbm.setVisible(v);
+		rbm.reconstructData(2*CDk);
+		
+		rbm.getVisible(vstar);
+		rbm.getHidden(hstar);
+	      }
+	      
+	      
+	      // calculates error gradients of recurrent neural network
+	      {
+		// du(n)/dw = df/dw + df/dr * Gr * du(n-1)/dw, Gr matrix selects r
+		
+		whiteice::math::matrix<T> fgrad_w;
+		
+		nn.gradient(input, fgrad_w);
+		
+		whiteice::math::matrix<T> fgrad_input;
+		
+		nn.gradient_value(input, fgrad_input);
+		
+		whiteice::math::matrix<T> fgrad_r(nn.output_size(), dimRecurrent);
+		
+		fgrad_input.submatrix(fgrad_r,
+				      dimVisible+dimHidden, 0,
+				      dimRecurrent, nn.output_size());
+		
+		whiteice::math::matrix<T> ugrad_r(dimRecurrent, nn.exportdatasize());
+		
+		ugrad.submatrix(ugrad_r,
+				0, dimVisible+dimHidden,
+				nn.exportdatasize(), dimRecurrent);
+		
+		ugrad = fgrad_w + fgrad_r * ugrad_r;
+	      }
+	      
+	      
+	      // calculates gradients of log(probability)
+	      {
+		// calculates rbm W weights gradient: h*v^T - E[h*v^T]
+		// TODO optimize computations
+		auto gW = (h.outerproduct(v) - hstar.outerproduct(vstar)); 
+		
+		// calculates RNN weights gradient:
+		// dlog(p)/dw = dlog(p)/da * da/dw + dlog(p)/db * db/dw
+		
+		// da/dw
+		whiteice::math::matrix<T> ugrad_a(dimVisible, nn.exportdatasize());
+		
+		ugrad.submatrix(ugrad_a,
+				0, 0,
+				nn.exportdatasize(), dimVisible);
+		
+		// db/dw
+		whiteice::math::matrix<T> ugrad_b(dimHidden, nn.exportdatasize());
+		
+		ugrad.submatrix(ugrad_b,
+				0, dimVisible,
+				nn.exportdatasize(), dimHidden);
+		
+		auto dlogp_a = v - vstar;
+		auto dlogp_b = h - hstar;
+		
+		auto dlogp_w = dlogp_a * ugrad_a + dlogp_b * ugrad_b;
+		
+		th_grad_W += gW;
+		th_grad_w += dlogp_w;
+		
+		th_numgradients++;
+	      }
+	      
+	      output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	  
+	    }
+	  
+	  }
+
+#pragma omp critical
+	  {
+	    n_numgradients += th_numgradients;
+	    n_grad_W += th_grad_W;
+	    n_grad_w += th_grad_w;
+	  }
+
+	}
+	
+	
 	if(n_numgradients > 0){
 	  n_grad_W /= T(n_numgradients);
 	  n_grad_w /= T(n_numgradients);
-
+	  
+	  // 10% of the gradient is negative gradient (regularizer value)
+	  // 10% don't work (36-16-2), 50% (36-50-10) works but has too
+	  //                           little variation (p = 70%)
+	  // 30% don'y work (36-16-2) [p = 50%]
+	  // 50% (36-16-2) p=50% do not work
+	  // 50% (35-16-2) p=70% 
+	  
 	  grad_W = T(0.5)*(grad_W - n_grad_W);
 	  grad_w = T(0.5)*(grad_w - n_grad_w);
 	}
@@ -1034,6 +1087,7 @@ namespace whiteice
 	  fflush(stdout);
 	}
 	  
+	if(running)
 	{
 	  std::lock_guard<std::mutex> lock(model_mutex);
 
