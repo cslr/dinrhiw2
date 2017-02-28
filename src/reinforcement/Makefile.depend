@@ -62,22 +62,24 @@ RIFL_abstract.o: RIFL_abstract.cpp RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/EnsembleMeans.h ../neuralnetwork/lreg_nnetwork.h \
  ../neuralnetwork/nnetwork_function.h \
  ../neuralnetwork/optimized_function.h ../hmm/HMM.h ../math/real.h \
- RIFL_abstract.h CartPole.h RIFL_abstract.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
- ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ RIFL_abstract.h CartPole.h RIFL_abstract.h RIFL_abstract2.h CartPole2.h \
+ RIFL_abstract2.h ../rnn/RNN_RBM.h ../neuralnetwork/nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
+ ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
+ ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
  ../math/correlation.h ../math/outerproduct.h ../math/bezier.h \
@@ -97,7 +99,7 @@ RIFL_abstract.o: RIFL_abstract.cpp RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/neuron.h ../neuralnetwork/odd_sigmoid.h \
  ../neuralnetwork/nnPSO.h ../neuralnetwork/PSO.h \
  ../neuralnetwork/dnnPSO.h ../neuralnetwork/nn_iterative_correction.h \
- ../neuralnetwork/nnetwork.h ../neuralnetwork/NNRandomSearch.h \
+ ../neuralnetwork/NNRandomSearch.h \
  ../neuralnetwork/deep_ica_network_priming.h ../neuralnetwork/KMeans.h \
  ../neuralnetwork/SOM2D.h ../ETA.h \
  ../neuralnetwork/optimized_nnetwork_function.h \
@@ -234,22 +236,23 @@ PolicyGradAscent.o: PolicyGradAscent.cpp PolicyGradAscent.h \
  ../neuralnetwork/lreg_nnetwork.h ../neuralnetwork/nnetwork_function.h \
  ../neuralnetwork/optimized_function.h ../hmm/HMM.h ../math/real.h \
  RIFL_abstract.h ../neuralnetwork/bayesian_nnetwork.h CartPole.h \
- RIFL_abstract.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
- ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
- ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
- ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ RIFL_abstract.h RIFL_abstract2.h CartPole2.h RIFL_abstract2.h \
+ ../rnn/RNN_RBM.h ../neuralnetwork/nnetwork.h ../array.h ../container.h \
+ ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
+ ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
+ ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
+ ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
+ ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
  ../math/correlation.h ../math/outerproduct.h ../math/bezier.h \
@@ -269,8 +272,7 @@ PolicyGradAscent.o: PolicyGradAscent.cpp PolicyGradAscent.h \
  ../neuralnetwork/neuron.h ../neuralnetwork/odd_sigmoid.h \
  ../neuralnetwork/nnPSO.h ../neuralnetwork/PSO.h \
  ../neuralnetwork/dnnPSO.h ../neuralnetwork/nn_iterative_correction.h \
- ../neuralnetwork/nnetwork.h ../neuralnetwork/NNGradDescent.h \
- ../neuralnetwork/NNRandomSearch.h \
+ ../neuralnetwork/NNGradDescent.h ../neuralnetwork/NNRandomSearch.h \
  ../neuralnetwork/deep_ica_network_priming.h ../neuralnetwork/KMeans.h \
  ../neuralnetwork/SOM2D.h ../ETA.h \
  ../neuralnetwork/optimized_nnetwork_function.h \
@@ -355,22 +357,24 @@ RIFL_abstract2.o: RIFL_abstract2.cpp RIFL_abstract2.h \
  ../neuralnetwork/EnsembleMeans.h ../neuralnetwork/lreg_nnetwork.h \
  ../neuralnetwork/nnetwork_function.h \
  ../neuralnetwork/optimized_function.h ../hmm/HMM.h ../math/real.h \
- RIFL_abstract.h CartPole.h RIFL_abstract.h ../array.h ../container.h \
- ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
- ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
- ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
- ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
- ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
- ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
- ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
- ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
- ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
- ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
- ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ RIFL_abstract.h CartPole.h RIFL_abstract.h RIFL_abstract2.h CartPole2.h \
+ RIFL_abstract2.h ../rnn/RNN_RBM.h ../neuralnetwork/nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
+ ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
+ ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
+ ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
+ ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
+ ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
+ ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
+ ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
+ ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
+ ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
  ../math/correlation.h ../math/outerproduct.h ../math/bezier.h \
@@ -390,7 +394,7 @@ RIFL_abstract2.o: RIFL_abstract2.cpp RIFL_abstract2.h \
  ../neuralnetwork/neuron.h ../neuralnetwork/odd_sigmoid.h \
  ../neuralnetwork/nnPSO.h ../neuralnetwork/PSO.h \
  ../neuralnetwork/dnnPSO.h ../neuralnetwork/nn_iterative_correction.h \
- ../neuralnetwork/nnetwork.h ../neuralnetwork/NNRandomSearch.h \
+ ../neuralnetwork/NNRandomSearch.h \
  ../neuralnetwork/deep_ica_network_priming.h ../neuralnetwork/KMeans.h \
  ../neuralnetwork/SOM2D.h ../ETA.h \
  ../neuralnetwork/optimized_nnetwork_function.h \
@@ -513,7 +517,59 @@ test.o: tst/test.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
  ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h RIFL_abstract.h
+ ../math/ica.h CartPole2.h RIFL_abstract2.h RIFL_abstract.h
+test2.o: tst/test2.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dnn.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dnn_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/nn_iterative_correction.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/vertex.h ../math/correlation.h \
+ ../dynamic_bitset.h ../math/integer.h ../math/blade_math.h \
+ ../math/integer.h ../math/gvertex.h ../math/gmatrix.h \
+ ../math/gmatrix.cpp ../neuralnetwork/function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
+ ../math/ica.h CartPole2.h RIFL_abstract2.h RIFL_abstract.h
 dataset.o: ../dataset.cpp ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -884,22 +940,23 @@ NNGradDescent.o: ../neuralnetwork/NNGradDescent.cpp \
  ../neuralnetwork/lreg_nnetwork.h ../neuralnetwork/nnetwork_function.h \
  ../neuralnetwork/optimized_function.h ../hmm/HMM.h ../math/real.h \
  RIFL_abstract.h ../neuralnetwork/bayesian_nnetwork.h CartPole.h \
- RIFL_abstract.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
- ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
- ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
- ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ RIFL_abstract.h RIFL_abstract2.h CartPole2.h RIFL_abstract2.h \
+ ../rnn/RNN_RBM.h ../neuralnetwork/nnetwork.h ../array.h ../container.h \
+ ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
+ ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
+ ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
+ ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
+ ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
  ../math/correlation.h ../math/outerproduct.h ../math/bezier.h \
@@ -919,8 +976,7 @@ NNGradDescent.o: ../neuralnetwork/NNGradDescent.cpp \
  ../neuralnetwork/neuron.h ../neuralnetwork/odd_sigmoid.h \
  ../neuralnetwork/nnPSO.h ../neuralnetwork/PSO.h \
  ../neuralnetwork/dnnPSO.h ../neuralnetwork/nn_iterative_correction.h \
- ../neuralnetwork/nnetwork.h ../neuralnetwork/NNGradDescent.h \
- ../neuralnetwork/NNRandomSearch.h \
+ ../neuralnetwork/NNGradDescent.h ../neuralnetwork/NNRandomSearch.h \
  ../neuralnetwork/deep_ica_network_priming.h ../neuralnetwork/KMeans.h \
  ../neuralnetwork/SOM2D.h ../ETA.h \
  ../neuralnetwork/optimized_nnetwork_function.h \
@@ -994,3 +1050,52 @@ deep_ica_network_priming.o: ../neuralnetwork/deep_ica_network_priming.cpp \
  ../math/RNG.h ../dataset.h ../math/ica.h ../math/eig.h \
  ../math/correlation.h ../math/linear_algebra.h \
  ../math/linear_equations.h
+linear_equations.o: ../math/linear_equations.cpp \
+ ../math/linear_equations.h ../math/vertex.h ../math/dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dnn.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dnn_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/blade_math.h ../math/integer.h \
+ ../math/gvertex.h ../math/gmatrix.h ../math/gmatrix.cpp \
+ ../neuralnetwork/function.h ../math/real.h ../math/quaternion.h \
+ ../math/gvertex.cpp ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h

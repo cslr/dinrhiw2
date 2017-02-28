@@ -28,7 +28,7 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp
 	../neuralnetwork/nnetwork.cpp ../neuralnetwork/bayesian_nnetwork.cpp \
 	../conffile.cpp ../neuralnetwork/NNGradDescent.cpp \
 	../neuralnetwork/deep_ica_network_priming.cpp \
-	../math/linear_equations.o
+	../math/linear_equations.cpp
 
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@

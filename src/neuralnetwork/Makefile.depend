@@ -52,11 +52,14 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
- ../array.h ../container.h ../static_array.h ../static_array.cpp \
- ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
- ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
- ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
- ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
  ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
  ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
  ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
@@ -81,7 +84,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -238,7 +241,8 @@ gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h \
- ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h
+ ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 neuron.o: neuron.cpp activation_function.h function.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -719,7 +723,8 @@ optimized_nnetwork_function.o: optimized_nnetwork_function.cpp \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h optimized_function.h nnetwork.h \
- ../conffile.h ../dataset.h ../math/ica.h
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
+ ../math/ica.h
 PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -1105,11 +1110,14 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
- ../array.h ../container.h ../static_array.h ../static_array.cpp \
- ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
- ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
- ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
- ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
  ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
  ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
  ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
@@ -1134,7 +1142,7 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1200,11 +1208,14 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
- ../array.h ../container.h ../static_array.h ../static_array.cpp \
- ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
- ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
- ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
- ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
  ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
  ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
  ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
@@ -1229,7 +1240,7 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../math/fastpca.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1294,11 +1305,14 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
  lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
- ../array.h ../container.h ../static_array.h ../static_array.cpp \
- ../dynamic_array.h ../stack.h ../queue.h ../dynamic_array.cpp \
- ../search_array.h ../printable.h ../data_source.h ../chainhash.h \
- ../hash_table.h ../chainhash.cpp ../dummystack.h ../priority_queue.h \
- ../dynamic_bitset.h ../point.h ../point.cpp ../math/ownexception.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
+ ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
+ ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
+ ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
+ ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
+ ../point.h ../point.cpp ../math/ownexception.h \
  ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
  ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
  ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
@@ -1323,7 +1337,7 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../math/fastpca.h ../math/matrix.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1480,7 +1494,8 @@ gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h \
- ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h
+ ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 GeneticAlgorithm.o: GeneticAlgorithm.cpp GeneticAlgorithm.h function.h \
  GeneticAlgorithm.cpp
 GeneticAlgorithm2.o: GeneticAlgorithm2.cpp GeneticAlgorithm2.h function.h \
@@ -1543,7 +1558,10 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
  Mixture.h EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h ../array.h \
+ ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
  ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
  ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
  ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
@@ -1573,7 +1591,7 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1639,7 +1657,10 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h \
  Mixture.h EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h \
  optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h ../array.h \
+ ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/RIFL_abstract2.h ../reinforcement/CartPole2.h \
+ ../reinforcement/RIFL_abstract2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
  ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
  ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
  ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
@@ -1669,7 +1690,7 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1726,15 +1747,18 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
- ../conffile.h bayesian_nnetwork.h ../math/RNG.h ../math/RNG.cpp \
- ../math/RNG.h NNGradDescent.h ../dinrhiw.h ../math/fastpca.h DBN.h \
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ bayesian_nnetwork.h NNGradDescent.h ../dinrhiw.h ../math/fastpca.h DBN.h \
  GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h stackedRBM_pretraining.h \
  DBN.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
  pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
  pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
  EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
  ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
- bayesian_nnetwork.h ../array.h ../container.h ../static_array.h \
+ bayesian_nnetwork.h ../reinforcement/CartPole.h \
+ ../reinforcement/RIFL_abstract.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
  ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
@@ -1763,7 +1787,7 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -1821,7 +1845,7 @@ bayesian_nnetwork.o: bayesian_nnetwork.cpp bayesian_nnetwork.h nnetwork.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
  ../math/outerproduct.h activation_function.h function.h ../conffile.h \
- ../dataset.h ../math/ica.h
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h
 HMC_abstract.o: HMC_abstract.cpp HMC_abstract.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2057,9 +2081,10 @@ deep_ica_network_priming.o: deep_ica_network_priming.cpp \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h nnetwork.h ../conffile.h ../dataset.h \
- ../math/ica.h ../math/eig.h ../math/correlation.h \
- ../math/linear_algebra.h ../math/linear_equations.h
+ activation_function.h function.h nnetwork.h ../conffile.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h ../math/eig.h \
+ ../math/correlation.h ../math/linear_algebra.h \
+ ../math/linear_equations.h
 BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
  optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2106,8 +2131,9 @@ BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h nnetwork.h ../conffile.h ../dataset.h \
- ../math/ica.h deep_ica_network_priming.h
+ activation_function.h nnetwork.h ../conffile.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ deep_ica_network_priming.h
 pBFGS_nnetwork.o: pBFGS_nnetwork.cpp pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/BFGS.h optimized_function.h function.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
@@ -2155,8 +2181,9 @@ pBFGS_nnetwork.o: pBFGS_nnetwork.cpp pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h nnetwork.h ../conffile.h ../dataset.h \
- ../math/ica.h deep_ica_network_priming.h
+ activation_function.h nnetwork.h ../conffile.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ deep_ica_network_priming.h
 LBFGS_nnetwork.o: LBFGS_nnetwork.cpp LBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2204,8 +2231,8 @@ LBFGS_nnetwork.o: LBFGS_nnetwork.cpp LBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h ../math/eig.h
+ nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../dataset.h ../math/ica.h deep_ica_network_priming.h ../math/eig.h
 pLBFGS_nnetwork.o: pLBFGS_nnetwork.cpp pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  ../math/LBFGS.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2253,8 +2280,8 @@ pLBFGS_nnetwork.o: pLBFGS_nnetwork.cpp pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h
+ nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../dataset.h ../math/ica.h deep_ica_network_priming.h
 lreg_nnetwork.o: lreg_nnetwork.cpp lreg_nnetwork.h nnetwork.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2302,7 +2329,7 @@ lreg_nnetwork.o: lreg_nnetwork.cpp lreg_nnetwork.h nnetwork.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
  ../math/outerproduct.h activation_function.h function.h ../conffile.h \
- ../math/blade_math.h
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../math/blade_math.h
 nnetwork_function.o: nnetwork_function.cpp nnetwork_function.h \
  optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2349,7 +2376,8 @@ nnetwork_function.o: nnetwork_function.cpp nnetwork_function.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h nnetwork.h ../conffile.h
+ activation_function.h function.h nnetwork.h ../conffile.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h
 ultradeep.o: ultradeep.cpp ultradeep.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2974,8 +3002,8 @@ HMCconvergencecheck.o: HMCconvergencecheck.cpp HMCconvergencecheck.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
- ../conffile.h bayesian_nnetwork.h ../math/RNG.h ../math/RNG.cpp \
- ../math/RNG.h
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ bayesian_nnetwork.h
 UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -3022,15 +3050,18 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
- ../conffile.h bayesian_nnetwork.h ../math/RNG.h ../math/RNG.cpp \
- ../math/RNG.h NNGradDescent.h ../dinrhiw.h ../math/fastpca.h DBN.h \
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ bayesian_nnetwork.h NNGradDescent.h ../dinrhiw.h ../math/fastpca.h DBN.h \
  GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h stackedRBM_pretraining.h \
  DBN.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
  pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
  pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
  EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
  ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
- bayesian_nnetwork.h ../array.h ../container.h ../static_array.h \
+ bayesian_nnetwork.h ../reinforcement/CartPole.h \
+ ../reinforcement/RIFL_abstract.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
  ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
@@ -3059,7 +3090,7 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../crypto/Cryptosystem.h ../crypto/DES.h ../crypto/DSA.h ../crypto/PAD.h \
  ../crypto/RSA.h ../crypto/SHA.h ../global.h ../../config.h ../dataset.h \
  activation_function.h neuralnetwork.h neuron.h odd_sigmoid.h nnPSO.h \
- PSO.h dnnPSO.h nn_iterative_correction.h nnetwork.h NNGradDescent.h \
+ PSO.h dnnPSO.h nn_iterative_correction.h NNGradDescent.h \
  NNRandomSearch.h deep_ica_network_priming.h KMeans.h SOM2D.h ../ETA.h \
  optimized_nnetwork_function.h negative_function.h stretched_function.h \
  identity_activation.h odd_sigmoid.h threshold.h treshold.h \
@@ -3167,8 +3198,8 @@ rLBFGS_nnetwork.o: rLBFGS_nnetwork.cpp rLBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h ../math/eig.h \
+ nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../dataset.h ../math/ica.h deep_ica_network_priming.h ../math/eig.h \
  EnsembleMeans.h
 Mixture.o: Mixture.cpp Mixture.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -3216,8 +3247,8 @@ Mixture.o: Mixture.cpp Mixture.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
- ../conffile.h rLBFGS_nnetwork.h ../math/LBFGS.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h
+ ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ rLBFGS_nnetwork.h ../math/LBFGS.h
 EnsembleMeans.o: EnsembleMeans.cpp EnsembleMeans.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \

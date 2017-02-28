@@ -286,7 +286,10 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/EnsembleMeans.h neuralnetwork/lreg_nnetwork.h \
  neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
  hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
- neuralnetwork/bayesian_nnetwork.h array.h container.h static_array.h \
+ neuralnetwork/bayesian_nnetwork.h reinforcement/CartPole.h \
+ reinforcement/RIFL_abstract.h reinforcement/RIFL_abstract2.h \
+ reinforcement/CartPole2.h reinforcement/RIFL_abstract2.h rnn/RNN_RBM.h \
+ neuralnetwork/nnetwork.h array.h container.h static_array.h \
  static_array.cpp dynamic_array.h stack.h queue.h dynamic_array.cpp \
  search_array.h compressable.h printable.h data_source.h chainhash.h \
  hash_table.h chainhash.cpp dummystack.h priority_queue.h \
@@ -315,10 +318,9 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h math/fastpca.h math/matrix.h \
  neuralnetwork/neuralnetwork.h neuralnetwork/neuron.h \
  neuralnetwork/odd_sigmoid.h neuralnetwork/nnPSO.h neuralnetwork/PSO.h \
  neuralnetwork/dnnPSO.h neuralnetwork/nn_iterative_correction.h \
- neuralnetwork/nnetwork.h neuralnetwork/NNGradDescent.h dinrhiw.h \
- neuralnetwork/NNRandomSearch.h neuralnetwork/deep_ica_network_priming.h \
- neuralnetwork/KMeans.h neuralnetwork/SOM2D.h ETA.h \
- neuralnetwork/optimized_nnetwork_function.h \
+ neuralnetwork/NNGradDescent.h dinrhiw.h neuralnetwork/NNRandomSearch.h \
+ neuralnetwork/deep_ica_network_priming.h neuralnetwork/KMeans.h \
+ neuralnetwork/SOM2D.h ETA.h neuralnetwork/optimized_nnetwork_function.h \
  neuralnetwork/negative_function.h neuralnetwork/stretched_function.h \
  neuralnetwork/identity_activation.h neuralnetwork/odd_sigmoid.h \
  neuralnetwork/threshold.h neuralnetwork/treshold.h \
