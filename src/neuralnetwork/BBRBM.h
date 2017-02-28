@@ -56,6 +56,9 @@ class BBRBM {
   bool setBValue(const math::vertex<T>& b);
   bool setAValue(const math::vertex<T>& a);
   bool setWeights(const math::matrix<T>& W);
+
+  // v->h (but no discretization of h) useful when calculating gradients..
+  bool getHiddenResponseField(const math::vertex<T>& v, math::vertex<T>& h) const;
   
   bool reconstructData(unsigned int iters = 2); // 2 to v->h->v
   bool reconstructData(std::vector< math::vertex<T> >& samples,

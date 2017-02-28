@@ -220,6 +220,25 @@ bool BBRBM<T>::setWeights(const math::matrix<T>& W)
   return true;
 }
 
+
+template <typename T>
+bool BBRBM<T>::getHiddenResponseField(const math::vertex<T>& v,
+				      math::vertex<T>& h) const
+{
+  if(this->v.size() != v.size()) return false;
+  
+  h = W*v + b;
+  
+  for(unsigned int j=0;j<h.size();j++){
+    h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+  }
+
+  // no discretization
+
+  return true;
+}
+  
+
 template <typename T>
 bool BBRBM<T>::reconstructData(unsigned int iters)
 {

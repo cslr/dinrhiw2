@@ -41,6 +41,7 @@ namespace whiteice
       arch.push_back(dimVisible + dimHidden + dimRecurrent);
 
       nn.setArchitecture(arch, whiteice::nnetwork<T>::halfLinear);
+      // nn.setArchitecture(arch, whiteice::nnetwork<T>::pureLinear);
       
       nn.randomize();
     }
@@ -592,54 +593,67 @@ namespace whiteice
 
     T error = T(0.0);
     unsigned int counter = 0;
-    
-    // const unsigned int CDk = 1;
-    
 
-    for(unsigned int n=0;n<timeseries.size();n++){
+#pragma omp parallel shared(error) shared(counter)
+    {
+      T e = T(0.0);
+      unsigned int c = 0;
+
+      whiteice::BBRBM<T> rbm(this->rbm);
       
-      whiteice::math::vertex<T> r(dimRecurrent);
-      r.zero();
-      
-      whiteice::math::vertex<T> v(dimVisible);
-      v.zero();
-      
-      for(unsigned int i=0;i<timeseries[n].size();i++){
-	whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
-	input.write_subvertex(v, 0);
-	input.write_subvertex(r, dimVisible);
-
-	whiteice::math::vertex<T> output;
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int n=0;n<timeseries.size();n++){
 	
-	nn.calculate(input, output);
-
-	whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+	whiteice::math::vertex<T> r(dimRecurrent);
+	r.zero();
 	
-	output.subvertex(a, 0, dimVisible);
-	output.subvertex(b, dimVisible, dimHidden);
-
-	v = timeseries[n][i]; // visible element
-
-	whiteice::math::vertex<T> vstar(dimVisible);
+	whiteice::math::vertex<T> v(dimVisible);
+	v.zero();
 	
-	// uses CD-k to calculate v* (CD-k estimate)
-	{
-	  rbm.setBValue(b);
-	  rbm.setAValue(a);
+	for(unsigned int i=0;i<timeseries[n].size();i++){
+	  whiteice::math::vertex<T> input(dimVisible + dimRecurrent);
+	  input.write_subvertex(v, 0);
+	  input.write_subvertex(r, dimVisible);
 	  
-	  rbm.setVisible(v);
-	  rbm.reconstructData(2*CDk);
+	  whiteice::math::vertex<T> output;
 	  
-	  rbm.getVisible(vstar);
+	  nn.calculate(input, output);
+	  
+	  whiteice::math::vertex<T> a(dimVisible), b(dimHidden);
+	  
+	  output.subvertex(a, 0, dimVisible);
+	  output.subvertex(b, dimVisible, dimHidden);
+	  
+	  v = timeseries[n][i]; // visible element
+	  
+	  whiteice::math::vertex<T> vstar(dimVisible);
+	  
+	  // uses CD-k to calculate v* (CD-k estimate)
+	  {
+	    rbm.setBValue(b);
+	    rbm.setAValue(a);
+	    
+	    rbm.setVisible(v);
+	    rbm.reconstructData(2*CDk);
+	    
+	    rbm.getVisible(vstar);
+	  }
+	  
+	  e += (v - vstar).norm();
+	  c++;
+	  
+	  output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	
 	}
-
-	error += (v - vstar).norm();
-	counter++;
-	  
-	output.subvertex(r, dimVisible + dimHidden, dimRecurrent);	
       }
-    }
 
+#pragma omp critical
+      {
+	error += e;
+	counter += c;
+      }
+
+    }
+      
     error /= T(counter);
 
     return error;
@@ -676,19 +690,21 @@ namespace whiteice
 
     // negative gradient heuristics
     // [we use random samples to form another negative grad not related to CD algo]
-    const bool negative_gradient = true;
-    const T p_negative = 0.70; // 50% change of being 0 or 1 (random noise) [was 70%]
+    const bool negative_gradient = false;
+    const T p_negative = 0.70; // 70% change of being 1 (random noise)
     
-    auto negativeseries = timeseries;
-    
-    for(unsigned int n=0;n<negativeseries.size();n++){
-      for(unsigned int t=0;t<negativeseries[n].size();t++){
-	for(unsigned int k=0;k<negativeseries[n][t].size();k++){
-	  if(rbm.rng.uniform() <= p_negative){
-	    negativeseries[n][t][k] = T(1.0);
-	  }
-	  else{
-	    negativeseries[n][t][k] = T(0.0);
+    std::vector< std::vector< whiteice::math::vertex<T> > > negativeseries;
+
+    if(negative_gradient){
+      for(unsigned int n=0;n<negativeseries.size();n++){
+	for(unsigned int t=0;t<negativeseries[n].size();t++){
+	  for(unsigned int k=0;k<negativeseries[n][t].size();k++){
+	    if(rbm.rng.uniform() <= p_negative){
+	      negativeseries[n][t][k] = T(1.0);
+	    }
+	    else{
+	      negativeseries[n][t][k] = T(0.0);
+	    }
 	  }
 	}
       }
@@ -756,16 +772,20 @@ namespace whiteice
 	    {
 	      rbm.setBValue(b);
 	      rbm.setAValue(a);
+
+	      rbm.getHiddenResponseField(v, h); // v->h
+	      // rbm.setVisible(v);
+	      // rbm.reconstructData(1);
+	      // rbm.getHidden(h);
 	      
-	      rbm.setVisible(v);
-	      rbm.reconstructData(1);
-	      rbm.getHidden(h);
-	      
+
 	      rbm.setVisible(v);
 	      rbm.reconstructData(2*CDk);
 	      
 	      rbm.getVisible(vstar);
-	      rbm.getHidden(hstar);
+	      
+	      // rbm.getHidden(hstar);
+	      rbm.getHiddenResponseField(vstar, hstar);
 	    }
 	    
 	    
@@ -915,15 +935,17 @@ namespace whiteice
 		rbm.setBValue(b);
 		rbm.setAValue(a);
 		
-		rbm.setVisible(v);
-		rbm.reconstructData(1);
-		rbm.getHidden(h);
+		// rbm.setVisible(v);
+		// rbm.reconstructData(1);
+		// rbm.getHidden(h);
+		rbm.getHiddenResponseField(v, h); // v->h
 		
 		rbm.setVisible(v);
 		rbm.reconstructData(2*CDk);
 		
 		rbm.getVisible(vstar);
-		rbm.getHidden(hstar);
+		// rbm.getHidden(hstar);
+		rbm.getHiddenResponseField(vstar, hstar); // v->h
 	      }
 	      
 	      
