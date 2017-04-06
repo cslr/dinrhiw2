@@ -86,7 +86,7 @@ realclean: clean removelib
 makelib:
 	$(RM) *.a
 	$(AR) rc $(LIBNAME) $(LIBOBJECTS)
-	$(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
+	$(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@ -fopenmp
 	$(MV) $(LIBNAME) lib
 	$(MV) $(SOLIBNAME) lib
 	$(CP) src/*.h lib/

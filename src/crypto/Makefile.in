@@ -23,7 +23,7 @@ SOURCES = PAD.cpp DES.cpp AES.cpp SHA.cpp RSA.cpp DSA.cpp \
 
 
 TARGET  = tst
-LIBS = @EXTRA_LIBPATHS@ -lgmp
+LIBS = -L/usr/lib/ @EXTRA_LIBPATHS@ -lgmp
 
 # nbits_integer.o 
 # Bitset.o
