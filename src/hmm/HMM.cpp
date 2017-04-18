@@ -251,6 +251,7 @@ namespace whiteice {
     {
       printf("ITER %d. Log(probability) = %f\n",
 	     iteration, logprobability(observations));
+      fflush(stdout);
     }
 
     
@@ -457,6 +458,7 @@ namespace whiteice {
       {
 	printf("ITER %d. Log(probability) = %f [ETA %f minutes]\n",
 	       iteration, log(po).getDouble(), eta.estimate()/60.0f);
+	fflush(stdout);
       }
       
       
