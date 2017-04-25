@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
     system.setEpsilon(1.00); // 100% of examples are selected accoring to model
     system.setLearningMode(false);
-    system.setHasModel(true);
+    system.setHasModel(1);
     
     if(system.load("rifl.dat") == false){
       printf("ERROR: loading model file failed.\n");

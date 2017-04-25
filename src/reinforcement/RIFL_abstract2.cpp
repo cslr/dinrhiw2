@@ -25,8 +25,8 @@ namespace whiteice
       learningMode = true;
 
       hasModel.resize(2);
-      hasModel[0] = false; // Q-network
-      hasModel[1] = false; // policy-network
+      hasModel[0] = 0; // Q-network
+      hasModel[1] = 0; // policy-network
       
       this->numActions = numActions;
       this->numStates  = numStates;
@@ -189,16 +189,17 @@ namespace whiteice
 
 
   template <typename T>
-  void RIFL_abstract2<T>::setHasModel(bool hasModel) throw()
+  void RIFL_abstract2<T>::setHasModel(unsigned int hasModel) throw()
   {
     this->hasModel[0] = hasModel;
     this->hasModel[1] = hasModel;
   }
 
   template <typename T>
-  bool RIFL_abstract2<T>::getHasModel() throw()
+  unsigned int RIFL_abstract2<T>::getHasModel() throw()
   {
-    return (hasModel[0] && hasModel[1]);
+    if(hasModel[0] > hasModel[1]) return hasModel[0];
+    else return hasModel[1];
   }
 
   
@@ -324,7 +325,7 @@ namespace whiteice
 	}
 
 	// if have no model then make random selections (normally distributed)
-	if(hasModel[0] == false || hasModel[1] == false){
+	if(hasModel[0] == 0 || hasModel[1] == 0){
 	  rng.normal(u);
 
 #if 0
@@ -371,8 +372,10 @@ namespace whiteice
 	  database.push_back(data);
 	}
 
+#if 0
 	printf("DATABASE SIZE: %d\n", (int)database.size());
 	fflush(stdout);
+#endif
       }
 
       
@@ -425,13 +428,13 @@ namespace whiteice
 		}
 		
 		Q.importNetwork(nn);
-		hasModel[0] = true;
+		hasModel[0]++;
 	      }
 	    }
 	    else{
 	      std::lock_guard<std::mutex> lock(Q_mutex);
 	      Q.importNetwork(nn);
-	      hasModel[0] = true;
+	      hasModel[0]++;
 	    }
 
 	    epoch[0]++;
@@ -498,8 +501,10 @@ namespace whiteice
 	  unsigned int iters = 0;
 
 	  if(grad.getSolution(nn, error, iters)){
-	    printf("Q-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
+#if 0
+	    printf("RIFL2 Q-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
 		   epoch[0], iters, error.c[0]);
+#endif
 	  }
 	}
       }
@@ -556,13 +561,13 @@ namespace whiteice
 		}
 		
 		policy.importNetwork(nn);
-		hasModel[1] = true;
+		hasModel[1]++;
 	      }
 	    }
 	    else{
 	      std::lock_guard<std::mutex> lock(policy_mutex);
 	      policy.importNetwork(nn);
-	      hasModel[1] = true;
+	      hasModel[1]++;
 	    }
 	  }
 
@@ -606,8 +611,10 @@ namespace whiteice
 	  unsigned int iters = 0;
 
 	  if(grad2.getSolution(nn, value, iters)){
-	    printf("POLICY-EPOCH %d OPTIMIZER %d ITERS: MEAN Q-VALUE %f\n",
+#if 0
+	    printf("RIFL2 POLICY-EPOCH %d OPTIMIZER %d ITERS: MEAN Q-VALUE %f\n",
 		   epoch[1], iters, value.c[0]);
+#endif
 	  }
 	}
       }

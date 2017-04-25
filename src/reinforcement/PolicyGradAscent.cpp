@@ -1,6 +1,11 @@
 
 #include "PolicyGradAscent.h"
 
+#ifdef WINOS
+#include <windows.h>
+#endif
+
+#include <sched.h>
 
 namespace whiteice
 {
@@ -171,7 +176,8 @@ namespace whiteice
       optimizer_thread[i] =
 	new thread(std::bind(&PolicyGradAscent<T>::optimizer_loop,
 			     this));
-      
+
+#if 0
       // NON-STANDARD WAY TO SET THREAD PRIORITY (POSIX)
       {
 	sched_param sch_params;
@@ -185,6 +191,8 @@ namespace whiteice
 				 SCHED_RR, &sch_params) != 0){
 	}
       }
+#endif
+      
     }
 
     // waits for threads to start
@@ -345,14 +353,22 @@ namespace whiteice
 
     {
       sched_param sch_params;
-      int policy = SCHED_RR;
+      int policy = SCHED_FIFO; // SCHED_RR
       
       pthread_getschedparam(pthread_self(), &policy, &sch_params);
+
+      // policy = SCHED_IDLE;
+      sch_params.sched_priority = sched_get_priority_min(policy);
       
-      sch_params.sched_priority = 20;
       if(pthread_setschedparam(pthread_self(),
-			       SCHED_RR, &sch_params) != 0){
+			       policy, &sch_params) != 0){
       }
+
+#ifdef WINOS
+      SetThreadPriority(GetCurrentThread(),
+			THREAD_PRIORITY_IDLE);
+#endif
+      
     }
 
     if(data == NULL){
@@ -402,9 +418,8 @@ namespace whiteice
 	
       // starting position for neural network
       whiteice::nnetwork<T> policy(*(this->policy));
-
       
-      std::cout << "************ RESET POLICY NETWORK" << std::endl;
+      // std::cout << "************ RESET POLICY NETWORK" << std::endl;
 
 
       {
@@ -564,11 +579,13 @@ namespace whiteice
 	      value = getValue(policy, *Q, dtrain);
 
 	      delta_value = (prev_value - value);
-	      
+
+#if 0
 	      std::cout << "POLICY VALUE: " << value
 			<< " PREV VALUE: " << prev_value
 			<< " DELTA: " << delta_value
 			<< " LRATE: " << lrate << std::endl;
+#endif
 
 
 	      // if value becomes smaller we reduce learning rate
@@ -584,11 +601,13 @@ namespace whiteice
 	    while(delta_value >= T(0.0) && lrate >= T(10e-30) &&
 		  abs(delta_value) > T(10e-12f) && running);
 
+#if 0
 	    std::cout << "POLICY UPDATED."
 		      << "VALUE: " << value 
 		      << " DELTA: " << delta_value
 		      << " LRATE: " << lrate
 		      << std::endl;
+#endif
 	    
 	    
 	    policy.exportdata(weights);
@@ -604,10 +623,12 @@ namespace whiteice
 		best_value = value;
 		best_q_value = getValue(policy, *Q, dtest, false);
 		policy.exportdata(bestx);
-		
+
+#if 0
 		std::cout << "************ BETTER POLICY FOUND: "
 			  << best_q_value
 			  << " ITER " << iterations << std::endl;
+#endif
 	      }
 	    
 	      solution_lock.unlock();
@@ -643,9 +664,11 @@ namespace whiteice
 	      best_q_value = getValue(policy, *Q, dtest, false);
 	      policy.exportdata(bestx);
 
+#if 0
 	      std::cout << "************ BETTER POLICY FOUND: "
 			<< best_q_value
 			<< " ITER " << iterations << std::endl;
+#endif
 	    }
 	    
 	    solution_lock.unlock();

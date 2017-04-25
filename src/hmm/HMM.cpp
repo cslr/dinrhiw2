@@ -863,6 +863,8 @@ namespace whiteice {
 		<< "File: " << __FILE__ << " "
 		<< "Line: " << __LINE__ << " "
 		<< e.what() << std::endl;
+      fflush(stdout);
+      
       return false;
     }
   }
@@ -955,6 +957,7 @@ namespace whiteice {
 		<< "File: " << __FILE__ << " "
 		<< "Line: " << __LINE__ << " "
 		<< e.what() << std::endl;
+      fflush(stdout);
       
       return false;
     }

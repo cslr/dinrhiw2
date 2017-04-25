@@ -69,8 +69,8 @@ namespace whiteice
      * as long as we don't have a proper model
      * we make random actions (initially) 
      */
-    void setHasModel(bool hasModel) throw();
-    bool getHasModel() throw();
+    void setHasModel(unsigned int hasModel) throw();
+    unsigned int getHasModel() throw();
 
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;
@@ -97,7 +97,7 @@ namespace whiteice
     whiteice::bayesian_nnetwork<T> policy;
     mutable std::mutex policy_mutex;
 
-    std::vector<bool> hasModel;
+    std::vector<unsigned int> hasModel;
     bool learningMode;
     
     T epsilon;

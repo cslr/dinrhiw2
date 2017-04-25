@@ -19,7 +19,7 @@ namespace whiteice
       epsilon = T(0.66);
 
       learningMode = true;
-      hasModel = false;
+      hasModel = 0;
       
       this->numActions        = numActions;
       this->numStates         = numStates;
@@ -166,13 +166,13 @@ namespace whiteice
 
 
   template <typename T>
-  void RIFL_abstract<T>::setHasModel(bool hasModel) throw()
+  void RIFL_abstract<T>::setHasModel(unsigned int hasModel) throw()
   {
     this->hasModel = hasModel;
   }
 
   template <typename T>
-  bool RIFL_abstract<T>::getHasModel() throw()
+  unsigned int RIFL_abstract<T>::getHasModel() throw()
   {
     return hasModel;
   }
@@ -353,7 +353,7 @@ namespace whiteice
 	  }
 	}
 
-	
+#if 0
 	{
 	  printf("U = ");
 	  for(unsigned int i=0;i<U.size();i++){
@@ -362,6 +362,7 @@ namespace whiteice
 	  }
 	  printf("\n");
 	}
+#endif
 	
 	// random selection with (1-epsilon) probability
 	T r = rng.uniform();
@@ -374,7 +375,7 @@ namespace whiteice
 	}
 
 	// if we don't have not yet optimized model, then we make random choices
-	if(hasModel == false)
+	if(hasModel == 0)
 	  action = rng.rand() % (numActions);
       }
       
@@ -416,9 +417,11 @@ namespace whiteice
 	    min_database_size = (unsigned int)database[i].size();
 	  total_database_size += database[i].size();
 	}
-	
+
+#if 0
 	printf("%d SAMPLES TOTAL. MIN ACTION DATABASE SIZE: %d\n",
 	       total_database_size, min_database_size);
+#endif
       }
       
 
@@ -434,9 +437,10 @@ namespace whiteice
 	  }
 	}
 
+#if 0
 	// debugging..
 	printf("%d SAMPLES. ALL HAS SAMPLES %d\n", samples, (int)allHasSamples);
-
+#endif
 	
 	if(samples >= SAMPLESIZE && allHasSamples)
 	{
@@ -502,7 +506,7 @@ namespace whiteice
 	      }
 
 	      epoch++;
-	      hasModel = true;
+	      hasModel++;
 	    }
 
 
@@ -631,15 +635,17 @@ namespace whiteice
 	      printf("STARTING GRAD OPTIMIZATION FAILED\n");
 	    }
 	    else{
-	      printf("STARTED GRAD OPTIMIZER EPOCH %d\n", epoch);
+	      // printf("STARTED GRAD OPTIMIZER EPOCH %d\n", epoch);
 	    }
 	    
 	  }
 	  else{
 
 	    if(grad.getSolution(nn, error, iters)){
-	      printf("EPOCH %d OPTIMIZER %d ITERS: ERROR %f HASMODEL: %d\n",
+#if 0
+	      printf("RIFL1 EPOCH %d OPTIMIZER %d ITERS: ERROR %f HASMODEL: %d\n",
 		     epoch, iters, error.c[0], (int)hasModel);
+#endif
 	    }
 	    else{
 	      printf("EPOCH %d GETSOLUTION() FAILED\n",

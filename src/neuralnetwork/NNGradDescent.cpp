@@ -2,6 +2,7 @@
 #include "NNGradDescent.h"
 #include <time.h>
 #include <pthread.h>
+#include <sched.h>
 
 #ifdef WINOS
 #include <windows.h>
@@ -156,19 +157,22 @@ namespace whiteice
 	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
 			       this));
 
+#if 0
 	// NON-STANDARD WAY TO SET THREAD PRIORITY (POSIX)
 	{
 	  sched_param sch_params;
-	  int policy = SCHED_RR;
+	  int policy = SCHED_FIFO; // SCHED_RR
 	  
 	  pthread_getschedparam(optimizer_thread[i]->native_handle(),
 				&policy, &sch_params);
 	  
 	  sch_params.sched_priority = 20;
 	  if(pthread_setschedparam(optimizer_thread[i]->native_handle(),
-				   SCHED_RR, &sch_params) != 0){
+				   policy, &sch_params) != 0){
 	  }
 	}
+#endif
+
       }
 
       {
@@ -323,18 +327,26 @@ namespace whiteice
 	start_lock.unlock();
       }
 
+      // set thread priority (non-standard)
       {
 	sched_param sch_params;
-	int policy = SCHED_RR;
+	int policy = SCHED_FIFO;
 	  
 	pthread_getschedparam(pthread_self(),
 			      &policy, &sch_params);
+
+	// policy = SCHED_IDLE;
+	sch_params.sched_priority = sched_get_priority_min(policy);
 	
-	sch_params.sched_priority = 20;
 	if(pthread_setschedparam(pthread_self(),
-				 SCHED_RR, &sch_params) != 0){
+				 policy, &sch_params) != 0){
 	  // printf("! SETTING LOW PRIORITY THREAD FAILED\n");
 	}
+
+#ifdef WINOS
+	SetThreadPriority(GetCurrentThread(),
+			  THREAD_PRIORITY_IDLE);
+#endif	
       }
 
       if(data == NULL){
