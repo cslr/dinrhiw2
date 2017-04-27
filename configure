@@ -623,6 +623,7 @@ ac_includes_default="\
 ac_unique_file="src/dinrhiw.h"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+SHAREDLIBSUFFIX
 conf_libs
 conf_flags
 optimization_flags
@@ -3882,10 +3883,12 @@ EXTRA_LIBPATHS="-L/usr/local/lib"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking Windows OS" >&5
 $as_echo_n "checking Windows OS... " >&6; }
 EXTRA_DEFINES=""
+SHAREDLIBSUFFIX="so"
 `g++ -o windowstest.exe windowstest.cpp > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
    EXTRA_DEFINES="-DWINOS"
+   SHAREDLIBSUFFIX="dll"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, $conf_flags" >&5
 $as_echo "yes, $conf_flags" >&6; }
 else
@@ -4351,6 +4354,8 @@ optimization_flags=$optimization_flags
 conf_flags=$conf_flags
 
 conf_libs=$conf_libs
+
+SHAREDLIBSUFFIX=$SHAREDLIBSUFFIX
 
 
 ac_config_headers="$ac_config_headers config.h"

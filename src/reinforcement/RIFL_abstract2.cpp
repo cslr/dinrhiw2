@@ -614,7 +614,8 @@ namespace whiteice
 	      }
 	    }
 	    
-	    grad2.startOptimize(&data2, q_nn, nn, 2, 150);
+	    // grad2.startOptimize(&data2, q_nn, nn, 2, 150);
+	    grad2.startOptimize(&data2, q_nn, nn, 1, 150);
 	  }
 	}
 	else{

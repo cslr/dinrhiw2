@@ -40,10 +40,12 @@ EXTRA_LIBPATHS="-L/usr/local/lib"
 dnl check for Windows (WINNT)
 AC_MSG_CHECKING([Windows OS])
 EXTRA_DEFINES=""
+SHAREDLIBSUFFIX="so"
 `g++ -o windowstest.exe windowstest.cpp > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
    EXTRA_DEFINES="-DWINOS"
+   SHAREDLIBSUFFIX="dll"
     AC_MSG_RESULT([yes, $conf_flags])
 else
     AC_MSG_RESULT([no])
@@ -414,6 +416,7 @@ AC_SUBST([EXTRA_LIBS],[$EXTRA_LIBS])
 AC_SUBST([optimization_flags],[$optimization_flags])
 AC_SUBST([conf_flags], [$conf_flags])
 AC_SUBST([conf_libs], [$conf_libs])
+AC_SUBST([SHAREDLIBSUFFIX], [$SHAREDLIBSUFFIX])
 
 AC_CONFIG_HEADER(config.h)
 AC_CONFIG_FILES([Makefile src/Makefile src/math/Makefile])

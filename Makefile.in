@@ -22,8 +22,10 @@ includedir=@includedir@/dinrhiw
 LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o src/hmm/*.o \
 	src/reinforcement/*.o src/rnn/*.o
 LIBNAME = libdinrhiw.a
-BASESOLIBNAME = libdinrhiw.so
-SOLIBNAME = libdinrhiw.so
+
+
+BASESOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
+SOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
 
 
 ############################################################
