@@ -13,7 +13,8 @@ EXTRA_OBJECTS =	../dataset.o ../MemoryCompressor.o \
 	../math/outerproduct.o ../math/norms.o \
 	../linear_ETA.o ../conffile.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/BBRBM.o \
-	../neuralnetwork/bayesian_nnetwork.o
+	../neuralnetwork/bayesian_nnetwork.o \
+	../Log.o
 
 TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 

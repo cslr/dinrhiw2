@@ -18,7 +18,8 @@ OBJECTS = blade_math.o ownexception.o outerproduct.o \
 	pdftree.o simplex.o BFGS.o LBFGS.o gcd.o integer.o modular.o \
 	gmatrix.o gvertex.o correlation.o norms.o eig.o \
 	ica.o RungeKutta.o maximizer.o fastpca.o RNG.o \
-	../MemoryCompressor.o ../conffile.o ../dynamic_bitset.o
+	../MemoryCompressor.o ../conffile.o ../dynamic_bitset.o \
+	../Log.o
 
 
 SOURCES = blade_math.cpp ownexception.cpp outerproduct.cpp \

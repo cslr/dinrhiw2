@@ -12,7 +12,8 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/bayesian_nnetwork.o \
 	../conffile.o ../neuralnetwork/NNGradDescent.o \
-	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o
+	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o \
+	../Log.o
 
 TEST1_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 

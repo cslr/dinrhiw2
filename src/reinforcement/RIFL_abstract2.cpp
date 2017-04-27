@@ -6,6 +6,9 @@
 #include "NNGradDescent.h"
 #include "PolicyGradAscent.h"
 
+#include "Log.h"
+#include "blade_math.h"
+
 #include <assert.h>
 #include <list>
 
@@ -372,10 +375,13 @@ namespace whiteice
 	  database.push_back(data);
 	}
 
-#if 0
-	printf("DATABASE SIZE: %d\n", (int)database.size());
-	fflush(stdout);
-#endif
+	{
+	  char buffer[128];
+	  snprintf(buffer, 128, "RIFL_abstract2: database size: %d",
+		   (int)database.size());
+	  whiteice::logging.info(buffer);
+	}
+	
       }
 
       
@@ -501,10 +507,16 @@ namespace whiteice
 	  unsigned int iters = 0;
 
 	  if(grad.getSolution(nn, error, iters)){
-#if 0
-	    printf("RIFL2 Q-EPOCH %d OPTIMIZER %d ITERS: ERROR %f\n",
-		   epoch[0], iters, error.c[0]);
-#endif
+	    char buffer[128];
+	    
+	    double e;
+	    whiteice::math::convert(e, error);
+	    
+	    snprintf(buffer, 128,
+		     "RIFL_abstract2: Q-optimizer epoch %d iter %d error %f",
+		     epoch[0], iters, e);
+	    
+	    whiteice::logging.info(buffer);
 	  }
 	}
       }
@@ -611,10 +623,16 @@ namespace whiteice
 	  unsigned int iters = 0;
 
 	  if(grad2.getSolution(nn, value, iters)){
-#if 0
-	    printf("RIFL2 POLICY-EPOCH %d OPTIMIZER %d ITERS: MEAN Q-VALUE %f\n",
-		   epoch[1], iters, value.c[0]);
-#endif
+	    char buffer[128];
+	    
+	    double v;
+	    whiteice::math::convert(v, value);
+	    
+	    snprintf(buffer, 128,
+		     "RIFL_abstract2: policy-optimizer epoch %d iter %d mean q-value %f",
+		     epoch[1], iters, v);
+	    
+	    whiteice::logging.info(buffer);
 	  }
 	}
       }

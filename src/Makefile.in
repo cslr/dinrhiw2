@@ -11,6 +11,7 @@ OBJECTS = point.o static_array.o dynamic_array.o \
 	conffile.o linear_ETA.o \
 	dynamic_bitset.o list_source.o \
 	MemoryCompressor.o timed_boolean.o \
+	Log.o \
 	dinrhiw.o
 
 EXTRA_OBJECTS = math/vertex.o math/matrix.o math/ownexception.o \
@@ -31,6 +32,7 @@ SOURCES = point.cpp static_array.cpp dynamic_array.cpp \
 	tst/test.cpp tst/conv_test.cpp \
 	singleton.cpp singleton_list.cpp \
 	dynamic_bitset.cpp list_source.cpp \
+	Log.cpp \
 	function_access_control.cpp tst/modtest.cpp \
 	dinrhiw.cpp tst/test.cpp
 

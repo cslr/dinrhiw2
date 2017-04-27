@@ -1,6 +1,9 @@
 
 #include "PolicyGradAscent.h"
 
+#include "Log.h"
+#include "blade_math.h"
+
 #ifdef WINOS
 #include <windows.h>
 #endif
@@ -418,10 +421,10 @@ namespace whiteice
 	
       // starting position for neural network
       whiteice::nnetwork<T> policy(*(this->policy));
+
+      whiteice::logging.info("PolicyGradAscent: reset policy network");
       
-      // std::cout << "************ RESET POLICY NETWORK" << std::endl;
-
-
+      
       {
 	std::lock_guard<std::mutex> lock(first_time_lock);
 	
@@ -550,7 +553,7 @@ namespace whiteice
 	    }
 	    	      
 	    if(policy.exportdata(weights) == false)
-	      std::cout << "export failed." << std::endl;
+	      whiteice::logging.error("PolicyGradAscent: weight export failed");
 
 	    w0 = weights;
 
@@ -568,8 +571,7 @@ namespace whiteice
 	      weights += lrate * sumgrad;
 
 	      if(policy.importdata(weights) == false)
-		std::cout << "import failed." << std::endl;
-
+		whiteice::logging.error("PolicyGradAscent: weight import failed");
 	      if(dropout) policy.removeDropOut();
 	      
 	      if(heuristics){
@@ -580,13 +582,19 @@ namespace whiteice
 
 	      delta_value = (prev_value - value);
 
-#if 0
-	      std::cout << "POLICY VALUE: " << value
-			<< " PREV VALUE: " << prev_value
-			<< " DELTA: " << delta_value
-			<< " LRATE: " << lrate << std::endl;
-#endif
-
+	      {
+		char buffer[128];
+		
+		double v, p, d, l;
+		whiteice::math::convert(v, value);
+		whiteice::math::convert(p, prev_value);
+		whiteice::math::convert(d, delta_value);
+		whiteice::math::convert(l, lrate);
+		
+		snprintf(buffer, 128,
+			 "PolicyGradAscent: gradstep curvalue %f prevvalue %f delta %f lrate %e\n", v, p, d, l);
+		whiteice::logging.info(buffer);
+	      }
 
 	      // if value becomes smaller we reduce learning rate
 	      if(delta_value >= T(0.0)){ 
@@ -601,14 +609,19 @@ namespace whiteice
 	    while(delta_value >= T(0.0) && lrate >= T(10e-30) &&
 		  abs(delta_value) > T(10e-12f) && running);
 
-#if 0
-	    std::cout << "POLICY UPDATED."
-		      << "VALUE: " << value 
-		      << " DELTA: " << delta_value
-		      << " LRATE: " << lrate
-		      << std::endl;
-#endif
-	    
+	    {
+	      char buffer[128];
+	      
+	      double v, d, l;
+	      whiteice::math::convert(v, value);
+	      whiteice::math::convert(d, delta_value);
+	      whiteice::math::convert(l, lrate);
+	      
+	      snprintf(buffer, 128,
+		       "PolicyGradAscent: policy updated value %f delta %f lrate %e\n",
+		       v, d, l);
+	      whiteice::logging.info(buffer);
+	    }
 	    
 	    policy.exportdata(weights);
 	    w0 = weights;
@@ -624,11 +637,18 @@ namespace whiteice
 		best_q_value = getValue(policy, *Q, dtest, false);
 		policy.exportdata(bestx);
 
-#if 0
-		std::cout << "************ BETTER POLICY FOUND: "
-			  << best_q_value
-			  << " ITER " << iterations << std::endl;
-#endif
+		{
+		  char buffer[128];
+		  
+		  double b;
+		  whiteice::math::convert(b, best_q_value);
+		  
+		  snprintf(buffer, 128,
+			   "PolicyGradAscent: better policy found: %f iter %d",
+			   b, iterations);
+		  whiteice::logging.info(buffer);
+		}
+		
 	      }
 	    
 	      solution_lock.unlock();
@@ -664,11 +684,17 @@ namespace whiteice
 	      best_q_value = getValue(policy, *Q, dtest, false);
 	      policy.exportdata(bestx);
 
-#if 0
-	      std::cout << "************ BETTER POLICY FOUND: "
-			<< best_q_value
-			<< " ITER " << iterations << std::endl;
-#endif
+	      {
+		char buffer[128];
+		
+		double b;
+		whiteice::math::convert(b, best_q_value);
+		
+		snprintf(buffer, 128,
+			 "PolicyGradAscent: better policy found: %f iter %d",
+			 b, iterations);
+		whiteice::logging.info(buffer);
+	      }
 	    }
 	    
 	    solution_lock.unlock();

@@ -13,7 +13,7 @@ CXXFLAGS = $(CFLAGS)
 OBJECTS = PAD.o DES.o AES.o SHA.o RSA.o DSA.o test/tst.o
 
 EXTRA_OBJECTS = ../math/ownexception.o ../math/integer.o \
-	../dynamic_bitset.o
+	../dynamic_bitset.o ../Log.o
 
 
 SOURCES = PAD.cpp DES.cpp AES.cpp SHA.cpp RSA.cpp DSA.cpp \

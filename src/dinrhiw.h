@@ -24,6 +24,8 @@
 #ifndef lib_dinrhiw_h
 #define lib_dinrhiw_h
 
+#include "Log.h"
+
 #include "fastpca.h"
 // #include "ultradeep.h"
 
