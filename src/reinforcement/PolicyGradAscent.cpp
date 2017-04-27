@@ -470,6 +470,8 @@ namespace whiteice
 	
 	do{
 	  prev_value = value;
+
+	  whiteice::logging.info("PolicyGradAscent: DEBUG calculates gradient");
 	  
 	  // goes through data, calculates gradient
 	  // exports weights, weights -= lrate*gradient
@@ -562,7 +564,8 @@ namespace whiteice
 	    {
 	      sumgrad -= regularizer*w0;
 	    }
-	    
+
+	    whiteice::logging.info("PolicyGradAscent: DEBUG calculates linesearch..");
 	    
 	    lrate *= 4;
 	    
