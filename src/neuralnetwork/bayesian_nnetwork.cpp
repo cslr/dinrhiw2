@@ -14,7 +14,7 @@
 #include "nnetwork.h"
 #include "dataset.h"
 #include "dinrhiw_blas.h"
-
+#include "Log.h"
 
 
 namespace whiteice
@@ -78,8 +78,24 @@ namespace whiteice
     if(nnets.size() > 0)
       nnets[0]->printInfo();
   }
-  
 
+  
+  template <typename T>
+  void bayesian_nnetwork<T>::diagnosticsInfo() const throw()
+  {
+    char buffer[80];
+
+    for(unsigned int i=0;i<nnets.size();i++){ 
+      snprintf(buffer, 80, "BNN NETWORK %d/%d", i+1, (int)nnets.size());
+      whiteice::logging.info(buffer);
+
+      nnets[i]->diagnosticsInfo();
+    }
+    
+    
+  }
+  
+  
   // number of samples in BNN
   template <typename T>
   unsigned int bayesian_nnetwork<T>::getNumberOfSamples() const throw(){
@@ -340,12 +356,12 @@ namespace whiteice
 				       math::vertex<T>& mean,
 				       math::matrix<T>& covariance,
 				       unsigned int SIMULATION_DEPTH, // for recurrent use of nnetworks..
-				       int latestN)
+				       int latestN) const
   {
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
-
+    
     if(SIMULATION_DEPTH > 1){
       if(nnets[0]->output_size() + input.size() != nnets[0]->input_size())
 	return false;
@@ -363,47 +379,51 @@ namespace whiteice
     covariance.zero();
 
     if(latestN <= (signed)D)
-    	covariance.identity(); // regularizer term for small datasize
-
+      covariance.identity(); // regularizer term for small datasize
+    
 #pragma omp parallel shared(mean, covariance)
     {
-    	math::matrix<T> cov;
-    	math::vertex<T> m;
-
-    	m.resize(D);
-    	cov.resize(D,D);
-    	m.zero();
-    	cov.zero();
-
-    	T ninv  = T(1.0f/latestN);
+      math::matrix<T> cov;
+      math::vertex<T> m;
+      
+      m.resize(D);
+      cov.resize(D,D);
+      m.zero();
+      cov.zero();
+      
+      T ninv  = T(1.0f/latestN);
 
 #pragma omp for nowait schedule(dynamic)
-    	for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
-	        nnets[i]->input().zero();
-		nnets[i]->output().zero();
-	        nnets[i]->input().write_subvertex(input, 0); // writes input section
+      for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
+	math::vertex<T> in(nnets[0]->input_size());
+	math::vertex<T> out(D);
 
-		for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
-		  if(SIMULATION_DEPTH > 1)
-		    nnets[i]->input().write_subvertex(nnets[i]->output(), input.size());
-		  nnets[i]->calculate();       // recurrent calculations if needed
-		}
-		
-    		math::vertex<T> out = nnets[i]->output();
+	in.zero();
+	out.zero();
 
-    		m += ninv*out;
-    		cov += ninv*out.outerproduct();
-    	}
-
+	in.write_subvertex(input, 0); // writes input section
+	
+	for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
+	  if(SIMULATION_DEPTH > 1){
+	    in.write_subvertex(out, input.size());
+	  }
+	  nnets[i]->calculate(in, out); // recurrent calculations if needed
+	}
+	
+	m += ninv*out;
+	cov += ninv*out.outerproduct();
+      }
+      
 #pragma omp critical
-    	{
-    		mean += m;
-    		covariance += cov;
-    	}
-
+      {
+	mean += m;
+	covariance += cov;
+      }
+      
     }
 
-    covariance -= mean.outerproduct(); // should divide by N-1 but we ignore this in order to have a result for N = 1
+    // should divide by N-1 but we ignore this in order to have a result for N=1
+    covariance -= mean.outerproduct(); 
 
     return true;
   }

@@ -1,14 +1,15 @@
 TODO
 
- * improve and fix and test parallel gradient descent to work again
-   (pgrad and plbfgs)
+* RIFL_abstract2 does not do dnMeanVarianceNormalization (unlike RIFL_abstract)
+  before feeding data to neural network optimizers..
+
+* RIFL_abstract and RIFL_abstract2 load() and save() do not really work
+  because starting learning loop does not have code to notice existing
+  nnetworks (starts always assuming fresh start)
+
 
 * DBN.toNNetwork() code must use W.transpose() when transferring
   weights between DBN and nnetwork<> is this a bug??
-
- * test RBM optimization, set them frozen and edit
-   to add extra layers, and optimize non-frozen layers
-   (Kaggle)
 
 * throughly test HMC further.
   Does negative phase improve results or not?
@@ -21,13 +22,6 @@ LATER (multistep optimization):
 
   * RUN/TEST RECURRENT NNTOOL TESTS IN TOOLS DIRECTORY
 
-* HMM (hidden markov models)
-
-  - implement discrete HMM using arbitrary precision numbers
-    * study some Hidden Markov Model theory
-    * this will be used to learn and generate likely stimulation sequences
-      and tag stimulation elements into language (does make sense?)
-      
    
 ========================
 

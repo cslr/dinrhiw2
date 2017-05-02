@@ -27,6 +27,7 @@
 #include "vertex.h"
 #include "bayesian_nnetwork.h"
 #include "RNG.h"
+#include "dataset.h"
 
 
 namespace whiteice
@@ -91,10 +92,12 @@ namespace whiteice
 
     // reinforcement Q model: Q(state, action) ~ discounted future cost
     whiteice::bayesian_nnetwork<T> Q;
+    whiteice::dataset<T> Q_preprocess;
     mutable std::mutex Q_mutex;
 
     // f(state) = action
     whiteice::bayesian_nnetwork<T> policy;
+    whiteice::dataset<T> policy_preprocess;
     mutable std::mutex policy_mutex;
 
     std::vector<unsigned int> hasModel;

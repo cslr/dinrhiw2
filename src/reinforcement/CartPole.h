@@ -41,7 +41,7 @@ namespace whiteice
 				 T& reinforcement);
 
       virtual bool getActionFeature(const unsigned int action,
-				    whiteice::math::vertex<T>& feature);
+				    whiteice::math::vertex<T>& feature) const;
 
       // helper function: normalizes theta values back into [-pi, pi] range
       T normalizeTheta(const T t) const throw();

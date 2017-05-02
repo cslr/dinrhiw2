@@ -1,6 +1,7 @@
 
 
 #include "CartPole2.h"
+#include "Log.h"
 
 #include <stdio.h>
 #include <math.h>
@@ -125,6 +126,8 @@ namespace whiteice
   template <typename T>
   bool CartPole2<T>::getState(whiteice::math::vertex<T>& state)
   {
+    whiteice::logging.info("CartPole2: entering getState()");
+    
     state.resize(4);
 
     state[0] = normalizeTheta(theta)/T(M_PI);
@@ -166,6 +169,8 @@ namespace whiteice
       }
     }
 #endif
+
+    whiteice::logging.info("CartPole2: exiting getState()");
 
     return true;
   }
@@ -211,9 +216,12 @@ namespace whiteice
 				   whiteice::math::vertex<T>& newstate,
 				   T& reinforcement)
   {
+    whiteice::logging.info("CartPole2: entering performAction()");
+    
     // converts action to control in newtons
     double Fstep = 0.0;
 
+#if 0
     if(action.size() > 0){
       Fstep = 25.0*action[0].c[0];
 
@@ -221,9 +229,10 @@ namespace whiteice
       if(Fstep >= 25.0) Fstep = 25.0;
       else if(Fstep <= -25.0) Fstep = -25.0;
     }
+#endif
 
-#if 0
-    // assumes action values are between [-1.0, +1.0]
+#if 1
+    // assumes action values are between [0, +1]
     if(action.size() > 0){
       // double a = (action[0].c[0]*2.0 - 1.0); // to interval [-1.0, +1.0]
       double a = action[0].c[0];

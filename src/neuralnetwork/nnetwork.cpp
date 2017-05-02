@@ -12,7 +12,7 @@
 
 #include "nnetwork.h"
 #include "dinrhiw_blas.h"
-
+#include "Log.h"
 
 namespace whiteice
 {
@@ -219,29 +219,40 @@ namespace whiteice
   template <typename T>
   void nnetwork<T>::diagnosticsInfo() const
   {
-    printf("NETWORK MAXVALUE (%d layers): \n", getLayers());
+    char buffer[80];    
+    snprintf(buffer, 80, "nnetwork: DIAGNOSTIC/MAXVALUE (%d layers): \n",
+	     getLayers());
+    whiteice::logging.info(buffer);
 
-    T maxvalue = T(-INFINITY);
 
     for(unsigned int l=0;l<getLayers();l++){
       math::matrix<T> W;
       math::vertex<T> b;
+      T maxvalue = T(-INFINITY);
       
       this->getBias(b, l);
       this->getWeights(W, l);
 
       for(unsigned int i=0;i<b.size();i++){
-	if(maxvalue < b[i])
-	  maxvalue = b[i];
+	if(maxvalue < abs(b[i]))
+	  maxvalue = abs(b[i]);
       }
 
       for(unsigned int j=0;j<W.ysize();j++)
 	for(unsigned int i=0;i<W.xsize();i++)
-	  if(maxvalue < W(j, i))
-	    maxvalue = W(j, i);
-    }
+	  if(maxvalue < abs(W(j, i)))
+	    maxvalue = abs(W(j, i));
 
-    std::cout << "NETWORK MAXIMUM VALUE: " << maxvalue << std::endl;
+
+      double temp = 0.0;
+      whiteice::math::convert(temp, maxvalue);
+
+      snprintf(buffer, 80, "nnetwork: LAYER %d/%d MAX ABS-VALUE %f",
+	       l+1, getLayers(), temp);
+      whiteice::logging.info(buffer);
+      
+      // std::cout << "NETWORK MAXIMUM VALUE: " << maxvalue << std::endl;
+    }
   }
 
   
@@ -1066,6 +1077,8 @@ namespace whiteice
     else{
       assert(0);
     }
+
+    return T(0.0);
   }
   
   
@@ -1165,7 +1178,8 @@ namespace whiteice
     else{
       assert(0);
     }
-    
+
+    return T(0.0);
   }
 
   
@@ -1192,7 +1206,8 @@ namespace whiteice
    * calculates gradient of input value GRAD[f(v|w)] while keeping weights w constant
    */
   template <typename T>
-  bool nnetwork<T>::gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const
+  bool nnetwork<T>::gradient_value(const math::vertex<T>& input,
+				   math::matrix<T>& grad) const
   {
     const unsigned int L = getLayers();
     

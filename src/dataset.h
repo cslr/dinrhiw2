@@ -122,9 +122,10 @@ namespace whiteice
       bool save(const std::string& filename) const throw();
       
       /*
-       * exports dataset values as ascii data without preprocessing (cluster = 0)
+       * exports dataset values as ascii data without preprocessing (all clusters)
+       * if raw = true, do not remove preprocessings from data before saving
        */
-      bool exportAscii(const std::string& filename, bool writeHeaders = false) const throw();
+      bool exportAscii(const std::string& filename, bool writeHeaders = false, bool raw = false) const throw();
 
       /*
        * imports space, "," or ";" separated floating point numbers as vectors into cluster 0
@@ -208,6 +209,12 @@ namespace whiteice
       bool convert(unsigned int index = 0) throw(); // removes all preprocessings from data
       bool convert(unsigned int index,
 		   std::vector<enum data_normalization> plist);
+
+      // calculates preprocessings Wx + b linear gradient W if possible
+      // (does not support dnSoftMax !!) [returns false if index out of range]
+
+      bool preprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
+      bool invpreprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
       
     private:
       // is data normalized with given operation?

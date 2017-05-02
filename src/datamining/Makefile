@@ -11,7 +11,7 @@ CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 
 OBJECTS = AssociationRuleFinder.o test/tst.o
 
-EXTRA_OBJECTS = ../math/ownexception.o ../math/integer.o ../dynamic_bitset.o ../timed_boolean.o
+EXTRA_OBJECTS = ../math/ownexception.o ../math/integer.o ../dynamic_bitset.o ../timed_boolean.o ../Log.o
 
 
 SOURCES = AssociationRuleFinder.cpp test/tst.cpp \

@@ -26,6 +26,8 @@ namespace whiteice
 
     void printInfo() const; // mostly for debugging.. prints NN information/data.
 
+    void diagnosticsInfo() const throw();
+
     /*
      * imports and exports samples of p(w) to and from nnetwork
      */
@@ -63,7 +65,7 @@ namespace whiteice
 		   math::vertex<T>& mean,
 		   math::matrix<T>& covariance,
 		   unsigned int SIMULATION_DEPTH /* = 1 */, // for recurrent use of nnetworks..
-		   int latestN /*= 0 */);
+		   int latestN /*= 0 */) const;
 
     unsigned int outputSize() const throw();
     unsigned int inputSize() const throw();

@@ -17,8 +17,17 @@
 
 namespace whiteice {
 
-  Log logging("dinrhiw.log");
+  // program using logging must set output file using setOutputFile()
+  Log logging; 
+
   
+  Log::Log()
+  {
+    std::lock_guard<std::mutex> lock(file_lock);
+    t0 = clock::now();
+    
+    handle = nullptr;
+  }
   
   Log::Log(std::string logFilename)
   {
@@ -54,10 +63,14 @@ namespace whiteice {
     auto new_handle = fopen(logFilename.c_str(), "wt");
     if(new_handle == nullptr) return false;
 
-    std::lock_guard<std::mutex> lock(file_lock);
-    
-    if(handle != 0) fclose(handle);
-    handle = new_handle;
+    {
+      std::lock_guard<std::mutex> lock(file_lock);
+      
+      if(handle != 0) fclose(handle);
+      handle = new_handle;
+    }
+
+    info("Logging system (re)started..");
 
     return true;
   }

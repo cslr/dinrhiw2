@@ -59,8 +59,9 @@ namespace whiteice
     // prints nnetwork information (mostly for debugging purposes)
     void printInfo() const; 
 
-    // prints nnetwork parameters statistics per layer
-    // (used to notice largest/smallest element in nnetwork)
+    // logs (whiteice::logging Log.h)
+    // nnetwork parameters statistics per layer
+    // (used to notice the largest element in nnetwork)
     void diagnosticsInfo() const;
 
     ////////////////////////////////////////////////////////////

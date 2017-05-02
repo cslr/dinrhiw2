@@ -32,6 +32,10 @@
 namespace whiteice
 {
 
+  template <typename T>
+    class CreateRIFLdataset;
+  
+  
   template <typename T = math::blas_real<float> >
     class RIFL_abstract
     {
@@ -70,10 +74,10 @@ namespace whiteice
     bool getLearningMode() const throw();
 
     /*
-     * hasModel flag means we have a proper model
-     * (from optimization or from load)
+     * hasModel is number of current optimization model (starting from zero)
+     * (from init or from load)
      *
-     * as long as we don't have a proper model
+     * as long as we don't have a proper model (hasModel == 0)
      * we make random actions (initially) 
      */
     void setHasModel(unsigned int hasModel) throw();
@@ -96,8 +100,10 @@ namespace whiteice
 			       T& reinforcement) = 0;
 
     virtual bool getActionFeature(const unsigned int action,
-				  whiteice::math::vertex<T>& feature) = 0;
+				  whiteice::math::vertex<T>& feature) const = 0;
 
+    protected:
+    
     // helper function, returns minimum value in vec
     unsigned int min(const std::vector<unsigned int>& vec) const throw();
 
@@ -119,7 +125,10 @@ namespace whiteice
     std::mutex thread_mutex;
     
     void loop();
-    
+
+    // friend thread class to do heavy computations in background
+    // out of main loop 
+    friend class CreateRIFLdataset<T>;
     
     };
 
@@ -134,5 +143,7 @@ namespace whiteice
   extern template class RIFL_abstract< math::blas_real<float> >;
   extern template class RIFL_abstract< math::blas_real<double> >;
 };
+
+#include "CreateRIFLdataset.h"
 
 #endif

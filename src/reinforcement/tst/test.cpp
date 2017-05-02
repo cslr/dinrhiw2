@@ -8,6 +8,7 @@
 #include "CartPole.h"
 #include "CartPole2.h"
 #include "RIFL_abstract.h"
+#include "Log.h"
 
 #include <fenv.h>
 
@@ -19,6 +20,8 @@ int main(int argc, char** argv)
   fflush(stdout);
 
   srand(time(0));
+
+  whiteice::logging.setOutputFile("debug.log");
   
 #ifndef WINOS
   // enable floating point exceptions (for debugging)

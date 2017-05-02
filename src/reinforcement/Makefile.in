@@ -4,7 +4,7 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o
+OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o
 
 EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
@@ -13,7 +13,7 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/bayesian_nnetwork.o \
 	../conffile.o ../neuralnetwork/NNGradDescent.o \
 	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o \
-	../Log.o
+	../Log.o ../math/norms.o
 
 TEST1_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
@@ -21,6 +21,7 @@ TEST2_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test2.o
 
 
 SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp \
+	CreateRIFLdataset.cpp \
 	CartPole2.cpp tst/test.cpp tst/test2.cpp \
 	../dataset.cpp \
 	../math/vertex.cpp \
@@ -29,7 +30,7 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp
 	../neuralnetwork/nnetwork.cpp ../neuralnetwork/bayesian_nnetwork.cpp \
 	../conffile.cpp ../neuralnetwork/NNGradDescent.cpp \
 	../neuralnetwork/deep_ica_network_priming.cpp \
-	../math/linear_equations.cpp
+	../math/linear_equations.cpp ../math/norms.cpp
 
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@

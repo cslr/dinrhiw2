@@ -19,6 +19,7 @@ namespace whiteice {
 
   class Log {
   public:
+        Log();
 	Log(std::string logFilename);
 	virtual ~Log();
 	
@@ -43,6 +44,7 @@ namespace whiteice {
 	std::mutex file_lock;
   };
 
+  // program using logging must set output file using setOutputFile()
   extern Log logging;
   
 } /* namespace whiteice */

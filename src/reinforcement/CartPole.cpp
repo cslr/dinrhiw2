@@ -207,7 +207,7 @@ namespace whiteice
 
   template <typename T>
   bool CartPole<T>::getActionFeature(const unsigned int action,
-				     whiteice::math::vertex<T>& feature)
+				     whiteice::math::vertex<T>& feature) const
   {
     feature.resize(1);
     feature.zero();

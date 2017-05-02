@@ -1255,7 +1255,7 @@ namespace whiteice
   
 
   template <typename T>
-  bool dataset<T>::exportAscii(const std::string& filename, bool writeHeaders) const throw()
+  bool dataset<T>::exportAscii(const std::string& filename, bool writeHeaders, bool raw) const throw()
   {
     if(filename.length() <= 0)
       return false;
@@ -1272,15 +1272,20 @@ namespace whiteice
     
     for(unsigned int index = 0;index < clusters.size();index++){
       if(writeHeaders){
-	snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimensions\n",
-		 index, (int)clusters[index].data.size(), clusters[index].data_dimension);
+	if(clusters[index].data_dimension > 1)
+	  snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimensions\n",
+		   index, (int)clusters[index].data.size(), clusters[index].data_dimension);
+	else
+	  snprintf(buffer, BUFSIZE, "# cluster %d: %d datapoints %d dimension\n",
+		   index, (int)clusters[index].data.size(), clusters[index].data_dimension);
+	  
 	fputs(buffer, fp);
       }
       
       // dumps data in this cluster to ascii format
       for(auto d : clusters[index].data){
-	
-	this->invpreprocess(index, d); // removes possible preprocessing from data
+	if(raw == false) // removes possible preprocessing from data
+	  this->invpreprocess(index, d); 
 	
 	if(clusters[index].data_dimension > 0){
 	  float value = 0.0f;
@@ -1446,31 +1451,31 @@ namespace whiteice
   template <typename T>
   const math::vertex<T>& dataset<T>::access(unsigned int cluster, unsigned int data) const throw(std::out_of_range)
   {
-	    if(cluster >= clusters.size())
-	      throw std::out_of_range("cluster index out of range");
+    if(cluster >= clusters.size())
+      throw std::out_of_range("cluster index out of range");
+    
+    if(data >= clusters[cluster].data.size())
+      throw std::out_of_range("data index out of range");
 
-	    if(data >= clusters[cluster].data.size())
-	      throw std::out_of_range("data index out of range");
-
-	    return clusters[cluster].data[data];
+    return clusters[cluster].data[data];
   }
   
   
   template <typename T>
   const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range)
   {
-            typename std::map<std::string, unsigned int>::const_iterator i;
-	    i = namemapping.find(clusterName);
-
-	    if(i == namemapping.end())
-	      throw std::out_of_range("dataset: cannot find cluster name");
-
-	    const unsigned int cluster = i->second;
-
-	    if(dataElem >= clusters[cluster].data.size())
-	      throw std::out_of_range("data index out of range");
-
-	    return clusters[cluster].data[dataElem];
+    typename std::map<std::string, unsigned int>::const_iterator i;
+    i = namemapping.find(clusterName);
+    
+    if(i == namemapping.end())
+      throw std::out_of_range("dataset: cannot find cluster name");
+    
+    const unsigned int cluster = i->second;
+    
+    if(dataElem >= clusters[cluster].data.size())
+      throw std::out_of_range("data index out of range");
+    
+    return clusters[cluster].data[dataElem];
   }
 
 
@@ -2002,6 +2007,70 @@ namespace whiteice
     
     return true;
   }
+
+
+  template <typename T>
+  bool dataset<T>::preprocess_grad(unsigned int index, math::matrix<T>& W) const throw()
+  {
+    if(index >= clusters.size())
+      return false;
+
+    for(unsigned int j=0;j<clusters[index].preprocessings.size();j++)
+      if(clusters[index].preprocessings[j] == dnSoftMax)
+	return false; // cannot compute linear gradient for softmax
+
+    W.resize(this->dimension(index), this->dimension(index));
+    W.identity();
+    
+    for(unsigned int j=0;j<clusters[index].preprocessings.size();j++){
+      if(clusters[index].preprocessings[j] == dnMeanVarianceNormalization){
+	for(unsigned int i=0;i<dimension(index);i++)
+	  if(clusters[index].variance[i] > T(10e-8))
+	    for(unsigned int k=0;k<dimension(index);k++)
+	      W(k,i) /= (T(2.0)*clusters[index].variance[i]);
+      }
+      else if(clusters[index].preprocessings[j] == dnCorrelationRemoval){
+	W = clusters[index].Wxx * W;
+      }
+      else if(clusters[index].preprocessings[j] == dnLinearICA){
+	W = clusters[index].ICA * W;
+      }
+    }
+
+    return true;
+  }
+
+  template <typename T>
+  bool dataset<T>::invpreprocess_grad(unsigned int index, math::matrix<T>& W) const throw()
+  {
+    if(index >= clusters.size())
+      return false;
+    
+    for(unsigned int i=0;i<clusters[index].preprocessings.size();i++)
+      if(clusters[index].preprocessings[i] == dnSoftMax)
+	return false; // cannot compute linear gradient for softmax
+
+    W.resize(this->dimension(index), this->dimension(index));
+    W.identity();
+    
+    for(unsigned int j=0;j<clusters[index].preprocessings.size();j++){
+      if(clusters[index].preprocessings[j] == dnMeanVarianceNormalization){
+	for(unsigned int i=0;i<dimension(index);i++)
+	  if(clusters[index].variance[i] > T(10e-8))
+	    for(unsigned int k=0;k<dimension(index);k++)
+	      W(k,i) *= (T(2.0)*clusters[index].variance[i]);
+      }
+      else if(clusters[index].preprocessings[j] == dnCorrelationRemoval){
+	W = clusters[index].invWxx * W;
+      }
+      else if(clusters[index].preprocessings[j] == dnLinearICA){
+	W = clusters[index].invICA * W;
+      }
+    }
+
+    return true;
+  }
+  
   
   
   /**************************************************/
@@ -2023,7 +2092,7 @@ namespace whiteice
   
   
   
-  // sets variance to be something like 0.25**2 -> good input/outputs for nn
+  // sets variance to be something like 0.50**2 -> good input/outputs for nn
   template <typename T>
   void dataset<T>::mean_variance_removal(unsigned int index, math::vertex<T>& vec) const
   {
@@ -2033,7 +2102,7 @@ namespace whiteice
     
     for(unsigned int i=0;i<vec.size();i++){
       if(clusters[index].variance[i] > T(10e-8))
-	vec[i] /= (T(4.0)*clusters[index].variance[i]);
+	vec[i] /= (T(2.0)*clusters[index].variance[i]);
     }
     
   }
@@ -2047,7 +2116,7 @@ namespace whiteice
     
     for(unsigned int i=0;i<vec.size();i++){
       if(clusters[index].variance[i] > T(10e-8))
-	vec[i] *= (T(4.0)*clusters[index].variance[i]);
+	vec[i] *= (T(2.0)*clusters[index].variance[i]);
     }
     
     vec += clusters[index].mean;
@@ -2080,7 +2149,7 @@ namespace whiteice
   template <typename T>
   void dataset<T>::whiten(unsigned int index, math::vertex<T>& vec) const
   {
-	  vec = clusters[index].Wxx * vec;
+    vec = clusters[index].Wxx * vec;
   }
   
   
@@ -2088,7 +2157,7 @@ namespace whiteice
   void dataset<T>::inv_whiten(unsigned int index,
 			      math::vertex<T>& vec) const
   {
-	  vec = clusters[index].invWxx * vec;
+    vec = clusters[index].invWxx * vec;
   }
 
 

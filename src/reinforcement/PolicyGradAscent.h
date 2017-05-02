@@ -46,6 +46,7 @@ namespace whiteice
      */
     bool startOptimize(const whiteice::dataset<T>* data,
 		       const whiteice::nnetwork<T>& Q,
+		       const whiteice::dataset<T>& Q_preprocess,
 		       const whiteice::nnetwork<T>& policy, // optimized policy
 		       unsigned int NTHREADS,
 		       unsigned int MAXITERS = 10000,
@@ -70,12 +71,13 @@ namespace whiteice
     private:
     // calculates mean Q-value of the policy in dtest dataset (states are inputs)
     T getValue(const whiteice::nnetwork<T>& policy,
-	       const whiteice::nnetwork<T>& Q, 
-	       const whiteice::dataset<T>& dtest,
-	       bool regularize = true) const;
+	       const whiteice::nnetwork<T>& Q,
+	       const whiteice::dataset<T>& Q_preprocess,
+	       const whiteice::dataset<T>& dtest) const;
 
 
     const whiteice::nnetwork<T>* Q;
+    const whiteice::dataset<T>* Q_preprocess;
     const whiteice::dataset<T>* data;
     
     whiteice::nnetwork<T>* policy; // network architecture and settings
@@ -83,7 +85,10 @@ namespace whiteice
     
     bool heuristics;
     bool dropout; // use dropout heuristics when training
+    bool regularize; // use regularizer term..
     T regularizer;
+
+    bool debug; // debugging messages (disabled)
     
     whiteice::math::vertex<T> bestx; // best policy weights
     T best_value;

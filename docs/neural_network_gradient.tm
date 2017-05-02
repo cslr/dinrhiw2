@@ -1,4 +1,4 @@
-<TeXmacs|1.0.7.15>
+<TeXmacs|1.99.5>
 
 <style|generic>
 
@@ -93,7 +93,28 @@
 
   \;
 
-  <emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash><emdash>
+  In continuous reinforcement learning, we need to maximize the given
+  policy's <math|\<b-mu\>> average <strong|Q>-value
+  <math|\<b-Q\><around*|(|\<b-x\>,\<b-mu\><around*|(|\<b-x\>|)>|)>> which
+  gradient can be computed by using the chain-rule but there is additionally
+  linear pre- and postprocessings <math|\<b-W\>*\<b-x\>+\<b-b\>> in
+  <math|\<b-mu\>> and <math|\<b-Q\>> which makes the calculation of gradient
+  more complicated.
+
+  <\math>
+    \<nabla\><rsub|<around*|(|\<b-W\><rsub|\<b-mu\>>\<b-x\>+\<b-b\><rsub|\<b-mu\>>|)>>\<b-W\><rsub|Q><rprime|'>*\<b-Q\><around*|(|\<b-W\><rsub|Q>*\<b-z\>+\<b-b\><rsub|Q>|)>+\<b-b\><rprime|'><rsub|Q>,\<b-z\>=<around*|[|\<b-x\>,\<b-W\><rprime|'><rsub|\<b-mu\>>*\<b-mu\><around*|(|\<b-W\><rsub|\<b-mu\>>\<b-x\>+\<b-b\><rsub|\<b-mu\>>|)>+\<b-b\><rprime|'><rsub|\<b-mu\>>|]>=
+
+    \<b-W\><rprime|'><rsub|Q>*\<nabla\><rsub|><rsub|>\<b-Q\><around*|(|\<b-W\><rsub|Q>*\<b-z\>+\<b-b\><rsub|Q>|)>\<b-W\><rsup|<around*|(|\<b-mu\>|)>><rsub|Q>\<b-W\><rprime|'><rsub|\<b-mu\>>\<nabla\>\<b-mu\>
+  </math>
+
+  But in practice we don't have post-processing for <math|\<b-mu\>> so the
+  gradient becomes
+
+  <center|<math|\<b-W\><rprime|'><rsub|Q>*\<nabla\><rsub|>\<b-Q\><around*|(|\<b-W\><rsub|Q>*\<b-z\>+\<b-b\><rsub|Q>|)>\<b-W\><rsup|<around*|(|\<b-mu\>|)>><rsub|Q>\<nabla\>\<b-mu\>>>
+
+  \;
+
+  \V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V\V
 
   \;
 
@@ -136,7 +157,7 @@
 
   <strong|RNN-RBM>
 
-  RNN-RBM was described on the web to create learn creating ``music'' by
+  RNN-RBM was described on the web to create learn creating \Pmusic\Q by
   using BPTT but I use extended RTRL approach instead.
 
   (<verbatim|http://danshiebler.com/2016-08-17-musical-tensorflow-part-two-the-rnn-rbm/>)
@@ -151,7 +172,7 @@
 
   One can then compute RBM's log-likelihood gradient with respect to
   recurrent neural networks weights <math|\<b-w\>> maximizing probability of
-  ``semi'' independent MIDI notes observations\ 
+  \Psemi\Q independent MIDI notes observations\ 
 
   <center|<math|-log<around*|[|p<around*|(|\<b-v\><around*|(|1|)>,\<b-v\><around*|(|2|)>\<ldots\>\<b-v\><around*|(|N|)>|)>|]>\<approx\><big|sum><rsub|n>-log<around*|(|p<around*|(|\<b-v\><rsub|n>|)>|)>>>
 
@@ -248,10 +269,10 @@
 
   In practice it seems to be difficult to regularize RNN-RBM because of the
   special form of the error function (log probability). I suggest the use of
-  ``negative gradient''. In addition to training samples which probability
+  \Pnegative gradient\Q. In addition to training samples which probability
   should be maximized, artificial songs are created where each note has
   random probability <math|p\<gtr\>0.50> of being in on position and gradient
   of these additional training samples is calculated normally but the
   calculated gradient is substracted from the positive gradient so that
-  probability of those ``random songs'' is greatly reduced.
+  probability of those \Prandom songs\Q is greatly reduced.
 </body>

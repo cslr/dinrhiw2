@@ -33,8 +33,10 @@ namespace whiteice
       running = false;
       nn = NULL;
 
-      // regularizer = T(0.0001); // 1/10.000 (to keep weights from become very large)
-      regularizer = T(1.0); // this works for "standard" cases
+      // regularizer = T(0.0001); // 1/10.000 (keep weights from becoming large)
+      // regularizer = T(1.0); // this works for "standard" cases
+      
+      regularizer = T(0.0);    // regularizer is DISABLED
     }
 
 
@@ -156,23 +158,6 @@ namespace whiteice
 	optimizer_thread[i] =
 	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
 			       this));
-
-#if 0
-	// NON-STANDARD WAY TO SET THREAD PRIORITY (POSIX)
-	{
-	  sched_param sch_params;
-	  int policy = SCHED_FIFO; // SCHED_RR
-	  
-	  pthread_getschedparam(optimizer_thread[i]->native_handle(),
-				&policy, &sch_params);
-	  
-	  sch_params.sched_priority = 20;
-	  if(pthread_setschedparam(optimizer_thread[i]->native_handle(),
-				   policy, &sch_params) != 0){
-	  }
-	}
-#endif
-
       }
 
       {
@@ -206,7 +191,7 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::getSolution(whiteice::nnetwork<T>& nn,
 				       T& error,
-				       unsigned int& iterations)
+				       unsigned int& iterations) const
     {
       // checks if the neural network architecture is the correct one
       if(this->nn == NULL) return false;
@@ -223,6 +208,41 @@ namespace whiteice
 
       return true;
     }
+
+
+        template <typename T>
+    bool NNGradDescent<T>::getSolutionStatistics(T& error,
+						 unsigned int& iterations) const
+    {
+      // checks if the neural network architecture is the correct one
+      if(this->nn == NULL) return false;
+
+      solution_lock.lock();
+      
+      error = best_pure_error;
+      iterations = this->iterations;
+
+      solution_lock.unlock();
+
+      return true;
+    }
+
+
+    template <typename T>
+    bool NNGradDescent<T>::getSolution(whiteice::nnetwork<T>& nn) const
+    {
+      // checks if the neural network architecture is the correct one
+      if(this->nn == NULL) return false;
+
+      solution_lock.lock();
+      
+      nn = *(this->nn);
+      
+      solution_lock.unlock();
+
+      return true;
+    }
+    
 
     
     /* used to pause, continue or stop the optimization process */
@@ -315,18 +335,6 @@ namespace whiteice
     template <typename T>
     void NNGradDescent<T>::optimizer_loop()
     {
-      {
-	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
-	thread_is_running++;
-	thread_is_running_cond.notify_all();
-      }
-
-      // acquires lock temporally to wait for startOptimizer() to finish
-      {
-	start_lock.lock();
-	start_lock.unlock();
-      }
-
       // set thread priority (non-standard)
       {
 	sched_param sch_params;
@@ -349,17 +357,6 @@ namespace whiteice
 #endif	
       }
 
-      if(data == NULL){
-	assert(0);
-	return; // silent failure if there is bad data
-      }
-      
-      if(data->size(0) <= 1 || running == false){
-	assert(0);
-	return;
-      }
-
-      
       
       // 1. divides data to to training and testing sets
       ///////////////////////////////////////////////////
@@ -403,6 +400,21 @@ namespace whiteice
 	}
       }
 
+      
+      {
+	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
+	thread_is_running++;
+	thread_is_running_cond.notify_all();
+      }
+
+      
+      // acquires lock temporally to wait for startOptimizer() to finish
+      {
+	start_lock.lock();
+	start_lock.unlock();
+      }
+
+      
       while(running && iterations < MAXITERS){
 	// keep looking for solution forever
 	
