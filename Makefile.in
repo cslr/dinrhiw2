@@ -33,6 +33,13 @@ SOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
 all: check_conf_changes make_objects makelib
 
 depend:
+	$(CD) src && echo "" > Makefile.depend
+	$(CD) src/math && echo "" > Makefile.depend
+	$(CD) src/crypto && echo "" > Makefile.depend
+	$(CD) src/neuralnetwork && echo "" > Makefile.depend
+	$(CD) src/hmm && echo "" > Makefile.depend
+	$(CD) src/reinforcement && echo "" > Makefile.depend
+	$(CD) src/rnn && echo "" > Makefile.depend
 	$(CD) src && $(MAKE) depend
 	$(CD) src/math && $(MAKE) depend
 	$(CD) src/crypto && $(MAKE) depend
