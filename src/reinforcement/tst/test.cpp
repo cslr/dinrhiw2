@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   if(argc <= 1){
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.50); // 50% of examples are selected accoring to model
+    system.setEpsilon(0.50); // 50% of examples are selected according to model
     system.setLearningMode(true);
     
     // system.load("rifl.dat");
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(1.00); // 100% of examples are selected accoring to model
+    system.setEpsilon(1.00); // 100% of examples are selected according to model
     system.setLearningMode(false);
     system.setHasModel(1);
     

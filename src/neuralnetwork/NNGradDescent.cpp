@@ -339,11 +339,13 @@ namespace whiteice
       {
 	sched_param sch_params;
 	int policy = SCHED_FIFO;
-	  
+	
 	pthread_getschedparam(pthread_self(),
 			      &policy, &sch_params);
-
-	// policy = SCHED_IDLE;
+	
+#ifdef linux
+	policy = SCHED_IDLE; // in linux we can set idle priority
+#endif	
 	sch_params.sched_priority = sched_get_priority_min(policy);
 	
 	if(pthread_setschedparam(pthread_self(),

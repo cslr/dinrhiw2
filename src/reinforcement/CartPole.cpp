@@ -141,6 +141,11 @@ namespace whiteice
 	if(event.type == SDL_QUIT){
 	  this->running = false;
 	}
+
+	if(event.type == SDL_KEYDOWN){
+	  if(event.key.keysym.sym == SDLK_ESCAPE)
+	    this->running = false;
+	}
       }
 
       // drawing
@@ -395,8 +400,8 @@ namespace whiteice
 
 	  auto temp = abs(mth); //  + sth; [DO NOT ADD STANDARD DEVIATION]
 	  
-	  printf("TIME %f theta = %f deg [%f]\n",
-		 t, degrees, temp.c[0]);
+	  printf("TIME %f theta = %f deg [%f] [model %d]\n",
+		 t, degrees, temp.c[0], this->getHasModel());
 	  
 	  fflush(stdout);
 	}
