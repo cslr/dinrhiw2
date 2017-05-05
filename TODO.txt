@@ -1,18 +1,12 @@
 TODO
 
+* DBN.convertToNNetwork(): pretraining+convertToNNetwork() 
+  sometimes (incorrectly) generates VERY large weights and further optimization only partly
+  remedies this. Bug fix/increase robustness of code to avoid extremely large weights in DBN/NNetwork.
+  
 * RIFL_abstract and RIFL_abstract2 load() and save() do not really work
   because starting learning loop does not have code to notice existing
   nnetworks (starts always assuming fresh start)
-
-* Modify NNGradDescent to support deep learning
-  ("GBRBM+BBRBM+linear output" initialization or
-   "GBRBM+BBRBM+BBRBM output" initialization)
-
-  - after this test how well CartPole (& RIFL_abstract) work with
-    deep neural networks..
-
-* DBN.toNNetwork() code must use W.transpose() when transferring
-  weights between DBN and nnetwork<> is this a bug??
 
 * throughly test HMC further.
   Does negative phase improve results or not?
