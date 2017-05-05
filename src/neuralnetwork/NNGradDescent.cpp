@@ -702,7 +702,7 @@ namespace whiteice
 
 	    
 	  }
-	  while(error > T(0.001f) && 
+	  while(error > T(0.00001f) && 
 		lrate >= T(10e-30) && 
 		iterations < MAXITERS && 
 		running);
