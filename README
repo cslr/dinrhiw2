@@ -9,7 +9,11 @@ network codes. Currently, the neural network code only supports:
 * second order L-BFGS search
 * gradient descent (backpropagation)
 
-.. as well as naive experimental PSO optimizer. 
+
+NOTE: please use experimental branch (RBM_test) as stable branch is seriously 
+      outdated and contains bugs. RBM_test contains experimental RBM weight 
+      pretraining/deep learning code (not fully working atm) and experimental 
+      reinforcement learning code (currently cannot learn well from data).
 
 BUILDING IT
 -----------
@@ -38,40 +42,14 @@ tools/nntool.cpp
 src/dataset.h
 src/neuralnetwork/nnetwork.h
 
-Expecially the latter one shows how to use nnetwork<> class properly to 
-learn from the data. Note that it only accepts aprox. [-1,1] valued data
-as a default so proper preprocessing of the data using dataset class can
-be very important in order to keep data within the correct range 
-(+ PCA preprocessing can make the learning from the data exponentially 
-   faster in some cases).
-
-IMPORTANT: There is also (alternative) neural network implementation
-           in neuralnetwork.h and related files that DO NOT work.
-
-	   However, I plan to make it work and write conversion code
-	   to change representation of the network between
-	   neuralnetwork <-> nnetwork classes so that you can
-	   convert low level (but fast) implementation of nnetwork
-	   into higher level representation of the network that
-	   is often more easy to understand.
-
-	   This is maybe needed when you want to write special
-	   bayesian priors for different neural network layers and
-	   convert multilayer restricted boltzman machine (RBM) to
-	   initial neural network weights.
-	   
+==============================================================================
 
 Additionally, there are 
 
 tools/test_data.sh
 tools/test_data2.sh
 tools/test_data3.sh
-tools/test_data3_bayes.sh    (SLOW but here bayesian method gives
-			      BETTER (bad) result than
-			      gradient descent algorithms)
 
-scripts that shows how the learning and data prediction from example data 
-works in practice using dstool and nntool commands.
 
 ADDITIONAL NOTES
 ----------------
