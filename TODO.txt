@@ -1,12 +1,15 @@
 TODO
 
-* RIFL_abstract2 does not do dnMeanVarianceNormalization (unlike RIFL_abstract)
-  before feeding data to neural network optimizers..
-
 * RIFL_abstract and RIFL_abstract2 load() and save() do not really work
   because starting learning loop does not have code to notice existing
   nnetworks (starts always assuming fresh start)
 
+* Modify NNGradDescent to support deep learning
+  ("GBRBM+BBRBM+linear output" initialization or
+   "GBRBM+BBRBM+BBRBM output" initialization)
+
+  - after this test how well CartPole (& RIFL_abstract) work with
+    deep neural networks..
 
 * DBN.toNNetwork() code must use W.transpose() when transferring
   weights between DBN and nnetwork<> is this a bug??
@@ -18,10 +21,7 @@ TODO
 
 LATER (multistep optimization):
 
-* implement recurrent neural networks
-
-  * RUN/TEST RECURRENT NNTOOL TESTS IN TOOLS DIRECTORY
-
+* fully implement recurrent neural networks
    
 ========================
 
@@ -78,7 +78,5 @@ OLD TODO
   (PCA seems to fail sometimes)
 
   write faster/good association rules finder (reread the relevant paper)
-  - what other datamining methods would be needed/useful(?)
-  - copy from own Java code
 
 ===================================================================

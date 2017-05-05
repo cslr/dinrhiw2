@@ -64,6 +64,12 @@ class BBRBM {
   bool reconstructData(std::vector< math::vertex<T> >& samples,
 		       unsigned int iters = 1);
   bool reconstructDataHidden(unsigned int iters = 2); // 2 to h->v->h
+
+  // calculates h = sigmoid(W*v + b) without disretization step
+  bool calculateHiddenMeanField(const math::vertex<T>& v, math::vertex<T>& h) const;
+
+  // calculates v = sigmoid(h*W + a) without discretization step
+  bool calculateVisibleMeanField(const math::vertex<T>& h, math::vertex<T>& v) const;
   
   void getParameters(math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b) const;
   
@@ -73,7 +79,7 @@ class BBRBM {
   // returns reconstruction error
   T learnWeights(const std::vector< math::vertex<T> >& samples,
 		 const unsigned int EPOCHS=1,
-		 bool verbose = false);
+		 const int verbose = 0, const bool* running = NULL);
 
   T reconstructionError(const std::vector< math::vertex<T> >& samples,
 			unsigned int N, // number of samples to use from samples to estimate reconstruction error
@@ -122,6 +128,12 @@ class BBRBM {
   
   bool load(const std::string& filename) throw();
   bool save(const std::string& filename) const throw();
+
+ protected:
+
+  void sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const;
+
+  void sigmoid(math::vertex<T>& x) const;
   
  private:
   math::vertex<T> h, v;

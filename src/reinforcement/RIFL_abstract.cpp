@@ -36,7 +36,7 @@ namespace whiteice
       arch.push_back((numStates + dimActionFeatures)*20);
       arch.push_back(1);
 
-      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
+      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
@@ -247,13 +247,14 @@ namespace whiteice
 
     // FIXME/DEBUG disable??? (heuristics keep weights at unity..)
     // whiteice::math::NNGradDescent<T> grad(true);
-    whiteice::math::NNGradDescent<T> grad(false);
+    // ENABLES deep pretraining for nnetwork..
+    whiteice::math::NNGradDescent<T> grad(false, false, true);
 
     // used to calculate dataset in background for NNGradDescent..
     whiteice::CreateRIFLdataset<T>* dataset_thread = nullptr;
 
     unsigned int epoch = 0;
-    
+    int old_grad_iterations = 0;
 
     const unsigned int DATASIZE = 10000;
     const unsigned int SAMPLESIZE = 100;
@@ -261,6 +262,7 @@ namespace whiteice
 
     // keep 100% of the new network weights (was 30%)
     const T tau = T(1.0); // T tau = T(0.3);
+    
 
     database.resize(numActions);
 
@@ -439,11 +441,14 @@ namespace whiteice
 	  }
 	}
 
-	char buffer[80];
-	snprintf(buffer, 80, "RIFL_abstract: %d samples. all has samples %d",
-		 samples, (int)allHasSamples);
-	whiteice::logging.info(buffer);
-
+#if 0
+	{
+	  char buffer[80];
+	  snprintf(buffer, 80, "RIFL_abstract: %d samples. all has samples %d",
+		   samples, (int)allHasSamples);
+	  whiteice::logging.info(buffer);
+	}
+#endif
 	
 	if(samples >= SAMPLESIZE && allHasSamples)
 	{
@@ -585,14 +590,21 @@ namespace whiteice
 	    }
 	    
 	    const bool dropout = false;
+	    bool useInitialNN = false; // start from scratch
+
+#if 0
+	    if(hasModel) // if we have model start from NN weights..
+	      useInitialNN = true;
+#endif
 	    
 	    // if(grad.startOptimize(data, nn, 2, 250, dropout) == false){
-	    if(grad.startOptimize(data, nn, 1, 250, dropout) == false){
+	    if(grad.startOptimize(data, nn, 1, 250, dropout, useInitialNN) == false){
 	      whiteice::logging.error("RIFL_abstract: starting grad optimizer FAILED");
 	      assert(0);
 	    }
 	    else
 	      whiteice::logging.info("RIFL_abstract: grad optimizer started");
+	    old_grad_iterations = -1;
 	    
 	    delete dataset_thread;
 	    dataset_thread = nullptr;
@@ -600,13 +612,20 @@ namespace whiteice
 	  else{
 
 	    if(grad.getSolutionStatistics(error, iters)){
-	      snprintf(buffer, 80,
-		       "RIFL_abstract: epoch %d optimizer %d iters. error: %f hasmodel %d",
-		       epoch, iters, error.c[0], hasModel);
-	      
-	      whiteice::logging.info(buffer);
+	      if(((signed int)iters) > old_grad_iterations){
+		char buffer[80];
+		
+		snprintf(buffer, 80,
+			 "RIFL_abstract: epoch %d optimizer %d iters. error: %f hasmodel %d",
+			 epoch, iters, error.c[0], hasModel);
+		
+		whiteice::logging.info(buffer);
+
+		old_grad_iterations = (int)iters;
+	      }
 	    }
 	    else{
+	      char buffer[80];
 	      snprintf(buffer, 80,
 		       "RIFL_abstract: epoch %d grad.getSolution() FAILED",
 		       epoch);

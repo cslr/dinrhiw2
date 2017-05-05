@@ -10,14 +10,17 @@
 
 #include <exception>
 #include <stdexcept>
+#include <random>
+
 #include "vertex.h"
 
 namespace whiteice {
 
   /**
    * Implements **thread-safe** hardware random number generator
-   * using Intel RDRAND if it is available. Otherwise falls back to rand()
-   * which is NOT thread-safe.
+   * using Intel RDRAND if it is available (& usehw = true). 
+   * Otherwise falls back to C rand() which is NOT guaranteed to 
+   * be thread-safe.
    *
    * NOTE: It seems that software C++ RNG is actually faster in generating
    *       normally distributed variables than this when using software RNG.
@@ -27,8 +30,9 @@ namespace whiteice {
   template <typename T=math::blas_real<float> >
     class RNG {
   public:
-  
-  RNG(); // uses regular rand() if rdrand is not supported
+
+  // uses regular rand() if rdrand is not supported or usehw = false
+  RNG(const bool usehw = false); 
   virtual ~RNG(){ }
   
   unsigned int rand() const; // 32bit

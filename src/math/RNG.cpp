@@ -21,48 +21,48 @@
 namespace whiteice {
 
 template <typename T>
-RNG<T>::RNG()
+RNG<T>::RNG(const bool usehw)
 {
-	// uses CPUID to check for RDRAND instruction
-	bool has_rdrand = false;
-	{
-		  unsigned int regs[4];
-
-		  // get vendor
-		  char vendor[12];
-		  cpuid(0, 0, regs);
-		  ((unsigned int *)vendor)[0] = regs[1]; // EBX
-		  ((unsigned int *)vendor)[1] = regs[3]; // EDX
-		  ((unsigned int *)vendor)[2] = regs[2]; // ECX
-		  std::string cpuvendor = std::string(vendor, 12);
-
-		  // printf("CPUVENDOR: %s\n", cpuvendor.c_str());
-
-		  if(cpuvendor == "GenuineIntel"){
-		    cpuid(1, 0, regs);
-		    if((regs[2] & 0x40000000) == 0x40000000)
-		      has_rdrand = true;
-		  }
-		  else if(cpuvendor == "AuthenticAMD"){
-		    cpuid(1, 0, regs);
-		    if((regs[2] & 0x40000000) == 0x40000000) // 30th bit ECX is 1
-		      has_rdrand = true;
-		  }
-	}
-	
-	// setups function pointers to be used for rng
-	if(has_rdrand){
-	  rdrand32 = &whiteice::RNG<T>::_rdrand32;
-	  rdrand64 = &whiteice::RNG<T>::_rdrand64;
-	}
-	else{
-	  srand(time(0));
-	  rdrand32 = &whiteice::RNG<T>::_rand32; // uses rand() it is NOT thread-safe
-	  rdrand64 = &whiteice::RNG<T>::_rand64; // uses rand() it is NOT thread-safe
-	}
-
-	// calculates ziggurat tables for normal and exponential distribution
-	calculate_ziggurat_tables();
+  // uses CPUID to check for RDRAND instruction
+  bool has_rdrand = false;
+  {
+    unsigned int regs[4];
+    
+    // get vendor
+    char vendor[12];
+    cpuid(0, 0, regs);
+    ((unsigned int *)vendor)[0] = regs[1]; // EBX
+    ((unsigned int *)vendor)[1] = regs[3]; // EDX
+    ((unsigned int *)vendor)[2] = regs[2]; // ECX
+    std::string cpuvendor = std::string(vendor, 12);
+    
+    // printf("CPUVENDOR: %s\n", cpuvendor.c_str());
+    
+    if(cpuvendor == "GenuineIntel"){
+      cpuid(1, 0, regs);
+      if((regs[2] & 0x40000000) == 0x40000000)
+	has_rdrand = true;
+    }
+    else if(cpuvendor == "AuthenticAMD"){
+      cpuid(1, 0, regs);
+      if((regs[2] & 0x40000000) == 0x40000000) // 30th bit ECX is 1
+	has_rdrand = true;
+    }
+  }
+  
+  // setups function pointers to be used for rng
+  if(has_rdrand && usehw){
+    rdrand32 = &whiteice::RNG<T>::_rdrand32;
+    rdrand64 = &whiteice::RNG<T>::_rdrand64;
+  }
+  else{
+    srand(time(0));
+    rdrand32 = &whiteice::RNG<T>::_rand32; // uses C rand()
+    rdrand64 = &whiteice::RNG<T>::_rand64; // uses C rand()
+  }
+  
+  // calculates ziggurat tables for normal and exponential distribution
+  calculate_ziggurat_tables();
 }
 
 template <typename T>
@@ -75,53 +75,53 @@ unsigned long long RNG<T>::rand64() const{ return (this->*rdrand64)(); } // 64bi
 template <typename T>
 T RNG<T>::uniform() const // [0,1]
 {
-	// const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
-	// return T(rdrand64()/MAX);
-	return T(unid());
+  // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
+  // return T(rdrand64()/MAX);
+  return T(unid());
 }
 
 
 template <typename T>
 void RNG<T>::uniform(math::vertex<T>& u) const{
-	// const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
-
-	for(unsigned int i=0;i<u.size();i++){
-		// u[i] = T(rdrand64()/MAX);
-		u[i] = T(unid());
-	}
+  // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
+  
+  for(unsigned int i=0;i<u.size();i++){
+    // u[i] = T(rdrand64()/MAX);
+    u[i] = T(unid());
+  }
 }
 
 
 template <typename T>
 T RNG<T>::normal() const{
-	return T(rnor());
+  return T(rnor());
 }
-
+  
 
 template <typename T>
 void RNG<T>::normal(math::vertex<T>& n) const
 {
-	for(unsigned int i=0;i<n.size();i++)
-		n[i] = T(rnor());
+  for(unsigned int i=0;i<n.size();i++)
+    n[i] = T(rnor());
 }
 
 
 template <typename T>
 T RNG<T>::exp() const
 {
-	const float e = rexp();
-
-	return T(e >= 0.0f ? e : (-e));
+  const float e = rexp();
+  
+  return T(e >= 0.0f ? e : (-e));
 }
 
 
 template <typename T>
 void RNG<T>::exp(math::vertex<T>& ev) const
 {
-	for(unsigned int i=0;i<ev.size();i++){
-		const float e = rexp();
-		ev[i] = T(e >= 0.0f ? e : (-e));
-	}
+  for(unsigned int i=0;i<ev.size();i++){
+    const float e = rexp();
+    ev[i] = T(e >= 0.0f ? e : (-e));
+  }
 }
 
 
@@ -270,13 +270,13 @@ unsigned int RNG<T>::_rdrand32() const
 template <typename T>
 unsigned long long RNG<T>::_rdrand64() const
 {
-	unsigned long long lvalue;
-	unsigned char ok = 0;
-
-	while(!ok)
-		asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
-
-	return lvalue;
+  unsigned long long lvalue;
+  unsigned char ok = 0;
+  
+  while(!ok)
+    asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
+  
+  return lvalue;
 }
 
 template <typename T>
@@ -285,7 +285,7 @@ unsigned int RNG<T>::_rand32() const
   unsigned int r1 = (unsigned int)::rand();
   unsigned int r2 = (unsigned int)::rand();
   unsigned int r = (r1 << 16) ^ (r2);
-  
+
   return r;
 }
 
@@ -303,8 +303,8 @@ unsigned long long RNG<T>::_rand64() const
 template <typename T>
 void RNG<T>::cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4])
 {
-	asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
-	     : "a" (leaf), "c" (subleaf));
+  asm volatile("cpuid" : "=a" (regs[0]), "=b" (regs[1]), "=c" (regs[2]), "=d" (regs[3])
+	       : "a" (leaf), "c" (subleaf));
 }
 
 

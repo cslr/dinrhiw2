@@ -32,7 +32,11 @@ namespace whiteice
 
       // if errorTerms is true then dataset output values are actual
       // errors rather than correct values
-      NNGradDescent(bool heuristics = false, bool errorTerms = false);
+      //
+      // deep_pretraining - pretrains new weights of sigmoidal neural network (GBRBM+BBRBM)
+      //                    (don't do anything if network is not sigmoidal)
+      // 
+      NNGradDescent(bool heuristics = false, bool errorTerms = false, bool deep_pretraining = false);
       NNGradDescent(const NNGradDescent<T>& grad);
       ~NNGradDescent();
       
@@ -49,12 +53,14 @@ namespace whiteice
        * descent solution
        * 
        * dropout - whether to use dropout heuristics when training
+       * initiallyUseNN = true => first try to use parameter nn weights
        */
       bool startOptimize(const whiteice::dataset<T>& data,
 			 const whiteice::nnetwork<T>& nn,
 			 unsigned int NTHREADS,
 			 unsigned int MAXITERS = 10000,
-			 bool dropout = false);
+			 bool dropout = false,
+			 bool initiallyUseNN = true);
       
       /*
        * Returns true if optimizer is running
@@ -104,13 +110,15 @@ namespace whiteice
       bool errorTerms; // dataset output values are
       // delta error values rather than correct outputs
       // (needed by reinforcement learning)
+
+      bool deep_pretraining;
       
       unsigned int NTHREADS;
       unsigned int MAXITERS;
       std::vector<std::thread*> optimizer_thread;
       mutable std::mutex solution_lock, start_lock;
       
-      volatile bool running;
+      bool running;
       
       volatile int thread_is_running;
       std::mutex thread_is_running_mutex;

@@ -220,7 +220,7 @@ namespace whiteice
   void nnetwork<T>::diagnosticsInfo() const
   {
     char buffer[80];    
-    snprintf(buffer, 80, "nnetwork: DIAGNOSTIC/MAXVALUE (%d layers): \n",
+    snprintf(buffer, 80, "nnetwork: DIAGNOSTIC/MAXVALUE (%d layers):",
 	     getLayers());
     whiteice::logging.info(buffer);
 
@@ -228,30 +228,33 @@ namespace whiteice
     for(unsigned int l=0;l<getLayers();l++){
       math::matrix<T> W;
       math::vertex<T> b;
-      T maxvalue = T(-INFINITY);
+      T maxvalueW = T(-INFINITY);
+      T maxvalueb = T(-INFINITY);
       
       this->getBias(b, l);
       this->getWeights(W, l);
 
       for(unsigned int i=0;i<b.size();i++){
-	if(maxvalue < abs(b[i]))
-	  maxvalue = abs(b[i]);
+	if(maxvalueb < abs(b[i]))
+	  maxvalueb = abs(b[i]);
       }
 
       for(unsigned int j=0;j<W.ysize();j++)
 	for(unsigned int i=0;i<W.xsize();i++)
-	  if(maxvalue < abs(W(j, i)))
-	    maxvalue = abs(W(j, i));
+	  if(maxvalueW < abs(W(j, i)))
+	    maxvalueW = abs(W(j, i));
 
 
       double temp = 0.0;
-      whiteice::math::convert(temp, maxvalue);
+      whiteice::math::convert(temp, maxvalueW);
 
-      snprintf(buffer, 80, "nnetwork: LAYER %d/%d MAX ABS-VALUE %f",
-	       l+1, getLayers(), temp);
+      double temp2 = 0.0;
+      whiteice::math::convert(temp2, maxvalueb);
+
+      snprintf(buffer, 80, "nnetwork: LAYER %d/%d MAX ABS-VALUE W=%f b=%f",
+	       l+1, getLayers(), temp, temp2);
       whiteice::logging.info(buffer);
       
-      // std::cout << "NETWORK MAXIMUM VALUE: " << maxvalue << std::endl;
     }
   }
 

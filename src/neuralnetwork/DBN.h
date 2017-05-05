@@ -72,7 +72,7 @@ namespace whiteice
     // learns stacked RBM layer by layer, each RBM is trained one by one
     // until deltaW < dW or convergence and then algorithm moves to the next layer
     bool learnWeights(const std::vector< math::vertex<T> >& samples,
-		      const T& dW, bool verbose);
+		      const T& dW, const int verbose, const bool* running);
 
     // converts DBN to supervised nnetwork by using training samples
     // (cluster 0 = input) and (cluster 1 = output) and
@@ -83,7 +83,8 @@ namespace whiteice
     // 
     // returns supervised mean-field (non-stochastic)
     // neural network with extra output layer
-    // (sigmoid non-linearity except the last layer which is pureLinear)
+    // (sigmoid non-linearity except the last layer which
+    //  is pureLinear)
     //
     // net - allocates new nnetwork and overwrites pointer to it as a return value
     //
@@ -101,13 +102,23 @@ namespace whiteice
     bool convertInverseToNNetwork(whiteice::nnetwork<T>*& net);
 
     // converts trained DBN to autoencoder which can be trained using LBFGS etc
-    // returns stochastic neural network
+    // returns sigmoidal mean-field neural network
+    // net is allocated using new (caller must delete)
     bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
 
     bool save(const std::string& basefilename) const;
     bool load(const std::string& basefilename);
     
     private:
+
+    // calculates mean field (sigmoid) response to input v -> h
+    // (used by convertToNNetwork())
+    bool calculateHiddenMeanField(const math::vertex<T>& v,
+				  math::vertex<T>& h) const;
+
+    // calculates mean field response to input to input h->v
+    bool calculateVisibleMeanField(const math::vertex<T>& h,
+				   math::vertex<T>& v) const;
     
     // stacked RBMs from the first to the last one
 

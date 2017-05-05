@@ -35,11 +35,11 @@ namespace whiteice
     public:
 
     enum nonLinearity {
-      sigmoid = 0, // uses sigmoid non-linearity as the default (0)
+      sigmoid = 0, // uses sigmoid non-linearity as the default (0) [output: [0,+1] input (-inf,inf)]
       stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
-      halfLinear = 2, // for deep networks (2) [half are tanh]
-      pureLinear = 3, // for last-layer and comparing nnetworks (pure linear) (3)
-      tanh = 4 // tanh non-linearity
+      halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
+      pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
+      tanh = 4 // tanh non-linearity (output: [-1,+1] (input: [-1,1])
     };
 
 

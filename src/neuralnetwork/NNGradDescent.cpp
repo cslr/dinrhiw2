@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 
+#include <memory>
 
 
 namespace whiteice
@@ -16,7 +17,7 @@ namespace whiteice
   {
 
     template <typename T>
-    NNGradDescent<T>::NNGradDescent(bool heuristics, bool errorTerms)
+    NNGradDescent<T>::NNGradDescent(bool heuristics, bool errorTerms, bool deep_pretraining)
     {
       best_error = T(INFINITY);
       best_pure_error = T(INFINITY);
@@ -27,11 +28,14 @@ namespace whiteice
       
       this->heuristics = heuristics;
       this->errorTerms = errorTerms;
+      this->deep_pretraining = deep_pretraining;
 
       dropout = false;
 
       running = false;
       nn = NULL;
+
+      first_time = true;
 
       // regularizer = T(0.0001); // 1/10.000 (keep weights from becoming large)
       // regularizer = T(1.0); // this works for "standard" cases
@@ -52,6 +56,7 @@ namespace whiteice
       
       this->heuristics = grad.heuristics;
       this->errorTerms = grad.errorTerms;
+      this->deep_pretraining = grad.deep_pretraining;
 
       dropout = grad.dropout;
       regularizer = grad.regularizer;
@@ -101,13 +106,16 @@ namespace whiteice
      *
      * Executes NTHREADS in parallel when looking for
      * the optimal solution.
+     * 
+     * initiallyUseNN = true => initially use given parameter nn weights
      */
     template <typename T>
     bool NNGradDescent<T>::startOptimize(const whiteice::dataset<T>& data,
 					 const whiteice::nnetwork<T>& nn,
 					 unsigned int NTHREADS,
 					 unsigned int MAXITERS,
-					 bool dropout)
+					 bool dropout,
+					 bool initiallyUseNN)
     {
       if(data.getNumberOfClusters() != 2) return false;
 
@@ -142,7 +150,8 @@ namespace whiteice
 
       {
 	std::lock_guard<std::mutex> lock(first_time_lock);
-	first_time = true; // first thread uses weights from user supplied NN
+	// first thread uses weights from user supplied NN
+	first_time = initiallyUseNN;
       }
 
       this->nn = new nnetwork<T>(nn); // copies network (settings)
@@ -421,7 +430,13 @@ namespace whiteice
 	// keep looking for solution forever
 	
 	// starting location for neural network
-	nnetwork<T> nn(*(this->nn));
+	std::unique_ptr< nnetwork<T> > nn(new nnetwork<T>(*(this->nn)));
+
+	{
+	  char buffer[128];
+	  snprintf(buffer, 128, "NNGradDescent: %d/%d reset/fresh neural network", iterations, MAXITERS);
+	  whiteice::logging.info(buffer);
+	}
 
 	{
 	  std::lock_guard<std::mutex> lock(first_time_lock);
@@ -429,26 +444,51 @@ namespace whiteice
 	  // use heuristic to normalize weights to unity
 	  // (keep input weights) [the first try is always given imported weights]
 	  if(first_time == false){
-	    nn.randomize();
+	    nn->randomize();
+
+	    if(deep_pretraining){
+	      auto ptr = nn.release();
+	      // verbose = 2: logs training to log file..
+	      if(deep_pretrain_nnetwork(ptr, dtrain, false, 2, &running) == false)
+		whiteice::logging.error("NNGradDescent: deep pretraining FAILED");
+	      else
+		whiteice::logging.info("NNGradDescent: deep pretraining complete");
+		
+	      nn.reset(ptr);
+	    }
+
 	    
 	    if(heuristics){
-	      normalize_weights_to_unity(nn);
+	      normalize_weights_to_unity(*nn);
 	      
 #if 0
-	      if(whiten1d_nnetwork(nn, dtrain) == false)
+	      if(whiten1d_nnetwork(*nn, dtrain) == false)
 		printf("ERROR: whiten1d_nnetwork failed\n");
 #endif
 #if 0
-	      normalize_weights_to_unity(nn);
+	      normalize_weights_to_unity(*nn);
 	      T alpha = T(0.5f);
-	      negative_feedback_between_neurons(nn, dtrain, alpha);
+	      negative_feedback_between_neurons(*nn, dtrain, alpha);
 #endif
 	    }
+	    
 	  }
 	  else{
 	    first_time = false;
 	  }
 	}
+
+	// cancellation point
+	{
+	  if(running == false){
+	    std::lock_guard<std::mutex> lock(thread_is_running_mutex);
+	    thread_is_running--;
+	    thread_is_running_cond.notify_all();
+	    return; // cancels execution
+	  }
+	}
+	    	      
+
 
 	// 2. normal gradient descent
 	///////////////////////////////////////
@@ -458,7 +498,7 @@ namespace whiteice
 	  T prev_error, error;	  
 	  T delta_error = 0.0f;
 
-	  error = getError(nn, dtest);
+	  error = getError(*nn, dtest);
 
 	  {
 	    solution_lock.lock();
@@ -466,8 +506,8 @@ namespace whiteice
 	    if(error < best_error){
 	      // improvement (smaller error with early stopping)
 	      best_error = error;
-	      best_pure_error = getError(nn, dtest, false);
-	      nn.exportdata(bestx);
+	      best_pure_error = getError(*nn, dtest, false);
+	      nn->exportdata(bestx);
 	    }
 	    
 	    solution_lock.unlock();
@@ -488,17 +528,17 @@ namespace whiteice
 	    // imports weights back
 
 	    math::vertex<T> sumgrad;
-	    sumgrad.resize(nn.exportdatasize());
+	    sumgrad.resize(nn->exportdatasize());
 	    sumgrad.zero();
 
 #pragma omp parallel shared(sumgrad)
 	    {
 	      T ninv = T(1.0f/dtrain.size(0));
 	      math::vertex<T> sgrad, grad;
-	      sgrad.resize(nn.exportdatasize());
+	      sgrad.resize(nn->exportdatasize());
 	      sgrad.zero();
 
-	      whiteice::nnetwork<T> nnet(nn);
+	      whiteice::nnetwork<T> nnet(*nn);
 	      math::vertex<T> err;
 	      
 #pragma omp for nowait schedule(dynamic)
@@ -535,6 +575,15 @@ namespace whiteice
 	      
 	    }
 
+	    {
+	      char buffer[80];
+	      double tmp = 0.0;
+	      whiteice::math::convert(tmp, sumgrad.norm());
+	      
+	      snprintf(buffer, 80, "NNGradDescent: %d/%d gradient norm: %f", iterations, MAXITERS, tmp);
+	      whiteice::logging.info(buffer);
+	    }
+
 
 	    // cancellation point
 	    {
@@ -546,7 +595,7 @@ namespace whiteice
 	      }
 	    }
 	    	      
-	    if(nn.exportdata(weights) == false)
+	    if(nn->exportdata(weights) == false)
 	      std::cout << "export failed." << std::endl;
 
 	    w0 = weights;
@@ -564,26 +613,26 @@ namespace whiteice
 	      weights = w0;
 	      weights -= lrate * sumgrad;
 
-	      if(nn.importdata(weights) == false)
+	      if(nn->importdata(weights) == false)
 		std::cout << "import failed." << std::endl;
 
-	      if(dropout) nn.removeDropOut();
+	      if(dropout) nn->removeDropOut();
 	      
 	      if(heuristics){
-		normalize_weights_to_unity(nn);
+		normalize_weights_to_unity(*nn);
 #if 0
-		if(whiten1d_nnetwork(nn, dtrain) == false)
+		if(whiten1d_nnetwork(*nn, dtrain) == false)
 		  printf("ERROR: whiten1d_nnetwork failed\n");
 #endif
 		
 #if 0
 		// using negative feedback heuristic 
 		T alpha = T(0.5f); // lrate;
-		negative_feedback_between_neurons(nn, dtrain, alpha);
+		negative_feedback_between_neurons(*nn, dtrain, alpha);
 #endif
 	      }
 
-	      error = getError(nn, dtrain);
+	      error = getError(*nn, dtrain);
 
 	      delta_error = (prev_error - error);
 	      ratio = abs(delta_error) / abs(error);
@@ -594,14 +643,36 @@ namespace whiteice
 	      else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
 		lrate *= T(1.0/0.50);
 	      }
-	      
+
+	      {
+		char buffer[128];
+		double tmp1, tmp2, tmp3, tmp4;
+		whiteice::math::convert(tmp1, error);
+		whiteice::math::convert(tmp2, delta_error);
+		whiteice::math::convert(tmp4, ratio);
+		whiteice::math::convert(tmp3, lrate);
+		
+		snprintf(buffer, 128, "NNGradDescent: %d/%d linesearch error: %f delta-error: %f ratio: %f lrate: %e", iterations, MAXITERS, tmp1, tmp2, tmp4, tmp3);
+		whiteice::logging.info(buffer);
+	      }
 	    }
 	    while(delta_error < T(0.0) && lrate != T(0.0) && 
 		  ratio > T(0.00001f) && running);
 	    
+	    {
+	      char buffer[128];
+	      double tmp1, tmp2, tmp3, tmp4;
+	      whiteice::math::convert(tmp1, error);
+	      whiteice::math::convert(tmp2, delta_error);
+	      whiteice::math::convert(tmp4, ratio);
+	      whiteice::math::convert(tmp3, lrate);
+	      
+	      snprintf(buffer, 128, "NNGradDescent: %d/%d linesearch STOP error: %f delta-error: %f ratio: %f lrate: %e", iterations, MAXITERS, tmp1, tmp2, tmp4, tmp3);
+	      whiteice::logging.info(buffer);
+	    }
 	    
 	    
-	    nn.exportdata(weights);
+	    nn->exportdata(weights);
 	    w0 = weights;
 
 	    {
@@ -610,8 +681,8 @@ namespace whiteice
 	      if(error < best_error){
 		// improvement (smaller error with early stopping)
 		best_error = error;
-		best_pure_error = getError(nn, dtrain, false);
-		nn.exportdata(bestx);
+		best_pure_error = getError(*nn, dtrain, false);
+		nn->exportdata(bestx);
 	      }
 	    
 	      solution_lock.unlock();
@@ -646,8 +717,8 @@ namespace whiteice
 	    if(error < best_error){
 	      // improvement (smaller error with early stopping)
 	      best_error = error;
-	      best_pure_error = getError(nn, dtrain, false);
-	      nn.exportdata(bestx);
+	      best_pure_error = getError(*nn, dtrain, false);
+	      nn->exportdata(bestx);
 	    }
 	    
 	    solution_lock.unlock();

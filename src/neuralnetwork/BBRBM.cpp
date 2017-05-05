@@ -8,6 +8,7 @@
 #include "BBRBM.h"
 #include "dataset.h"
 #include "linear_ETA.h"
+#include "Log.h"
 
 namespace whiteice {
 
@@ -332,6 +333,39 @@ bool BBRBM<T>::reconstructDataHidden(unsigned int iters)
   return true;
 }
 
+
+  // calculates h = sigmoid(W*v + b) without disretization step
+  template <typename T>
+  bool BBRBM<T>::calculateHiddenMeanField(const math::vertex<T>& v,
+					  math::vertex<T>& h) const
+  {
+    if(v.size() != a.size())
+      return false;
+
+    h = W*v + b;
+
+    sigmoid(h);
+
+    return true;
+  }
+
+  
+  // calculates v = sigmoid(h*W + a) without discretization step
+  template <typename T>
+  bool BBRBM<T>::calculateVisibleMeanField(const math::vertex<T>& h,
+					   math::vertex<T>& v) const
+  {
+    if(h.size() != b.size())
+      return false;
+
+    v = h*W + a;
+
+    sigmoid(v);
+
+    return true;
+  }
+
+
 template <typename T>
 void BBRBM<T>::getParameters(math::matrix<T>& W,
 			     math::vertex<T>& a,
@@ -376,7 +410,7 @@ bool BBRBM<T>::initializeWeights() // initialize weights to small values
 template <typename T>
 T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 			 const unsigned int EPOCHS,
-			 bool verbose)
+			 const int verbose, const bool* running)
 {
   // implements traditional CD-k (k=2) learning algorithm,
   // which can be used as a reference point
@@ -393,12 +427,19 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
   
   T latestError = reconstructionError(samples, 1000, a, b, W);
   
-  if(verbose){
+  if(verbose == 1){
     double error = 0.0;
     math::convert(error, latestError);
     
-    printf("%d/%d START. R: %f\n", 0, EPOCHS, error);
-    fflush(stdout);
+    printf("BBRBM::learnWeights(): %d/%d START. R: %f\n", 0, EPOCHS, error);
+  }
+  else if(verbose == 2){
+    char buffer[128];
+    double error = 0.0;
+    math::convert(error, latestError);
+    
+    snprintf(buffer, 128, "%d/%d START. R: %f\n", 0, EPOCHS, error);
+    whiteice::logging.info(buffer);
   }
 
   if(samples.size() <= 0) return latestError;
@@ -416,12 +457,19 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
     
     for(unsigned int es=0;es<EPOCHSAMPLES;es++){
 
+      if(running) if(*running == false) break;
+
       eta.update(es);
 
-      if(verbose){
+      if(verbose == 1){
 	printf("\r                                                                             \r");
 	printf("EPOCH SAMPLES %d/%d [ETA: %.2f minutes]", es, EPOCHSAMPLES, eta.estimate()/60.0);
-	fflush(stdout);
+      }
+      else if(verbose == 2){
+	char buffer[128];
+	snprintf(buffer, 128, "BBRBM::learnWeights(): epoch samples %d/%d [ETA: %.2f minutes]",
+		 es, EPOCHSAMPLES, eta.estimate()/60.0);
+	whiteice::logging.info(buffer);
       }
 
       // calculates positive gradient from NUMSAMPLES examples Pdata(v))
@@ -431,6 +479,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       
       // Pdata
       for(unsigned int i=0;i<NUMSAMPLES;i++){
+	if(running) if(*running == false) break;
+	
 	const unsigned int index = rng.rand() % samples.size();
 	auto v = samples[index];
 	
@@ -462,6 +512,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
       for(unsigned int i=0;i<NUMSAMPLES;i++)
       {
+	if(running) if(*running == false) break;
+	
 	const unsigned int index = rng.rand() % samples.size();
 	auto v = samples[index];
 
@@ -513,6 +565,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       
       // Pmodel
       for(unsigned int i=0;i<NUMSAMPLES;i++){
+	if(running) if(*running == false) break;
+	
 	// const unsigned int index = rng.rand() % modelsamples.size();
 	const unsigned int index = i;
 	auto v = modelsamples[index];
@@ -595,12 +649,19 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
     // calculates mean reconstruction error in samples and looks for convergence
     latestError = reconstructionError(samples, 1000, a, b, W);
     
-    if(verbose){
+    if(verbose == 1){
       double error = 0.0;
       math::convert(error, latestError);
 
       printf("\n");
       printf("%d/%d EPOCH. R: %f\n", e+1, EPOCHS, error);
+    }
+    else if(verbose == 2){
+      char buffer[128];
+      double error = 0.0;
+      math::convert(error, latestError);
+
+      snprintf(buffer, 128, "BBRBM::learnWeights(): %d/%d epoch. reconstruction error: %f\n", e+1, EPOCHS, error);
       fflush(stdout);
     }
 
@@ -1047,9 +1108,31 @@ bool BBRBM<T>::save(const std::string& filename) const throw()
   return file.save(filename);
 }
 
-template class BBRBM< float >;
-template class BBRBM< double >;
-template class BBRBM< math::blas_real<float> >;
-template class BBRBM< math::blas_real<double> >;
+  
+  template <typename T>
+  void BBRBM<T>::sigmoid(const math::vertex<T>& input,
+			 math::vertex<T>& output) const
+  {
+    output.resize(input.size());
+
+    for(unsigned int i=0;i<input.size();i++){
+      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
+    }
+  }
+
+  
+  template <typename T>
+  void BBRBM<T>::sigmoid(math::vertex<T>& x) const
+  {
+    for(unsigned int i=0;i<x.size();i++){
+      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
+    }
+  }
+
+  
+  template class BBRBM< float >;
+  template class BBRBM< double >;
+  template class BBRBM< math::blas_real<float> >;
+  template class BBRBM< math::blas_real<double> >;
 
 } /* namespace whiteice */

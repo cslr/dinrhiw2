@@ -1,6 +1,7 @@
 
 #include "DBN.h"
 #include "dataset.h"
+#include "Log.h"
 
 #include <list>
 
@@ -242,10 +243,10 @@ namespace whiteice
       else{
 	bb_input.reconstructData(1);  // BBRBM: v->h
       }
-
+      
       for(unsigned int i=0;i<layers.size();i++){
 	math::vertex<T> h;
-
+	
 	if(i == 0){
 	  if(!binaryInput)
 	    gb_input.getHidden(h);
@@ -258,12 +259,12 @@ namespace whiteice
 	  layers[i-1].getHidden(h);
 	  layers[i].setVisible(h);
 	}
-
+	
 	layers[i].reconstructData(1); // from visible to hidden
       }
-
+      
       iters--;
-
+      
       if(iters <= 0) return true;
       
       // now we have stimulated RBMs all the way to the last hidden layer and now we need to get back
@@ -277,14 +278,14 @@ namespace whiteice
 	}
 	else{
 	  layers[0].getVisible(v);
-
+	  
 	  if(!binaryInput)
 	    gb_input.setHidden(v);
 	  else
 	    bb_input.setHidden(v);
 	}
       }
-
+      
       if(!binaryInput){
 	gb_input.reconstructDataHidden2Visible();
 	/*
@@ -304,8 +305,8 @@ namespace whiteice
     
     return true;
   }
-
-
+  
+  
   template <typename T>
   bool DBN<T>::reconstructData(std::vector< math::vertex<T> >& samples)
   {
@@ -349,7 +350,7 @@ namespace whiteice
   // learns stacked RBM layer by layer, each RBM is trained one by one
   template <typename T>
   bool DBN<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
-			    const T& errorLevel, bool verbose)
+			    const T& errorLevel, const int verbose, const bool* running)
   {
     if(errorLevel < T(0.0)) return false;
 
@@ -365,18 +366,29 @@ namespace whiteice
     if(!binaryInput){ // GBRBM
       
       unsigned int iters = 0;
-      while((error = gb_input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
+      while((error = gb_input.learnWeights(in, EPOCH_STEPS, verbose, running)) >= errorLevel
 	    && iters < ITERLIMIT)
       {
+	if(running) if(*running == false) return false; // stop execution
+	
 	// learns also variance
 	iters += EPOCH_STEPS;
 	errors.push_back(error);
 	
-	if(verbose)
-	  std::cout << "GBRBM LAYER OPTIMIZATION "
+	if(verbose == 1){
+	  std::cout << "GBRBM LAYER 0 OPTIMIZATION "
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	}
+	else if(verbose == 2){
+	  char buffer[80];
+	  double tmp;
+	  whiteice::math::convert(tmp, errorLevel);
+	  snprintf(buffer, 80, "DBN::learnWeights: GBRBM layer 0 optimization %d/%d: %f",
+		   iters, ITERLIMIT, tmp);
+	  whiteice::logging.info(buffer);
+	}
 	
 	while(errors.size() > 5)
 	  errors.pop_front();
@@ -427,15 +439,26 @@ namespace whiteice
       while((error = bb_input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
 	    && iters < ITERLIMIT)
       {
+	if(running) if(*running == false) return false; // stop execution
+	
 	// learns also variance
 	iters += EPOCH_STEPS;
 	errors.push_back(error);
 	
-	if(verbose)
-	  std::cout << "BBRBM LAYER OPTIMIZATION "
+	if(verbose == 1){
+	  std::cout << "BBRBM LAYER 0 OPTIMIZATION "
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	}
+	else if(verbose == 2){
+	  char buffer[80];
+	  double tmp;
+	  whiteice::math::convert(tmp, errorLevel);
+	  snprintf(buffer, 80, "DBN::learnWeights: BBRBM layer 0 optimization %d/%d: %f",
+		   iters, ITERLIMIT, tmp);
+	  whiteice::logging.info(buffer);	  
+	}
 	
 	while(errors.size() > 5)
 	  errors.pop_front();
@@ -487,18 +510,30 @@ namespace whiteice
       // learns the current layer from input
 
       unsigned int iters = 0;
-      while((error = layers[i].learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel &&
+      while((error = layers[i].learnWeights(in, EPOCH_STEPS, verbose, running)) >= errorLevel &&
 	    iters < ITERLIMIT)
       {
+	if(running) if(*running == false) return false; // stops execution
+	
 	iters += EPOCH_STEPS;
 
 	errors.push_back(error);
 	
-	if(verbose)
-	  std::cout << "BBRBM LAYER OPTIMIZATION "
+	if(verbose == 1){
+	  std::cout << "BBRBM LAYER " << (i+1) << " OPTIMIZATION "
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	}
+	else if(verbose == 2){
+	  char buffer[80];
+	  double tmp;
+	  whiteice::math::convert(tmp, errorLevel);
+	  
+	  snprintf(buffer, 80, "DBN::learnWeights: BBRBM layer %d optimization %d/%d: %f",
+		   i+1, iters, ITERLIMIT, tmp);
+	  whiteice::logging.info(buffer);	  
+	}
 	
 	while(errors.size() > 5)
 	  errors.pop_front();
@@ -579,33 +614,7 @@ namespace whiteice
 
     // output layer dimensions
     const unsigned int outputDimension = data.dimension(1);
-
-    // 1. process input data and calculates the deepest hidden values h
-    // 2. optimizes hidden values h to map output values:
-    //    min ||Ah + b - y||^2 (final linear layer)
-    // 3. creates nnetwork<T> and sets parameters (weights)
-    //    appropriately
-
-    // calculates hidden values
-    std::vector< math::vertex<T> > hidden;
-
-#if 0
-    std::cout << "size(visible) = " << data.size(0) << std::endl;
-    std::cout << "x(0) = " << data.access(0,0) << std::endl;
-
-    if(binaryInput == false)
-      std::cout << "W = " << gb_input.getWeights() << std::endl;
-    else
-      std::cout << "W = " << bb_input.getWeights() << std::endl;
-#endif
-    
-    for(unsigned int i=0;i<data.size(0);i++){
-      this->setVisible(data.access(0,i));
-
-      this->reconstructData(1);
-      
-      hidden.push_back(this->getHidden());
-    }
+    const unsigned int hDimension = this->getHidden().size();
 
     /////////////////////////////////////////////////////////////////
     // final layers linear optimizer (hidden(i) -> data.access(1, i))
@@ -614,78 +623,124 @@ namespace whiteice
     // 
     // A = Syh * Shh^-1
     // b = m_y - A*m_h
-    
+
     math::matrix<T> A;
     math::vertex<T> b;
 
-    const unsigned int hDimension = this->getHidden().size();
-
-    math::matrix<T> Shh(hDimension, hDimension);
-    math::matrix<T> Syh(outputDimension, hDimension);
-    math::vertex<T> mh(hDimension);
-    math::vertex<T> my(outputDimension);
-
-    Shh.zero();
-    Syh.zero();
-    mh.zero();
-    my.zero();
-
+    if(data.size(0) > 10){ // have enough data
+      
+      // 1. process input data and calculates the deepest hidden values h
+      // 2. optimizes hidden values h to map output values:
+      //    min ||Ah + b - y||^2 (final linear layer)
+      // 3. creates nnetwork<T> and sets parameters (weights)
+      //    appropriately
+      
+      // calculates hidden values
+      std::vector< math::vertex<T> > hidden;
+      
 #if 0
-    std::cout << "size(hidden) = " << hidden.size() << std::endl;
-    std::cout << "h(0) = " << hidden[0] << std::endl;
-    std::cout << "y(0) = " << data.access(1, 0) << std::endl;
+      std::cout << "size(visible) = " << data.size(0) << std::endl;
+      std::cout << "x(0) = " << data.access(0,0) << std::endl;
+      
+      if(binaryInput == false)
+	std::cout << "W = " << gb_input.getWeights() << std::endl;
+      else
+	std::cout << "W = " << bb_input.getWeights() << std::endl;
 #endif
-
-    for(unsigned int i=0;i<hidden.size();i++){
-      const auto& h = hidden[i];
-      const auto& y = data.access(1, i);
-
-      mh += h/T(hidden.size());
-      my += y/T(hidden.size());
-
-      Shh += h.outerproduct(h)/T(hidden.size());
-      Syh += y.outerproduct(h)/T(hidden.size());
-    }
-
-    Shh -= mh.outerproduct(mh);
-    Syh -= my.outerproduct(mh);
-
+      
+      math::vertex<T> h;
+      
+      for(unsigned int i=0;i<data.size(0);i++){
 #if 0
-    std::cout << "Shh = " << Shh << std::endl;
-    std::cout << "Syh = " << Syh << std::endl;
+	// calculates discretized DBN response
+	this->setVisible(data.access(0,i));
+	this->reconstructData(1);
+	hidden.push_back(this->getHidden());
 #endif
-
-    // calculate inverse of Shh + regularizes it by adding terms
-    // to diagonal if inverse fails
-    // (TODO calculate pseudoinverse instead)
-
-    {
-      T mindiagonal = abs(Shh(0,0));
-
-      for(unsigned int i=0;i<hDimension;i++)
-	if(abs(Shh(i,i)) < abs(mindiagonal))
-	  mindiagonal = abs(Shh(i, i));
-      
-      if(mindiagonal <= T(0.0))
-	mindiagonal = T(0.0001); // happens rarely or not at all..
-      
-      double k = 0.01;
-      auto temp = Shh;
-      
-      while(Shh.inv() == false){
-	Shh = temp;
+	// calculates mean-field response without discretization..
+	if(this->calculateHiddenMeanField(data.access(0, i), h) == false)
+	  return false;
 	
-	for(unsigned int i=0;i<hDimension;i++){
-	  T p = T(pow(2.0, k));
-	  Shh(i,i) += p*mindiagonal;
-	}
-	
-	k = 2.0*k;
+	hidden.push_back(h);
       }
+      
+      math::matrix<T> Shh(hDimension, hDimension);
+      math::matrix<T> Syh(outputDimension, hDimension);
+      math::vertex<T> mh(hDimension);
+      math::vertex<T> my(outputDimension);
+      
+      Shh.zero();
+      Syh.zero();
+      mh.zero();
+      my.zero();
+      
+#if 0
+      std::cout << "size(hidden) = " << hidden.size() << std::endl;
+      std::cout << "h(0) = " << hidden[0] << std::endl;
+      std::cout << "y(0) = " << data.access(1, 0) << std::endl;
+#endif
+      
+      for(unsigned int i=0;i<hidden.size();i++){
+	const auto& h = hidden[i];
+	const auto& y = data.access(1, i);
+	
+	mh += h/T(hidden.size());
+	my += y/T(hidden.size());
+	
+	Shh += h.outerproduct(h)/T(hidden.size());
+	Syh += y.outerproduct(h)/T(hidden.size());
+      }
+      
+      Shh -= mh.outerproduct(mh);
+      Syh -= my.outerproduct(mh);
+      
+#if 0
+      std::cout << "Shh = " << Shh << std::endl;
+      std::cout << "Syh = " << Syh << std::endl;
+#endif
+      
+      // calculate inverse of Shh + regularizes it by adding terms
+      // to diagonal if inverse fails
+      // (TODO calculate pseudoinverse instead)
+      
+      {
+	T mindiagonal = abs(Shh(0,0));
+	
+	for(unsigned int i=0;i<hDimension;i++)
+	  if(abs(Shh(i,i)) < abs(mindiagonal))
+	    mindiagonal = abs(Shh(i, i));
+	
+	if(mindiagonal <= T(0.0))
+	  mindiagonal = T(0.0001); // happens rarely or not at all..
+	
+	double k = 0.01;
+	auto temp = Shh;
+	
+	while(Shh.inv() == false){
+	  Shh = temp;
+	  
+	  for(unsigned int i=0;i<hDimension;i++){
+	    T p = T(pow(2.0, k));
+	    Shh(i,i) += p*mindiagonal;
+	  }
+	  
+	  k = 2.0*k;
+	}
+      }
+      
+      A = Syh*Shh;
+      b = my - A*mh;
     }
+    else{
+      A.resize(outputDimension, hDimension);
+      b.resize(outputDimension);
 
-    A = Syh*Shh;
-    b = my - A*mh;
+      gb_input.rng.normal(b);
+      
+      for(unsigned int j=0;j<outputDimension;j++)
+	for(unsigned int i=0;i<hDimension;i++)
+	  A(j,i) = gb_input.rng.normal();
+    }
     
     //////////////////////////////////////////////////////////
     // creates feedforward neural network
@@ -723,7 +778,7 @@ namespace whiteice
       gb_input.getVariance(v);
 
       for(unsigned int i=0;i<v.size();i++)
-	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
+	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-5)); // no div by zeros..
 
       assert(v.size() == W.xsize());
 
@@ -760,7 +815,12 @@ namespace whiteice
     
     // printf("DBN convertNNetwork() exit\n");
     // fflush(stdout);
-    
+
+    // internal logging (prints max value of nnetwork)
+    {
+      whiteice::logging.info("DBN::convertToNNetwork(): DBN->nnetwork analysis");
+      net->diagnosticsInfo();
+    }
     
     return true;
   }
@@ -883,7 +943,7 @@ namespace whiteice
 	
 	if(net->setBias(gb_input.getAValue(), ll) == false) throw "error setting decoder output layer a";
 	
-	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoid);
 
 	// output layer is not stochastic sigmoid but pure linear (gaussian output) ???
 	net->setNonlinearity(ll, whiteice::nnetwork<T>::pureLinear);
@@ -1039,7 +1099,7 @@ namespace whiteice
 	if(net->setBias(gb_input.getAValue(), ll+1) == false)
 	  throw "error setting decoder output layer a";
 	
-	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoid);
 
 	// output layer is not stochastic sigmoid but pure linear (gaussian output) ???
 	net->setNonlinearity(ll+1, whiteice::nnetwork<T>::pureLinear);
@@ -1102,7 +1162,7 @@ namespace whiteice
 	if(net->setWeights(bb_input.getWeights(), ll+1) == false) throw "error setting decoder output layer W^t ";
 	if(net->setBias(bb_input.getAValue(), ll+1) == false) throw "error setting decoder output layer a";
 	
-	net->setNonlinearity(whiteice::nnetwork<T>::stochasticSigmoid);
+	net->setNonlinearity(whiteice::nnetwork<T>::sigmoid);
       }
       catch(const char* msg){
 	printf("ERROR: %s\n", msg);
@@ -1252,6 +1312,63 @@ namespace whiteice
     return true;
   }
 
+
+  // calculates mean field sigmoid response of input
+  // (used by convertToNNetwork())
+  template <typename T>
+    bool DBN<T>::calculateHiddenMeanField(const math::vertex<T>& v,
+					  math::vertex<T>& h) const
+  {
+    if(binaryInput == false){
+      // GBRBM: v->h
+      if(gb_input.calculateHiddenMeanField(v, h) == false)
+	return false;
+    }
+    else{
+      // BBRBM: v->h
+      if(bb_input.calculateHiddenMeanField(v, h) == false)
+	return false;
+    }
+
+    for(unsigned int i=0;i<layers.size();i++){
+      // BBRBM: v->h
+      auto tmp_input = h;
+      if(layers[i].calculateHiddenMeanField(tmp_input, h) == false)
+	return false;
+    }
+
+    return true;
+  }
+
+
+  // calculates mean field response to input to input h->v
+  template <typename T>
+    bool DBN<T>::calculateVisibleMeanField(const math::vertex<T>& h,
+					   math::vertex<T>& v) const
+  {
+    auto input = h;
+    
+    for(unsigned int i=0;i<layers.size();i++){
+      // BBRBM: h->v
+      if(layers[i].calculateVisibleMeanField(input, v) == false)
+	return false;
+      input = v;
+    }
+    
+    if(binaryInput == false){
+      // GBRBM: h->v
+      if(gb_input.calculateVisibleMeanField(input, v) == false)
+	return false;
+    }
+    else{
+      // BBRBM: h->v
+      if(bb_input.calculateVisibleMeanField(input, v) == false)
+	return false;
+    }
+
+    return true;
+  }
+  
 
   template class DBN< float >;
   template class DBN< double >;  

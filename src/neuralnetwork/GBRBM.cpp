@@ -9,6 +9,7 @@
 #include "dataset.h"
 #include "LBFGS_GBRBM.h"
 #include "linear_ETA.h"
+#include "Log.h"
 
 #include <unistd.h>
 
@@ -316,50 +317,91 @@ bool GBRBM<T>::reconstructDataHidden2Visible()
 }
 
   
-// sample from p(h|v)
-template <typename T>
-bool GBRBM<T>::sampleHidden(math::vertex<T>& h, const math::vertex<T>& v)
-{
-	if(v.size() != a.size())
-		return false;
+  // sample from p(h|v)
+  template <typename T>
+  bool GBRBM<T>::sampleHidden(math::vertex<T>& h, const math::vertex<T>& v)
+  {
+    if(v.size() != a.size())
+      return false;
+    
+    auto x = v;
+    for(unsigned int i=0;i<v.size();i++)
+      x[i] *= math::exp(-z[i]/T(2.0)); // t = S^-0.5 * v
+    
+    h.resize(b.size());
+    x = x*W + b;
+    
+    sigmoid(x, h);
+    
+    for(unsigned int i=0;i<h.size();i++){
+      T r = rng.uniform();
+      if(r <= h[i]) h[i] = T(1.0);
+      else h[i] = T(0.0);
+    }
+    
+    return true;
+  }
+  
+  // sample from p(v|h)
+  template <typename T>
+  bool GBRBM<T>::sampleVisible(math::vertex<T>& v, const math::vertex<T>& h)
+  {
+    if(h.size() != b.size())
+      return false;
+    
+    v.resize(a.size());
+    
+    auto mean = W*h; // pseudo-mean requires multiplication by covariance..
+    
+    for(unsigned int i=0;i<mean.size();i++){
+      v[i] = math::exp(z[i]/T(2.0))*normalrnd() +
+	math::exp(z[i]/T(2.0))*mean[i] + a[i];
+    }
+    
+    return true;
+  }
+  
+ 
+  // calculates h = sigmoid(v*S^-0.5*W + b) without discretization step
+  template <typename T>
+  bool GBRBM<T>::calculateHiddenMeanField(const math::vertex<T>& v,
+					  math::vertex<T>& h) const
+  {
+    if(v.size() != a.size())
+      return false;
 
-	auto x = v;
-	for(unsigned int i=0;i<v.size();i++)
-		x[i] *= math::exp(-z[i]/T(2.0)); // t = S^-0.5 * v
+    h = v;
+    
+    for(unsigned int i=0;i<v.size();i++)
+      h[i] *= v[i]*math::exp(-z[i]/T(2.0)); // t = S^-0.5 * v
+    
+    h = h*W + b;
 
-	h.resize(b.size());
-	x = x*W + b;
+    sigmoid(h);
 
-	sigmoid(x, h);
+    return true;
+  }
 
-	for(unsigned int i=0;i<h.size();i++){
-		T r = rng.uniform();
-		if(r <= h[i]) h[i] = T(1.0);
-		else h[i] = T(0.0);
-	}
 
-	return true;
-}
+  // calculates v = S^0.5 * W * h + a) without gaussian random noise
+  template <typename T>
+  bool GBRBM<T>::calculateVisibleMeanField(const math::vertex<T>& h, math::vertex<T>& v) const
+  {
+    if(h.size() != b.size())
+      return false;
+    
+    v = W*h;
 
-// sample from p(v|h)
-template <typename T>
-bool GBRBM<T>::sampleVisible(math::vertex<T>& v, const math::vertex<T>& h)
-{
-	if(h.size() != b.size())
-		return false;
+    for(unsigned int i=0;i<v.size();i++)
+      v[i] *= math::exp(z[i]/T(2.0)); // t = S^0.5 * v
 
-	v.resize(a.size());
+    v += a;
 
-	auto mean = W*h; // pseudo-mean requires multiplication by covariance..
+    return true;
+  }
 
-	for(unsigned int i=0;i<mean.size();i++){
-		v[i] = math::exp(z[i]/T(2.0))*normalrnd() +
-				math::exp(z[i]/T(2.0))*mean[i] + a[i];
-	}
 
-	return true;
-}
-
+  
 
 template <typename T>
 void GBRBM<T>::getParameters(math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& var) const
@@ -470,7 +512,7 @@ bool GBRBM<T>::initializeWeights() // initialize weights to small values
 // learn parameters using LBFGS 2nd order optimization. Optimizes all parameters including variance.
 template <typename T>
 T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
-			 const unsigned int EPOCHS, bool verbose)
+			 const unsigned int EPOCHS, const int verbose, const bool* running)
 {
   if(EPOCHS <= 0) return T(INFINITY);
   if(samples.size() <= 0) return T(INFINITY);
@@ -526,18 +568,35 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       if(!optimizer[i]->isRunning() || optimizer[i]->solutionConverged()){
 	break;
       }
+
+      if(running) if(*running == false) break;
 		    
       optimizer[i]->getSolution(x, error, iters);
       
       if((signed)iters > last_iter){
-	if(verbose){
-	  if((i & 1) == 0)
+	if(verbose == 1){
+	  if((i & 1) == 0){
 	    std::cout << "ITER " << iters << ": error = " << error
 		      << " (variance-step)" << std::endl;
-	  else
+	  }
+	  else{
 	    std::cout << "ITER " << iters << ": error = " << error
 		      << " (parameter-step)" << std::endl;
-	  fflush(stdout);
+	  }
+	}
+	else if(verbose == 2){
+	  char buffer[128];
+	  double tmp = 0.0;
+	  whiteice::math::convert(tmp, error);
+	  
+	  if((i & 1) == 0){
+	    snprintf(buffer, 128, "GBRBM::learnWeights(): iter %d: error = %f (variance step)", iters, tmp);
+	    whiteice::logging.info(buffer);
+	  }
+	  else{
+	    snprintf(buffer, 128, "GBRBM::learnWeights(): iter %d: error = %f (parametr step)", iters, tmp);
+	    whiteice::logging.info(buffer);
+	  }
 	}
 	
 	last_iter = iters;
@@ -551,12 +610,21 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
     eta.update(i+1); // this epoch has been calculated..
 
-    if(verbose){
+    if(verbose == 1){
       std::cout << "EPOCH " << i << "/" << EPOCHS
 		<< ": error = " << error
 		<< " ETA " << eta.estimate()/(3600.0) << " hour(s)"
 		<< std::endl;
-      fflush(stdout);
+    }
+    else if(verbose == 2){
+      char buffer[128];
+      double tmp;
+      whiteice::math::convert(tmp, error);
+
+      snprintf(buffer, 128, "GBRBM::learnWeights(): epoch %d/%d: error = %f ETA %f hour(s)",
+	       i, EPOCHS, tmp, eta.estimate()/3600.0);
+      whiteice::logging.info(buffer);
+      
     }
 
     errors.push_back(error);
@@ -585,9 +653,12 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	                        // within the latest 20 steps
 	delete optimizer[i];
 	
-	if(verbose)
+	if(verbose == 1)
 	  std::cout << "Early stopping.. convergence detected."
 		    << std::endl;
+	else if(verbose == 2)
+	  whiteice::logging.info("GBRBM::learnWeights(): Early stopping.. convergence detected.");
+	
 	break;
       }
 	
@@ -1939,15 +2010,23 @@ math::vertex<T> GBRBM<T>::normalrnd(const math::vertex<T>& m, const math::vertex
 	return x;
 }
 
-template <typename T>
-void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const
-{
-	output.resize(input.size());
+  template <typename T>
+  void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const
+  {
+    output.resize(input.size());
+    
+    for(unsigned int i=0;i<input.size();i++){
+      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
+    }
+  }
 
-	for(unsigned int i=0;i<input.size();i++){
-		output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
-	}
-}
+  template <typename T>
+  void GBRBM<T>::sigmoid(math::vertex<T>& x) const
+  {
+    for(unsigned int i=0;i<x.size();i++){
+      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
+    }
+  }
 
 
 // estimates ratio of Z values of unscaled p(v|params) distributions: Z1/Z2 using AIS Monte Carlo sampling.
