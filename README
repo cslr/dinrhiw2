@@ -11,6 +11,8 @@ the feedforward neural network code supports:
 * experimental branch (RBM_test): GB-RBM and BB-RBM 2nd order
   LBFGS optimizer and HMC sampler => greedy deep belief net optimizer
   
+Read wiki pages for further documentation: https://github.com/cslr/dinrhiw2/wiki
+  
 
 BUILDING IT
 -----------
