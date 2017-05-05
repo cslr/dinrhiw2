@@ -14,6 +14,8 @@ NOTE: please use experimental branch (RBM_test) as stable branch is seriously
       outdated and contains bugs. RBM_test contains experimental RBM weight 
       pretraining/deep learning code (not fully working atm) and experimental 
       reinforcement learning code (currently cannot learn well from data).
+      
+Read wiki pages for further documentation: https://github.com/cslr/dinrhiw2/wiki
 
 BUILDING IT
 -----------
