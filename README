@@ -24,7 +24,7 @@ to compile and use the library initially on Linux.
 Library requirements:
 
 * OpenBLAS (cblas.h interface),
-* GMP (arbitrary precision mathematics) [not really needed]
+* GMP (arbitrary precision mathematics)
 * ZLib (memory compression) [not really needed]
 
 
