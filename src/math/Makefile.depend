@@ -232,7 +232,7 @@ matrix.o: matrix.cpp matrix.h dinrhiw_blas.h \
  ../neuralnetwork/neuronlayer.h correlation.h ../dynamic_bitset.h \
  integer.h number.h blade_math.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h quaternion.h gvertex.cpp \
- matrix_rotations.h outerproduct.h norms.h gcd.h gcd.cpp
+ matrix_rotations.h outerproduct.h norms.h gcd.h gcd.cpp eig.h ../Log.h
 real.o: real.cpp real.h number.h ownexception.h \
  ../neuralnetwork/function.h blade_math.h dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \

@@ -675,7 +675,7 @@ dataset.o: ../dataset.cpp ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
- ../math/eig.h ../dataset.h ../math/ica.h ../math/blade_math.h
+ ../math/eig.h ../dataset.h ../math/ica.h ../math/blade_math.h ../Log.h
 vertex.o: ../math/vertex.cpp ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \

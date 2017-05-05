@@ -2086,7 +2086,8 @@ namespace whiteice
       double temp = 0.0;
       whiteice::math::convert(temp, maxvalue);
       
-      snprintf(buffer, 128, "cluster %d max abs-value: %f", c, temp);
+      snprintf(buffer, 128, "cluster %d (N=%d) max abs-value: %f",
+	       c, (int)clusters[c].data.size(), temp);
       whiteice::logging.info(buffer);
     }
 

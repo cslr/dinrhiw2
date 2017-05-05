@@ -657,8 +657,7 @@ namespace whiteice
 		whiteice::logging.info(buffer);
 	      }
 	    }
-	    while(delta_error < T(0.0) && lrate != T(0.0) && 
-		  ratio > T(0.00001f) && running);
+	    while(delta_error < T(0.0) && lrate >= T(10e-30) && running);
 	    
 	    {
 	      char buffer[128];
@@ -704,7 +703,7 @@ namespace whiteice
 	    
 	  }
 	  while(error > T(0.001f) && 
-		ratio > T(0.00001f) && 
+		lrate >= T(10e-30) && 
 		iterations < MAXITERS && 
 		running);
 
