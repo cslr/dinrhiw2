@@ -1017,6 +1017,57 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
   return grad;
 }
 
+  template <typename T>
+  bool BBRBM<T>::diagnostics() const
+  {
+    whiteice::logging.info("BBRBM::diagnostics()");
+
+    T maxvalue_a = T(-INFINITY);
+    T minvalue_a = T(+INFINITY);
+
+    T maxvalue_b = T(-INFINITY);
+    T minvalue_b = T(+INFINITY);
+
+    T maxvalue_W = T(-INFINITY);
+    T minvalue_W = T(+INFINITY);
+
+    for(unsigned int i=0;i<a.size();i++){
+      if(abs(a[i]) > maxvalue_a) maxvalue_a = abs(a[i]);
+      if(abs(a[i]) < minvalue_a) minvalue_a = abs(a[i]);
+    }
+
+    for(unsigned int i=0;i<a.size();i++){
+      if(abs(b[i]) > maxvalue_b) maxvalue_b = abs(b[i]);
+      if(abs(b[i]) < minvalue_b) minvalue_b = abs(b[i]);
+    }
+
+    for(unsigned int j=0;j<W.ysize();j++){
+      for(unsigned int i=0;i<W.xsize();i++){
+	if(abs(W(j,i)) > maxvalue_W) maxvalue_W = abs(W(j,i));
+	if(abs(W(j,i)) < minvalue_W) minvalue_W = abs(W(j,i));
+      }
+    }
+
+    double temp[6];
+
+    whiteice::math::convert(temp[0], minvalue_a);
+    whiteice::math::convert(temp[1], maxvalue_a);
+    whiteice::math::convert(temp[2], minvalue_b);
+    whiteice::math::convert(temp[3], maxvalue_b);
+    whiteice::math::convert(temp[4], minvalue_W);
+    whiteice::math::convert(temp[5], maxvalue_W);
+
+    char buffer[256];
+    snprintf(buffer, 256,"a min=%f max=%f b min=%f max=%f W min=%f max=%f",
+	     temp[0], temp[1],
+	     temp[2], temp[3],
+	     temp[4], temp[5]);
+    
+    whiteice::logging.info(buffer);
+
+    return true;
+  }
+
 ////////////////////////////////////////////////////////////
 
 // load & saves RBM data from/to file

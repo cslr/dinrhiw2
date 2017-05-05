@@ -137,6 +137,20 @@ namespace whiteice
     bool convert(double& B, const int& A) throw();
     bool convert(double& B, const unsigned int& A) throw();
 
+    // max and min value template functions
+
+    template <typename T>
+      const T& max(const T& a, const T& b){ if(a > b) return a; else return b; }
+
+    template <typename T>
+      T& max(T& a, T& b){ if(a > b) return a; else return b; }
+
+    template <typename T>
+      const T& min(const T& a, const T& b){ if(a < b) return a; else return b; }
+
+    template <typename T>
+      T& min(T& a, T& b){ if(a < b) return a; else return b; }
+
 
     //////////////////////////////////////////////////////////////////////
     // isinf, isnan

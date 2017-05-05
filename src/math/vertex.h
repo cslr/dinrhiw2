@@ -188,6 +188,8 @@ namespace whiteice
       // often imported by data analysis software
       bool saveAscii(const std::string& filename) const throw();
 
+      void toString(std::string& line) const throw();
+
       
       //////////////////////////////////////////////////
       // vertex data compression

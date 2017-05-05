@@ -139,6 +139,15 @@ else
 fi
 
 
+AC_ARG_ENABLE([native],
+	AS_HELP_STRING([--enable-native],[Enables native optimization]))
+
+AS_IF([test "x$enable_native" == "xyes"],[
+  optimization_flags="$optimization_flags -march=native"
+])
+
+
+
 AC_ARG_ENABLE([openmp],
 	AS_HELP_STRING([--disable-openmp],[Disable OpenMP]))
 

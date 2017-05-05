@@ -172,8 +172,7 @@ namespace whiteice
       (matrix<float>& A, matrix<float>& U, matrix<float>& V);
     extern template bool svd<double>
       (matrix<double>& A, matrix<double>& U, matrix<double>& V);
-      
-    
+
     
   };
 };

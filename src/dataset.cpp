@@ -26,7 +26,7 @@
 #include "eig.h"
 #include "dataset.h"
 #include "blade_math.h"
-
+#include "Log.h"
 
 /**************************************************/
 
@@ -2070,7 +2070,28 @@ namespace whiteice
 
     return true;
   }
-  
+
+  template <typename T>
+  bool dataset<T>::diagnostics() const throw()
+  {
+    whiteice::logging.info("dataset::diagnostics()");
+    
+    for(unsigned int c=0;c<clusters.size();c++){
+      T maxvalue = T(-INFINITY);
+      for(auto& d : clusters[c].data)
+	for(unsigned int i=0;i<d.size();i++)
+	  if(abs(d[i]) > maxvalue) maxvalue = abs(d[i]);
+
+      char buffer[128];
+      double temp = 0.0;
+      whiteice::math::convert(temp, maxvalue);
+      
+      snprintf(buffer, 128, "cluster %d max abs-value: %f", c, temp);
+      whiteice::logging.info(buffer);
+    }
+
+    return true;
+  }
   
   
   /**************************************************/

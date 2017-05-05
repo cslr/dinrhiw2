@@ -4,6 +4,9 @@
 
 #include "matrix.h"
 #include "gcd.h"
+#include "eig.h"
+#include "norms.h"
+#include "Log.h"
 
 #include <list>
 #include <algorithm>
@@ -970,6 +973,28 @@ namespace whiteice
     }
     
     
+    // calculates hermitian matrix (conjugate transpose matrix)
+    template <typename T>
+    matrix<T>& matrix<T>::hermite() throw()
+    {
+      this->transpose();
+
+      // conjugates complex matrices
+      if(typeid(T) == typeid(complex<float>) ||
+	 typeid(T) == typeid(complex<double>) ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_complex<double>))
+	{
+	  auto& M = (*this);
+	  
+	  for(unsigned int j=0;j<M.numRows;j++)
+	    for(unsigned int i=0;i<M.numCols;i++)
+	      M(j,i) = conj(M(j,i));
+	}
+
+      return (*this);
+    }
+    
     
     template <typename T>
     T matrix<T>::det() const throw(std::logic_error)
@@ -1123,6 +1148,72 @@ namespace whiteice
       
       
       return true;
+    }
+
+
+    template <typename T>
+    void matrix<T>::pseudoinverse(const T machine_epsilon) throw()
+    {
+      // this currently makes copy of itself which is SLOW but
+      // allows us to always give some kind of result even when
+      // SVD fails (should never happen)
+      
+      matrix<T> U, V;
+      matrix<T> S(*this);
+
+      // machine epsilon [numerical accuracy] (see wikipedia)
+      T epsilon = T(10e-10);
+      
+      if(machine_epsilon <= T(0.0)){
+
+	if(typeid(T) == typeid(float)){
+	  epsilon = T(1.19e-07);
+	}
+	else if(typeid(T) == typeid(double)){
+	  epsilon = T(2.22e-16);
+	}
+	else if(typeid(T) == typeid(blas_real<float>)){
+	  epsilon = T(1.19e-07);
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+	  epsilon = T(2.22e-16);
+	}
+      }
+      else{
+	epsilon = machine_epsilon; // user specified machine epsilon
+      }
+      
+
+      const T tolerance = whiteice::math::abs(epsilon * T(max(this->numRows, this->numCols)) * norm_inf(*this));
+      double k = 0.0;
+
+      // fail safe to work even if SVD fails for mysterious reasons (should not never happen)..
+      while(svd(S, U, V) == false){ // this = U*S*V^h
+	whiteice::logging.warn("matrix::pseudoinverse(): computation of svd failed. applying rescue heuristics");
+	
+	S = *this;
+
+	// hack to remove singular/bad data (this should never happen)
+	for(unsigned int i=0;i<min(S.ysize(),S.xsize());i++)
+	  S(i,i) += T(pow(2.0,k))*tolerance;
+
+	k++;
+      }
+
+      // calculates pseudoinverse
+      {
+	V.hermite();
+	U.hermite();
+
+	for(unsigned int i=0;i<min(S.numRows,S.numCols);i++){
+	  if(whiteice::math::abs(S(i,i)) <= whiteice::math::abs(tolerance))
+	    S(i,i) = T(0.0); // zero elements are kept zero
+	  else
+	    S(i,i) = T(1.0)/S(i,i); // calculates inverse
+	}
+
+	(*this) = V*S*U;
+      }
     }
     
     
@@ -1649,8 +1740,39 @@ namespace whiteice
     {
       return false;
     }
-    
-    
+
+    template <typename T>
+    void matrix<T>::toString(std::string& line) const throw()
+    {
+      if(this->ysize() == 0 && this->xsize() == 0){ line = ""; return; }
+      if(this->ysize() == 1 && this->xsize() == 1){
+	line = "";
+	char buffer[20];
+	double temp = 0.0;
+	whiteice::math::convert(temp, (*this)(0,0));
+	snprintf(buffer, 20, "%f", temp);
+	line += buffer;
+	return;
+      }
+
+      line = "[";
+      char buffer[20];
+      double temp = 0.0;
+
+      for(unsigned int j=0;j<this->ysize();j++){
+	for(unsigned int i=0;i<this->xsize();i++){
+	  whiteice::math::convert(temp, (*this)(j,i));
+	  snprintf(buffer, 20, " %f", temp);
+	  line += buffer;
+	}
+
+	line += "; ";
+      }
+
+      line += "]";
+
+      return;
+    }
     
     ////////////////////////////////////////////////////////////
     // matrix data compression

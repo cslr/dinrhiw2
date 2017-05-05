@@ -136,7 +136,9 @@ namespace whiteice {
   T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const;
 
   math::vertex<T> Ugrad(const math::vertex<T>& q) throw(); // calculates grad(U(q))
-  
+
+  // prints min/max values of paramters to log
+  bool diagnostics() const;
   
   ////////////////////////////////////////////////////////////
     // load & saves RBM data from/to file
@@ -223,6 +225,7 @@ namespace whiteice {
 				 const math::vertex<T>& b,
 				 const math::vertex<T>& z,
 				 unsigned int CDk);
+
   private:
   // parameters of GB-RBM network
   

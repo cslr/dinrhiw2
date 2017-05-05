@@ -452,7 +452,7 @@ namespace whiteice
 	      if(deep_pretrain_nnetwork(ptr, dtrain, false, 2, &running) == false)
 		whiteice::logging.error("NNGradDescent: deep pretraining FAILED");
 	      else
-		whiteice::logging.info("NNGradDescent: deep pretraining complete");
+		whiteice::logging.info("NNGradDescent: deep pretraining completed");
 		
 	      nn.reset(ptr);
 	    }
@@ -608,7 +608,8 @@ namespace whiteice
 	    
 	    
 	    lrate *= 4;
-	    
+
+	    // line search: (we should maybe increase lrate to both directions lrate_next = 2.0*lrate and lrate_next2 = 0.5*lrate...
 	    do{
 	      weights = w0;
 	      weights -= lrate * sumgrad;

@@ -494,18 +494,27 @@ bool GBRBM<T>::getLogVariance(math::vertex<T>& z) const
 template <typename T>
 bool GBRBM<T>::initializeWeights() // initialize weights to small values
 {
-	a.zero();
-	b.zero();
-	z.zero(); // initially assume var_i = 1
+  a.zero();
+  b.zero();
+  z.zero(); // initially assume var_i = 1
+  
+  for(unsigned int i=0;i<z.size();i++)
+    z[i] = math::log(1.0);
+  
+  for(unsigned int j=0;j<W.ysize();j++)
+    for(unsigned int i=0;i<W.xsize();i++)
+      W(j,i) = T(0.1f) * normalrnd();
 
-	for(unsigned int i=0;i<z.size();i++)
-		z[i] = math::log(1.0);
-
-	for(unsigned int j=0;j<W.ysize();j++)
-		for(unsigned int i=0;i<W.xsize();i++)
-			W(j,i) = T(0.1f) * normalrnd();
-
-	return true;
+  // added to initialization (was zero before)
+  {
+    for(unsigned int i=0;i<a.size();i++)
+      a[i] = T(0.1f) * normalrnd();
+    
+    for(unsigned int i=0;i<b.size();i++)
+      b[i] = T(0.1f) * normalrnd();
+  }
+  
+  return true;
 }
 
 
@@ -594,7 +603,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	    whiteice::logging.info(buffer);
 	  }
 	  else{
-	    snprintf(buffer, 128, "GBRBM::learnWeights(): iter %d: error = %f (parametr step)", iters, tmp);
+	    snprintf(buffer, 128, "GBRBM::learnWeights(): iter %d: error = %f (parameter step)", iters, tmp);
 	    whiteice::logging.info(buffer);
 	  }
 	}
@@ -1856,6 +1865,70 @@ void GBRBM<T>::setLearnBothMode() // learn both variance and parameteres
 {
   learningMode = 0;
 }
+
+
+
+  template <typename T>
+  bool GBRBM<T>::diagnostics() const
+  {
+    whiteice::logging.info("GBRBM::diagnostics()");
+
+    T maxvalue_a = T(-INFINITY);
+    T minvalue_a = T(+INFINITY);
+
+    T maxvalue_b = T(-INFINITY);
+    T minvalue_b = T(+INFINITY);
+
+    T maxvalue_z = T(-INFINITY);
+    T minvalue_z = T(+INFINITY);
+
+    T maxvalue_W = T(-INFINITY);
+    T minvalue_W = T(+INFINITY);
+
+    for(unsigned int i=0;i<a.size();i++){
+      if(abs(a[i]) > maxvalue_a) maxvalue_a = abs(a[i]);
+      if(abs(a[i]) < minvalue_a) minvalue_a = abs(a[i]);
+    }
+
+    for(unsigned int i=0;i<a.size();i++){
+      if(abs(b[i]) > maxvalue_b) maxvalue_b = abs(b[i]);
+      if(abs(b[i]) < minvalue_b) minvalue_b = abs(b[i]);
+    }
+
+    for(unsigned int i=0;i<z.size();i++){
+      if(abs(z[i]) > maxvalue_z) maxvalue_z = abs(z[i]);
+      if(abs(z[i]) < minvalue_z) minvalue_z = abs(z[i]);
+    }
+
+    for(unsigned int j=0;j<W.ysize();j++){
+      for(unsigned int i=0;i<W.xsize();i++){
+	if(abs(W(j,i)) > maxvalue_W) maxvalue_W = abs(W(j,i));
+	if(abs(W(j,i)) < minvalue_W) minvalue_W = abs(W(j,i));
+      }
+    }
+
+    double temp[8];
+
+    whiteice::math::convert(temp[0], minvalue_a);
+    whiteice::math::convert(temp[1], maxvalue_a);
+    whiteice::math::convert(temp[2], minvalue_b);
+    whiteice::math::convert(temp[3], maxvalue_b);
+    whiteice::math::convert(temp[4], minvalue_z);
+    whiteice::math::convert(temp[5], maxvalue_z);    
+    whiteice::math::convert(temp[6], minvalue_W);
+    whiteice::math::convert(temp[7], maxvalue_W);
+
+    char buffer[256];
+    snprintf(buffer, 256,"a min=%f max=%f b min=%f max=%f z min=%f max=%f W min=%f max=%f",
+	     temp[0], temp[1],
+	     temp[2], temp[3],
+	     temp[4], temp[5],
+	     temp[6], temp[7]);
+    
+    whiteice::logging.info(buffer);
+
+    return true;
+  }
   
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2688,6 +2761,7 @@ T GBRBM<T>::reconstruct_gbrbm_data_error(const std::vector< math::vertex<T> >& s
 
 	return error;
 }
+
 
 
 template class GBRBM< float >;

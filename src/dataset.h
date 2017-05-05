@@ -215,6 +215,9 @@ namespace whiteice
 
       bool preprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
       bool invpreprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
+
+      // logs clustering statistics per cluster
+      bool diagnostics() const throw();
       
     private:
       // is data normalized with given operation?

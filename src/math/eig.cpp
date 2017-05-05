@@ -10,10 +10,13 @@
 #include "dinrhiw_blas.h"
 
 #include <map>
+#include <assert.h>
+
 
 
 namespace whiteice
 {
+  
   namespace math
   {
     
@@ -896,6 +899,44 @@ namespace whiteice
       
     }
     
+
+
+    /////////////////////////////////////////////////////////////
+    // missing "implementations" for unsupported types (SVD)
+    
+    template <> bool svd<int>(matrix<int>& A,
+			      matrix<int>& U,
+			      matrix<int>& V){ assert(0); }
+    
+    template <> bool svd<char>(matrix<char>& A,
+			       matrix<char>& U,
+			       matrix<char>& V){ assert(0); }
+
+    template <> bool svd<unsigned int>(matrix<unsigned int>& A,
+				       matrix<unsigned int>& U,
+				       matrix<unsigned int>& V){ assert(0); }
+    
+    template <> bool svd<unsigned char>(matrix<unsigned char>& A,
+					matrix<unsigned char>& U,
+					matrix<unsigned char>& V){ assert(0); }
+    
+    // FIXME: THIS SHOULD BE IMPLEMENTED!
+    template <> bool svd< blas_complex<float> >(matrix< blas_complex<float> >& A,
+						matrix< blas_complex<float> >& U,
+						matrix< blas_complex<float> >& V){ assert(0); }
+    
+    // FIXME: THIS SHOULD BE IMPLEMENTED!
+    template <> bool svd< blas_complex<double> >(matrix< blas_complex<double> >& A,
+						 matrix< blas_complex<double> >& U,
+						 matrix< blas_complex<double> >& V){ assert(0); }
+    
+    template <> bool svd< whiteice::math::complex<float> >(matrix< whiteice::math::complex<float> >& A,
+							   matrix< whiteice::math::complex<float> >& U,
+							   matrix< whiteice::math::complex<float> >& V){ assert(0); }
+    
+    template <> bool svd< whiteice::math::complex<double> >(matrix< whiteice::math::complex<double> >& A,
+							    matrix< whiteice::math::complex<double> >& U,
+							    matrix< whiteice::math::complex<double> >& V){ assert(0); }
     
     
   };

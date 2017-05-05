@@ -122,6 +122,9 @@ class BBRBM {
   T U(const math::vertex<T>& q) const throw();
   math::vertex<T> Ugrad(const math::vertex<T>& q) throw();
 
+  // prints min/max values of parameters to log
+  bool diagnostics() const;
+
   ////////////////////////////////////////////////////////////
   
   // load & saves RBM data from/to file

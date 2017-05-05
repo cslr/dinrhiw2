@@ -19,29 +19,29 @@ namespace whiteice {
 
   class Log {
   public:
-        Log();
-	Log(std::string logFilename);
-	virtual ~Log();
-	
-	bool setOutputFile(std::string logFilename);
-
-	// logging
-	void info(std::string msg);
-	void warn(std::string msg);
-	void error(std::string msg);
-	void fatal(std::string msg);
-
-
+    Log();
+    Log(std::string logFilename);
+    virtual ~Log();
+    
+    bool setOutputFile(std::string logFilename);
+    
+    // logging
+    void info(std::string msg);
+    void warn(std::string msg);
+    void error(std::string msg);
+    void fatal(std::string msg);
+    
+    
   protected:
-	typedef std::chrono::high_resolution_clock clock;
-	typedef std::chrono::milliseconds milliseconds;
-	
-	FILE* handle = nullptr; // initially prints to stdout until initialized by ctor
-	static const int BUFLEN = 8192;
-	char buffer[BUFLEN];
-	
-	clock::time_point t0;
-	std::mutex file_lock;
+    typedef std::chrono::high_resolution_clock clock;
+    typedef std::chrono::milliseconds milliseconds;
+    
+    FILE* handle = nullptr; // initially prints to stdout until initialized by ctor
+    static const int BUFLEN = 65536; // 64 KB
+    char buffer[BUFLEN];
+    
+    clock::time_point t0;
+    std::mutex file_lock;
   };
 
   // program using logging must set output file using setOutputFile()

@@ -167,10 +167,19 @@ namespace whiteice
       
       // transposes itself (changes matrix)
       matrix<T>& transpose() throw();
-      
-      T det() const throw(std::logic_error); // determinate
-      bool inv() throw(); // inverse
+
+      // calculates hermitian matrix (conjugate transpose matrix)
+      matrix<T>& hermite() throw();
+
+      T det() const throw(std::logic_error); // determinate      
       T trace() const throw(std::logic_error);
+
+      // inverse (returns false if matrix is singular and
+      // value of matrix is garbage/undefined)
+      bool inv() throw();
+      
+      // calculates pseudoinverse using svd (should not never fail)
+      void pseudoinverse(const T machine_epsilon = T(0.0)) throw();
       
       unsigned int size() const throw();
       unsigned int ysize() const throw(); // rows      
@@ -224,7 +233,9 @@ namespace whiteice
       void normalize() throw();
       
       bool comparable() throw();
-      
+
+      // converts matrix to printable string
+      void toString(std::string& line) const throw();
       
       //////////////////////////////////////////////////
       // matrix data compression

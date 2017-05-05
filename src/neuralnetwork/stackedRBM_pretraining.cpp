@@ -23,10 +23,14 @@ namespace whiteice
     if(nn == NULL) return false;
     if(data.getNumberOfClusters() < 2) return false;
     if(data.size(0) != data.size(1)) return false;
+    if(data.size(0) <= 0) return false;
     if(data.access(0,0).size() != nn->input_size()) return false;
     if(data.access(1,0).size() != nn->output_size()) return false;
 
     if(running) if(*running == false) return false; // stops execution
+
+    if(verbose == 2)
+      data.diagnostics();
 
     std::vector<unsigned int> arch;
 
@@ -53,6 +57,9 @@ namespace whiteice
     }
     
     whiteice::DBN<T> dbn(arch, binary);
+
+    if(verbose == 2)
+      dbn.diagnostics();
 
     std::vector< math::vertex<T> > samples;
     data.getData(0, samples);

@@ -106,6 +106,9 @@ namespace whiteice
     // net is allocated using new (caller must delete)
     bool convertToAutoEncoder(whiteice::nnetwork<T>*& net) const;
 
+    // prints to log max/min values of DBN network
+    bool diagnostics() const;
+
     bool save(const std::string& basefilename) const;
     bool load(const std::string& basefilename);
     

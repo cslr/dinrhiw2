@@ -687,10 +687,10 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_optimize
+enable_native
 enable_openmp
 enable_mkl
 with_atlaslpath
-enable_native
 enable_cppdebug
 '
       ac_precious_vars='build_alias
@@ -1327,6 +1327,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-optimize      Disable optimization
+  --enable-native         Enables native optimization
   --disable-openmp        Disable OpenMP
   --disable-mkl           Disable Intel MKL library
   --enable-native         Enable native optimization
@@ -4039,6 +4040,20 @@ fi
 else
     as_fn_error $? "$cpufamily , unrecognized/unsupported machine architecture." "$LINENO" 5
 fi
+
+
+# Check whether --enable-native was given.
+if test "${enable_native+set}" = set; then :
+  enableval=$enable_native;
+fi
+
+
+if test "x$enable_native" == "xyes"; then :
+
+  optimization_flags="$optimization_flags -march=native"
+
+fi
+
 
 
 # Check whether --enable-openmp was given.

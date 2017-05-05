@@ -417,6 +417,9 @@ namespace whiteice
 	}
       }
 
+      if(verbose == 2)
+	gb_input.diagnostics();
+
       // maps input to output
       out.clear();
       
@@ -485,6 +488,9 @@ namespace whiteice
 	    break; // stdev is less than 5% of mean
 	}
       }
+
+      if(verbose == 2)
+	bb_input.diagnostics();
 
       // maps input to output
       out.clear();
@@ -560,7 +566,10 @@ namespace whiteice
 	    break; // stdev is less than 5% of mean
 	}
       }
+
       
+      if(verbose == 2)
+	layers[i].diagnostics();
       
       // maps input into output
       out.clear();
@@ -649,19 +658,26 @@ namespace whiteice
 #endif
       
       math::vertex<T> h;
+      T maxabs_h = T(-INFINITY);
       
       for(unsigned int i=0;i<data.size(0);i++){
-#if 0
-	// calculates discretized DBN response
-	this->setVisible(data.access(0,i));
-	this->reconstructData(1);
-	hidden.push_back(this->getHidden());
-#endif
 	// calculates mean-field response without discretization..
 	if(this->calculateHiddenMeanField(data.access(0, i), h) == false)
 	  return false;
+
+	for(unsigned int k=0;k<h.size();k++)
+	  if(maxabs_h < abs(h[k])) maxabs_h = abs(h[k]);
 	
 	hidden.push_back(h);
+      }
+
+      {
+	double v = 0.0;
+	whiteice::math::convert(v, maxabs_h);
+
+	char buffer[80];
+	snprintf(buffer, 80, "DBN::convertToNNetwork(): max abs hidden value %f", v);
+	whiteice::logging.info(buffer);
       }
       
       math::matrix<T> Shh(hDimension, hDimension);
@@ -679,6 +695,7 @@ namespace whiteice
       std::cout << "h(0) = " << hidden[0] << std::endl;
       std::cout << "y(0) = " << data.access(1, 0) << std::endl;
 #endif
+      T maxabs_y = T(-INFINITY);
       
       for(unsigned int i=0;i<hidden.size();i++){
 	const auto& h = hidden[i];
@@ -689,49 +706,87 @@ namespace whiteice
 	
 	Shh += h.outerproduct(h)/T(hidden.size());
 	Syh += y.outerproduct(h)/T(hidden.size());
+
+	for(unsigned int k=0;k<y.size();k++)
+	  if(maxabs_y < abs(y[k])) maxabs_y = abs(y[k]);
       }
       
       Shh -= mh.outerproduct(mh);
       Syh -= my.outerproduct(mh);
-      
-#if 0
-      std::cout << "Shh = " << Shh << std::endl;
-      std::cout << "Syh = " << Syh << std::endl;
-#endif
-      
-      // calculate inverse of Shh + regularizes it by adding terms
-      // to diagonal if inverse fails
-      // (TODO calculate pseudoinverse instead)
-      
+
       {
-	T mindiagonal = abs(Shh(0,0));
-	
-	for(unsigned int i=0;i<hDimension;i++)
-	  if(abs(Shh(i,i)) < abs(mindiagonal))
-	    mindiagonal = abs(Shh(i, i));
-	
-	if(mindiagonal <= T(0.0))
-	  mindiagonal = T(0.0001); // happens rarely or not at all..
-	
-	double k = 0.01;
-	auto temp = Shh;
-	
-	while(Shh.inv() == false){
-	  Shh = temp;
-	  
-	  for(unsigned int i=0;i<hDimension;i++){
-	    T p = T(pow(2.0, k));
-	    Shh(i,i) += p*mindiagonal;
-	  }
-	  
-	  k = 2.0*k;
-	}
+	double v = 0.0;
+	whiteice::math::convert(v, maxabs_y);
+
+	char buffer[80];
+	snprintf(buffer, 80, "DBN::convertToNNetwork(): max abs output value %f", v);
+	whiteice::logging.info(buffer);
+
+	std::string shh_str;
+	std::string syh_str;
+
+	Shh.toString(shh_str);
+	Syh.toString(syh_str);
+
+	std::string line = "DBN::convertToNNetwork(): Shh = " + shh_str;
+	whiteice::logging.info(line);
+
+	line = "DBN::convertToNNetwork(): Syh = " + syh_str;
+	whiteice::logging.info(line);
+
+	T detShh = Shh.det();
+	double detShh_ = 0.0;
+	whiteice::math::convert(detShh_, detShh);
+
+	snprintf(buffer, 80, "DBN::convertToNNetwork(): det(Shh) = %e",
+		 detShh_);
+
+	whiteice::logging.info(buffer);
+
+	T normSyh = norm_inf(Syh);
+	double normSyh_ = 0.0;
+	whiteice::math::convert(normSyh_, normSyh);
+
+	snprintf(buffer, 80, "DBN::convertToNNetwork(): norm_inf(Syh) = %e",
+		 normSyh_);
+
+	whiteice::logging.info(buffer);
       }
+      
+
+      // pseudoinverse always exists..
+      // specifies own low precision of singular values: we only keep clearly non-singular elements/data..
+      // (values that are set to zero and not inverted)
+      Shh.pseudoinverse(T(0.001));
+      // Shh.pseudoinverse(T(0.0001));
       
       A = Syh*Shh;
       b = my - A*mh;
+
+      {
+	std::string A_str;
+	A.toString(A_str);
+	std::string b_str;
+	b.toString(b_str);
+	
+	std::string line = "DBN::convertToNNetwork() output layer A = " +
+	  A_str + " b = " + b_str;
+	whiteice::logging.info(line);
+
+	T normA = norm_inf(A);
+	double normA_ = 0.0;
+	whiteice::math::convert(normA_, normA);
+	
+	char buffer[80];
+	snprintf(buffer, 80, "DBN::convertToNNetwork() output norm_inf(A) = %e",
+		 normA_);
+
+	whiteice::logging.info(buffer);
+      }
     }
     else{
+      // no enough data fills output matrices with random noise to be optimized..
+      
       A.resize(outputDimension, hDimension);
       b.resize(outputDimension);
 
@@ -1173,6 +1228,27 @@ namespace whiteice
       
     }
     
+  }
+
+  
+  // prints to log max/min values of DBN network
+  template <typename T>
+  bool DBN<T>::diagnostics() const
+  {
+    whiteice::logging.info("DBN::diagnostics()");
+
+    if(binaryInput == false){
+      if(gb_input.diagnostics() == false) return false;
+    }
+    else{
+      if(bb_input.diagnostics() == false) return false;
+    }
+
+    for(unsigned int i=0;i<layers.size();i++){
+      if(layers[i].diagnostics() == false) return false;
+    }
+
+    return true;
   }
 
   

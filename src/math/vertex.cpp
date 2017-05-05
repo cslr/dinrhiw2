@@ -1382,7 +1382,35 @@ namespace whiteice
       
       return true;
     }
-    
+
+
+    template <typename T>
+    void vertex<T>::toString(std::string& line) const throw()
+    {
+      if(this->size() == 0){ line = ""; return; }
+      if(this->size() == 1){
+	char buffer[20];
+	double temp = 0.0;
+	whiteice::math::convert(temp, (*this)[0]);
+	snprintf(buffer, 20, "%f", temp);
+	line = buffer;
+	return;
+      }
+
+      line = "[";
+      char buffer[20];
+      double temp = 0.0;
+
+      for(unsigned int i=0;i<this->size();i++){
+	whiteice::math::convert(temp, (*this)[i]);
+	snprintf(buffer, 20, " %f", temp);
+	line += buffer;
+      }
+
+      line += "]";
+      
+      return;
+    }
     
     ////////////////////////////////////////////////////////////
     
