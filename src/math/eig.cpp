@@ -80,11 +80,11 @@ namespace whiteice
     
     
     template bool symmetric_eig< blas_real<float> >
-      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& D);
+    (matrix< blas_real<float> >& A, matrix< blas_real<float> >& D, bool sort);
     template bool symmetric_eig< blas_real<double> >
-      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D);
-    template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D);
-    template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D);
+    (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D, bool sort);
+    template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D, bool sort);
+    template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D, bool sort);
     
     
     template bool svd< blas_real<float> >
@@ -465,7 +465,7 @@ namespace whiteice
     /***********************************************************************************/
     
     template <typename T>
-    inline bool symmetric_eig(matrix<T>& A, matrix<T>& X)
+    inline bool symmetric_eig(matrix<T>& A, matrix<T>& X, bool sort)
     {
       try{
 	if(A.xsize() != A.ysize())
@@ -494,92 +494,85 @@ namespace whiteice
 	  A(1,0) = T(0.0);
 	  A(1,1) = d[1];
 	  
-	  return true;
+	  // return true; (need to sort eigenvalues)..
 	}
+	else{
 	
-	
-	// calculates first hessenberg reduction of A
-	if(!hessenberg_reduction(A, X))
-	  return false;
-	
-	// keeps zeroing below diagonal entries,
-	// because of symmetry A is symmetric and diagonal
-	// when algorithm converges (only if A really is symmetric)
-	
-	unsigned int iter = 0;
-	unsigned int f1 = 0, f2 = N-2;
-	unsigned int e1 = 0, e2 = N-2;
-	T error = 0;
-	
-	for(unsigned int k=0;k<(N-1);k++)
-	  if(whiteice::math::abs(A(k+1,k)) > error)
-	    error = whiteice::math::abs(A(k+1,k));
-	
-	
-	while(error > TOLERANCE){
-	  // finds submatrix
+	  // calculates first hessenberg reduction of A
+	  if(!hessenberg_reduction(A, X))
+	    return false;
 	  
-	  for(unsigned int k=0;k<e2;k++){
-	    if(whiteice::math::abs(A(k+1,k)) > EPSILON){
-	      e1 = k;
-	      break;
-	    }
-	  }
+	  // keeps zeroing below diagonal entries,
+	  // because of symmetry A is symmetric and diagonal
+	  // when algorithm converges (only if A really is symmetric)
 	  
-	  for(unsigned int k=(N-2);k>=e1;k--){
-	    if(whiteice::math::abs(A(k+1,k)) > EPSILON){
-	      e2 = k+1;
-	      break;
-	    }
-	  }
+	  unsigned int iter = 0;
+	  unsigned int f1 = 0, f2 = N-2;
+	  unsigned int e1 = 0, e2 = N-2;
+	  T error = 0;
 	  
-	  
-	  // calculates qr step for the non-diagonal submatrix
-	  if(!implicit_symmetric_qrstep_wilkinson(A, X, e1, (e2 - e1)+1)){
-	    std::cout << "IMPLICIT SHIFT FAILED" << std::endl;
-	  }
-	  
-	  error = T(0.0);
-	  for(unsigned int k=e1;k<e2;k++){
+	  for(unsigned int k=0;k<(N-1);k++)
 	    if(whiteice::math::abs(A(k+1,k)) > error)
 	      error = whiteice::math::abs(A(k+1,k));
-	  }
-	  
-	  // std::cout << "error =" << error << std::endl;
-	  // std::cout << "e2-e1 = " << (e2-e1) << std::endl;
 	  
 	  
-	  if(f1 == e1 && f2 == e2){
-	    iter++;
+	  while(error > TOLERANCE){
+	    // finds submatrix
 	    
-	    if(iter > 5){ // was 50 iterations
-	      TOLERANCE *= 2.0f; // increases TOLERANCE
-	      EPSILON   *= 2.0f;
+	    for(unsigned int k=0;k<e2;k++){
+	      if(whiteice::math::abs(A(k+1,k)) > EPSILON){
+		e1 = k;
+		break;
+	      }
+	    }
+	    
+	    for(unsigned int k=(N-2);k>=e1;k--){
+	      if(whiteice::math::abs(A(k+1,k)) > EPSILON){
+		e2 = k+1;
+		break;
+	      }
+	    }
+	    
+	    
+	    // calculates qr step for the non-diagonal submatrix
+	    if(!implicit_symmetric_qrstep_wilkinson(A, X, e1, (e2 - e1)+1)){
+	      std::cout << "IMPLICIT SHIFT FAILED" << std::endl;
+	    }
+
+	    
+	    if(f1 == e1 && f2 == e2){
+	      iter++;
 	      
+	      if(iter > 10){ // was 50 iterations (was 5)
+		TOLERANCE *= 2.0f; // increases TOLERANCE
+		EPSILON   *= 2.0f;
+		
+		iter = 0;
+		f1 = e1;
+		f2 = e2;
+	      }
+	    }
+	    else{
 	      iter = 0;
 	      f1 = e1;
 	      f2 = e2;
+	      
 	    }
-	  }
-	  else{
-	    iter = 0;
-	    f1 = e1;
-	    f2 = e2;
+
+	    
+	    error = T(0.0);
+	    for(unsigned int k=e1;k<e2;k++){
+	      if(whiteice::math::abs(A(k+1,k)) > error)
+		error = whiteice::math::abs(A(k+1,k));
+	    }
 	    
 	  }
-	  
 	}
 	
 	
-	error = T(0.0);
-	for(unsigned int k=e1;k<e2;k++){
-	  if(whiteice::math::abs(A(k+1,k)) > error)
-	    error = whiteice::math::abs(A(k+1,k));
-	}
-	
-#if 0
+
 	// sorts eigenvectors according to their variances
-	{
+	if(sort){
 	  std::multimap<T, int> var;
 	  
 	  for(unsigned int j=0;j<A.xsize();j++)
@@ -603,7 +596,6 @@ namespace whiteice
 	    index--;
 	  }
 	}
-#endif
 	
 	
 	return true;
@@ -636,11 +628,48 @@ namespace whiteice
     template <typename T>
     inline bool svd(matrix<T>& A, matrix<T>& U, matrix<T>& V)
     {
+      std::cout << "SVD IN: " << A << std::endl;
+      
+      auto Ah = A;
+      Ah.hermite();
+      
+      auto AAh = A*Ah;
+
+      if(symmetric_eig(AAh,U,true) == false)
+	return false;
+
+      std::cout << "AAh = " << AAh << std::endl;
+
+      auto AhA = Ah*A;
+      
+      if(symmetric_eig(AhA,V,true) == false)
+	return false;
+
+      std::cout << "AhA = " << AhA << std::endl;
+
+      auto Uh = U;
+      U.hermite();
+
+      A = Uh*A*V; // singular values
+
+      std::cout << "S = " << A << std::endl;
+
+      {
+	auto Vh = V;
+	Vh.hermite();
+	std::cout << "SVD OUT: " << (U*A*Vh) << std::endl;
+      }
+
+      return true;
+
+#if 0
+      // the code below cannot function because US and VS terms cannot be separated because S is non-square singular matrix..
+      
       // A = [N1 x N2] matrix
       const unsigned int N1 = A.ysize();
       const unsigned int N2 = A.xsize();
       
-      if(N1 > N2){
+      if(N1 >= N2){
 	matrix<T> AA(A);
 	AA.transpose();
 	AA *= A; // AA = A^t * A
@@ -648,8 +677,8 @@ namespace whiteice
 	if(symmetric_eig(AA,V) == false)
 	  return false;
 	
-	U = A*V;
-	A = AA; // A = S (singular values)
+	U = A*V; // result = U S V^t * V = U S [N1 x N1] [N1 x N2] (N2 <= N1)
+	A = AA; // A = S^2 (singular values)
 	
 	for(unsigned int j=0;j<N2;j++){
 	  // S^2 -> S (S is diagonal)
@@ -668,15 +697,15 @@ namespace whiteice
       else{
 	matrix<T> AA(A);
 	AA.transpose();
-	AA = A * AA; // AA = A * A^t
+	AA = A * AA; // AA = A * A^t = USV^t * VSU^t = U S^2 U^t
                      // optimize: this is slow (code templated atlas sped up: A = A*A')
 	
 	if(symmetric_eig(AA,U) == false)
 	  return false;
 	
 	A.transpose(); // slow, code matrix::transposemulti, B = this^t * A
-	V = A * U;
-	A = AA; // A = S
+	V = A * U;     // result = VSU^T * U = VS [N2 x N2] [N2 x N1] (N1 < N2)
+	A = AA; // A = S^2
 	
 	for(unsigned int j=0;j<N1;j++){
 	  A(j,j) = whiteice::math::sqrt(whiteice::math::abs(A(j,j)));
@@ -691,7 +720,7 @@ namespace whiteice
 	
 	return true;
       }
-      
+#endif 
     }
     
     
@@ -902,7 +931,7 @@ namespace whiteice
 
 
     /////////////////////////////////////////////////////////////
-    // missing "implementations" for unsupported types (SVD)
+    // missing "implementations" for unsupported types (SVD, symmetric EVD)
     
     template <> bool svd<int>(matrix<int>& A,
 			      matrix<int>& U,
@@ -937,6 +966,13 @@ namespace whiteice
     template <> bool svd< whiteice::math::complex<double> >(matrix< whiteice::math::complex<double> >& A,
 							    matrix< whiteice::math::complex<double> >& U,
 							    matrix< whiteice::math::complex<double> >& V){ assert(0); }
+    
+    template <> bool symmetric_eig<char>
+      (matrix<char>& A, matrix<char>& D, bool sort){ assert(0); }
+    template <> bool symmetric_eig<int>
+      (matrix<int>& A, matrix<int>& D, bool sort){ assert(0); }
+    template <> bool symmetric_eig<unsigned char>(matrix<unsigned char>& A, matrix<unsigned char>& D, bool sort){ assert(0); }
+    template <> bool symmetric_eig<unsigned int>(matrix<unsigned int>& A, matrix<unsigned int>& D, bool sort){ assert(0); }
     
     
   };

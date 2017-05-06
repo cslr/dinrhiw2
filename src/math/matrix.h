@@ -179,7 +179,11 @@ namespace whiteice
       bool inv() throw();
       
       // calculates pseudoinverse using svd (should not never fail)
-      void pseudoinverse(const T machine_epsilon = T(0.0)) throw();
+      matrix<T>& pseudoinverse(const T machine_epsilon = T(0.0)) throw();
+
+      // symmetric pseudoinverse (symmetric eig to calculate evd)
+      bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) throw();
+      
       
       unsigned int size() const throw();
       unsigned int ysize() const throw(); // rows      

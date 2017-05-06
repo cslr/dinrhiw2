@@ -1389,10 +1389,13 @@ void test_eigenproblem_tests()
     }
     
     // checks three first eigenvalues are same (fails if values are in different order)
-    if(norm_inf(AS - BS) > 0.001){
+    auto BSt = BS;
+    BSt.transpose();
+    
+    if(norm_inf(AS - BSt) > 0.001){
       std::cout << "ERROR: singular value mismatch" << std::endl;
       std::cout << "AS = " << AS << std::endl;
-      std::cout << "BS = " << BS << std::endl;
+      std::cout << "BSt = " << BSt << std::endl;
       ok = false;
     }
 
@@ -1421,6 +1424,67 @@ void test_eigenproblem_tests()
     std::cout << "ERROR: SVD tests failed: "
 	      << e.what() << std::endl;
   }
+  
+  
+  // PSEUDOINVERSE calculation test
+  try{
+    std::cout << "PSEUDOINVERSE CALCULATION TESTS" << std::endl;
+    bool ok = true;
+    
+    matrix< blas_real<float> > A;
+    matrix< blas_real<float> > pinvA;    
+    
+    A.resize(3,5);
+    
+    A(0,0) = 0.9228; A(0,1) = 0.0226; A(0,2) = 0.6514; A(0,3) = 0.3667; A(0,4) = 0.4829;
+    A(1,0) = 0.6568; A(1,1) = 0.0972; A(1,2) = 0.4556; A(1,3) = 0.4237; A(1,4) = 0.0697;
+    A(2,0) = 0.9928; A(2,1) = 0.8410; A(2,2) = 0.7007; A(2,3) = 0.6735; A(2,4) = 0.8934;
+
+    if(rand()&1) A.transpose();
+    
+    pinvA = A;
+    pinvA.pseudoinverse();
+
+    auto R1 = A*pinvA*A; // V*inv(S)*U^t * U*S*V^t
+    auto R2 = pinvA*A*pinvA;
+
+    {
+      auto error = norm_inf(R1 - A);
+      
+      if(error > 0.001){
+	std::cout << "ERROR: PSEUDOINVERSE A*invA*A != A (1)" << std::endl;
+	std::cout << "error = " << error << std::endl;
+	ok = false;
+      }
+      else{
+	std::cout << "PSEUDOINVERSE OK: A*invA*A = pseudoI (1)" << std::endl;
+      }
+    }
+
+    {
+      auto error = norm_inf(R2 - pinvA);
+      
+      if(error > 0.001){
+	std::cout << "ERROR: PSEUDOINVERSE invA*A*invA != invA (2)" << std::endl;
+	std::cout << "error = " << error << std::endl;
+	ok = false;
+      }
+      else{
+	std::cout << "PSEUDOINVERSE OK: A*invA = pseudoI (2)" << std::endl;
+      }
+    }
+
+    
+    if(ok == true)
+      std::cout << "PSEUDOINVERSE TESTS: PASSED" << std::endl;
+    else
+      std::cout << "PSEUDOINVERSE TESTS: FAILED!!" << std::endl;
+  }
+  catch(std::exception& e){
+    std::cout << "ERROR: PSEUDOINVERSE tests failed: "
+	      << e.what() << std::endl;
+  }
+  
   
   std::cout << std::endl;
 }

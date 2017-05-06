@@ -757,7 +757,7 @@ namespace whiteice
       // pseudoinverse always exists..
       // specifies own low precision of singular values: we only keep clearly non-singular elements/data..
       // (values that are set to zero and not inverted)
-      Shh.pseudoinverse(T(0.001));
+      Shh.symmetric_pseudoinverse(T(0.001));
       // Shh.pseudoinverse(T(0.0001));
       
       A = Syh*Shh;

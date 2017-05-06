@@ -1145,18 +1145,56 @@ namespace whiteice
 	}
 	
       }
-      
+
       
       return true;
     }
-
-
+    
+    
     template <typename T>
-    void matrix<T>::pseudoinverse(const T machine_epsilon) throw()
+    matrix<T>& matrix<T>::pseudoinverse(const T machine_epsilon) throw()
     {
+#if 1
+      // calculates pseudoinverse using symmetric_pseudoinverse
+
+      if(numCols <= numRows){
+	// pinv(A) = pinv(A^h A) * A^h
+
+	auto&A = *this;
+	auto Ah = *this;
+	Ah.hermite();
+
+	auto AhA = Ah*A; // (numCols x numRows) (numRows x numCols)
+
+	if(AhA.symmetric_pseudoinverse(machine_epsilon) == false)
+	  whiteice::logging.error("matrix::pseudoinverse(): symmetric_pseudoinverse() FAILED");
+	
+	*this = AhA * Ah;
+
+	return (*this);
+      }
+      else{
+	// pinv(A) = A^h * pinv(A A^h)
+
+	auto&A = *this;
+	auto Ah = *this;
+	Ah.hermite();
+
+	auto AAh = A*Ah;
+
+	if(AAh.symmetric_pseudoinverse(machine_epsilon) == false)
+	  whiteice::logging.error("matrix::pseudoinverse(): symmetric_pseudoinverse() FAILED");
+	
+	*this = Ah * AAh;
+
+	return (*this);
+      }
+#else
       // this currently makes copy of itself which is SLOW but
       // allows us to always give some kind of result even when
       // SVD fails (should never happen)
+
+      // !!!!!!!!!!!!!!!!!!!! SVD is buggy so this doesn't work..
       
       matrix<T> U, V;
       matrix<T> S(*this);
@@ -1194,17 +1232,14 @@ namespace whiteice
 	S = *this;
 
 	// hack to remove singular/bad data (this should never happen)
-	for(unsigned int i=0;i<min(S.ysize(),S.xsize());i++)
+	for(unsigned int i=0;i<min(S.numRows,S.numCols);i++)
 	  S(i,i) += T(pow(2.0,k))*tolerance;
 
 	k++;
       }
 
-      // calculates pseudoinverse
+      // calculates pseudoinverse U*S*V^h => V*inv(S)*U^h
       {
-	V.hermite();
-	U.hermite();
-
 	for(unsigned int i=0;i<min(S.numRows,S.numCols);i++){
 	  if(whiteice::math::abs(S(i,i)) <= whiteice::math::abs(tolerance))
 	    S(i,i) = T(0.0); // zero elements are kept zero
@@ -1212,8 +1247,74 @@ namespace whiteice
 	    S(i,i) = T(1.0)/S(i,i); // calculates inverse
 	}
 
-	(*this) = V*S*U;
+	S.hermite();
+
+	(*this) = V*S*U.hermite();
       }
+
+      return *this;
+#endif
+    }
+
+
+    template <typename T>
+    bool matrix<T>::symmetric_pseudoinverse(const T machine_epsilon) throw()
+    {
+      if(numCols != numRows)
+	return false;
+
+      // this currently makes copy of itself which is SLOW but
+      // allows us to always give some kind of result even when
+      // EIG fails (should never happen)
+      
+      matrix<T> X;
+      matrix<T>&D = *this;
+
+      // machine epsilon [numerical accuracy] (see wikipedia)
+      T epsilon = T(10e-10);
+      
+      if(machine_epsilon <= T(0.0)){
+
+	if(typeid(T) == typeid(float)){
+	  epsilon = T(1.19e-07);
+	}
+	else if(typeid(T) == typeid(double)){
+	  epsilon = T(2.22e-16);
+	}
+	else if(typeid(T) == typeid(blas_real<float>)){
+	  epsilon = T(1.19e-07);
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+	  epsilon = T(2.22e-16);
+	}
+      }
+      else{
+	epsilon = machine_epsilon; // user specified machine epsilon
+      }
+      
+
+      const T tolerance = whiteice::math::abs(epsilon * T(max(this->numRows, this->numCols)) * norm_inf(*this));
+      
+      while(symmetric_eig(D, X) == false){ // this = X*D*X^h
+	whiteice::logging.error("matrix::symmetric_pseudoinverse(): computation of symmetric evd failed.");
+	return false;
+      }
+
+
+      // calculates pseudoinverse X*D*X^h => X*inv(D)*X^h
+      {
+	for(unsigned int i=0;i<D.numRows;i++){
+	  if(whiteice::math::abs(D(i,i)) <= whiteice::math::abs(tolerance))
+	    D(i,i) = T(0.0); // zero elements are kept zero
+	  else
+	    D(i,i) = T(1.0)/D(i,i); // calculates inverse
+	}
+
+	(*this) = X*D;
+	(*this) *= X.hermite();
+      }
+
+      return true;
     }
     
     

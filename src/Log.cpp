@@ -52,8 +52,10 @@ namespace whiteice {
     info("Shutdown? Logging class destroyed.");
 
     std::lock_guard<std::mutex> lock(file_lock);
+
+    if(handle)
+      fclose(handle);
     
-    fclose(handle);
     handle = nullptr;
   }
   

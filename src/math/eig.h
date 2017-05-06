@@ -62,7 +62,7 @@ namespace whiteice
     // solves eigenvalue problem (EVD) for symmetric real matrices
     // A = X * D * X^t , A = A^t. A will be overwritten with D.
     template <typename T>
-      bool symmetric_eig(matrix<T>& A, matrix<T>& X);
+      bool symmetric_eig(matrix<T>& A, matrix<T>& X, bool sort=false);
     
     // calculates real singular value decomposition (SVD) A = U*S*V^t.
     // A will be replaced with matrix S containing A's
@@ -155,11 +155,11 @@ namespace whiteice
     
     
     extern template bool symmetric_eig< blas_real<float> >
-      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& D);
+      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& D, bool sort);
     extern template bool symmetric_eig< blas_real<double> >
-      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D);
-    extern template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D);
-    extern template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D);
+      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D, bool sort);
+    extern template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D, bool sort);
+    extern template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D, bool sort);
     
     
     extern template bool svd< blas_real<float> >
