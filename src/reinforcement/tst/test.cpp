@@ -47,6 +47,12 @@ int main(int argc, char** argv)
     unsigned int counter = 1;
 
     while(system.physicsIsRunning()){
+      
+      if(system.getHasModel() >= 2){
+	// 95% are selected according to model
+	system.setEpsilon(0.95);
+      }
+      
       sleep(1); 
       if((counter % 180) == 0){ // saved model file every 3 minutes
 	if(system.save("rifl.dat"))

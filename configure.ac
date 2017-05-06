@@ -139,15 +139,6 @@ else
 fi
 
 
-AC_ARG_ENABLE([native],
-	AS_HELP_STRING([--enable-native],[Enables native optimization]))
-
-AS_IF([test "x$enable_native" == "xyes"],[
-  optimization_flags="$optimization_flags -march=native"
-])
-
-
-
 AC_ARG_ENABLE([openmp],
 	AS_HELP_STRING([--disable-openmp],[Disable OpenMP]))
 
@@ -382,6 +373,7 @@ fi
 
 
 dnl adds --with-atlaslibpath
+dnl ATLAS support is NOT working / is broken!!!
 ATLASLIBS_PATH="/usr/local/lib/"
 
 AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search path for ATLAS libraries]),

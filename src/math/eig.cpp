@@ -628,24 +628,24 @@ namespace whiteice
     template <typename T>
     inline bool svd(matrix<T>& A, matrix<T>& U, matrix<T>& V)
     {
-      std::cout << "SVD IN: " << A << std::endl;
+      // std::cout << "SVD IN: " << A << std::endl;
       
       auto Ah = A;
       Ah.hermite();
       
       auto AAh = A*Ah;
-
+      
       if(symmetric_eig(AAh,U,true) == false)
 	return false;
 
-      std::cout << "AAh = " << AAh << std::endl;
+      // std::cout << "AAh = " << AAh << std::endl;
 
       auto AhA = Ah*A;
       
       if(symmetric_eig(AhA,V,true) == false)
 	return false;
 
-      std::cout << "AhA = " << AhA << std::endl;
+      // std::cout << "AhA = " << AhA << std::endl;
 
       auto Uh = U;
       U.hermite();
@@ -654,11 +654,15 @@ namespace whiteice
 
       std::cout << "S = " << A << std::endl;
 
+      // FIXME: we must reorder A to be diagonal matrix again (+ EIG should have more numeric accuracy to be useful..)
+
+#if 0
       {
 	auto Vh = V;
 	Vh.hermite();
 	std::cout << "SVD OUT: " << (U*A*Vh) << std::endl;
       }
+#endif
 
       return true;
 
