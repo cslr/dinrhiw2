@@ -63,23 +63,24 @@ test.o: tst/test.cpp ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../reinforcement/RIFL_abstract.h ../neuralnetwork/bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h RNN_RBM.h \
- ../neuralnetwork/nnetwork.h ../array.h ../container.h ../static_array.h \
- ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
- ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
- ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
- ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
- ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
- ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
- ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
- ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
- ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
- ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
- ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
- ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
- ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
+ RNN_RBM.h ../neuralnetwork/nnetwork.h ../array.h ../container.h \
+ ../static_array.h ../static_array.cpp ../dynamic_array.h ../stack.h \
+ ../queue.h ../dynamic_array.cpp ../search_array.h ../printable.h \
+ ../data_source.h ../chainhash.h ../hash_table.h ../chainhash.cpp \
+ ../dummystack.h ../priority_queue.h ../dynamic_bitset.h ../point.h \
+ ../point.cpp ../math/ownexception.h ../dynamic_ctor_protection.h \
+ ../singleton.h ../singleton_list.h ../singleton.cpp ../augmented_data.h \
+ ../tree.h ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp \
+ ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
+ ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
+ ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
+ ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
+ ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
+ ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
  ../math/correlation.h ../math/outerproduct.h ../math/bezier.h \

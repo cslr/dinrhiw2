@@ -440,15 +440,7 @@ namespace whiteice
 	    allHasSamples = false;
 	  }
 	}
-
-#if 0
-	{
-	  char buffer[80];
-	  snprintf(buffer, 80, "RIFL_abstract: %d samples. all has samples %d",
-		   samples, (int)allHasSamples);
-	  whiteice::logging.info(buffer);
-	}
-#endif
+	
 	
 	if(samples >= SAMPLESIZE && allHasSamples)
 	{
@@ -486,8 +478,7 @@ namespace whiteice
 	      if(dataset_thread == nullptr){
 		// we do not have proper dataset/model yet so we fetch params
 		grad.getSolution(nn);
-		
-	      
+			      
 		char buffer[128];
 		double tmp = 0.0;
 		whiteice::math::convert(tmp, error);
@@ -602,8 +593,10 @@ namespace whiteice
 	      whiteice::logging.error("RIFL_abstract: starting grad optimizer FAILED");
 	      assert(0);
 	    }
-	    else
+	    else{
 	      whiteice::logging.info("RIFL_abstract: grad optimizer started");
+	    }
+	    
 	    old_grad_iterations = -1;
 	    
 	    delete dataset_thread;

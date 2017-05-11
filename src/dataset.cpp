@@ -89,6 +89,7 @@ namespace whiteice
   {
     clusters.resize(d.clusters.size());
 
+#pragma omp parallel for schedule(dynamic)
     for(unsigned int i=0;i<clusters.size();i++){
       clusters[i].cname = d.clusters[i].cname;
       clusters[i].cindex = d.clusters[i].cindex;
@@ -186,13 +187,13 @@ namespace whiteice
   template <typename T>
   unsigned int dataset<T>::getCluster(const std::string& name) const
   {
-	    typename std::map<std::string, unsigned int>::const_iterator i;
-	    i = namemapping.find(name);
-
-	    if(i == namemapping.end())
-	      return (unsigned int)(-1);
-
-	    return (i->second);
+    typename std::map<std::string, unsigned int>::const_iterator i;
+    i = namemapping.find(name);
+    
+    if(i == namemapping.end())
+      return (unsigned int)(-1);
+    
+    return (i->second);
   }
   
   
@@ -1596,13 +1597,10 @@ namespace whiteice
 	}
 	
 	{
-	  typename std::vector< math::vertex<T> >::iterator i;
-	  
-	  i = clusters[index].data.begin();
-	  while(i != clusters[index].data.end()){
-	    mean_variance_removal(index, *i);
-	    i++;
-	  }
+
+#pragma omp parallel for schedule(dynamic)
+	  for(unsigned int i=0;i<clusters[index].data.size();i++)
+	    mean_variance_removal(index, clusters[index].data[i]);
 	}
 	
 	clusters[index].preprocessings.push_back(dnMeanVarianceNormalization);
@@ -1625,13 +1623,9 @@ namespace whiteice
 	
 	// soft max
 	{
-	  typename std::vector< math::vertex<T> >::iterator i;
-	  i = clusters[index].data.begin();
-	  
-	  while(i != clusters[index].data.end()){
-	    soft_max(index, *i);
-	    i++;
-	  }
+#pragma omp parallel for schedule(dynamic)
+	  for(unsigned int i=0;i<clusters[index].data.size();i++)
+	    soft_max(index, clusters[index].data[i]);
 	}
 	
 	clusters[index].preprocessings.push_back(dnSoftMax);
@@ -1694,15 +1688,10 @@ namespace whiteice
 
 	// std::cout << "Wxx      = " << clusters[index].Wxx << std::endl;
 	// std::cout << "inv(Wxx) = " << clusters[index].invWxx << std::endl;
-	
-	typename std::vector< math::vertex<T> >::iterator i;
-	i = clusters[index].data.begin();
-	
-	while(i != clusters[index].data.end()){	  
-	  whiten(index, *i);
-	  i++;
-	}
-	
+
+#pragma omp parallel for schedule(dynamic)
+	for(unsigned int i=0;i<clusters[index].data.size();i++)
+	  whiten(index, clusters[index].data[i]);
 	
 	clusters[index].preprocessings.push_back(dnCorrelationRemoval);
 	return true;
@@ -1736,13 +1725,10 @@ namespace whiteice
 	    
 	}
 
-	typename std::vector< math::vertex<T> >::iterator i;
-	i = clusters[index].data.begin();
 	
-	while(i != clusters[index].data.end()){
-	  ica(index, (*i));
-	  i++;
-	}
+#pragma omp parallel for schedule(dynamic)
+	for(unsigned int i=0;i<clusters[index].data.size();i++)
+	  ica(index, clusters[index].data[i]);
 	
 	clusters[index].preprocessings.push_back(dnLinearICA);
 	return true;
@@ -1802,12 +1788,18 @@ namespace whiteice
   {
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
+
+    if(vec.size() != clusters[index].data_dimension)
+      return false;
     
     typename std::vector<enum data_normalization>::const_iterator i;
     
     for(i=clusters[index].preprocessings.begin();i!=clusters[index].preprocessings.end();i++){
-      
-      if(*i == dnCorrelationRemoval){
+
+      if(*i == dnLinearICA){
+	ica(index, vec);
+      }
+      else if(*i == dnCorrelationRemoval){
     	  whiten(index, vec);
       }
       else if(*i == dnMeanVarianceNormalization){
@@ -1829,14 +1821,16 @@ namespace whiteice
   {
     if(index >= clusters.size())
       return false;
-    
-    typename std::vector< math::vertex<T> >::iterator i;
-    
-    for(i=group.begin();i!=group.end();i++){
-      if(!preprocess(index, *i)) return false;
+
+    bool ok = true;
+
+#pragma omp parallel for schedule(dynamic)
+    for(unsigned int i=0;i<group.size();i++){
+      if(ok == false) continue;
+      if(!preprocess(index, group[i])) ok = false;
     }
-    
-    return true;
+
+    return ok;
   }
   
   
@@ -1858,6 +1852,8 @@ namespace whiteice
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
 
+    if(vec.size() != clusters[index].data_dimension)
+      return false;
     
     typename std::vector<enum data_normalization>::const_reverse_iterator i;
     
@@ -1888,13 +1884,16 @@ namespace whiteice
   {
     if(index >= clusters.size())
       return false;
-    
-    typename std::vector< math::vertex<T> >::iterator i;
-    
-    for(i=group.begin();i!=group.end();i++)
-      if(!invpreprocess(index, *i)) return false;
-    
-    return true;
+
+    bool ok = true;
+
+#pragma omp parallel for schedule(dynamic)
+    for(unsigned int i=0;i<group.size();i++){
+      if(ok == false) continue;
+      if(!invpreprocess(index, group[i])) ok = false;
+    }
+
+    return ok;
   }
   
   

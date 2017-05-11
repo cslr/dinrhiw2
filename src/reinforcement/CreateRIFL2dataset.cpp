@@ -1,5 +1,5 @@
 
-#include "CreateRIFLdataset.h"
+#include "CreateRIFL2dataset.h"
 
 #include <pthread.h>
 #include <sched.h>
@@ -15,13 +15,14 @@ namespace whiteice
 {
   
   // calculates reinforcement learning training dataset from database
-  // using database_lock
+  // uses database_lock for synchronization
   template <typename T>
-  CreateRIFLdataset<T>::CreateRIFLdataset(RIFL_abstract<T> const & rifl_,
-					  std::vector< std::vector< rifl_datapoint<T> > > const & database_,
-					  std::mutex & database_mutex_,
-					  unsigned int const & epoch_,
-					  whiteice::dataset<T>& data_) :
+  CreateRIFL2dataset<T>::CreateRIFL2dataset(RIFL_abstract2<T> const & rifl_, 
+					    std::vector< rifl2_datapoint<T> > const & database_,
+					    std::mutex & database_mutex_,
+					    unsigned int const& epoch_, 
+					    whiteice::dataset<T>& data_) : 
+  
     rifl(rifl_), 
     database(database_),
     database_mutex(database_mutex_),
@@ -32,10 +33,10 @@ namespace whiteice
     running = false;
     completed = false;
   }
-
+  
   
   template <typename T>
-  CreateRIFLdataset<T>::~CreateRIFLdataset()
+  CreateRIFL2dataset<T>::~CreateRIFL2dataset()
   {
     std::lock_guard<std::mutex> lk(thread_mutex);
     
@@ -46,10 +47,11 @@ namespace whiteice
       worker_thread = nullptr;
     }
   }
+
   
   // starts thread that creates NUMDATAPOINTS samples to dataset
   template <typename T>
-  bool CreateRIFLdataset<T>::start(const unsigned int NUMDATAPOINTS)
+  bool CreateRIFL2dataset<T>::start(const unsigned int NUMDATAPOINTS)
   {
     if(NUMDATAPOINTS == 0) return false;
 
@@ -61,13 +63,13 @@ namespace whiteice
     try{
       NUMDATA = NUMDATAPOINTS;
       data.clear();
-      data.createCluster("input-state", rifl.numStates + rifl.dimActionFeatures);
+      data.createCluster("input-state", rifl.numStates + rifl.numActions);
       data.createCluster("output-action", 1);
       
       completed = false;
       
       running = true;
-      worker_thread = new std::thread(std::bind(&CreateRIFLdataset<T>::loop, this));
+      worker_thread = new std::thread(std::bind(&CreateRIFL2dataset<T>::loop, this));
       
     }
     catch(std::exception&){
@@ -81,20 +83,20 @@ namespace whiteice
   
   // returns true when computation is completed
   template <typename T>
-  bool CreateRIFLdataset<T>::isCompleted() const
+  bool CreateRIFL2dataset<T>::isCompleted() const
   {
     return completed;
   }
   
   // returns true if computation is running
   template <typename T>
-  bool CreateRIFLdataset<T>::isRunning() const
+  bool CreateRIFL2dataset<T>::isRunning() const
   {
     return running;
   }
 
   template <typename T>
-  bool CreateRIFLdataset<T>::stop()
+  bool CreateRIFL2dataset<T>::stop()
   {
     std::lock_guard<std::mutex> lock(thread_mutex);
     
@@ -112,14 +114,14 @@ namespace whiteice
   // returns reference to dataset
   // (warning: if calculations are running then dataset can change during use)
   template <typename T>
-  whiteice::dataset<T> const & CreateRIFLdataset<T>::getDataset() const
+  whiteice::dataset<T> const & CreateRIFL2dataset<T>::getDataset() const
   {
     return data;
   }
   
   // worker thread loop
   template <typename T>
-  void CreateRIFLdataset<T>::loop()
+  void CreateRIFL2dataset<T>::loop()
   {
     // set thread priority (non-standard) to low (background thread)
     {
@@ -149,93 +151,75 @@ namespace whiteice
     // used to calculate avg max abs(Q)-value
     // (internal debugging for checking that Q-values are within sane limits)
     std::vector<T> maxvalues;
-    
-    
+
 #pragma omp parallel for schedule(dynamic)
     for(unsigned int i=0;i<NUMDATA;i++){
 
       if(running == false) // we don't do anything anymore..
-	continue; // exits OpenMP loop..
+	continue; // exits OpenMP loop
 
       database_mutex.lock();
       
-      const unsigned int action = rifl.rng.rand() % rifl.numActions;
-      const unsigned int index = rifl.rng.rand() % database[action].size();
+      const unsigned int index = rifl.rng.rand() % database.size();
 
-      const auto datum = database[action][index];
+      const auto datum = database[index];
 
       database_mutex.unlock();
       
-      whiteice::math::vertex<T> in;
-      whiteice::math::vertex<T> feature;
-
-      rifl.getActionFeature(action, feature);
-      
-      in.resize(rifl.numStates + rifl.dimActionFeatures);
+      whiteice::math::vertex<T> in(rifl.numStates + rifl.numActions);
       in.zero();
       in.write_subvertex(datum.state, 0);
-
-      in.write_subvertex(feature, rifl.numStates);
+      in.write_subvertex(datum.action, rifl.numStates);
       
       whiteice::math::vertex<T> out(1);
       out.zero();
       
       // calculates updated utility value
-	      
-      whiteice::math::vertex<T> u;
-      
-      T unew_value = T(0.0);
-      
+      whiteice::math::vertex<T> y(1);
+
       T maxvalue = T(-INFINITY);
       
       {
+	whiteice::math::vertex<T> tmp(rifl.numStates + rifl.numActions);
+	whiteice::math::matrix<T> e;
 	
-	for(unsigned int j=0;j<rifl.numActions;j++){
-	  std::lock_guard<std::mutex> lock(rifl.model_mutex);
-	  
-	  whiteice::math::vertex<T> u;
+	tmp.write_subvertex(datum.newstate, 0);
+	
+	{
+	  whiteice::math::vertex<T> u; // new action..
 	  whiteice::math::matrix<T> e;
 	  
-	  whiteice::math::vertex<T> input(rifl.numStates + rifl.dimActionFeatures);
-	  whiteice::math::vertex<T> f;
+	  auto input = datum.newstate;
 	  
-	  input.zero();
-	  input.write_subvertex(datum.newstate, 0);
+	  rifl.policy_preprocess.preprocess(0, input);
 	  
-	  rifl.getActionFeature(j, f);
-	  input.write_subvertex(f, rifl.numStates);
+	  rifl.policy.calculate(input, u, e, 1, 0);
 	  
-	  rifl.preprocess.preprocess(0, input);
+	  rifl.policy_preprocess.invpreprocess(1, u); // does nothing..
 	  
-	  if(rifl.model.calculate(input, u, e, 1, 0) == true){
-	    if(u.size() != 1){
-	      u.resize(1);
-	      u[0] = T(0.0);
-	    }
-	    else
-	      rifl.preprocess.invpreprocess(1, u);
-	  }
-	  else{
-	    u.resize(1);
-	    u[0] = T(0.0);
-	  }
+	  // add exploration noise?
 	  
-	  if(maxvalue < u[0])
-	    maxvalue = u[0];
+	  tmp.write_subvertex(u, rifl.numStates); // writes policy's action
 	}
+	
+	rifl.Q_preprocess.preprocess(0, tmp);
+	
+	rifl.Q.calculate(tmp, y, e, 1, 0);
+	
+	rifl.Q_preprocess.invpreprocess(1, y);
 
+	if(maxvalue < abs(y[0]))
+	  maxvalue = abs(y[0]);
+	
 	if(epoch > 0){
-	  unew_value =
-	    datum.reinforcement + rifl.gamma*maxvalue;
+	  out[0] = datum.reinforcement + rifl.gamma*y[0];
 	}
-	else{ // first iteration always uses raw reinforcement values
-	  unew_value =
-	    datum.reinforcement;
+	else{ // the first iteration of reinforcement learning do not use Q
+	  out[0] = datum.reinforcement;
 	}
+	
       }
-      
-      out[0] = unew_value;
-      
+
 #pragma omp critical
       {
 	data.add(0, in);
@@ -248,15 +232,17 @@ namespace whiteice
 
     if(running == false)
       return; // exit point
-    
+
     // add preprocessing to dataset
+#if 1
     {
       data.preprocess
 	(0, whiteice::dataset<T>::dnMeanVarianceNormalization);
-      
+    
       data.preprocess
 	(1, whiteice::dataset<T>::dnMeanVarianceNormalization);
     }
+#endif
 
     
     // for debugging purposes (reports average max Q-value)
@@ -272,7 +258,7 @@ namespace whiteice
       whiteice::math::convert(tmp, sum);
 
       char buffer[80];
-      snprintf(buffer, 80, "CreateRIFLdataset: avg abs(max(Q))-value %f",
+      snprintf(buffer, 80, "CreateRIFL2dataset: avg abs(Q)-value %f",
 	       tmp);
 
       whiteice::logging.info(buffer);
@@ -284,9 +270,10 @@ namespace whiteice
       std::lock_guard<std::mutex> lock(thread_mutex);
       running = false;
     }
+    
   }
   
 
-  template class CreateRIFLdataset< math::blas_real<float> >;
-  template class CreateRIFLdataset< math::blas_real<double> >;
+  template class CreateRIFL2dataset< math::blas_real<float> >;
+  template class CreateRIFL2dataset< math::blas_real<double> >;
 };

@@ -54,7 +54,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1112,7 +1113,8 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1210,7 +1212,8 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../Log.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1307,7 +1310,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1561,7 +1565,8 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1660,7 +1665,8 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -1758,7 +1764,8 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
@@ -3063,7 +3070,8 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
- ../reinforcement/CartPole2.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
  ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
  ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
  ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \

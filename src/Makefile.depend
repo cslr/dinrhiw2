@@ -336,12 +336,13 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h Log.h math/fastpca.h math/matrix.h \
  hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
  neuralnetwork/bayesian_nnetwork.h reinforcement/CreateRIFLdataset.h \
  reinforcement/RIFL_abstract.h reinforcement/CartPole.h \
- reinforcement/RIFL_abstract2.h reinforcement/CartPole2.h \
- reinforcement/RIFL_abstract2.h rnn/RNN_RBM.h neuralnetwork/nnetwork.h \
- array.h container.h static_array.h static_array.cpp dynamic_array.h \
- stack.h queue.h dynamic_array.cpp search_array.h compressable.h \
- printable.h data_source.h chainhash.h hash_table.h chainhash.cpp \
- dummystack.h priority_queue.h dynamic_bitset.h point.h point.cpp \
+ reinforcement/RIFL_abstract2.h reinforcement/CreateRIFL2dataset.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreatePolicyDataset.h \
+ reinforcement/CartPole2.h rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h \
+ container.h static_array.h static_array.cpp dynamic_array.h stack.h \
+ queue.h dynamic_array.cpp search_array.h compressable.h printable.h \
+ data_source.h chainhash.h hash_table.h chainhash.cpp dummystack.h \
+ priority_queue.h dynamic_bitset.h point.h point.cpp \
  exceptions/ownexception.h dynamic_ctor_protection.h singleton.h \
  singleton_list.h singleton.cpp augmented_data.h tree.h avltree.h \
  avlnode.h avlnode.cpp avltree.cpp rbtree.h rbnode.h rbnode.cpp \

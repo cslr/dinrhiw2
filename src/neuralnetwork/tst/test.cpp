@@ -263,7 +263,26 @@ void nnetwork_gradient_test()
       arch.push_back(rng.rand() % 10 + 1);
     arch.push_back(dimOutput);
 
-    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch);
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    unsigned int nli = rng.rand() % 5;
+
+    if(nli == 0){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+    }
+    else if(nli == 1){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; // do not calculate gradients for stochastic sigmoid..
+    }
+    else if(nli == 2){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear; // do not calculate gradients for stochastic sigmoid..
+    }
+    else if(nli == 3){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear; // do not calculate gradients for stochastic sigmoid..
+    }
+    else if(nli == 4){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh; // do not calculate gradients for stochastic sigmoid..
+    }
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
 
     whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
     whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);

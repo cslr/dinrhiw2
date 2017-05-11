@@ -14,6 +14,9 @@
 #include "dinrhiw.h"
 #include "nnetwork.h"
 
+#include "RNG.h"
+
+
 #ifndef __whiteice__PolicyGradAscent_h
 #define __whiteice__PolicyGradAscent_h
 
@@ -27,7 +30,7 @@ namespace whiteice
     
     // if errorTerms is true then dataset output values are actual
     // errors rather than correct values
-    PolicyGradAscent();
+    PolicyGradAscent(bool deep_pretraining = false);
     PolicyGradAscent(const PolicyGradAscent<T>& grad);
     ~PolicyGradAscent();
     
@@ -50,7 +53,8 @@ namespace whiteice
 		       const whiteice::nnetwork<T>& policy, // optimized policy
 		       unsigned int NTHREADS,
 		       unsigned int MAXITERS = 10000,
-		       bool dropout = false);
+		       bool dropout = false,
+		       bool useInitialNN = true);
     
     /*
      * Returns true if optimizer is running
@@ -63,7 +67,11 @@ namespace whiteice
      * of converged solutions so far.
      */
     bool getSolution(whiteice::nnetwork<T>& policy,
-		     T& value, unsigned int& iterations);
+		     T& value, unsigned int& iterations) const;
+
+    bool getSolutionStatistics(T& value, unsigned int& iterations) const;
+
+    bool getSolution(whiteice::nnetwork<T>& policy) const;
     
     /* used to stop the optimization process */
     bool stopComputation();
@@ -85,6 +93,8 @@ namespace whiteice
     
     bool heuristics;
     bool dropout; // use dropout heuristics when training
+    bool deep_pretraining;
+    
     bool regularize; // use regularizer term..
     T regularizer;
 
@@ -103,15 +113,18 @@ namespace whiteice
     unsigned int NTHREADS;
     unsigned int MAXITERS;
     std::vector<std::thread*> optimizer_thread;
-    std::mutex solution_lock, start_lock;
+    std::mutex start_lock;
+    mutable std::mutex solution_lock;
     
-    volatile bool running;
+    bool running;
     
-    volatile int thread_is_running;
+    int thread_is_running;
     std::mutex thread_is_running_mutex;
     std::condition_variable thread_is_running_cond;
     
     void optimizer_loop();
+
+    whiteice::RNG<T> rng;
     
     };
 

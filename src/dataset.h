@@ -57,11 +57,17 @@ namespace whiteice
       void copyAllButData(const dataset<T>& d);
       
       // adds data examples
-      bool add(const math::vertex<T>& input, bool nopreprocess = false) throw();
-      bool add(const std::vector<math::vertex<T> >& inputs, bool nopreprocess = false) throw();
+      bool add(const math::vertex<T>& input,
+	       bool nopreprocess = false) throw();
       
-      bool add(const std::string& input, bool nopreprocess = false) throw();    
-      bool add(const std::vector<std::string>& inputs, bool nopreprocess = false) throw();
+      bool add(const std::vector<math::vertex<T> >& inputs,
+	       bool nopreprocess = false) throw();
+      
+      bool add(const std::string& input,
+	       bool nopreprocess = false) throw();
+      
+      bool add(const std::vector<std::string>& inputs,
+	       bool nopreprocess = false) throw();
 
       // adds data to clusters
       bool add(unsigned int index, const math::vertex<T>& input, 

@@ -4,7 +4,7 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o
+OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o
 
 EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
@@ -21,7 +21,7 @@ TEST2_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test2.o
 
 
 SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp \
-	CreateRIFLdataset.cpp \
+	CreateRIFLdataset.cpp CreateRIFL2dataset.cpp CreatePolicyDataset.cpp \
 	CartPole2.cpp tst/test.cpp tst/test2.cpp \
 	../dataset.cpp \
 	../math/vertex.cpp \

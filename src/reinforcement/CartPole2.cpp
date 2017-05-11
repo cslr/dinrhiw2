@@ -126,7 +126,7 @@ namespace whiteice
   template <typename T>
   bool CartPole2<T>::getState(whiteice::math::vertex<T>& state)
   {
-    whiteice::logging.info("CartPole2: entering getState()");
+    // whiteice::logging.info("CartPole2: entering getState()");
     
     state.resize(4);
 
@@ -170,7 +170,7 @@ namespace whiteice
     }
 #endif
 
-    whiteice::logging.info("CartPole2: exiting getState()");
+    // whiteice::logging.info("CartPole2: exiting getState()");
 
     return true;
   }
@@ -216,7 +216,7 @@ namespace whiteice
 				   whiteice::math::vertex<T>& newstate,
 				   T& reinforcement)
   {
-    whiteice::logging.info("CartPole2: entering performAction()");
+    // whiteice::logging.info("CartPole2: entering performAction()");
     
     // converts action to control in newtons
     double Fstep = 0.0;
@@ -298,9 +298,7 @@ namespace whiteice
 #endif
 	    
 	  reinforcement = T(1.0) + a; // we keep things between [0,1]
-
-	  reinforcement = T(0.5)*reinforcement; // keep at scale [0.0,0.5]
-
+	  
 	  printf("REINFORCEMENT: %f\n", reinforcement.c[0]);
 	  fflush(stdout);
 	}

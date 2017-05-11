@@ -14,7 +14,7 @@ namespace whiteice
 {
 
   template <typename T>
-  PolicyGradAscent<T>::PolicyGradAscent()
+  PolicyGradAscent<T>::PolicyGradAscent(bool deep_pretraining)
   {
     best_value = T(-INFINITY);
     best_q_value = T(-INFINITY);
@@ -28,6 +28,7 @@ namespace whiteice
     heuristics = false;
     dropout = false;
     regularize = false;
+    this->deep_pretraining = deep_pretraining;
     
     debug = false;
     first_time = true;
@@ -69,6 +70,7 @@ namespace whiteice
     heuristics = grad.heuristics;
     dropout = grad.dropout;
     regularizer = grad.regularizer;
+    deep_pretraining = grad.deep_pretraining;
 
     debug = grad.debug;
     first_time = true;
@@ -126,7 +128,8 @@ namespace whiteice
 					  const whiteice::nnetwork<T>& policy, 
 					  unsigned int NTHREADS,
 					  unsigned int MAXITERS,
-					  bool dropout)
+					  bool dropout,
+					  bool initiallyUseNN)
   {
     if(data == NULL) return false;
     
@@ -164,7 +167,8 @@ namespace whiteice
     
     {
       std::lock_guard<std::mutex> lock(first_time_lock);
-      first_time = true; // first thread uses weights from user supplied NN
+      // first thread uses weights from user supplied NN
+      first_time = initiallyUseNN;
     }
 
     // FIXME can run out of memory and throw exception!
@@ -200,23 +204,6 @@ namespace whiteice
       optimizer_thread[i] =
 	new thread(std::bind(&PolicyGradAscent<T>::optimizer_loop,
 			     this));
-
-#if 0
-      // NON-STANDARD WAY TO SET THREAD PRIORITY (POSIX)
-      {
-	sched_param sch_params;
-	int policy = SCHED_RR;
-	
-	pthread_getschedparam(optimizer_thread[i]->native_handle(),
-			      &policy, &sch_params);
-	
-	sch_params.sched_priority = 20;
-	if(pthread_setschedparam(optimizer_thread[i]->native_handle(),
-				 SCHED_RR, &sch_params) != 0){
-	}
-      }
-#endif
-      
     }
 
     // waits for threads to start
@@ -253,7 +240,7 @@ namespace whiteice
   template <typename T>
   bool PolicyGradAscent<T>::getSolution(whiteice::nnetwork<T>& policy,
 					T& value,
-					unsigned int& iterations)
+					unsigned int& iterations) const
   {
     // checks if the neural network architecture is the correct one
     if(this->policy == NULL) return false;
@@ -265,6 +252,40 @@ namespace whiteice
     
     value = best_q_value;
     iterations = this->iterations;
+    
+    solution_lock.unlock();
+    
+    return true;
+  }
+  
+  
+  template <typename T>
+  bool PolicyGradAscent<T>::getSolutionStatistics(T& value,
+						  unsigned int& iterations) const
+  {
+    if(this->policy == NULL) return false;
+
+    solution_lock.lock();
+
+    value = best_q_value;
+    iterations = this->iterations;
+
+    solution_lock.unlock();
+
+    return true;
+  }
+
+  
+  template <typename T>
+  bool PolicyGradAscent<T>::getSolution(whiteice::nnetwork<T>& policy) const
+  {
+    // checks if the neural network architecture is the correct one
+    if(this->policy == NULL) return false;
+    
+    solution_lock.lock();
+    
+    policy = *(this->policy);
+    policy.importdata(bestx);
     
     solution_lock.unlock();
     
@@ -316,17 +337,18 @@ namespace whiteice
       // calculates mean q-value from the testing dataset
 #pragma omp for nowait schedule(dynamic)	    	    
       for(unsigned int i=0;i<dtest.size(0);i++){
-	const auto& state = dtest.access(0, i);
+	auto state = dtest.access(0, i);
 	
 	math::vertex<T> in(policy.input_size() + policy.output_size());
 	in.zero();
 	
-	in.write_subvertex(state, 0);
-	
 	whiteice::math::vertex<T> action;
-	
+
 	policy.calculate(state, action);
-	
+
+	dtest.invpreprocess(0, state);
+
+	in.write_subvertex(state, 0);
 	in.write_subvertex(action, state.size());
 
 	whiteice::math::vertex<T> q;
@@ -418,6 +440,7 @@ namespace whiteice
       }
     }
 
+    dtrain.diagnostics();
 
     {
       std::lock_guard<std::mutex> lock(thread_is_running_mutex);
@@ -436,7 +459,8 @@ namespace whiteice
       // keep looking for solution until MAXITERS
 	
       // starting position for neural network
-      whiteice::nnetwork<T> policy(*(this->policy));
+      // whiteice::nnetwork<T> policy(*(this->policy));
+      std::unique_ptr< whiteice::nnetwork<T> > policy(new nnetwork<T>(*(this->policy)));
 
       whiteice::logging.info("PolicyGradAscent: reset policy network");
       
@@ -446,10 +470,20 @@ namespace whiteice
 	
 	// use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
 	if(first_time == false){
-	  policy.randomize();
+	  policy->randomize();
+
+	  if(deep_pretraining){
+	    auto ptr = policy.release();
+	    if(deep_pretrain_nnetwork_full_sigmoid(ptr, dtrain, false, 2, &running) == false)
+	      whiteice::logging.error("PolicyGradAscent: deep pretraining FAILED");
+	    else
+	      whiteice::logging.info("PolicyGradAscent: deep pretraining completed");
+	    
+	    policy.reset(ptr);
+	  }
 	  
 	  if(heuristics){
-	    normalize_weights_to_unity(policy);	      
+	    normalize_weights_to_unity(*policy);
 	  }
 	}
 	else{
@@ -466,7 +500,7 @@ namespace whiteice
 	T prev_value, value;
 	T delta_value = 0.0f;
 
-	value = getValue(policy, *Q, *Q_preprocess, dtest);
+	value = getValue(*policy, *Q, *Q_preprocess, dtest);
 
 	{
 	  solution_lock.lock();
@@ -474,14 +508,99 @@ namespace whiteice
 	  if(value > best_value){
 	    // improvement (larger mean q-value of the policy)
 	      best_value = value;
-	      best_q_value = getValue(policy, *Q, *Q_preprocess, dtest);
-	      policy.exportdata(bestx);
+	      best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
+	      policy->exportdata(bestx);
 	  }
 	  
 	  solution_lock.unlock();
 	}
 
-	T lrate = T(0.01);
+	
+	T lrate = T(1.0);
+
+
+	// calculates proper scaling for gradient terms..
+	T q_grad_scaling = T(1.0);
+	T p_grad_scaling = T(1.0);
+
+#if 0
+	{
+	  std::vector<T> q_norms; // q gradient norms
+	  std::vector<T> p_norms; // policy gradient norms
+	  	    
+#pragma omp parallel for schedule(dynamic)
+	  for(unsigned int i=0;i<100;i++){
+	    
+	    // calculates gradients for Q(state, action(state)) and policy(state)
+	    const unsigned int index = rng.rand() % dtrain.size(0);
+
+	    auto state = dtrain.access(0, index); // preprocessed state vector
+	    
+	    whiteice::math::vertex<T> action;
+
+	    policy->calculate(state, action);
+	    
+	    whiteice::math::matrix<T> gradP;
+	    
+	    policy->gradient(state, gradP);
+
+	    const T p = frobenius_norm(gradP);
+
+	    dtrain.invpreprocess(0, state); // original state for Q network
+	      
+	    whiteice::math::vertex<T> in(state.size() + action.size());
+	      
+	    in.write_subvertex(state, 0);
+	    in.write_subvertex(action, state.size());
+	      
+	    Q_preprocess->preprocess(0, in);
+
+	    whiteice::math::matrix<T> full_gradQ;
+
+	    Q->gradient_value(in, full_gradQ);
+
+	    whiteice::math::matrix<T> Qpostprocess_grad;
+	    whiteice::math::matrix<T> Qpreprocess_grad_full;
+		
+	    Q_preprocess->preprocess_grad(0, Qpreprocess_grad_full);
+	    Q_preprocess->invpreprocess_grad(1, Qpostprocess_grad);
+		
+	    whiteice::math::matrix<T> Qpreprocess_grad;
+		
+	    Qpreprocess_grad_full.submatrix(Qpreprocess_grad,
+					    state.size(), 0,
+					    action.size(),
+					    Qpreprocess_grad_full.ysize());
+
+	    
+	    auto gradQ = Qpostprocess_grad * full_gradQ * Qpreprocess_grad;
+
+	    const T q = frobenius_norm(gradQ);
+
+#pragma omp critical
+	    {
+	      p_norms.push_back(p);
+	      q_norms.push_back(q);
+	    }
+	    
+	  }
+
+
+	  T meanp = T(10e-10);
+
+	  for(const auto& p : p_norms)
+	    meanp += p / T(p_norms.size());
+
+	  T meanq = T(10e-10);
+
+	  for(const auto& q : q_norms)
+	    meanq += q / T(q_norms.size());
+
+	  
+	  p_grad_scaling = T(1.0)/meanp;
+	  q_grad_scaling = T(1.0)/meanq;
+	}
+#endif
 	
 	
 	do{
@@ -494,18 +613,18 @@ namespace whiteice
 	  // imports weights back
 
 	  math::vertex<T> sumgrad;
-	  sumgrad.resize(policy.exportdatasize());
+	  sumgrad.resize(policy->exportdatasize());
 	  sumgrad.zero();
 
 #pragma omp parallel shared(sumgrad)
 	  {
 	    T ninv = T(1.0f/dtrain.size(0));
 	    math::vertex<T> sgrad, grad;
-	    grad.resize(policy.exportdatasize());
-	    sgrad.resize(policy.exportdatasize());
+	    grad.resize(policy->exportdatasize());
+	    sgrad.resize(policy->exportdatasize());
 	    sgrad.zero();
 
-	    whiteice::nnetwork<T> pnet(policy);
+	    whiteice::nnetwork<T> pnet(*policy);
 	    math::vertex<T> err;
 
 	    char buffer[80];
@@ -523,7 +642,7 @@ namespace whiteice
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, state.norm());
-		snprintf(buffer, 80, "PolicyGradientAscent: norm(state) = %f\n", 
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(state) = %e\n", 
 			 temp);
 		whiteice::logging.info(buffer);
 	      }
@@ -536,7 +655,7 @@ namespace whiteice
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, action.norm());
-		snprintf(buffer, 80, "PolicyGradientAscent: norm(action) = %f\n", 
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(action) = %e\n", 
 			 temp);
 		whiteice::logging.info(buffer);
 	      }
@@ -545,27 +664,45 @@ namespace whiteice
 	      
 	      pnet.gradient(state, gradP);
 
+	      gradP *= p_grad_scaling;
+
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, frobenius_norm(gradP));
-		snprintf(buffer, 80, "PolicyGradientAscent: norm(gradP) = %f\n", 
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(gradP) = %e\n", 
 			 temp);
 		whiteice::logging.info(buffer);
 	      }
 	      
 	      dtrain.invpreprocess(0, state); // original state for Q network
+	      if(debug)
+	      {
+		whiteice::math::convert(temp, state.norm());
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(invpreprocess(state)) = %e\n", 
+			 temp);
+		whiteice::logging.info(buffer);
+	      }
 	      
 	      whiteice::math::vertex<T> in(state.size() + action.size());
 	      
 	      in.write_subvertex(state, 0);
 	      in.write_subvertex(action, state.size());
+
+	      if(debug)
+	      {
+		whiteice::math::convert(temp, in.norm());
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(in) = %e\n", 
+			 temp);
+		whiteice::logging.info(buffer);
+	      }
+
 	      
 	      Q_preprocess->preprocess(0, in);
 
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, in.norm());
-		snprintf(buffer, 80, "PolicyGradientAscent: norm(in) = %f\n", 
+		snprintf(buffer, 80, "PolicyGradientAscent: norm(preprocess(in)) = %e\n", 
 			 temp);
 		whiteice::logging.info(buffer);
 	      }
@@ -575,6 +712,8 @@ namespace whiteice
 		whiteice::math::matrix<T> full_gradQ;
 		Q->gradient_value(in, full_gradQ);
 
+		full_gradQ *= q_grad_scaling;
+
 		if(debug)
 		{
 		  whiteice::logging.info("PolicyGradientAscent: Q-network diagnostics");
@@ -582,7 +721,7 @@ namespace whiteice
 		  
 		  whiteice::math::convert(temp, frobenius_norm(full_gradQ));
 		  snprintf(buffer, 80,
-			   "PolicyGradientAscent: norm(full_gradQ) = %f\n", 
+			   "PolicyGradientAscent: norm(full_gradQ) = %e\n", 
 			   temp);
 		  whiteice::logging.info(buffer);
 		}
@@ -603,7 +742,7 @@ namespace whiteice
 		if(debug)
 		{
 		  whiteice::math::convert(temp, frobenius_norm(Qpreprocess_grad_full));
-		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpreprocess_grad_full) = %f\n", 
+		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpreprocess_grad_full) = %e\n", 
 			   temp);
 		  whiteice::logging.info(buffer);
 		}
@@ -611,7 +750,7 @@ namespace whiteice
 		if(debug)
 		{
 		  whiteice::math::convert(temp, frobenius_norm(Qpreprocess_grad));
-		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpreprocess_grad) = %f\n", 
+		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpreprocess_grad) = %e\n", 
 			   temp);
 		  whiteice::logging.info(buffer);
 		}
@@ -619,7 +758,7 @@ namespace whiteice
 		if(debug)
 		{
 		  whiteice::math::convert(temp, frobenius_norm(Qpostprocess_grad));
-		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpostprocess_grad) = %f\n", 
+		  snprintf(buffer, 80, "PolicyGradientAscent: norm(Qpostprocess_grad) = %e\n", 
 			   temp);
 		  whiteice::logging.info(buffer);
 		}
@@ -629,7 +768,7 @@ namespace whiteice
 		if(debug)
 		{
 		  whiteice::math::convert(temp, frobenius_norm(gradQ));
-		  snprintf(buffer, 80, "PolicyGradientAscent: norm(gradQ) = %f\n", 
+		  snprintf(buffer, 80, "PolicyGradientAscent: norm(gradQ) = %e\n", 
 			   temp);
 		  whiteice::logging.info(buffer);
 		}
@@ -640,7 +779,7 @@ namespace whiteice
 		
 		g = gradQ * gradP;
 		
-		for(unsigned int i=0;i<policy.exportdatasize();i++)
+		for(unsigned int i=0;i<policy->exportdatasize();i++)
 		  grad[i] = g(0, i);
 	      }
 
@@ -661,7 +800,7 @@ namespace whiteice
 	    
 	    whiteice::math::convert(gradlen, sumgrad.norm());
 
-	    snprintf(buffer, 80, "PolicyGradAscent: raw gradient norm: %f",
+	    snprintf(buffer, 80, "PolicyGradAscent: raw gradient norm: %e",
 		     gradlen);
 	    
 	    whiteice::logging.info(buffer);
@@ -678,7 +817,7 @@ namespace whiteice
 	    }
 	  }
 	  
-	  if(policy.exportdata(weights) == false)
+	  if(policy->exportdata(weights) == false)
 	    whiteice::logging.error("PolicyGradAscent: weight export failed");
 	  
 	  w0 = weights;
@@ -692,23 +831,25 @@ namespace whiteice
 
 	  if(debug)
 	    whiteice::logging.info("PolicyGradAscent: calculates linesearch..");
+
+	  // sumgrad.normalize(); // normalizes gradient length to unit..
 	  
-	  lrate *= 4;
+	  lrate *= T(4.0);
 	  
 	  do{
 	    weights = w0;
 	    weights += lrate * sumgrad;
 	    
-	    if(policy.importdata(weights) == false)
+	    if(policy->importdata(weights) == false)
 	      whiteice::logging.error("PolicyGradAscent: weight import failed");
 	    
-	    if(dropout) policy.removeDropOut();
+	    if(dropout) policy->removeDropOut();
 	    
 	    if(heuristics){
-	      normalize_weights_to_unity(policy);
+	      normalize_weights_to_unity(*policy);
 	    }
 	    
-	    value = getValue(policy, *Q, *Q_preprocess, dtrain);
+	    value = getValue(*policy, *Q, *Q_preprocess, dtrain);
 	    
 	    delta_value = (prev_value - value);
 	    
@@ -722,7 +863,7 @@ namespace whiteice
 	      whiteice::math::convert(l, lrate);
 	      
 	      snprintf(buffer, 128,
-		       "PolicyGradAscent: gradstep curvalue %f prevvalue %f delta %f lrate %e\n", v, p, d, l);
+		       "PolicyGradAscent: gradstep curvalue %f prevvalue %f delta %e lrate %e\n", v, p, d, l);
 	      whiteice::logging.info(buffer);
 	    }
 	    
@@ -736,8 +877,8 @@ namespace whiteice
 	    }
 	    
 	  }
-	  while(delta_value >= T(0.0) && lrate >= T(10e-30) &&
-		abs(delta_value) > T(10e-12f) && running);
+	  while(delta_value > T(0.0) && lrate >= T(10e-30) &&
+		abs(delta_value) > T(10e-30f) && running);
 	  
 	  {
 	    char buffer[128];
@@ -748,15 +889,15 @@ namespace whiteice
 	    whiteice::math::convert(l, lrate);
 	    
 	    snprintf(buffer, 128,
-		     "PolicyGradAscent: policy updated value %f delta %f lrate %e\n",
+		     "PolicyGradAscent: policy updated value %f delta %e lrate %e\n",
 		     v, d, l);
 	    whiteice::logging.info(buffer);
 
 	    whiteice::logging.info("PolicyGradientAscent: policy-network diagnostics");
-	    policy.diagnosticsInfo();
+	    policy->diagnosticsInfo();
 	  }
 	  
-	  policy.exportdata(weights);
+	  policy->exportdata(weights);
 	  w0 = weights;
 	  
 	  iterations++;
@@ -767,8 +908,8 @@ namespace whiteice
 	    if(value > best_value){
 	      // improvement (larger mean q-value of the policy)
 	      best_value = value;
-	      best_q_value = getValue(policy, *Q, *Q_preprocess, dtest);
-	      policy.exportdata(bestx);
+	      best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
+	      policy->exportdata(bestx);
 	      
 	      {
 		char buffer[128];
@@ -777,7 +918,7 @@ namespace whiteice
 		whiteice::math::convert(b, best_q_value);
 		
 		snprintf(buffer, 128,
-			 "PolicyGradAscent: better policy found: %f iter %d",
+			 "PolicyGradAscent: better policy found: %e iter %d",
 			 b, iterations);
 		whiteice::logging.info(buffer);
 	      }
@@ -799,7 +940,7 @@ namespace whiteice
 	  
 	  
 	}
-	while(abs(delta_value) > T(10e-12f) &&
+	while(abs(delta_value) > T(10e-30f) &&
 	      lrate >= T(10e-30) && 
 	      iterations < MAXITERS &&
 	      running);
@@ -814,8 +955,8 @@ namespace whiteice
 	  if(value > best_value){
 	    // improvement (larger mean q-value of the policy)
 	    best_value = value;
-	    best_q_value = getValue(policy, *Q, *Q_preprocess, dtest);
-	    policy.exportdata(bestx);
+	    best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
+	    policy->exportdata(bestx);
 	    
 	    {
 	      char buffer[128];

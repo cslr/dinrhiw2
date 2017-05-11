@@ -32,6 +32,11 @@
 
 namespace whiteice
 {
+  template <typename T>
+    class CreateRIFL2dataset;
+
+  template <typename T>
+    class CreatePolicyDataset;
 
   template <typename T = math::blas_real<float> >
     class RIFL_abstract2
@@ -114,6 +119,11 @@ namespace whiteice
     
     void loop();
     
+    // friend thread class to do heavy computations in background
+    // out of main loop 
+    friend class CreateRIFL2dataset<T>;
+
+    friend class CreatePolicyDataset<T>;
     
     };
 
@@ -129,5 +139,8 @@ namespace whiteice
   extern template class RIFL_abstract2< math::blas_real<float> >;
   extern template class RIFL_abstract2< math::blas_real<double> >;
 };
+
+#include "CreateRIFL2dataset.h"
+#include "CreatePolicyDataset.h"
 
 #endif

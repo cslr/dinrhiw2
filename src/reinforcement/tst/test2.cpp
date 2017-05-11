@@ -8,6 +8,7 @@
 #include "CartPole.h"
 #include "CartPole2.h"
 #include "RIFL_abstract.h"
+#include "Log.h"
 
 #include <fenv.h>
 
@@ -15,10 +16,12 @@
 
 int main(int argc, char** argv)
 {
-  printf("REINFORCEMENT LEARNING TESTCASES\n");
+  printf("REINFORCEMENT LEARNING TESTCASES 2\n");
   fflush(stdout);
 
   srand(time(0));
+
+  whiteice::logging.setOutputFile("debug.log");
 
 #if 0
   // enable floating point exceptions (for debugging)
@@ -43,6 +46,12 @@ int main(int argc, char** argv)
     unsigned int counter = 1;
 
     while(system.physicsIsRunning()){
+      
+      if(system.getHasModel() >= 2){
+	// 95% are selected according to model
+	system.setEpsilon(0.95);
+      }
+      
       sleep(1); 
       if((counter % 180) == 0){ // saved model file every 3 minutes
 	if(system.save("rifl.dat"))

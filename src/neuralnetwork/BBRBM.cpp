@@ -462,14 +462,18 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
       eta.update(es);
 
       if(verbose == 1){
-	printf("\r                                                                             \r");
-	printf("EPOCH SAMPLES %d/%d [ETA: %.2f minutes]", es, EPOCHSAMPLES, eta.estimate()/60.0);
+	if(es % 100){
+	  printf("\r                                                                             \r");
+	  printf("EPOCH SAMPLES %d/%d [ETA: %.2f minutes]", es, EPOCHSAMPLES, eta.estimate()/60.0);
+	}
       }
       else if(verbose == 2){
-	char buffer[128];
-	snprintf(buffer, 128, "BBRBM::learnWeights(): epoch samples %d/%d [ETA: %.2f minutes]",
-		 es, EPOCHSAMPLES, eta.estimate()/60.0);
-	whiteice::logging.info(buffer);
+	if(es % 100 == 0){ // prints only every 100th iteration..
+	  char buffer[128];
+	  snprintf(buffer, 128, "BBRBM::learnWeights(): epoch samples %d/%d [ETA: %.2f minutes]",
+		   es, EPOCHSAMPLES, eta.estimate()/60.0);
+	  whiteice::logging.info(buffer);
+	}
       }
 
       // calculates positive gradient from NUMSAMPLES examples Pdata(v))
@@ -1036,7 +1040,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
       if(abs(a[i]) < minvalue_a) minvalue_a = abs(a[i]);
     }
 
-    for(unsigned int i=0;i<a.size();i++){
+    for(unsigned int i=0;i<b.size();i++){
       if(abs(b[i]) > maxvalue_b) maxvalue_b = abs(b[i]);
       if(abs(b[i]) < minvalue_b) minvalue_b = abs(b[i]);
     }

@@ -355,7 +355,7 @@ namespace whiteice
     if(errorLevel < T(0.0)) return false;
 
     // increase after the whole learning process works..
-    const unsigned int ITERLIMIT = 25;
+    const unsigned int ITERLIMIT = 1000;
     const unsigned int EPOCH_STEPS = 2;
     
     std::vector< math::vertex<T> > in = samples;
@@ -722,17 +722,21 @@ namespace whiteice
 	snprintf(buffer, 80, "DBN::convertToNNetwork(): max abs output value %f", v);
 	whiteice::logging.info(buffer);
 
-	std::string shh_str;
-	std::string syh_str;
+#if 0
+	{
+	  std::string shh_str;
+	  std::string syh_str;
+	  
+	  Shh.toString(shh_str);
+	  Syh.toString(syh_str);
+	  
+	  std::string line = "DBN::convertToNNetwork(): Shh = " + shh_str;
+	  whiteice::logging.info(line);
 
-	Shh.toString(shh_str);
-	Syh.toString(syh_str);
-
-	std::string line = "DBN::convertToNNetwork(): Shh = " + shh_str;
-	whiteice::logging.info(line);
-
-	line = "DBN::convertToNNetwork(): Syh = " + syh_str;
-	whiteice::logging.info(line);
+	  line = "DBN::convertToNNetwork(): Syh = " + syh_str;
+	  whiteice::logging.info(line);
+	}
+#endif
 
 	T detShh = Shh.det();
 	double detShh_ = 0.0;
@@ -762,17 +766,18 @@ namespace whiteice
       
       A = Syh*Shh;
       b = my - A*mh;
-
+      
+#if 0
       {
 	std::string A_str;
 	A.toString(A_str);
 	std::string b_str;
 	b.toString(b_str);
-	
+
 	std::string line = "DBN::convertToNNetwork() output layer A = " +
 	  A_str + " b = " + b_str;
 	whiteice::logging.info(line);
-
+	
 	T normA = norm_inf(A);
 	double normA_ = 0.0;
 	whiteice::math::convert(normA_, normA);
@@ -783,6 +788,8 @@ namespace whiteice
 
 	whiteice::logging.info(buffer);
       }
+#endif
+      
     }
     else{
       // no enough data fills output matrices with random noise to be optimized..
@@ -915,7 +922,7 @@ namespace whiteice
       gb_input.getVariance(v);
 
       for(unsigned int i=0;i<v.size();i++)
-	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
+	v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-5)); // no div by zeros..
 
       assert(v.size() == W.xsize());
 
@@ -1106,7 +1113,7 @@ namespace whiteice
 	  gb_input.getVariance(v);
 	  
 	  for(unsigned int i=0;i<v.size();i++)
-	    v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-10)); // no div by zeros..
+	    v[i] = T(1.0)/(math::sqrt(v[i]) + T(10e-5)); // no div by zeros..
 
 	  assert(v.size() == W.xsize());
 	  
