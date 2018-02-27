@@ -3,6 +3,7 @@
 #include "linear_equations.h"
 #include <iostream>
 #include <list>
+#include <functional>
 
 #include <unistd.h>
 

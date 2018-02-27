@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <list>
+#include <functional>
 
 namespace whiteice
 {

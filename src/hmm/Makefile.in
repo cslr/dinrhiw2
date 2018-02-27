@@ -23,7 +23,7 @@ SOURCES = HMM.cpp tst/test.cpp \
 	../math/ownexception.cpp ../math/norms.cpp
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
 
 TARGET= testsuite
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -I../math -I../neuralnetwork $(OPTIMIZE)

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <functional>
 #include <chrono>
 
 #include <unistd.h>

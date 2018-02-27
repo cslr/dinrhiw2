@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <sched.h>
+#include <functional>
 
 #ifdef WINOS
 #include <windows.h>

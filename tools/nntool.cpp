@@ -332,11 +332,11 @@ int main(int argc, char** argv)
 
       if(deep == 1) binary = true; // full RBM network
       else if(deep == 2) binary = false; // gaussian-bernoulli rbm input layer
-      const bool running = true;
+      bool running = true;
       int v = 0;
       if(verbose) v = 1;
       
-      if(deep_pretrain_nnetwork(nn, data, binary, v, running) == false){
+      if(deep_pretrain_nnetwork(nn, data, binary, v, &running) == false){
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
 	return -1;
       }

@@ -6,7 +6,7 @@
 #include "bayesian_nnetwork.h"
 
 #include <stdio.h>
-
+#include <functional>
 
 namespace whiteice
 {

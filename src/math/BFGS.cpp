@@ -2,7 +2,7 @@
 #include "BFGS.h"
 #include "linear_equations.h"
 #include <iostream>
-
+#include <functional>
 
 
 namespace whiteice

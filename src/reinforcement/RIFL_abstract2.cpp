@@ -10,6 +10,7 @@
 #include "blade_math.h"
 
 #include <assert.h>
+#include <functional>
 #include <list>
 
 

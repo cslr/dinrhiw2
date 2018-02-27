@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 
+#include <functional>
 #include <sched.h>
 
 namespace whiteice

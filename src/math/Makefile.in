@@ -7,7 +7,7 @@ CXX = @CXX@
 OPTIMIZE_FLAGS=@optimization_flags@
 
 CFLAGS = @CFLAGS@ -Wall -g  -I. -I.. -I../.. -I../neuralnetwork -I../crypto \
-	$(OPTIMIZE_FLAGS) -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
+	$(OPTIMIZE_FLAGS) -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-deprecated -std=c++1y @EXTRA_INCLUDEPATHS@
 
 CXXFLAGS = $(CFLAGS)
 

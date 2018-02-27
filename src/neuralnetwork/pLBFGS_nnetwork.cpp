@@ -7,6 +7,7 @@
 #include "pLBFGS_nnetwork.h"
 #include "deep_ica_network_priming.h"
 #include <vector>
+#include <functional>
 #include <unistd.h>
 
 
