@@ -390,14 +390,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);
 	}
 	
-	while(errors.size() > 5)
+	while(errors.size() > 20)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 5){
+	if(errors.size() >= 20){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -463,14 +463,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);	  
 	}
 	
-	while(errors.size() > 5)
+	while(errors.size() > 20)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 5){
+	if(errors.size() >= 20){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -516,6 +516,7 @@ namespace whiteice
       // learns the current layer from input
 
       unsigned int iters = 0;
+      // mean error per element per sample (does not increase if dimensions or number of samples increase)
       while((error = layers[i].learnWeights(in, EPOCH_STEPS, verbose, running)) >= errorLevel &&
 	    iters < ITERLIMIT)
       {
@@ -541,14 +542,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);	  
 	}
 	
-	while(errors.size() > 5)
+	while(errors.size() > 20)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 5){
+	if(errors.size() >= 20){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
