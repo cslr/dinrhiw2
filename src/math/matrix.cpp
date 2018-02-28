@@ -1335,6 +1335,22 @@ namespace whiteice
       
       return tr;
     }
+
+    
+    template <typename T>
+    void matrix<T>::diag(vertex<T>& diagonal) const throw()
+    {
+      if(numCols < numRows)
+	diagonal.resize(numCols);
+      else
+	diagonal.resize(numRows);
+
+      unsigned int index = 0;
+      for(unsigned int i=0;i<diagonal.size();i++){
+	diagonal[i] = data[index];
+	index += numCols+1;
+      }
+    }
     
     
     template <typename T>

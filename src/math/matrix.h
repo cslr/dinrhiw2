@@ -173,6 +173,7 @@ namespace whiteice
 
       T det() const throw(std::logic_error); // determinate      
       T trace() const throw(std::logic_error);
+      void diag(vertex<T>& diagonal) const throw();
 
       // inverse (returns false if matrix is singular and
       // value of matrix is garbage/undefined)

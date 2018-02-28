@@ -73,8 +73,255 @@ int main(int argc, char **argv, char **envp)
 
 void test_pca_tests()
 {
-  std::cout << "FASTPCA TESTS" << std::endl;
+
+  {
+    std::cout << "AUTOCORRELATION TEST (blas_real<float>)" << std::endl;
+
+    const unsigned int DIMENSIONS =  100;
+    
+    std::vector< math::vertex<> > data;
+    
+    for(unsigned int j=0;j<(2*DIMENSIONS)+1000;j++){
+      math::vertex<> v;
+      v.resize(DIMENSIONS);
+      
+      for(unsigned int i=0;i<DIMENSIONS;i++){
+	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	if(i == 0) v[i] *= 2.0f;
+      }
+      
+      data.push_back(v);
+    }
+    
+    math::matrix<> Rxx;
+    
+    if(autocorrelation(Rxx, data) == false){
+      printf("CALCULATION OF MEAN_COVARIANCE_ESTIMATE() FAILED\n");
+      exit(-1);
+    }
+
+    math::matrix<> Rxx2(DIMENSIONS, DIMENSIONS);
+
+    Rxx2.zero();
+
+    for(unsigned int i=0;i<data.size();i++){
+      Rxx2 += data[i].outerproduct(data[i]);
+    }
+
+    Rxx2 /= blas_real<float>(data.size());
+    
+    auto delta_Rxx2 = Rxx - Rxx2;
+
+    bool error = false;
+
+    if(frobenius_norm(delta_Rxx2) < 0.01f)
+      std::cout << "AUTOCORRELATION MATRIX OK\n";
+    else{
+      std::cout << "AUTOCORRELATION MATRIX INCORRECT: "
+		<< frobenius_norm(delta_Rxx2)
+		<< " error\n";
+      error = true;
+    }
+
+    if(error) exit(-1);
+  }
+
+
+    {
+    std::cout << "AUTOCORRELATION TEST (blas_real<double>)" << std::endl;
+
+    const unsigned int DIMENSIONS =  100;
+
+    
+    std::vector< math::vertex< math::blas_real<double> > > data;
+    
+    for(unsigned int j=0;j<(2*DIMENSIONS)+1000;j++){
+      math::vertex< math::blas_real<double> > v;
+      v.resize(DIMENSIONS);
+      
+      for(unsigned int i=0;i<DIMENSIONS;i++){
+	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	if(i == 0) v[i] *= 2.0f;
+      }
+      
+      data.push_back(v);
+    }
+    
+    math::matrix< math::blas_real<double> > Rxx;
+    
+    if(autocorrelation(Rxx, data) == false){
+      printf("CALCULATION OF MEAN_COVARIANCE_ESTIMATE() FAILED\n");
+      exit(-1);
+    }
+
+    math::matrix< math::blas_real<double> > Rxx2(DIMENSIONS, DIMENSIONS);
+
+    Rxx2.zero();
+
+    for(unsigned int i=0;i<data.size();i++){
+      Rxx2 += data[i].outerproduct(data[i]);
+    }
+
+    Rxx2 /= blas_real<double>(data.size());
+    
+    auto delta_Rxx2 = Rxx - Rxx2;
+
+    bool error = false;
+
+    if(frobenius_norm(delta_Rxx2) < 0.01f)
+      std::cout << "AUTOCORRELATION MATRIX OK\n";
+    else{
+      std::cout << "AUTOCORRELATION MATRIX INCORRECT: "
+		<< frobenius_norm(delta_Rxx2)
+		<< " error\n";
+      error = true;
+    }
+
+    if(error) exit(-1);
+  }
   
+
+  {
+    std::cout << "MEAN COVARIANCE CALCULATION TEST (blas_real<float>)" << std::endl;
+    
+    const unsigned int DIMENSIONS =  100;
+    
+    std::vector< math::vertex<> > data;
+    
+    for(unsigned int j=0;j<(2*DIMENSIONS)+1000;j++){
+      math::vertex<> v;
+      v.resize(DIMENSIONS);
+      
+      for(unsigned int i=0;i<DIMENSIONS;i++){
+	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	if(i == 0) v[i] *= 2.0f;
+      }
+      
+      data.push_back(v);
+    }
+    
+    math::vertex<> m;
+    math::matrix<> Cxx;
+    
+    if(mean_covariance_estimate(m, Cxx, data) == false){
+      printf("CALCULATION OF MEAN_COVARIANCE_ESTIMATE() FAILED\n");
+      exit(-1);
+    }
+
+    math::vertex<> m2(DIMENSIONS);
+    math::matrix<> Cxx2(DIMENSIONS, DIMENSIONS);
+
+    m2.zero();
+    Cxx2.zero();
+
+    for(unsigned int i=0;i<data.size();i++){
+      m2 += data[i];
+      Cxx2 += data[i].outerproduct(data[i]);
+    }
+
+    m2 /= blas_real<float>(data.size());
+    Cxx2 /= blas_real<float>(data.size());
+
+    Cxx2 -= m2.outerproduct(m2);
+
+    auto delta_m = m - m2;
+    auto delta_Cxx2 = Cxx - Cxx2;
+
+    bool error = false;
+
+    if(delta_m.norm() < 0.01f)
+      std::cout << "MEAN VALUE OK\n";
+    else{
+      std::cout << "MEAN VALUE INCORRECT: " << delta_m.norm() << " error\n";
+      error = true;
+    }
+
+    if(frobenius_norm(delta_Cxx2) < 0.01f)
+      std::cout << "COVARIANCE MATRIX OK\n";
+    else{
+      std::cout << "COVARIANCE MATRIX INCORRECT: "
+		<< frobenius_norm(delta_Cxx2)
+		<< " error\n";
+      error = true;
+    }
+
+    if(error) exit(-1);
+  }
+
+
+
+    {
+    std::cout << "MEAN COVARIANCE CALCULATION TEST (blas_real<double>)" << std::endl;
+    
+    const unsigned int DIMENSIONS =  97;
+    
+    std::vector< math::vertex< math::blas_real<double> > > data;
+    
+    for(unsigned int j=0;j<(2*DIMENSIONS)+1000;j++){
+      math::vertex< math::blas_real<double> > v;
+      v.resize(DIMENSIONS);
+      
+      for(unsigned int i=0;i<DIMENSIONS;i++){
+	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	if(i == 0) v[i] *= 2.0f;
+      }
+      
+      data.push_back(v);
+    }
+    
+    math::vertex< math::blas_real<double> > m;
+    math::matrix< math::blas_real<double> > Cxx;
+    
+    if(mean_covariance_estimate(m, Cxx, data) == false){
+      printf("CALCULATION OF MEAN_COVARIANCE_ESTIMATE() FAILED\n");
+      exit(-1);
+    }
+
+    math::vertex< math::blas_real<double> > m2(DIMENSIONS);
+    math::matrix< math::blas_real<double> > Cxx2(DIMENSIONS, DIMENSIONS);
+
+    m2.zero();
+    Cxx2.zero();
+
+    for(unsigned int i=0;i<data.size();i++){
+      m2 += data[i];
+      Cxx2 += data[i].outerproduct(data[i]);
+    }
+
+    m2 /= blas_real<double>(data.size());
+    Cxx2 /= blas_real<double>(data.size());
+
+    Cxx2 -= m2.outerproduct(m2);
+
+    auto delta_m = m - m2;
+    auto delta_Cxx2 = Cxx - Cxx2;
+
+    bool error = false;
+
+    if(delta_m.norm() < 0.01f)
+      std::cout << "MEAN VALUE OK\n";
+    else{
+      std::cout << "MEAN VALUE INCORRECT: " << delta_m.norm() << " error\n";
+      error = true;
+    }
+
+    if(frobenius_norm(delta_Cxx2) < 0.01f)
+      std::cout << "COVARIANCE MATRIX OK\n";
+    else{
+      std::cout << "COVARIANCE MATRIX INCORRECT: "
+		<< frobenius_norm(delta_Cxx2)
+		<< " error\n";
+      error = true;
+    }
+
+    if(error) exit(-1);
+  }
+  
+  
+
+  
+  
+  std::cout << "FASTPCA TESTS" << std::endl;
 
   try{
     // generates random data and calculates PCA via EVD and 
@@ -100,6 +347,7 @@ void test_pca_tests()
     math::matrix<> Cxx;
     
     mean_covariance_estimate(m, Cxx, data);
+
     auto D = Cxx;
     
     std::chrono::time_point<std::chrono::system_clock> start, end;

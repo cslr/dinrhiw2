@@ -6,6 +6,7 @@
 
 #include "matrix.h"
 #include "vertex.h"
+#include "eig.h"
 
 #include <typeinfo>
 #include <string.h>
@@ -40,14 +41,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
-	  
-	  // doesn't seem to work with overlapping memory areas
-	  //cblas_scopy(i+1,
-	  //(float*)&(R.data[r*N - ((r - 1)*r)/2 ]), 1,
-	  //(float*)&(R.data[r*N + r]), 1);
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -65,14 +63,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
-	  
-	  // doesn't seem to work with overlapping memory areas
-	  //cblas_ccopy(i+1,
-	  //(float*)&(R.data[r*N - ((r - 1)*r)/2 ]), 1,
-	  //(float*)&(R.data[r*N + r]), 1);
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -92,12 +87,9 @@ namespace whiteice
 	// converts symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
-	  
-	  // doesn't seem to work with overlapping memory areas
-	  // cblas_dcopy(i+1,
-	  //(double*)&(R.data[r*N - ((r - 1)*r)/2 ]), 1,
-	  //(double*)&(R.data[r*N + r]), 1);
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -117,12 +109,9 @@ namespace whiteice
 	// converts symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
-	  
-	  // doesn't seem to work with overlapping memory areas
-	  // cblas_zcopy(i+1,
-	  //(double*)&(R.data[r*N - ((r - 1)*r)/2 ]), 1,
-	  //(double*)&(R.data[r*N + r]), 1);
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -251,7 +240,7 @@ namespace whiteice
       m.zero();
       
       T s = T(1.0f) / T(data.size());
-      
+
       
       if(typeid(T) == typeid(blas_real<float>)){	
 	
@@ -262,19 +251,20 @@ namespace whiteice
 	  
 	  i++;
 	}
-	
-	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+
+	// converts packed symmetric matrix results into regular matrix data format
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
-	
-	// copy data from upper triangular part to lower
+
 	for(unsigned int i=0;i<(N-1);i++)
 	  cblas_scopy(N - i - 1, 
 		      (float*)&(R.data[i*N + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*N + i]), N);
-	
+
 	m *= s;
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
@@ -287,10 +277,12 @@ namespace whiteice
 	  i++;
 	}
 	
-	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+	// converts packed symmetric matrix results into regular matrix data format
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -312,9 +304,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -336,9 +330,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memmove(&(R.data[r*N + r]), &(R.data[r*N - ((r - 1)*r)/2]), sizeof(T) * (i+1));
+	  memcpy(&(R.data[r*N + r]),
+		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		 sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -362,17 +358,19 @@ namespace whiteice
 	R *= s;
 	m *= s;
       }
+
       
       // removes mean from R = E[xx^t]
-      
+
       for(unsigned int j=0;j<N;j++){
-	for(unsigned int i=0;i<j;i++){
+	for(unsigned int i=0;i<=j;i++){
 	  T tmp = m[j]*m[i];
 	  R(j,i) -= tmp;
-	  R(i,j) -= tmp;
+	  if(j!=i)
+	    R(i,j) -= tmp;
 	}
       }
-      
+
       
       return true;
     }
@@ -437,7 +435,48 @@ namespace whiteice
       
       return true;
     }
+
+
     
+    // calculates PCA dimension reduction using symmetric eigenvalue decomposition
+    template <typename T>
+    bool pca(const std::vector< vertex<T> >& data, 
+	     const unsigned int dimensions,
+	     math::matrix<T>& PCA,
+	     T& original_var, T& reduced_var)
+    {
+      vertex<T> m;
+      matrix<T> C;
+
+      if(mean_covariance_estimate(m, C, data) == false)
+	return false;
+
+      matrix<T> X;
+
+      if(symmetric_eig(C, X, true) == false)
+	return false;
+
+      // C = X * D * X^t
+
+      // we want to keep only the top variance vectors
+
+      original_var = T(0.0f);
+      reduced_var  = T(0.0f);
+
+      for(unsigned int i=0;i<X.xsize();i++){
+	if(i<dimensions) reduced_var += C(i,i);
+	original_var += C(i,i);
+      }
+
+      if(X.submatrix(PCA, 0, 0, dimensions, X.xsize()) == false)
+	return false;
+
+      PCA.transpose();
+
+      // TODO: tests that PCA matrix works (for debugging)
+
+      return true;
+    }
     
     
     
@@ -528,7 +567,30 @@ namespace whiteice
      const std::vector< vertex< blas_complex<double> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
     
+    
+    template bool pca<float>
+      (const std::vector< vertex<float> >& data, 
+       const unsigned int dimensions,
+       math::matrix<float>& PCA,
+       float& original_var, float& reduced_var);
 
+    template bool pca<double>
+      (const std::vector< vertex<double> >& data, 
+       const unsigned int dimensions,
+       math::matrix<double>& PCA,
+       double& original_var, double& reduced_var);
+
+    template bool pca< blas_real<float> >
+      (const std::vector< vertex< blas_real<float> > >& data, 
+       const unsigned int dimensions,
+       math::matrix< blas_real<float> >& PCA,
+       blas_real<float>& original_var, blas_real<float>& reduced_var);
+
+    template bool pca< blas_real<double> >
+      (const std::vector< vertex< blas_real<double> > >& data, 
+       const unsigned int dimensions,
+       math::matrix< blas_real<double> >& PCA,
+       blas_real<double>& original_var, blas_real<double>& reduced_var);
     
   };
 };
