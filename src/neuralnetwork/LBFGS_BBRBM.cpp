@@ -90,9 +90,9 @@ namespace whiteice
   template <typename T>
   math::vertex<T> LBFGS_BBRBM<T>::Ugrad(const math::vertex<T>& x) const
   {
-    whiteice::BBRBM<T> gbrbm(this->net);
+    whiteice::BBRBM<T> rbm(this->net);
     
-    return -gbrbm.Ugrad(x);
+    return -rbm.Ugrad(x);
   }
   
   

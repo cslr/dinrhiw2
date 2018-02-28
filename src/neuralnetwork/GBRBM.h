@@ -88,7 +88,8 @@ namespace whiteice {
   
   // learn parameters using LBFGS 2nd order optimization and heuristics..
   T learnWeights(const std::vector< math::vertex<T> >& samples,
-		 const unsigned int EPOCHS, const int verbose = 0, const bool* running = NULL);
+		 const unsigned int EPOCHS, const int verbose = 0,
+		 const bool* running = NULL);
   
   // estimates log(P(samples|params)) of the RBM
   T logProbability(const std::vector< math::vertex<T> >& samples);

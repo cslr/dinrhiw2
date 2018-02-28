@@ -79,7 +79,16 @@ class BBRBM {
   // returns reconstruction error
   T learnWeights(const std::vector< math::vertex<T> >& samples,
 		 const unsigned int EPOCHS=1,
-		 const int verbose = 0, const bool* running = NULL);
+		 const int verbose = 0,
+		 const bool* running = NULL);
+
+  // calculates parameters using LBFGS 2nd order optimization and
+  // CD-3 to estimate gradient
+  T learnWeights2(const std::vector< math::vertex<T> >& samples,
+		  const unsigned int EPOCHS=1,
+		  const int verbose = 0,
+		  const bool* running = NULL);
+  
 
   T reconstructionError(const std::vector< math::vertex<T> >& samples,
 			unsigned int N, // number of samples to use from samples to estimate reconstruction error
@@ -120,6 +129,8 @@ class BBRBM {
   void safebox(math::vertex<T>& a, math::vertex<T>& b, math::matrix<T>& W) const;
   
   T U(const math::vertex<T>& q) const throw();
+
+  // uses CD-3 to estimate gradient
   math::vertex<T> Ugrad(const math::vertex<T>& q) throw();
 
   // prints min/max values of parameters to log

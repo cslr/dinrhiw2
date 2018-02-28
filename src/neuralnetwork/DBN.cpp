@@ -355,7 +355,7 @@ namespace whiteice
     if(errorLevel < T(0.0)) return false;
 
     // increase after the whole learning process works..
-    const unsigned int ITERLIMIT = 1000;
+    const unsigned int ITERLIMIT = 50;
     const unsigned int EPOCH_STEPS = 2;
     
     std::vector< math::vertex<T> > in = samples;
@@ -366,6 +366,14 @@ namespace whiteice
     if(!binaryInput){ // GBRBM
       
       unsigned int iters = 0;
+
+      if(verbose == 1){
+	std::cout << "GBRBM LAYER 0 OPTIMIZATION "
+		  << iters << "/" << ITERLIMIT
+		  << std::endl;
+      }
+      
+      
       while((error = gb_input.learnWeights(in, EPOCH_STEPS, verbose, running)) >= errorLevel
 	    && iters < ITERLIMIT)
       {
@@ -390,14 +398,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);
 	}
 	
-	while(errors.size() > 20)
+	while(errors.size() > 10)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 20){
+	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -410,6 +418,10 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  if(verbose == 1){
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	  }
 
 	  if(v/m <= 0.05)
 	    break; // stdev is less than 5% of mean
@@ -439,7 +451,14 @@ namespace whiteice
     else{ // BBRBM
       
       unsigned int iters = 0;
-      while((error = bb_input.learnWeights(in, EPOCH_STEPS, verbose)) >= errorLevel
+      
+      if(verbose == 1){
+	std::cout << "BBRBM LAYER 0 OPTIMIZATION "
+		  << iters << "/" << ITERLIMIT
+		  << std::endl;
+      }
+      
+      while((error = bb_input.learnWeights2(in, EPOCH_STEPS, verbose)) >= errorLevel
 	    && iters < ITERLIMIT)
       {
 	if(running) if(*running == false) return false; // stop execution
@@ -463,14 +482,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);	  
 	}
 	
-	while(errors.size() > 20)
+	while(errors.size() > 10)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 20){
+	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -483,6 +502,10 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  if(verbose == 1){
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	  }
 
 	  if((v/m) <= T(0.05))
 	    break; // stdev is less than 5% of mean
@@ -508,16 +531,23 @@ namespace whiteice
       in = out;
       
     }
-
-    
     
 
     for(unsigned int i=0;i<layers.size();i++){
       // learns the current layer from input
 
       unsigned int iters = 0;
+
+      if(verbose == 1){
+	std::cout << "BBRBM LAYER " << (i+1) << " OPTIMIZATION "
+		  << iters << "/" << ITERLIMIT
+		  << std::endl;
+      }
+
+      errors.clear();
+	    
       // mean error per element per sample (does not increase if dimensions or number of samples increase)
-      while((error = layers[i].learnWeights(in, EPOCH_STEPS, verbose, running)) >= errorLevel &&
+      while((error = layers[i].learnWeights2(in, EPOCH_STEPS, verbose, running)) >= errorLevel &&
 	    iters < ITERLIMIT)
       {
 	if(running) if(*running == false) return false; // stops execution
@@ -542,14 +572,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);	  
 	}
 	
-	while(errors.size() > 20)
+	while(errors.size() > 10)
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
 	// within 1% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
-	if(errors.size() >= 20){
+	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
 	  for(auto& e : errors){
@@ -562,6 +592,10 @@ namespace whiteice
 	  v -= m*m;
 	  
 	  v = sqrt(v);
+
+	  if(verbose == 1){
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	  }
 
 	  if(v/m <= 0.05) 
 	    break; // stdev is less than 5% of mean

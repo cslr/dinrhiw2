@@ -10,6 +10,11 @@
 #include "linear_ETA.h"
 #include "Log.h"
 
+#include "LBFGS_BBRBM.h"
+
+#include <unistd.h>
+
+
 namespace whiteice {
 
 template <typename T>
@@ -679,6 +684,163 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 }
 
 
+// calculates parameters using LBFGS 2nd order optimization and
+// CD-3 to estimate gradient
+template <typename T>
+T BBRBM<T>::learnWeights2(const std::vector< math::vertex<T> >& samples,
+			  const unsigned int EPOCHS,
+			  const int verbose,
+			  const bool* running)
+{
+  if(EPOCHS <= 0) return T(INFINITY);
+  if(samples.size() <= 0) return T(INFINITY);
+  if(samples[0].size() != getVisibleNodes()) return T(INFINITY);
+
+  whiteice::dataset<T> ds;
+
+  // this->initializeWeights();
+  this->setUData(samples);
+
+  ds.createCluster("input", getVisibleNodes());
+  ds.add(0, samples);
+
+  math::vertex<T> x0;
+  this->getParametersQ(x0);
+
+  whiteice::LBFGS_BBRBM<T>* optimizer[EPOCHS];
+		
+  math::vertex<T> x(x0);
+  T error;
+  int last_iter = -1;
+  unsigned int iters = 0;
+
+  std::list<T> errors; // epoch errors... used to detect convergence
+
+  auto bestx = x0;
+  auto besterror = T(INFINITY);
+
+  whiteice::linear_ETA<double> eta;
+  eta.start(0.0, EPOCHS+1);
+  eta.update(0.0);
+
+  for(unsigned int i=0;i<EPOCHS;i++){
+    this->getParametersQ(x0);
+		  
+    optimizer[i] = new whiteice::LBFGS_BBRBM<T>(*this, ds, false);
+    optimizer[i]->minimize(x0);
+
+    last_iter = -1;
+    iters = 0;
+    
+    while(true){
+      if(!optimizer[i]->isRunning() || optimizer[i]->solutionConverged()){
+	break;
+      }
+
+      if(running) if(*running == false) break;
+		    
+      optimizer[i]->getSolution(x, error, iters);
+      
+      if((signed)iters > last_iter){
+	if(verbose == 1){
+	  std::cout << "ITER " << iters << ": error = " << error << std::endl;
+	}
+	else if(verbose == 2){
+	  char buffer[128];
+	  double tmp = 0.0;
+	  whiteice::math::convert(tmp, error);
+	  
+	  snprintf(buffer, 128, "BBRBM::learnWeights(): iter %d: error = %f",
+		   iters, tmp);
+	  
+	  whiteice::logging.info(buffer);
+	}
+	
+	last_iter = iters;
+      }
+      
+      sleep(1);
+    }
+    
+    optimizer[i]->getSolution(x, error, iters);
+    this->setParametersQ(x);
+
+    eta.update(i+1); // this epoch has been calculated..
+
+    if(verbose == 1){
+      std::cout << "EPOCH " << i << "/" << EPOCHS
+		<< ": error = " << error
+		<< " ETA " << eta.estimate()/(3600.0) << " hour(s)"
+		<< std::endl;
+    }
+    else if(verbose == 2){
+      char buffer[128];
+      double tmp;
+      whiteice::math::convert(tmp, error);
+
+      snprintf(buffer, 128, "BBRBM::learnWeights(): epoch %d/%d: error = %f ETA %f hour(s)",
+	       i, EPOCHS, tmp, eta.estimate()/3600.0);
+      whiteice::logging.info(buffer);
+      
+    }
+
+    errors.push_back(error);
+
+    // keeps last 20 error terms in epochs
+    while(errors.size() > 20)
+      errors.pop_front();
+    
+    // smart convergence detection..
+    if(errors.size() > 20){
+      T m = 0.0, v = 0.0;
+      
+      for(auto& e : errors){
+	m += e;
+	v += e*e;
+      }
+
+      m /= T(errors.size());
+      v /= T(errors.size());
+
+      v -= m*m;
+
+      T statistic = sqrt(v)/m;
+
+      if(statistic < T(1.005)){ // only 0.5% change in optimized values
+	                        // within the latest 20 steps
+	delete optimizer[i];
+	
+	if(verbose == 1)
+	  std::cout << "Early stopping.. convergence detected."
+		    << std::endl;
+	else if(verbose == 2)
+	  whiteice::logging.info("BBRBM::learnWeights(): Early stopping.. convergence detected.");
+	
+	break;
+      }
+	
+    }
+
+
+    if(optimizer[i]->getSolution(x, error, iters)){
+      if(error < besterror){
+	besterror = error;
+	bestx = x;
+      }
+    }
+
+    delete optimizer[i];
+    optimizer[i] = NULL;
+  }
+
+  
+  this->setParametersQ(bestx);
+  
+  return besterror;
+}
+
+  
+// mean error per element per sample (does not increase if dimensions or number of samples increase)
 template <typename T>
 T BBRBM<T>::reconstructionError(const std::vector< math::vertex<T> >& samples,
 				// number of samples to use
@@ -868,6 +1030,7 @@ T BBRBM<T>::U(const math::vertex<T>& q) const throw()
   return reconstructionError(Usamples, 1000, a, b, W);
 }
 
+// uses CD-1 to estimate gradient
 template <typename T>
 math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 {
