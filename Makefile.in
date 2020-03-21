@@ -9,7 +9,7 @@ CD = cd
 RM = rm -f
 MV = mv
 CP = cp
-LDCONFIG = ldconfig
+LDCONFIG = /sbin/ldconfig
 
 CFLAGS=@CFLAGS@
 CXXFLAGS=@CXXFLAGS@
@@ -30,7 +30,7 @@ SOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
 
 ############################################################
 
-all: check_conf_changes make_objects makelib
+all: check_conf_changes depend make_objects makelib
 
 depend:
 	$(CD) src && echo "" > Makefile.depend

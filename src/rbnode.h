@@ -23,7 +23,7 @@ namespace whiteice
       bool leaf() const throw();
       
       // is color of node
-      bool& red() const throw(){ return !black; }
+      bool red() const throw(){ return !black; }
       
       T& key() throw(){ return value; }
       const T& key() const throw(){ return value; }
