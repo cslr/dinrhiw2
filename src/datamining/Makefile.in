@@ -5,7 +5,7 @@ CC = @CC@
 CXX= @CXX@
 
 OPTIMIZE=@optimization_flags@
-CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math @EXTRA_INCLUDEPATHS@
+CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../../ -I../neuralnetwork -I../math @EXTRA_INCLUDEPATHS@
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 
 

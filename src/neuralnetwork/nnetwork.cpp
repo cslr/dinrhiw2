@@ -1820,6 +1820,39 @@ namespace whiteice
     return nn;
   }
 
+  // creates subnet starting from fromLayer:th layer to the toLayer
+  template <typename T>
+  nnetwork<T>* nnetwork<T>::createSubnet(const unsigned int fromLayer,
+					 const unsigned int toLayer)
+  {
+    if(fromLayer >= getLayers()) return nullptr;
+    if(toLayer >= arch.size()) return nullptr;
+
+    std::vector<unsigned int> a;
+
+    for(unsigned int i=fromLayer;i<=toLayer;i++)
+      a.push_back(arch[i]);
+
+    nnetwork<T>* nn = new nnetwork<T>(a);
+
+    math::matrix<T> W;
+    math::vertex<T> b;
+
+    // sets parameters of the network
+    for(unsigned int i=fromLayer;i<=toLayer;i++){
+      nn->frozen[i-fromLayer] = this->frozen[i];
+      nn->nonlinearity[i-fromLayer] = this->nonlinearity[i];
+      
+      this->getWeights(W, i);
+      nn->setWeights(W, i - fromLayer);
+      
+      this->getBias(b, i);
+      nn->setBias(b, i - fromLayer);
+    }
+
+    return nn;
+  }
+
   // injects (if possible) subnet into net starting from fromLayer:th layer
   template <typename T>
   bool nnetwork<T>::injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn)

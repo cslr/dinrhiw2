@@ -5,7 +5,7 @@ CC = gcc
 CXX= g++
 
 OPTIMIZE=-fPIC -O3 -g -DAMD64 -ffast-math -fopenmp -mtune=native
-CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../neuralnetwork -I../math -I/usr/include/ -I/usr/local/include -DOPENBLAS -I/opt/include/ 
+CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../../ -I../neuralnetwork -I../math -I/usr/include/ -I/usr/local/include -DOPENBLAS -I/opt/include/ 
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 
 

@@ -36,12 +36,14 @@ depend:
 	$(CD) src && echo "" > Makefile.depend
 	$(CD) src/math && echo "" > Makefile.depend
 	$(CD) src/crypto && echo "" > Makefile.depend
+	$(CD) src/datamining && echo "" > Makefile.depend
 	$(CD) src/neuralnetwork && echo "" > Makefile.depend
 	$(CD) src/hmm && echo "" > Makefile.depend
 	$(CD) src/reinforcement && echo "" > Makefile.depend
 	$(CD) src/rnn && echo "" > Makefile.depend
 	$(CD) src && $(MAKE) depend
 	$(CD) src/math && $(MAKE) depend
+	$(CD) src/datamining && $(MAKE) depend
 	$(CD) src/crypto && $(MAKE) depend
 	$(CD) src/neuralnetwork && $(MAKE) depend
 	$(CD) src/hmm && $(MAKE) depend

@@ -363,6 +363,8 @@ namespace whiteice
     T error = T(INFINITY);
     std::list<T> errors;
 
+    T bbErrorLevel = T(0.1)*errorLevel;
+
     if(!binaryInput){ // GBRBM
       
       unsigned int iters = 0;
@@ -402,7 +404,7 @@ namespace whiteice
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
-	// within 1% of mean (convergence) during latest
+	// within 5% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
 	if(errors.size() >= 10){
@@ -458,7 +460,7 @@ namespace whiteice
 		  << std::endl;
       }
       
-      while((error = bb_input.learnWeights2(in, EPOCH_STEPS, verbose)) >= errorLevel
+      while((error = bb_input.learnWeights2(in, EPOCH_STEPS, verbose)) >= bbErrorLevel
 	    && iters < ITERLIMIT)
       {
 	if(running) if(*running == false) return false; // stop execution
@@ -486,7 +488,7 @@ namespace whiteice
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
-	// within 1% of mean (convergence) during latest
+	// within 5% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
 	if(errors.size() >= 10){
@@ -547,7 +549,7 @@ namespace whiteice
       errors.clear();
 	    
       // mean error per element per sample (does not increase if dimensions or number of samples increase)
-      while((error = layers[i].learnWeights2(in, EPOCH_STEPS, verbose, running)) >= errorLevel &&
+      while((error = layers[i].learnWeights2(in, EPOCH_STEPS, verbose, running)) >= bbErrorLevel &&
 	    iters < ITERLIMIT)
       {
 	if(running) if(*running == false) return false; // stops execution
@@ -576,7 +578,7 @@ namespace whiteice
 	  errors.pop_front();
 	
 	// calculates mean and variance and stops if variance is
-	// within 1% of mean (convergence) during latest
+	// within 5% of mean (convergence) during latest
 	// EPOCH_STEPS*10 iterations
 	
 	if(errors.size() >= 10){
