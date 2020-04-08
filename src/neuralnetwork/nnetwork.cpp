@@ -656,9 +656,27 @@ namespace whiteice
 
       if(l != getLayers()-1){ // not the last layer
 	for(unsigned int j=0;j<W.ysize();j++){
-	  unsigned int k = rand() % inputdata.size();
-	  for(unsigned int i=0;i<W.xsize();i++){
-	    W(j,i) = inputdata[k][i];
+	  unsigned int k1 = rand() % inputdata.size();
+	  unsigned int k2 = rand() % inputdata.size();
+
+	  if(inputdata.size() < W.ysize()){
+	    for(unsigned int i=0;i<W.xsize();i++){
+	      W(j,i) = inputdata[k1][i];
+	    }
+	  }
+	  else{
+	    // if there are more weights than training samples then use also mixtures.
+	    if(rand() & 1){
+	      for(unsigned int i=0;i<W.xsize();i++){
+		W(j,i) = inputdata[k1][i];
+	      }
+	    }
+	    else{
+	      for(unsigned int i=0;i<W.xsize();i++){
+		W(j,i) = T(0.5)*inputdata[k1][i] + T(0.5)*inputdata[k2][i];
+	      }
+	    }
+	    
 	  }
 	}
 

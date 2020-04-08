@@ -459,8 +459,6 @@ namespace whiteice
       my.zero();
       Cyx.zero();
 
-      printf("B\n"); fflush(stdout);
-
       for(unsigned int i=0;i<xdata.size();i++){
 	mx += xdata[i];
 	my += ydata[i];

@@ -163,6 +163,11 @@ namespace whiteice
       this->dropout = dropout;
 
       optimizer_thread.resize(NTHREADS);
+
+      {
+	std::lock_guard<std::mutex> lock(errors_lock);
+	errors.clear();
+      }
       
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	optimizer_thread[i] =
@@ -192,6 +197,67 @@ namespace whiteice
       std::unique_lock<std::mutex> lock2(thread_is_running_mutex);
       return running && (thread_is_running > 0);
     }
+
+    
+    template <typename T>
+    bool NNGradDescent<T>::hasConverged(T percentage)
+    {
+      std::vector<bool> convergence;
+
+      if(percentage <= T(0.0f)) return true;
+      if(percentage >= T(1.0f)) return false;
+
+      {
+	std::lock_guard<std::mutex> lock(errors_lock);
+
+	if(errors.size() != NTHREADS) return false;
+	
+	for(const auto& err : errors){
+	  if(err.second.size() >= EHISTORY){
+	    T m = T(0.0), v = T(0.0);
+	    
+	    for(const auto& e : err.second){
+	      m += e;
+	    }
+	    
+	    m /= err.second.size();
+
+	    for(const auto& e : err.second){
+	      v += (e - m)*(e - m);
+	    }
+	    
+	    v /= (err.second.size() - 1);
+	    
+	    v = sqrt(abs(v));
+	    
+
+	    if(v/m <= percentage) // 1% is a good value
+	      convergence.push_back(true);
+	    else
+	      convergence.push_back(false);
+	  }
+	  else{
+	    convergence.push_back(false);
+	  }
+	}
+	
+      }
+      
+
+      {
+	unsigned int cnum = 0;
+	
+	for(const auto& c : convergence){
+	  if(c == true) cnum++;
+	}
+	
+	if(cnum == NTHREADS)
+	  return true;
+      }
+
+      return false;
+    }
+    
     
     /*
      * returns the best NN solution found so far and
@@ -659,7 +725,7 @@ namespace whiteice
 		whiteice::logging.info(buffer);
 	      }
 	    }
-	    while(delta_error < T(0.0) && lrate >= T(10e-30) && running);
+	    while(delta_error < T(0.0) && lrate >= T(10e-25) && running);
 	    
 	    {
 	      char buffer[128];
@@ -686,8 +752,17 @@ namespace whiteice
 		best_pure_error = getError(*nn, dtrain, false);
 		nn->exportdata(bestx);
 	      }
-	    
+
 	      solution_lock.unlock();
+	      
+	      {
+		std::lock_guard<std::mutex> lock(errors_lock);
+		
+		auto& e = errors[std::this_thread::get_id()];
+		e.push_back(error);
+		while(e.size() > EHISTORY) e.pop_front();
+	      }
+	      
 	    }
 
 	    iterations++;

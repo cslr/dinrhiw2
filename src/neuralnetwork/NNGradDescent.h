@@ -9,6 +9,8 @@
 
 
 #include <thread>
+#include <list>
+#include <map>
 #include <mutex>
 #include <condition_variable>
 
@@ -66,6 +68,13 @@ namespace whiteice
        * Returns true if optimizer is running
        */
       bool isRunning();
+
+
+      /*
+       * Returns true if heuristics estimate that optimizer has converged.
+       * "stdev/mean" of most recent errors is less than percentage => convergence.
+       */
+      bool hasConverged(T percentage = T(0.01));
       
       /*
        * returns the best NN solution found so far and
@@ -116,7 +125,10 @@ namespace whiteice
       unsigned int NTHREADS;
       unsigned int MAXITERS;
       std::vector<std::thread*> optimizer_thread;
-      mutable std::mutex solution_lock, start_lock;
+      std::map<std::thread::id, std::list<T> > errors; // estimate to convergence of thread
+      const unsigned int EHISTORY = 500;
+	
+      mutable std::mutex solution_lock, start_lock, errors_lock;
       
       bool running;
       

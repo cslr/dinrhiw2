@@ -410,16 +410,19 @@ namespace whiteice
 	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
-	  for(auto& e : errors){
+	  for(const auto& e : errors){
 	    m += e;
-	    v += e*e;
 	  }
 	  
 	  m /= errors.size();
-	  v /= errors.size();
-	  v -= m*m;
+
+	  for(const auto& e : errors){
+	    v += (e - m)*(e - m);
+	  }
 	  
-	  v = sqrt(v);
+	  v /= (errors.size() - 1);
+	  
+	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
 	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
@@ -494,16 +497,19 @@ namespace whiteice
 	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
-	  for(auto& e : errors){
+	  for(const auto& e : errors){
 	    m += e;
-	    v += e*e;
 	  }
 	  
 	  m /= errors.size();
-	  v /= errors.size();
-	  v -= m*m;
+
+	  for(const auto& e : errors){
+	    v += (e - m)*(e - m);
+	  }
 	  
-	  v = sqrt(v);
+	  v /= (errors.size() - 1);
+	  
+	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
 	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
@@ -584,22 +590,25 @@ namespace whiteice
 	if(errors.size() >= 10){
 	  T m = T(0.0), v = T(0.0);
 	  
-	  for(auto& e : errors){
+	  for(const auto& e : errors){
 	    m += e;
-	    v += e*e;
 	  }
 	  
 	  m /= errors.size();
-	  v /= errors.size();
-	  v -= m*m;
+
+	  for(const auto& e : errors){
+	    v += (e - m)*(e - m);
+	  }
 	  
-	  v = sqrt(v);
+	  v /= (errors.size() - 1);
+	  
+	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
 	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
 	  }
 
-	  if(v/m <= 0.05) 
+	  if((v/m) <= T(0.05))
 	    break; // stdev is less than 5% of mean
 	}
       }
