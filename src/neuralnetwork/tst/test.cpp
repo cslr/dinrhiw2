@@ -84,6 +84,7 @@ void ensemble_means_test();
 void nnetwork_gradient_test();
   
 void rbm_test();
+void simple_rbm_test();
 
 void lbfgs_rbm_test();
 
@@ -123,6 +124,10 @@ int main()
   srand(seed);
   
   try{
+    simple_rbm_test();
+    
+    return 0;
+    
     nnetwork_gradient_test();
     
     bbrbm_test();
@@ -1777,6 +1782,12 @@ void rbm_test()
     std::cout << "RBM LOAD/SAVE TEST OK." << std::endl;
   }
 
+
+}
+
+
+void simple_rbm_test()
+{
   // creates a toy problems and check that results seem to make sense
   {
     std::cout << "RBM TOY PROBLEM TEST" << std::endl;
@@ -1833,6 +1844,22 @@ void rbm_test()
     
     std::cout << "W  = " << machine.getWeights() << std::endl;
     std::cout << "Wt = " << machine.getWeights().transpose() << std::endl;
+
+
+    std::cout << "BBRBM LEARNING TOY PROBLEM.." << std::endl;
+    {
+      whiteice::BBRBM< math::blas_real<float> > bbrbm;
+      bbrbm.resize(V, H);
+
+      auto error = bbrbm.learnWeights(samples, 50, true);
+
+      std::cout << "BBRMB LEARNING TOY PROBLEM.. DONE" << std::endl;
+      std::cout << "W = " << bbrbm.getWeights() << std::endl;
+      std::cout << "b = " << bbrbm.getBValue() << std::endl;
+      std::cout << "a = " << bbrbm.getAValue() << std::endl;
+	
+    }
+    
     
 #if 0
     std::cout << "DBN LEARNING TOY PROBLEM.." << std::endl;

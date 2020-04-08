@@ -202,25 +202,28 @@ namespace whiteice
     printf("\n");
     fflush(stdout);
 
-    printf("LAST LAYER WEIGHTS:\n");
-
-    math::matrix<T> W;
-    math::vertex<T> b;
-
-    this->getBias(b, getLayers()-1);
-    this->getWeights(W, getLayers()-1);
-
-    std::cout << "W = " << W << std::endl;
-    std::cout << "b = " << b << std::endl;
     
+    printf("NEURAL NETWORK LAYER WEIGHTS:\n");
+
+    for(unsigned int l=0;l<getLayers();l++){
+      math::matrix<T> W;
+      math::vertex<T> b;
+      
+      this->getBias(b, l);
+      this->getWeights(W, l);
+    
+      std::cout << "W(" << l << ") = " << W << std::endl;
+      std::cout << "b(" << l << ") = " << b << std::endl;
+    }
+      
   }
 
   
   template <typename T>
   void nnetwork<T>::diagnosticsInfo() const
   {
-    char buffer[80];    
-    snprintf(buffer, 80, "nnetwork: DIAGNOSTIC/MAXVALUE (%d layers):",
+    char buffer[128];    
+    snprintf(buffer, 128, "nnetwork: DIAGNOSTIC/MAXVALUE (%d layers):",
 	     getLayers());
     whiteice::logging.info(buffer);
 
@@ -230,29 +233,44 @@ namespace whiteice
       math::vertex<T> b;
       T maxvalueW = T(-INFINITY);
       T maxvalueb = T(-INFINITY);
+      T minvalueW = T(+INFINITY);
+      T minvalueb = T(+INFINITY);
       
       this->getBias(b, l);
       this->getWeights(W, l);
 
       for(unsigned int i=0;i<b.size();i++){
-	if(maxvalueb < abs(b[i]))
-	  maxvalueb = abs(b[i]);
+	if(maxvalueb < b[i])
+	  maxvalueb = b[i];
+	if(minvalueb > b[i])
+	  minvalueb = b[i];
       }
 
-      for(unsigned int j=0;j<W.ysize();j++)
-	for(unsigned int i=0;i<W.xsize();i++)
-	  if(maxvalueW < abs(W(j, i)))
-	    maxvalueW = abs(W(j, i));
+      for(unsigned int j=0;j<W.ysize();j++){
+	for(unsigned int i=0;i<W.xsize();i++){
+	  if(maxvalueW < W(j, i))
+	    maxvalueW = W(j, i);
+	  if(minvalueW > W(j, i))
+	    minvalueW = W(j, i);
+	}
+      }
 
 
       double temp = 0.0;
-      whiteice::math::convert(temp, maxvalueW);
+      whiteice::math::convert(temp, minvalueW);
 
       double temp2 = 0.0;
-      whiteice::math::convert(temp2, maxvalueb);
+      whiteice::math::convert(temp2, maxvalueW);
 
-      snprintf(buffer, 80, "nnetwork: LAYER %d/%d MAX ABS-VALUE W=%f b=%f",
-	       l+1, getLayers(), temp, temp2);
+      double temp3 = 0.0;
+      whiteice::math::convert(temp3, minvalueb);
+
+      double temp4 = 0.0;
+      whiteice::math::convert(temp4, maxvalueb);
+
+      snprintf(buffer, 128, "nnetwork: LAYER %d/%d %d-%d MIN/MAX ABS-VALUE W=%f/%f b=%f/%f",
+	       l+1, getLayers(), getInputs(l), getNeurons(l),
+	       temp, temp2, temp3, temp4);
       whiteice::logging.info(buffer);
       
     }
@@ -1806,7 +1824,7 @@ namespace whiteice
     math::vertex<T> b;
 
     // sets parameters of the network
-    for(unsigned int i=fromLayer;i<arch.size();i++){
+    for(unsigned int i=fromLayer;i<(arch.size()-1);i++){
       nn->frozen[i-fromLayer] = this->frozen[i];
       nn->nonlinearity[i-fromLayer] = this->nonlinearity[i];
       
@@ -1826,11 +1844,11 @@ namespace whiteice
 					 const unsigned int toLayer)
   {
     if(fromLayer >= getLayers()) return nullptr;
-    if(toLayer >= arch.size()) return nullptr;
+    if(toLayer >= arch.size() || fromLayer >= toLayer) return nullptr;
 
     std::vector<unsigned int> a;
 
-    for(unsigned int i=fromLayer;i<=toLayer;i++)
+    for(unsigned int i=fromLayer;i<=(toLayer+1);i++)
       a.push_back(arch[i]);
 
     nnetwork<T>* nn = new nnetwork<T>(a);

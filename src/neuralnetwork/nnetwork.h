@@ -146,8 +146,13 @@ namespace whiteice
     bool getFrozen(unsigned int layer) const;               // always zero and optimization is restricted
     void getFrozen(std::vector<bool>& frozen) const;        // to other parts of the network
 
-    nnetwork<T>* createSubnet(const unsigned int fromLayer);          // creates subnet starting from fromLayer:th layer to the output
-    nnetwork<T>* createSubnet(const unsigned int fromLayer, const unsigned int toLayer); // creates subnet starting from fromLayer to toLayer;
+    // creates subnet starting from fromLayer:th layer to the output
+    nnetwork<T>* createSubnet(const unsigned int fromLayer);
+
+    // creates subnet starting from fromLayer to toLayer;
+    nnetwork<T>* createSubnet(const unsigned int fromLayer,
+			      const unsigned int toLayer);
+      
     bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); // injects (if possible) subnet into net starting from fromLayer:th layer
     
     unsigned int getSamplesCollected() const throw();

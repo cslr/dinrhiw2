@@ -1,4 +1,37 @@
 blade_math.o: blade_math.cpp blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h number.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
@@ -14,6 +47,39 @@ blade_math.o: blade_math.cpp blade_math.h dinrhiw_blas.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
 ownexception.o: ownexception.cpp ownexception.h
 outerproduct.o: outerproduct.cpp matrix.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h linear_algebra.h vertex.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
@@ -25,9 +91,43 @@ outerproduct.o: outerproduct.cpp matrix.h dinrhiw_blas.h \
  integer.h number.h blade_math.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h quaternion.h gvertex.cpp \
  matrix_rotations.h outerproduct.h norms.h
-vertex.o: vertex.cpp vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+vertex.o: vertex.cpp vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -39,6 +139,39 @@ vertex.o: vertex.cpp vertex.h dinrhiw_blas.h blas_primitives.h \
  linear_algebra.h correlation.h matrix_rotations.h outerproduct.h gcd.h \
  blade_math.h integer.h gvertex.h gmatrix.h real.h gcd.cpp
 quaternion.o: quaternion.cpp quaternion.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h number.h matrix.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h linear_algebra.h vertex.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
@@ -50,9 +183,42 @@ quaternion.o: quaternion.cpp quaternion.h dinrhiw_blas.h \
  integer.h number.h blade_math.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h gvertex.cpp \
  matrix_rotations.h outerproduct.h norms.h
-matrix.o: matrix.cpp matrix.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h linear_algebra.h vertex.h \
+matrix.o: matrix.cpp matrix.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h linear_algebra.h vertex.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -64,6 +230,39 @@ matrix.o: matrix.cpp matrix.h dinrhiw_blas.h blas_primitives.h \
  matrix_rotations.h outerproduct.h norms.h gcd.h gcd.cpp eig.h ../Log.h
 real.o: real.cpp real.h number.h ownexception.h \
  ../neuralnetwork/function.h blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h integer.h gvertex.h gmatrix.h gmatrix.cpp vertex.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
@@ -77,8 +276,42 @@ real.o: real.cpp real.h number.h ownexception.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
 matrix_rotations.o: matrix_rotations.cpp matrix_rotations.h \
- dinrhiw_blas.h blas_primitives.h ownexception.h vertex.h number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h vertex.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -90,8 +323,42 @@ matrix_rotations.o: matrix_rotations.cpp matrix_rotations.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  linear_algebra.h correlation.h outerproduct.h matrix.h
 linear_equations.o: linear_equations.cpp linear_equations.h vertex.h \
- dinrhiw_blas.h blas_primitives.h ownexception.h number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -104,6 +371,39 @@ linear_equations.o: linear_equations.cpp linear_equations.h vertex.h \
  linear_algebra.h correlation.h matrix_rotations.h outerproduct.h \
  matrix.h
 linear_algebra.o: linear_algebra.cpp linear_algebra.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h matrix.h number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h correlation.h \
  ../dynamic_bitset.h integer.h number.h blade_math.h integer.h gvertex.h \
@@ -116,9 +416,43 @@ linear_algebra.o: linear_algebra.cpp linear_algebra.h dinrhiw_blas.h \
  ../neuralnetwork/neuronlayer.h matrix_rotations.h outerproduct.h \
  quaternion.h gvertex.cpp norms.h
 hermite.o: hermite.cpp hermite.h number.h ownexception.h hermite.cpp \
- blade_math.h dinrhiw_blas.h blas_primitives.h integer.h gvertex.h \
- gmatrix.h gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h integer.h gvertex.h gmatrix.h gmatrix.cpp \
+ ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -130,7 +464,41 @@ hermite.o: hermite.cpp hermite.h number.h ownexception.h hermite.cpp \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
 bezier.o: bezier.cpp number.h ownexception.h bezier.h vertex.h \
- dinrhiw_blas.h blas_primitives.h ../compressable.h ../MemoryCompressor.h \
+ dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ../compressable.h ../MemoryCompressor.h \
  ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -148,6 +516,39 @@ bezier_density.o: bezier_density.cpp number.h ownexception.h \
  bezier_density.h
 pdftree.o: pdftree.cpp pdftree.h
 simplex.o: simplex.cpp simplex.h blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h number.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
  ../compressable.h ../MemoryCompressor.h ../compressable.h \
@@ -162,9 +563,43 @@ simplex.o: simplex.cpp simplex.h blade_math.h dinrhiw_blas.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
 BFGS.o: BFGS.cpp BFGS.h ../neuralnetwork/optimized_function.h \
- ../neuralnetwork/function.h vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ ../neuralnetwork/function.h vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h linear_algebra.h matrix.h \
@@ -174,9 +609,43 @@ BFGS.o: BFGS.cpp BFGS.h ../neuralnetwork/optimized_function.h \
  ../neuralnetwork/neuronlayer.h norms.h outerproduct.h \
  ../neuralnetwork/activation_function.h dinrhiw_blas.h linear_equations.h \
  vertex.h matrix.h
-LBFGS.o: LBFGS.cpp LBFGS.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h vertex.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+LBFGS.o: LBFGS.cpp LBFGS.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h vertex.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -187,10 +656,43 @@ LBFGS.o: LBFGS.cpp LBFGS.h dinrhiw_blas.h blas_primitives.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  linear_algebra.h correlation.h matrix_rotations.h outerproduct.h \
  linear_equations.h matrix.h
-gcd.o: gcd.cpp gcd.h dinrhiw_blas.h blas_primitives.h ownexception.h \
- blade_math.h number.h integer.h gvertex.h gmatrix.h gmatrix.cpp \
- ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h \
+gcd.o: gcd.cpp gcd.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h blade_math.h number.h integer.h \
+ gvertex.h gmatrix.h gmatrix.cpp ../neuralnetwork/function.h real.h \
+ vertex.h ../compressable.h ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -204,21 +706,41 @@ gcd.o: gcd.cpp gcd.h dinrhiw_blas.h blas_primitives.h ownexception.h \
  gcd.cpp
 integer.o: integer.cpp integer.h number.h ownexception.h
 modular.o: modular.cpp modular.h number.h ownexception.h integer.h \
- blade_math.h dinrhiw_blas.h blas_primitives.h gvertex.h gmatrix.h \
- gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
- ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
- ../neuralnetwork/nn_iterative_correction.h vertex.h \
- ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
- ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
- number.h linear_algebra.h matrix.h vertex.h correlation.h \
- ../dynamic_bitset.h integer.h blade_math.h integer.h gvertex.h gmatrix.h \
- real.h matrix_rotations.h ../neuralnetwork/neuronlayer.h norms.h \
- outerproduct.h ../neuralnetwork/activation_function.h \
- ../neuralnetwork/function.h linear_algebra.h correlation.h \
- matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
-gmatrix.o: gmatrix.cpp gmatrix.h ownexception.h number.h gvertex.h \
- gvertex.cpp blade_math.h dinrhiw_blas.h blas_primitives.h integer.h \
+ blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h gvertex.h gmatrix.h gmatrix.cpp \
  ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
@@ -230,8 +752,88 @@ gmatrix.o: gmatrix.cpp gmatrix.h ownexception.h number.h gvertex.h \
  real.h matrix_rotations.h ../neuralnetwork/neuronlayer.h norms.h \
  outerproduct.h ../neuralnetwork/activation_function.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
+ matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
+gmatrix.o: gmatrix.cpp gmatrix.h ownexception.h number.h gvertex.h \
+ gvertex.cpp blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h integer.h ../neuralnetwork/function.h real.h vertex.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
+ number.h linear_algebra.h matrix.h vertex.h correlation.h \
+ ../dynamic_bitset.h integer.h blade_math.h integer.h gvertex.h gmatrix.h \
+ real.h matrix_rotations.h ../neuralnetwork/neuronlayer.h norms.h \
+ outerproduct.h ../neuralnetwork/activation_function.h \
+ ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gmatrix.cpp
 gvertex.o: gvertex.cpp ownexception.h blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h number.h integer.h gvertex.h gmatrix.h gmatrix.cpp \
  ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h \
@@ -245,10 +847,43 @@ gvertex.o: gvertex.cpp ownexception.h blade_math.h dinrhiw_blas.h \
  outerproduct.h ../neuralnetwork/activation_function.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
-eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h integer.h gvertex.h gmatrix.h gmatrix.cpp \
- ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h \
+eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h integer.h gvertex.h gmatrix.h \
+ gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -260,6 +895,39 @@ eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h blas_primitives.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
 correlation.o: correlation.cpp correlation.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h ../dynamic_bitset.h integer.h number.h \
  ownexception.h blade_math.h number.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
@@ -273,9 +941,43 @@ correlation.o: correlation.cpp correlation.h dinrhiw_blas.h \
  gmatrix.h real.h outerproduct.h ../neuralnetwork/activation_function.h \
  ../neuralnetwork/function.h linear_algebra.h matrix_rotations.h \
  outerproduct.h matrix.h quaternion.h gvertex.cpp eig.h
-norms.o: norms.cpp norms.h vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+norms.o: norms.cpp norms.h vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -286,10 +988,43 @@ norms.o: norms.cpp norms.h vertex.h dinrhiw_blas.h blas_primitives.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  linear_algebra.h correlation.h matrix_rotations.h outerproduct.h \
  matrix.h blade_math.h integer.h gvertex.h gmatrix.h real.h
-eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h integer.h gvertex.h gmatrix.h gmatrix.cpp \
- ../neuralnetwork/function.h real.h vertex.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h \
+eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h integer.h gvertex.h gmatrix.h \
+ gmatrix.cpp ../neuralnetwork/function.h real.h vertex.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -300,9 +1035,43 @@ eig.o: eig.cpp eig.h blade_math.h dinrhiw_blas.h blas_primitives.h \
  outerproduct.h ../neuralnetwork/activation_function.h \
  ../neuralnetwork/function.h linear_algebra.h correlation.h \
  matrix_rotations.h outerproduct.h matrix.h quaternion.h gvertex.cpp
-ica.o: ica.cpp ica.h vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ica.o: ica.cpp ica.h vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -314,9 +1083,43 @@ ica.o: ica.cpp ica.h vertex.h dinrhiw_blas.h blas_primitives.h \
  linear_algebra.h correlation.h matrix_rotations.h outerproduct.h \
  matrix.h eig.h blade_math.h integer.h gvertex.h gmatrix.h real.h
 RungeKutta.o: RungeKutta.cpp RungeKutta.h odefunction.h \
- ../neuralnetwork/function.h vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ ../neuralnetwork/function.h vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -329,8 +1132,42 @@ RungeKutta.o: RungeKutta.cpp RungeKutta.h odefunction.h \
  blade_math.h integer.h gvertex.h gmatrix.h real.h
 maximizer.o: maximizer.cpp maximizer.h \
  ../neuralnetwork/optimized_function.h ../neuralnetwork/function.h \
- vertex.h dinrhiw_blas.h blas_primitives.h ownexception.h number.h \
- ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -343,6 +1180,39 @@ maximizer.o: maximizer.cpp maximizer.h \
  dinrhiw_blas.h number.h ownexception.h integer.h gvertex.h gmatrix.h \
  real.h matrix.h correlation.h
 fastpca.o: fastpca.cpp fastpca.h matrix.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
  blas_primitives.h ownexception.h number.h ../compressable.h \
  ../MemoryCompressor.h ../compressable.h linear_algebra.h vertex.h \
  ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
@@ -354,9 +1224,43 @@ fastpca.o: fastpca.cpp fastpca.h matrix.h dinrhiw_blas.h \
  integer.h number.h blade_math.h integer.h gvertex.h gmatrix.h \
  gmatrix.cpp ../neuralnetwork/function.h real.h quaternion.h gvertex.cpp \
  matrix_rotations.h outerproduct.h norms.h
-RNG.o: RNG.cpp RNG.h vertex.h dinrhiw_blas.h blas_primitives.h \
- ownexception.h number.h ../compressable.h ../MemoryCompressor.h \
- ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+RNG.o: RNG.cpp RNG.h vertex.h dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h vertex.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h dinrhiw_blas.h ownexception.h \
@@ -371,9 +1275,42 @@ MemoryCompressor.o: ../MemoryCompressor.cpp ../MemoryCompressor.h \
 conffile.o: ../conffile.cpp ../../config.h ../conffile.h
 dynamic_bitset.o: ../dynamic_bitset.cpp ../dynamic_bitset.h integer.h \
  number.h ownexception.h
-test.o: tst/test.cpp dinrhiw_blas.h blas_primitives.h ownexception.h \
- number.h vertex.h dinrhiw_blas.h number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h \
+test.o: tst/test.cpp dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h ownexception.h number.h vertex.h dinrhiw_blas.h \
+ number.h ../compressable.h ../MemoryCompressor.h ../compressable.h \
  ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/nn_iterative_correction.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
@@ -387,9 +1324,42 @@ test.o: tst/test.cpp dinrhiw_blas.h blas_primitives.h ownexception.h \
  bezier.h pdftree.h simplex.h linear_equations.h correlation.h modular.h \
  norms.h real.h eig.h gmatrix.h gvertex.h RNG.h RNG.cpp RNG.h
 test2.o: tst/test2.cpp simplex.h number.h ownexception.h vertex.h \
- dinrhiw_blas.h blas_primitives.h number.h ../compressable.h \
- ../MemoryCompressor.h ../compressable.h \
- ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
+ dinrhiw_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trans.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_cblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_spblas.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapack.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_lapacke.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_pardiso.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dss.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_sparse_handle.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_rci.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_service.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vml_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_vsl_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_defines.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_functions.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_df_types.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_dfti.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_trig_transforms.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_poisson.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_solvers_ee.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_direct_call.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_compact.h \
+ /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_blas.h \
+ blas_primitives.h number.h ../compressable.h ../MemoryCompressor.h \
+ ../compressable.h ../neuralnetwork/backpropagation.h dinrhiw_blas.h \
  ../neuralnetwork/nn_iterative_correction.h \
  ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
  ../neuralnetwork/neuronlayer.h matrix.h linear_algebra.h matrix.h \
