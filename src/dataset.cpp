@@ -1642,20 +1642,39 @@ namespace whiteice
 	
 	// we can use autocorrelation because mean is already zero
 	if(autocorrelation(clusters[index].Rxx, clusters[index].data) == false){
-		clusters[index].Rxx.resize(clusters[index].data_dimension, clusters[index].data_dimension);
-		clusters[index].Rxx.identity();
+	  clusters[index].Rxx.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+	  clusters[index].Rxx.identity();
 	}
 	
 	// std::cout << "Rxx = " << clusters[index].Rxx << std::endl;
+
+
+	// regularizes the problem by adding variance to diagonal
+	// in order to be able to compute eig()
 	
 	math::matrix<T> V, Vt, invD, D(clusters[index].Rxx);
+	T dd = T(10e-2);
+	unsigned int counter = 0;
 	
-	if(symmetric_eig(D, V) == false){
-		D.resize(clusters[index].data_dimension, clusters[index].data_dimension);
-		D.identity();
-		V.resize(clusters[index].data_dimension, clusters[index].data_dimension);
-		V.identity();
+	while(symmetric_eig(D, V) == false){
+	  D = clusters[index].Rxx;
+
+	  for(unsigned int i=0;i<D.ysize();i++){
+	    D(i,i) += dd;
+	  }
+
+	  dd = T(2.0)*dd;
+	  counter++;
+
+	  if(counter >= 10){
+	    D.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+	    D.identity();
+	    V.resize(clusters[index].data_dimension, clusters[index].data_dimension);
+	    V.identity();
+	    break;
+	  }
 	}
+	
 	
 	// std::cout << "typeinfo = " << typeid(T).name() << std::endl;
 	// std::cout << "D = " << D << std::endl;

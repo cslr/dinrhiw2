@@ -47,7 +47,7 @@ HMM.o: HMM.cpp HMM.h ../math/real.h ../math/number.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h ../dataset.h ../math/ica.h ../linear_ETA.h ../ETA.h \
- ../linear_ETA.cpp ../linear_ETA.h
+ ../math/blas_primitives.h ../linear_ETA.cpp ../linear_ETA.h
 test.o: tst/test.cpp HMM.h ../math/real.h ../math/number.h \
  ../math/ownexception.h ../neuralnetwork/function.h ../math/blade_math.h \
  ../math/dinrhiw_blas.h \
@@ -294,7 +294,7 @@ real.o: ../math/real.cpp ../math/real.h ../math/number.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/quaternion.h ../math/gvertex.cpp
 linear_ETA.o: ../linear_ETA.cpp ../linear_ETA.h ../ETA.h \
- ../linear_ETA.cpp
+ ../math/blas_primitives.h ../math/ownexception.h ../linear_ETA.cpp
 ownexception.o: ../math/ownexception.cpp ../math/ownexception.h
 norms.o: ../math/norms.cpp ../math/norms.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \

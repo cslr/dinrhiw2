@@ -5,12 +5,13 @@
 #define linear_ETA_h
 
 #include "ETA.h"
+#include "blas_primitives.h"
 
 namespace whiteice
 {
 
-  template <typename T>
-    class linear_ETA : public ETA<T>
+  template <typename T = whiteice::math::blas_real<float> >
+  class linear_ETA : public ETA<T>
     {
     public:
       linear_ETA();

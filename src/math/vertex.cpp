@@ -362,6 +362,16 @@ namespace whiteice
 	  data[i] = T(0.0f);
       }
     }
+
+
+    template <typename T>
+    void vertex<T>::hermite() throw()
+    {
+      if(dataSize <= 0) return;
+
+      for(unsigned int i=0;i<dataSize;i++)
+	data[i] = conj(data[i]);
+    }
     
     
     // calculates sum of vertexes

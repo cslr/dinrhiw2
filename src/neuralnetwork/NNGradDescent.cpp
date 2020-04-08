@@ -286,6 +286,7 @@ namespace whiteice
 				 const whiteice::dataset<T>& dtest,
 				 bool regularize)
     {
+      // error term is E[ 0.5*||y-f(x)||^2 ]
       T error = T(0.0);
       
       // calculates initial error

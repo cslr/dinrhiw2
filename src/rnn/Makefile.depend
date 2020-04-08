@@ -75,10 +75,10 @@ test.o: tst/test.cpp ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
  ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
  ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../ETA.h ../linear_ETA.h ../math/blas_primitives.h ../linear_ETA.cpp \
+ ../MemoryCompressor.h ../conffile.h ../unique_id.h ../math/number.h \
+ ../math/blade_math.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -166,8 +166,8 @@ RNN_RBM.o: RNN_RBM.cpp RNN_RBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
- ../neuralnetwork/nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp \
- ../math/RNG.h ../neuralnetwork/BBRBM.h ../dataset.h ../math/ica.h \
+ ../neuralnetwork/nnetwork.h ../conffile.h ../dataset.h ../math/ica.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../neuralnetwork/BBRBM.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h
 dataset.o: ../dataset.cpp ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -414,5 +414,5 @@ real.o: ../math/real.cpp ../math/real.h ../math/number.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/quaternion.h ../math/gvertex.cpp
 linear_ETA.o: ../linear_ETA.cpp ../linear_ETA.h ../ETA.h \
- ../linear_ETA.cpp
+ ../math/blas_primitives.h ../math/ownexception.h ../linear_ETA.cpp
 ownexception.o: ../math/ownexception.cpp ../math/ownexception.h

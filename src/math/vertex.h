@@ -98,6 +98,9 @@ namespace whiteice
       
       bool normalize() throw(); // length = 1
       void zero() throw(); // vertex = 0;
+
+      // hermitean transpose of the vector
+      void hermite() throw();
       
       vertex<T> operator+(const vertex<T>& v) const throw(illegal_operation);      
       vertex<T> operator-(const vertex<T>& v) const throw(illegal_operation);

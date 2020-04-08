@@ -623,7 +623,84 @@ namespace whiteice
     return true;
   }
   
-  
+
+  // set parameters to fit the data from dataset (we set weights to match data values)
+  // [experimental code]
+  template <typename T>
+  bool nnetwork<T>::presetWeightsFromData(const whiteice::dataset<T>& ds)
+  {
+    if(ds.getNumberOfClusters() == 0) return false;
+    if(ds.dimension(0) != input_size()) return false;
+    if(ds.size(0) <= 0) return false;
+
+    this->randomize(); // sets biases to random values
+
+    // set weights to match to data so that inner product is matched exactly to some data
+    std::vector< whiteice::math::vertex<T> > inputdata;
+    std::vector< whiteice::math::vertex<T> > outputdata;
+    std::vector< whiteice::math::vertex<T> > realoutput;
+
+    for(unsigned int i=0;i<ds.size(0);i++)
+      inputdata.push_back(ds.access(0, i));
+
+    for(unsigned int i=0;i<ds.size(1);i++)
+      realoutput.push_back(ds.access(1, i));
+    
+
+    for(unsigned int l=0;l<getLayers();l++){
+      math::matrix<T> W;
+      math::vertex<T> b;
+      
+      getWeights(W, l);
+      getBias(b, l);
+
+      if(l != getLayers()-1){ // not the last layer
+	for(unsigned int j=0;j<W.ysize();j++){
+	  unsigned int k = rand() % inputdata.size();
+	  for(unsigned int i=0;i<W.xsize();i++){
+	    W(j,i) = inputdata[k][i];
+	  }
+	}
+
+	b.zero();
+      }
+      else{ // the last layer, calculate linear mapping y=A*x + b
+
+	// W = Cyx*inv(Cxx)
+	// b = E[y] - W*E[x]
+	
+	whiteice::math::vertex<T> mx, my;
+	whiteice::math::matrix<T> Cxx, Cyx;
+
+	mean_covariance_estimate(mx, Cxx, inputdata);
+	mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
+
+	Cxx.symmetric_pseudoinverse();	
+	W = Cyx*Cxx;
+	b = my - W*mx;
+      }
+
+      setWeights(W, l);
+      setBias(b, l);
+
+      outputdata.resize(inputdata.size());
+
+      // processes data in parallel
+#pragma omp parallel for schedule(dynamic)
+      for(unsigned int i=0;i<inputdata.size();i++){
+	auto out = W*inputdata[i] + b;
+	for(unsigned int n=0;n<out.size();n++)
+	  out[n] = nonlin(out[n], l, n);
+
+	outputdata[i] = out;
+      }
+
+      inputdata = outputdata;
+      outputdata.clear();
+    }
+
+    return true;
+  }
   
   // calculates gradient of [ 1/2*(last_output - network(last_input|w))^2 ] => error*GRAD[function(x,w)]
   // uses values stored by previous computation, this function is very heavily optimized using direct memory

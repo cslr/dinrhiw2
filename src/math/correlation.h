@@ -44,6 +44,13 @@ namespace whiteice
 				    const std::vector< vertex<T> >& data,
 				    const std::vector< whiteice::dynamic_bitset >& missing);
 
+    
+    // calculates crosscorrelation matrix Cyx as well as mean values E[x], E[y]
+    template <typename T>
+    bool mean_crosscorrelation_estimate(vertex<T>& mx, vertex<T>& my, matrix<T>& Cyx,
+					const std::vector< vertex<T> >& xdata,
+					const std::vector< vertex<T> >& ydata);
+
 
     // calculates PCA dimension reduction using symmetric eigenvalue decomposition
     template <typename T>
@@ -148,6 +155,36 @@ namespace whiteice
       (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
        const std::vector< vertex< blas_complex<double> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
+
+    extern template bool mean_crosscorrelation_estimate< float >
+    (vertex< float >& mx, vertex< float >& my, matrix< float >& Cyx,
+     const std::vector< vertex<float> >& xdata,
+     const std::vector< vertex<float> >& ydata);
+
+    extern template bool mean_crosscorrelation_estimate< double >
+    (vertex< double >& mx, vertex< double >& my, matrix< double >& Cyx,
+     const std::vector< vertex<double> >& xdata,
+     const std::vector< vertex<double> >& ydata);
+    
+    extern template bool mean_crosscorrelation_estimate< blas_real<float> >
+    (vertex< blas_real<float> >& mx, vertex< blas_real<float> >& my, matrix< blas_real<float> >& Cyx,
+     const std::vector< vertex< blas_real<float> > >& xdata,
+     const std::vector< vertex< blas_real<float> > >& ydata);
+
+    extern template bool mean_crosscorrelation_estimate< blas_real<double> >
+    (vertex< blas_real<double> >& mx, vertex< blas_real<double> >& my, matrix< blas_real<double> >& Cyx,
+     const std::vector< vertex< blas_real<double> > >& xdata,
+     const std::vector< vertex< blas_real<double> > >& ydata);
+
+    extern template bool mean_crosscorrelation_estimate< blas_complex<float> >
+    (vertex< blas_complex<float> >& mx, vertex< blas_complex<float> >& my, matrix< blas_complex<float> >& Cyx,
+     const std::vector< vertex< blas_complex<float> > >& xdata,
+     const std::vector< vertex< blas_complex<float> > >& ydata);
+
+    extern template bool mean_crosscorrelation_estimate< blas_complex<double> >
+    (vertex< blas_complex<double> >& mx, vertex< blas_complex<double> >& my, matrix< blas_complex<double> >& Cyx,
+     const std::vector< vertex< blas_complex<double> > >& xdata,
+     const std::vector< vertex< blas_complex<double> > >& ydata);
 
 
     extern template bool pca<float>

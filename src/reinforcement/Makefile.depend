@@ -47,8 +47,8 @@ RIFL_abstract.o: RIFL_abstract.cpp RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFLdataset.h ../neuralnetwork/NNGradDescent.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFLdataset.h ../neuralnetwork/NNGradDescent.h \
  ../dinrhiw.h ../Log.h ../math/fastpca.h ../neuralnetwork/DBN.h \
  ../neuralnetwork/GBRBM.h ../neuralnetwork/BBRBM.h \
  ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
@@ -74,10 +74,10 @@ RIFL_abstract.o: RIFL_abstract.cpp RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../rbtree.h ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h \
  ../btree_node.h ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h \
  ../fast_radixv.h ../radix_sort.h ../radix_sortv.h ../insertion.h \
- ../ETA.h ../linear_ETA.h ../linear_ETA.cpp ../MemoryCompressor.h \
- ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
- ../math/blas_primitives.h ../math/modular.h ../math/gcd.h \
- ../math/gcd.cpp ../math/gcd.h ../primality_test.h ../primality_test.cpp \
+ ../ETA.h ../linear_ETA.h ../math/blas_primitives.h ../linear_ETA.cpp \
+ ../MemoryCompressor.h ../conffile.h ../unique_id.h ../math/number.h \
+ ../math/blade_math.h ../math/modular.h ../math/gcd.h ../math/gcd.cpp \
+ ../math/gcd.h ../primality_test.h ../primality_test.cpp \
  ../math/quaternion.h ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
  ../math/linear_algebra.h ../math/linear_equations.h \
  ../math/matrix_rotations.h ../math/eig.h ../conversion.h \
@@ -168,8 +168,8 @@ CartPole.o: CartPole.cpp CartPole.h RIFL_abstract.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFLdataset.h
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFLdataset.h
 PolicyGradAscent.o: PolicyGradAscent.cpp PolicyGradAscent.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -247,8 +247,8 @@ PolicyGradAscent.o: PolicyGradAscent.cpp PolicyGradAscent.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -341,8 +341,8 @@ RIFL_abstract2.o: RIFL_abstract2.cpp RIFL_abstract2.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFL2dataset.h CreatePolicyDataset.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFL2dataset.h CreatePolicyDataset.h \
  ../neuralnetwork/NNGradDescent.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h ../neuralnetwork/BBRBM.h \
  ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
@@ -368,8 +368,8 @@ RIFL_abstract2.o: RIFL_abstract2.cpp RIFL_abstract2.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -615,8 +615,8 @@ CartPole2.o: CartPole2.cpp CartPole2.h RIFL_abstract2.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFL2dataset.h CreatePolicyDataset.h ../Log.h
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFL2dataset.h CreatePolicyDataset.h ../Log.h
 test.o: tst/test.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -666,8 +666,8 @@ test.o: tst/test.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFLdataset.h CartPole2.h RIFL_abstract2.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFLdataset.h CartPole2.h RIFL_abstract2.h \
  CreateRIFL2dataset.h CreatePolicyDataset.h RIFL_abstract.h ../Log.h
 test2.o: tst/test2.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -718,8 +718,8 @@ test2.o: tst/test2.cpp CartPole.h RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h CreateRIFLdataset.h CartPole2.h RIFL_abstract2.h \
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h CreateRIFLdataset.h CartPole2.h RIFL_abstract2.h \
  CreateRIFL2dataset.h CreatePolicyDataset.h RIFL_abstract.h ../Log.h
 dataset.o: ../dataset.cpp ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -967,7 +967,8 @@ nnetwork.o: ../neuralnetwork/nnetwork.cpp ../neuralnetwork/nnetwork.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../Log.h
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h ../Log.h
 bayesian_nnetwork.o: ../neuralnetwork/bayesian_nnetwork.cpp \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
  ../math/dinrhiw_blas.h \
@@ -1018,8 +1019,8 @@ bayesian_nnetwork.o: ../neuralnetwork/bayesian_nnetwork.cpp \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h ../Log.h
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h ../Log.h
 conffile.o: ../conffile.cpp ../../config.h ../conffile.h
 NNGradDescent.o: ../neuralnetwork/NNGradDescent.cpp \
  ../neuralnetwork/NNGradDescent.h ../math/dinrhiw_blas.h \
@@ -1098,8 +1099,8 @@ NNGradDescent.o: ../neuralnetwork/NNGradDescent.cpp \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1191,8 +1192,8 @@ deep_ica_network_priming.o: ../neuralnetwork/deep_ica_network_priming.cpp \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
- ../neuralnetwork/nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp \
- ../math/RNG.h ../dataset.h ../math/ica.h ../math/eig.h \
+ ../neuralnetwork/nnetwork.h ../conffile.h ../dataset.h ../math/ica.h \
+ ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../math/eig.h \
  ../math/correlation.h ../math/linear_algebra.h \
  ../math/linear_equations.h
 linear_equations.o: ../math/linear_equations.cpp \
@@ -1493,7 +1494,7 @@ GBRBM.o: ../neuralnetwork/GBRBM.cpp ../neuralnetwork/GBRBM.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
  ../neuralnetwork/LBFGS_GBRBM.h ../math/LBFGS.h ../linear_ETA.h ../ETA.h \
- ../linear_ETA.cpp ../linear_ETA.h ../Log.h
+ ../math/blas_primitives.h ../linear_ETA.cpp ../linear_ETA.h ../Log.h
 BBRBM.o: ../neuralnetwork/BBRBM.cpp ../neuralnetwork/BBRBM.h \
  ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -1543,8 +1544,8 @@ BBRBM.o: ../neuralnetwork/BBRBM.cpp ../neuralnetwork/BBRBM.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
- ../linear_ETA.h ../ETA.h ../linear_ETA.cpp ../linear_ETA.h ../Log.h \
- ../neuralnetwork/LBFGS_BBRBM.h ../math/LBFGS.h
+ ../linear_ETA.h ../ETA.h ../math/blas_primitives.h ../linear_ETA.cpp \
+ ../linear_ETA.h ../Log.h ../neuralnetwork/LBFGS_BBRBM.h ../math/LBFGS.h
 outerproduct.o: ../math/outerproduct.cpp ../math/matrix.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \

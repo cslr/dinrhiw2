@@ -20,6 +20,7 @@
 #include "vertex.h"
 #include "conffile.h"
 #include "compressable.h"
+#include "dataset.h"
 #include "MemoryCompressor.h"
 #include "RNG.h"
 
@@ -92,8 +93,12 @@ namespace whiteice
     bool calculate(const math::vertex<T>& input, math::vertex<T>& output) const;
 
     unsigned int length() const; // number of layers
-    
+
+    // set nnetworks parameters to random values
     bool randomize();
+
+    // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
+    bool presetWeightsFromData(const whiteice::dataset<T>& ds);
     
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
     // grad(0,5*error^2) = grad(right - output)
@@ -152,8 +157,9 @@ namespace whiteice
     // creates subnet starting from fromLayer to toLayer;
     nnetwork<T>* createSubnet(const unsigned int fromLayer,
 			      const unsigned int toLayer);
-      
-    bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); // injects (if possible) subnet into net starting from fromLayer:th layer
+
+    // injects (if possible) subnet into net starting from fromLayer:th layer
+    bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); 
     
     unsigned int getSamplesCollected() const throw();
 

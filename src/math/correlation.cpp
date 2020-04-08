@@ -422,6 +422,8 @@ namespace whiteice
 	
 	m += data[i];
       }
+
+      
       
       
       for(unsigned int i=0;i<D;i++)
@@ -437,6 +439,53 @@ namespace whiteice
     }
 
 
+    // calculates crosscorrelation matrix Cyx as well as mean values E[x], E[y]
+    template <typename T>
+    bool mean_crosscorrelation_estimate(vertex<T>& mx, vertex<T>& my, matrix<T>& Cyx,
+					const std::vector< vertex<T> >& xdata,
+					const std::vector< vertex<T> >& ydata)
+    {
+      // not optimized
+
+      if(xdata.size() != ydata.size()) return false;
+      if(xdata.size() == 0) return false;
+
+      // calculates Ryx and mean and then Cyx = Ryx - my*mx^t
+
+      mx.resize(xdata[0].size());
+      my.resize(ydata[0].size());
+      Cyx.resize(ydata[0].size(), xdata[0].size());
+      mx.zero();
+      my.zero();
+      Cyx.zero();
+
+      printf("B\n"); fflush(stdout);
+
+      for(unsigned int i=0;i<xdata.size();i++){
+	mx += xdata[i];
+	my += ydata[i];
+
+	auto hx = xdata[i];
+	hx.hermite();
+	for(unsigned int y=0;y<ydata[0].size();y++)
+	  for(unsigned int x=0;x<xdata[0].size();x++)
+	    Cyx(y,x) += ydata[i][y]*hx[x];
+      }
+
+      mx /= T(xdata.size());
+      my /= T(xdata.size());
+      Cyx /= T(xdata.size());
+
+      auto hmx = mx;
+      hmx.hermite();
+
+      for(unsigned int y=0;y<ydata[0].size();y++)
+	for(unsigned int x=0;x<xdata[0].size();x++)
+	  Cyx(y,x) -= my[y]*hmx[x];
+
+      return true;
+    }
+    
     
     // calculates PCA dimension reduction using symmetric eigenvalue decomposition
     template <typename T>
@@ -566,6 +615,39 @@ namespace whiteice
     (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
      const std::vector< vertex< blas_complex<double> > >& data,
      const std::vector< whiteice::dynamic_bitset >& missing);
+
+    
+    template bool mean_crosscorrelation_estimate< float >
+    (vertex< float >& mx, vertex< float >& my, matrix< float >& Cyx,
+     const std::vector< vertex<float> >& xdata,
+     const std::vector< vertex<float> >& ydata);
+
+    template bool mean_crosscorrelation_estimate< double >
+    (vertex< double >& mx, vertex< double >& my, matrix< double >& Cyx,
+     const std::vector< vertex<double> >& xdata,
+     const std::vector< vertex<double> >& ydata);
+
+    
+    template bool mean_crosscorrelation_estimate< blas_real<float> >
+    (vertex< blas_real<float> >& mx, vertex< blas_real<float> >& my, matrix< blas_real<float> >& Cyx,
+     const std::vector< vertex< blas_real<float> > >& xdata,
+     const std::vector< vertex< blas_real<float> > >& ydata);
+
+    template bool mean_crosscorrelation_estimate< blas_real<double> >
+    (vertex< blas_real<double> >& mx, vertex< blas_real<double> >& my, matrix< blas_real<double> >& Cyx,
+     const std::vector< vertex< blas_real<double> > >& xdata,
+     const std::vector< vertex< blas_real<double> > >& ydata);
+
+    template bool mean_crosscorrelation_estimate< blas_complex<float> >
+    (vertex< blas_complex<float> >& mx, vertex< blas_complex<float> >& my, matrix< blas_complex<float> >& Cyx,
+     const std::vector< vertex< blas_complex<float> > >& xdata,
+     const std::vector< vertex< blas_complex<float> > >& ydata);
+
+    template bool mean_crosscorrelation_estimate< blas_complex<double> >
+    (vertex< blas_complex<double> >& mx, vertex< blas_complex<double> >& my, matrix< blas_complex<double> >& Cyx,
+     const std::vector< vertex< blas_complex<double> > >& xdata,
+     const std::vector< vertex< blas_complex<double> > >& ydata);
+
     
     
     template bool pca<float>

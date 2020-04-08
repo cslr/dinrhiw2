@@ -66,8 +66,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -239,7 +239,7 @@ gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h \
  ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
+ ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 neuron.o: neuron.cpp activation_function.h function.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -710,8 +710,8 @@ optimized_nnetwork_function.o: optimized_nnetwork_function.cpp \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h optimized_function.h nnetwork.h \
- ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h \
- ../math/ica.h
+ ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h
 PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -989,7 +989,8 @@ SOM2D.o: SOM2D.cpp SOM2D.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../data_source.h ../ETA.h \
- ../linear_ETA.h ../ETA.h ../linear_ETA.cpp ../linear_ETA.h ../conffile.h
+ ../linear_ETA.h ../ETA.h ../math/blas_primitives.h ../linear_ETA.cpp \
+ ../linear_ETA.h ../conffile.h
 KMeans.o: KMeans.cpp KMeans.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl_version.h \
@@ -1104,8 +1105,8 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1202,8 +1203,8 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../Log.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1299,8 +1300,8 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../math/fastpca.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1472,7 +1473,7 @@ gene_main.o: tst/gene_main.cpp GeneticAlgorithm.h function.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h \
  ga3_test_function.h nnetwork_function.h nnetwork.h ../conffile.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
+ ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 GeneticAlgorithm.o: GeneticAlgorithm.cpp GeneticAlgorithm.h function.h \
  GeneticAlgorithm.cpp
 GeneticAlgorithm2.o: GeneticAlgorithm2.cpp GeneticAlgorithm2.h function.h \
@@ -1550,8 +1551,8 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1649,8 +1650,8 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1747,8 +1748,8 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -1822,7 +1823,7 @@ bayesian_nnetwork.o: bayesian_nnetwork.cpp bayesian_nnetwork.h nnetwork.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
  ../math/outerproduct.h activation_function.h function.h ../conffile.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
  ../Log.h
 HMC_abstract.o: HMC_abstract.cpp HMC_abstract.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
@@ -2054,8 +2055,8 @@ deep_ica_network_priming.o: deep_ica_network_priming.cpp \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h nnetwork.h ../conffile.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h ../math/eig.h \
+ activation_function.h function.h nnetwork.h ../conffile.h ../dataset.h \
+ ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../math/eig.h \
  ../math/correlation.h ../math/linear_algebra.h \
  ../math/linear_equations.h
 BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
@@ -2103,8 +2104,8 @@ BFGS_nnetwork.o: BFGS_nnetwork.cpp BFGS_nnetwork.h ../math/BFGS.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h nnetwork.h ../conffile.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ activation_function.h nnetwork.h ../conffile.h ../dataset.h \
+ ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
  deep_ica_network_priming.h
 pBFGS_nnetwork.o: pBFGS_nnetwork.cpp pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/BFGS.h optimized_function.h function.h ../math/vertex.h \
@@ -2152,8 +2153,8 @@ pBFGS_nnetwork.o: pBFGS_nnetwork.cpp pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h nnetwork.h ../conffile.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h ../dataset.h ../math/ica.h \
+ activation_function.h nnetwork.h ../conffile.h ../dataset.h \
+ ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
  deep_ica_network_priming.h
 LBFGS_nnetwork.o: LBFGS_nnetwork.cpp LBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/dinrhiw_blas.h \
@@ -2201,8 +2202,8 @@ LBFGS_nnetwork.o: LBFGS_nnetwork.cpp LBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
- ../dataset.h ../math/ica.h deep_ica_network_priming.h ../math/eig.h
+ nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h ../math/eig.h
 pLBFGS_nnetwork.o: pLBFGS_nnetwork.cpp pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  ../math/LBFGS.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2249,8 +2250,8 @@ pLBFGS_nnetwork.o: pLBFGS_nnetwork.cpp pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
- ../dataset.h ../math/ica.h deep_ica_network_priming.h
+ nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h
 lreg_nnetwork.o: lreg_nnetwork.cpp lreg_nnetwork.h nnetwork.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2297,7 +2298,8 @@ lreg_nnetwork.o: lreg_nnetwork.cpp lreg_nnetwork.h nnetwork.h \
  ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
  ../math/outerproduct.h activation_function.h function.h ../conffile.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../math/blade_math.h
+ ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../math/blade_math.h
 nnetwork_function.o: nnetwork_function.cpp nnetwork_function.h \
  optimized_function.h function.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2343,8 +2345,8 @@ nnetwork_function.o: nnetwork_function.cpp nnetwork_function.h \
  ../math/gmatrix.h ../math/gmatrix.cpp function.h ../math/real.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
- activation_function.h function.h nnetwork.h ../conffile.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h
+ activation_function.h function.h nnetwork.h ../conffile.h ../dataset.h \
+ ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h
 ultradeep.o: ultradeep.cpp ultradeep.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2577,7 +2579,8 @@ BBRBM.o: BBRBM.cpp BBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h ../dataset.h ../math/ica.h ../linear_ETA.h ../ETA.h \
- ../linear_ETA.cpp ../linear_ETA.h ../Log.h LBFGS_BBRBM.h ../math/LBFGS.h
+ ../math/blas_primitives.h ../linear_ETA.cpp ../linear_ETA.h ../Log.h \
+ LBFGS_BBRBM.h ../math/LBFGS.h
 construct_nnetwork.o: construct_nnetwork.cpp construct_nnetwork.h DBN.h \
  GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -2768,7 +2771,8 @@ GBRBM.o: GBRBM.cpp GBRBM.h ../math/vertex.h ../math/dinrhiw_blas.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h ../dataset.h ../math/ica.h LBFGS_GBRBM.h ../math/LBFGS.h \
- ../linear_ETA.h ../ETA.h ../linear_ETA.cpp ../linear_ETA.h ../Log.h
+ ../linear_ETA.h ../ETA.h ../math/blas_primitives.h ../linear_ETA.cpp \
+ ../linear_ETA.h ../Log.h
 HMCGBRBM.o: HMCGBRBM.cpp HMCGBRBM.h HMC_abstract.h ../math/vertex.h \
  ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
@@ -3027,8 +3031,8 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
  ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
  ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
- ../linear_ETA.cpp ../MemoryCompressor.h ../conffile.h ../unique_id.h \
- ../math/number.h ../math/blade_math.h ../math/blas_primitives.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
+ ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
  ../primality_test.h ../primality_test.cpp ../math/quaternion.h \
  ../math/gmatrix.h ../math/gvertex.h ../math/norms.h \
@@ -3151,8 +3155,8 @@ rLBFGS_nnetwork.o: rLBFGS_nnetwork.cpp rLBFGS_nnetwork.h ../math/LBFGS.h \
  ../math/gmatrix.cpp function.h ../math/real.h ../math/quaternion.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h neuronlayer.h \
  ../math/norms.h ../math/outerproduct.h activation_function.h function.h \
- nnetwork.h ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
- ../dataset.h ../math/ica.h deep_ica_network_priming.h ../math/eig.h \
+ nnetwork.h ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h \
+ ../math/RNG.cpp ../math/RNG.h deep_ica_network_priming.h ../math/eig.h \
  EnsembleMeans.h
 Mixture.o: Mixture.cpp Mixture.h ../math/vertex.h ../math/dinrhiw_blas.h \
  /opt/intel/compilers_and_libraries/linux/mkl/include/mkl.h \
