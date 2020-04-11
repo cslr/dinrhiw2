@@ -491,17 +491,53 @@ namespace whiteice
 	     const unsigned int dimensions,
 	     math::matrix<T>& PCA,
 	     math::vertex<T>& m,
-	     T& original_var, T& reduced_var)
+	     T& original_var, T& reduced_var,
+	     bool regularizeIfNeeded)
     {
       matrix<T> C;
 
       if(mean_covariance_estimate(m, C, data) == false)
 	return false;
 
+      
       matrix<T> X;
 
-      if(symmetric_eig(C, X, true) == false)
-	return false;
+      
+      if(regularizeIfNeeded){
+	// not optimized
+	
+	matrix<T> CC(C);
+	T regularizer = T(0.0f);
+	for(unsigned int j=0;j<CC.ysize();j++)
+	  for(unsigned int i=0;i<CC.xsize();i++)
+	    regularizer += abs(CC(j,i));
+	regularizer /= (CC.ysize()*CC.xsize());
+	regularizer *= T(0.001);
+	if(regularizer <= T(0.0f)) regularizer = T(0.0001f);
+	
+	unsigned int counter = 0;
+	const unsigned int CLIMIT = 20;
+	
+	
+	while(symmetric_eig(CC, X, true) == false){
+	  CC = C;
+	  
+	  for(unsigned int i=0;i<CC.ysize();i++)
+	    CC(i,i) += regularizer;
+	  
+	  regularizer *= T(2.0f);
+	  counter++;
+	  
+	  if(counter >= CLIMIT)
+	    return false;
+	}
+
+	C = CC;
+      }
+      else{
+	if(symmetric_eig(C, X, true) == false)
+	  return false;
+      }
 
       // C = X * D * X^t
 
@@ -653,28 +689,32 @@ namespace whiteice
        const unsigned int dimensions,
        math::matrix<float>& PCA,
        math::vertex<float>& m,
-       float& original_var, float& reduced_var);
+       float& original_var, float& reduced_var,
+       bool regularizeIfNeeded);
 
     template bool pca<double>
       (const std::vector< vertex<double> >& data, 
        const unsigned int dimensions,
        math::matrix<double>& PCA,
        math::vertex<double>& m,
-       double& original_var, double& reduced_var);
+       double& original_var, double& reduced_var,
+       bool regularizeIfNeeded);
 
     template bool pca< blas_real<float> >
       (const std::vector< vertex< blas_real<float> > >& data, 
        const unsigned int dimensions,
        math::matrix< blas_real<float> >& PCA,
        math::vertex< blas_real<float> >& m,
-       blas_real<float>& original_var, blas_real<float>& reduced_var);
+       blas_real<float>& original_var, blas_real<float>& reduced_var,
+       bool regularizeIfNeeded);
 
     template bool pca< blas_real<double> >
       (const std::vector< vertex< blas_real<double> > >& data, 
        const unsigned int dimensions,
        math::matrix< blas_real<double> >& PCA,
        math::vertex< blas_real<double> >& m,
-       blas_real<double>& original_var, blas_real<double>& reduced_var);
+       blas_real<double>& original_var, blas_real<double>& reduced_var,
+       bool regularizeIfNeeded);
     
   };
 };

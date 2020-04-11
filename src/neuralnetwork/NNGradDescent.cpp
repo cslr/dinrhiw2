@@ -506,12 +506,14 @@ namespace whiteice
 	  whiteice::logging.info(buffer);
 	}
 
+
 	{
 	  std::lock_guard<std::mutex> lock(first_time_lock);
-	  
+
 	  // use heuristic to normalize weights to unity
 	  // (keep input weights) [the first try is always given imported weights]
-	  if(first_time == false){
+
+	  if(first_time == false){	    
 	    nn->randomize();
 
 	    if(deep_pretraining){
@@ -544,7 +546,9 @@ namespace whiteice
 	  else{
 	    first_time = false;
 	  }
+
 	}
+
 
 	// cancellation point
 	{

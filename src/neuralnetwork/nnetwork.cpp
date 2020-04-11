@@ -659,21 +659,28 @@ namespace whiteice
 	  unsigned int k1 = rand() % inputdata.size();
 	  unsigned int k2 = rand() % inputdata.size();
 
+	  T norm1 = inputdata[k1].norm(); norm1 = norm1*norm1;
+	  T norm2 = inputdata[k2].norm(); norm2 = norm2*norm2;
+	  if(norm1 <= T(0.0f)) norm1 = T(1.0f);
+	  if(norm2 <= T(0.0f)) norm2 = T(1.0f);
+
 	  if(inputdata.size() < W.ysize()){
 	    for(unsigned int i=0;i<W.xsize();i++){
-	      W(j,i) = inputdata[k1][i];
+	      W(j,i) = inputdata[k1][i]/norm1;
 	    }
 	  }
 	  else{
-	    // if there are more weights than training samples then use also mixtures.
-	    if(rand() & 1){
+	    if(j < inputdata.size()){
+	      T norm = inputdata[j].norm(); norm = norm*norm;
+	      if(norm <= T(0.0f)) norm = T(1.0f);
+
 	      for(unsigned int i=0;i<W.xsize();i++){
-		W(j,i) = inputdata[k1][i];
+		W(j,i) = inputdata[j][i]/norm;
 	      }
 	    }
-	    else{
+	    else{ // if there are more weights than training samples then use also mixtures.
 	      for(unsigned int i=0;i<W.xsize();i++){
-		W(j,i) = T(0.5)*inputdata[k1][i] + T(0.5)*inputdata[k2][i];
+		W(j,i) = T(0.5f)*inputdata[k1][i]/norm1 + T(0.5f)*inputdata[k2][i]/norm2;
 	      }
 	    }
 	    

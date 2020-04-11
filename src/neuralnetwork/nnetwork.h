@@ -97,7 +97,7 @@ namespace whiteice
     // set nnetworks parameters to random values
     bool randomize();
 
-    // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
+      // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);
     
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
