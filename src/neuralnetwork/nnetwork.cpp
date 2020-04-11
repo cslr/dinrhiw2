@@ -664,7 +664,10 @@ namespace whiteice
 	  if(norm1 <= T(0.0f)) norm1 = T(1.0f);
 	  if(norm2 <= T(0.0f)) norm2 = T(1.0f);
 
-	  if(inputdata.size() < W.ysize()){
+	  // for now we just use vectors randomly [does this work well if number nodes is > data?]
+	  W(j,i) = inputdata[k1][i]/norm1;
+#if 0
+	  if(inputdata.size() > W.ysize()){ // was "<" (but don't work)
 	    for(unsigned int i=0;i<W.xsize();i++){
 	      W(j,i) = inputdata[k1][i]/norm1;
 	    }
@@ -685,6 +688,7 @@ namespace whiteice
 	    }
 	    
 	  }
+#endif
 	}
 
 	b.zero();
