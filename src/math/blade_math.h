@@ -953,7 +953,7 @@ namespace whiteice
     // absolute value        
     
     double abs(double x) PURE_FUNCTION;
-    float abs(float& x) PURE_FUNCTION;
+    float abs(float x) PURE_FUNCTION;
     int abs(int x) PURE_FUNCTION;
     unsigned int abs(unsigned int x) PURE_FUNCTION;
     
@@ -989,7 +989,7 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     
     inline double abs(double x){ return std::fabs(x); }
-    inline float abs(float& x){ return fabsf(x); }
+    inline float abs(float x){ return fabsf(x); }
     inline int abs(int x){ return std::abs(x); }
     inline unsigned int abs(unsigned int x){ return x; }
     

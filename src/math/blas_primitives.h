@@ -153,11 +153,12 @@ namespace whiteice
 	 *
 	 */
 	
-	inline T& real() throw(){ return c[0]; }
-	inline const T& real() const throw(){ return c[0]; }
+	inline T real() throw(){ return c[0]; }
+	inline const T real() const throw(){ return c[0]; }
 	
-	inline T& value() throw(){ return c[0]; }
-	inline const T& value() const throw(){ return c[0]; }
+	// BUG: DOESN'T COMPILE WITH REFERENCE ALTHOUGH IT SHOULD, removed T&
+	inline T value() throw(){ return c[0]; }
+	inline const T value() const throw(){ return c[0]; }
 	
 	
 	template <typename A>

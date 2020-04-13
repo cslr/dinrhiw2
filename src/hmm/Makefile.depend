@@ -1,1 +1,135 @@
-
+HMM.o: HMM.cpp HMM.h ../math/real.h C:/msys2/usr/include/gmp.h \
+ ../math/number.h ../math/ownexception.h ../neuralnetwork/function.h \
+ ../math/blade_math.h ../math/dinrhiw_blas.h \
+ C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp ../math/real.h ../math/vertex.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h ../dataset.h ../math/ica.h ../linear_ETA.h ../ETA.h \
+ ../math/blas_primitives.h ../linear_ETA.cpp ../linear_ETA.h
+test.o: tst/test.cpp HMM.h ../math/real.h C:/msys2/usr/include/gmp.h \
+ ../math/number.h ../math/ownexception.h ../neuralnetwork/function.h \
+ ../math/blade_math.h ../math/dinrhiw_blas.h \
+ C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp ../math/real.h ../math/vertex.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/RNG.h ../math/RNG.cpp \
+ ../math/RNG.h
+dataset.o: ../dataset.cpp ../math/dinrhiw_blas.h \
+ C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h ../math/number.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/nn_iterative_correction.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/vertex.h ../math/correlation.h \
+ ../dynamic_bitset.h ../math/integer.h C:/msys2/usr/include/gmp.h \
+ ../math/blade_math.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp ../neuralnetwork/function.h \
+ ../math/real.h ../math/quaternion.h ../math/gvertex.cpp \
+ ../math/matrix_rotations.h ../neuralnetwork/neuronlayer.h \
+ ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/eig.h ../dataset.h ../math/ica.h ../math/blade_math.h ../Log.h
+vertex.o: ../math/vertex.cpp ../math/vertex.h ../math/dinrhiw_blas.h \
+ C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h C:/msys2/usr/include/gmp.h ../math/blade_math.h \
+ ../math/integer.h ../math/gvertex.h ../math/gmatrix.h \
+ ../math/gmatrix.cpp ../neuralnetwork/function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/gcd.h ../math/gcd.cpp
+integer.o: ../math/integer.cpp C:/msys2/usr/include/gmp.h \
+ ../math/integer.h ../math/number.h ../math/ownexception.h
+blade_math.o: ../math/blade_math.cpp ../math/blade_math.h \
+ ../math/dinrhiw_blas.h C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../math/integer.h C:/msys2/usr/include/gmp.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp ../neuralnetwork/function.h \
+ ../math/real.h ../math/vertex.h ../compressable.h ../MemoryCompressor.h \
+ ../compressable.h ../neuralnetwork/backpropagation.h \
+ ../math/dinrhiw_blas.h ../neuralnetwork/nn_iterative_correction.h \
+ ../math/vertex.h ../neuralnetwork/neuralnetwork.h \
+ ../neuralnetwork/backpropagation.h ../neuralnetwork/neuronlayer.h \
+ ../math/matrix.h ../math/linear_algebra.h ../math/matrix.h \
+ ../math/correlation.h ../dynamic_bitset.h ../math/integer.h \
+ ../math/matrix_rotations.h ../neuralnetwork/neuronlayer.h \
+ ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/quaternion.h ../math/gvertex.cpp
+real.o: ../math/real.cpp ../math/real.h C:/msys2/usr/include/gmp.h \
+ ../math/number.h ../math/ownexception.h ../neuralnetwork/function.h \
+ ../math/blade_math.h ../math/dinrhiw_blas.h \
+ C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/integer.h ../math/gvertex.h \
+ ../math/gmatrix.h ../math/gmatrix.cpp ../math/vertex.h ../compressable.h \
+ ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
+ ../math/quaternion.h ../math/gvertex.cpp
+linear_ETA.o: ../linear_ETA.cpp ../linear_ETA.h ../ETA.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../linear_ETA.cpp
+ownexception.o: ../math/ownexception.cpp ../math/ownexception.h
+norms.o: ../math/norms.cpp ../math/norms.h ../math/vertex.h \
+ ../math/dinrhiw_blas.h C:/msys2/opt/OpenBLAS/include/cblas.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ C:/msys2/opt/OpenBLAS/include/openblas_config.h \
+ ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
+ ../compressable.h ../MemoryCompressor.h ../compressable.h \
+ ../neuralnetwork/backpropagation.h ../math/dinrhiw_blas.h \
+ ../neuralnetwork/nn_iterative_correction.h ../math/vertex.h \
+ ../neuralnetwork/neuralnetwork.h ../neuralnetwork/backpropagation.h \
+ ../neuralnetwork/neuronlayer.h ../math/matrix.h ../math/linear_algebra.h \
+ ../math/matrix.h ../math/correlation.h ../dynamic_bitset.h \
+ ../math/integer.h C:/msys2/usr/include/gmp.h ../math/blade_math.h \
+ ../math/integer.h ../math/gvertex.h ../math/gmatrix.h \
+ ../math/gmatrix.cpp ../neuralnetwork/function.h ../math/real.h \
+ ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
+ ../neuralnetwork/neuronlayer.h ../math/outerproduct.h \
+ ../neuralnetwork/activation_function.h ../neuralnetwork/function.h
