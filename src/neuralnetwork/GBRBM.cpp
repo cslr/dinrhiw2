@@ -272,29 +272,29 @@ template <typename T>
 bool GBRBM<T>::reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
 		const std::vector< math::vertex<T> >& qparameters)
 {
-	// calculates reconstruction v -> h -> v'
-
+  // calculates reconstruction v -> h -> v'
+  
 #pragma omp parallel for schedule(dynamic)
-	for(unsigned int i=0;i<samples.size();i++){
-		auto& v = samples[i];
+  for(unsigned int i=0;i<samples.size();i++){
+    auto& v = samples[i];
+    
+    auto x = v;
+    x.zero();
+    
+    for(auto& q : qparameters){
+      math::matrix<T> W;
+      math::vertex<T> a, b, z;
+      
+      convertQToParameters(q, W, a, b, z);
+      
+      x += reconstruct_gbrbm_data(v, W, a, b, z, 1);
+    }
+    
+    x /= qparameters.size(); // E[reconstruct(v)]
+    v = x;
+  }
 
-		auto x = v;
-		x.zero();
-
-		for(auto& q : qparameters){
-			math::matrix<T> W;
-			math::vertex<T> a, b, z;
-
-			convertQToParameters(q, W, a, b, z);
-
-			x += reconstruct_gbrbm_data(v, W, a, b, z, 1);
-		}
-
-		x /= qparameters.size(); // E[reconstruct(v)]
-		v = x;
-	}
-
-	return true;
+  return true;
 }
 
 

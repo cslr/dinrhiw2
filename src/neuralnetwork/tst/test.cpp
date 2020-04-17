@@ -43,6 +43,8 @@
 
 #include "DBN.h"
 
+#include "VAE.h"
+
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
 
@@ -103,6 +105,8 @@ void gda_clustering_test();
 
 void simple_dataset_test();
 
+void simple_vae_test();
+
 void compressed_neuralnetwork_test();
 
 
@@ -124,7 +128,9 @@ int main()
   srand(seed);
   
   try{
-    simple_rbm_test();
+    simple_vae_test();
+    
+    // simple_rbm_test();
     
     return 0;
     
@@ -246,6 +252,64 @@ private:
   char* reason;
   
 };
+
+/************************************************************/
+
+void simple_vae_test()
+{
+  try{
+    std::cout << "VAE optimization test" << std::endl;
+    
+    whiteice::nnetwork<> encoder, decoder;
+    
+    std::vector<unsigned int> arch_e, arch_d;
+    
+    arch_e.push_back(10);
+    arch_e.push_back(20);
+    arch_e.push_back(2*2);
+    
+    arch_d.push_back(2);
+    arch_d.push_back(20);
+    arch_d.push_back(10);
+    
+    encoder.setArchitecture(arch_e, whiteice::nnetwork<>::halfLinear);
+    decoder.setArchitecture(arch_d, whiteice::nnetwork<>::halfLinear);
+    
+    whiteice::VAE<> vae(encoder, decoder);
+    
+    
+    if(vae.setModel(encoder, decoder) == false){
+      std::cout << "ERROR: setting models FAILED" << std::endl;
+      exit(-1);
+    }
+    
+    whiteice::RNG<> rng;
+    std::vector< math::vertex<> > samples;
+    
+    for(unsigned int i=0;i<1000;i++){
+      math::vertex<> v;
+      v.resize(10);
+      rng.uniform(v);
+      samples.push_back(v);
+    }
+    
+    vae.initializeParameters();
+    
+    if(vae.learnParameters(samples) == false){
+      std::cout << "ERROR: learning parameters FAILED" << std::endl;
+      exit(-1);
+    }
+
+    std::cout << "VAE tests ended (success)." << std::endl;
+    
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception " 
+	      << e.what() << std::endl;
+    return;
+  }
+
+}
 
 /************************************************************/
 
