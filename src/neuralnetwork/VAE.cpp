@@ -164,6 +164,7 @@ namespace whiteice
     for(unsigned int i=0;i<zmean.size();i++){
       zmean[i] = result[i];
       zstdev[i] = result[i+zmean.size()];
+      zstdev[i] = exp(zstdev[i]);
     }
 
     return true;
@@ -319,9 +320,10 @@ namespace whiteice
       bool found = false;
       
       T eprev = error;
+      lrate = T(1.0);
       lrate *= T(4.0);
       
-      while(eprev <= error && lrate > T(10e-15)){
+      while(eprev <= error && lrate > T(10e-20)){
 	p = params;
 	p += lrate*grad;
 	setParameters(p);
@@ -414,8 +416,9 @@ namespace whiteice
 	// 1. first calculate gradient of "-D_KL" term
 	
 	// encoder values
-	math::vertex<T> zmean, zstdev, inv_zstdev;
+	math::vertex<T> zmean, zstdev;
 	math::vertex<T> output;
+	math::vertex<T> ones;
 	
 	if(encoder.calculate(x, output) == false){
 	  failure = true;
@@ -424,6 +427,8 @@ namespace whiteice
 	
 	zmean.resize(output.size()/2);
 	zstdev.resize(output.size()/2);
+	ones.resize(output.size()/2);
+	
 	if(output.subvertex(zmean, 0, zmean.size()) == false){
 	  failure = true;
 	  continue;
@@ -433,12 +438,10 @@ namespace whiteice
 	  failure = true;
 	  continue;
 	}
-	
-	inv_zstdev.resize(zstdev.size());
-	
-	for(unsigned int i=0;i<inv_zstdev.size();i++){
-	  zstdev[i] = abs(zstdev[i]);
-	  inv_zstdev[i] = T(1.0)/(zstdev[i] + T(0.001));
+
+	for(unsigned int i=0;i<zstdev.size();i++){
+	  zstdev[i] = exp(zstdev[i]); // convert s = Log(stdev) to proper standard deviation
+	  ones[i] = T(1.0);
 	}
 	
 	// gradient of encoder
@@ -469,10 +472,14 @@ namespace whiteice
 	  failure = true;
 	  continue;
 	}
+
+
+	auto zvar = zstdev;
+	for(unsigned int j=0;j<zvar.size();j++)
+	  zvar[j] = zvar[j]*zvar[j];
 	
-	auto zsum = zstdev - inv_zstdev;
+	auto g1 = ones*Jstdev + T(-1.0)*zmean*Jmean + T(-1.0)*zvar*Jstdev;
 	
-	auto g1 = T(-1.0)*zmean*Jmean + T(-1.0)*zsum*Jstdev;
 	
 	// 2. second calculate gradient
 	math::vertex<T> decoder_gradient, encoder_gradient;
@@ -488,7 +495,7 @@ namespace whiteice
 	
 	
 	// printf("CALCULATING 2ND GRADIENT\n");
-	
+
 	for(unsigned int j=0;j<N;j++){
 	  // epsilon is ~ Normal(0,I)
 	  rng.normal(epsilon);
@@ -513,7 +520,7 @@ namespace whiteice
 	  auto Jstdev_epsilon = Jstdev;
 	  for(unsigned int y=0;y<Jstdev.ysize();y++)
 	    for(unsigned int x=0;x<Jstdev.xsize();x++)
-	      Jstdev_epsilon(y,x) = epsilon[y]*Jstdev(y,x);
+	      Jstdev_epsilon(y,x) = epsilon[y]*zstdev[y]*Jstdev(y,x);
 	  
 	  // encoder_gradient += gzx * (Jmean + epsilon*Jstdev); // second part of gradient
 	  encoder_gradient += gzx * (Jmean + Jstdev_epsilon); // second part of gradient
