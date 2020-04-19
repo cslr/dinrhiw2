@@ -36,6 +36,8 @@
 #include "GBRBM.h"
 #include "stackedRBM_pretraining.h"
 
+#include "VAE.h"
+
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"
 #include "pBFGS_nnetwork.h"

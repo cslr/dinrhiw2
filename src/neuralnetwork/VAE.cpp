@@ -169,6 +169,32 @@ namespace whiteice
 
     return true;
   }
+
+
+  // x -> z (hidden) [returns sample from ~ Normal(zm(x),zv(x))]
+  template <typename T>
+  bool VAE<T>::encodeSample(const math::vertex<T>& x,
+			    math::vertex<T>& zsample) const
+  {
+    math::vertex<T> result;
+    if(encoder.calculate(x, result) == false)
+      return false;
+
+    RNG<T> rng;
+    zsample.resize(decoder.input_size());
+
+    if(decoder.input_size()*2 != result.size())
+      return false;
+    
+    for(unsigned int i=0;i<zsample.size();i++){
+      auto zmean = result[i];
+      auto zstdev = exp(result[i+zsample.size()]);
+      
+      zsample[i] = zmean + rng.normal()*zstdev;
+    }
+
+    return true;
+  }
   
   
   // z (hidden) -> xmean (variance = I)
@@ -554,6 +580,45 @@ namespace whiteice
 
     pgradient /= pgradient.norm(); // is this really needed?
     
+    return true;
+  }
+  
+
+  template <typename T>
+  bool VAE<T>::load(const std::string& filename) throw()
+  {
+    if(filename.size() <= 0) return false;
+    
+    const std::string encoderfile = filename + ".vae-encoder";
+    const std::string decoderfile = filename + ".vae-decoder";
+    
+    auto en = encoder;
+    auto de = decoder;
+
+    if(en.load(encoderfile) == false || de.load(decoderfile) == false)
+      return false;
+
+    if(en.input_size() != de.output_size() || en.output_size() != 2*de.input_size())
+      return false;
+
+    encoder = en;
+    decoder = de;
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool VAE<T>::save(const std::string& filename) const throw()
+  {
+    if(filename.size() <= 0) return false;
+    
+    const std::string encoderfile = filename + ".vae-encoder";
+    const std::string decoderfile = filename + ".vae-decoder";
+    
+    if(encoder.save(encoderfile) == false || decoder.save(decoderfile) == false)
+      return false;
+
     return true;
   }
   

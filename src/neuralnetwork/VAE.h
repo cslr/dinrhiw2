@@ -52,6 +52,9 @@ namespace whiteice
     bool encode(const math::vertex<T>& x,
 		math::vertex<T>& zmean,
 		math::vertex<T>& zstdev) const;
+
+    bool encodeSample(const math::vertex<T>& x,
+		      math::vertex<T>& zsample) const;
     
     // z (hidden) -> x
     bool decode(const math::vertex<T>& z,
@@ -80,6 +83,10 @@ namespace whiteice
     // calculates gradient of parameter p using all samples
     bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
 			   math::vertex<T>& pgradient);
+
+
+    bool load(const std::string& filename) throw();
+    bool save(const std::string& filename) const throw();
 
     private:
     

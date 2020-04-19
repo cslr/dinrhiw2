@@ -15,7 +15,7 @@ OPTIMIZE=@optimization_flags@
 CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
-SOURCES = aescipher.cpp FileSource.cpp CryptoFleSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
+SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
 	nntool.cpp argparser.tab.cpp cpuid_threads.cpp datatool.cpp gendata.cpp
 
 

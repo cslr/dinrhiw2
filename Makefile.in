@@ -41,6 +41,7 @@ depend:
 	$(CD) src/hmm && echo "" > Makefile.depend
 	$(CD) src/reinforcement && echo "" > Makefile.depend
 	$(CD) src/rnn && echo "" > Makefile.depend
+	$(CD) tools && echo "" > Makefile.depend
 	$(CD) src && $(MAKE) depend
 	$(CD) src/math && $(MAKE) depend
 	$(CD) src/datamining && $(MAKE) depend
@@ -49,6 +50,7 @@ depend:
 	$(CD) src/hmm && $(MAKE) depend
 	$(CD) src/reinforcement && $(MAKE) depend
 	$(CD) src/rnn && $(MAKE) depend
+	$(CD) tools && $(MAKE) depend
 
 make_objects:
 	$(CD) src && $(MAKE) all
