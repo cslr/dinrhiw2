@@ -42,6 +42,43 @@ namespace whiteice
     this->decoder = decoder;
   }
 
+  
+  template <typename T>
+  VAE<T>::VAE(const std::vector<unsigned int> encoderArchitecture, // x -> (z_mean, z_var)
+	      const std::vector<unsigned int> decoderArchitecture) // z -> (x_mean)
+    
+    throw(std::invalid_argument)
+  {
+    if(encoderArchitecture.size() < 2 || decoderArchitecture.size() < 2)
+      throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+
+    
+    if(encoderArchitecture[encoderArchitecture.size()-1] & 1) // odd value
+      throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+    
+    if(encoderArchitecture[0] !=
+       decoderArchitecture[decoderArchitecture.size()-1]) // dim(x) != dim(d(e(x)))
+      throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+
+    if(2*decoderArchitecture[0] !=
+       encoderArchitecture[encoderArchitecture.size()-1]) // dim(e(x)/2) != dim(z)
+      throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+
+    for(unsigned int i=0;i<encoderArchitecture.size();i++){
+      if(encoderArchitecture[i] <= 0)
+	throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+    }
+
+    for(unsigned int i=0;i<decoderArchitecture.size();i++){
+      if(decoderArchitecture[i] <= 0)
+	throw std::invalid_argument("bad encoder/decoder dimensions/arch");
+    }
+    
+    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::halfLinear);
+    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::halfLinear);
+  }
+
+
   template <typename T>
   void VAE<T>::getModel(nnetwork<T>& encoder,
 			nnetwork<T>& decoder)
@@ -49,6 +86,7 @@ namespace whiteice
     encoder = this->encoder;
     decoder = this->decoder;
   }
+  
   
   template <typename T>
   bool VAE<T>::setModel(const nnetwork<T>& encoder,
@@ -67,6 +105,41 @@ namespace whiteice
 
     this->encoder = encoder;
     this->decoder = decoder;
+
+    return true;
+  }
+
+
+  template <typename T>
+  bool VAE<T>::setModel(const std::vector<unsigned int> encoderArchitecture,
+			const std::vector<unsigned int> decoderArchitecture)
+  {
+    if(encoderArchitecture.size() < 2 || decoderArchitecture.size() < 2)
+      return false;
+    
+    if(encoderArchitecture[encoderArchitecture.size()-1] & 1) // odd value
+      return false;
+    
+    if(encoderArchitecture[0] !=
+       decoderArchitecture[decoderArchitecture.size()-1]) // dim(x) != dim(d(e(x)))
+      return false;
+
+    if(2*decoderArchitecture[0] !=
+       encoderArchitecture[encoderArchitecture.size()-1]) // dim(e(x)/2) != dim(z)
+      return false;
+
+    for(unsigned int i=0;i<encoderArchitecture.size();i++){
+      if(encoderArchitecture[i] <= 0)
+	return false;
+    }
+
+    for(unsigned int i=0;i<decoderArchitecture.size();i++){
+      if(decoderArchitecture[i] <= 0)
+	return false;
+    }
+    
+    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::halfLinear);
+    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::halfLinear);
 
     return true;
   }
@@ -387,9 +460,9 @@ namespace whiteice
 	  continue;
 	}
 	
-	auto zsum = zstdev + inv_zstdev;
+	auto zsum = zstdev - inv_zstdev;
 	
-	auto g1 = T(-2.0)*zmean*Jmean + T(-2.0)*zsum*Jstdev;
+	auto g1 = T(-1.0)*zmean*Jmean + T(-1.0)*zsum*Jstdev;
 	
 	// 2. second calculate gradient
 	math::vertex<T> decoder_gradient, encoder_gradient;
@@ -398,7 +471,7 @@ namespace whiteice
 	decoder_gradient.zero();
 	encoder_gradient.zero();
 	
-	const unsigned int N = 10;
+	const unsigned int N = 30;
 	
 	math::vertex<T> epsilon;
 	epsilon.resize(zmean.size());
