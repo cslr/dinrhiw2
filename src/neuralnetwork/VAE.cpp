@@ -250,10 +250,20 @@ namespace whiteice
       math::vertex<T> zmean, zstdev, xmean;
       T e = T(0.0);
 
+      whiteice::RNG<T> rng;
+      math::vertex<T> epsilon;
+      epsilon.resize(encoder.output_size()/2);
+
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<xsamples.size();i++){
 	encode(xsamples[i], zmean, zstdev);
-	decode(zmean, xmean);
+
+	auto zi = zmean;
+	for(unsigned int k=0;k<zmean.size();k++){
+	  zi[k] += zstdev[k]*epsilon[k];
+	}
+	
+	decode(zi, xmean);
 	
 	auto delta = xsamples[i] - xmean;
 	e += delta.norm();
