@@ -160,6 +160,11 @@ namespace whiteice
       (matrix< blas_real<double> >& A, matrix< blas_real<double> >& D, bool sort);
     extern template bool symmetric_eig<float>(matrix<float>& A, matrix<float>& D, bool sort);
     extern template bool symmetric_eig<double>(matrix<double>& A, matrix<double>& D, bool sort);
+
+    //extern template bool symmetric_eig< complex<float> >(matrix< complex<float> >& A, matrix< complex<float> >& D, bool sort);
+    //extern template bool symmetric_eig< complex<double> >(matrix< complex<double> >& A, matrix< complex<double> >& D, bool sort);
+    //extern template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
+    //extern template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
     
     
     extern template bool svd< blas_real<float> >

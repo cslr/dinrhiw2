@@ -78,7 +78,7 @@ namespace whiteice
     // model_stdev_error(last N iters)/model_mean_error(last N iters) < convergence_ratio 
     // 
     bool learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			 T convergence_ratio = T(0.01f));
+			 T convergence_ratio = T(0.01f), bool verbose = false);
 
     // calculates gradient of parameter p using all samples
     bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
@@ -96,8 +96,8 @@ namespace whiteice
     };
 
   
-  extern template class VAE< float >;
-  extern template class VAE< double >;  
+  // extern template class VAE< float >;
+  // extern template class VAE< double >;  
   extern template class VAE< math::blas_real<float> >;
   extern template class VAE< math::blas_real<double> >;
 }

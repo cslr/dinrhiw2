@@ -26,3 +26,7 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
   as they are not properly implemented.
   
 * Sylvester Equation solver hasn't been working for a long time but is not needed (won't fix)
+
+* matrix<T>::symmetric_pseudoinverse() call calls assert(0) for now, fix it by fixing
+  symmetric_eig() to properly handle complex numbers so the code can be enabled.
+  

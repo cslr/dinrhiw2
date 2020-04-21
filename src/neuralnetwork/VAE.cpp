@@ -164,7 +164,13 @@ namespace whiteice
     for(unsigned int i=0;i<zmean.size();i++){
       zmean[i] = result[i];
       zstdev[i] = result[i+zmean.size()];
-      zstdev[i] = exp(zstdev[i]);
+
+      T value = zstdev[i];
+
+      if(value >= T(10.0)) // restrict values so we don't go to infinity
+	value = T(10.0);
+      
+      zstdev[i] = ::exp(value.c[0]);
     }
 
     return true;
@@ -188,7 +194,12 @@ namespace whiteice
     
     for(unsigned int i=0;i<zsample.size();i++){
       auto zmean = result[i];
-      auto zstdev = exp(result[i+zsample.size()]);
+      T value = result[i+zsample.size()];
+      
+      if(value >= T(10.0)) // restrict values so we don't go to infinity
+	value = T(10.0);
+      
+      auto zstdev = ::exp(value.c[0]);
       
       zsample[i] = zmean + rng.normal()*zstdev;
     }
@@ -272,7 +283,7 @@ namespace whiteice
   {
     T error = T(0.0);
 
-#pragma omp parallel shared(error)
+    //#pragma omp parallel shared(error)
     {
       math::vertex<T> zmean, zstdev, xmean;
       T e = T(0.0);
@@ -281,7 +292,7 @@ namespace whiteice
       math::vertex<T> epsilon;
       epsilon.resize(encoder.output_size()/2);
 
-#pragma omp for nowait schedule(dynamic)
+      //#pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<xsamples.size();i++){
 	encode(xsamples[i], zmean, zstdev);
 
@@ -296,7 +307,7 @@ namespace whiteice
 	e += delta.norm();
       }
 
-#pragma omp critical
+      //#pragma omp critical
       {
 	error += e;
       }
@@ -318,7 +329,7 @@ namespace whiteice
   //
   template <typename T>
   bool VAE<T>::learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			       T convergence_ratio)
+			       T convergence_ratio, bool verbose)
   {
     // implements gradient descent
     if(convergence_ratio <= T(0.0) || convergence_ratio >= T(1.0))
@@ -334,22 +345,34 @@ namespace whiteice
       // gradient search of better solution
       math::vertex<T> grad;
       if(calculateGradient(xsamples, grad) == false){
-	std::cout << "calculateGradient() returns false!" << std::endl;
+	if(verbose){
+	  std::cout << "calculateGradient() returns false!" << std::endl;
+	  std::cout << std::flush;;
+	}
+	return false;
       }
 
-      std::cout << "norm(grad) == " << grad.norm() << std::endl;
+      if(verbose){
+	std::cout << "norm(grad) == " << grad.norm() << std::endl;
+	std::cout << std::flush;;
+      }
       
       // FIXME write proper line search in grad direction
       math::vertex<T> params, p;
       getParameters(params);
-      std::cout << "[before update] norm(params) = " << params.norm() << std::endl;
+
+      if(verbose){
+	std::cout << "[before update] norm(params) = " << params.norm() << std::endl;
+	std::cout << std::flush;;
+      }
+      
       bool found = false;
       
       T eprev = error;
-      lrate = T(1.0);
+      // lrate = T(1.0);
       lrate *= T(4.0);
       
-      while(eprev <= error && lrate > T(10e-20)){
+      while(eprev <= error && lrate > T(10e-30)){
 	p = params;
 	p += lrate*grad;
 	setParameters(p);
@@ -360,7 +383,7 @@ namespace whiteice
 	  lrate *= T(2.0);
 	  found = true;
 	}
-	else if(error > eprev){
+	else if(error >= eprev){
 	  lrate *= T(0.50);
 	}
       }
@@ -375,9 +398,12 @@ namespace whiteice
       }
       
       counter++;
-      
-      std::cout << "[after update] norm(params) = " << params.norm() << std::endl;
-      std::cout << "ERROR " << counter << ": " << error << std::endl;
+
+      if(verbose){
+	std::cout << "[after update] norm(params) = " << params.norm() << std::endl;
+	std::cout << "ERROR " << counter << ": " << error << std::endl;
+	std::cout << std::flush;;
+      }
 
       errors.push_back(error);
 
@@ -403,7 +429,11 @@ namespace whiteice
 	v = sqrt(abs(v));
 	
 	if(true){
-	  std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	  if(verbose){
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	    std::cout << std::flush;;
+	  }
+	      
 	}
 
 	if(v/m <= convergence_ratio)
@@ -425,18 +455,29 @@ namespace whiteice
     pgradient.zero();
     
     bool failure = false;
+    const bool verbose = false;
 
-#pragma omp parallel shared(pgradient)
+    if(verbose){
+      printf("CALCULATE GRADIENT CALLED\n");
+      fflush(stdout);
+    }
+
+    //#pragma omp parallel shared(pgradient)
     {
       whiteice::RNG<T> rng;
       math::vertex<T> pgrad;
       pgrad.resize(pgradient.size());
       pgrad.zero();
 
-#pragma omp for nowait schedule(dynamic)
+      //#pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<xsamples.size();i++)
       {
 	if(failure) continue; // do nothing after first failure
+
+	if(verbose){
+	  printf("PROCESSING SAMPLE %d/%d\n", i, (int)xsamples.size());
+	  fflush(stdout);
+	}
 	
 	const auto& x = xsamples[i];
 	// 1. first calculate gradient of "-D_KL" term
@@ -465,9 +506,14 @@ namespace whiteice
 	  continue;
 	}
 
-	for(unsigned int i=0;i<zstdev.size();i++){
-	  zstdev[i] = exp(zstdev[i]); // convert s = Log(stdev) to proper standard deviation
-	  ones[i] = T(1.0);
+	for(unsigned int j=0;j<zstdev.size();j++){
+	  T value = zstdev[j];
+	  
+	  if(value >= T(10.0)) // restrict values so we don't go to infinity
+	    value = T(10.0);
+	  
+	  zstdev[j] = ::exp(value.c[0]); // convert s = Log(stdev) to proper standard deviation
+	  ones[j] = T(1.0);
 	}
 	
 	// gradient of encoder
@@ -514,13 +560,16 @@ namespace whiteice
 	decoder_gradient.zero();
 	encoder_gradient.zero();
 	
-	const unsigned int N = 30;
+	const unsigned int N = 15;
 	
 	math::vertex<T> epsilon;
 	epsilon.resize(zmean.size());
 	
-	
-	// printf("CALCULATING 2ND GRADIENT\n");
+
+	if(verbose){
+	  printf("%d/%d: CALCULATING 2ND GRADIENT\n", i, (int)xsamples.size());
+	  fflush(stdout);
+	}
 
 	for(unsigned int j=0;j<N;j++){
 	  // epsilon is ~ Normal(0,I)
@@ -532,15 +581,26 @@ namespace whiteice
 	  }
 	  
 	  auto xmean = x;
-	  decoder.calculate(zi, xmean);
+	  if(decoder.calculate(zi, xmean) == false){
+	    failure = true;
+	    continue;
+	  }
 	  
 	  math::matrix<T> grad_meanx;
-	  decoder.gradient(zi, grad_meanx);
+	  if(decoder.gradient(zi, grad_meanx) == false){
+	    failure = true;
+	    continue;
+	  }
 	  
 	  decoder_gradient += T(1.0/N)*(x - xmean)*grad_meanx;
 	  
 	  math::matrix<T> J_meanx_value;
-	  decoder.gradient_value(zi, J_meanx_value);
+	  if(decoder.gradient_value(zi, J_meanx_value) == false){
+	    failure = true;
+	    continue;
+	  }
+
+	  
 	  auto gzx = T(1.0/N)*(x - xmean)*J_meanx_value; // first part of gradient
 	  
 	  auto Jstdev_epsilon = Jstdev;
@@ -551,23 +611,39 @@ namespace whiteice
 	  // encoder_gradient += gzx * (Jmean + epsilon*Jstdev); // second part of gradient
 	  encoder_gradient += gzx * (Jmean + Jstdev_epsilon); // second part of gradient
 	}
-	
-	// printf("CALCULATING 2ND GRADIENT: SUM CALCULATED\n");
+
+	if(verbose){
+	  printf("%d/%d: CALCULATING 2ND GRADIENT: SUM CALCULATED\n", i, (int)xsamples.size());
+	  fflush(stdout);
+	}
 	
 	// calculates gradient
 	auto pg = pgradient;
 	pg.zero();
-	pg.write_subvertex(g1, 0);
+	
+	if(pg.write_subvertex(g1, 0) == false){
+	  failure = true;
+	  continue;
+	}
+	
 	pgrad += pg;
 	
 	pg.zero();
-	pg.write_subvertex(encoder_gradient, 0);
-	pg.write_subvertex(decoder_gradient, encoder_gradient.size());
+	if(pg.write_subvertex(encoder_gradient, 0) == false){
+	  failure = true;
+	  continue;
+	}
+	
+	if(pg.write_subvertex(decoder_gradient, encoder_gradient.size()) == false){
+	  failure = true;
+	  continue;
+	}
+	
 	pgrad += pg;
       }
       
 
-#pragma omp critical
+      //#pragma omp critical
       if(!failure){
 	pgradient += pgrad;
       }
@@ -575,10 +651,15 @@ namespace whiteice
     }
 
     if(failure) return false;
-    
-    pgradient /= T(xsamples.size());
 
-    pgradient /= pgradient.norm(); // is this really needed?
+    if(xsamples.size() > 0)
+      pgradient /= T(xsamples.size());
+
+    T nrm = pgradient.norm();
+
+    if(nrm > T(0.0)){
+      pgradient /= nrm; // is this really needed?
+    }
     
     return true;
   }
@@ -624,8 +705,8 @@ namespace whiteice
   
   
   
-  template class VAE< float >;
-  template class VAE< double >;  
+  // template class VAE< float >;
+  // template class VAE< double >;  
   template class VAE< math::blas_real<float> >;
   template class VAE< math::blas_real<double> >;
 }

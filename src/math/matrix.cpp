@@ -1260,6 +1260,9 @@ namespace whiteice
     template <typename T>
     bool matrix<T>::symmetric_pseudoinverse(const T machine_epsilon) throw()
     {
+      assert(0); // TODO: fix symmetric_eig to work with complex numbers!!! so the compilation would work
+      
+#if 0
       if(numCols != numRows)
 	return false;
 
@@ -1315,6 +1318,7 @@ namespace whiteice
       }
 
       return true;
+#endif
     }
     
     

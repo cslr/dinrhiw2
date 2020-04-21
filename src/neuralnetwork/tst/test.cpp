@@ -66,6 +66,20 @@
 
 #include <fenv.h>
 
+extern "C" {
+
+  // traps floating point exceptions..
+#define _GNU_SOURCE 1
+#ifdef __linux__
+#include <fenv.h>
+  static void __attribute__ ((constructor))
+  trapfpe(){
+    feenableexcept(FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
+  }
+#endif
+  
+}
+
 
 using namespace whiteice;
 
@@ -295,7 +309,7 @@ void simple_vae_test()
     
     vae.initializeParameters();
     
-    if(vae.learnParameters(samples) == false){
+    if(vae.learnParameters(samples, 0.01, true) == false){
       std::cout << "ERROR: learning parameters FAILED" << std::endl;
       exit(-1);
     }
