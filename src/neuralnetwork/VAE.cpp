@@ -167,8 +167,8 @@ namespace whiteice
 
       T value = zstdev[i];
 
-      if(value >= T(20.0)) // restrict values so we don't go to infinity
-	value = T(20.0);
+      if(value >= T(1.0)) // restrict values so we don't go to infinity
+	value = T(10.0);
       else if(value <= T(-10.0))
 	value = T(-10.0);
       
@@ -198,8 +198,8 @@ namespace whiteice
       auto zmean = result[i];
       T value = result[i+zsample.size()];
       
-      if(value >= T(20.0)) // restrict values so we don't go to infinity
-	value = T(20.0);
+      if(value >= T(10.0)) // restrict values so we don't go to infinity
+	value = T(10.0);
       else if(value <= T(-10.0))
 	value = T(-10.0);
       
@@ -513,8 +513,8 @@ namespace whiteice
 	for(unsigned int j=0;j<zstdev.size();j++){
 	  T value = zstdev[j];
 	  
-	  if(value >= T(20.0)) // restrict values so we don't go to infinity
-	    value = T(20.0);
+	  if(value >= T(10.0)) // restrict values so we don't go to infinity
+	    value = T(10.0);
 	  else if(value <= T(-10.0))
 	    value = T(-10.0);
 	  
