@@ -103,7 +103,7 @@ dnl enables CPU specific optimization flags
 AC_ARG_ENABLE([optimize],
 	AS_HELP_STRING([--disable-optimize],[Disable optimization]))
 
-optimization_flags="-O2 -ffast-math"
+optimization_flags="-O3 -ffast-math"
 
 AS_IF([test "x$enable_optimize" == "xno"],[
   optimization_flags="-g"

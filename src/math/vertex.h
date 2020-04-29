@@ -303,10 +303,10 @@ namespace whiteice{
     extern template class vertex<complex<float> >;
     extern template class vertex<complex<double> >;
     
-    extern template class vertex<int>;
-    extern template class vertex<char>;
-    extern template class vertex<unsigned int>;
-    extern template class vertex<unsigned char>;
+    //extern template class vertex<int>;
+    //extern template class vertex<char>;
+    //extern template class vertex<unsigned int>;
+    //extern template class vertex<unsigned char>;
         
     extern template class vertex< blas_real<float> >;
     extern template class vertex< blas_real<double> >;
@@ -322,10 +322,10 @@ namespace whiteice{
     extern template vertex<complex<double> > operator*<complex<double> >
       (const complex<double>& s, const vertex<complex<double> >& v);
     
-    extern template vertex<int> operator*<int>(const int& s, const vertex<int>& v);
-    extern template vertex<char> operator*<char>(const char& s, const vertex<char>& v);
-    extern template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
-    extern template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
+    //extern template vertex<int> operator*<int>(const int& s, const vertex<int>& v);
+    //extern template vertex<char> operator*<char>(const char& s, const vertex<char>& v);
+    //extern template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
+    // extern template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
       
     extern template vertex<blas_real<float> > operator*<blas_real<float> >
       (const blas_real<float>& s, const vertex<blas_real<float> >& v);

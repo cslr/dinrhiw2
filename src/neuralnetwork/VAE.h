@@ -4,8 +4,12 @@
  * 
  * Implementation research paper:
  * "Auto-Encoding Variational Bayes. Diedrik Kingma and Max Welling."
- * Implementation extra math notes in hyperplane2 repository (non-free) 
+ * Implementation extra math notes in docs directory:
  * [variational-bayes-encoder.tm]
+ * 
+ * NOTE: the input data x ~ p(x) should be roughly distributed as Normal(0,I)
+ * because it is assumed that p(x|z) don't estimate variance term but
+ * fixes it to be Var[x_i] = 1 for each dimension.
  */
 
 #ifndef __nnetwork_VAE_h

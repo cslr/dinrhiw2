@@ -155,6 +155,9 @@ namespace whiteice
 	
 	inline T real() throw(){ return c[0]; }
 	inline const T real() const throw(){ return c[0]; }
+
+	inline T imag() throw(){ return T(0.0f); }
+	inline const T imag() const throw(){ return T(0.0f); }
 	
 	// BUG: DOESN'T COMPILE WITH REFERENCE ALTHOUGH IT SHOULD, removed T&
 	inline T value() throw(){ return c[0]; }
@@ -370,11 +373,11 @@ namespace whiteice
 	 * 
 	 */
 	
-	inline T& real() throw(){ return c[0]; }
-	inline const T& real() const throw(){ return c[0]; }
+	inline T real() throw(){ return c[0]; }
+	inline const T real() const throw(){ return c[0]; }
 	
-	inline T& imag() throw(){ return c[1]; }
-	inline const T& imag() const throw(){ return c[1]; }
+	inline T imag() throw(){ return c[1]; }
+	inline const T imag() const throw(){ return c[1]; }
 	
 	
 	
@@ -505,7 +508,7 @@ namespace whiteice
     template <typename T, typename S>
       inline bool convert(blas_real<T>& B, const blas_real<S>& A) throw()
       {
-	try{ B.c[0] = dynamic_cast<T>(A.c[0]); return true; }
+	try{ B.c[0] = static_cast<T>(A.c[0]); return true; }
 	catch(std::exception& e){ return false; }
       }
     
@@ -514,8 +517,8 @@ namespace whiteice
       inline bool convert(blas_complex<T>& B, const blas_complex<S>& A) throw()
       {
 	try{
-	  B.c[0] = dynamic_cast<T>(A.c[0]);	
-	  B.c[1] = dynamic_cast<T>(A.c[1]);
+	  B.c[0] = static_cast<T>(A.c[0]);	
+	  B.c[1] = static_cast<T>(A.c[1]);
 	  return true;
 	}
 	catch(std::exception& e){ return false; }

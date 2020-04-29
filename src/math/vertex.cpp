@@ -380,7 +380,9 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(v.dataSize != dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator+ failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
+	
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -404,7 +406,9 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(v.dataSize != dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator- failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
+
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -455,7 +459,8 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(dataSize != v.dataSize && (dataSize != 1 && v.dataSize != 1)){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator* failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -596,7 +601,9 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(v.dataSize != dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator+= failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
+
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -623,7 +630,9 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(dataSize != dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator-= failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
+	
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -649,7 +658,8 @@ namespace whiteice
       throw(illegal_operation)
     {
       if(v.dataSize != dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator*= failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -802,7 +812,9 @@ namespace whiteice
       throw(std::domain_error)
     {
       if(dataSize != 4){
-	assert(0);
+	printf("ERROR: illegal operation: vector operator= failed: vector dim is not 4 (%s:%d)\n",
+	       __FILE__, __LINE__);
+
 	throw std::domain_error("vertex '='-operator: cannot assign quaternion - dimension mismatch");
       }
       
@@ -1006,7 +1018,9 @@ namespace whiteice
       throw(std::invalid_argument)
     {
       if(dataSize != M.numRows){
-	assert(0);
+	printf("ERROR: illegal operation: vector/matrix operator* failed: dim %d != dim %dx%d (%s:%d)\n",
+	       dataSize, M.numRows, M.numCols, __FILE__, __LINE__);
+	
 	throw std::invalid_argument("multiply: vertex/matrix dim. mismatch");
       }
       
@@ -1016,10 +1030,10 @@ namespace whiteice
       // uses optimized cblas_Xgemv() functions
       
       if(typeid(T) == typeid(blas_real<float>)){
-	
+
 	cblas_sgemv(CblasRowMajor, CblasTrans,
 		    M.numRows, M.numCols,
-		    1.0f, (float*)M.data, M.numCols,
+		    1.0f, (float*)M.data, M.numCols, // 1,
 		    (float*)data, 1,
 		    0.0f, (float*)r.data, 1);
 	
@@ -1184,7 +1198,9 @@ namespace whiteice
     vertex<T>& vertex<T>::dotmulti(const vertex<T>& v) throw(illegal_operation)
     {
       if(this->dataSize != v.dataSize){
-	assert(0);
+	printf("ERROR: illegal operation: vector dotmulti() failed: dim %d != dim %d (%s:%d)\n",
+	       dataSize, v.dataSize, __FILE__, __LINE__);
+	
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
       
@@ -1455,10 +1471,10 @@ namespace whiteice
     template class vertex<complex<float> >;
     template class vertex<complex<double> >;
     
-    template class vertex<int>;
-    template class vertex<char>;
-    template class vertex<unsigned int>;
-    template class vertex<unsigned char>;
+    //template class vertex<int>;
+    //template class vertex<char>;
+    //template class vertex<unsigned int>;
+    //template class vertex<unsigned char>;
     
     template class vertex< blas_real<float> >;
     template class vertex< blas_real<double> >;
@@ -1474,10 +1490,10 @@ namespace whiteice
     template vertex<complex<double> > operator*<complex<double> >
       (const complex<double>& s, const vertex<complex<double> >& v);
     
-    template vertex<int> operator*<int>(const int& s, const vertex<int>& v);
-    template vertex<char> operator*<char>(const char& s, const vertex<char>& v);
-    template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
-    template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
+    //template vertex<int> operator*<int>(const int& s, const vertex<int>& v);
+    //template vertex<char> operator*<char>(const char& s, const vertex<char>& v);
+    //template vertex<unsigned int> operator*<unsigned int>(const unsigned int& s, const vertex<unsigned int>& v);
+    //template vertex<unsigned char> operator*<unsigned char>(const unsigned char& s, const vertex<unsigned char>& v);
       
     template vertex<blas_real<float> > operator*<blas_real<float> >
       (const blas_real<float>& s, const vertex<blas_real<float> >& v);

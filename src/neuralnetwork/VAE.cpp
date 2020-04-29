@@ -4,8 +4,12 @@
  * 
  * Implementation research paper:
  * "Auto-Encoding Variational Bayes. Diedrik Kingma and Max Welling."
- * Implementation extra math notes in hyperplane2 repository (non-free) 
+ * Implementation extra math notes in docs directory:
  * [variational-bayes-encoder.tm]
+ *
+ * NOTE: the input data x ~ p(x) should be roughly distributed as Normal(0,I)
+ * because it is assumed that p(x|z) don't estimate variance term but
+ * fixes it to be Var[x_i] = 1 for each dimension.
  */
 
 #include "VAE.h"
@@ -167,10 +171,10 @@ namespace whiteice
 
       T value = zstdev[i];
 
-      if(value >= T(1.0)) // restrict values so we don't go to infinity
-	value = T(10.0);
-      else if(value <= T(-10.0))
-	value = T(-10.0);
+      if(value >= T(20.0)) // restrict values so we don't go to infinity
+	value = T(20.0);
+      else if(value <= T(-20.0))
+	value = T(-20.0);
       
       zstdev[i] = ::exp(value.c[0]);
     }
@@ -198,10 +202,10 @@ namespace whiteice
       auto zmean = result[i];
       T value = result[i+zsample.size()];
       
-      if(value >= T(10.0)) // restrict values so we don't go to infinity
-	value = T(10.0);
-      else if(value <= T(-10.0))
-	value = T(-10.0);
+      if(value >= T(20.0)) // restrict values so we don't go to infinity
+	value = T(20.0);
+      else if(value <= T(-20.0))
+	value = T(-20.0);
       
       auto zstdev = ::exp(value.c[0]);
       
@@ -287,7 +291,7 @@ namespace whiteice
   {
     T error = T(0.0);
 
-    //#pragma omp parallel shared(error)
+#pragma omp parallel shared(error)
     {
       math::vertex<T> zmean, zstdev, xmean;
       T e = T(0.0);
@@ -296,7 +300,7 @@ namespace whiteice
       math::vertex<T> epsilon;
       epsilon.resize(encoder.output_size()/2);
 
-      //#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<xsamples.size();i++){
 	encode(xsamples[i], zmean, zstdev);
 
@@ -311,13 +315,14 @@ namespace whiteice
 	e += delta.norm();
       }
 
-      //#pragma omp critical
+#pragma omp critical
       {
 	error += e;
       }
     }
-    
-    error /= T(xsamples.size());
+
+    if(xsamples.size() > 0)
+      error /= T(xsamples.size());
 
     return error;
   }
@@ -460,30 +465,35 @@ namespace whiteice
     
     bool failure = false;
     const bool verbose = false;
+    const unsigned int MINIBATCHSIZE = 30; // number of samples ussed to estimate gradient
+
+    if(xsamples.size() <= 0) failure = true;
 
     if(verbose){
       printf("CALCULATE GRADIENT CALLED\n");
       fflush(stdout);
     }
 
-    //#pragma omp parallel shared(pgradient)
+#pragma omp parallel shared(pgradient)
     {
       whiteice::RNG<T> rng;
       math::vertex<T> pgrad;
       pgrad.resize(pgradient.size());
       pgrad.zero();
 
-      //#pragma omp for nowait schedule(dynamic)
-      for(unsigned int i=0;i<xsamples.size();i++)
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
 	if(failure) continue; // do nothing after first failure
 
+	const unsigned int index = rng.rand() % ((unsigned int)xsamples.size());
+	
 	if(verbose){
-	  printf("PROCESSING SAMPLE %d/%d\n", i, (int)xsamples.size());
+	  printf("PROCESSING SAMPLE %d/%d\n", index, (int)xsamples.size());
 	  fflush(stdout);
 	}
 	
-	const auto& x = xsamples[i];
+	const auto& x = xsamples[index];
 	// 1. first calculate gradient of "-D_KL" term
 	
 	// encoder values
@@ -513,10 +523,10 @@ namespace whiteice
 	for(unsigned int j=0;j<zstdev.size();j++){
 	  T value = zstdev[j];
 	  
-	  if(value >= T(10.0)) // restrict values so we don't go to infinity
-	    value = T(10.0);
-	  else if(value <= T(-10.0))
-	    value = T(-10.0);
+	  if(value >= T(20.0)) // restrict values so we don't go to infinity
+	    value = T(20.0);
+	  else if(value <= T(-20.0))
+	    value = T(-20.0);
 	  
 	  zstdev[j] = ::exp(value.c[0]); // convert s = Log(stdev) to proper standard deviation
 	  ones[j] = T(1.0);
@@ -556,7 +566,7 @@ namespace whiteice
 	for(unsigned int j=0;j<zvar.size();j++)
 	  zvar[j] = zvar[j]*zvar[j];
 	
-	auto g1 = ones*Jstdev + T(-1.0)*zmean*Jmean + T(-1.0)*zvar*Jstdev;
+	auto g1 = T(-1.0)*zmean*Jmean + (ones + T(-1.0)*zvar)*Jstdev;
 	
 	
 	// 2. second calculate gradient
@@ -573,7 +583,7 @@ namespace whiteice
 	
 
 	if(verbose){
-	  printf("%d/%d: CALCULATING 2ND GRADIENT\n", i, (int)xsamples.size());
+	  printf("%d/%d: CALCULATING 2ND GRADIENT\n", index, (int)xsamples.size());
 	  fflush(stdout);
 	}
 
@@ -598,7 +608,7 @@ namespace whiteice
 	    continue;
 	  }
 	  
-	  decoder_gradient += T(1.0/N)*(x - xmean)*grad_meanx;
+	  decoder_gradient += (x - xmean)*grad_meanx;
 	  
 	  math::matrix<T> J_meanx_value;
 	  if(decoder.gradient_value(zi, J_meanx_value) == false){
@@ -607,7 +617,7 @@ namespace whiteice
 	  }
 
 	  
-	  auto gzx = T(1.0/N)*(x - xmean)*J_meanx_value; // first part of gradient
+	  auto gzx = (x - xmean)*J_meanx_value; // first part of gradient
 	  
 	  auto Jstdev_epsilon = Jstdev;
 	  for(unsigned int y=0;y<Jstdev.ysize();y++)
@@ -617,6 +627,9 @@ namespace whiteice
 	  // encoder_gradient += gzx * (Jmean + epsilon*Jstdev); // second part of gradient
 	  encoder_gradient += gzx * (Jmean + Jstdev_epsilon); // second part of gradient
 	}
+
+	encoder_gradient *= T(1.0/N);
+	decoder_gradient *= T(1.0/N);
 
 	if(verbose){
 	  printf("%d/%d: CALCULATING 2ND GRADIENT: SUM CALCULATED\n", i, (int)xsamples.size());
@@ -633,6 +646,12 @@ namespace whiteice
 	}
 	
 	pgrad += pg;
+
+	// HEURISTICS: scales "dimensionality" of p(x) to be same as in p(z) which are both
+	// guessed to be Normal(0,I) distributed.
+	// DISABLED:
+	// encoder_gradient *= T((float)zmean.size()/((float)x.size()));
+	// decoder_gradient *= T((float)zmean.size()/((float)x.size()));
 	
 	pg.zero();
 	if(pg.write_subvertex(encoder_gradient, 0) == false){
@@ -649,7 +668,7 @@ namespace whiteice
       }
       
 
-      //#pragma omp critical
+#pragma omp critical
       if(!failure){
 	pgradient += pgrad;
       }
@@ -659,7 +678,7 @@ namespace whiteice
     if(failure) return false;
 
     if(xsamples.size() > 0)
-      pgradient /= T(xsamples.size());
+      pgradient /= T(MINIBATCHSIZE);
 
     T nrm = pgradient.norm();
 

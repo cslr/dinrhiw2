@@ -159,7 +159,8 @@ namespace whiteice
 	if(b.size() != A.xsize()) return false;  // b not large enough	
 	x = b;
 		
-	vertex<unsigned int> permutation(A.ysize()); // permutation of rows
+	std::vector<unsigned int> permutation;
+	permutation.resize(A.ysize()); // permutation of rows
 	// permutation p: p(i) = j <-> permutation[i] = j
 	
 	for(unsigned int i=0;i<permutation.size();i++)

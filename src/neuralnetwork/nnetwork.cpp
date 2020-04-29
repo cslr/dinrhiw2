@@ -398,14 +398,14 @@ namespace whiteice
 	  bpsize += arch[i];
 	
 	bpdata.resize(bpsize);
-	memset(&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
+	memset((T*)&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
       }
 
       bpptr = &(bpdata[0]);
 
       // saves input to backprogation data
       {
-	memcpy(bpptr, &(state[0]), arch[aindex]*sizeof(T));
+	memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T));
 	bpptr += arch[aindex];
       }
 
@@ -417,7 +417,7 @@ namespace whiteice
 	if(collectSamples){
 	  math::vertex<T> x;
 	  x.resize(arch[aindex]);
-	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
 	  samples[aindex].push_back(x);
 	}
 	
@@ -431,7 +431,7 @@ namespace whiteice
 	
 	// COPIES LOCAL FIELD v FROM state TO BACKPROGRAGATION DATA
 	{
-	  memcpy(bpptr, &(state[0]), arch[aindex+1]*sizeof(T));
+	  memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T));
 	  bpptr += arch[aindex+1];
 	}
 
@@ -455,7 +455,7 @@ namespace whiteice
 	if(collectSamples){
 	  math::vertex<T> x;
 	  x.resize(arch[aindex]);
-	  memcpy(&(x[0]), &(state[0]), arch[aindex]*sizeof(T));
+	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
 	  samples[aindex].push_back(x);
 	}
 	
@@ -563,10 +563,20 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnetwork<T>::randomize()
+  bool nnetwork<T>::randomize(const unsigned int type)
   {
     memset(data.data(), 0, sizeof(T)*data.size()); // TODO remove after debugging
-    
+
+    if(type == 0){
+      // bulk random [-1,+1] initialization
+
+      T* dptr = data.data();
+      for(unsigned int i=0;i<data.size();i++, dptr++){
+	const T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
+	*dptr = r;
+      }
+    }
+    else
     {
       unsigned int start = 0;
       unsigned int end   = 0;
@@ -2138,7 +2148,7 @@ namespace whiteice
       temp[j] = sum;
     }
     
-    memcpy(y, &(temp[0]), yd*sizeof(T));
+    memcpy((T*)y, (const T*)&(temp[0]), yd*sizeof(T));
   }
   
   
@@ -2161,22 +2171,22 @@ namespace whiteice
     
 #if 1
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
-      memcpy(temp.data(), b, yd*sizeof(T));
+      memcpy((T*)temp.data(), (T*)b, yd*sizeof(T));
       
       cblas_sgemv(CblasRowMajor, CblasNoTrans, yd, xd,
 		  1.0f, (float*)W, xd, (float*)x, 1, 
 		  1.0f, (float*)temp.data(), 1);
       
-      memcpy(y, temp.data(), yd*sizeof(T));
+      memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
     }
     else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
-      memcpy(temp.data(), b, yd*sizeof(T));
+      memcpy((T*)temp.data(), (const T*)b, yd*sizeof(T));
       
       cblas_dgemv(CblasRowMajor, CblasNoTrans, yd, xd,
 		  1.0f, (double*)W, xd, (double*)x, 1, 
 		  1.0f, (double*)temp.data(), 1);
       
-      memcpy(y, temp.data(), yd*sizeof(T));
+      memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
     }
     else
 #endif
@@ -2205,7 +2215,7 @@ namespace whiteice
 	temp[j] = sum;
       }
       
-      memcpy(y, temp.data(), yd*sizeof(T));
+      memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
     }
 
   }

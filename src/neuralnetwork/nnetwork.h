@@ -95,7 +95,8 @@ namespace whiteice
     unsigned int length() const; // number of layers
 
     // set nnetworks parameters to random values
-    bool randomize();
+    // type = 0: random [-1,+1] values, type 1 = smart initialization
+    bool randomize(const unsigned int type = 1);
 
       // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);

@@ -303,7 +303,7 @@ namespace whiteice
     template <typename T>
       std::ostream& operator<<(std::ostream& ios, const matrix<T>& M);
     
-    
+#if 1
     // tries to convert matrix of type S to matrix of type T (B = A)    
     template <typename T, typename S>
       bool convert(matrix<T>& B, const matrix<S>& A) throw()
@@ -312,9 +312,14 @@ namespace whiteice
 	  if(B.resize(A.ysize(), A.xsize()) == false)
 	    return false;
 	  
-	  for(unsigned int j=0;j<A.ysize();j++)
-	    for(unsigned int i=0;i<A.xsize();i++)
-	      B(j,i) = static_cast<T>(A(j,i));
+	  for(unsigned int j=0;j<A.ysize();j++){
+	    for(unsigned int i=0;i<A.xsize();i++){
+	      if(convert(B(j,i), A(j,i)) == false)
+		return false;
+	      
+	      // B(j,i) = static_cast<T>(A(j,i));
+	    }
+	  }
 	  
 	  return true;
 	}
@@ -322,6 +327,8 @@ namespace whiteice
 	  return false;
 	}
       }
+#endif
+    
   };
 };
 
@@ -345,10 +352,10 @@ namespace whiteice
     extern template class matrix<complex<float> >;
     extern template class matrix<complex<double> >;
     
-    extern template class matrix<int>;
-    extern template class matrix<char>;
-    extern template class matrix<unsigned int>;
-    extern template class matrix<unsigned char>;
+    //extern template class matrix<int>;
+    //extern template class matrix<char>;
+    //extern template class matrix<unsigned int>;
+    //extern template class matrix<unsigned char>;
         
     extern template class matrix< blas_real<float> >;
     extern template class matrix< blas_real<double> >;
@@ -363,12 +370,12 @@ namespace whiteice
     extern template matrix<complex<double> > operator*<complex<double> >(const complex<double>&, const matrix<complex<double> >&)
       throw(std::invalid_argument);
     
-    extern template matrix<int> operator*<int>(const int&, const matrix<int>&) throw(std::invalid_argument);
-    extern template matrix<char> operator*<char>(const char&, const matrix<char>&) throw(std::invalid_argument);
-    extern template matrix<unsigned int> operator*<unsigned int>(const unsigned int&, const matrix<unsigned int>&)
-      throw(std::invalid_argument);
-    extern template matrix<unsigned char> operator*<unsigned char>(const unsigned char&, const matrix<unsigned char>&)
-      throw(std::invalid_argument);
+    //extern template matrix<int> operator*<int>(const int&, const matrix<int>&) throw(std::invalid_argument);
+    //extern template matrix<char> operator*<char>(const char&, const matrix<char>&) throw(std::invalid_argument);
+    //extern template matrix<unsigned int> operator*<unsigned int>(const unsigned int&, const matrix<unsigned int>&)
+    //  throw(std::invalid_argument);
+    //extern template matrix<unsigned char> operator*<unsigned char>(const unsigned char&, const matrix<unsigned char>&)
+    //  throw(std::invalid_argument);
     
     
     extern template matrix<blas_real<float> > operator*<blas_real<float> >
@@ -387,10 +394,10 @@ namespace whiteice
     extern template std::ostream& operator<< <double>(std::ostream& ios, const matrix<double>& M);
     extern template std::ostream& operator<< <complex<float> >(std::ostream& ios, const matrix<complex<float> >& M);
     extern template std::ostream& operator<< <complex<double> >(std::ostream& ios, const matrix<complex<double> >& M);
-    extern template std::ostream& operator<< <int>(std::ostream& ios, const matrix<int>& M);
-    extern template std::ostream& operator<< <char>(std::ostream& ios, const matrix<char>& M);
-    extern template std::ostream& operator<< <unsigned int>(std::ostream& ios, const matrix<unsigned int>& M);
-    extern template std::ostream& operator<< <unsigned char>(std::ostream& ios, const matrix<unsigned char>& M);
+    //extern template std::ostream& operator<< <int>(std::ostream& ios, const matrix<int>& M);
+    //extern template std::ostream& operator<< <char>(std::ostream& ios, const matrix<char>& M);
+    //extern template std::ostream& operator<< <unsigned int>(std::ostream& ios, const matrix<unsigned int>& M);
+    //extern template std::ostream& operator<< <unsigned char>(std::ostream& ios, const matrix<unsigned char>& M);
     extern template std::ostream& operator<< <blas_real<float> >(std::ostream& ios, const matrix<blas_real<float> >& M);
     extern template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const matrix<blas_real<double> >& M);
     extern template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const matrix<blas_complex<float> >& M);

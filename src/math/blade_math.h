@@ -137,6 +137,58 @@ namespace whiteice
     bool convert(double& B, const int& A) throw();
     bool convert(double& B, const unsigned int& A) throw();
 
+    
+    bool convert(blas_real<float>& B, const blas_complex<float>& A);
+    bool convert(blas_real<float>& B, const blas_complex<double>& A);
+    bool convert(blas_real<float>& B, const complex<float>& A);
+    bool convert(blas_real<float>& B, const complex<double>& A);
+    bool convert(blas_complex<float>& B, const blas_real<float>& A);
+    bool convert(blas_complex<double>& B, const blas_real<float>& A);
+    bool convert(complex<float>& B, const blas_real<float>& A);
+    bool convert(complex<float>& B, const blas_real<double>& A);
+    bool convert(blas_real<double>& B, const blas_real<float>& A);
+    bool convert(blas_real<float>& B, const blas_real<double>& A);
+
+    bool convert(blas_real<float>& B, const double& A);
+    bool convert(complex<float>& B, const float& A);
+    bool convert(complex<double>& B, const double& A);
+		 
+
+#if 0
+    // KNOWN BUG: needed by hack in matrix.cpp to handle symmetric_eig() call with complex data
+
+    bool convert(whiteice::math::matrix< blas_real<float> >& B,
+		 whiteice::math::matrix< blas_complex<float> >& A);
+
+    bool convert(whiteice::math::matrix< blas_real<float> >& B,
+		 whiteice::math::matrix< blas_complex<double> >& A);
+
+    bool convert(whiteice::math::matrix< blas_real<float> >& B,
+		 whiteice::math::matrix< complex<float> >& A);
+
+    bool convert(whiteice::math::matrix< blas_real<float> >& B,
+		 whiteice::math::matrix< complex<double> >& A);
+
+    bool convert(whiteice::math::matrix< blas_complex<float> >& B,
+		 whiteice::math::matrix< blas_real<float> >& A);
+
+    bool convert(whiteice::math::matrix< blas_complex<double> >& B,
+		 whiteice::math::matrix< blas_real<float> >& A);
+
+    bool convert(whiteice::math::matrix< complex<float> >& B,
+		 whiteice::math::matrix< blas_real<float> >& A);
+
+    bool convert(whiteice::math::matrix< complex<float> >& B,
+		 whiteice::math::matrix< blas_real<double> >& A);
+    
+    bool convert(whiteice::math::matrix< blas_real<double> >& B,
+		 whiteice::math::matrix< blas_real<float> >& A);
+
+    bool convert(whiteice::math::matrix< blas_real<float> >& B,
+		 whiteice::math::matrix< blas_real<double> >& A);
+
+#endif
+
     // max and min value template functions
 
     template <typename T>

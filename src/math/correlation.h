@@ -88,7 +88,7 @@ namespace whiteice
 							  const std::vector< vertex<complex<float> > >& data);
     extern template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
 							   const std::vector< vertex<complex<double> > >& data);    
-    extern template bool autocorrelation<int>(matrix<int>& R, const std::vector< vertex<int> >& data);
+    //extern template bool autocorrelation<int>(matrix<int>& R, const std::vector< vertex<int> >& data);
     
     extern template bool autocorrelation<float>(matrix<float>& R, const matrix<float>& W);
     extern template bool autocorrelation<double>(matrix<double>& R, const matrix<double>& W);

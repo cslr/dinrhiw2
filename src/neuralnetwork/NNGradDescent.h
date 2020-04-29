@@ -126,7 +126,9 @@ namespace whiteice
       unsigned int MAXITERS;
       std::vector<std::thread*> optimizer_thread;
       std::map<std::thread::id, std::list<T> > errors; // estimate to convergence of thread
-      const unsigned int EHISTORY = 500;
+      const unsigned int EHISTORY = 20;
+
+      whiteice::RNG<T> rng; // we use random numbers
 	
       mutable std::mutex solution_lock, start_lock, errors_lock;
       

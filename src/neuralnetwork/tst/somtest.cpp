@@ -8,6 +8,7 @@
 
 #include "SOM2D.h"
 #include "KMeans.h"
+#include "dataset.h"
 
 
 using namespace whiteice::math;
@@ -70,21 +71,48 @@ int main()
   using namespace whiteice;
   srand(time(0));
   
-  std::vector< vertex<float> > data;
+  std::vector< vertex< whiteice::math::blas_real<float> > > data;
+  std::vector< vertex< whiteice::math::blas_real<float> > > pdata;
   data.resize(5000);
-  init_data<float>(data, 10);
+  init_data< whiteice::math::blas_real<float> >(data, 10);
+  
+  dataset<> ds;
+  ds.createCluster("input", 10);
+  ds.add(0, data);
+  ds.preprocess(0, dataset<>::dnMeanVarianceNormalization);
+  ds.getData(0, pdata);
+  
   
   {
-    SOM2D* som;  
-    som = new SOM2D(256, 256, 10);
-    delete som;
-    
-    class test_datasource ds;
-    ds.setsource(data);    
-    
-    som = new SOM2D(64, 64, 10);  
-    som->learn(ds, true);
-    som->show(true);
+    SOM2D* som;
+
+    {
+      SOM2D* som_prev;
+      
+      som = new SOM2D(16, 16, 10);
+      som->randomize(pdata); // initialize weights using data points
+      som->learn(pdata, true);
+
+      som_prev = som;
+      som = new SOM2D(32, 32, 10);
+      som->initializeHiearchical(*som_prev);
+      som->learn(pdata, true);
+
+      delete som_prev;
+      som_prev = som;
+      som = new SOM2D(64, 64, 10);
+      som->initializeHiearchical(*som_prev);
+      som->learn(pdata, true);
+
+      delete som_prev;
+      som_prev = som;
+      som = new SOM2D(100, 100, 10);
+      som->initializeHiearchical(*som_prev);
+      som->learn(pdata, true);
+
+      delete som_prev;
+      //som->show(true);
+    }
     
     // sleep(5);
     

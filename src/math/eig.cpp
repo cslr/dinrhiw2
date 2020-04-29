@@ -472,6 +472,10 @@ namespace whiteice
     template <typename T>
     inline bool symmetric_eig(matrix<T>& A, matrix<T>& X, bool sort)
     {
+      // KNOWN_BUG: only works with real valued data,
+      // as a compilation-hack converts values to real values which don't work
+      
+      
       try{
 	if(A.xsize() != A.ysize())
 	  return false;
@@ -491,6 +495,7 @@ namespace whiteice
 	}
 	else if(N == 2){
 	  vertex<T> d;
+
 	  if(!eig2x2matrix(A, d, X, false))
 	    return false;
 	  
@@ -502,10 +507,11 @@ namespace whiteice
 	  // return true; (need to sort eigenvalues)..
 	}
 	else{
-	
+	    
 	  // calculates first hessenberg reduction of A
 	  if(!hessenberg_reduction(A, X))
 	    return false;
+
 	  
 	  // keeps zeroing below diagonal entries,
 	  // because of symmetry A is symmetric and diagonal
@@ -516,23 +522,69 @@ namespace whiteice
 	  unsigned int e1 = 0, e2 = N-2;
 	  T error = 0;
 	  
-	  for(unsigned int k=0;k<(N-1);k++)
-	    if(whiteice::math::abs(A(k+1,k)) > error)
-	      error = whiteice::math::abs(A(k+1,k));
+	  for(unsigned int k=0;k<(N-1);k++){
+	    double error_double;
+	    double absA_double;
+
+	    T err  = real(error);
+	    T absA = real(whiteice::math::abs(A(k+1,k)));
+
+	    convert(error_double, err);
+	    convert(absA_double, absA);
+	    
+	    if(absA_double > error_double)
+	      error = absA;
+	  }
 	  
 	  
-	  while(error > TOLERANCE){
+	  while(1){
+
+	    // while(real(error) > real(TOLERANCE)){
+	    {
+	      double error_double;
+	      double tolerance_double;
+
+	      T tol = real(TOLERANCE);
+	      T err = real(error);
+
+	      convert(error_double, err);
+	      convert(tolerance_double, tol);
+
+	      if(error_double <= tolerance_double)
+		break;
+	    }
+	    
 	    // finds submatrix
 	    
 	    for(unsigned int k=0;k<e2;k++){
-	      if(whiteice::math::abs(A(k+1,k)) > EPSILON){
+	      // if(real(whiteice::math::abs(A(k+1,k))) > real(EPSILON)){
+	      double epsilon_double;
+	      double absA_double;
+
+	      T absA = real(whiteice::math::abs(A(k+1,k)));
+	      T eps  = real(EPSILON);
+
+	      convert(epsilon_double, eps);
+	      convert(absA_double, absA);
+	      
+	      if(absA_double > epsilon_double){
 		e1 = k;
 		break;
 	      }
 	    }
 	    
 	    for(unsigned int k=(N-2);k>=e1;k--){
-	      if(whiteice::math::abs(A(k+1,k)) > EPSILON){
+	      // if(real(whiteice::math::abs(A(k+1,k))) > real(EPSILON)){
+	      double epsilon_double;
+	      double absA_double;
+
+	      T absA = real(whiteice::math::abs(A(k+1,k)));
+	      T eps  = real(EPSILON);
+
+	      convert(epsilon_double, eps);
+	      convert(absA_double, absA);
+		
+	      if(absA_double > epsilon_double){
 		e2 = k+1;
 		break;
 	      }
@@ -543,6 +595,7 @@ namespace whiteice
 	    if(!implicit_symmetric_qrstep_wilkinson(A, X, e1, (e2 - e1)+1)){
 	      std::cout << "IMPLICIT SHIFT FAILED" << std::endl;
 	    }
+
 
 	    
 	    if(f1 == e1 && f2 == e2){
@@ -567,7 +620,18 @@ namespace whiteice
 	    
 	    error = T(0.0);
 	    for(unsigned int k=e1;k<e2;k++){
-	      if(whiteice::math::abs(A(k+1,k)) > error)
+	      // if(real(whiteice::math::abs(A(k+1,k))) > real(error))
+	      double error_double;
+	      double absA_double;
+
+	      T absA = real(whiteice::math::abs(A(k+1,k)));
+	      T err  = real(error);
+
+	      convert(error_double, err);
+	      convert(absA_double, absA);
+	      
+	      
+	      if(absA_double > error_double)
 		error = whiteice::math::abs(A(k+1,k));
 	    }
 	    

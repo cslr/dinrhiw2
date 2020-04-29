@@ -211,6 +211,7 @@ namespace whiteice
 	std::lock_guard<std::mutex> lock(errors_lock);
 
 	if(errors.size() != NTHREADS) return false;
+	unsigned int threadnum = 0;
 	
 	for(const auto& err : errors){
 	  if(err.second.size() >= EHISTORY){
@@ -229,7 +230,11 @@ namespace whiteice
 	    v /= (err.second.size() - 1);
 	    
 	    v = sqrt(abs(v));
-	    
+
+	    std::cout << "THREAD " << threadnum << "/" << (int)errors.size()
+		      << ": ERROR CONVERGENCE: " << T(100.0)*v/m << "%% (convergence: "
+		      << T(100.0)*percentage << "%%)"
+		      << std::endl;
 
 	    if(v/m <= percentage) // 1% is a good value
 	      convergence.push_back(true);
@@ -239,6 +244,8 @@ namespace whiteice
 	  else{
 	    convergence.push_back(false);
 	  }
+
+	  threadnum++;
 	}
 	
       }
@@ -354,6 +361,8 @@ namespace whiteice
     {
       // error term is E[ 0.5*||y-f(x)||^2 ]
       T error = T(0.0);
+
+      //const unsigned int MINIBATCHSIZE = 200; // number of samples used to estimate gradient
       
       // calculates initial error
 #pragma omp parallel
@@ -366,10 +375,11 @@ namespace whiteice
 	// calculates error from the testing dataset
 #pragma omp for nowait schedule(dynamic)	    	    
 	for(unsigned int i=0;i<dtest.size(0);i++){
+	  const unsigned int index = i; // rng.rand() % dtest.size(0);
 	  math::vertex<T> out;
-	  const auto& doi = dtest.access(1, i);
+	  const auto& doi = dtest.access(1, index);
 	  
-	  nnet.calculate(dtest.access(0, i), out);
+	  nnet.calculate(dtest.access(0, index), out);
 
 	  if(errorTerms == false){
 	    err = doi - out;
@@ -390,6 +400,7 @@ namespace whiteice
 	}
 	
 	esum /= T((float)dtest.size(0));
+	// esum /= T((float)MINIBATCHSIZE);
 	
 #pragma omp critical
 	{
@@ -408,7 +419,7 @@ namespace whiteice
       return error;
     }
 
-
+    
     template <typename T>
     void NNGradDescent<T>::optimizer_loop()
     {
@@ -603,9 +614,13 @@ namespace whiteice
 	    sumgrad.resize(nn->exportdatasize());
 	    sumgrad.zero();
 
+	    const unsigned int MINIBATCHSIZE = 100; // number of samples used to estimate gradient
+
+
 #pragma omp parallel shared(sumgrad)
 	    {
-	      T ninv = T(1.0f/dtrain.size(0));
+	      T ninv = T(1.0f/MINIBATCHSIZE);
+	      //T ninv = T(1.0f/dtrain.size(0));
 	      math::vertex<T> sgrad, grad;
 	      sgrad.resize(nn->exportdatasize());
 	      sgrad.zero();
@@ -614,18 +629,20 @@ namespace whiteice
 	      math::vertex<T> err;
 	      
 #pragma omp for nowait schedule(dynamic)
-	      for(unsigned int i=0;i<dtrain.size(0);i++){
+	      for(unsigned int i=0;i<MINIBATCHSIZE;i++){
+		const unsigned int index = rng.rand() % dtrain.size(0);
+		// const unsigned int index = i;
 
 		if(dropout) nnet.setDropOut();
 		
-		nnet.input() = dtrain.access(0, i);
+		nnet.input() = dtrain.access(0, index);
 		nnet.calculate(true);
 
 		if(errorTerms == false){
-		  err = dtrain.access(1,i) - nnet.output();
+		  err = dtrain.access(1,index) - nnet.output();
 		}
 		else{
-		  const auto& doi = dtrain.access(1,i);
+		  const auto& doi = dtrain.access(1,index);
 		  err.resize(doi.size());
 		  err.zero();
 		  
