@@ -87,7 +87,7 @@ namespace whiteice
   
   // returns input vectors dimension (weight vector length)
   template <typename T>
-  unsigned int optimized_nnetwork_function<T>::dimension() const throw() 
+  unsigned int optimized_nnetwork_function<T>::dimension() const  
   {
     math::vertex<T> err, grad;
 	
@@ -103,7 +103,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool optimized_nnetwork_function<T>::hasGradient() const throw() 
+  bool optimized_nnetwork_function<T>::hasGradient() const  
   {
     math::vertex<T> err, grad;
 	
@@ -163,7 +163,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool optimized_nnetwork_function<T>::hasHessian() const throw() 
+  bool optimized_nnetwork_function<T>::hasHessian() const  
   {
     return false;
   }

@@ -22,19 +22,19 @@ class FileSource : public whiteice::data_source<whiteice::dynamic_bitset>
   ~FileSource();
   
   whiteice::dynamic_bitset& operator[](unsigned int index)
-    throw(std::out_of_range);
+    ;
   
   const whiteice::dynamic_bitset& operator[](unsigned int index)
-    const throw(std::out_of_range);
+    const ;
   
-  unsigned int size() const throw();
+  unsigned int size() const ;
   
-  bool good() const throw();
+  bool good() const ;
   
   void flush() const;
   
   // writes data to file with given filename
-  bool write(const std::string& filename) const throw();
+  bool write(const std::string& filename) const ;
   
  private:
   

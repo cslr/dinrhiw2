@@ -50,7 +50,7 @@ namespace whiteice
     RIFL_abstract(const unsigned int numActions,
 		  const unsigned int numStates,
 		  const unsigned int dimActionFeatures);
-    ~RIFL_abstract() throw();
+    ~RIFL_abstract() ;
 
     // starts Reinforcement Learning thread
     bool start();
@@ -62,16 +62,16 @@ namespace whiteice
 
     // epsilon E [0,1] percentage of actions are chosen according to model
     //                 1-e percentage of actions are random (exploration)
-    bool setEpsilon(T epsilon) throw();
+    bool setEpsilon(T epsilon) ;
 
-    T getEpsilon() const throw();
+    T getEpsilon() const ;
 
     /*
      * sets/gets learning mode 
      * (do we do just control or also try to learn from data)
      */
-    void setLearningMode(bool learn) throw();
-    bool getLearningMode() const throw();
+    void setLearningMode(bool learn) ;
+    bool getLearningMode() const ;
 
     /*
      * hasModel is number of current optimization model (starting from zero)
@@ -80,8 +80,8 @@ namespace whiteice
      * as long as we don't have a proper model (hasModel == 0)
      * we make random actions (initially) 
      */
-    void setHasModel(unsigned int hasModel) throw();
-    unsigned int getHasModel() throw();
+    void setHasModel(unsigned int hasModel) ;
+    unsigned int getHasModel() ;
 
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;
@@ -105,7 +105,7 @@ namespace whiteice
     protected:
     
     // helper function, returns minimum value in vec
-    unsigned int min(const std::vector<unsigned int>& vec) const throw();
+    unsigned int min(const std::vector<unsigned int>& vec) const ;
 
     // separate network for each action
     whiteice::bayesian_nnetwork<T> model;

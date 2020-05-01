@@ -183,12 +183,12 @@ namespace whiteice
     
     // returns vertex dimension/size
     template <typename T>
-    unsigned int vertex<T>::size() const throw(){ return dataSize; }
+    unsigned int vertex<T>::size() const { return dataSize; }
     
     
     // sets vertex dimension/size, fills new dimensios with zero
     template <typename T>
-    unsigned int vertex<T>::resize(unsigned int d) throw()
+    unsigned int vertex<T>::resize(unsigned int d) 
     {
       if(d == 0){
 	free(data);
@@ -224,7 +224,7 @@ namespace whiteice
     
     // returns length of vertex
     template <typename T>
-    T vertex<T>::norm() const throw()
+    T vertex<T>::norm() const 
     {
       T len; // cblas_Xnrm2 optimizated functions
       
@@ -262,7 +262,7 @@ namespace whiteice
     
     // calculates partial norm for vertex(i:j)
     template <typename T>
-    T vertex<T>::norm(unsigned int i, unsigned int j) const throw()
+    T vertex<T>::norm(unsigned int i, unsigned int j) const 
     {
       T len = T(0.0f); // cblas_Xnrm2 optimizated functions
       
@@ -303,7 +303,7 @@ namespace whiteice
     
     // sets length to zero, zero length -> retuns false
     template <typename T>
-    bool vertex<T>::normalize() throw()
+    bool vertex<T>::normalize() 
     {
       // uses optimized cblas_Xscal() routines
       
@@ -343,7 +343,7 @@ namespace whiteice
     
     // vertex = 0;
     template <typename T>
-    void vertex<T>::zero() throw()
+    void vertex<T>::zero() 
     {
       if(dataSize <= 0) return;
       
@@ -365,7 +365,7 @@ namespace whiteice
 
 
     template <typename T>
-    void vertex<T>::hermite() throw()
+    void vertex<T>::hermite() 
     {
       if(dataSize <= 0) return;
 
@@ -377,7 +377,7 @@ namespace whiteice
     // calculates sum of vertexes
     template <typename T>
     vertex<T> vertex<T>::operator+(const vertex<T>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.dataSize != dataSize){
 	printf("ERROR: illegal operation: vector operator+ failed: dim %d != dim %d (%s:%d)\n",
@@ -403,7 +403,7 @@ namespace whiteice
     // substracts two vertexes
     template <typename T>
     vertex<T> vertex<T>::operator-(const vertex<T>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.dataSize != dataSize){
 	printf("ERROR: illegal operation: vector operator- failed: dim %d != dim %d (%s:%d)\n",
@@ -456,7 +456,7 @@ namespace whiteice
     // is scalar product
     template <typename T>
     vertex<T> vertex<T>::operator*(const vertex<T>& v) const
-      throw(illegal_operation)
+      
     {
       if(dataSize != v.dataSize && (dataSize != 1 && v.dataSize != 1)){
 	printf("ERROR: illegal operation: vector operator* failed: dim %d != dim %d (%s:%d)\n",
@@ -529,20 +529,20 @@ namespace whiteice
     
     // no divide operation
     template <typename T>
-    vertex<T> vertex<T>::operator/(const vertex<T>& v) const throw(illegal_operation){
+    vertex<T> vertex<T>::operator/(const vertex<T>& v) const {
       throw illegal_operation("vertex(): '/'-operator not available");
     }
     
     // no "!" operation
     template <typename T>
-    vertex<T> vertex<T>::operator!() const throw(illegal_operation){
+    vertex<T> vertex<T>::operator!() const {
       throw illegal_operation("vertex(): '!'-operation not available");
     }
     
     // changes vertex sign
     template <typename T>
     vertex<T> vertex<T>::operator-() const
-      throw(illegal_operation)
+      
     {
       vertex<T> r(*this);
       
@@ -577,7 +577,7 @@ namespace whiteice
     // calculates cross product
     template <typename T>
     vertex<T> vertex<T>::operator^(const vertex<T>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.dataSize != 3 || this->dataSize != 3)      
 	throw illegal_operation("crossproduct: vector dimension != 3");
@@ -598,7 +598,7 @@ namespace whiteice
     // adds vertexes
     template <typename T>
     vertex<T>& vertex<T>::operator+=(const vertex<T>& v)
-      throw(illegal_operation)
+      
     {
       if(v.dataSize != dataSize){
 	printf("ERROR: illegal operation: vector operator+= failed: dim %d != dim %d (%s:%d)\n",
@@ -627,7 +627,7 @@ namespace whiteice
     // subtracts vertexes
     template <typename T>
     vertex<T>& vertex<T>::operator-=(const vertex<T>& v)
-      throw(illegal_operation)
+      
     {
       if(dataSize != dataSize){
 	printf("ERROR: illegal operation: vector operator-= failed: dim %d != dim %d (%s:%d)\n",
@@ -655,7 +655,7 @@ namespace whiteice
     // calculates inner product
     template <typename T>
     vertex<T>& vertex<T>::operator*=(const vertex<T>& v)
-      throw(illegal_operation)
+      
     {
       if(v.dataSize != dataSize){
 	printf("ERROR: illegal operation: vector operator*= failed: dim %d != dim %d (%s:%d)\n",
@@ -679,14 +679,14 @@ namespace whiteice
     // dividing not available
     template <typename T>
     vertex<T>& vertex<T>::operator/=(const vertex<T>& v)
-      throw(illegal_operation){
+      {
       throw illegal_operation("vertex(): '/='-operator not available");
     }
     
     // assigns given vertex value to this vertex
     template <typename T>
     vertex<T>& vertex<T>::operator=(const vertex<T>& v)
-      throw(illegal_operation)
+      
     {
       if(v.compressor != 0 || this->compressor != 0)
 	throw illegal_operation("vertex '='-operator: compressed vertex data");
@@ -705,7 +705,7 @@ namespace whiteice
 
 #if 0    
     template <typename T>
-    vertex<T>& vertex<T>::operator=(vertex<T>&& t) throw(illegal_operation)
+    vertex<T>& vertex<T>::operator=(vertex<T>&& t) 
     {
       if(this == &t) return *this; // self-assignment
       
@@ -730,7 +730,7 @@ namespace whiteice
     // compares two vertexes for equality
     template <typename T>
     bool vertex<T>::operator==(const vertex<T>& v) const
-      throw(uncomparable)
+      
     {
       if(v.dataSize != dataSize)
 	return false; // throw uncomparable("vertex compare: dimension mismatch");
@@ -755,7 +755,7 @@ namespace whiteice
     // compares two vertexes for non-equality
     template <typename T>
     bool vertex<T>::operator!=(const vertex<T>& v) const
-      throw(uncomparable)
+      
     {
       if(v.dataSize != dataSize)
 	return true; // throw uncomparable("vertex compare: dimension mismatch");
@@ -779,28 +779,28 @@ namespace whiteice
     
     // not defined
     template <typename T>
-    bool vertex<T>::operator>=(const vertex<T>& v) const throw(uncomparable){
+    bool vertex<T>::operator>=(const vertex<T>& v) const {
       if(dataSize != 1) throw uncomparable("vertex(): '>='-operator not defined");
       else return (data[0] >= v.data[0]);
     }
     
     // not defined
     template <typename T>
-    bool vertex<T>::operator<=(const vertex<T>& v) const throw(uncomparable){
+    bool vertex<T>::operator<=(const vertex<T>& v) const {
       if(dataSize != 1) throw uncomparable("vertex(): '<='-operator not defined");
       else return (data[0] <= v.data[0]);
     }
     
     // not defined
     template <typename T>
-    bool vertex<T>::operator< (const vertex<T>& v) const throw(uncomparable){
+    bool vertex<T>::operator< (const vertex<T>& v) const {
       if(dataSize != 1) throw uncomparable("vertex(): '<'-operator not defined");
       else return (data[0] < v.data[0]);
     }
 
     // not defined
     template <typename T>
-    bool vertex<T>::operator> (const vertex<T>& v) const throw(uncomparable){
+    bool vertex<T>::operator> (const vertex<T>& v) const {
       if(dataSize != 1) throw uncomparable("vertex(): '>'-operator not defined");
       else return (data[0] > v.data[0]);
     }
@@ -809,7 +809,7 @@ namespace whiteice
     // assigns quaternion to 4 dimension vertex
     template <typename T>
     vertex<T>& vertex<T>::operator=(const quaternion<T>& q)
-      throw(std::domain_error)
+      
     {
       if(dataSize != 4){
 	printf("ERROR: illegal operation: vector operator= failed: vector dim is not 4 (%s:%d)\n",
@@ -827,7 +827,7 @@ namespace whiteice
     
     // returns vertex with absolute value of each vertex element
     template <typename T>
-    vertex<T>& vertex<T>::abs() throw()
+    vertex<T>& vertex<T>::abs() 
     {
       for(unsigned int i=0;i<dataSize;i++)
 	data[i] = whiteice::math::abs(data[i]);
@@ -843,7 +843,7 @@ namespace whiteice
     /* sets all elements of vertex = given scalar */
     template <typename T>
     vertex<T>& vertex<T>::operator=(const T& s)
-      throw(illegal_operation)
+      
     {
       for(unsigned int i=0;i<dataSize;i++)
 	data[i] = s;
@@ -855,7 +855,7 @@ namespace whiteice
     
     // multiples vertex with scalar */
     template <typename T>
-    vertex<T>  vertex<T>::operator*(const T& s) const throw()
+    vertex<T>  vertex<T>::operator*(const T& s) const 
     {
       vertex<T> r(dataSize);
       
@@ -887,7 +887,7 @@ namespace whiteice
     
     // multiples vertex with scalar */
     template <typename T>
-    vertex<T>  vertex<T>::operator/(const T& s) const throw(std::invalid_argument)
+    vertex<T>  vertex<T>::operator/(const T& s) const 
     {
       vertex<T> r(dataSize);      
       T ss = T(1)/s;      
@@ -920,7 +920,7 @@ namespace whiteice
     
     // multiples vertex with scalar */
     template <typename T>
-    vertex<T>& vertex<T>::operator*=(const T& s) throw()
+    vertex<T>& vertex<T>::operator*=(const T& s) 
     {
       if(typeid(T) == typeid(blas_real<float>)){
 	
@@ -949,7 +949,7 @@ namespace whiteice
     
     // multiples vertex with scalar */
     template <typename T>
-    vertex<T>& vertex<T>::operator/=(const T& s) throw(std::invalid_argument)
+    vertex<T>& vertex<T>::operator/=(const T& s) 
     {
       T ss = T(1.0)/s;
       
@@ -1015,7 +1015,7 @@ namespace whiteice
     // multiplies matrix from left
     template <typename T>
     vertex<T> vertex<T>::operator* (const matrix<T>& M) const
-      throw(std::invalid_argument)
+      
     {
       if(dataSize != M.numRows){
 	printf("ERROR: illegal operation: vector/matrix operator* failed: dim %d != dim %dx%d (%s:%d)\n",
@@ -1091,7 +1091,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T> vertex<T>::outerproduct() const throw(std::domain_error)
+    matrix<T> vertex<T>::outerproduct() const 
     {
       const unsigned int N = dataSize;
       T s = T(1.0f);
@@ -1171,7 +1171,7 @@ namespace whiteice
 
     template <typename T>
     matrix<T> vertex<T>::outerproduct(const vertex<T>& v) const
-      throw(std::domain_error)
+      
     {
       return outerproduct(*this, v);
     }
@@ -1181,7 +1181,7 @@ namespace whiteice
     template <typename T>
     matrix<T> vertex<T>::outerproduct(const vertex<T>& v0,
 				      const vertex<T>& v1) const
-      throw(std::domain_error)
+      
     {
       matrix<T> m(v0.dataSize, v1.dataSize);
       
@@ -1195,7 +1195,7 @@ namespace whiteice
     
     // element-wise multiplication of vector elements
     template <typename T>
-    vertex<T>& vertex<T>::dotmulti(const vertex<T>& v) throw(illegal_operation)
+    vertex<T>& vertex<T>::dotmulti(const vertex<T>& v) 
     {
       if(this->dataSize != v.dataSize){
 	printf("ERROR: illegal operation: vector dotmulti() failed: dim %d != dim %d (%s:%d)\n",
@@ -1216,7 +1216,7 @@ namespace whiteice
     template <typename T>
     bool vertex<T>::subvertex(vertex<T>& v,
 			      unsigned int x0,
-			      unsigned int len) const throw()
+			      unsigned int len) const 
     {
       if(x0+len > dataSize)
 	return false;
@@ -1229,7 +1229,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool vertex<T>::write_subvertex(const vertex<T>& v, unsigned int x0) throw()
+    bool vertex<T>::write_subvertex(const vertex<T>& v, unsigned int x0) 
     {
       const unsigned int len = v.size();
       
@@ -1243,35 +1243,35 @@ namespace whiteice
     
 #if 0    
     template <typename T> // iterators
-    typename vertex<T>::iterator vertex<T>::begin() throw(){
+    typename vertex<T>::iterator vertex<T>::begin() {
       return c.begin();
     }
 
     template <typename T>
-    typename vertex<T>::iterator vertex<T>::end() throw(){
+    typename vertex<T>::iterator vertex<T>::end() {
       return c.end();
     }
     
     template <typename T> // iterators
-    typename vertex<T>::const_iterator vertex<T>::begin() const throw(){
+    typename vertex<T>::const_iterator vertex<T>::begin() const {
       return c.begin();
     }
     
     template <typename T>
-    typename vertex<T>::const_iterator vertex<T>::end() const throw(){
+    typename vertex<T>::const_iterator vertex<T>::end() const {
       return c.end();
     }
 #endif    
     
     template <typename T>
-    bool vertex<T>::comparable() throw()
+    bool vertex<T>::comparable() 
     {
       return false;
     }
     
     
     template <typename T>
-    bool vertex<T>::saveAscii(const std::string& filename) const throw()
+    bool vertex<T>::saveAscii(const std::string& filename) const 
 	{
     	FILE* fp = fopen(filename.c_str(), "wt");
     	if(fp == NULL || ferror(fp)) return false;
@@ -1308,7 +1308,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool vertex<T>::compress() throw()
+    bool vertex<T>::compress() 
     {
       if(compressor != 0) return false; // already compressed
       
@@ -1334,7 +1334,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool vertex<T>::decompress() throw()
+    bool vertex<T>::decompress() 
     {
       if(compressor == 0) return false; // not compressed
       
@@ -1355,14 +1355,14 @@ namespace whiteice
     
     
     template <typename T>
-    bool vertex<T>::iscompressed() const throw()
+    bool vertex<T>::iscompressed() const 
     {
       return (compressor != 0);
     }
     
 
     template <typename T>
-    float vertex<T>::ratio() const throw()
+    float vertex<T>::ratio() const 
     {
       if(compressor == 0) return 1.0f;
       return compressor->ratio();
@@ -1376,7 +1376,7 @@ namespace whiteice
     template <typename T>
     bool vertex<T>::importData(const T* data_,
 			       unsigned int len,
-			       unsigned int start) throw()
+			       unsigned int start) 
     {
       if(len == 0)
 	len = dataSize - start;
@@ -1395,7 +1395,7 @@ namespace whiteice
     template <typename T>
     bool vertex<T>::exportData(T* data_,
 			       unsigned int len,
-			       unsigned int start) const throw()
+			       unsigned int start) const 
     {
       if(len == 0)
 	len = dataSize - start;
@@ -1411,7 +1411,7 @@ namespace whiteice
 
 
     template <typename T>
-    void vertex<T>::toString(std::string& line) const throw()
+    void vertex<T>::toString(std::string& line) const 
     {
       if(this->size() == 0){ line = ""; return; }
       if(this->size() == 1){

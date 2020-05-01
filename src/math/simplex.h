@@ -45,7 +45,7 @@ namespace whiteice
 	~simplex();
 	
 	// format: [c_1 c_2 ... c_n], where F = SUM( c_i*x_i )
-	bool setTarget(const std::vector<T>& target) throw();
+	bool setTarget(const std::vector<T>& target) ;
 	
 	// format: [c_1 c2_ ... c_n, c], where 
 	// eqtype = 0: SUM( c_i*x_i ) <= c
@@ -53,40 +53,40 @@ namespace whiteice
 	// eqtype = 2: SUM( c_i*x_i ) >= c
 	bool setConstraint(unsigned int index,
 			   const std::vector<T>& constraint,
-			   unsigned int eqtype = 0) throw();
+			   unsigned int eqtype = 0) ;
 	
 	// format - look at set setX()s documentation
-	bool getTarget(std::vector<T>& target) const throw();
-	bool getConstraint(unsigned int index, std::vector<T>& constraint) const throw();
+	bool getTarget(std::vector<T>& target) const ;
+	bool getConstraint(unsigned int index, std::vector<T>& constraint) const ;
 	
-	unsigned int getNumberOfConstraints() const throw();
-	unsigned int getNumberOfVariables() const throw();
+	unsigned int getNumberOfConstraints() const ;
+	unsigned int getNumberOfVariables() const ;
 	
 	
 	// maximizes problem, returns true if maximum is found
 	// else returns false (maximum not found)
-	bool maximize() throw();
+	bool maximize() ;
 	
-	bool hasResult() throw();
+	bool hasResult() ;
 	
 	// format [x_1, x_2,... x_n, F], where F = SUM(c_i*x_i) (optimum value)
 	bool getSolution(std::vector<T>& solution) const;
 	
 	// show simplex table, for debugging/testing etc.
-	bool show_simplex() const throw();
+	bool show_simplex() const ;
 	
       private:
 	
 	// finds pivot element and row
 	bool find_indexes(T*& target, std::vector<T*>& constraints,
-			  unsigned int& eindex, unsigned int& lindex) const throw();
+			  unsigned int& eindex, unsigned int& lindex) const ;
 	
 	bool find_indexes2(T*& target, std::vector<T*>& constraints,
 			   unsigned int& eindex, unsigned int& lindex,
 			   const std::vector<unsigned int>& bsols,
-			   const unsigned int& pseudoStart) const throw();
+			   const unsigned int& pseudoStart) const ;
 	
-	bool show_simplex(T* target) const throw();
+	bool show_simplex(T* target) const ;
 	
 	unsigned int numVariables;
 	unsigned int numArtificials; // number of artificial variables

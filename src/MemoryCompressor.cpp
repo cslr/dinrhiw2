@@ -91,7 +91,7 @@ namespace whiteice
   }
   
   
-  float MemoryCompressor::ratio() const throw()
+  float MemoryCompressor::ratio() const 
   {
     if(compressed_data != 0 && data != 0){
       return ((float)compressed_datalen / (float)datalen);
@@ -100,7 +100,7 @@ namespace whiteice
   }
   
   
-  bool MemoryCompressor::compress() throw()
+  bool MemoryCompressor::compress() 
   {
     if(this->data == 0 || this->datalen == 0)
       return false;
@@ -218,7 +218,7 @@ namespace whiteice
   
   
   
-  bool MemoryCompressor::decompress() throw()
+  bool MemoryCompressor::decompress() 
   {
     if(this->compressed_data == 0 || this->compressed_datalen == 0)
       return false;

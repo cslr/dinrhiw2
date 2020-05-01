@@ -19,26 +19,26 @@ namespace whiteice
     public:
       
       // ctor & dtor
-      bezier_surface() throw();
-      ~bezier_surface() throw();
+      bezier_surface() ;
+      ~bezier_surface() ;
       
       typedef typename std::vector< std::vector<T> >::const_iterator iterator;
       
       // calculates bezier surfaces
-      unsigned int operator()(const std::vector< std::vector<T> >& data) throw();
+      unsigned int operator()(const std::vector< std::vector<T> >& data) ;
       
-      iterator begin() const throw();
-      iterator end() const throw();
+      iterator begin() const ;
+      iterator end() const ;
       
       std::vector<T>& operator[](unsigned int index)
-	throw(std::out_of_range);
+	;
 
       const std::vector<T>& operator[](unsigned int index) const
-	throw(std::out_of_range);
+	;
 
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
-      void clear() throw();
+      void clear() ;
       
     private:
       

@@ -20,16 +20,16 @@ namespace whiteice
       virtual ~HCLogic(){ }
       
       // calculates parameters of a leaf node
-      virtual bool initialize(whiteice::hcnode<Parameters, T>* p) throw() = 0;
+      virtual bool initialize(whiteice::hcnode<Parameters, T>* p)  = 0;
       
       // calculates similarity between clusters (parameters)
       virtual T similarity(std::vector< hcnode<Parameters, T>* > clusters,
-			   unsigned int i, unsigned int j) throw() = 0;
+			   unsigned int i, unsigned int j)  = 0;
       
       // calculates merged node
       virtual bool merge(whiteice::hcnode<Parameters, T>* p1,
 			 whiteice::hcnode<Parameters, T>* p2,
-			 whiteice::hcnode<Parameters, T>& result) const throw() = 0;
+			 whiteice::hcnode<Parameters, T>& result) const  = 0;
       
     };
 };

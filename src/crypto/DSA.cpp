@@ -38,7 +38,7 @@ namespace whiteice
     // message. A pointer *signature is updated to point into allocated memory area of
     // slen bytes long.
     bool DSA::sign(unsigned char** message, unsigned int len,
-		   std::vector<integer>& signature) const throw()
+		   std::vector<integer>& signature) const 
     {
       try{
 	
@@ -101,7 +101,7 @@ namespace whiteice
     
     // returns true if the signature of a message matches with the given message
     bool DSA::verify(unsigned char** message, unsigned int len,
-		     const std::vector<integer>& signature) const throw()
+		     const std::vector<integer>& signature) const 
     {
       try{
 	
@@ -151,7 +151,7 @@ namespace whiteice
     
     
     
-    bool DSA::getKey(DSAKey& dsakey) const throw()
+    bool DSA::getKey(DSAKey& dsakey) const 
     {
       try{
 	dsakey = *key;
@@ -163,7 +163,7 @@ namespace whiteice
     
     bool DSA::calculate_sha(integer& sha,
 			    unsigned char **message,
-			    unsigned int len) const throw()
+			    unsigned int len) const 
     {
       // calculate SHA-1 of the message
       
@@ -210,7 +210,7 @@ namespace whiteice
     }
     
     
-    bool DSA::random_bit() const throw()
+    bool DSA::random_bit() const 
     {
       // terrible unsecure (& slow) way to generate bits
       // (useful for testing)
@@ -349,14 +349,14 @@ namespace whiteice
     
     // returns number of keys in a keyschedule
     // or negative value for infinity
-    unsigned int DSAKey::size() const throw()
+    unsigned int DSAKey::size() const 
     {
       return (pk.size() + sk.size());
     }
     
     
     // returns number of bits in a single key      
-    unsigned int DSAKey::keybits() const throw()
+    unsigned int DSAKey::keybits() const 
     {
       // returns number of bits in p
       
@@ -365,7 +365,7 @@ namespace whiteice
     
     
     // gets n:th key from the key schedule
-    const integer& DSAKey::operator[](unsigned int n) const throw(std::out_of_range)
+    const integer& DSAKey::operator[](unsigned int n) const 
     {
       // 0 = p, 1 = q, 2 = alpha, 3 = beta
       // if(hasSecretKey): 4 = a
@@ -383,7 +383,7 @@ namespace whiteice
     
     
     
-    DSAKey& DSAKey::operator=(const DSAKey& dsakey) throw()
+    DSAKey& DSAKey::operator=(const DSAKey& dsakey) 
     {
       this->pk.resize(dsakey.pk.size());
       this->sk.resize(dsakey.sk.size());
@@ -406,21 +406,21 @@ namespace whiteice
     
     
     // gets n:th key from the key schedule
-    const std::vector<integer>& DSAKey::publickey() const throw()
+    const std::vector<integer>& DSAKey::publickey() const 
     {
       return pk;
     }
       
     
       // gets n:th key from the key schedule
-    const std::vector<integer>& DSAKey::privatekey() const throw()
+    const std::vector<integer>& DSAKey::privatekey() const 
     {
       return sk;
     }
     
 
     
-    bool DSAKey::check_key_values() const throw()
+    bool DSAKey::check_key_values() const 
     {
       if(pk.size() != 4) return false;
       if(sk.size() > 1) return false;
@@ -463,7 +463,7 @@ namespace whiteice
     
     
     void DSAKey::generate_random_prime(integer& a,
-				       unsigned int abits) const throw()
+				       unsigned int abits) const 
     {
       do{
 	a = 0;
@@ -479,7 +479,7 @@ namespace whiteice
     }
     
     
-    void DSAKey::generate_random_even(integer& a, unsigned int abits) const throw()
+    void DSAKey::generate_random_even(integer& a, unsigned int abits) const 
     {
       a = 0;
       
@@ -492,7 +492,7 @@ namespace whiteice
     }
     
     
-    void DSAKey::random_number_smaller_than(integer& a, const integer& b) const throw()
+    void DSAKey::random_number_smaller_than(integer& a, const integer& b) const 
     {
       const unsigned int abits = b.bits();
       
@@ -506,7 +506,7 @@ namespace whiteice
     }
       
     
-    bool DSAKey::random_bit() const throw()
+    bool DSAKey::random_bit() const 
     {
       // terrible unsecure (& slow) way to generate bits
       // (useful for testing)

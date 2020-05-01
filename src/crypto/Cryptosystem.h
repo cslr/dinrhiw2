@@ -36,17 +36,17 @@ namespace whiteice
 	// if encryption failed.
 
 	// uses ECB mode of operation
-	virtual bool encrypt(DATA& data, const Keyschedule<KEY>& k) throw() = 0;
-	virtual bool decrypt(DATA& data, const Keyschedule<KEY>& k) throw() = 0;
+	virtual bool encrypt(DATA& data, const Keyschedule<KEY>& k)  = 0;
+	virtual bool decrypt(DATA& data, const Keyschedule<KEY>& k)  = 0;
 	
 	// encrypt/decrypt with given mode of operation
 	virtual bool encrypt(data_source<DATA>& data,
 			     const Keyschedule<KEY>& k, const DATA& IV,
-			     ModeOfOperation mode = ECBmode) throw() = 0;
+			     ModeOfOperation mode = ECBmode)  = 0;
 			     
 	virtual bool decrypt(data_source<DATA>& data,
 			     const Keyschedule<KEY>& k, const DATA& IV,
-			     ModeOfOperation mode = ECBmode) throw() = 0;
+			     ModeOfOperation mode = ECBmode)  = 0;
 			     
       };
 
@@ -62,15 +62,15 @@ namespace whiteice
 	// if encryption failed.
 
 	// uses ECB mode of operation
-	virtual bool encrypt(DATA& data, const Keyschedule<KEY>& k) throw() = 0;
-	virtual bool decrypt(DATA& data, const Keyschedule<KEY>& k) throw() = 0;
+	virtual bool encrypt(DATA& data, const Keyschedule<KEY>& k)  = 0;
+	virtual bool decrypt(DATA& data, const Keyschedule<KEY>& k)  = 0;
 	
 	// encrypt/decrypt with given mode of operation
 	virtual bool encrypt(data_source<DATA>& data,
-			     const Keyschedule<KEY>& k) throw() = 0;
+			     const Keyschedule<KEY>& k)  = 0;
 			     
 	virtual bool decrypt(data_source<DATA>& data,
-			     const Keyschedule<KEY>& k) throw() = 0;
+			     const Keyschedule<KEY>& k)  = 0;
 			     
       };
 	
@@ -85,14 +85,14 @@ namespace whiteice
 	
 	// returns number of keys in a keyschedule
 	// or ((unsigned int)(-1)) for infinity
-	virtual unsigned int size() const throw() = 0;
+	virtual unsigned int size() const  = 0;
 	
 	// returns number of bits in a single key      
-	virtual unsigned int keybits() const throw() = 0;
+	virtual unsigned int keybits() const  = 0;
 	
 	// gets n:th key from the key schedule
 	virtual const KEY& operator[](unsigned int n)
-	  const throw(std::out_of_range) = 0;
+	  const  = 0;
 	
 	// Keyschedules can copy itself
 	virtual Keyschedule<KEY>* copy() const = 0;
@@ -109,10 +109,10 @@ namespace whiteice
 	virtual ~PublicPrivateKeyPair(){ }
 	
 	// returns publickeys
-	virtual const std::vector<KEY>& publickey() const throw() = 0;
+	virtual const std::vector<KEY>& publickey() const  = 0;
 	
 	// returns privatekeys
-	virtual const std::vector<KEY>& privatekey() const throw() = 0;
+	virtual const std::vector<KEY>& privatekey() const  = 0;
       };
     
     
@@ -135,17 +135,17 @@ namespace whiteice
        */
       virtual bool hash(unsigned char** data, // pointer to data pointer
 			unsigned int length,
-			unsigned char* shash) const throw() = 0;
+			unsigned char* shash) const  = 0;
       
       // compares two hashes
       virtual bool check(const unsigned char* sha1,
-			 const unsigned char* sha2) const throw() = 0;
+			 const unsigned char* sha2) const  = 0;
       
       // number of bits in hash
-      virtual unsigned int bits() const throw() = 0;
+      virtual unsigned int bits() const  = 0;
       
       // number of bytes in hash
-      virtual unsigned int bytes() const throw() = 0;
+      virtual unsigned int bytes() const  = 0;
     };
     
     

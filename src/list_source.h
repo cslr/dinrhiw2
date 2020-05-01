@@ -22,12 +22,12 @@ namespace whiteice
       list_source(std::vector<datum>& list);
       virtual ~list_source();
       
-      datum& operator[](unsigned int index) throw(std::out_of_range);
-      const datum& operator[](unsigned int index) const throw(std::out_of_range);
+      datum& operator[](unsigned int index) ;
+      const datum& operator[](unsigned int index) const ;
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
-      bool good() const throw();
+      bool good() const ;
       
       void flush() const;
       

@@ -22,7 +22,7 @@ namespace whiteice
   
     // gvertex ctor, i is dimension of vector
     template <typename T, typename S>
-    gvertex<T,S>::gvertex(unsigned int i) throw()
+    gvertex<T,S>::gvertex(unsigned int i) 
     {
       c.resize(i);
     }
@@ -30,7 +30,7 @@ namespace whiteice
     
     // gvertex ctor - makes copy of v
     template <typename T, typename S>
-    gvertex<T,S>::gvertex(const gvertex<T,S>& v) throw()
+    gvertex<T,S>::gvertex(const gvertex<T,S>& v) 
     {
       c.resize(v.c.size());
       for(unsigned int i=0;i<v.c.size();i++) c[i] = v.c[i];
@@ -39,7 +39,7 @@ namespace whiteice
     
     // gvertex ctor - makes copy of v
     template <typename T, typename S>
-    gvertex<T,S>::gvertex(const std::vector<T>& v) throw()
+    gvertex<T,S>::gvertex(const std::vector<T>& v) 
     {
       c.resize(v.size());
       for(unsigned int i=0;i<v.size();i++)
@@ -49,19 +49,19 @@ namespace whiteice
     
     // gvertex dtor
     template <typename T, typename S>
-    gvertex<T,S>::~gvertex() throw(){ }
+    gvertex<T,S>::~gvertex() { }
     
     /***************************************************/
     
     
     // returns gvertex dimension/size
     template <typename T, typename S>
-    unsigned int gvertex<T,S>::size() const throw(){ return c.size(); }
+    unsigned int gvertex<T,S>::size() const { return c.size(); }
     
     
     // sets gvertex dimension/size, fills new dimensios with zero
     template <typename T, typename S>
-    unsigned int gvertex<T,S>::resize(unsigned int d) throw()
+    unsigned int gvertex<T,S>::resize(unsigned int d) 
     {
       unsigned int s = c.size();
       c.resize(d);
@@ -75,7 +75,7 @@ namespace whiteice
     
     // returns 2nd norm of gvertex
     template <typename T, typename S>
-    T gvertex<T,S>::norm() const throw()
+    T gvertex<T,S>::norm() const 
     {
       T sum = 0;
       
@@ -88,7 +88,7 @@ namespace whiteice
 
     
     template <typename T, typename S>
-    T gvertex<T,S>::norm(unsigned int i, unsigned int j) const throw()
+    T gvertex<T,S>::norm(unsigned int i, unsigned int j) const 
     {
       T sum = 0;
       
@@ -104,7 +104,7 @@ namespace whiteice
     
     // sets length to zero, zero length -> retuns false
     template <typename T, typename S>
-    bool gvertex<T,S>::normalize() throw()
+    bool gvertex<T,S>::normalize() 
     {
       T l = norm();
       if(l == T(0)) return false;
@@ -119,7 +119,7 @@ namespace whiteice
     // calculates sum of gvertexes
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator+(const gvertex<T,S>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size())
 	throw illegal_operation("vector op: vector dim. mismatch");
@@ -134,7 +134,7 @@ namespace whiteice
     // substracts two gvertexes
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator-(const gvertex<T,S>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size())
 	throw illegal_operation("vector op: vector dim. mismatch");
@@ -150,7 +150,7 @@ namespace whiteice
     // or calculates scalar product if other vector is one dimensional
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator*(const gvertex<T,S>& v) const
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size()){
 	if(v.c.size() == 1)
@@ -186,7 +186,7 @@ namespace whiteice
     // no divide operation
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator/(const gvertex<T,S>& v) const
-      throw(illegal_operation)
+      
     {
       throw illegal_operation("gvertex(): '/'-operator not available");
     }
@@ -194,7 +194,7 @@ namespace whiteice
     
     // no "!" operation
     template <typename T, typename S>
-    gvertex<T,S> gvertex<T,S>::operator!() const throw(illegal_operation){
+    gvertex<T,S> gvertex<T,S>::operator!() const {
       throw illegal_operation("gvertex(): '!'-operation not available");
     }
 
@@ -202,7 +202,7 @@ namespace whiteice
     // changes gvertex sign
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator-() const
-      throw(illegal_operation)
+      
     {
       gvertex<T,S> r(c.size());
       for(unsigned int i=0;i<c.size();i++) r.c[i] = -c[i];    
@@ -212,7 +212,7 @@ namespace whiteice
     // calculates cross product
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator^(const gvertex<T,S>& v) const
-      throw(illegal_operation)
+      
     {
       if(c.size() != 3 || this->size() != 3)      
 	throw illegal_operation("crossproduct: vector dimension != 3");
@@ -231,7 +231,7 @@ namespace whiteice
     // adds gvertexes
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator+=(const gvertex<T,S>& v)
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size())
 	throw illegal_operation("vector op: vector dim. mismatch");
@@ -243,7 +243,7 @@ namespace whiteice
     // subtracts gvertexes
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator-=(const gvertex<T,S>& v)
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size())
 	throw illegal_operation("vector op: vector dim. mismatch");
@@ -255,7 +255,7 @@ namespace whiteice
     // calculates inner product
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator*=(const gvertex<T,S>& v)
-      throw(illegal_operation)
+      
     {
       if(v.c.size() != c.size())
 	throw illegal_operation("vector op: vector dim. mismatch");    
@@ -274,14 +274,14 @@ namespace whiteice
     // dividing not available
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator/=(const gvertex<T,S>& v)
-      throw(illegal_operation){
+      {
       throw illegal_operation("gvertex(): '/='-operator not available");
     }
     
     // assigns given gvertex value to this gvertex
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator=(const gvertex<T,S>& v)
-      throw(illegal_operation)
+      
     {
       if(this != &v){
 	if(v.c.size() != c.size()) c.resize(v.c.size());
@@ -299,7 +299,7 @@ namespace whiteice
     // compares two gvertexes for equality
     template <typename T, typename S>
     bool gvertex<T,S>::operator==(const gvertex<T,S>& v) const
-      throw(uncomparable)
+      
     {
       if(v.c.size() != c.size())
 	throw uncomparable("gvertex compare: dimension mismatch");
@@ -313,7 +313,7 @@ namespace whiteice
     // compares two gvertexes for non-equality
     template <typename T, typename S>
     bool gvertex<T,S>::operator!=(const gvertex<T,S>& v) const
-      throw(uncomparable)
+      
     {
       if(v.c.size() != c.size())
 	throw uncomparable("gvertex compare: dimension mismatch");
@@ -326,25 +326,25 @@ namespace whiteice
     
     // not defined
     template <typename T, typename S>
-    bool gvertex<T,S>::operator>=(const gvertex<T,S>& v) const throw(uncomparable){
+    bool gvertex<T,S>::operator>=(const gvertex<T,S>& v) const {
       throw uncomparable("gvertex(): '>='-operator defined");
     }
     
     // not defined
     template <typename T, typename S>
-    bool gvertex<T,S>::operator<=(const gvertex<T,S>& v) const throw(uncomparable){
+    bool gvertex<T,S>::operator<=(const gvertex<T,S>& v) const {
       throw uncomparable("gvertex(): '<='-operator not defined");
     }
     
     // not defined
     template <typename T, typename S>
-    bool gvertex<T,S>::operator< (const gvertex<T,S>& v) const throw(uncomparable){
+    bool gvertex<T,S>::operator< (const gvertex<T,S>& v) const {
       throw uncomparable("gvertex(): '<'-operator not defined");
     }
     
     // not defined
     template <typename T, typename S>
-    bool gvertex<T,S>::operator> (const gvertex<T,S>& v) const throw(uncomparable){
+    bool gvertex<T,S>::operator> (const gvertex<T,S>& v) const {
       throw uncomparable("gvertex(): '>'-operator not defined");
     }
     
@@ -352,7 +352,7 @@ namespace whiteice
     
     // calculates absolute value of each gvertex element
     template <typename T, typename S>
-    gvertex<T,S>& gvertex<T,S>::abs() throw()
+    gvertex<T,S>& gvertex<T,S>::abs() 
     {
       for(unsigned int i=0;i<c.size();i++)
 	c[i] = whiteice::math::abs(c[i]);
@@ -361,7 +361,7 @@ namespace whiteice
     }
     
     template <typename T, typename S>
-    gvertex<T,S>& gvertex<T,S>::conj() throw()
+    gvertex<T,S>& gvertex<T,S>::conj() 
     {
       for(unsigned int i=0;i<c.size();i++)
 	c[i] = whiteice::math::conj(c[i]);
@@ -377,7 +377,7 @@ namespace whiteice
     /* sets all elements of gvertex = given scalar */
     template <typename T, typename S>
     gvertex<T,S>& gvertex<T,S>::operator=(const S& s)
-      throw(illegal_operation)
+      
     {
       for(unsigned int i=0;i<c.size();i++) c[i] = s;
       return *this;
@@ -387,7 +387,7 @@ namespace whiteice
     
     // multiples gvertex with scalar */
     template <typename T, typename S>
-    gvertex<T,S>  gvertex<T,S>::operator*(const S& s) const throw()
+    gvertex<T,S>  gvertex<T,S>::operator*(const S& s) const 
     {
       gvertex<T,S> r(c.size());
       
@@ -397,7 +397,7 @@ namespace whiteice
     
     // multiples gvertex with scalar */
     template <typename T, typename S>
-    gvertex<T,S>& gvertex<T,S>::operator*=(const S& s) throw()
+    gvertex<T,S>& gvertex<T,S>::operator*=(const S& s) 
     {
       for(unsigned int i=0;i<c.size();i++) c[i] = c[i]*s;          
       return *this;
@@ -407,7 +407,7 @@ namespace whiteice
     // multiples gvertex with scalar */
     template <typename T, typename S>
     gvertex<T,S>  gvertex<T,S>::operator/(const S& s) const
-      throw(std::invalid_argument)
+      
     {
       gvertex<T,S> r(c.size());
       
@@ -420,7 +420,7 @@ namespace whiteice
     
     // multiples gvertex with scalar */
     template <typename T, typename S>
-    gvertex<T,S>& gvertex<T,S>::operator/=(const S& s) throw(std::invalid_argument)
+    gvertex<T,S>& gvertex<T,S>::operator/=(const S& s) 
     {
       for(unsigned int i=0;i<c.size();i++){
 	c[i] = c[i]/s;
@@ -447,7 +447,7 @@ namespace whiteice
     // multiplies gmatrix from left
     template <typename T, typename S>
     gvertex<T,S> gvertex<T,S>::operator* (const gmatrix<T,S>& m) const
-      throw(std::invalid_argument)
+      
     {
       if(c.size() != m.ysize())
 	throw std::invalid_argument("multiply: gvertex/gmatrix dim. mismatch");
@@ -471,7 +471,7 @@ namespace whiteice
     
     template <typename T, typename S>
     T& gvertex<T,S>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
+      
     {
       if(index >= c.size())
 	throw std::out_of_range("gvertex[]: index out of range");
@@ -482,7 +482,7 @@ namespace whiteice
     
     template <typename T, typename S>
     const T& gvertex<T,S>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       if(index >= c.size())
 	throw std::out_of_range("gvertex[]: index out of range");
@@ -493,7 +493,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> gvertex<T,S>::outerproduct(const gvertex<T,S>& v) const
-      throw(std::domain_error)
+      
     {
       return outerproduct(*this, v);
     }
@@ -503,7 +503,7 @@ namespace whiteice
     template <typename T, typename S>
     gmatrix<T,S> gvertex<T,S>::outerproduct(const gvertex<T,S>& v0,
 					  const gvertex<T,S>& v1) const
-      throw(std::domain_error)
+      
     {
       gmatrix<T,S> m(v0.c.size(), v1.c.size());
       
@@ -516,24 +516,24 @@ namespace whiteice
     
 
     template <typename T, typename S> // iterators
-    typename gvertex<T,S>::iterator gvertex<T,S>::begin() throw(){
+    typename gvertex<T,S>::iterator gvertex<T,S>::begin() {
       return c.begin();
     }
     
     
     template <typename T, typename S>
-    typename gvertex<T,S>::iterator gvertex<T,S>::end() throw(){
+    typename gvertex<T,S>::iterator gvertex<T,S>::end() {
       return c.end();
     }
   
   
     template <typename T, typename S> // iterators
-    typename gvertex<T,S>::const_iterator gvertex<T,S>::begin() const throw(){
+    typename gvertex<T,S>::const_iterator gvertex<T,S>::begin() const {
       return c.begin();
     }
     
     template <typename T, typename S>
-    typename gvertex<T,S>::const_iterator gvertex<T,S>::end() const throw(){
+    typename gvertex<T,S>::const_iterator gvertex<T,S>::end() const {
       return c.end();
     }
     
@@ -564,7 +564,7 @@ namespace whiteice
     
     // tries to convert gvertex of type S to gvertex of type T (B = A)
     template <typename T, typename S>
-    bool convert(gvertex<T>& B, const gvertex<S>& A) throw()
+    bool convert(gvertex<T>& B, const gvertex<S>& A) 
     {
       try{
 	if(B.resize(A.size()) == false)

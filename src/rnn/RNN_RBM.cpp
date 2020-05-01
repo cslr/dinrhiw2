@@ -110,7 +110,7 @@ namespace whiteice
   
 
   template <typename T>
-  RNN_RBM<T>& RNN_RBM<T>::operator=(const whiteice::RNN_RBM<T>& rbm) throw(std::invalid_argument)
+  RNN_RBM<T>& RNN_RBM<T>::operator=(const whiteice::RNN_RBM<T>& rbm) 
   {
     std::lock_guard<std::mutex> lock1(thread_mutex);
 

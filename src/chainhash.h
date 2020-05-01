@@ -20,11 +20,11 @@ namespace whiteice
     
     virtual ~chainhash();
     
-    bool insert(const T& key, D& data) throw();
-    bool remove(const T& key) throw();
+    bool insert(const T& key, D& data) ;
+    bool remove(const T& key) ;
     
-    D&   search(const T& key) throw(std::out_of_range);
-    D& operator[](const T& key) throw(std::out_of_range);
+    D&   search(const T& key) ;
+    D& operator[](const T& key) ;
     
     bool rehash();
     

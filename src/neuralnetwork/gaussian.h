@@ -24,13 +24,13 @@ namespace whiteice
       T operator() (const T& x) const;  // calculates value of function
       T calculate(const T& x) const;    // calculates value
       
-      gaussian<T>* clone() const throw(std::bad_alloc); // creates copy of object
+      gaussian<T>* clone() const ; // creates copy of object
       
-      T& mean() throw();
-      const T& mean() const throw();
+      T& mean() ;
+      const T& mean() const ;
       
-      T& variance() throw();
-      const T& variance() const throw();
+      T& variance() ;
+      const T& variance() const ;
       
     private:
       

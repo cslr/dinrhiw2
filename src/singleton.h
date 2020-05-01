@@ -48,14 +48,14 @@ namespace whiteice
       
     protected: // only locally available
       
-      singleton() throw(std::logic_error);
-      virtual ~singleton() throw();
+      singleton() ;
+      virtual ~singleton() ;
       
       singleton(const singleton<T>& s)
-	throw(std::logic_error);
+	;
       
       singleton<T>& operator=(const singleton<T>& s)
-	throw(std::logic_error);
+	;
       
       
     public:
@@ -63,7 +63,7 @@ namespace whiteice
       static T& instance() throw(std::bad_alloc,
 				 std::logic_error);
       
-      static bool destroy() throw();
+      static bool destroy() ;
       
     };
   

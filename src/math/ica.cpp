@@ -17,22 +17,22 @@ namespace whiteice
   {
     
     template bool ica< blas_real<float> >
-      (const matrix< blas_real<float> >& D, matrix< blas_real<float> >& W, bool verbose) throw();
+      (const matrix< blas_real<float> >& D, matrix< blas_real<float> >& W, bool verbose) ;
     template bool ica< blas_real<double> >
-      (const matrix< blas_real<double> >& D, matrix< blas_real<double> >& W, bool verbose) throw();
+      (const matrix< blas_real<double> >& D, matrix< blas_real<double> >& W, bool verbose) ;
     template bool ica< float >
-      (const matrix<float>& D, matrix<float>& W, bool verbose) throw();
+      (const matrix<float>& D, matrix<float>& W, bool verbose) ;
     template bool ica< double >
-      (const matrix<double>& D, matrix<double>& W, bool verbose) throw();
+      (const matrix<double>& D, matrix<double>& W, bool verbose) ;
 
     template bool ica< blas_real<float> >
-      (const std::vector< math::vertex< blas_real<float> > >& data, matrix< blas_real<float> >& W, bool verbose) throw();
+      (const std::vector< math::vertex< blas_real<float> > >& data, matrix< blas_real<float> >& W, bool verbose) ;
     template bool ica< blas_real<double> >
-      (const std::vector< math::vertex< blas_real<double> > >& data, matrix< blas_real<double> >& W, bool verbose) throw();
+      (const std::vector< math::vertex< blas_real<double> > >& data, matrix< blas_real<double> >& W, bool verbose) ;
     template bool ica< float >
-      (const std::vector< math::vertex<float> >& data, matrix<float>& W, bool verbose) throw();
+      (const std::vector< math::vertex<float> >& data, matrix<float>& W, bool verbose) ;
     template bool ica< double >
-      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) throw();    
+      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) ;    
     
     template <typename T>
     void __ica_project(vertex<T>& w, const unsigned int n, const matrix<T>& W);
@@ -48,7 +48,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool ica(const std::vector< math::vertex<T> >& data, matrix<T>& W, bool verbose) throw()
+    bool ica(const std::vector< math::vertex<T> >& data, matrix<T>& W, bool verbose) 
     {
       // this is interface class that simply makes dataset<> calls work, does an costly data format transformation here
       // as the data types are not compatible (TODO: write code that uses DIRECTLY std::vector<> datasets
@@ -68,7 +68,7 @@ namespace whiteice
 
     
     template <typename T>
-    bool ica(const matrix<T>& D, matrix<T>& W, bool verbose) throw()
+    bool ica(const matrix<T>& D, matrix<T>& W, bool verbose) 
     {
       try{
 	

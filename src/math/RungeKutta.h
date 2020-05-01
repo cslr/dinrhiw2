@@ -27,8 +27,8 @@ namespace whiteice
 	RungeKutta(odefunction<T>* f = 0);
 	~RungeKutta();
 	
-	odefunction<T>* getFunction() const throw();
-	void setFunction(odefunction<T>* f) throw();
+	odefunction<T>* getFunction() const ;
+	void setFunction(odefunction<T>* f) ;
 	
 	// calculates values from the starting point y0
 	// with adaptive step length, adds results to the end of vector

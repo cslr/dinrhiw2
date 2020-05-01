@@ -21,13 +21,13 @@ namespace whiteice
     
     
     template <typename T>
-    odefunction<T>* RungeKutta<T>::getFunction() const throw(){
+    odefunction<T>* RungeKutta<T>::getFunction() const {
       return f;
     }
     
     
     template <typename T>
-    void RungeKutta<T>::setFunction(odefunction<T>* f) throw(){
+    void RungeKutta<T>::setFunction(odefunction<T>* f) {
       this->f = f;
     }
     

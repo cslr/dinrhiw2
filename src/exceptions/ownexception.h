@@ -14,10 +14,10 @@ namespace whiteice
     {
     public:
       
-      ~ownexception_base() throw() { }
+      ~ownexception_base()  { }
       
-      bool operator==(const ownexception_base& e) throw();
-      const std::string& message() const throw();
+      bool operator==(const ownexception_base& e) ;
+      const std::string& message() const ;
       
       const char* what() const throw() { return msg.c_str(); }
       
@@ -31,10 +31,10 @@ namespace whiteice
     {
     public:
       
-      uncomparable() throw();
-      uncomparable(const std::string& s) throw();
-      uncomparable(const uncomparable& u) throw();
-      ~uncomparable() throw() { }
+      uncomparable() ;
+      uncomparable(const std::string& s) ;
+      uncomparable(const uncomparable& u) ;
+      ~uncomparable()  { }
       
     };
   
@@ -43,10 +43,10 @@ namespace whiteice
     {
     public:
       
-      illegal_operation() throw();
-      illegal_operation(const std::string& s) throw();
-      illegal_operation(const illegal_operation& u) throw();
-      ~illegal_operation() throw() { }
+      illegal_operation() ;
+      illegal_operation(const std::string& s) ;
+      illegal_operation(const illegal_operation& u) ;
+      ~illegal_operation()  { }
     };
   
   
@@ -54,11 +54,11 @@ namespace whiteice
     {
     public:
       
-      noaccess() throw();
-      noaccess(const std::string& s) throw();
-      noaccess(const noaccess& u) throw();
+      noaccess() ;
+      noaccess(const std::string& s) ;
+      noaccess(const noaccess& u) ;
       
-      ~noaccess() throw(){ }
+      ~noaccess() { }
     };
   
 }

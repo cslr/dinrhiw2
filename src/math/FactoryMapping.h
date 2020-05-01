@@ -29,12 +29,12 @@ namespace whiteice
     
     // gets access to factory
     template <typename I>
-      I* getImplementation(I*& ptr_ref) const throw();
+      I* getImplementation(I*& ptr_ref) const ;
     
     
     // registering new implementation, multiples are not allowed - use properly
     template <typename I>
-      bool setImplementation(Factory<I>* i) throw();
+      bool setImplementation(Factory<I>* i) ;
     
   private:  
     map<std::string, GenericFactory*> factories;
@@ -48,13 +48,13 @@ namespace whiteice
   public: // hopefully compiler inlines these
     
     // FM::create() - implementation
-    template <typename I> inline static I* create(I*& ptr_ref) throw()
+    template <typename I> inline static I* create(I*& ptr_ref) 
     {
       return FactoryMapping::getInstance()->createInstance(ptr_ref);
     }
       
     // FM::set() - implementator
-    template <typename I> inline static bool set(Factory<I>* i) throw()
+    template <typename I> inline static bool set(Factory<I>* i) 
     {
       return FactoryMapping::getInstance()->setImplementation(i);
     }
@@ -68,7 +68,7 @@ namespace whiteice
   
   
   template <typename I>
-  I* FactoryMapping::getImplementation(I*& ptr_ref) const throw()
+  I* FactoryMapping::getImplementation(I*& ptr_ref) const 
   {
     try{
       std::string str = typeid(I).name();
@@ -85,7 +85,7 @@ namespace whiteice
   
   // registering new implementation, multiples are not allowed - use properly
   template <typename I>
-  bool FactoryMapping::setImplementation(Factory<I>* i) throw()
+  bool FactoryMapping::setImplementation(Factory<I>* i) 
   {
     try{
       if(!i) return false;

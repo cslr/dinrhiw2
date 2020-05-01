@@ -31,23 +31,23 @@ namespace whiteice
       ~priority_queue(){ if(table) free(table); }
       
       /* returns number of elements in queue */
-      unsigned int size() const throw(){ return numElements; }  
-      bool empty() const throw(){ return (numElements == 0); }
+      unsigned int size() const { return numElements; }  
+      bool empty() const { return (numElements == 0); }
       
-      T& maximum() throw(std::logic_error){
+      T& maximum() {
 	if(!numElements)
 	  throw std::logic_error("empty queue");
 	return table[1];
       }
       
-      const T& maximum() const throw(std::logic_error){
+      const T& maximum() const {
 	if(!numElements)
 	  throw std::logic_error("empty queue");
 	return table[1];
       }
       
       // returns false if operation fails
-      bool insert(const T& value) throw(){
+      bool insert(const T& value) {
 	if(numElements == tableSize){
 	  unsigned int numNew = (unsigned)(tableSize*0.10);
 	  if(numNew < 256) numNew = 256;
@@ -76,7 +76,7 @@ namespace whiteice
       }
       
       /* extracts maximum value */
-      T extract() throw(std::logic_error){
+      T extract() {
 	if(numElements < 1)
 	  throw std::logic_error("empty queue");
 	

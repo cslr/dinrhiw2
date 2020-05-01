@@ -87,78 +87,78 @@ namespace whiteice
       typedef typename std::vector<T>::const_iterator const_iterator;
 #endif
       
-      unsigned int size() const throw();
-      unsigned int resize(unsigned int d) throw();
+      unsigned int size() const ;
+      unsigned int resize(unsigned int d) ;
       
       // TODO: move norm() to generic number class
-      T norm() const throw();
+      T norm() const ;
       
       // calculates partial norm for vertex(i:j)
-      T norm(unsigned int i, unsigned int j) const throw();      
+      T norm(unsigned int i, unsigned int j) const ;      
       
-      bool normalize() throw(); // length = 1
-      void zero() throw(); // vertex = 0;
+      bool normalize() ; // length = 1
+      void zero() ; // vertex = 0;
 
       // hermitean transpose of the vector
-      void hermite() throw();
+      void hermite() ;
       
-      vertex<T> operator+(const vertex<T>& v) const throw(illegal_operation);      
-      vertex<T> operator-(const vertex<T>& v) const throw(illegal_operation);
+      vertex<T> operator+(const vertex<T>& v) const ;      
+      vertex<T> operator-(const vertex<T>& v) const ;
       
       // if v.size() != 1 this is inner product - returns vertex with size 1
       // if v.size() == 1 this is scalar multiplication
-      vertex<T> operator*(const vertex<T>& v) const throw(illegal_operation);
+      vertex<T> operator*(const vertex<T>& v) const ;
       
-      vertex<T> operator/(const vertex<T>& v) const throw(illegal_operation);
-      vertex<T> operator!() const throw(illegal_operation);
-      vertex<T> operator-() const throw(illegal_operation);
+      vertex<T> operator/(const vertex<T>& v) const ;
+      vertex<T> operator!() const ;
+      vertex<T> operator-() const ;
       
       // cross product
-      vertex<T> operator^(const vertex<T>& v) const throw(illegal_operation);
+      vertex<T> operator^(const vertex<T>& v) const ;
       
-      vertex<T>& operator+=(const vertex<T>& v) throw(illegal_operation);
-      vertex<T>& operator-=(const vertex<T>& v) throw(illegal_operation);
-      vertex<T>& operator*=(const vertex<T>& v) throw(illegal_operation);
-      vertex<T>& operator/=(const vertex<T>& v) throw(illegal_operation);
+      vertex<T>& operator+=(const vertex<T>& v) ;
+      vertex<T>& operator-=(const vertex<T>& v) ;
+      vertex<T>& operator*=(const vertex<T>& v) ;
+      vertex<T>& operator/=(const vertex<T>& v) ;
       
-      vertex<T>& operator=(const vertex<T>& v) throw(illegal_operation);      
-      //vertex<T>& operator=(vertex<T>&& t) throw(illegal_operation);      
+      vertex<T>& operator=(const vertex<T>& v) ;      
+      //vertex<T>& operator=(vertex<T>&& t) ;      
       
-      bool operator==(const vertex<T>& v) const throw(uncomparable);
-      bool operator!=(const vertex<T>& v) const throw(uncomparable);
-      bool operator>=(const vertex<T>& v) const throw(uncomparable);
-      bool operator<=(const vertex<T>& v) const throw(uncomparable);
-      bool operator< (const vertex<T>& v) const throw(uncomparable);
-      bool operator> (const vertex<T>& v) const throw(uncomparable);
+      bool operator==(const vertex<T>& v) const ;
+      bool operator!=(const vertex<T>& v) const ;
+      bool operator>=(const vertex<T>& v) const ;
+      bool operator<=(const vertex<T>& v) const ;
+      bool operator< (const vertex<T>& v) const ;
+      bool operator> (const vertex<T>& v) const ;
       
-      vertex<T>& operator=(const quaternion<T>&) throw(std::domain_error);
+      vertex<T>& operator=(const quaternion<T>&) ;
       
-      vertex<T>& abs() throw();
+      vertex<T>& abs() ;
       
       /* scalars */
-      vertex<T>& operator= (const T& s) throw(illegal_operation);
-      vertex<T>  operator* (const T& s) const throw();
-      vertex<T>  operator/ (const T& s) const throw(std::invalid_argument);
-      vertex<T>& operator*=(const T& s) throw();
-      vertex<T>& operator/=(const T& s) throw(std::invalid_argument);
+      vertex<T>& operator= (const T& s) ;
+      vertex<T>  operator* (const T& s) const ;
+      vertex<T>  operator/ (const T& s) const ;
+      vertex<T>& operator*=(const T& s) ;
+      vertex<T>& operator/=(const T& s) ;
     
       template <typename TT>
       friend vertex<TT> operator*(const TT& s, const vertex<TT>& v); // multi from right
       
       // multiply from left
-      vertex<T>  operator* (const matrix<T>& m) const throw(std::invalid_argument);    
+      vertex<T>  operator* (const matrix<T>& m) const ;    
 
       // outer product
-      matrix<T> outerproduct() const throw(std::domain_error);
-      matrix<T> outerproduct(const vertex<T>& v) const throw(std::domain_error);
+      matrix<T> outerproduct() const ;
+      matrix<T> outerproduct(const vertex<T>& v) const ;
       matrix<T> outerproduct(const vertex<T>& v0,
-			     const vertex<T>& v1) const throw(std::domain_error);
+			     const vertex<T>& v1) const ;
       
       // element-wise multiplication of vector elements
-      vertex<T>& dotmulti(const vertex<T>& v) throw(illegal_operation);
+      vertex<T>& dotmulti(const vertex<T>& v) ;
       
       
-      inline T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
+      inline T& operator[](const unsigned int& index) 
       {
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -166,7 +166,7 @@ namespace whiteice
 	return data[index]; // no range check
       }
       
-      inline const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
+      inline const T& operator[](const unsigned int& index) const 
       {	
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -175,41 +175,41 @@ namespace whiteice
       }
       
       
-      bool subvertex(vertex<T>& v, unsigned int x0, unsigned int len) const throw();
-      bool write_subvertex(const vertex<T>& v, unsigned int x0) throw();
+      bool subvertex(vertex<T>& v, unsigned int x0, unsigned int len) const ;
+      bool write_subvertex(const vertex<T>& v, unsigned int x0) ;
       
 #if 0
-      iterator begin() throw(); // iterators
-      iterator end() throw();
-      const_iterator begin() const throw(); // iterators
-      const_iterator end() const throw();
+      iterator begin() ; // iterators
+      iterator end() ;
+      const_iterator begin() const ; // iterators
+      const_iterator end() const ;
 #endif
       
-      bool comparable() throw();
+      bool comparable() ;
       
       // stores vertex to comma separated ASCII file (.CSV) which can be
       // often imported by data analysis software
-      bool saveAscii(const std::string& filename) const throw();
+      bool saveAscii(const std::string& filename) const ;
 
-      void toString(std::string& line) const throw();
+      void toString(std::string& line) const ;
 
       
       //////////////////////////////////////////////////
       // vertex data compression
       
-      bool compress() throw();
-      bool decompress() throw();
-      bool iscompressed() const throw();
-      float ratio() const throw();
+      bool compress() ;
+      bool decompress() ;
+      bool iscompressed() const ;
+      float ratio() const ;
       
       //////////////////////////////////////////////////
       // direct memory access
       
       // copies vertex[start:(start+len-1)] = data[0:(len-1)]
-      bool importData(const T* data, unsigned int len=0, unsigned int start=0) throw();
+      bool importData(const T* data, unsigned int len=0, unsigned int start=0) ;
       
       // copies data[0:(len-1)] = vertex[start:(start+len-1)]
-      bool exportData(T* data, unsigned int len=0, unsigned int start=0) const throw();
+      bool exportData(T* data, unsigned int len=0, unsigned int start=0) const ;
       
       //////////////////////////////////////////////////
       
@@ -268,7 +268,7 @@ namespace whiteice
     
     // tries to convert vertex of type S to vertex of type T (B = A)
     template <typename T, typename S>
-      bool convert(vertex<T>& B, const vertex<S>& A) throw()
+      bool convert(vertex<T>& B, const vertex<S>& A) 
       {
 	try{
 	  if(B.resize(A.size()) == false)

@@ -52,13 +52,13 @@ namespace whiteice
      * (caller may need to make local copies for the call)
      */
     template <typename T>
-      bool linsolve(matrix<T>& A, vertex<T>& x, const vertex<T>& b) throw();
+      bool linsolve(matrix<T>& A, vertex<T>& x, const vertex<T>& b) ;
 
     /* gives least squares solution to a problem A*x = b,
      * where A is not square matrix
      */
     template <typename T>
-      bool linlsqsolve(matrix<T>& A, const vertex<T>& b, vertex<T>& x) throw();
+      bool linlsqsolve(matrix<T>& A, const vertex<T>& b, vertex<T>& x) ;
    
     
     /* calculates cholesky factorization of symmetric
@@ -67,17 +67,17 @@ namespace whiteice
      * result to lower triangular part of A (overwrites input data).
      */
     template <typename T>
-      bool cholesky_factorization(matrix<T>& A) throw();
+      bool cholesky_factorization(matrix<T>& A) ;
     
     /* needed by cholesky factorization */
     template <typename T>
-      bool solvegg(matrix<T>& C, vertex<T>& x) throw();
+      bool solvegg(matrix<T>& C, vertex<T>& x) ;
     
     /*
      * solves symmetric matrix inverse problem through cholesky factorization
      */
     template <typename T>
-      bool symmetric_inverse(matrix<T>& A) throw();
+      bool symmetric_inverse(matrix<T>& A) ;
     
     
     
@@ -94,48 +94,48 @@ namespace whiteice
     
     
     extern template bool linsolve< blas_real<float> >
-      (matrix< blas_real<float> >& A, vertex< blas_real<float> >& x, const vertex< blas_real<float> >& b) throw();
+      (matrix< blas_real<float> >& A, vertex< blas_real<float> >& x, const vertex< blas_real<float> >& b) ;
     extern template bool linsolve< blas_real<double> >
-      (matrix< blas_real<double> >& A, vertex< blas_real<double> >& x, const vertex< blas_real<double> >& b) throw();
+      (matrix< blas_real<double> >& A, vertex< blas_real<double> >& x, const vertex< blas_real<double> >& b) ;
     extern template bool linsolve<float>
-      (matrix<float>& A, vertex<float>& x, const vertex<float>& b) throw();
+      (matrix<float>& A, vertex<float>& x, const vertex<float>& b) ;
     extern template bool linsolve<double>
-      (matrix<double>& A, vertex<double>& x, const vertex<double>& b) throw();
+      (matrix<double>& A, vertex<double>& x, const vertex<double>& b) ;
     
     
     extern template bool linlsqsolve< blas_real<float> >
-      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& b, vertex< blas_real<float> >& x) throw();
+      (matrix< blas_real<float> >& A, const vertex< blas_real<float> >& b, vertex< blas_real<float> >& x) ;
     extern template bool linlsqsolve< blas_real<double> >
-      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& b, vertex< blas_real<double> >& x) throw();
+      (matrix< blas_real<double> >& A, const vertex< blas_real<double> >& b, vertex< blas_real<double> >& x) ;
     extern template bool linlsqsolve<float>
-      (matrix<float>& A, const vertex<float>& b, vertex<float>& x) throw();
+      (matrix<float>& A, const vertex<float>& b, vertex<float>& x) ;
     extern template bool linlsqsolve<double>
-      (matrix<double>& A, const vertex<double>& b, vertex<double>& x) throw();
+      (matrix<double>& A, const vertex<double>& b, vertex<double>& x) ;
     
     
     extern template bool cholesky_factorization< blas_real<float> >
-      (matrix< blas_real<float> >& A) throw();
+      (matrix< blas_real<float> >& A) ;
     extern template bool cholesky_factorization< blas_real<double> >
-      (matrix< blas_real<double> >& A) throw();
+      (matrix< blas_real<double> >& A) ;
     extern template bool cholesky_factorization<float>
-      (matrix<float>& A) throw();
+      (matrix<float>& A) ;
     extern template bool cholesky_factorization<double>
-      (matrix<double>& A) throw();
+      (matrix<double>& A) ;
     
     
     extern template bool solvegg< blas_real<float> >
-      (matrix< blas_real<float> >& C, vertex< blas_real<float> >& x) throw();
+      (matrix< blas_real<float> >& C, vertex< blas_real<float> >& x) ;
     extern template bool solvegg< blas_real<double> >
-      (matrix< blas_real<double> >& C, vertex< blas_real<double> >& x) throw();
+      (matrix< blas_real<double> >& C, vertex< blas_real<double> >& x) ;
     extern template bool solvegg<float>
-      (matrix<float>& C, vertex<float>& x) throw();
+      (matrix<float>& C, vertex<float>& x) ;
     extern template bool solvegg<double>
-      (matrix<double>& C, vertex<double>& x) throw();
+      (matrix<double>& C, vertex<double>& x) ;
     
-    extern template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) throw();
-    extern template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) throw();
-    extern template bool symmetric_inverse< float >(matrix< float >& A) throw();
-    extern template bool symmetric_inverse< double >(matrix< double >& A) throw();
+    extern template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) ;
+    extern template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) ;
+    extern template bool symmetric_inverse< float >(matrix< float >& A) ;
+    extern template bool symmetric_inverse< double >(matrix< double >& A) ;
     
     
     extern template void solve_sylvester< blas_real<float> >

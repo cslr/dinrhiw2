@@ -19,7 +19,7 @@ namespace whiteice
 
     /* hermite ctor */
     template <typename T, typename S>
-    hermite<T,S>::hermite() throw()
+    hermite<T,S>::hermite() 
     {
       curvetype = undefined_curve;
       derivate_parameter = (S)(0.5);
@@ -29,12 +29,12 @@ namespace whiteice
     
     /* empty dtor */
     template <typename T, typename S>
-    hermite<T,S>::~hermite() throw(){ }
+    hermite<T,S>::~hermite() { }
     
     
     
     template <typename T, typename S>
-    bool hermite<T,S>::set_cardinal_parameter(const S& a) throw()
+    bool hermite<T,S>::set_cardinal_parameter(const S& a) 
     {
       derivate_parameter = a;
       curvetype = cardinal_spline_curve;    
@@ -46,7 +46,7 @@ namespace whiteice
     int hermite<T,S>::calculate(const std::vector<T>& data,
 				bool clear_path,
 				curve_types ct)
-      throw(std::domain_error)
+      
     {
       if(data.size() == 0) return 0;    
       curvetype = ct;
@@ -70,7 +70,7 @@ namespace whiteice
     int hermite<T,S>::operator()(const std::vector<T>& data,
 				 bool clear_path,
 				 curve_types ct)
-      throw(std::domain_error)
+      
     {
       return calculate(data, clear_path, ct);
     }
@@ -82,7 +82,7 @@ namespace whiteice
 				int MAX_FRAMES,
 				bool clear_path,
 				curve_types ct)
-      throw(std::domain_error)
+      
     {
       if(data.size() == 0) return 0;    
       curvetype = ct;
@@ -107,7 +107,7 @@ namespace whiteice
 				 int MAX_FRAMES,
 				 bool clear_path,
 				 curve_types ct)
-      throw(std::domain_error)
+      
     {
       return calculate(data, MAX_FRAMES, clear_path, ct);
     }
@@ -115,19 +115,19 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    typename hermite<T,S>::iterator hermite<T,S>::begin() const throw(){
+    typename hermite<T,S>::iterator hermite<T,S>::begin() const {
       return path.begin();
     }
     
     template <typename T, typename S>
-    typename hermite<T,S>::iterator hermite<T,S>::end() const throw(){
+    typename hermite<T,S>::iterator hermite<T,S>::end() const {
       return path.end();
     }
     
     
     template <typename T, typename S>
     T& hermite<T,S>::operator[](unsigned int index)
-      throw(std::out_of_range)
+      
     {
       if(index >= path.size())
 	throw std::out_of_range("hermite::operator[] - index out of range");
@@ -137,7 +137,7 @@ namespace whiteice
     
     template <typename T, typename S>
     const T& hermite<T,S>::operator[](unsigned int index) const
-      throw(std::out_of_range)
+      
     {
       if(index >= path.size())
 	throw std::out_of_range("hermite::operator[] - index out of range");
@@ -146,7 +146,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    unsigned int hermite<T,S>::size() const throw()
+    unsigned int hermite<T,S>::size() const 
     {
       return path.size();
     }
@@ -156,7 +156,7 @@ namespace whiteice
     template <typename T, typename S>
     void hermite<T,S>::cardinal_spline(const std::vector<T>& data,
 				       bool clear_path)
-      throw(std::domain_error)
+      
     {
       cardinal_spline(data, data.size()*10, clear_path);
     }
@@ -170,7 +170,7 @@ namespace whiteice
     void hermite<T,S>::cardinal_spline(const std::vector<T>& data,
 				       int MAX_FRAMES,
 				       bool clear_path)
-      throw(std::domain_error)
+      
     {
       if((unsigned)MAX_FRAMES < data.size()*2)
 	throw std::domain_error("hermite::cardinal_spline(): not enough frames.");
@@ -236,7 +236,7 @@ namespace whiteice
      */  
     template <typename T, typename S>
     void hermite<T,S>::kb_spline(bool clear_path)
-      throw(std::domain_error)
+      
     {
       using namespace std;
       
@@ -259,7 +259,7 @@ namespace whiteice
 				    const T& p1, const T& delta1,
 				    bool clear_path,
 				    bool plot_last_one)
-      throw(std::domain_error)
+      
     {
       
       if(clear_path) path.clear();
@@ -312,7 +312,7 @@ namespace whiteice
 				    int MAX_FRAMES,
 				    bool clear_path,
 				    bool plot_last_one)
-      throw(std::domain_error)
+      
     {
       if(MAX_FRAMES <  2)
 	throw std::domain_error("hermite::hermite_line() number of frames <= 0");

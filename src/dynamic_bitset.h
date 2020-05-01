@@ -31,8 +31,8 @@ namespace whiteice
     dynamic_bitset& operator&=(const dynamic_bitset& r);
     dynamic_bitset& operator|=(const dynamic_bitset& r);
     dynamic_bitset& operator^=(const dynamic_bitset& r);
-    dynamic_bitset& operator<<=(int pos) throw();
-    dynamic_bitset& operator>>=(int pos) throw();
+    dynamic_bitset& operator<<=(int pos) ;
+    dynamic_bitset& operator>>=(int pos) ;
     
     // adds bitset at the beginning of the current one
     dynamic_bitset& operator+=(const dynamic_bitset& r);
@@ -40,24 +40,24 @@ namespace whiteice
     dynamic_bitset operator&(const dynamic_bitset& r) const;
     dynamic_bitset operator|(const dynamic_bitset& r) const;
     dynamic_bitset operator^(const dynamic_bitset& r) const;
-    dynamic_bitset operator<<(const int pos) const throw();
-    dynamic_bitset operator>>(const int pos) const throw();
+    dynamic_bitset operator<<(const int pos) const ;
+    dynamic_bitset operator>>(const int pos) const ;
     
     // ORs bit sequencies
     dynamic_bitset operator+(const dynamic_bitset& r) const;
     
-    dynamic_bitset& set() throw(); // sets all bits
-    dynamic_bitset& set(unsigned int pos, bool val = true) throw(std::out_of_range);
+    dynamic_bitset& set() ; // sets all bits
+    dynamic_bitset& set(unsigned int pos, bool val = true) ;
     
-    dynamic_bitset& reset() throw(); // clears all bits
-    dynamic_bitset& reset(unsigned int pos) throw(std::out_of_range);
+    dynamic_bitset& reset() ; // clears all bits
+    dynamic_bitset& reset(unsigned int pos) ;
     
-    dynamic_bitset& flip() throw();
-    dynamic_bitset& flip(unsigned int pos) throw(std::out_of_range);
+    dynamic_bitset& flip() ;
+    dynamic_bitset& flip(unsigned int pos) ;
     
     
     inline bool operator[](unsigned int pos)
-      const throw(std::out_of_range)
+      const 
     {
 #ifndef FAST_CODE
       if(pos >= seqlen)
@@ -74,29 +74,29 @@ namespace whiteice
     std::string to_hexstring() const;
     whiteice::math::integer to_integer() const;
     
-    unsigned int count() const throw(); // number of bits set
-    unsigned int size() const throw();  // length of the bit sequence
+    unsigned int count() const ; // number of bits set
+    unsigned int size() const ;  // length of the bit sequence
         
-    unsigned int blocks() const throw(); // number of 8bit blocks
+    unsigned int blocks() const ; // number of 8bit blocks
     
-    void resize(unsigned int len) throw(std::bad_alloc);  // sets length of sequence
+    void resize(unsigned int len) ;  // sets length of sequence
     
-    bool operator==(const dynamic_bitset& r) const throw();
-    bool operator!=(const dynamic_bitset& r) const throw();
+    bool operator==(const dynamic_bitset& r) const ;
+    bool operator!=(const dynamic_bitset& r) const ;
     
-    bool any() const throw();  // is any bit set?
-    bool none() const throw(); // no bits are set?
+    bool any() const ;  // is any bit set?
+    bool none() const ; // no bits are set?
     
     dynamic_bitset operator~() const; // returns flipped bitset
     bool operator!() const; // returns true if no bits are set (iszero)
     
     // shifts bitset cyclically (pos > 0: left shift, pos < 0: right shift)
-    void cyclicshift(int pos) throw(std::bad_alloc);
+    void cyclicshift(int pos) ;
     
     // accesses 8 bit blocks
     // WARNING: when accessing the last block's unused bits
     // must be set to zero or dynamic_bitset may stop working correctly
-    inline unsigned char& value(unsigned int p) throw(std::out_of_range){
+    inline unsigned char& value(unsigned int p) {
 #ifndef FAST_CODE
       // remove checks to increase speed and reduce stability
       if(p >= (sizeof(unsigned long)*numblocks)/sizeof(unsigned char))
@@ -106,7 +106,7 @@ namespace whiteice
       return ((unsigned char*)(this->memory))[p];
     }
     
-    inline const unsigned char& value(unsigned int p) const throw(std::out_of_range){
+    inline const unsigned char& value(unsigned int p) const {
 #ifndef FAST_CODE
       // remove checks to increase speed and reduce stability
       if(p >= (sizeof(unsigned long)*numblocks)/sizeof(unsigned char))
@@ -119,7 +119,7 @@ namespace whiteice
     
     // increments unsigned integer by one 
     // (uses carry flag to optimize this one)
-    inline void inc() throw()
+    inline void inc() 
     {      
 #if defined IA32
       // assumes sizeof(unsigned long) = 4
@@ -154,7 +154,7 @@ namespace whiteice
     
     
     // decrements unsigned integer by one
-    inline void dec() throw()
+    inline void dec() 
     {
 
 #if defined IA32

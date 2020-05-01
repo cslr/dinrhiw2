@@ -23,75 +23,75 @@ namespace whiteice
     template bool linsolve< blas_real<float> >
     (matrix< blas_real<float> >& A, 
      vertex< blas_real<float> >& x, 
-     const vertex< blas_real<float> >& b) throw();
+     const vertex< blas_real<float> >& b) ;
     
     template bool linsolve< blas_real<double> >
     (matrix< blas_real<double> >& A, 
      vertex< blas_real<double> >& x, 
-     const vertex< blas_real<double> >& b) throw();
+     const vertex< blas_real<double> >& b) ;
     
     template bool linsolve<float>
     (matrix<float>& A, 
      vertex<float>& x, 
-     const vertex<float>& b) throw();
+     const vertex<float>& b) ;
     
     template bool linsolve<double>
     (matrix<double>& A, 
      vertex<double>& x, 
-     const vertex<double>& b) throw();
+     const vertex<double>& b) ;
     
     
     
     template bool linlsqsolve< blas_real<float> >
     (matrix< blas_real<float> >& A, 
      const vertex< blas_real<float> >& b, 
-     vertex< blas_real<float> >& x) throw();
+     vertex< blas_real<float> >& x) ;
     
     template bool linlsqsolve< blas_real<double> >
     (matrix< blas_real<double> >& A, 
      const vertex< blas_real<double> >& b, 
-     vertex< blas_real<double> >& x) throw();
+     vertex< blas_real<double> >& x) ;
     
     template bool linlsqsolve<float>
     (matrix<float>& A, 
      const vertex<float>& b, 
-     vertex<float>& x) throw();
+     vertex<float>& x) ;
     
     template bool linlsqsolve<double>
     (matrix<double>& A, 
      const vertex<double>& b, 
-     vertex<double>& x) throw();
+     vertex<double>& x) ;
     
     
     
     template bool cholesky_factorization< blas_real<float> >
-      (matrix< blas_real<float> >& A) throw();
+      (matrix< blas_real<float> >& A) ;
     template bool cholesky_factorization< blas_real<double> >
-      (matrix< blas_real<double> >& A) throw();
+      (matrix< blas_real<double> >& A) ;
     template bool cholesky_factorization<float>
-      (matrix<float>& A) throw();
+      (matrix<float>& A) ;
     template bool cholesky_factorization<double>
-      (matrix<double>& A) throw();    
+      (matrix<double>& A) ;    
     
     
     template bool solvegg< blas_real<float> >
     (matrix< blas_real<float> >& C, 
-     vertex< blas_real<float> >& x) throw();
+     vertex< blas_real<float> >& x) ;
     
     template bool solvegg< blas_real<double> >
     (matrix< blas_real<double> >& C, 
-     vertex< blas_real<double> >& x) throw();
+     vertex< blas_real<double> >& x) ;
     
     template bool solvegg<float>
-      (matrix<float>& C, vertex<float>& x) throw();
+      (matrix<float>& C, vertex<float>& x) ;
     template bool solvegg<double>
-      (matrix<double>& C, vertex<double>& x) throw();
+      (matrix<double>& C, vertex<double>& x) ;
 
     
-    template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) throw();
-    template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) throw();
-    template bool symmetric_inverse< float >(matrix< float >& A) throw();
-    template bool symmetric_inverse< double >(matrix< double >& A) throw();
+    template bool symmetric_inverse< blas_real<float> >(matrix< blas_real<float> >& A) ;
+    template bool symmetric_inverse< blas_real<double> >(matrix< blas_real<double> >& A) ;
+    template bool symmetric_inverse< float >(matrix< float >& A) ;
+    template bool symmetric_inverse< double >(matrix< double >& A) ;
     
     
     template void solve_sylvester< blas_real<float> >
@@ -152,7 +152,7 @@ namespace whiteice
      * (caller may need to make local copies for the call)
      */
     template <typename T>
-      bool linsolve(matrix<T>& A, vertex<T>& x, const vertex<T>& b) throw()
+      bool linsolve(matrix<T>& A, vertex<T>& x, const vertex<T>& b) 
       {
 	// initial conditions and initializations
 	if(A.xsize() != A.ysize()) return false; // not a square (TODO: calculate pseudoinverse with svd then)
@@ -257,7 +257,7 @@ namespace whiteice
     
     /* least squares solution */
     template <typename T>
-      bool linlsqsolve(matrix<T>& A, const vertex<T>& b, vertex<T>& x) throw()
+      bool linlsqsolve(matrix<T>& A, const vertex<T>& b, vertex<T>& x) 
       {
 	// A = X^(m x n) , m >= n
 
@@ -293,7 +293,7 @@ namespace whiteice
     // implementation only uses lower triangular part of A and calculates
     // result to lower triangular part of A (overwrites input data).
     template <typename T>
-      bool cholesky_factorization(matrix<T>& A) throw()
+      bool cholesky_factorization(matrix<T>& A) 
       {
 	if(A.xsize() != A.ysize()) return false;
 	
@@ -331,7 +331,7 @@ namespace whiteice
     
     
     template <typename T>
-      bool solvegg(matrix<T>& C, vertex<T>& x) throw()
+      bool solvegg(matrix<T>& C, vertex<T>& x) 
       {
 	// C's lower triangular part = G;
 	
@@ -384,7 +384,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool symmetric_inverse(matrix<T>& A) throw()
+    bool symmetric_inverse(matrix<T>& A) 
     {
       if(A.ysize() != A.xsize()) return false;  // only square matrixes
       

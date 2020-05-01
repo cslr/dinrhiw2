@@ -23,7 +23,7 @@ namespace whiteice
     {
       protected:
       
-      dynamic_ctor_protection() throw(std::logic_error)
+      dynamic_ctor_protection() 
       {
 	if(!canCreate)
 	throw std::logic_error("Construction of class is disabled");
@@ -41,7 +41,7 @@ namespace whiteice
       // inheritator implements this to tell if
       // class with given key can change state
       
-      virtual bool canChange(const K& key) throw() = 0;
+      virtual bool canChange(const K& key)  = 0;
       
       private:
       
@@ -59,7 +59,7 @@ namespace whiteice
     {
       protected:    
       
-      bool enableCreation() throw()
+      bool enableCreation() 
       {	
 	const K& key = getAuthorizationKey();
 	
@@ -70,7 +70,7 @@ namespace whiteice
 	else return false;
       }
       
-      bool disableCreation() throw()
+      bool disableCreation() 
       {
 	const K& key = getAuthorizationKey();
 	
@@ -84,7 +84,7 @@ namespace whiteice
       // inheritator implements to provide key for
       // a proof of authorizated control
       
-      virtual const K& getAuthorizationKey() throw() = 0;
+      virtual const K& getAuthorizationKey()  = 0;
     };
 
 }

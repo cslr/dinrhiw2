@@ -25,18 +25,18 @@ namespace whiteice
       
       virtual ~PAD(){ }
       
-      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
-      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
+      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
+      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
       
       // note: ModeOfOperation is ignored
       bool encrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
       
       // note: ModeOfOperation is ignored
       bool decrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
     };
     
     
@@ -48,12 +48,12 @@ namespace whiteice
       
       virtual ~PADKey();
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       const dynamic_bitset& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
       Keyschedule<dynamic_bitset>* copy() const;
       

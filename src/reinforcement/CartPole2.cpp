@@ -178,7 +178,7 @@ namespace whiteice
 
 
   template <typename T>
-  T CartPole2<T>::normalizeTheta(const T t) const throw()
+  T CartPole2<T>::normalizeTheta(const T t) const 
   {
     // sets range between [-2*pi, +2*pi]
     T a = t/T(2.0*M_PI);

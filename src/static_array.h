@@ -20,13 +20,13 @@ namespace whiteice
     static_array(const array<D,T>& a);
     virtual ~static_array();
     
-    unsigned int size() const throw();
-    bool resize(const T& n) throw();
+    unsigned int size() const ;
+    bool resize(const T& n) ;
     
-    void clear() throw();
+    void clear() ;
     
-    D& operator[](const T& n) throw(std::out_of_range);
-    const D& operator[](const T& n) const throw(std::out_of_range);
+    D& operator[](const T& n) ;
+    const D& operator[](const T& n) const ;
     
     private:
     

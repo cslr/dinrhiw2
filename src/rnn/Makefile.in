@@ -28,7 +28,7 @@ SOURCES = tst/test.cpp RNN_RBM.cpp \
 	../math/ownexception.cpp
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes @EXTRA_INCLUDEPATHS@
 
 TARGET= testsuite
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../reinforcement -I../crypto $(OPTIMIZE)

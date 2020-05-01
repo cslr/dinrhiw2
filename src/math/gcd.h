@@ -18,7 +18,7 @@ namespace whiteice
    * with euclid algorithm
    */
   template <typename T> 
-    T gcd(T a, T b) throw();
+    T gcd(T a, T b) ;
   
   /*
    * (trival algorithm)
@@ -29,7 +29,7 @@ namespace whiteice
    * (causes relatively much swapping)
    */  
   template <typename T>
-    void permutation(std::vector<T>& A) throw();
+    void permutation(std::vector<T>& A) ;
   
 
   /*
@@ -46,7 +46,7 @@ namespace whiteice
    * when this algorithm is used)
    */  
   template <typename T>
-    void dqpermutation(std::vector<T>& A) throw();
+    void dqpermutation(std::vector<T>& A) ;
   
   
 };

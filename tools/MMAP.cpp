@@ -110,7 +110,7 @@ namespace whiteice
     bytes = 0;
   }
   
-  bool MMAP::resize(unsigned long long newbytes) throw()
+  bool MMAP::resize(unsigned long long newbytes) 
   {
     if(newbytes > (__LIMIT__ - PAGESIZE))
       return false; // too large memory area
@@ -196,7 +196,7 @@ namespace whiteice
   
   
   
-  bool MMAP::changePage(unsigned long long newpage) const throw()
+  bool MMAP::changePage(unsigned long long newpage) const 
   {
     const unsigned long long numpages = (bytes + PAGESIZE - 1) / PAGESIZE;
     
@@ -314,7 +314,7 @@ namespace whiteice
   }
   
   
-  bool FMMAP::resize(unsigned long long floats) throw()
+  bool FMMAP::resize(unsigned long long floats) 
   {
     // implement me!
     return false;

@@ -16,16 +16,16 @@ namespace whiteice
     /**************************************************/
     
     template <typename T>
-    bezier<T>::bezier() throw(){ }
+    bezier<T>::bezier() { }
     
     
     template <typename T>
-    bezier<T>::~bezier() throw(){ }
+    bezier<T>::~bezier() { }
     
     /***************************************************/
     
     template <typename T>
-    unsigned int bezier<T>::operator()(const std::vector< vertex<T> >& data) throw()
+    unsigned int bezier<T>::operator()(const std::vector< vertex<T> >& data) 
     {
       if(data.size() <= 0) return 0;
 
@@ -63,13 +63,13 @@ namespace whiteice
     /***************************************************/
     
     template <typename T>
-    typename bezier<T>::iterator bezier<T>::begin() const throw()
+    typename bezier<T>::iterator bezier<T>::begin() const 
     {
       return path.begin();
     }
     
     template <typename T>
-    typename bezier<T>::iterator bezier<T>::end() const throw()
+    typename bezier<T>::iterator bezier<T>::end() const 
     {
       return path.end();
     }
@@ -79,26 +79,26 @@ namespace whiteice
     
     template <typename T>    
     vertex<T>& bezier<T>::operator[](unsigned int index)
-      throw(std::out_of_range)
+      
     {
       return path[index];
     }
     
     template <typename T>
     const vertex<T>& bezier<T>::operator[](unsigned int index) const
-      throw(std::out_of_range)
+      
     {
       return path[index];
     }
     
     template <typename T>
-    unsigned int bezier<T>::size() const throw()
+    unsigned int bezier<T>::size() const 
     {
       return path.size();
     }
     
     template <typename T>
-    void bezier<T>::clear() throw()
+    void bezier<T>::clear() 
     {
       path.clear();
     }

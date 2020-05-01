@@ -33,21 +33,21 @@ namespace whiteice
       // message. (message pointer may be changed and length increased)
       
       bool sign(unsigned char** message, unsigned int len,
-		std::vector<integer>& signature) const throw();
+		std::vector<integer>& signature) const ;
       
       // returns true if the signature of a message matches with the given message
       bool verify(unsigned char** message, unsigned int len,
-		  const std::vector<integer>& signature) const throw();
+		  const std::vector<integer>& signature) const ;
       
-      bool getKey(DSAKey& dsakey) const throw();
+      bool getKey(DSAKey& dsakey) const ;
       
     private:
       
       bool calculate_sha(integer& sha, unsigned char **message, unsigned int len)
-	const throw();
+	const ;
 			 
       
-      bool random_bit() const throw();
+      bool random_bit() const ;
       
     private:
       
@@ -75,35 +75,35 @@ namespace whiteice
       
       // returns number of keys in a keyschedule
       // or negative value for infinity
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
       // returns number of bits in a single key
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       // gets n:th key from the key schedule
       const integer& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
-      DSAKey& operator=(const DSAKey& dsakey) throw();
+      DSAKey& operator=(const DSAKey& dsakey) ;
       
       // Keyschedules can copy itself
       Keyschedule<integer>* copy() const;
       
-      const std::vector<integer>& publickey() const throw();
+      const std::vector<integer>& publickey() const ;
       
-      const std::vector<integer>& privatekey() const throw();
+      const std::vector<integer>& privatekey() const ;
       
     private:
       
-      void generate_random_prime(integer& a, unsigned int bits) const throw();
+      void generate_random_prime(integer& a, unsigned int bits) const ;
       
-      void generate_random_even(integer& a, unsigned int bits) const throw();
+      void generate_random_even(integer& a, unsigned int bits) const ;
       
-      void random_number_smaller_than(integer& a, const integer& b) const throw();
+      void random_number_smaller_than(integer& a, const integer& b) const ;
       
-      bool random_bit() const throw();
+      bool random_bit() const ;
       
-      bool check_key_values() const throw();
+      bool check_key_values() const ;
       
     private:
       

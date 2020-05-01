@@ -139,7 +139,7 @@ namespace whiteice
   
   template <typename T>
   bool KMeans<T>::learn(unsigned int k,
-			std::vector<std::vector<T> >& data) throw()
+			std::vector<std::vector<T> >& data) 
   {
     try{
       if(data.size() < 1) return false;
@@ -275,7 +275,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool KMeans<T>::learn(unsigned int k, std::vector< whiteice::math::vertex<T> >& data) throw()
+  bool KMeans<T>::learn(unsigned int k, std::vector< whiteice::math::vertex<T> >& data) 
   {
     try{
       if(data.size() < 1) return false;
@@ -408,7 +408,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int KMeans<T>::size() const throw()
+  unsigned int KMeans<T>::size() const 
   {
     return kmeans.size();
   }
@@ -429,7 +429,7 @@ namespace whiteice
 
   template <typename T>
   unsigned int KMeans<T>::getClusterIndex(const whiteice::math::vertex<T>& x) const
-    throw(std::logic_error)
+    
   {
     if(kmeans.size() <= 0)
       throw std::logic_error("KMeans: No clustering available");
@@ -456,7 +456,7 @@ namespace whiteice
   
   template <typename T>
   unsigned int KMeans<T>::getClusterIndex(const std::vector<T>& x) const
-    throw(std::logic_error)
+    
   {
     if(kmeans.size() <= 0)
       throw std::logic_error("KMeans: No clustering available");
@@ -517,7 +517,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool KMeans<T>::save(const std::string& filename) throw()
+  bool KMeans<T>::save(const std::string& filename) 
   {
     whiteice::conffile configuration;
     std::vector<int> ints;
@@ -567,7 +567,7 @@ namespace whiteice
 
   // loads k-means clustering data from a file
   template <typename T>
-  bool KMeans<T>::load(const std::string& filename) throw()
+  bool KMeans<T>::load(const std::string& filename) 
   {
     whiteice::conffile configuration;
     std::vector<int> ints;
@@ -720,37 +720,37 @@ namespace whiteice
   
   
   template <typename T>
-  T& KMeans<T>::rate() throw(){
+  T& KMeans<T>::rate() {
     return learning_rate;
   }
   
   
   template <typename T>
-  const T& KMeans<T>::rate() const throw(){
+  const T& KMeans<T>::rate() const {
     return learning_rate;
   }
   
   
   template <typename T>
-  bool& KMeans<T>::getOptimalMode() throw(){
+  bool& KMeans<T>::getOptimalMode() {
     return goodmode;
   }
   
   
   template <typename T>
-  const bool& KMeans<T>::getOptimalMode() const throw(){
+  const bool& KMeans<T>::getOptimalMode() const {
     return goodmode;
   }
   
   
   template <typename T>
-  unsigned int& KMeans<T>::numSamplingSteps() throw(){
+  unsigned int& KMeans<T>::numSamplingSteps() {
     return samplesetsize;
   }
   
   
   template <typename T>
-  const unsigned int& KMeans<T>::numSamplingSteps() const throw(){
+  const unsigned int& KMeans<T>::numSamplingSteps() const {
     return samplesetsize;
   }
   

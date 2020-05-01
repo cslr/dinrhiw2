@@ -158,7 +158,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO<T>::verbosity(bool v) throw()
+  bool nnPSO<T>::verbosity(bool v) 
   {
     this->verbose = v;
     if(pso) pso->verbosity(v);
@@ -174,7 +174,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO<T>::enableOvertraining() throw()
+  bool nnPSO<T>::enableOvertraining() 
   {
     if(typeid(nn_error) != typeid(nnPSO_optimized_function<T>*))
       return false;
@@ -185,7 +185,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO<T>::disableOvertraining() throw()
+  bool nnPSO<T>::disableOvertraining() 
   {
     if(typeid(nn_error) != typeid(nnPSO_optimized_function<T>*))
       return false;
@@ -347,7 +347,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int nnPSO_optimized_function<T>::dimension() const throw()
+  unsigned int nnPSO_optimized_function<T>::dimension() const 
   {
     return (this->fvector_dimension);
   }
@@ -362,17 +362,17 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO_optimized_function<T>::getUseAllData() const throw()
+  bool nnPSO_optimized_function<T>::getUseAllData() const 
   { return useAllSamples; }
   
   
   template <typename T>
-  void nnPSO_optimized_function<T>::enableUseAllData() throw()
+  void nnPSO_optimized_function<T>::enableUseAllData() 
   { useAllSamples = true; }
   
   
   template <typename T>
-  void nnPSO_optimized_function<T>::disableUseAllData() throw()
+  void nnPSO_optimized_function<T>::disableUseAllData() 
   { useAllSamples = false; }
   
   
@@ -440,7 +440,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO_optimized_function<T>::hasGradient() const throw(){
+  bool nnPSO_optimized_function<T>::hasGradient() const {
     return false;
   }
   
@@ -458,7 +458,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnPSO_optimized_function<T>::hasHessian() const throw(){
+  bool nnPSO_optimized_function<T>::hasHessian() const {
     return false;
   }
   

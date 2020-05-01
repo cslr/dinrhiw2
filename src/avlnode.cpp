@@ -25,14 +25,14 @@ namespace whiteice
   
   // returns true if node is leaf node
   template <typename T>
-  bool avlnode<T>::leaf() const throw()
+  bool avlnode<T>::leaf() const 
   {
     return (numNodes == 1);
   }
   
   // returns height of this subtree
   template <typename T>
-  unsigned int avlnode<T>::height() const throw()
+  unsigned int avlnode<T>::height() const 
   {
     unsigned int height = 0;
     unsigned int n = numNodes;
@@ -50,7 +50,7 @@ namespace whiteice
   // returns height difference between nodes
   // (this.height - node.height)
   template <typename T>
-  int avlnode<T>::hdifference(const avlnode<T>& node) const throw()
+  int avlnode<T>::hdifference(const avlnode<T>& node) const 
   {
     unsigned int a = numNodes;
     unsigned int b = node.numNodes;
@@ -85,7 +85,7 @@ namespace whiteice
   // it is assumed a >= b
   template <typename T>
   bool avlnode<T>::equal_height(unsigned int a, unsigned int b)
-    const throw()
+    const 
   {
     if(a < b)
       return (bool)( (b & (~a)) <= (b & a) );    

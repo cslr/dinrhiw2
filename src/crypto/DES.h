@@ -31,16 +31,16 @@ namespace whiteice
       virtual ~DES(){ }
       
       // data must be 64 bit and Keyschedule should be DESKey
-      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
-      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
+      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
+      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
       
       bool encrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
       
       bool decrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
       
     public:
       
@@ -71,7 +71,7 @@ namespace whiteice
     private:
       
       // A = data, J = key
-      bool f(dynamic_bitset& A, const dynamic_bitset& J) throw();
+      bool f(dynamic_bitset& A, const dynamic_bitset& J) ;
     };
     
     
@@ -84,18 +84,18 @@ namespace whiteice
       
       // data must be 64 bit and Keyschedule should be NDESKey with 3 DESKeys
       // (key schedule must provide exactly 48 round keys which are 48 bits long
-      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
-      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
+      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
+      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
       
       // note: mode of operation is applied separatedly to each single DES operation
       bool encrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
       
       // note: mode of operation is applied separatedly to each single DES operation
       bool decrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
     };
 
     
@@ -109,12 +109,12 @@ namespace whiteice
       DESKey(const DESKey& k);
       virtual ~DESKey();
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
             
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       const dynamic_bitset& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
       Keyschedule<dynamic_bitset>* copy() const;
       
@@ -148,12 +148,12 @@ namespace whiteice
       NDESKey(const NDESKey& key);
       virtual ~NDESKey();
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
             
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       const dynamic_bitset& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
       Keyschedule<dynamic_bitset>* copy() const;
       
@@ -175,12 +175,12 @@ namespace whiteice
       PartialKeyschedule(const PartialKeyschedule& k);
       virtual ~PartialKeyschedule();
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
             
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       const dynamic_bitset& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
       Keyschedule<dynamic_bitset>* copy() const;
       

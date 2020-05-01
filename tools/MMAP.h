@@ -41,17 +41,17 @@ namespace whiteice
     MMAP(const MMAP& mmap);
     ~MMAP();
     
-    bool resize(unsigned long long bytes) throw();
+    bool resize(unsigned long long bytes) ;
     
-    unsigned long long size() const throw(){
+    unsigned long long size() const {
       return bytes;
     }
 
-    unsigned long long pagesize() const throw(){
+    unsigned long long pagesize() const {
       return ((bytes + PAGESIZE - 1) / PAGESIZE);
     }
 
-    inline const unsigned char& operator[](unsigned long long index) const throw(){
+    inline const unsigned char& operator[](unsigned long long index) const {
       const unsigned long long ipage = (index >> PAGESHIFT);
       if(ipage != activePage)
 	assert(changePage(ipage) == true);
@@ -59,7 +59,7 @@ namespace whiteice
       return page_ptr[index & PAGEMASK];
     }
     
-    inline unsigned char& operator[](unsigned long long index) throw(){
+    inline unsigned char& operator[](unsigned long long index) {
       const unsigned long long ipage = (index >> PAGESHIFT);
       if(ipage != activePage)
 	assert(changePage(ipage) == true);
@@ -69,7 +69,7 @@ namespace whiteice
     
     // returns pointer to PAGESIZE continuous piece of memory
     // (or less if last page)
-    inline const unsigned char* page(unsigned long long page) const throw(){
+    inline const unsigned char* page(unsigned long long page) const {
       if(activePage != page)
 	assert(changePage(page) == true);
       
@@ -78,7 +78,7 @@ namespace whiteice
     
     // returns pointer to PAGESIZE continuous piece of memory
     // (or less if last page)
-    inline unsigned char* page(unsigned long long page) throw(){
+    inline unsigned char* page(unsigned long long page) {
       if(activePage != page)
 	assert(changePage(page) == true);
       
@@ -86,7 +86,7 @@ namespace whiteice
     }
     
   private:
-    bool changePage(unsigned long long newpage) const throw();
+    bool changePage(unsigned long long newpage) const ;
     
     mutable unsigned long long activePage;
     mutable unsigned char* page_ptr;
@@ -104,35 +104,35 @@ namespace whiteice
     FMMAP(const FMMAP& fmmap);
     ~FMMAP();
     
-    bool resize(unsigned long long floats) throw();
+    bool resize(unsigned long long floats) ;
 
-    unsigned long long size() const throw(){
+    unsigned long long size() const {
       return floats;
     }
 
-    unsigned long long pagesize() const throw(){
+    unsigned long long pagesize() const {
       return ((floats*sizeof(float) + PAGESIZE - 1) / PAGESIZE);
     }
     
-    inline const float& operator[](unsigned long long index) const throw(){
+    inline const float& operator[](unsigned long long index) const {
       return pages[index >> FP_PAGESHIFT][index & FP_PAGEMASK];
     }
     
-    inline float& operator[](unsigned long long index) throw(){
+    inline float& operator[](unsigned long long index) {
       return pages[index >> FP_PAGESHIFT][index & FP_PAGEMASK];
     }
     
     // returns pointer to 1 GB continuous piece of memory
     // this means 1 GB / sizeof(float) number of floating point
     // numbers (or less if last page)
-    inline const float* page(unsigned int page) const throw(){
+    inline const float* page(unsigned int page) const {
       return pages[page];
     }
     
     // returns pointer to 1 GB continuous piece of memory
     // this means 1 GB / sizeof(float) number of floating point
     // numbers (or less if last page)
-    inline float* page(unsigned int page) throw(){
+    inline float* page(unsigned int page) {
       return pages[page];
     }
     

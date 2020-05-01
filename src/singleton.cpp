@@ -22,7 +22,7 @@ namespace whiteice
   
   
   template <typename T>
-  singleton<T>::singleton() throw(std::logic_error)
+  singleton<T>::singleton() 
   {
     if(singleton<T>::canCreate == false)
       throw std::logic_error("singleton: unauthorized create attempt.");
@@ -32,7 +32,7 @@ namespace whiteice
   
   template <typename T>
   singleton<T>::singleton(const singleton<T>& s)
-    throw(std::logic_error)
+    
   {
     throw std::logic_error("singleton: no copying allowed.");
   }
@@ -40,14 +40,14 @@ namespace whiteice
   
   template <typename T>
   singleton<T>& singleton<T>::operator=(const singleton<T>& s)
-    throw(std::logic_error)
+    
   {
     throw std::logic_error("singleton: no copying allowed.");
   }
   
   
   template <typename T>
-  singleton<T>::~singleton() throw()
+  singleton<T>::~singleton() 
   {
     canCreate = false;
     
@@ -94,7 +94,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool singleton<T>::destroy() throw()
+  bool singleton<T>::destroy() 
   {
     if(!instance_ptr)
       return false;

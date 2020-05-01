@@ -15,7 +15,7 @@ namespace whiteice
 {
 
   // allocates numbers
-  unsigned int unique_id::get(const std::string& name) const throw()
+  unsigned int unique_id::get(const std::string& name) const 
   {
     std::map< std::string, id_domain >::iterator i;
       
@@ -66,7 +66,7 @@ namespace whiteice
   // frees id numbers
   // limited list: freeing already free number is possible (returns true)
   //
-  bool unique_id::free(const std::string& name, unsigned int id) const throw()
+  bool unique_id::free(const std::string& name, unsigned int id) const 
   {
     std::map< std::string, id_domain>::iterator i;
     if(id == 0) return false;
@@ -100,7 +100,7 @@ namespace whiteice
   
 
   // creates id number domains
-  bool unique_id::create(const std::string& name, unsigned int number) const throw()
+  bool unique_id::create(const std::string& name, unsigned int number) const 
   {
     if(number == 0)
       return this->create(name);
@@ -121,7 +121,7 @@ namespace whiteice
   
   
   // unlimited (limited by memory/int size) number of id values
-  bool unique_id::create(const std::string& name) const throw()
+  bool unique_id::create(const std::string& name) const 
   {
     if(idlist.find(name) != idlist.end())
       return false; // already in use
@@ -135,7 +135,7 @@ namespace whiteice
   
   
   // frees id number domains
-  bool unique_id::free(const std::string& name) const throw()
+  bool unique_id::free(const std::string& name) const 
   {
     std::map< std::string,
       id_domain >::iterator i;

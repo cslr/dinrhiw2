@@ -36,15 +36,15 @@ namespace whiteice
 	clone() const;
       
       // returns input vectors dimension
-      unsigned int dimension() const throw() PURE_FUNCTION;
+      unsigned int dimension() const  PURE_FUNCTION;
       
       
-      bool hasGradient() const throw() PURE_FUNCTION;
+      bool hasGradient() const  PURE_FUNCTION;
       math::vertex< math::blas_real<float> > grad(math::vertex< math::blas_real<float> >& x) const PURE_FUNCTION;
       void grad(math::vertex< math::blas_real<float> >& x, math::vertex< math::blas_real<float> >& y) const;
       
       
-      bool hasHessian() const throw() PURE_FUNCTION;
+      bool hasHessian() const  PURE_FUNCTION;
       math::matrix< math::blas_real<float> > hessian(math::vertex< math::blas_real<float> >& x) const PURE_FUNCTION;
       void hessian(math::vertex< math::blas_real<float> >& x, math::matrix< math::blas_real<float> >& y) const;
       

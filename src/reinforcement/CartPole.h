@@ -44,7 +44,7 @@ namespace whiteice
 				    whiteice::math::vertex<T>& feature) const;
 
       // helper function: normalizes theta values back into [-pi, pi] range
-      T normalizeTheta(const T t) const throw();
+      T normalizeTheta(const T t) const ;
 
     protected:
 

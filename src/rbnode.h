@@ -20,19 +20,19 @@ namespace whiteice
       ~rbnode();    
       
       // returns true if node is leaf node
-      bool leaf() const throw();
+      bool leaf() const ;
       
       // is color of node
-      bool red() const throw(){ return !black; }
+      bool red() const { return !black; }
       
-      T& key() throw(){ return value; }
-      const T& key() const throw(){ return value; }
+      T& key() { return value; }
+      const T& key() const { return value; }
       
     private:
       friend class rbtree<T>;
       
-      bool left_rotate(rbtree<T>* tree) throw();
-      bool right_rotate(rbtree<T>* tree) throw();
+      bool left_rotate(rbtree<T>* tree) ;
+      bool right_rotate(rbtree<T>* tree) ;
       
       bool black; // is the tree black? (otherwise red)
       T value;

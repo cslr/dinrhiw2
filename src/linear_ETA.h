@@ -18,11 +18,11 @@ namespace whiteice
       linear_ETA(const linear_ETA<T>& eta);
       virtual ~linear_ETA();
       
-      bool start(T begin, T end) throw();
-      bool update(T current) throw();
+      bool start(T begin, T end) ;
+      bool update(T current) ;
       
       // ETA in seconds when the end value will be reached
-      T estimate() const throw();
+      T estimate() const ;
       
     private:
       
@@ -31,7 +31,7 @@ namespace whiteice
       
       // returns time in seconds since
       // some historical origo
-      double get_time() const throw();
+      double get_time() const ;
       
       T current_eta;
       double time_start;

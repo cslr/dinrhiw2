@@ -110,7 +110,7 @@ namespace whiteice
     
     // format: [c_1 c_2 ... c_n], where F = SUM( c_i*x_i )
     template <typename T>
-    bool simplex<T>::setTarget(const std::vector<T>& trg) throw()
+    bool simplex<T>::setTarget(const std::vector<T>& trg) 
     {
       if(running)
 	return false;
@@ -130,7 +130,7 @@ namespace whiteice
     template <typename T>
     bool simplex<T>::setConstraint(unsigned int index,
 				   const std::vector<T>& constraint,
-				   unsigned int eqtype) throw()
+				   unsigned int eqtype) 
     {
       if(running)
 	return false;
@@ -156,20 +156,20 @@ namespace whiteice
     
     
     template <typename T>
-    unsigned int simplex<T>::getNumberOfConstraints() const throw(){
+    unsigned int simplex<T>::getNumberOfConstraints() const {
       return constraints.size();
     }  
     
     
     template <typename T>
-    unsigned int simplex<T>::getNumberOfVariables() const throw(){
+    unsigned int simplex<T>::getNumberOfVariables() const {
       return numVariables;
     }
     
     
     // format - look at set setX()s documentation
     template <typename T>
-    bool simplex<T>::getTarget(std::vector<T>& trg) const throw()
+    bool simplex<T>::getTarget(std::vector<T>& trg) const 
     {
       if(running)
 	return false;
@@ -188,7 +188,7 @@ namespace whiteice
     
     template <typename T>
     bool simplex<T>::getConstraint(unsigned int index,
-				   std::vector<T>& constraint) const throw()
+				   std::vector<T>& constraint) const 
     {
       if(running)
 	return false;
@@ -209,7 +209,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool simplex<T>::maximize() throw()
+    bool simplex<T>::maximize() 
     {
       if(running) // check without grabbing lock
 	return false;
@@ -1194,7 +1194,7 @@ namespace whiteice
     // finds pivot row and pivot element for simplex algorithm
     template <typename T>
     bool simplex<T>::find_indexes(T*& target, std::vector<T*>& constraints,
-				  unsigned int& eindex, unsigned int& lindex) const throw()
+				  unsigned int& eindex, unsigned int& lindex) const 
     {
       // finds the smallest negative non-zero variable
       // (variable to enter)
@@ -1304,7 +1304,7 @@ namespace whiteice
     bool simplex<T>::find_indexes2(T*& target, std::vector<T*>& constraints,
 				   unsigned int& eindex, unsigned int& lindex,
 				   const std::vector<unsigned int>& bsols,
-				   const unsigned int& pseudoStart) const throw()
+				   const unsigned int& pseudoStart) const 
     {
       // pseudoStart containts index of the first pseudovariable
       
@@ -1345,7 +1345,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool simplex<T>::hasResult() throw()
+    bool simplex<T>::hasResult() 
     {
       return (running == false && has_result == true);
     }
@@ -1384,7 +1384,7 @@ namespace whiteice
     
     // displays simplex solution
     template <typename T>
-    bool simplex<T>::show_simplex(T* pseudotarget) const throw()
+    bool simplex<T>::show_simplex(T* pseudotarget) const 
     {
       for(unsigned int i=0;i<numVariables+numArtificials+1;i++)
 	printf("%+2.2f   ", pseudotarget[i]);
@@ -1417,7 +1417,7 @@ namespace whiteice
 
     // displays simplex solution
     template <typename T>
-    bool simplex<T>::show_simplex() const throw()
+    bool simplex<T>::show_simplex() const 
     {
       for(unsigned int i=0;i<numVariables+numArtificials+1;i++)
 	printf("%+2.2f   ", target[i]);

@@ -28,16 +28,16 @@ namespace whiteice
       virtual ~AES();
       
       // data must be X bit and Keyschedule should be AESKey
-      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
-      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw();
+      bool encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
+      bool decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) ;
       
       bool encrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
       
       bool decrypt(data_source<dynamic_bitset>& data,
 		   const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		   ModeOfOperation mode = ECBmode) throw();
+		   ModeOfOperation mode = ECBmode) ;
        
     private:
       
@@ -54,7 +54,7 @@ namespace whiteice
       
       void xmulti(unsigned char& p) const;
       
-      inline unsigned int mod(int i, unsigned int modulo) const throw() PURE_FUNCTION;
+      inline unsigned int mod(int i, unsigned int modulo) const  PURE_FUNCTION;
       
       void self_test();
       
@@ -86,15 +86,15 @@ namespace whiteice
       AESKey(const AESKey& k);
       virtual ~AESKey();
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
       // resizes keyschedule to be smaller
-      bool resize(unsigned int s) throw();
+      bool resize(unsigned int s) ;
       
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       const dynamic_bitset& operator[](unsigned int n)
-	const throw(std::out_of_range);
+	const ;
       
       Keyschedule<dynamic_bitset>* copy() const;
       

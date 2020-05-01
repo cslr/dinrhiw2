@@ -23,15 +23,15 @@ namespace whiteice
     
     /* resizes array to given size and returns true if size is now n
      * returning false means size is unchanged */
-    virtual bool resize(const T& n) throw() = 0;
+    virtual bool resize(const T& n)  = 0;
     
     /* returns nth element from array or throws out_of_range if
      * n is out of range (too large) */
-    virtual D& operator[](const T& n) throw(std::out_of_range) = 0;
+    virtual D& operator[](const T& n)  = 0;
 
     /* returns nth element from array or throws out_of_range if
      * n is out of range (too large) */
-    virtual const D& operator[](const T& n) const throw(std::out_of_range) = 0;
+    virtual const D& operator[](const T& n) const  = 0;
   };
   
 }

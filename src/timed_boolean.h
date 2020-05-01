@@ -31,25 +31,25 @@ namespace whiteice
     timed_boolean& operator=(const timed_boolean& tb);
     
     // compares timed_boolean() against boolean value
-    bool operator==(const bool bValue) const throw();
-    bool operator!=(const bool bValue) const throw();
+    bool operator==(const bool bValue) const ;
+    bool operator!=(const bool bValue) const ;
 
-    bool operator==(const timed_boolean& b) const throw();
-    bool operator!=(const timed_boolean& b) const throw();
+    bool operator==(const timed_boolean& b) const ;
+    bool operator!=(const timed_boolean& b) const ;
     
-    bool operator!() const throw(); // returns inverted value
+    bool operator!() const ; // returns inverted value
     
     /* returns time left for the change of value,
      * zero if timer has been expired and
      * negative value if calculating remaining time failed.
      */
-    double time_left() const throw();
+    double time_left() const ;
     
   protected:
     
-    void update() const throw();
+    void update() const ;
     
-    bool get_time(double& t) const throw();
+    bool get_time(double& t) const ;
     
   private:
     mutable bool inverted;

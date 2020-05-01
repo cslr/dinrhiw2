@@ -19,16 +19,16 @@ class PCA
 		     unsigned int output_size=0) = 0;
   
   /* use this to feed data incrementally */
-  virtual bool train(const std::vector<T>& input) throw(std::out_of_range) = 0;
+  virtual bool train(const std::vector<T>& input)  = 0;
 
   /* for a big data batch */
-  virtual bool batch_train(const std::vector< const std::vector<T> >& input) throw(std::out_of_range) = 0;
+  virtual bool batch_train(const std::vector< const std::vector<T> >& input)  = 0;
   
   virtual bool code(const std::vector<T>& input,
-		    std::vector<T>& coded) throw(std::out_of_range) = 0;
+		    std::vector<T>& coded)  = 0;
   
   virtual bool encode(const std::vector<T>& coded,
-		      std::vector<T>& encoded) throw(std::out_of_range) = 0;
+		      std::vector<T>& encoded)  = 0;
 
   /* returns input vector size */
   virtual unsigned int size() = 0;

@@ -25,13 +25,13 @@ namespace whiteice
   
   
   
-  conffile::conffile() throw()
+  conffile::conffile() 
   {
     verbose = true;
   }
   
   
-  conffile::conffile(const std::string& file) throw()
+  conffile::conffile(const std::string& file) 
   {
     if(!load(file)){
       integers.clear();
@@ -43,14 +43,14 @@ namespace whiteice
   }
   
   
-  conffile::~conffile() throw()
+  conffile::~conffile() 
   {
     verbose = true;
   }
   
   
   // loads and/or saves settings to file
-  bool conffile::load(const std::string& filename) throw()
+  bool conffile::load(const std::string& filename) 
   {
     try{
       // 20*1024*1024 is a limitation of configuration file line length.
@@ -113,7 +113,7 @@ namespace whiteice
   }
   
   
-  bool conffile::save(const std::string& filename) throw()
+  bool conffile::save(const std::string& filename) 
   {
     try{
       ofstream file;
@@ -256,7 +256,7 @@ namespace whiteice
   
   
   // checks if configuration has a named variable
-  bool conffile::exists(const std::string& name) const throw()
+  bool conffile::exists(const std::string& name) const 
   {
     std::map< std::string, std::vector<int> >::const_iterator i;
     std::map< std::string, std::vector<float> >::const_iterator j;
@@ -275,7 +275,7 @@ namespace whiteice
   
   
   // removes named variable
-  bool conffile::remove(const std::string& name) throw()
+  bool conffile::remove(const std::string& name) 
   {
     std::map< std::string, std::vector<int> >::iterator i;
     std::map< std::string, std::vector<float> >::iterator j;
@@ -305,7 +305,7 @@ namespace whiteice
   
   
   // removes all variables
-  bool conffile::clear() throw()
+  bool conffile::clear() 
   {
     integers.clear();
     floats.clear();
@@ -314,7 +314,7 @@ namespace whiteice
   }
   
   
-  bool conffile::get(std::vector<std::string>& vnames) const throw()
+  bool conffile::get(std::vector<std::string>& vnames) const 
   {
     try{
       std::map< std::string, std::vector<int> >::const_iterator ii;
@@ -351,7 +351,7 @@ namespace whiteice
   
   // gets value(s) of variable
   bool conffile::get(const std::string& name,
-		     std::vector<int>& value) const throw()
+		     std::vector<int>& value) const 
   {
     std::map< std::string, std::vector<int> >::const_iterator i;
     
@@ -365,7 +365,7 @@ namespace whiteice
   
   
   bool conffile::get(const std::string& name,
-		     std::vector<float>& value) const throw()
+		     std::vector<float>& value) const 
   {
     std::map< std::string, std::vector<float> >::const_iterator j;
     
@@ -378,7 +378,7 @@ namespace whiteice
   
   
   bool conffile::get(const std::string& name,
-		     std::vector<std::string>& value) const throw()
+		     std::vector<std::string>& value) const 
   {
     std::map< std::string, std::vector<std::string> >::const_iterator k;
     
@@ -393,7 +393,7 @@ namespace whiteice
   // sets value(s) for variable - setting value over old variable
   // is possible *only* if old variables had a same type (vector size can be different)
   bool conffile::set(const std::string& name,
-		     const std::vector<int>& value) throw()
+		     const std::vector<int>& value) 
   {
     if(name.size() <= 0 || value.size() <= 0 || is_good_variable_name(name) == false)
       return false;
@@ -421,7 +421,7 @@ namespace whiteice
   
   
   bool conffile::set(const std::string& name,
-		     const std::vector<float>& value) throw()
+		     const std::vector<float>& value) 
   {
     if(name.size() <= 0 || value.size() <= 0 || is_good_variable_name(name) == false)
       return false;
@@ -450,7 +450,7 @@ namespace whiteice
   
   
   bool conffile::set(const std::string& name,
-		     const std::vector<std::string>& value) throw()
+		     const std::vector<std::string>& value) 
   {
     if(name.size() <= 0 || value.size() <= 0 || is_good_variable_name(name) == false)
       return false;
@@ -485,7 +485,7 @@ namespace whiteice
 		       std::string& name,
 		       std::vector<int>& i,
 		       std::vector<float>& f,
-		       std::vector<std::string>& s) throw()
+		       std::vector<std::string>& s) 
   {
     int index;
     int variable_start;
@@ -776,7 +776,7 @@ namespace whiteice
   
   // encodes string into a format, where '"' and 
   // '\' are coded with two characters
-  bool conffile::encode(std::string& s) const throw()
+  bool conffile::encode(std::string& s) const 
   {
     std::string u = s;
     
@@ -807,7 +807,7 @@ namespace whiteice
 
   // encodes string from a format, where '"' and 
   // '\' are handled specially (inverse of encode)
-  bool conffile::decode(std::string& s) const throw()
+  bool conffile::decode(std::string& s) const 
   {
     // replaces \\ -> \ and \" -> "
     
@@ -835,7 +835,7 @@ namespace whiteice
   
   
   // removes extra spaces at the beginning and end of the line
-  bool conffile::trim(std::string& s) const throw()
+  bool conffile::trim(std::string& s) const 
   {
     if(s.length() <= 0) return true;
     
@@ -867,7 +867,7 @@ namespace whiteice
   }
   
   
-  bool conffile::is_good_variable_name(const std::string& name) const throw()
+  bool conffile::is_good_variable_name(const std::string& name) const 
   {
     for(unsigned int i=0;i<name.size();i++){
       if(!isalpha(name[i]) && !isdigit(name[i]) && name[i] != '_')
@@ -878,7 +878,7 @@ namespace whiteice
   }
   
   
-  bool conffile::is_good_string_vector(const std::vector<std::string>& name) const throw()
+  bool conffile::is_good_string_vector(const std::vector<std::string>& name) const 
   {
     std::vector<std::string>::const_iterator i = name.begin();
     

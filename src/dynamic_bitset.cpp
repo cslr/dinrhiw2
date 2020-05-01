@@ -216,7 +216,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::operator<<=(int pos) throw()
+  dynamic_bitset& dynamic_bitset::operator<<=(int pos) 
   {
     if(pos < 0){
       return ((*this) >>= -pos);
@@ -266,7 +266,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::operator>>=(int pos) throw()
+  dynamic_bitset& dynamic_bitset::operator>>=(int pos) 
   {
     if(pos < 0){
       return ((*this) <<= -pos);
@@ -373,7 +373,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset dynamic_bitset::operator<<(const int pos) const throw()
+  dynamic_bitset dynamic_bitset::operator<<(const int pos) const 
   {
     dynamic_bitset copy(*this);
     
@@ -393,7 +393,7 @@ namespace whiteice
   }
   
   
-  dynamic_bitset dynamic_bitset::operator>>(const int pos) const throw()
+  dynamic_bitset dynamic_bitset::operator>>(const int pos) const 
   {
     dynamic_bitset copy(*this);
     
@@ -404,7 +404,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::set() throw()  // sets all bits
+  dynamic_bitset& dynamic_bitset::set()   // sets all bits
   {
     memset(memory, 0xff, numblocks*sizeof(unsigned long));
     
@@ -415,7 +415,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::set(unsigned int pos, bool val) throw(std::out_of_range)
+  dynamic_bitset& dynamic_bitset::set(unsigned int pos, bool val) 
   {
     if(!val) return reset(pos);
     
@@ -434,7 +434,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::reset() throw()  // clears all bits
+  dynamic_bitset& dynamic_bitset::reset()   // clears all bits
   {
     memset(memory, 0x00, numblocks*sizeof(unsigned long));
     
@@ -443,7 +443,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::reset(unsigned int pos) throw(std::out_of_range)
+  dynamic_bitset& dynamic_bitset::reset(unsigned int pos) 
   {
     if(pos >= seqlen)
       throw std::out_of_range("index bigger than bitset length");
@@ -463,7 +463,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::flip() throw()
+  dynamic_bitset& dynamic_bitset::flip() 
   {
     if(!seqlen) return (*this);
     
@@ -479,7 +479,7 @@ namespace whiteice
   
   
 
-  dynamic_bitset& dynamic_bitset::flip(unsigned int pos) throw(std::out_of_range)
+  dynamic_bitset& dynamic_bitset::flip(unsigned int pos) 
   {
     if(pos >= seqlen)
       throw std::out_of_range("index bigger than bitset length");
@@ -672,7 +672,7 @@ namespace whiteice
   }
   
   
-  unsigned int dynamic_bitset::count() const throw() // number of bits set
+  unsigned int dynamic_bitset::count() const  // number of bits set
   {    
     if(seqlen == 0) return 0;
     unsigned int c = 0;
@@ -697,19 +697,19 @@ namespace whiteice
   
   
 
-  unsigned int dynamic_bitset::size() const throw()   // length of the bit sequence
+  unsigned int dynamic_bitset::size() const    // length of the bit sequence
   {
     return seqlen;
   }
   
   
-  unsigned int dynamic_bitset::blocks() const throw()
+  unsigned int dynamic_bitset::blocks() const 
   {
     return (numblocks*(sizeof(unsigned long)/sizeof(unsigned char)));
   }
   
 
-  void dynamic_bitset::resize(unsigned int len) throw(std::bad_alloc)  // sets length of sequence
+  void dynamic_bitset::resize(unsigned int len)   // sets length of sequence
   {
     if(len == 0){
       
@@ -747,7 +747,7 @@ namespace whiteice
   
   
 
-  bool dynamic_bitset::operator==(const dynamic_bitset& r) const throw()
+  bool dynamic_bitset::operator==(const dynamic_bitset& r) const 
   {
     if(r.seqlen != seqlen) return false;
         
@@ -762,14 +762,14 @@ namespace whiteice
   
   
 
-  bool dynamic_bitset::operator!=(const dynamic_bitset& r) const throw()
+  bool dynamic_bitset::operator!=(const dynamic_bitset& r) const 
   {
     return (!( (*this) == r ));
   }
   
   
 
-  bool dynamic_bitset::any() const throw()   // is any bit set?
+  bool dynamic_bitset::any() const    // is any bit set?
   {
     
     for(unsigned int i=0;i<numblocks;i++){
@@ -781,7 +781,7 @@ namespace whiteice
   
   
 
-  bool dynamic_bitset::none() const throw()  // no bits are set?
+  bool dynamic_bitset::none() const   // no bits are set?
   {
     for(unsigned int i=0;i<numblocks;i++){
       if(memory[i] != 0) return false;
@@ -834,7 +834,7 @@ namespace whiteice
   
   
   // shifts bitset cyclically (pos > 0: left shift, pos < 0: right shift)
-  void dynamic_bitset::cyclicshift(int pos) throw(std::bad_alloc)
+  void dynamic_bitset::cyclicshift(int pos) 
   {
     // note: not very fast implementation
     

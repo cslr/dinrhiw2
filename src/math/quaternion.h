@@ -30,63 +30,63 @@ namespace whiteice
     {
       public:
       
-      quaternion() throw();
+      quaternion() ;
       
-      quaternion(const quaternion<T>&) throw();
-      quaternion(const T& s) throw();
-      virtual ~quaternion() throw();
+      quaternion(const quaternion<T>&) ;
+      quaternion(const T& s) ;
+      virtual ~quaternion() ;
       
-      quaternion<T> operator+(const quaternion<T>&) const throw(illegal_operation);
-      quaternion<T> operator-(const quaternion<T>&) const throw(illegal_operation);
-      quaternion<T> operator*(const quaternion<T>&) const throw(illegal_operation);
-      quaternion<T> operator/(const quaternion<T>&) const throw(illegal_operation);
+      quaternion<T> operator+(const quaternion<T>&) const ;
+      quaternion<T> operator-(const quaternion<T>&) const ;
+      quaternion<T> operator*(const quaternion<T>&) const ;
+      quaternion<T> operator/(const quaternion<T>&) const ;
       
-      quaternion<T> operator!() const throw(illegal_operation);
-      quaternion<T> operator-() const throw(illegal_operation);
+      quaternion<T> operator!() const ;
+      quaternion<T> operator-() const ;
       
-      quaternion<T>& operator+=(const quaternion<T>&) throw(illegal_operation);
-      quaternion<T>& operator-=(const quaternion<T>&) throw(illegal_operation);
-      quaternion<T>& operator*=(const quaternion<T>&) throw(illegal_operation);
-      quaternion<T>& operator/=(const quaternion<T>&) throw(illegal_operation);
+      quaternion<T>& operator+=(const quaternion<T>&) ;
+      quaternion<T>& operator-=(const quaternion<T>&) ;
+      quaternion<T>& operator*=(const quaternion<T>&) ;
+      quaternion<T>& operator/=(const quaternion<T>&) ;
       
-      quaternion<T>& operator=(const quaternion<T>&) throw(illegal_operation);
+      quaternion<T>& operator=(const quaternion<T>&) ;
       
-      bool operator==(const quaternion<T>&) const throw(uncomparable);
-      bool operator!=(const quaternion<T>&) const throw(uncomparable);
-      bool operator>=(const quaternion<T>&) const throw(uncomparable);
-      bool operator<=(const quaternion<T>&) const throw(uncomparable);
-      bool operator< (const quaternion<T>&) const throw(uncomparable);
-      bool operator> (const quaternion<T>&) const throw(uncomparable);
+      bool operator==(const quaternion<T>&) const ;
+      bool operator!=(const quaternion<T>&) const ;
+      bool operator>=(const quaternion<T>&) const ;
+      bool operator<=(const quaternion<T>&) const ;
+      bool operator< (const quaternion<T>&) const ;
+      bool operator> (const quaternion<T>&) const ;
       
       /* interaction with 'primal' type */
-      quaternion<T>& operator= (const T&) throw(illegal_operation);
-      quaternion<T>& operator*=(const T&) throw();
-      quaternion<T>& operator/=(const T&) throw(std::invalid_argument);
-      quaternion<T>  operator* (const T&) const throw();
-      quaternion<T>  operator/ (const T&) const throw(std::invalid_argument);
+      quaternion<T>& operator= (const T&) ;
+      quaternion<T>& operator*=(const T&) ;
+      quaternion<T>& operator/=(const T&) ;
+      quaternion<T>  operator* (const T&) const ;
+      quaternion<T>  operator/ (const T&) const ;
       
-      quaternion<T>& operator= (const vertex<T>&) throw(std::invalid_argument);
+      quaternion<T>& operator= (const vertex<T>&) ;
       
-      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation);
-      const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation);
+      T& operator[](const unsigned int& index) ;
+      const T& operator[](const unsigned int& index) const ;
       
       
       /* creates rotation matrix of quaternion */
-      matrix<T> rotation_matrix() const throw();
+      matrix<T> rotation_matrix() const ;
       
       /* calculates quaternion rotator from matrix */
-      bool create_quaternion_rotator(const matrix<T>& m) const throw();
+      bool create_quaternion_rotator(const matrix<T>& m) const ;
       
       // setups rotation quaternion
-      bool setup_rotation(T& alpha, const quaternion<T>& axis) throw(std::invalid_argument);
+      bool setup_rotation(T& alpha, const quaternion<T>& axis) ;
       
       // inverse quaternion
-      quaternion<T> inv() const throw(std::invalid_argument);
+      quaternion<T> inv() const ;
       
-      quaternion<T>& abs() throw();
-      bool normalize() throw();
+      quaternion<T>& abs() ;
+      bool normalize() ;
       
-      bool comparable() throw(){ return false; }
+      bool comparable() { return false; }
       
       private:
       

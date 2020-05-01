@@ -57,35 +57,35 @@ namespace whiteice
       // function must be positive
       // f(x) > 0  with all x !
       GeneticAlgorithm(const function<T,double>& f);
-      ~GeneticAlgorithm() throw();
+      ~GeneticAlgorithm() ;
 
-      double& getCrossover() throw(){ return p_crossover; }
-      double& getMutation()  throw(){ return p_mutation; }
+      double& getCrossover() { return p_crossover; }
+      double& getMutation()  { return p_mutation; }
       
       // optimizes with given
       // population size
       bool maximize(const unsigned int numIterations,
-		    const unsigned int size) throw();
+		    const unsigned int size) ;
       bool minimize(const unsigned int numIterations,
-		    const unsigned int size) throw();
+		    const unsigned int size) ;
       
       // continues optimization
-      bool continue_optimization(const unsigned int numIterations) throw();
+      bool continue_optimization(const unsigned int numIterations) ;
       
       // returns value of the best candidate
       // saves it to best
-      double getBest(T& best) const throw();
+      double getBest(T& best) const ;
       
       // returns mean value
-      double getMean() const throw();
+      double getMean() const ;
       
-      bool verbosity(bool v) throw(){ verbose = v; return verbose; }
+      bool verbosity(bool v) { verbose = v; return verbose; }
       
     private:
       
-      bool create_initial_population() throw();
+      bool create_initial_population() ;
       bool create_candidate(const std::bitset< sizeof(T)*8 >& bits,
-			    T& candidate) const throw();
+			    T& candidate) const ;
       
       const unsigned int bits;
       function<T,double>* f;

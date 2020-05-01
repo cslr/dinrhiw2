@@ -39,7 +39,7 @@ namespace whiteice
   
   // inserts value to search tree
   template <typename T>
-  bool avltree<T>::insert(const T& t) throw()
+  bool avltree<T>::insert(const T& t) 
   {
     try{
       avlnode<T>* n = new avlnode<T>(t);
@@ -51,7 +51,7 @@ namespace whiteice
   
   // remove()s value to tree
   template <typename T>
-  bool avltree<T>::remove(T& t) throw()
+  bool avltree<T>::remove(T& t) 
   {
     try{    
       avlnode<T>* n = iterative_search(root, t);
@@ -66,7 +66,7 @@ namespace whiteice
   // remove()s minimum value and saves it to variable t
   // or returns false if tree is empty
   template <typename T>
-  bool avltree<T>::remove_minimum(T& t) throw()
+  bool avltree<T>::remove_minimum(T& t) 
   {
     try{    
       avlnode<T>* n = min_value(root);
@@ -82,7 +82,7 @@ namespace whiteice
   // remove()s maximum value and saves it to variable t
   // or returns false if tree is empty
   template <typename T>
-  bool avltree<T>::remove_maximum(T& t) throw()
+  bool avltree<T>::remove_maximum(T& t) 
   {
     try{    
       avlnode<T>* n = max_value(root);
@@ -98,7 +98,7 @@ namespace whiteice
   // search()es for given value, updates value and
   // returns true in case of success
   template <typename T>
-  bool avltree<T>::search(T& value) const throw()
+  bool avltree<T>::search(T& value) const 
   {
     try{
       avlnode<T>* t = iterative_search(root, value);
@@ -113,7 +113,7 @@ namespace whiteice
   
     
   template <typename T>
-  bool avltree<T>::order_search(unsigned int order, T& value) const throw()
+  bool avltree<T>::order_search(unsigned int order, T& value) const 
   {
     try{
       if(order >= root->numNodes)
@@ -129,7 +129,7 @@ namespace whiteice
   
   // clear()s tree from any data
   template <typename T>
-  void avltree<T>::clear() throw()
+  void avltree<T>::clear() 
   {
     free_subtree(root);
     root = dummy;
@@ -138,7 +138,7 @@ namespace whiteice
   
   // returns maximum & minimum keys/objects from the tree
   template <typename T>
-  T& avltree<T>::maximum() const throw(std::logic_error)
+  T& avltree<T>::maximum() const 
   {
     avlnode<T> *k = max_value(root);
     if(!k) throw std::logic_error("no maximum value: empty tree");
@@ -147,7 +147,7 @@ namespace whiteice
   
   
   template <typename T>
-  T& avltree<T>::minimum() const throw(std::logic_error)
+  T& avltree<T>::minimum() const 
   {
     avlnode<T> *k = min_value(root);  
     if(!k) throw std::logic_error("no minimum value: empty tree");
@@ -156,7 +156,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int avltree<T>::size() const throw()
+  unsigned int avltree<T>::size() const 
   {
     if(root)
       return root->numNodes;
@@ -166,7 +166,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool avltree<T>::list() const throw()
+  bool avltree<T>::list() const 
   {
     std::vector<avlnode<T>*> A, B;      
     A.push_back(root);
@@ -242,7 +242,7 @@ namespace whiteice
   
   // lists all elements in order (and checks all links are ok)
   template <typename T>
-  bool avltree<T>::ordered_list() const throw()
+  bool avltree<T>::ordered_list() const 
   {
     
 #if 0
@@ -274,7 +274,7 @@ namespace whiteice
   /************************************************************/
   
   template <typename T>
-  bool avltree<T>::insert(avlnode<T>* n) throw()
+  bool avltree<T>::insert(avlnode<T>* n) 
   {
     try{
       // inserts node to tree + height updates
@@ -448,7 +448,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool avltree<T>::node_remove(avlnode<T>* z) throw()
+  bool avltree<T>::node_remove(avlnode<T>* z) 
   {
     try{	
       avlnode<T> *y = 0, *x = 0;
@@ -720,7 +720,7 @@ namespace whiteice
   
   // normal tree insert + height updating
   template <typename T>
-  bool avltree<T>::basic_insert(avlnode<T>* z) throw()
+  bool avltree<T>::basic_insert(avlnode<T>* z) 
   {
     try{
       avlnode<T>* y = dummy;
@@ -754,7 +754,7 @@ namespace whiteice
   
   
   template <typename T>
-  avlnode<T>* avltree<T>::tree_search(avlnode<T>* x, T& value) const throw()
+  avlnode<T>* avltree<T>::tree_search(avlnode<T>* x, T& value) const 
   {
     if(x == 0) return 0;
     if(x->value == value) return x;
@@ -767,7 +767,7 @@ namespace whiteice
   
   
   template <typename T>
-  avlnode<T>* avltree<T>::iterative_search(avlnode<T>* x, T& value) const throw()
+  avlnode<T>* avltree<T>::iterative_search(avlnode<T>* x, T& value) const 
   {
     if(x == 0) return 0;
     if(x->value == value) return x;  
@@ -786,7 +786,7 @@ namespace whiteice
   template <typename T>
   bool avltree<T>::recursive_order_search(avlnode<T>* n,
 					  unsigned int order,
-					  T& value) const throw()
+					  T& value) const 
   {
     // note: tail recursion optimizations in gcc
     // should be able to make this iterative
@@ -808,7 +808,7 @@ namespace whiteice
   
   
   template <typename T>
-  avlnode<T>* avltree<T>::max_value(avlnode<T>* x) const throw()
+  avlnode<T>* avltree<T>::max_value(avlnode<T>* x) const 
   {
     if(x == 0) return 0;      
     while(x->right != dummy) x = x->right;
@@ -817,7 +817,7 @@ namespace whiteice
   
   
   template <typename T>
-  avlnode<T>* avltree<T>::min_value(avlnode<T>* x) const throw()
+  avlnode<T>* avltree<T>::min_value(avlnode<T>* x) const 
   {
     if(x == 0) return 0;
     while(x->left != dummy) x = x->left;
@@ -826,7 +826,7 @@ namespace whiteice
   
   
   template <typename T>
-  avlnode<T>* avltree<T>::tree_successor(avlnode<T>* x) const throw()
+  avlnode<T>* avltree<T>::tree_successor(avlnode<T>* x) const 
   {
     if(x == 0) return 0;
     if(x->right != dummy)
@@ -849,7 +849,7 @@ namespace whiteice
   
   
   template <typename T>
-  void avltree<T>::free_subtree(avlnode<T>* x) throw()
+  void avltree<T>::free_subtree(avlnode<T>* x) 
   {
     if(x != dummy){
       free_subtree(x->left);

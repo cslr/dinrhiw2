@@ -12,7 +12,7 @@ RM = rm
 
 OPTIMIZE=@optimization_flags@
 
-CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -std=c++11 `pkg-config dinrhiw --cflags`
+CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall `pkg-config dinrhiw --cflags`
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
 SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \

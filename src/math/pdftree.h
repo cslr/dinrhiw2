@@ -46,46 +46,46 @@ namespace whiteice
     {    
       public:
       
-      pdftree() throw();
+      pdftree() ;
       pdftree(const std::vector<T> min,
-	      const std::vector<T> max) throw();
+	      const std::vector<T> max) ;
       
-      ~pdftree() throw();
+      ~pdftree() ;
       
       // adds point to distribution
-      bool add(const std::vector<T>& v) throw();
+      bool add(const std::vector<T>& v) ;
       
       // calculates probability
-      M pdf(const std::vector<T>& v) const throw();
+      M pdf(const std::vector<T>& v) const ;
       
       // todo: xcalculates probability of area
-      //bool probability_area(const std::vector<T>& v0, const std::vector<T>& v1) const throw();
+      //bool probability_area(const std::vector<T>& v0, const std::vector<T>& v1) const ;
       
       // resets tree to a new tree
       bool reset(const std::vector<T>& min,
-		 const std::vector<T>& max) throw();
+		 const std::vector<T>& max) ;
       
       // removes all data information
       //   - frees memory, pdf data is still available
       //   - after this one creation of subtrees
       //     start with 'fresh'/no memory
-      void flush() throw();
+      void flush() ;
       
       /***************************************************/
       private:            
       
       
       // adds data to node or to subnode
-      bool add(pdfnode<T>* node, const std::vector<T>& v) throw();
+      bool add(pdfnode<T>* node, const std::vector<T>& v) ;
       
       // returns number of elements in area E v and with depth = depth_counter
-      unsigned int pdf(pdfnode<T>* node, const std::vector<T>& v) const throw();
+      unsigned int pdf(pdfnode<T>* node, const std::vector<T>& v) const ;
       
       // removes data points
-      void flush(pdfnode<T>* node) throw();
+      void flush(pdfnode<T>* node) ;
       
       // frees subnodes and node itself
-      void remove(pdfnode<T>* node) const throw();
+      void remove(pdfnode<T>* node) const ;
       
       
       unsigned int num_data;
@@ -109,7 +109,7 @@ namespace whiteice
       {
       public:
 	pdfnode(const std::vector<U>& min,
-		const std::vector<U>& max) throw();
+		const std::vector<U>& max) ;
 	
 	std::vector<U> min, mid, max;
 	unsigned int counter;

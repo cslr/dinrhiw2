@@ -44,7 +44,7 @@ namespace whiteice
   
   
   // returns input vectors dimension
-  unsigned int test_function::dimension() const throw()
+  unsigned int test_function::dimension() const 
   {
     return 1;
   }
@@ -52,7 +52,7 @@ namespace whiteice
   
   
   
-  bool test_function::hasGradient() const throw()
+  bool test_function::hasGradient() const 
   { return false; }
   
   math::vertex< math::blas_real<float> > test_function::grad(math::vertex< math::blas_real<float> >& x) const
@@ -62,7 +62,7 @@ namespace whiteice
   { y = calculate(x); }
   
   
-  bool test_function::hasHessian() const throw()
+  bool test_function::hasHessian() const 
   { return false; }
   
   math::matrix< math::blas_real<float> > test_function::hessian(math::vertex< math::blas_real<float> >& x) const

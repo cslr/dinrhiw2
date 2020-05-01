@@ -37,11 +37,11 @@ namespace whiteice
 
   
   
-  GA::~GA() throw(){ if(f) delete f; }
+  GA::~GA() { if(f) delete f; }
   
   
   bool GA::maximize(const unsigned int numIterations,
-		    const unsigned int size) throw()
+		    const unsigned int size) 
   {
     try{
       if(size == 0) return false;
@@ -67,7 +67,7 @@ namespace whiteice
   
   
   bool GA::minimize(const unsigned int numIterations,
-		    const unsigned int size) throw()
+		    const unsigned int size) 
   {
     try{
       if(size == 0) return false;
@@ -94,7 +94,7 @@ namespace whiteice
   /*
    * currently: slow but perfect
    */
-  bool GA::continue_optimization(const unsigned int numIterations) throw()
+  bool GA::continue_optimization(const unsigned int numIterations) 
   {
     unsigned int iter = 0;
     float total = 0;
@@ -243,7 +243,7 @@ namespace whiteice
    * creates equally distributed random variables
    * assumes rand() has been initialized with srand().
    */
-  bool GA::create_initial_population() throw()
+  bool GA::create_initial_population() 
   {
     try{
       std::vector<dynamic_bitset>::iterator i;
@@ -278,13 +278,13 @@ namespace whiteice
   // returns value of the best candidate
   // saves it to best
   
-  float GA::getBest(dynamic_bitset& best) const throw(){
+  float GA::getBest(dynamic_bitset& best) const {
     best = best_candidate;
     return very_best_value;
   }
   
   // returns mean value
-  float GA::getMean() const throw(){ return mean_value; }
+  float GA::getMean() const { return mean_value; }
   
 };
   

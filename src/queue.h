@@ -21,11 +21,11 @@ namespace whiteice
     
     /* returns true if data has been succesfully put the the queue,
      * otherwise returns false */
-    virtual bool enqueue(const D& data) throw() = 0;
+    virtual bool enqueue(const D& data)  = 0;
     
     /* gets oldest data from stack or throws logic_error
      * exception if queue is empty */
-    virtual D dequeue() throw(std::logic_error) = 0;
+    virtual D dequeue()  = 0;
   };
 
 }

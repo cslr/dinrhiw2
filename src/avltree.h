@@ -30,68 +30,68 @@ namespace whiteice
       ~avltree();
       
       // inserts value to search tree
-      bool insert(const T& t) throw();
+      bool insert(const T& t) ;
       
       // remove()s value from tree
-      bool remove(T& t) throw();
+      bool remove(T& t) ;
       
       // remove()s minimum value and saves it to variable t
       // or returns false if tree is empty
-      bool remove_minimum(T& t) throw();
+      bool remove_minimum(T& t) ;
       
       // remove()s maximum value and saves it to variable t
       // or returns false if tree is empty
-      bool remove_maximum(T& t) throw();
+      bool remove_maximum(T& t) ;
       
       // search()es for given value, updates value and
       // returns true in case of success
-      bool search(T& value) const throw();
+      bool search(T& value) const ;
       
       // search()es for 'order'th value from tree
       // this runs in O(log n) and is reason to use this
       // variant of avl search tree
       // order == 0 finds 1st smallest value
       // order == size()-1 finds biggest value
-      bool order_search(unsigned int order, T& value) const throw();
+      bool order_search(unsigned int order, T& value) const ;
       
       // returns maximum & minimum keys/objects from the tree
-      T& maximum() const throw(std::logic_error);
-      T& minimum() const throw(std::logic_error);
+      T& maximum() const ;
+      T& minimum() const ;
       
       // clears tree from data
-      void clear() throw();
+      void clear() ;
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
       // prints tree list
-      bool list() const throw();
+      bool list() const ;
       
       // prints tree data in order
-      bool ordered_list() const throw();
+      bool ordered_list() const ;
       
     private:
       friend class avlnode<T>;
       
-      bool insert(avlnode<T>* n) throw();
-      bool node_remove(avlnode<T>* z) throw();
+      bool insert(avlnode<T>* n) ;
+      bool node_remove(avlnode<T>* z) ;
       
       /* basic binary tree algorthms */	
       // normal tree insert
-      bool basic_insert(avlnode<T>* z) throw();
+      bool basic_insert(avlnode<T>* z) ;
       
-      avlnode<T>* tree_search(avlnode<T>* x, T& value) const throw();  
-      avlnode<T>* iterative_search(avlnode<T>* x, T& value) const throw();
+      avlnode<T>* tree_search(avlnode<T>* x, T& value) const ;  
+      avlnode<T>* iterative_search(avlnode<T>* x, T& value) const ;
       
       bool recursive_order_search(avlnode<T>* n,
 				  unsigned int order,
-				  T& value) const throw();
+				  T& value) const ;
       
-      avlnode<T>* max_value(avlnode<T>* x) const throw();
-      avlnode<T>* min_value(avlnode<T>* x) const throw();
+      avlnode<T>* max_value(avlnode<T>* x) const ;
+      avlnode<T>* min_value(avlnode<T>* x) const ;
       
-      avlnode<T>* tree_successor(avlnode<T>* x) const throw();
+      avlnode<T>* tree_successor(avlnode<T>* x) const ;
       
-      void free_subtree(avlnode<T>* x) throw();
+      void free_subtree(avlnode<T>* x) ;
       
       // recalculates numNodes starting from given node
       // up to root

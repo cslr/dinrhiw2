@@ -24,18 +24,18 @@ namespace whiteice
     {
     public:
       // creates hypercube
-      hypervolume(unsigned int dim, unsigned int len) throw();
+      hypervolume(unsigned int dim, unsigned int len) ;
       // hyperrectangle [0..L0-1][0..L1-1] ..
-      hypervolume(const std::vector<unsigned int>& lengths) throw();
-      ~hypervolume() throw();
+      hypervolume(const std::vector<unsigned int>& lengths) ;
+      ~hypervolume() ;
       
-      T& operator[](const std::vector<unsigned int>& index) throw();
-      const T& operator[](const std::vector<unsigned int>& index) const throw();
+      T& operator[](const std::vector<unsigned int>& index) ;
+      const T& operator[](const std::vector<unsigned int>& index) const ;
       
-      unsigned int size(unsigned int index) const throw();
+      unsigned int size(unsigned int index) const ;
       
-      inline hypervolume_node<T>& operator[](unsigned int index) throw();
-      inline const hypervolume_node<T>& operator[](unsigned int index) const throw();
+      inline hypervolume_node<T>& operator[](unsigned int index) ;
+      inline const hypervolume_node<T>& operator[](unsigned int index) const ;
       
     private:
       
@@ -50,18 +50,18 @@ namespace whiteice
     {
     public:
       hypervolume_node(unsigned int node_size,
-		       unsigned int dimension) throw(); // 0 = data, 1... = nodelist
+		       unsigned int dimension) ; // 0 = data, 1... = nodelist
       hypervolume_node(const std::vector<T>& lengths,
-		       unsigned int index = 0) throw();
-      ~hypervolume_node() throw();
+		       unsigned int index = 0) ;
+      ~hypervolume_node() ;
       
-      inline hypervolume_node<T>& operator[](unsigned int index) throw();
-      inline const hypervolume_node<T>& operator[](unsigned int index) const throw();
+      inline hypervolume_node<T>& operator[](unsigned int index) ;
+      inline const hypervolume_node<T>& operator[](unsigned int index) const ;
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
-      T& value() throw(std::logic_error);
-      const T& value() const throw(std::logic_error);
+      T& value() ;
+      const T& value() const ;
       
     private:
       

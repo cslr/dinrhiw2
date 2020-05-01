@@ -17,19 +17,19 @@ class CryptoFileSource : public whiteice::data_source<whiteice::dynamic_bitset>
   ~CryptoFileSource();
   
   whiteice::dynamic_bitset& operator[](unsigned int index)
-    throw(std::out_of_range){ return (*DC)[index]; }
+    { return (*DC)[index]; }
   
   const whiteice::dynamic_bitset& operator[](unsigned int index)
-    const throw(std::out_of_range){ return (*DC)[index]; }
+    const { return (*DC)[index]; }
   
-  unsigned int size() const throw();
+  unsigned int size() const ;
   
-  bool good() const throw();
+  bool good() const ;
   
   void flush() const;
   
   // writes data to file with given filename
-  bool write(const std::string& filename) const throw();
+  bool write(const std::string& filename) const ;
   
   const whiteice::dynamic_bitset& getIV(){ return IV; }
   

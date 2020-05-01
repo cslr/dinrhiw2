@@ -29,78 +29,78 @@ namespace whiteice
       virtual ~integer();
       
       // operators
-      integer operator+(const integer&) const throw(illegal_operation);
-      integer operator-(const integer&) const throw(illegal_operation);
-      integer operator*(const integer&) const throw(illegal_operation);
-      integer operator/(const integer&) const throw(illegal_operation);
+      integer operator+(const integer&) const ;
+      integer operator-(const integer&) const ;
+      integer operator*(const integer&) const ;
+      integer operator/(const integer&) const ;
       
-      integer operator%(const integer&) const throw(illegal_operation);
+      integer operator%(const integer&) const ;
                   
-      integer operator-() const throw(illegal_operation);
+      integer operator-() const ;
       
-      integer& operator+=(const integer&) throw(illegal_operation);
-      integer& operator-=(const integer&) throw(illegal_operation);
-      integer& operator*=(const integer&) throw(illegal_operation);
-      integer& operator/=(const integer&) throw(illegal_operation);
+      integer& operator+=(const integer&) ;
+      integer& operator-=(const integer&) ;
+      integer& operator*=(const integer&) ;
+      integer& operator/=(const integer&) ;
       
-      integer& operator%=(const integer&) throw(illegal_operation);
+      integer& operator%=(const integer&) ;
       
-      integer& operator=(const integer&) throw(illegal_operation);
+      integer& operator=(const integer&) ;
       
-      integer& operator++() throw(illegal_operation);
-      integer& operator--() throw(illegal_operation);
+      integer& operator++() ;
+      integer& operator--() ;
 
-      integer& operator++(int) throw(illegal_operation);
-      integer& operator--(int) throw(illegal_operation);
+      integer& operator++(int) ;
+      integer& operator--(int) ;
       
       // bitwise operators
-      integer operator!() const throw(illegal_operation); // one's complement
+      integer operator!() const ; // one's complement
       
-      integer& operator&=(const integer&) throw(illegal_operation);
-      integer& operator|=(const integer&) throw(illegal_operation);
-      integer& operator^=(const integer&) throw(illegal_operation);
+      integer& operator&=(const integer&) ;
+      integer& operator|=(const integer&) ;
+      integer& operator^=(const integer&) ;
       
-      integer operator&(const integer&) throw(illegal_operation);
-      integer operator|(const integer&) throw(illegal_operation);
-      integer operator^(const integer&) throw(illegal_operation);
+      integer operator&(const integer&) ;
+      integer operator|(const integer&) ;
+      integer operator^(const integer&) ;
       
-      bool getbit(unsigned int index) const throw();
-      void setbit(unsigned int index, bool value=true) throw();
-      void clrbit(unsigned int index) throw();
+      bool getbit(unsigned int index) const ;
+      void setbit(unsigned int index, bool value=true) ;
+      void clrbit(unsigned int index) ;
       
-      integer operator<<(unsigned int left) const throw();
-      integer operator>>(unsigned int right) const throw();
+      integer operator<<(unsigned int left) const ;
+      integer operator>>(unsigned int right) const ;
       
-      integer& operator<<=(unsigned int left) throw();
-      integer& operator>>=(unsigned int right) throw();
+      integer& operator<<=(unsigned int left) ;
+      integer& operator>>=(unsigned int right) ;
       
       // left is the positive direction
-      integer& circularshift(int shift) throw();
+      integer& circularshift(int shift) ;
       
       
-      bool operator==(const integer&) const throw(uncomparable);
-      bool operator!=(const integer&) const throw(uncomparable);
-      bool operator>=(const integer&) const throw(uncomparable);
-      bool operator<=(const integer&) const throw(uncomparable);
-      bool operator< (const integer&) const throw(uncomparable);
-      bool operator> (const integer&) const throw(uncomparable);
+      bool operator==(const integer&) const ;
+      bool operator!=(const integer&) const ;
+      bool operator>=(const integer&) const ;
+      bool operator<=(const integer&) const ;
+      bool operator< (const integer&) const ;
+      bool operator> (const integer&) const ;
       
       // scalar operation
-      integer& operator= (const int& s) throw(illegal_operation);
-      integer  operator* (const int& s) const throw();
-      integer  operator/ (const int& s) const throw(std::invalid_argument);
-      integer& operator*=(const int& s) throw();
-      integer& operator/=(const int& s) throw(std::invalid_argument);
+      integer& operator= (const int& s) ;
+      integer  operator* (const int& s) const ;
+      integer  operator/ (const int& s) const ;
+      integer& operator*=(const int& s) ;
+      integer& operator/=(const int& s) ;
       
-      long int to_int() const throw();
-      std::string to_string(unsigned int base = 10) const throw();
+      long int to_int() const ;
+      std::string to_string(unsigned int base = 10) const ;
       
-      integer& abs() throw();
+      integer& abs() ;
       
       // returns true if number is zero or positive
-      bool positive() const throw();
+      bool positive() const ;
       
-      unsigned long int bits() const throw(); // number of bits used by number
+      unsigned long int bits() const ; // number of bits used by number
       
       
       // friend functions

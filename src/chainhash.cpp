@@ -45,7 +45,7 @@ namespace whiteice
   
   
   template<typename D, typename T>
-  bool chainhash<D,T>::insert(const T& key, D& data) throw()
+  bool chainhash<D,T>::insert(const T& key, D& data) 
   {
     try{
       typename chainhash<D,T>::hash_node* hn = 
@@ -71,7 +71,7 @@ namespace whiteice
   
   
   template<typename D, typename T>
-  bool chainhash<D,T>::remove(const T& key) throw()
+  bool chainhash<D,T>::remove(const T& key) 
   {
     try{
       table[hash(key)].remove(key);
@@ -83,13 +83,13 @@ namespace whiteice
   
   
   template<typename D, typename T>
-  D& chainhash<D,T>::search(const T& key) throw(std::out_of_range)
+  D& chainhash<D,T>::search(const T& key) 
   {
     return table[hash(key)].search(key);
   }
   
   template<typename D, typename T>
-  D& chainhash<D,T>::operator[](const T& key) throw(std::out_of_range)
+  D& chainhash<D,T>::operator[](const T& key) 
   {
     return table[hash(key)].search(key);
   }

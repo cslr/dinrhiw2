@@ -46,7 +46,7 @@ namespace whiteice
     
     
     template <unsigned int B>
-    dynamic_bitset& DataConversion<B>::operator[](unsigned int index) throw(std::out_of_range)
+    dynamic_bitset& DataConversion<B>::operator[](unsigned int index) 
     {
 #ifdef DEBUG
       if(index >= size())
@@ -63,7 +63,7 @@ namespace whiteice
     
     
     template <unsigned int B>
-    const dynamic_bitset& DataConversion<B>::operator[](unsigned int index) const throw(std::out_of_range)
+    const dynamic_bitset& DataConversion<B>::operator[](unsigned int index) const 
     {
 #ifdef DEBUG
       if(index >= size())
@@ -80,14 +80,14 @@ namespace whiteice
     
     
     template <unsigned int B>
-    unsigned int DataConversion<B>::size() const throw()
+    unsigned int DataConversion<B>::size() const 
     {
       return ( (numbytes + (B/8) - 1) / (B/8) );
     }
     
     
     template <unsigned int B>
-    bool DataConversion<B>::good() const throw()
+    bool DataConversion<B>::good() const 
     {
       return true;
     }

@@ -53,7 +53,7 @@ namespace whiteice
     // operators
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator+(const superresolution<T,U>& s)
-      const throw(illegal_operation)
+      const 
     {
       superresolution<T,U> t(*this);
       
@@ -66,7 +66,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator-(const superresolution<T,U>& s) const
-      throw(illegal_operation)
+      
     {
       superresolution<T,U> t(*this);
       
@@ -79,7 +79,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator*(const superresolution<T,U>& s) const
-      throw(illegal_operation)
+      
     {
       superresolution<T,U> t(U(this->basis.size()));
       
@@ -98,7 +98,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator/(const superresolution<T,U>& s) const
-      throw(illegal_operation)
+      
     {
       {
 	U u;
@@ -120,7 +120,7 @@ namespace whiteice
     // complex conjugate (?)
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator!() const 
-      throw(illegal_operation)
+      
     {
       // conjugates both numbers and basises            
       
@@ -142,7 +142,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U> superresolution<T,U>::operator-() const
-      throw(illegal_operation)
+      
     {
       superresolution<T,U> s(*this);
       
@@ -156,7 +156,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator+=(const superresolution<T,U>& s)
-      throw(illegal_operation)
+      
     {
       for(U u=U(0);u<U(this->basis.size());u++){
 	this->basis[u] += s.basis[u];
@@ -168,7 +168,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator-=(const superresolution<T,U>& s)
-      throw(illegal_operation)
+      
     {
       for(U u=U(0);u<U(this->basis.size());u++){
 	this->basis[u] -= s.basis[u];
@@ -180,7 +180,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator*=(const superresolution<T,U>& s)
-      throw(illegal_operation)
+      
     {
       superresolution<T,U> t(*this);
       
@@ -199,7 +199,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator/=(const superresolution<T,U>& s)
-      throw(illegal_operation)
+      
     {
       // TODO
       
@@ -209,7 +209,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator=(const superresolution<T,U>& s)
-      throw(illegal_operation)
+      
     {
       this->basis.resize(s.basis.size());
       
@@ -223,7 +223,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator==(const superresolution<T,U>& s) const 
-      throw(uncomparable)
+      
     
     {
       if(this->size() != s.size()){		
@@ -253,7 +253,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator!=(const superresolution<T,U>& s) const 
-      throw(uncomparable)
+      
     {
       
       if(this->size() != s.size()){		
@@ -283,7 +283,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator>=(const superresolution<T,U>& s) const
-      throw(uncomparable)
+      
     {
       {
 	U u;
@@ -298,7 +298,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator<=(const superresolution<T,U>& s) const 
-      throw(uncomparable)
+      
     {
       // not implemented
       return false;
@@ -307,7 +307,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator< (const superresolution<T,U>& s) const 
-      throw(uncomparable)
+      
     {
       // not implemented
       return false;
@@ -316,7 +316,7 @@ namespace whiteice
     
     template <typename T, typename U>
     bool superresolution<T,U>::operator> (const superresolution<T,U>& s) const 
-      throw(uncomparable)
+      
     {
       // not implemented
       return false;
@@ -327,7 +327,7 @@ namespace whiteice
     // scalar operation
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator= (const T& s) 
-      throw(illegal_operation)
+      
     {
       // not implemented
       return (*this);
@@ -335,7 +335,7 @@ namespace whiteice
     
     
     template <typename T, typename U>
-    superresolution<T,U>  superresolution<T,U>::operator* (const T& s) const throw()
+    superresolution<T,U>  superresolution<T,U>::operator* (const T& s) const 
       
     {
       // not implemented
@@ -345,7 +345,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>  superresolution<T,U>::operator/ (const T& s) const 
-      throw(std::invalid_argument)
+      
     {
       // not implemented
       return *this;
@@ -353,7 +353,7 @@ namespace whiteice
     
     
     template <typename T, typename U>
-    superresolution<T,U>& superresolution<T,U>::operator*=(const T& s) throw()
+    superresolution<T,U>& superresolution<T,U>::operator*=(const T& s) 
     {
       // not implemented
       return (*this);
@@ -362,7 +362,7 @@ namespace whiteice
     
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::operator/=(const T& s)
-      throw(std::invalid_argument)
+      
     {
       // not implemented
       return (*this);
@@ -370,7 +370,7 @@ namespace whiteice
     
     
     template <typename T, typename U>
-    superresolution<T,U>& superresolution<T,U>::abs() throw()
+    superresolution<T,U>& superresolution<T,U>::abs() 
     {
       // not implemented
       return (*this);
@@ -379,7 +379,7 @@ namespace whiteice
     
     template <typename T, typename U>
     T& superresolution<T,U>::operator[](const U& index)
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return basis[index];
     }
@@ -387,7 +387,7 @@ namespace whiteice
     
     template <typename T, typename U>
     const T& superresolution<T,U>::operator[](const U& index) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return basis[index];
     }
@@ -395,14 +395,14 @@ namespace whiteice
     
     // scales basis - not numbers
     template <typename T, typename U>
-    void superresolution<T,U>::basis_scaling(const T& s) throw()
+    void superresolution<T,U>::basis_scaling(const T& s) 
     {
       // not implemented
     }
     
     
     template <typename T, typename U>
-    bool basis_scaling(const std::vector<T>& s) throw()  // non-uniform scaling
+    bool basis_scaling(const std::vector<T>& s)   // non-uniform scaling
     {
       // not implemented
       return false;
@@ -411,7 +411,7 @@ namespace whiteice
     
     // measures with s-(dimensional) measure-function
     template <typename T, typename U>
-    T superresolution<T,U>::measure(const U& s) throw()
+    T superresolution<T,U>::measure(const U& s) 
     {
       // not implemented
       return T(0.0f);

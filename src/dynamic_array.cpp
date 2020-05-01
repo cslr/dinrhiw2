@@ -80,7 +80,7 @@ namespace whiteice
    * returns number of elements in dynamic_array
    */
   template <typename D, typename T>
-  unsigned int dynamic_array<D,T>::size() const throw()
+  unsigned int dynamic_array<D,T>::size() const 
   {
     return size_of_array;
   }
@@ -90,7 +90,7 @@ namespace whiteice
    * resizes dynamic_array
    */
   template <typename D, typename T>
-  bool dynamic_array<D,T>::resize(const T& n) throw()
+  bool dynamic_array<D,T>::resize(const T& n) 
   {
     if(n < 0){
       return false;
@@ -140,7 +140,7 @@ namespace whiteice
    * returns nth element of dynamic_array
    */
   template <typename D, typename T>
-  void dynamic_array<D,T>::clear() throw()
+  void dynamic_array<D,T>::clear() 
   {
     resize(0);
   }
@@ -150,7 +150,7 @@ namespace whiteice
    * returns nth element of dynamic_array
    */
   template <typename D, typename T>
-  D& dynamic_array<D,T>::operator[](const T& n) throw(std::out_of_range){
+  D& dynamic_array<D,T>::operator[](const T& n) {
     
     if(n < 0 || n >= size_of_array)
       throw std::out_of_range("index out of range");
@@ -171,7 +171,7 @@ namespace whiteice
   
   /* returns nth element of const dynamic_array */
   template <typename D, typename T>
-  const D& dynamic_array<D,T>::operator[](const T& n) const throw(std::out_of_range){
+  const D& dynamic_array<D,T>::operator[](const T& n) const {
     
     if(n < 0 || n >= size_of_array)
       throw std::out_of_range("index out of range");
@@ -194,7 +194,7 @@ namespace whiteice
    * adds data to the end of the list
    */
   template <typename D, typename T>
-  bool dynamic_array<D,T>::push(const D& d) throw(){    
+  bool dynamic_array<D,T>::push(const D& d) {    
     try{
       add_node(d);
       return true;
@@ -207,7 +207,7 @@ namespace whiteice
    * pops data from the end of the list
    */
   template <typename D, typename T>
-  D dynamic_array<D,T>::pop() throw(std::logic_error){    
+  D dynamic_array<D,T>::pop() {    
     if(size_of_array <= 0)
       throw std::logic_error("cannot pop from empty stack");
     
@@ -219,7 +219,7 @@ namespace whiteice
    * adds data element to the end of the list
    */
   template <typename D, typename T>
-  bool dynamic_array<D,T>::enqueue(const D& data) throw(){
+  bool dynamic_array<D,T>::enqueue(const D& data) {
     try{
       add_node(data);
       return true;
@@ -232,7 +232,7 @@ namespace whiteice
    * removes data element from the beginning of the list
    */
   template <typename D, typename T>
-  D dynamic_array<D,T>::dequeue() throw(std::logic_error){
+  D dynamic_array<D,T>::dequeue() {
     if(size_of_array <= 0)
       throw std::logic_error("cannot dequeue from empty queue");
     
@@ -256,7 +256,7 @@ namespace whiteice
    * adds empty node to the end of list
    */
   template <typename D, typename T>
-  void dynamic_array<D,T>::add_empty_node() throw(std::bad_alloc){
+  void dynamic_array<D,T>::add_empty_node() {
     darray_node *dn = new darray_node;
     last->prev->next = dn;
     last->prev->next->prev = last->prev;
@@ -271,7 +271,7 @@ namespace whiteice
    * adds node with data to the end of list
    */
   template <typename D, typename T>
-  void dynamic_array<D,T>::add_node(const D& data) throw(std::bad_alloc){
+  void dynamic_array<D,T>::add_node(const D& data) {
     darray_node *dn = new darray_node;
     dn->data = data;
     
@@ -286,7 +286,7 @@ namespace whiteice
   
   /* removes nth node from list */
   template <typename D, typename T>
-  D dynamic_array<D,T>::remove_node(const T& n) throw(){
+  D dynamic_array<D,T>::remove_node(const T& n) {
     T i = n;
     darray_node *dn = first->next;
     
@@ -311,7 +311,7 @@ namespace whiteice
   
   /* removes last node from the list */
   template <typename D, typename T>
-  D dynamic_array<D,T>::remove_node() throw(){
+  D dynamic_array<D,T>::remove_node() {
     return remove_node(size_of_array - 1);
   }
   

@@ -2,7 +2,7 @@
  * simplistic/restricted implementation of
  * feedforward neural network
  *
- * NOTE: user must also implement 'bool whiteice::convert(float&, const T&) throw()'
+ * NOTE: user must also implement 'bool whiteice::convert(float&, const T&) '
  * conversion functions from T -> to float in order to make save() and load() to work.
  * (see SRC/math/blas_primitives.h for example / used by blas_read<float> )
  *
@@ -41,7 +41,7 @@ namespace whiteice
     
     // (W1, W2, ... Wn, width) network
     neuralnetwork(const std::vector<unsigned int>& nn_structure,
-		  bool compressed_network = false) throw(std::invalid_argument);
+		  bool compressed_network = false) ;
     
     virtual ~neuralnetwork();
     
@@ -50,14 +50,14 @@ namespace whiteice
     // other stuff to create more complex nn structures
     /* accessing data / configuration */
     
-    math::vertex<T>& input() throw();
-    math::vertex<T>& output() throw();
+    math::vertex<T>& input() ;
+    math::vertex<T>& output() ;
     
     /* calculates output for input */
     bool calculate();
     bool operator()();
     
-    neuronlayer<T>& operator[](unsigned int index) throw(std::out_of_range);
+    neuronlayer<T>& operator[](unsigned int index) ;
     unsigned int length() const; // number of layers
     
     bool randomize();
@@ -70,28 +70,28 @@ namespace whiteice
     // loading and saving isn't possible when network is compressed
     // (todo: add support for compressed networks)
     // 
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
     
     // exports and imports neural network parameters to/from vertex
     // (doesn't change architecture of neural network)
     // export() and import() are mainly used by PSO and GA optimizers
-    bool exportdata(math::vertex<T>& v) const throw();
-    bool importdata(const math::vertex<T>& v) throw();
+    bool exportdata(math::vertex<T>& v) const ;
+    bool importdata(const math::vertex<T>& v) ;
     
     // number of dimensions used by import/export
-    unsigned int exportdatasize() const throw(); 
+    unsigned int exportdatasize() const ; 
     
     
     // changes NN to compressed form of operation or
     // back to normal non-compressed form
     
-    bool compress() throw();
-    bool decompress() throw();
-    bool iscompressed() const throw();
+    bool compress() ;
+    bool decompress() ;
+    bool iscompressed() const ;
     
     // returns compression ratio: compressed/orig
-    float ratio() const throw();
+    float ratio() const ;
     
     friend class backpropagation<T>;
     

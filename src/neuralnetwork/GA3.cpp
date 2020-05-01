@@ -44,14 +44,14 @@ namespace whiteice
   
 
   template <typename T>
-  bool GA3<T>::isRunning() const throw()
+  bool GA3<T>::isRunning() const 
   {
     return running;
   }
   
 
   template <typename T>
-  bool GA3<T>::stop() throw()
+  bool GA3<T>::stop() 
   {
     running = false;
     while(thread_running)
@@ -62,14 +62,14 @@ namespace whiteice
   
   // returns the best solution found so far
   template <typename T>
-  T GA3<T>::getBestSolution(math::vertex<T>& solution) const throw()
+  T GA3<T>::getBestSolution(math::vertex<T>& solution) const 
   {
     solution = very_best_candidate;
     return very_best_result;
   }
   
   template <typename T>
-  unsigned int GA3<T>::getGenerations() const throw()
+  unsigned int GA3<T>::getGenerations() const 
   {
     return generations;
   }

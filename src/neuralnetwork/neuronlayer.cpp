@@ -132,44 +132,44 @@ namespace whiteice
   
   
   template <typename T>
-  T& neuronlayer<T>::moment() throw()
+  T& neuronlayer<T>::moment() 
   {
     return moment_factor;
   }
   
   template <typename T>
-  const T& neuronlayer<T>::moment() const throw()
+  const T& neuronlayer<T>::moment() const 
   {
     return moment_factor;
   }
 
   template <typename T>
-  T& neuronlayer<T>::learning_rate() throw()
+  T& neuronlayer<T>::learning_rate() 
   {
     return learning_factor;
   }
   
   template <typename T>
-  const T& neuronlayer<T>::learning_rate() const throw()
+  const T& neuronlayer<T>::learning_rate() const 
   {
     return learning_factor;
   }
   
   
   template <typename T>
-  math::vertex<T>& neuronlayer<T>::bias() throw(){ return b; }
+  math::vertex<T>& neuronlayer<T>::bias() { return b; }
   
   
   template <typename T>
-  const math::vertex<T>& neuronlayer<T>::bias() const throw(){ return b; }
+  const math::vertex<T>& neuronlayer<T>::bias() const { return b; }
   
   
   template <typename T>
-  math::matrix<T>& neuronlayer<T>::weights() throw(){ return W; }
+  math::matrix<T>& neuronlayer<T>::weights() { return W; }
   
   
   template <typename T>
-  const math::matrix<T>& neuronlayer<T>::weights() const throw(){ return W; }
+  const math::matrix<T>& neuronlayer<T>::weights() const { return W; }
   
   
   template <typename T>
@@ -180,21 +180,21 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int neuronlayer<T>::size() const throw()
+  unsigned int neuronlayer<T>::size() const 
   {
     return state.size();
   }
   
   
   template <typename T>
-  math::vertex<T>*& neuronlayer<T>::input() throw()
+  math::vertex<T>*& neuronlayer<T>::input() 
   {
     return input_data;
   }
   
 
   template <typename T>
-  math::vertex<T>*& neuronlayer<T>::output() throw()
+  math::vertex<T>*& neuronlayer<T>::output() 
   {
     return output_data;
   }
@@ -231,7 +231,7 @@ namespace whiteice
    * calculates ouput value of input
    */
   template <typename T>
-  bool neuronlayer<T>::calculate() throw()
+  bool neuronlayer<T>::calculate() 
   {
     // (todo: when code has stabilized move these checks to assert() and
     //  compile usually with NDEBUG defined)
@@ -311,7 +311,7 @@ namespace whiteice
    * calculates() outputs from inputs
    */
   template <typename T>
-  bool neuronlayer<T>::operator()() throw()
+  bool neuronlayer<T>::operator()() 
   {
     return calculate();
   }
@@ -323,28 +323,28 @@ namespace whiteice
   // (biases are small and won't compress very well .. I think)
   
   template <typename T>
-  bool neuronlayer<T>::compress() throw()
+  bool neuronlayer<T>::compress() 
   {
     return W.compress();
   }
   
   
   template <typename T>
-  bool neuronlayer<T>::decompress() throw()
+  bool neuronlayer<T>::decompress() 
   {
     return W.decompress();
   }
   
   
   template <typename T>
-  bool neuronlayer<T>::iscompressed() const throw()
+  bool neuronlayer<T>::iscompressed() const 
   {
     return W.iscompressed();
   }
   
   
   template <typename T>  
-  float neuronlayer<T>::ratio() const throw()
+  float neuronlayer<T>::ratio() const 
   {
     return W.ratio();
   }

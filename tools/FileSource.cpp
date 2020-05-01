@@ -42,7 +42,7 @@ FileSource<B>::~FileSource()
 
 template <unsigned int B>
 whiteice::dynamic_bitset& FileSource<B>::operator[](unsigned int index)
-  throw(std::out_of_range) // not thread safe
+   // not thread safe
 {
   return (*DC)[index];
 }
@@ -50,7 +50,7 @@ whiteice::dynamic_bitset& FileSource<B>::operator[](unsigned int index)
 
 template <unsigned int B>
 const whiteice::dynamic_bitset& FileSource<B>::operator[](unsigned int index)
-  const throw(std::out_of_range) // not thread safe
+  const  // not thread safe
 {
   return (*DC)[index];
 }
@@ -58,7 +58,7 @@ const whiteice::dynamic_bitset& FileSource<B>::operator[](unsigned int index)
 
 /* returns number of blocks */
 template <unsigned int B>
-unsigned int FileSource<B>::size() const throw()
+unsigned int FileSource<B>::size() const 
 {
   if(filesize == 0){
     struct stat buf;
@@ -74,7 +74,7 @@ unsigned int FileSource<B>::size() const throw()
 
 
 template <unsigned int B>
-bool FileSource<B>::good() const throw()
+bool FileSource<B>::good() const 
 {
   if(ferror(file) != 0) return false;
   
@@ -102,7 +102,7 @@ void FileSource<B>::flush() const
 
 
 template <unsigned int B>
-bool FileSource<B>::write(const std::string& filename) const throw()
+bool FileSource<B>::write(const std::string& filename) const 
 {
   flush();
   

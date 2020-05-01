@@ -67,7 +67,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int negative_function<T>::dimension() const throw()
+  unsigned int negative_function<T>::dimension() const 
   {
     return f->dimension();
   }
@@ -75,7 +75,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool negative_function<T>::hasGradient() const throw(){
+  bool negative_function<T>::hasGradient() const {
     return f->hasGradient();
   }
   

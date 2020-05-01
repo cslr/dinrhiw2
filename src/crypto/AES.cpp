@@ -34,7 +34,7 @@ namespace whiteice
     
     
     // data must be X bit and Keyschedule should be AESKey
-    bool AES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool AES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	// input data must be 128 bits
@@ -74,7 +74,7 @@ namespace whiteice
     }
     
     
-    bool AES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool AES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	// input data must be 128 bits
@@ -110,7 +110,7 @@ namespace whiteice
     
     bool AES::encrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       try{
 	if(data.size() <= 0) return true;
@@ -264,7 +264,7 @@ namespace whiteice
     
     bool AES::decrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       try{
 	if(data.size() <= 0) return true;
@@ -699,7 +699,7 @@ namespace whiteice
     
     
     // calculates smallest positive conquence in modular arithmetic
-    unsigned int AES::mod(int i, unsigned int modulo) const throw()
+    unsigned int AES::mod(int i, unsigned int modulo) const 
     {
       int r = (i % modulo);
       
@@ -933,7 +933,7 @@ namespace whiteice
     }
     
     
-    unsigned int AESKey::size() const throw()
+    unsigned int AESKey::size() const 
     {
       return keys.size();
       
@@ -941,7 +941,7 @@ namespace whiteice
     }
     
     
-    bool AESKey::resize(unsigned int s) throw()
+    bool AESKey::resize(unsigned int s) 
     {
       // can only reduce number of keys
       
@@ -954,7 +954,7 @@ namespace whiteice
     }
     
     
-    unsigned int AESKey::keybits() const throw()
+    unsigned int AESKey::keybits() const 
     {
       if(keys.size() <= 0) return 0;
       else return keys[0].size();
@@ -962,7 +962,7 @@ namespace whiteice
     
     
     const dynamic_bitset& AESKey::operator[](unsigned int n)
-      const throw(std::out_of_range)
+      const 
     {
       if(n >= keys.size())
 	throw std::out_of_range("index bigger than number of keys");

@@ -35,14 +35,14 @@ namespace whiteice
     // learns given data, full is true performs also slow
     // convergence phase
     bool learn(const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& datasource,
-	       bool full=true) throw();
+	       bool full=true) ;
     
     // randomizes som vertex values
-    bool randomize() throw();
+    bool randomize() ;
     
     // randomsizes SOM vertex values to span two highest variance PCA eigenvectors
     bool randomize 
-    (const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data) throw();
+    (const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data) ;
 
     // uses smaller SOM to initialize weights of this SOM
     bool initializeHierarchical(const SOM2D& som_prev);
@@ -52,10 +52,10 @@ namespace whiteice
     whiteice::math::blas_real<float> getError(const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data);
     
     float somdistance(const whiteice::math::vertex< whiteice::math::blas_real<float> >& v1,
-		      const whiteice::math::vertex< whiteice::math::blas_real<float> >& v2) const throw();
+		      const whiteice::math::vertex< whiteice::math::blas_real<float> >& v2) const ;
     
     // returns winner vertex raw index for a given vertex
-    unsigned int activate(const whiteice::math::vertex< whiteice::math::blas_real<float> >& v) const throw();
+    unsigned int activate(const whiteice::math::vertex< whiteice::math::blas_real<float> >& v) const ;
 
     // returns interpolated coordinates in SOM 2d map:
     // first find winner vertex (i,j) and calculates its closeness to data at points
@@ -66,57 +66,57 @@ namespace whiteice
     // assigns pseudo probability value to data v based on vector in SOM2D(i,j)
     whiteice::math::blas_real<float> getActivity
     (const whiteice::math::vertex< whiteice::math::blas_real<float> >& v,
-     unsigned int i, unsigned int j) const throw();
+     unsigned int i, unsigned int j) const ;
       
     // reads som vertex given lattice coordinate
-    whiteice::math::vertex< whiteice::math::blas_real<float> > operator()(int i, int j) const throw();
+    whiteice::math::vertex< whiteice::math::blas_real<float> > operator()(int i, int j) const ;
 
     // writes vertex given lattice coordinate
     bool setVector(int i, int j,
 		   const whiteice::math::vertex< whiteice::math::blas_real<float> >& v);
       
     // reads som vertex given direct raw index coordinate to a table
-    whiteice::math::vertex< whiteice::math::blas_real<float> > operator()(unsigned int index) const throw();
+    whiteice::math::vertex< whiteice::math::blas_real<float> > operator()(unsigned int index) const ;
 
     // handles wrap-around property properly, returns index to n:th vector, for RAW
     // index value multiply by som_dimension..
-    bool index2coordinates(const unsigned int index, unsigned int& i, unsigned int& j) const throw();
+    bool index2coordinates(const unsigned int index, unsigned int& i, unsigned int& j) const ;
     bool coordinates2index(const unsigned int i, const unsigned int j,
-			   unsigned int& index) const throw();
+			   unsigned int& index) const ;
 
-    whiteice::math::blas_real<float> Uvalue() const throw();
+    whiteice::math::blas_real<float> Uvalue() const ;
     
     // size of the som lattice
-    unsigned int width() const throw();
-    unsigned int height() const throw();
-    unsigned int dimension() const throw();
-    unsigned int size() const throw();
+    unsigned int width() const ;
+    unsigned int height() const ;
+    unsigned int dimension() const ;
+    unsigned int size() const ;
     
     
     // loads SOM data from file
-    bool load(const std::string& filename) throw();
+    bool load(const std::string& filename) ;
     
     // saves SOM data to file
-    bool save(const std::string& filename) const throw();
+    bool save(const std::string& filename) const ;
     
     // som visualization on/off switch
-    bool show(bool on) throw();
+    bool show(bool on) ;
     
   private:
     
     // finds the closest vector from som
-    unsigned int find_winner(const whiteice::math::blas_real<float>* vmemory) const throw();
+    unsigned int find_winner(const whiteice::math::blas_real<float>* vmemory) const ;
     
     // calculates wrap-a-round distance for coordinates with given delta
-    float wraparound_sqdistance(float x1, float x2, float y1, float y2) const throw();
+    float wraparound_sqdistance(float x1, float x2, float y1, float y2) const ;
     
     float norm_distance(const whiteice::math::blas_real<float> * const m1,
-			const whiteice::math::blas_real<float> * const m2) const throw();
+			const whiteice::math::blas_real<float> * const m2) const ;
 
 #if 0    
-    bool open_visualization() throw();
-    bool close_visualization() throw();
-    bool draw_visualization() throw();
+    bool open_visualization() ;
+    bool close_visualization() ;
+    bool draw_visualization() ;
 #endif
     
     

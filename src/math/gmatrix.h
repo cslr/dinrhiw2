@@ -35,89 +35,89 @@ namespace whiteice
       virtual ~gmatrix();
       
       
-      gmatrix<T,S> operator+(const gmatrix<T,S>&) const throw(illegal_operation);
-      gmatrix<T,S> operator-(const gmatrix<T,S>&) const throw(illegal_operation);
-      gmatrix<T,S> operator*(const gmatrix<T,S>&) const throw(illegal_operation);
-      gmatrix<T,S> operator/(const gmatrix<T,S>&) const throw(illegal_operation);
-      gmatrix<T,S> operator!() const throw(illegal_operation);
-      gmatrix<T,S> operator-() const throw(illegal_operation);
+      gmatrix<T,S> operator+(const gmatrix<T,S>&) const ;
+      gmatrix<T,S> operator-(const gmatrix<T,S>&) const ;
+      gmatrix<T,S> operator*(const gmatrix<T,S>&) const ;
+      gmatrix<T,S> operator/(const gmatrix<T,S>&) const ;
+      gmatrix<T,S> operator!() const ;
+      gmatrix<T,S> operator-() const ;
       
-      gmatrix<T,S>& operator+=(const gmatrix<T,S>&) throw(illegal_operation);
-      gmatrix<T,S>& operator-=(const gmatrix<T,S>&) throw(illegal_operation);
-      gmatrix<T,S>& operator*=(const gmatrix<T,S>&) throw(illegal_operation);
-      gmatrix<T,S>& operator/=(const gmatrix<T,S>&) throw(illegal_operation);
+      gmatrix<T,S>& operator+=(const gmatrix<T,S>&) ;
+      gmatrix<T,S>& operator-=(const gmatrix<T,S>&) ;
+      gmatrix<T,S>& operator*=(const gmatrix<T,S>&) ;
+      gmatrix<T,S>& operator/=(const gmatrix<T,S>&) ;
       
-      gmatrix<T,S>& operator=(const gmatrix<T,S>&) throw(illegal_operation);
+      gmatrix<T,S>& operator=(const gmatrix<T,S>&) ;
                   
-      bool operator==(const gmatrix<T,S>&) const throw(uncomparable);
-      bool operator!=(const gmatrix<T,S>&) const throw(uncomparable);
-      bool operator>=(const gmatrix<T,S>&) const throw(uncomparable);
-      bool operator<=(const gmatrix<T,S>&) const throw(uncomparable);
-      bool operator< (const gmatrix<T,S>&) const throw(uncomparable);
-      bool operator> (const gmatrix<T,S>&) const throw(uncomparable);
+      bool operator==(const gmatrix<T,S>&) const ;
+      bool operator!=(const gmatrix<T,S>&) const ;
+      bool operator>=(const gmatrix<T,S>&) const ;
+      bool operator<=(const gmatrix<T,S>&) const ;
+      bool operator< (const gmatrix<T,S>&) const ;
+      bool operator> (const gmatrix<T,S>&) const ;
 
       // scalars and gmatrix interaction
-      gmatrix<T,S>& operator= (const S&) throw(illegal_operation);
+      gmatrix<T,S>& operator= (const S&) ;
 
-      gmatrix<T,S>  operator* (const S&) const throw();
+      gmatrix<T,S>  operator* (const S&) const ;
       
       template <typename TT, typename SS>
       friend gmatrix<TT,SS> operator*(const SS&, const gmatrix<TT,SS>&)
-        throw(std::invalid_argument);
+        ;
       
-      gmatrix<T,S>  operator/ (const S&) const throw(std::invalid_argument);
+      gmatrix<T,S>  operator/ (const S&) const ;
 
-      gmatrix<T,S>& operator*=(const S&) throw();
-      gmatrix<T,S>& operator/=(const S&) throw(std::invalid_argument);
+      gmatrix<T,S>& operator*=(const S&) ;
+      gmatrix<T,S>& operator/=(const S&) ;
 
-      gvertex<T,S> operator*(const gvertex<T,S>&) const throw(std::invalid_argument);      
+      gvertex<T,S> operator*(const gvertex<T,S>&) const ;      
       
       gvertex<T,S>& operator[](const unsigned int& index)
-        throw(std::out_of_range, illegal_operation);
+        ;
       
       const gvertex<T,S>& operator[](const unsigned int& index)
-        const throw(std::out_of_range, illegal_operation);
+        const ;
       
-      T& operator()(unsigned int y, unsigned int x) throw(std::out_of_range, illegal_operation);
-      const T& operator()(unsigned int y, unsigned int x) const throw(std::out_of_range, illegal_operation);
+      T& operator()(unsigned int y, unsigned int x) ;
+      const T& operator()(unsigned int y, unsigned int x) const ;
       
       
       gmatrix<T,S>& zero(); // zeroes gmatrix
       gmatrix<T,S>& identity();
       
-      gmatrix<T,S>& crossproduct(const gvertex<T,S>& v) throw(std::domain_error);
+      gmatrix<T,S>& crossproduct(const gvertex<T,S>& v) ;
       
       // euclidean rotation
-      gmatrix<T,S>& rotation(const S& xr, const S& yr, const S& zr) throw();
+      gmatrix<T,S>& rotation(const S& xr, const S& yr, const S& zr) ;
       
       // translation
-      gmatrix<T,S>& translation(const S& dx, const S& dy, const S& dz) throw();
+      gmatrix<T,S>& translation(const S& dx, const S& dy, const S& dz) ;
       
       
-      gmatrix<T,S>& abs() throw();
-      gmatrix<T,S>& conj() throw();
-      gmatrix<T,S>& transpose() throw();
-      gmatrix<T,S>& hermite() throw();
+      gmatrix<T,S>& abs() ;
+      gmatrix<T,S>& conj() ;
+      gmatrix<T,S>& transpose() ;
+      gmatrix<T,S>& hermite() ;
       
-      gmatrix<T,S>& inv() throw(std::logic_error); // inverse
+      gmatrix<T,S>& inv() ; // inverse
       
-      T det() const throw(std::logic_error); // determinate
-      T trace() const throw(std::logic_error);
+      T det() const ; // determinate
+      T trace() const ;
       
-      unsigned int size() const throw();
-      unsigned int ysize() const throw();      
-      unsigned int xsize() const throw();
+      unsigned int size() const ;
+      unsigned int ysize() const ;      
+      unsigned int xsize() const ;
       
-      bool resize_x(unsigned int d) throw();
-      bool resize_y(unsigned int d) throw();
-      bool resize(unsigned int y, unsigned int x) throw();
+      bool resize_x(unsigned int d) ;
+      bool resize_y(unsigned int d) ;
+      bool resize(unsigned int y, unsigned int x) ;
       
       
       // normalizes each row vector of matrix to have unit length
-      void normalize() throw();
+      void normalize() ;
       
       
-      bool comparable() throw(){ return false; }
+      bool comparable() { return false; }
       
       // TODO: add dummy    static const gmatrix<T,S> null; for empty/null gvertex
       
@@ -132,7 +132,7 @@ namespace whiteice
     
     // tries to convert gmatrix of type L to gmatrix of type T (B = A)
     template <typename T, typename S, typename L, typename M>
-      bool convert(gmatrix<T,S>& B, const gmatrix<L,M>& A) throw();
+      bool convert(gmatrix<T,S>& B, const gmatrix<L,M>& A) ;
 
   }
 }

@@ -73,7 +73,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool factorize(T n, std::map<T,T>& f) throw()
+  bool factorize(T n, std::map<T,T>& f) 
   {
     // with very small numbers ( < 10**9 ) trial
     // division is reasonable fast

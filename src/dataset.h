@@ -32,9 +32,9 @@ namespace whiteice
       // creates dataset with a given number of dimensions
       // data is a set of vectors
       dataset();
-      dataset(unsigned int dimension) throw(std::out_of_range);
+      dataset(unsigned int dimension) ;
       dataset(const dataset<T>& d);
-      ~dataset() throw();
+      ~dataset() ;
 
       
       bool createCluster(const std::string& name, const unsigned int dimension);
@@ -58,30 +58,30 @@ namespace whiteice
       
       // adds data examples
       bool add(const math::vertex<T>& input,
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       
       bool add(const std::vector<math::vertex<T> >& inputs,
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       
       bool add(const std::string& input,
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       
       bool add(const std::vector<std::string>& inputs,
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
 
       // adds data to clusters
       bool add(unsigned int index, const math::vertex<T>& input, 
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       bool add(unsigned int index, const std::vector<math::vertex<T> >& inputs, 
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
 
       bool add(unsigned int index, const std::vector<T>& input,
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       
       bool add(unsigned int index, const std::string& input, 
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       bool add(unsigned int index, const std::vector<std::string>& inputs, 
-	       bool nopreprocess = false) throw();
+	       bool nopreprocess = false) ;
       
       // creates empty dataset
       bool clear();
@@ -97,7 +97,7 @@ namespace whiteice
       // each cluster (which must have equal size) and keeps
       // order of samples between different clusters the same
       // so ith element of cluster A match to ith element of cluster B
-      bool downsampleAll(unsigned int samples) throw();
+      bool downsampleAll(unsigned int samples) ;
       
       // removes data elements from dataset which have Infinite or NaN values
       // maintains pairing between cluster A and cluster B, 
@@ -105,17 +105,17 @@ namespace whiteice
       bool removeBadData();
       
       // returns data in cluster "index"
-      bool getData(unsigned int index, std::vector< math::vertex<T> >& data) const throw(std::out_of_range);
+      bool getData(unsigned int index, std::vector< math::vertex<T> >& data) const ;
       
       /* defines dataset<T>::iterator */
       typedef typename std::vector< math::vertex<T> >::iterator iterator;
       typedef typename std::vector< math::vertex<T> >::const_iterator const_iterator;
       
       // iterators for dataset
-      iterator begin(unsigned int index = 0) throw(std::out_of_range);
-      iterator end(unsigned int index = 0) throw(std::out_of_range);
-      const_iterator begin(unsigned int index = 0) const throw(std::out_of_range);
-      const_iterator end(unsigned int index = 0) const throw(std::out_of_range);
+      iterator begin(unsigned int index = 0) ;
+      iterator end(unsigned int index = 0) ;
+      const_iterator begin(unsigned int index = 0) const ;
+      const_iterator end(unsigned int index = 0) const ;
       
       
       /*
@@ -124,14 +124,14 @@ namespace whiteice
        * documented in dataset::load() (dataset.cpp)
        * 
        */
-      bool load(const std::string& filename) throw();
-      bool save(const std::string& filename) const throw();
+      bool load(const std::string& filename) ;
+      bool save(const std::string& filename) const ;
       
       /*
        * exports dataset values as ascii data without preprocessing (all clusters)
        * if raw = true, do not remove preprocessings from data before saving
        */
-      bool exportAscii(const std::string& filename, bool writeHeaders = false, bool raw = false) const throw();
+      bool exportAscii(const std::string& filename, bool writeHeaders = false, bool raw = false) const ;
 
       /*
        * imports space, "," or ";" separated floating point numbers as vectors into cluster 0
@@ -142,21 +142,21 @@ namespace whiteice
        *       exportAscii() dumps data from all clusters. However, if there is only a single
        *       cluster 0 then importAscii() can load data saved by exportAscii()
        */
-      bool importAscii(const std::string& filename, unsigned int LINES=0) throw();
+      bool importAscii(const std::string& filename, unsigned int LINES=0) ;
       
       // accesses data from cluster zero
-      const math::vertex<T>& operator[](unsigned int index) const throw(std::out_of_range);
+      const math::vertex<T>& operator[](unsigned int index) const ;
       
-      const math::vertex<T>& access(unsigned int cluster, unsigned int data) const throw(std::out_of_range);
-      const math::vertex<T>& accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range);
+      const math::vertex<T>& access(unsigned int cluster, unsigned int data) const ;
+      const math::vertex<T>& accessName(const std::string& clusterName, unsigned int dataElem) ;
       
       // accesses random element from specified cluster
-      const math::vertex<T>& random_access(unsigned int index = 0) const throw(std::out_of_range);
+      const math::vertex<T>& random_access(unsigned int index = 0) const ;
       
-      unsigned int size(unsigned int index) const throw(); // dataset size  
-      bool clear(unsigned int index) throw(); // data set clear  
-      bool resize(unsigned int index, unsigned int nsize) throw(); // reduces size of data
-      unsigned int dimension(unsigned int index) const throw(); // dimension of data vectors
+      unsigned int size(unsigned int index) const ; // dataset size  
+      bool clear(unsigned int index) ; // data set clear  
+      bool resize(unsigned int index, unsigned int nsize) ; // reduces size of data
+      unsigned int dimension(unsigned int index) const ; // dimension of data vectors
       
       
       // data preprocessing methods
@@ -169,66 +169,66 @@ namespace whiteice
       
       
       bool getPreprocessings(unsigned int cluster,
-			     std::vector<data_normalization>& preprocessings) const  throw();
+			     std::vector<data_normalization>& preprocessings) const  ;
       
       // is data normalized with given operation
-      bool hasPreprocess(unsigned int cluster, enum data_normalization norm) const throw(){
+      bool hasPreprocess(unsigned int cluster, enum data_normalization norm) const {
     	  if(cluster >= clusters.size()) return false;
     	  else return is_normalized(cluster, norm);
       }
 
       // data preprocessing
       bool preprocess(unsigned int index,
-		      enum data_normalization norm = dnCorrelationRemoval) throw();
+		      enum data_normalization norm = dnCorrelationRemoval) ;
       // index = 0
-      bool preprocess(enum data_normalization norm = dnCorrelationRemoval) throw();
+      bool preprocess(enum data_normalization norm = dnCorrelationRemoval) ;
       
       // inverse preprocess everything, calculates new preprocessing parameters
       // and preprocesses everything with parameter data from the whole dataset
       // (dataset may grow after preprocessing)
-      bool repreprocess(unsigned int index = 0) throw();
+      bool repreprocess(unsigned int index = 0) ;
       
       // converts data with same preprocessing as with dataset vectors
       bool preprocess(unsigned int index,
-		      math::vertex<T>& vec) const throw();
+		      math::vertex<T>& vec) const ;
       
       bool preprocess(unsigned int index,
-		      std::vector< math::vertex<T> >& group) const throw();
+		      std::vector< math::vertex<T> >& group) const ;
       // index = 0
       
-      bool preprocess(math::vertex<T>& vec) const throw();
+      bool preprocess(math::vertex<T>& vec) const ;
       
-      bool preprocess(std::vector< math::vertex<T> >& group) const throw();
+      bool preprocess(std::vector< math::vertex<T> >& group) const ;
   
       // inverse preprocess given data vector
       
       bool invpreprocess(unsigned int index,
-			 math::vertex<T>& vec) const throw();
+			 math::vertex<T>& vec) const ;
       
       bool invpreprocess(unsigned int index,
-			 std::vector< math::vertex<T> >& group) const throw();
+			 std::vector< math::vertex<T> >& group) const ;
       // index = 0
-      bool invpreprocess(math::vertex<T>& vec) const throw();
-      bool invpreprocess(std::vector< math::vertex<T> >& group) const throw();
+      bool invpreprocess(math::vertex<T>& vec) const ;
+      bool invpreprocess(std::vector< math::vertex<T> >& group) const ;
       
       // changes preprocessing to given a given list of preprocessings
-      bool convert(unsigned int index = 0) throw(); // removes all preprocessings from data
+      bool convert(unsigned int index = 0) ; // removes all preprocessings from data
       bool convert(unsigned int index,
 		   std::vector<enum data_normalization> plist);
 
       // calculates preprocessings Wx + b linear gradient W if possible
       // (does not support dnSoftMax !!) [returns false if index out of range]
 
-      bool preprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
-      bool invpreprocess_grad(unsigned int index, math::matrix<T>& W) const throw();
+      bool preprocess_grad(unsigned int index, math::matrix<T>& W) const ;
+      bool invpreprocess_grad(unsigned int index, math::matrix<T>& W) const ;
 
       // logs clustering statistics per cluster
-      bool diagnostics() const throw();
+      bool diagnostics() const ;
       
     private:
       // is data normalized with given operation?
       bool is_normalized(unsigned int index,
-			 enum data_normalization norm) const throw();
+			 enum data_normalization norm) const ;
       
       // preprocessing functions and inverse preprocessing functions
       void mean_variance_removal(unsigned int index,

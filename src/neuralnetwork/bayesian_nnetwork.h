@@ -26,12 +26,12 @@ namespace whiteice
 
     void printInfo() const; // mostly for debugging.. prints NN information/data.
 
-    void diagnosticsInfo() const throw();
+    void diagnosticsInfo() const ;
 
     /*
      * imports and exports samples of p(w) to and from nnetwork
      */
-    unsigned int getNumberOfSamples() const throw(); // number of samples in BNN
+    unsigned int getNumberOfSamples() const ; // number of samples in BNN
 
     bool importSamples(const whiteice::nnetwork<T>& nn,
 		       const std::vector< math::vertex<T> >& weights);
@@ -67,13 +67,13 @@ namespace whiteice
 		   unsigned int SIMULATION_DEPTH /* = 1 */, // for recurrent use of nnetworks..
 		   int latestN /*= 0 */) const;
 
-    unsigned int outputSize() const throw();
-    unsigned int inputSize() const throw();
+    unsigned int outputSize() const ;
+    unsigned int inputSize() const ;
 
     // stores and loads bayesian nnetwork to a dataset file
     // (saves all samples into files)
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
 
     private:
 

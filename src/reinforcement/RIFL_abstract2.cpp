@@ -104,7 +104,7 @@ namespace whiteice
   }
 
   template <typename T>
-  RIFL_abstract2<T>::~RIFL_abstract2() throw()
+  RIFL_abstract2<T>::~RIFL_abstract2() 
   {
     // stops executing thread
     {
@@ -184,7 +184,7 @@ namespace whiteice
   // epsilon E [0,1] percentage of actions are chosen according to model
   //                 1-e percentage of actions are random (exploration)
   template <typename T>
-  bool RIFL_abstract2<T>::setEpsilon(T epsilon) throw()
+  bool RIFL_abstract2<T>::setEpsilon(T epsilon) 
   {
     if(epsilon < T(0.0) || epsilon > T(1.0)) return false;
     this->epsilon = epsilon;
@@ -193,34 +193,34 @@ namespace whiteice
   
 
   template <typename T>
-  T RIFL_abstract2<T>::getEpsilon() const throw()
+  T RIFL_abstract2<T>::getEpsilon() const 
   {
     return epsilon;
   }
 
 
   template <typename T>
-  void RIFL_abstract2<T>::setLearningMode(bool learn) throw()
+  void RIFL_abstract2<T>::setLearningMode(bool learn) 
   {
     learningMode = learn;
   }
 
   template <typename T>
-  bool RIFL_abstract2<T>::getLearningMode() const throw()
+  bool RIFL_abstract2<T>::getLearningMode() const 
   {
     return learningMode;
   }
 
 
   template <typename T>
-  void RIFL_abstract2<T>::setHasModel(unsigned int hasModel) throw()
+  void RIFL_abstract2<T>::setHasModel(unsigned int hasModel) 
   {
     this->hasModel[0] = hasModel;
     this->hasModel[1] = hasModel;
   }
 
   template <typename T>
-  unsigned int RIFL_abstract2<T>::getHasModel() throw()
+  unsigned int RIFL_abstract2<T>::getHasModel() 
   {
     if(hasModel[0] < hasModel[1]) return hasModel[0];
     else return hasModel[1];

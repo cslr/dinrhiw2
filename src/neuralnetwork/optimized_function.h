@@ -24,11 +24,11 @@ namespace whiteice
       // function interface.      
       
       // returns input vectors dimension
-      virtual unsigned int dimension() const throw() PURE_FUNCTION = 0;
+      virtual unsigned int dimension() const  PURE_FUNCTION = 0;
       
       
       
-      virtual bool hasGradient() const throw() PURE_FUNCTION = 0;
+      virtual bool hasGradient() const  PURE_FUNCTION = 0;
       
       // gets gradient at given point
       virtual math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION = 0;

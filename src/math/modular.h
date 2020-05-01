@@ -28,48 +28,48 @@ namespace whiteice
       virtual ~modular();
       
       // operators
-      modular<T> operator+(const modular<T>&) const throw(illegal_operation);
-      modular<T> operator-(const modular<T>&) const throw(illegal_operation);
-      modular<T> operator*(const modular<T>&) const throw(illegal_operation);
-      modular<T> operator/(const modular<T>&) const throw(illegal_operation);
+      modular<T> operator+(const modular<T>&) const ;
+      modular<T> operator-(const modular<T>&) const ;
+      modular<T> operator*(const modular<T>&) const ;
+      modular<T> operator/(const modular<T>&) const ;
       
       // complex conjugate (?)
-      modular<T> operator!() const throw(illegal_operation);
-      modular<T> operator-() const throw(illegal_operation);
+      modular<T> operator!() const ;
+      modular<T> operator-() const ;
       
-      modular<T>& operator+=(const modular<T>&) throw(illegal_operation);
-      modular<T>& operator-=(const modular<T>&) throw(illegal_operation);
-      modular<T>& operator*=(const modular<T>&) throw(illegal_operation);
-      modular<T>& operator/=(const modular<T>&) throw(illegal_operation);
+      modular<T>& operator+=(const modular<T>&) ;
+      modular<T>& operator-=(const modular<T>&) ;
+      modular<T>& operator*=(const modular<T>&) ;
+      modular<T>& operator/=(const modular<T>&) ;
       
-      modular<T>& operator=(const modular<T>&) throw(illegal_operation);      
+      modular<T>& operator=(const modular<T>&) ;      
       
-      bool operator==(const modular<T>&) const throw(uncomparable);
-      bool operator!=(const modular<T>&) const throw(uncomparable);
-      bool operator>=(const modular<T>&) const throw(uncomparable);
-      bool operator<=(const modular<T>&) const throw(uncomparable);
-      bool operator< (const modular<T>&) const throw(uncomparable);
-      bool operator> (const modular<T>&) const throw(uncomparable);
+      bool operator==(const modular<T>&) const ;
+      bool operator!=(const modular<T>&) const ;
+      bool operator>=(const modular<T>&) const ;
+      bool operator<=(const modular<T>&) const ;
+      bool operator< (const modular<T>&) const ;
+      bool operator> (const modular<T>&) const ;
       
       // scalar operation
-      modular<T>& operator= (const T& s) throw(illegal_operation);
-      modular<T>  operator* (const T& s) const throw();
-      modular<T>  operator/ (const T& s) const throw(std::invalid_argument);
-      modular<T>& operator*=(const T& s) throw();
-      modular<T>& operator/=(const T& s) throw(std::invalid_argument);
+      modular<T>& operator= (const T& s) ;
+      modular<T>  operator* (const T& s) const ;
+      modular<T>  operator/ (const T& s) const ;
+      modular<T>& operator*=(const T& s) ;
+      modular<T>& operator/=(const T& s) ;
       
       template <typename A>
-      friend modular<A> operator*(const A& s, const modular<A>&) throw(std::invalid_argument);
+      friend modular<A> operator*(const A& s, const modular<A>&) ;
       
-      modular<T>& abs() throw();      
+      modular<T>& abs() ;      
       
       T& operator[](const unsigned int& index) 
-        throw(std::out_of_range, illegal_operation);
+        ;
       
       const T& operator[](const unsigned int& index) const
-        throw(std::out_of_range, illegal_operation);
+        ;
       
-      bool comparable() throw(){ return false; }
+      bool comparable() { return false; }
       
       private:
       
@@ -79,7 +79,7 @@ namespace whiteice
     
     
     template <typename T>
-      modular<T> operator*(const T& s, const modular<T>&) throw(std::invalid_argument);
+      modular<T> operator*(const T& s, const modular<T>&) ;
     
     template <typename T>
       std::ostream& operator<<(std::ostream& ios,
@@ -95,16 +95,16 @@ namespace whiteice
     
     
     extern template modular<unsigned int> operator*<unsigned int>
-      (const unsigned int& s, const modular<unsigned int>&) throw(std::invalid_argument);
+      (const unsigned int& s, const modular<unsigned int>&) ;
     
     extern template modular<unsigned short> operator*<unsigned short>
-      (const unsigned short& s, const modular<unsigned short>&) throw(std::invalid_argument);
+      (const unsigned short& s, const modular<unsigned short>&) ;
     
     extern template modular<unsigned char> operator*<unsigned char>
-      (const unsigned char& s, const modular<unsigned char>&) throw(std::invalid_argument);
+      (const unsigned char& s, const modular<unsigned char>&) ;
     
     extern template modular<integer> operator*<integer>
-      (const integer& s, const modular<integer>&) throw(std::invalid_argument);
+      (const integer& s, const modular<integer>&) ;
     
     
     extern template std::ostream& operator<< <unsigned int>(std::ostream& ios, const whiteice::math::modular<unsigned int>&);

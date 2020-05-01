@@ -21,7 +21,7 @@ namespace whiteice
       virtual ~nnetwork_function();
       
       // returns input vectors dimension
-      virtual unsigned int dimension() const throw();
+      virtual unsigned int dimension() const ;
 
       // calculates value of function
       virtual T operator() (const math::vertex<T>& x) const;
@@ -37,7 +37,7 @@ namespace whiteice
       virtual function< math::vertex<T>, T>* clone() const;
 
       
-      virtual bool hasGradient() const throw();
+      virtual bool hasGradient() const ;
       
       // gets gradient at given point
       virtual math::vertex<T> grad(math::vertex<T>& x) const;

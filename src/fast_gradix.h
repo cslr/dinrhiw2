@@ -26,7 +26,7 @@ class radixnode {
  public:
   virtual ~radixnode(){ }
   
-  virtual const whiteice::dynamic_bitset& radixkey() throw() = 0;
+  virtual const whiteice::dynamic_bitset& radixkey()  = 0;
 };
 
 
@@ -58,7 +58,7 @@ class fast_gradix
   }
   
   
-  unsigned int size() const throw(){ return tableSize; }
+  unsigned int size() const { return tableSize; }
   
   
   /* changes source data table pointer and size of

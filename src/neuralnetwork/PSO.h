@@ -29,7 +29,7 @@ namespace whiteice
 		// range of input values
 		PSO(const optimized_function<T>& f,
 				std::vector<PSO<T>::range> r);
-		~PSO() throw();
+		~PSO() ;
 
 		struct range{ T min; T max; };
 
@@ -47,37 +47,37 @@ namespace whiteice
 
 		// iterations and swarm size
 		bool maximize(const unsigned int numIterations,
-				const unsigned int size) throw();
+				const unsigned int size) ;
       
 		bool minimize(const unsigned int numIterations,
-				const unsigned int size) throw();
+				const unsigned int size) ;
       
 		// with custom starting population
 		bool maximize(const unsigned int numIterations,
-				const std::vector< math::vertex<T> >& data) throw();
+				const std::vector< math::vertex<T> >& data) ;
 
 		// with custom starting population
 		bool minimize(const unsigned int numIterations,
-				const std::vector< math::vertex<T> >& data) throw();
+				const std::vector< math::vertex<T> >& data) ;
 
 		// continues old optimization task with
 		// additional 'numIterations'
-		bool improve(const unsigned int numIterations) throw();
+		bool improve(const unsigned int numIterations) ;
 
 		// returns best candidate found so far
-		void getCurrentBest(math::vertex<T>& best) const throw();
+		void getCurrentBest(math::vertex<T>& best) const ;
 
 		// returns best candidate found so far
-		void getBest(math::vertex<T>& best) const throw();
+		void getBest(math::vertex<T>& best) const ;
 
 		// samples vector from swarm according
 		// to goodness of swarm particles
 		const typename PSO<T>::particle& sample();
 
 		// swarm size
-		unsigned int size() const throw() PURE_FUNCTION;
+		unsigned int size() const  PURE_FUNCTION;
 
-		bool verbosity(bool v) throw(){
+		bool verbosity(bool v) {
 			verbose = v;
 			return verbose;
 		}
@@ -89,17 +89,17 @@ namespace whiteice
 		bool create_initial_population(const unsigned int size);
 
 		// creates initial particles from given data
-		bool setup_population(const std::vector< math::vertex<T> >& data) throw();
+		bool setup_population(const std::vector< math::vertex<T> >& data) ;
 
 
 		// optimization with given swarm [real stuff is here]
-		bool continue_optimization(const unsigned int numIterations) throw();
+		bool continue_optimization(const unsigned int numIterations) ;
 
 		// helper function - calculates percentage difference
 		T percentage_change(const math::vertex<T>& old_best,
 				const math::vertex<T>& new_best) const;
 
-		void clamp_values_to_range(PSO<T>::particle& p) const throw();
+		void clamp_values_to_range(PSO<T>::particle& p) const ;
 
 
 		T c1, c2; // parameters

@@ -25,8 +25,8 @@ namespace whiteice
 
     // allocates and frees id numbers, zero cannot be id
     // number -> zero means error
-    virtual unsigned int get(const std::string& name) const throw();
-    virtual bool free(const std::string& name, unsigned int id) const throw();
+    virtual unsigned int get(const std::string& name) const ;
+    virtual bool free(const std::string& name, unsigned int id) const ;
     
     // creates and frees id number domains
     // variable number is number of id numbers or zero if
@@ -36,12 +36,12 @@ namespace whiteice
     // and O('reserved numbers') for unlimited mode
     // 
     virtual bool create(const std::string& name,
-			unsigned int number) const throw();
+			unsigned int number) const ;
     
-    virtual bool free(const std::string& name) const throw();
+    virtual bool free(const std::string& name) const ;
     
     // unlimited (limited by memory/int size) number of id values
-    virtual bool create(const std::string& name) const throw();
+    virtual bool create(const std::string& name) const ;
     
     
     // returns true if domain exists

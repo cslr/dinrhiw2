@@ -36,21 +36,21 @@ namespace whiteice
       
       bool clusterize();
       
-      inline void setData(std::vector< math::vertex<T> >* data) throw()
+      inline void setData(std::vector< math::vertex<T> >* data) 
       { this->data = data; }
       
       inline void setProgramLogic(whiteice::HCLogic<Parameters, T>* logic)
       { this->logic = logic; }
       
-      inline const std::vector< whiteice::hcnode<Parameters, T>* >& getNodes() throw()
+      inline const std::vector< whiteice::hcnode<Parameters, T>* >& getNodes() 
       { return nodes; }
       
       private:
       
-      T distance(const  std::vector<T>& v0, const  std::vector<T>& v1) const throw();
-      T distance(const math::vertex<T>& v0, const math::vertex<T>& v1) const throw();
-      T distance(const  std::vector<T>& v0, const math::vertex<T>& v1) const throw();
-      T distance(const math::vertex<T>& v0, const  std::vector<T>& v1) const throw();
+      T distance(const  std::vector<T>& v0, const  std::vector<T>& v1) const ;
+      T distance(const math::vertex<T>& v0, const math::vertex<T>& v1) const ;
+      T distance(const  std::vector<T>& v0, const math::vertex<T>& v1) const ;
+      T distance(const math::vertex<T>& v0, const  std::vector<T>& v1) const ;
       
       std::vector< math::vertex<T> >* data;
       std::vector< hcnode<Parameters, T>* > nodes;

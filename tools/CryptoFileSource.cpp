@@ -126,7 +126,7 @@ CryptoFileSource<B>::~CryptoFileSource()
 
 /* returns number of blocks */
 template <unsigned int B>
-unsigned int CryptoFileSource<B>::size() const throw()
+unsigned int CryptoFileSource<B>::size() const 
 {
   if(filesize == 0){
     struct stat buf;
@@ -142,7 +142,7 @@ unsigned int CryptoFileSource<B>::size() const throw()
 
 
 template <unsigned int B>
-bool CryptoFileSource<B>::good() const throw()
+bool CryptoFileSource<B>::good() const 
 {
   if(ferror(file) != 0) return false;
   
@@ -170,7 +170,7 @@ void CryptoFileSource<B>::flush() const
 
 
 template <unsigned int B>
-bool CryptoFileSource<B>::write(const std::string& filename) const throw()
+bool CryptoFileSource<B>::write(const std::string& filename) const 
 {
   flush();
   

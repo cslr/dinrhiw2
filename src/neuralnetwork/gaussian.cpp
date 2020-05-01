@@ -42,7 +42,7 @@ namespace whiteice
   
   // creates copy of object
   template <typename T>
-  gaussian<T>* gaussian<T>::clone() const throw(std::bad_alloc)
+  gaussian<T>* gaussian<T>::clone() const 
   {
     gaussian<T> *g = new gaussian(mean_val, var_val);
     return g;
@@ -50,11 +50,11 @@ namespace whiteice
   
   
   template <typename T>
-  T& gaussian<T>::mean() throw(){ return mean_val; }
+  T& gaussian<T>::mean() { return mean_val; }
   
   
   template <typename T>
-  const T& gaussian<T>::mean() const throw(){ return mean_val; }
+  const T& gaussian<T>::mean() const { return mean_val; }
   
   
   template <typename T>

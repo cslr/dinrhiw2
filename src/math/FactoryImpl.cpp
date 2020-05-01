@@ -13,7 +13,7 @@ namespace whiteice
 {
   
   template <typename I, typename T>
-  FactoryImpl<I,T>::FactoryImpl() throw(std::logic_error){ }
+  FactoryImpl<I,T>::FactoryImpl() { }
   
   
   template <typename I, typename T>

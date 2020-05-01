@@ -29,7 +29,7 @@ namespace whiteice
     CRBM(const CRBM<T>& rbm);
     
     // creates 2-layer: V * H network
-    CRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
+    CRBM(unsigned int visible, unsigned int hidden) ;
     
     virtual ~CRBM();
     
@@ -61,8 +61,8 @@ namespace whiteice
     
     // load & saves CRBM data from/to file
     
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
     
     ////////////////////////////////////////////////////////////
     

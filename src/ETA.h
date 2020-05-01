@@ -18,11 +18,11 @@ namespace whiteice
     public:
       virtual ~ETA(){ }
       
-      virtual bool start(T begin, T end) throw() = 0;
-      virtual bool update(T current) throw() = 0;
+      virtual bool start(T begin, T end)  = 0;
+      virtual bool update(T current)  = 0;
       
       // ETA in seconds when the end value will be reached
-      virtual T estimate() const throw() = 0;
+      virtual T estimate() const  = 0;
       
     };
   

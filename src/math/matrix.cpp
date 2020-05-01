@@ -157,7 +157,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T> matrix<T>::operator+(const matrix<T>& M) const
-      throw(illegal_operation)
+      
     {
       if(M.numCols != numCols ||
 	 M.numRows != numRows)
@@ -174,7 +174,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T> matrix<T>::operator-(const matrix<T>& M) const
-      throw(illegal_operation)
+      
     {
       if(M.numCols != numCols || M.numRows != numRows)
 	throw illegal_operation("'-' operator: matrix size mismatch");
@@ -190,7 +190,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T> matrix<T>::operator*(const matrix<T>& M) const
-      throw(illegal_operation)
+      
     {	
       if(numCols != M.numRows)
 	throw illegal_operation("'*' operator: matrix size mismatch");
@@ -257,7 +257,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T> matrix<T>::operator/(const matrix<T>& M) const
-      throw(illegal_operation)
+      
     {
       matrix<T> R(*this);
       R /= M;
@@ -266,14 +266,14 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T> matrix<T>::operator!() const throw(illegal_operation){    
+    matrix<T> matrix<T>::operator!() const {    
       throw illegal_operation("'!'-operator");
     }
     
     
     template <typename T>
     matrix<T> matrix<T>::operator-() const
-      throw(illegal_operation)
+      
     {
       matrix<T> M(ysize(), xsize());
       
@@ -286,7 +286,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T>& matrix<T>::operator+=(const matrix<T>& M)
-      throw(illegal_operation)
+      
     {
       if(M.numCols != numCols || M.numRows != numRows)
 	throw illegal_operation("'+=' operator: matrix size mismatch");
@@ -300,7 +300,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T>& matrix<T>::operator-=(const matrix<T>& M)
-      throw(illegal_operation)
+      
     {
       if(M.numCols != numCols || M.numRows != numRows)
 	throw illegal_operation("'-=' operator: matrix size mismatch");
@@ -314,7 +314,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T>& matrix<T>::operator*=(const matrix<T>& M)
-      throw(illegal_operation)
+      
     {
       if(numCols != M.numRows)
 	throw illegal_operation("'*=' operator: matrix size mismatch");
@@ -407,7 +407,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator/=(const matrix<T>& m) throw(illegal_operation)
+    matrix<T>& matrix<T>::operator/=(const matrix<T>& m) 
     {
       // C BLAS OPTIMIZE ("/" operator, too)
       matrix<T> n(m);
@@ -422,7 +422,7 @@ namespace whiteice
     
 
     template <typename T>
-    matrix<T>& matrix<T>::operator=(const matrix<T>& M) throw(illegal_operation)
+    matrix<T>& matrix<T>::operator=(const matrix<T>& M) 
     {
       if(this != &M){ // no self-assignment
 	if(M.numCols != numCols) resize_x(M.numCols);
@@ -436,7 +436,7 @@ namespace whiteice
     
 #if 0    
     template <typename T>
-    matrix<T>& matrix<T>::operator=(matrix<T>&& t) throw(illegal_operation)
+    matrix<T>& matrix<T>::operator=(matrix<T>&& t) 
     {
       if(this == &t) return *this; // self-assignment
       
@@ -461,7 +461,7 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::operator==(const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != numCols || M.numRows != numRows)
 	return false; // throw illegal_operation("'==' operator: matrix size mismatch");
@@ -484,7 +484,7 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::operator!=(const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != numCols || M.numRows != numRows)
 	return true; // throw illegal_operation("'!=' operator: matrix size mismatch");
@@ -509,7 +509,7 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::operator>=(const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
 	throw illegal_operation("matrix '>=': not a 1x1 matrix ");
@@ -520,7 +520,7 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::operator<=(const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
 	throw illegal_operation("matrix '<=': not a 1x1 matrix");
@@ -531,7 +531,7 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::operator< (const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
 	throw illegal_operation("matrix  '<': not a 1x1 matrix");
@@ -542,7 +542,7 @@ namespace whiteice
   
     template <typename T>
     bool matrix<T>::operator> (const matrix<T>& M) const
-      throw(uncomparable)
+      
     {
       if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
 	throw illegal_operation("matrix  '>': not a 1x1 matrix");
@@ -555,7 +555,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator=(const T& s) throw(illegal_operation)
+    matrix<T>& matrix<T>::operator=(const T& s) 
     {
       const unsigned int LIMIT = numRows*numCols;
       
@@ -568,7 +568,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>  matrix<T>::operator* (const T& s) const throw()
+    matrix<T>  matrix<T>::operator* (const T& s) const 
     {      
       matrix<T> M(numRows,numCols);
       const unsigned int MSIZE = numRows*numCols;
@@ -600,7 +600,7 @@ namespace whiteice
     
     template <typename T>
     matrix<T> operator*(const T& s, const matrix<T>& N)
-      throw(std::invalid_argument)
+      
     {
       matrix<T> M(N.numRows, N.numCols);
       const unsigned int MSIZE = N.numRows*N.numCols;
@@ -632,7 +632,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>  matrix<T>::operator/ (const T& s) const throw(std::invalid_argument)
+    matrix<T>  matrix<T>::operator/ (const T& s) const 
     {
       matrix<T> M(numRows, numCols);
       const unsigned int MSIZE = numRows*numCols;
@@ -664,7 +664,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator*=(const T& s) throw()
+    matrix<T>& matrix<T>::operator*=(const T& s) 
     {
       const unsigned int MSIZE = numRows*numCols;
       
@@ -695,7 +695,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator/=(const T& s) throw(std::invalid_argument)
+    matrix<T>& matrix<T>::operator/=(const T& s) 
     {
       const unsigned int MSIZE = numRows*numCols;
       T ss = T(1.0)/s;
@@ -730,7 +730,7 @@ namespace whiteice
     
     template <typename T>
     vertex<T> matrix<T>::operator*(const vertex<T>& v) const
-      throw(std::invalid_argument)
+      
     {
       if(v.size() == 0)
 	throw std::invalid_argument("multiply: incompatible vertex/matrix sizes");
@@ -800,7 +800,7 @@ namespace whiteice
 
     // crossproduct matrix M(z): M(z) * y = z x y
     template <typename T>
-    matrix<T>& matrix<T>::crossproduct(const vertex<T>& v) throw(std::domain_error)
+    matrix<T>& matrix<T>::crossproduct(const vertex<T>& v) 
     {
       if(v.size() != 3)
 	throw std::out_of_range("crossproduct() requires 3 dimensions");
@@ -825,7 +825,7 @@ namespace whiteice
     
     // euclidean rotation XYZ matrix
     template <typename T>
-    matrix<T>& matrix<T>::rotation(const T& xr, const T& yr, const T& zr) throw()
+    matrix<T>& matrix<T>::rotation(const T& xr, const T& yr, const T& zr) 
     {
       if( (xsize() != 3 && ysize() != 3) ||
 	  (xsize() != 4 && ysize() != 4) ){
@@ -867,7 +867,7 @@ namespace whiteice
     
     // 4x4 translation matrix
     template <typename T>
-    matrix<T>& matrix<T>::translation(const T& dx, const T& dy, const T& dz) throw()
+    matrix<T>& matrix<T>::translation(const T& dx, const T& dy, const T& dz) 
     {
       if(ysize() != 4){
 	if(!resize_y(4)) throw std::bad_alloc();
@@ -890,7 +890,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::abs() throw()
+    matrix<T>& matrix<T>::abs() 
     {
       const unsigned int N = numRows*numCols;
       
@@ -903,7 +903,7 @@ namespace whiteice
     
   
     template <typename T>
-    matrix<T>& matrix<T>::transpose() throw()
+    matrix<T>& matrix<T>::transpose() 
     {
       const matrix<T> A(*this);
       this->resize(A.xsize(), A.ysize());
@@ -976,7 +976,7 @@ namespace whiteice
     
     // calculates hermitian matrix (conjugate transpose matrix)
     template <typename T>
-    matrix<T>& matrix<T>::hermite() throw()
+    matrix<T>& matrix<T>::hermite() 
     {
       this->transpose();
 
@@ -998,7 +998,7 @@ namespace whiteice
     
     
     template <typename T>
-    T matrix<T>::det() const throw(std::logic_error)
+    T matrix<T>::det() const 
     {
       if(ysize() != xsize())
 	throw std::logic_error("matrix::determinate() - non square matrix");
@@ -1068,7 +1068,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool  matrix<T>::inv() throw()
+    bool  matrix<T>::inv() 
     {
       // simple and slow: gaussian elimination - works for small matrixes
       // big ones: start to use atlas (don't bother to reinvent wheel)
@@ -1153,7 +1153,7 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>& matrix<T>::pseudoinverse(const T machine_epsilon) throw()
+    matrix<T>& matrix<T>::pseudoinverse(const T machine_epsilon) 
     {
 #if 1
       // calculates pseudoinverse using symmetric_pseudoinverse
@@ -1259,7 +1259,7 @@ namespace whiteice
 
 
     template <typename T>
-    bool matrix<T>::symmetric_pseudoinverse(const T machine_epsilon) throw()
+    bool matrix<T>::symmetric_pseudoinverse(const T machine_epsilon) 
     {
       // TODO: fix symmetric_eig to work with complex numbers!!! so the compilation would work
       assert(1); 
@@ -1336,7 +1336,7 @@ namespace whiteice
     
     
     template <typename T>
-    T matrix<T>::trace() const throw(std::logic_error)
+    T matrix<T>::trace() const 
     {
       if(numCols != numRows)
 	throw std::logic_error("matrix::trace() non square matrix");
@@ -1355,7 +1355,7 @@ namespace whiteice
 
     
     template <typename T>
-    void matrix<T>::diag(vertex<T>& diagonal) const throw()
+    void matrix<T>::diag(vertex<T>& diagonal) const 
     {
       if(numCols < numRows)
 	diagonal.resize(numCols);
@@ -1409,7 +1409,7 @@ namespace whiteice
     
     
     template <typename T>
-    unsigned int matrix<T>::xsize() const throw()
+    unsigned int matrix<T>::xsize() const 
     {
       if(numRows <= 0) return 0;
       
@@ -1418,20 +1418,20 @@ namespace whiteice
     
     
     template <typename T>
-    unsigned int matrix<T>::size() const throw()
+    unsigned int matrix<T>::size() const 
     {
       return numRows*numCols;
     }
     
     template <typename T>
-    unsigned int matrix<T>::ysize() const throw()
+    unsigned int matrix<T>::ysize() const 
     {
       return numRows;
     }
     
     
     template <typename T>
-    bool matrix<T>::resize(unsigned int y, unsigned int x) throw()
+    bool matrix<T>::resize(unsigned int y, unsigned int x) 
     {
       if(!resize_x(x)) return false;
       if(!resize_y(y)) return false;      
@@ -1441,7 +1441,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::resize_x(unsigned int d) throw()
+    bool matrix<T>::resize_x(unsigned int d) 
     {      
       if(d == numCols){
 	return true;
@@ -1499,7 +1499,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::resize_y(unsigned int d) throw()
+    bool matrix<T>::resize_y(unsigned int d) 
     {
       T* new_area = 0;
       if(d == numRows){
@@ -1532,7 +1532,7 @@ namespace whiteice
     
     template <typename T>
     T matrix<T>::rownorm(unsigned int y, unsigned int x1, unsigned int x2) const
-      throw(std::out_of_range)
+      
     {
       if(x2 < x1 || x1 >= numCols || y >= numRows)
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
@@ -1564,7 +1564,7 @@ namespace whiteice
     
     template <typename T>
     T matrix<T>::colnorm(unsigned int x, unsigned int y1, unsigned int y2)
-      const throw(std::out_of_range)
+      const 
     {
       if(y2 < y1 || y1 >= numRows || x >= numCols)
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
@@ -1598,7 +1598,7 @@ namespace whiteice
     // copies row data to a given vector, M(y,x1:x2) -> v
     template <typename T>
     void matrix<T>::rowcopyto(vertex<T>& v, unsigned int y, unsigned int x1, unsigned int x2)
-      const throw(std::out_of_range)
+      const 
     {
       if(x2 < x1 || x1 >= numCols || y >= numRows)
 	throw std::out_of_range("rowcopyto(): bad indeces to matrix");
@@ -1631,7 +1631,7 @@ namespace whiteice
     // copies column data to a given vector, M(y1:y2,x) -> v
     template <typename T>
     void matrix<T>::colcopyto(vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
-      const throw(std::out_of_range)
+      const 
     {
       if(y2 < y1 || y1 >= numRows || x >= numCols)
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
@@ -1664,7 +1664,7 @@ namespace whiteice
     
     template <typename T>
     void matrix<T>::rowcopyfrom(const vertex<T>& v, unsigned int y, unsigned int x1, unsigned int x2)
-      throw(std::out_of_range)
+      
     {
       if(x2 >= numCols) x2 = numCols - 1;
       if(x2 < x1 || x1 >= numCols || y >= numRows || v.size() != x2 - x1 + 1)
@@ -1692,7 +1692,7 @@ namespace whiteice
     
     template <typename T>
     void matrix<T>::colcopyfrom(const vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
-      throw(std::out_of_range)
+      
     {
       if(y2 >= numRows) y2 = numRows - 1;
       if(y2 < y1 || y1 >= numRows || x >= numCols || v.size() != y2 - y1 + 1)
@@ -1792,7 +1792,7 @@ namespace whiteice
     
     
     template <typename T>
-    void matrix<T>::normalize() throw()
+    void matrix<T>::normalize() 
     {
       // normalizes each row to have unit length
       // normalization of each column: transpose + normalize  + transpose is slow
@@ -1870,13 +1870,13 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::comparable() throw()
+    bool matrix<T>::comparable() 
     {
       return false;
     }
 
     template <typename T>
-    void matrix<T>::toString(std::string& line) const throw()
+    void matrix<T>::toString(std::string& line) const 
     {
       if(this->ysize() == 0 && this->xsize() == 0){ line = ""; return; }
       if(this->ysize() == 1 && this->xsize() == 1){
@@ -1915,7 +1915,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::compress() throw()
+    bool matrix<T>::compress() 
     {
       if(compressor != 0) return false; // already compressed
       
@@ -1941,7 +1941,7 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::decompress() throw()
+    bool matrix<T>::decompress() 
     {
       if(compressor == 0) return false; // not compressed
       
@@ -1962,14 +1962,14 @@ namespace whiteice
     
     
     template <typename T>
-    bool matrix<T>::iscompressed() const throw()
+    bool matrix<T>::iscompressed() const 
     {
       return (compressor != 0);
     }
     
     
     template <typename T>
-    float matrix<T>::ratio() const throw()
+    float matrix<T>::ratio() const 
     {
       if(compressor == 0) return 1.0f;
       return ( ((float)compressor->getTargetSize()) / ((float)(numRows*numCols*sizeof(T))) );
@@ -2020,32 +2020,32 @@ namespace whiteice
     template class matrix< blas_complex<double> >;
     
     
-    template matrix<float> operator*<float>(const float&, const matrix<float>&) throw(std::invalid_argument);
-    template matrix<double> operator*<double>(const double&, const matrix<double>&) throw(std::invalid_argument);
+    template matrix<float> operator*<float>(const float&, const matrix<float>&) ;
+    template matrix<double> operator*<double>(const double&, const matrix<double>&) ;
     template matrix<complex<float> > operator*<complex<float> >(const complex<float>&, const matrix<complex<float> >&)
-      throw(std::invalid_argument);    
+      ;    
     template matrix<complex<double> > operator*<complex<double> >(const complex<double>&, const matrix<complex<double> >&)
-      throw(std::invalid_argument);
+      ;
     
-    //template matrix<int> operator*<int>(const int&, const matrix<int>&) throw(std::invalid_argument);
-    //template matrix<char> operator*<char>(const char&, const matrix<char>&) throw(std::invalid_argument);
+    //template matrix<int> operator*<int>(const int&, const matrix<int>&) ;
+    //template matrix<char> operator*<char>(const char&, const matrix<char>&) ;
     //template matrix<unsigned int> operator*<unsigned int>(const unsigned int&, const matrix<unsigned int>&)
-    //  throw(std::invalid_argument);
+    //  ;
     //template matrix<unsigned char> operator*<unsigned char>(const unsigned char&, const matrix<unsigned char>&)
-    //  throw(std::invalid_argument);
+    //  ;
     
     
     template matrix<blas_real<float> > operator*<blas_real<float> >
-      (const blas_real<float>&, const matrix<blas_real<float> >&) throw(std::invalid_argument);
+      (const blas_real<float>&, const matrix<blas_real<float> >&) ;
        
     template matrix<blas_real<double> > operator*<blas_real<double> >
-      (const blas_real<double>&, const matrix<blas_real<double> >&) throw(std::invalid_argument);
+      (const blas_real<double>&, const matrix<blas_real<double> >&) ;
     
     
     template matrix<blas_complex<float> > operator*<blas_complex<float> >
-      (const blas_complex<float>&, const matrix<blas_complex<float> >&) throw(std::invalid_argument);
+      (const blas_complex<float>&, const matrix<blas_complex<float> >&) ;
     template matrix<blas_complex<double> > operator*<blas_complex<double> >
-      (const blas_complex<double>&, const matrix<blas_complex<double> >&) throw(std::invalid_argument);
+      (const blas_complex<double>&, const matrix<blas_complex<double> >&) ;
         
     template std::ostream& operator<< <float>(std::ostream& ios, const matrix<float>& M);
     template std::ostream& operator<< <double>(std::ostream& ios, const matrix<double>& M);

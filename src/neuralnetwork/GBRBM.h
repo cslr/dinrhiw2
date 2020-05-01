@@ -27,7 +27,7 @@ namespace whiteice {
   GBRBM(const GBRBM<T>& rbm);
   
   // creates 2-layer: V * H network
-  GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
+  GBRBM(unsigned int visible, unsigned int hidden) ;
   
   virtual ~GBRBM();
   
@@ -39,8 +39,8 @@ namespace whiteice {
   
   ////////////////////////////////////////////////////////////
   
-  unsigned int getVisibleNodes() const throw();
-  unsigned int getHiddenNodes() const throw();
+  unsigned int getVisibleNodes() const ;
+  unsigned int getHiddenNodes() const ;
   
   void getVisible(math::vertex<T>& v) const;
   bool setVisible(const math::vertex<T>& v);
@@ -78,8 +78,8 @@ namespace whiteice {
   void getParameters(math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& var) const;
   bool setParameters(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b, const math::vertex<T>& var);
 
-  void getVariance(math::vertex<T>& var) const throw();
-  bool setVariance(const math::vertex<T>& var) throw();
+  void getVariance(math::vertex<T>& var) const ;
+  bool setVariance(const math::vertex<T>& var) ;
 
   bool setLogVariance(const math::vertex<T>& z);
   bool getLogVariance(math::vertex<T>& z) const;
@@ -115,7 +115,7 @@ namespace whiteice {
   bool setUTemperature(const T temperature);
     T getUTemperature();
   
-  unsigned int qsize() const throw(); // size of q vector q = [a, b, z, vec(W)]
+  unsigned int qsize() const ; // size of q vector q = [a, b, z, vec(W)]
   
   // converts (W, a, b, z) parameters into q vector
   bool convertParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
@@ -132,11 +132,11 @@ namespace whiteice {
   // keeps parameters within sane values so that computations dont run into errors
   void safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& z, math::matrix<T>& W) const;
   
-  T U(const math::vertex<T>& q) const throw(); // calculates U(q) = -log(P(data|q))
+  T U(const math::vertex<T>& q) const ; // calculates U(q) = -log(P(data|q))
   
   T Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const;
 
-  math::vertex<T> Ugrad(const math::vertex<T>& q) throw(); // calculates grad(U(q))
+  math::vertex<T> Ugrad(const math::vertex<T>& q) ; // calculates grad(U(q))
 
   // prints min/max values of paramters to log
   bool diagnostics() const;
@@ -144,8 +144,8 @@ namespace whiteice {
   ////////////////////////////////////////////////////////////
     // load & saves RBM data from/to file
   
-  bool load(const std::string& filename) throw();
-  bool save(const std::string& filename) const throw();
+  bool load(const std::string& filename) ;
+  bool save(const std::string& filename) const ;
   
   protected:
   // Ugrad..

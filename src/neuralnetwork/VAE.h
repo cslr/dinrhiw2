@@ -36,11 +36,11 @@ namespace whiteice
     VAE(const VAE<T>& vae);
     VAE(const nnetwork<T>& encoder, // x -> (z_mean, z_var)
 	const nnetwork<T>& decoder) // z -> (x_mean)
-      throw(std::invalid_argument);
+      ;
 
     VAE(const std::vector<unsigned int> encoderArchitecture,
 	const std::vector<unsigned int> decoderArchitecture)
-    throw(std::invalid_argument);
+    ;
     
     void getModel(nnetwork<T>& encoder,
 		  nnetwork<T>& decoder);
@@ -89,8 +89,8 @@ namespace whiteice
 			   math::vertex<T>& pgradient);
 
 
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
 
     private:
     

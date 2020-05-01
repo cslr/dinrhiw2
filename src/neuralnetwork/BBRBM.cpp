@@ -45,7 +45,7 @@ BBRBM<T>::BBRBM(const BBRBM<T>& rbm)
 
 // creates 2-layer: V * H network
 template <typename T>
-BBRBM<T>::BBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument)
+BBRBM<T>::BBRBM(unsigned int visible, unsigned int hidden) 
 {
   if(visible == 0 || hidden == 0)
     throw std::invalid_argument("invalid network architecture");
@@ -849,7 +849,7 @@ T BBRBM<T>::reconstructionError(const std::vector< math::vertex<T> >& samples,
 				const math::vertex<T>& a,
 				const math::vertex<T>& b,
 				// weight matrix (parameters) to use
-				const math::matrix<T>& W) const throw()
+				const math::matrix<T>& W) const 
 {
   T error = T(0.0);
 
@@ -869,7 +869,7 @@ template <typename T>
 T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
 				const math::vertex<T>& a,
 				const math::vertex<T>& b,
-				const math::matrix<T>& W) const throw()
+				const math::matrix<T>& W) const 
 {
   try{
     math::vertex<T> v(this->v);
@@ -927,7 +927,7 @@ bool BBRBM<T>::setUData(const std::vector< math::vertex<T> >& samples)
 }
 
 template <typename T>
-unsigned int BBRBM<T>::qsize() const throw() // size of q vector q = [vec(W)]
+unsigned int BBRBM<T>::qsize() const  // size of q vector q = [vec(W)]
 {
   return (a.size() + b.size() + W.xsize()*W.ysize());
 }
@@ -1018,7 +1018,7 @@ void BBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b,
 }
   
 template <typename T>
-T BBRBM<T>::U(const math::vertex<T>& q) const throw()
+T BBRBM<T>::U(const math::vertex<T>& q) const 
 {
   math::vertex<T> a;
   math::vertex<T> b;
@@ -1032,7 +1032,7 @@ T BBRBM<T>::U(const math::vertex<T>& q) const throw()
 
 // uses CD-1 to estimate gradient
 template <typename T>
-math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
+math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) 
 {
   math::vertex<T> a;
   math::vertex<T> b;
@@ -1239,7 +1239,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q) throw()
 
 // load & saves RBM data from/to file
 template <typename T>
-bool BBRBM<T>::load(const std::string& filename) throw()
+bool BBRBM<T>::load(const std::string& filename) 
 {
     whiteice::dataset<T> file;
 
@@ -1293,7 +1293,7 @@ bool BBRBM<T>::load(const std::string& filename) throw()
 }
 
 template <typename T>
-bool BBRBM<T>::save(const std::string& filename) const throw()
+bool BBRBM<T>::save(const std::string& filename) const 
 {
   whiteice::dataset<T> file;
 

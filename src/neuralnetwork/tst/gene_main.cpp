@@ -18,9 +18,9 @@
 using namespace whiteice;
 
 template <typename T>
-void show_results(const GeneticAlgorithm<T>* GA) throw();
+void show_results(const GeneticAlgorithm<T>* GA) ;
 
-void show_results(const class GA* GA) throw();
+void show_results(const class GA* GA) ;
 
 
 
@@ -117,7 +117,7 @@ int main(int argc, char ** argv, char **envp)
 
 
 template <typename T>
-void show_results(const GeneticAlgorithm<T>* GA) throw()
+void show_results(const GeneticAlgorithm<T>* GA) 
 {
   T input;
   
@@ -128,7 +128,7 @@ void show_results(const GeneticAlgorithm<T>* GA) throw()
 
 
 
-void show_results(const class GA* GA) throw()
+void show_results(const class GA* GA) 
 {
   dynamic_bitset input;
   

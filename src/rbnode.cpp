@@ -26,7 +26,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool rbnode<T>::leaf() const throw()
+  bool rbnode<T>::leaf() const 
   {
     if(!left & !right) return true;
     return false;
@@ -37,7 +37,7 @@ namespace whiteice
    * (red-black tree) left rotates given node
    */
   template <typename T>
-  bool rbnode<T>::left_rotate(rbtree<T>* tree) throw()
+  bool rbnode<T>::left_rotate(rbtree<T>* tree) 
   {
     if(!right) return false;
     
@@ -67,7 +67,7 @@ namespace whiteice
    * right rotates red black tree
    */
   template <typename T>
-  bool rbnode<T>::right_rotate(rbtree<T>* tree) throw()
+  bool rbnode<T>::right_rotate(rbtree<T>* tree) 
   {
     if(!left) return false;
     

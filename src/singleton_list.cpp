@@ -13,14 +13,14 @@ namespace whiteice
   /******************************************************/
   /* singleton listable */
   
-  singleton_listable::singleton_listable() throw()
+  singleton_listable::singleton_listable() 
   { // -> not directly creatable
     
     singleton_list::add(*this);
   }
   
   
-  singleton_listable::~singleton_listable() throw()
+  singleton_listable::~singleton_listable() 
   {
     singleton_list::remove(*this);
   }
@@ -37,7 +37,7 @@ namespace whiteice
   static singleton_list slist;
   
   
-  singleton_list::singleton_list() throw(std::logic_error)
+  singleton_list::singleton_list() 
   {
     if(created)
       throw std::logic_error("Only one singleton list can be created");
@@ -68,7 +68,7 @@ namespace whiteice
   
   
   
-  bool singleton_list::add(singleton_listable& sl) throw()
+  bool singleton_list::add(singleton_listable& sl) 
   {
     if(!created || no_inputs) return false;
     
@@ -77,7 +77,7 @@ namespace whiteice
   }
   
   
-  bool singleton_list::remove(singleton_listable& sl) throw()
+  bool singleton_list::remove(singleton_listable& sl) 
   {
     if(!created || no_inputs) return false;
     

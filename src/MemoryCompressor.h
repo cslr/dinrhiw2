@@ -47,15 +47,15 @@ namespace whiteice
       void clearTarget();
       void clear();
       
-      float ratio() const throw();
+      float ratio() const ;
       
       // compresses data. this *may* allocate memory
       // which caller must free() (getTarget())
-      bool compress() throw();
+      bool compress() ;
       
       // decompressed data. this *may* allocated memory
       // which caller must free() (getMemory())
-      bool decompress() throw();
+      bool decompress() ;
       
     private:
       

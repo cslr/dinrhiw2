@@ -90,7 +90,7 @@ namespace whiteice
   template <typename T>
   nnetwork<T>::nnetwork(const std::vector<unsigned int>& nnarch,
 			const typename nnetwork<T>::nonLinearity nl)
-    throw(std::invalid_argument)
+    
   {
     if(nnarch.size() < 2)
       throw std::invalid_argument("invalid network architecture");
@@ -281,13 +281,13 @@ namespace whiteice
 
   // returns input and output dimensions of neural network
   template <typename T>
-  unsigned int nnetwork<T>::input_size() const throw(){
+  unsigned int nnetwork<T>::input_size() const {
     if(arch.size() > 0) return arch[0];
     else return 0;
   }
   
   template <typename T>
-  unsigned int nnetwork<T>::output_size() const throw(){
+  unsigned int nnetwork<T>::output_size() const {
     unsigned int index = arch.size()-1;
     
     if(arch.size() > 0) return arch[index];
@@ -295,7 +295,7 @@ namespace whiteice
   }
 
   template <typename T>
-  unsigned int nnetwork<T>::gradient_size() const throw()
+  unsigned int nnetwork<T>::gradient_size() const 
   {
     return size; // number of parameters in neural network
   }
@@ -1128,7 +1128,7 @@ namespace whiteice
   
   
   template <typename T> // non-linearity used in neural network
-  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  inline T nnetwork<T>::nonlin(const T& input, unsigned int layer, unsigned int neuron) const 
   {
     assert(layer < getLayers());
     assert(neuron < getNeurons(layer));
@@ -1224,7 +1224,7 @@ namespace whiteice
   
   
   template <typename T> // derivat of non-linearity used in neural network
-  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const 
   {
     assert(layer < getLayers());
     assert(neuron < getNeurons(layer));
@@ -1325,7 +1325,7 @@ namespace whiteice
 
   
   template <typename T>
-  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw()
+  inline T nnetwork<T>::inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const 
   {
     // inverse of non-linearity used
 #if 0
@@ -1407,7 +1407,7 @@ namespace whiteice
   //////////////////////////////////////////////////////////////////////
 
   template <typename T>
-  bool nnetwork<T>::save(const std::string& filename) const throw(){
+  bool nnetwork<T>::save(const std::string& filename) const {
     try{
       whiteice::conffile configuration;
       
@@ -1519,7 +1519,7 @@ namespace whiteice
 
   // load neuralnetwork data from file
   template <typename T>
-  bool nnetwork<T>::load(const std::string& filename) throw(){
+  bool nnetwork<T>::load(const std::string& filename) {
     try{
       whiteice::conffile configuration;
       std::vector<std::string> strings;
@@ -1698,7 +1698,7 @@ namespace whiteice
   
   // exports and imports neural network parameters to/from vertex
   template <typename T>
-  bool nnetwork<T>::exportdata(math::vertex<T>& v) const throw(){
+  bool nnetwork<T>::exportdata(math::vertex<T>& v) const {
     v.resize(size);
     
     // NN exports TO vertex, vertex imports FROM NN
@@ -1706,7 +1706,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool nnetwork<T>::importdata(const math::vertex<T>& v) throw(){
+  bool nnetwork<T>::importdata(const math::vertex<T>& v) {
     if(v.size() != size)
       return false;
     
@@ -1727,20 +1727,20 @@ namespace whiteice
   
   // number of dimensions used by import/export
   template <typename T>
-  unsigned int nnetwork<T>::exportdatasize() const throw(){
+  unsigned int nnetwork<T>::exportdatasize() const {
     return size;
   }
 
   ////////////////////////////////////////////////////////////////////////////
   
   template <typename T>
-  unsigned int nnetwork<T>::getLayers() const throw(){
+  unsigned int nnetwork<T>::getLayers() const {
     return (arch.size()-1); 
   }
 
   // number of neurons per layer
   template <typename T>
-  unsigned int nnetwork<T>::getNeurons(unsigned int layer) const throw()
+  unsigned int nnetwork<T>::getNeurons(unsigned int layer) const 
   {
     if(layer+1 >= arch.size()) return 0;
     return arch[layer+1];
@@ -1748,14 +1748,14 @@ namespace whiteice
 
   // number of neurons per layer
   template <typename T>
-  unsigned int nnetwork<T>::getInputs(unsigned int layer) const throw()
+  unsigned int nnetwork<T>::getInputs(unsigned int layer) const 
   {
     if(layer >= arch.size()-1) return 0;
     return arch[layer];
   }
 
   template <typename T>
-  bool nnetwork<T>::getBias(math::vertex<T>& b, unsigned int layer) const throw()
+  bool nnetwork<T>::getBias(math::vertex<T>& b, unsigned int layer) const 
   {
     if(layer+1 >= arch.size()) return false;
 
@@ -1778,7 +1778,7 @@ namespace whiteice
 
   
   template <typename T>
-  bool nnetwork<T>::setBias(const math::vertex<T>& b, unsigned int layer) throw()
+  bool nnetwork<T>::setBias(const math::vertex<T>& b, unsigned int layer) 
   {
     if(layer+1 >= arch.size()) return false;
 
@@ -1801,7 +1801,7 @@ namespace whiteice
   
 
   template <typename T>
-  bool nnetwork<T>::getWeights(math::matrix<T>& w, unsigned int layer) const throw()
+  bool nnetwork<T>::getWeights(math::matrix<T>& w, unsigned int layer) const 
   {
     if(layer+1 >= arch.size()) return false;
 
@@ -1823,7 +1823,7 @@ namespace whiteice
 
   
   template <typename T>
-  bool nnetwork<T>::setWeights(const math::matrix<T>& w, unsigned int layer) throw()
+  bool nnetwork<T>::setWeights(const math::matrix<T>& w, unsigned int layer) 
   {
     if(layer+1 >= arch.size()) return false;
 
@@ -1858,7 +1858,7 @@ namespace whiteice
   }
 
   template <typename T>
-  typename nnetwork<T>::nonLinearity nnetwork<T>::getNonlinearity(unsigned int layer) const throw()
+  typename nnetwork<T>::nonLinearity nnetwork<T>::getNonlinearity(unsigned int layer) const 
   {
     if(layer >= nonlinearity.size()) return pureLinear; // silent failure..
 
@@ -1876,13 +1876,13 @@ namespace whiteice
   }
   
   template <typename T>
-  void nnetwork<T>::getNonlinearity(std::vector<nonLinearity>& nls) const throw()
+  void nnetwork<T>::getNonlinearity(std::vector<nonLinearity>& nls) const 
   {
     nls = nonlinearity;
   }
 
   template <typename T>
-  bool nnetwork<T>::setNonlinearity(const std::vector<nonLinearity>& nls) throw()
+  bool nnetwork<T>::setNonlinearity(const std::vector<nonLinearity>& nls) 
   {
     if(nonlinearity.size() != nls.size()) return false;
 
@@ -2027,7 +2027,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int nnetwork<T>::getSamplesCollected() const throw()
+  unsigned int nnetwork<T>::getSamplesCollected() const 
   {
     if(samples.size() > 0)
       return samples[0].size();
@@ -2036,7 +2036,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer, unsigned int MAXSAMPLES) const throw()
+  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer, unsigned int MAXSAMPLES) const 
   {
     if(layer >= this->samples.size()) return false;
 
@@ -2054,14 +2054,14 @@ namespace whiteice
   }
   
   template <typename T>
-  void nnetwork<T>::clearSamples() throw()
+  void nnetwork<T>::clearSamples() 
   {
     for(auto& s : samples)
       s.clear();
   }
 
   template <typename T>
-  bool nnetwork<T>::setDropOut(T probability) throw()
+  bool nnetwork<T>::setDropOut(T probability) 
   {
     if(probability <= T(0.0) || probability > T(1.0))
       return false; // we cannot set all neurons to be dropout neurons
@@ -2102,7 +2102,7 @@ namespace whiteice
   }
 
   template <typename T>
-  bool nnetwork<T>::removeDropOut(T probability) throw()
+  bool nnetwork<T>::removeDropOut(T probability) 
   {
     // scales weights according to retain_probability
     // (except the first layer and last layer where we keep all input/outputs)
@@ -2123,7 +2123,7 @@ namespace whiteice
 
   // remove all drop-out
   template <typename T>
-  void nnetwork<T>::clearDropOut() throw()
+  void nnetwork<T>::clearDropOut() 
   {
     retain_probability = T(1.0);
     dropout.clear();
@@ -2228,7 +2228,7 @@ namespace whiteice
   // changes NN to compressed form of operation or
   // back to normal non-compressed form
   template <typename T>  
-  bool nnetwork<T>::compress() throw(){
+  bool nnetwork<T>::compress() {
     if(compressed) return false;
     
     compressor = new MemoryCompressor();
@@ -2252,7 +2252,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnetwork<T>::decompress() throw(){
+  bool nnetwork<T>::decompress() {
     if(compressed == false) return false;
     
     if(compressor->decompress()){
@@ -2273,14 +2273,14 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnetwork<T>::iscompressed() const throw(){
+  bool nnetwork<T>::iscompressed() const {
     return compressed;
   }
   
   
   // returns compression ratio: compressed/orig
   template <typename T>
-  float nnetwork<T>::ratio() const throw(){
+  float nnetwork<T>::ratio() const {
     if(compressed) return compressor->ratio();
     else return 1.0f;
   }

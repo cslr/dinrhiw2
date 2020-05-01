@@ -17,7 +17,7 @@ namespace whiteice
     RSA::~RSA(){ }
     
     
-    bool RSA::encrypt(integer& data, const Keyschedule<integer>& k) throw()
+    bool RSA::encrypt(integer& data, const Keyschedule<integer>& k) 
     {
       //// must be public key
       //if(typeid(PublicPrivateKeyPair<integer>).before(typeid(k)) == false)
@@ -48,7 +48,7 @@ namespace whiteice
     }
     
     
-    bool RSA::decrypt(integer& data, const Keyschedule<integer>& k) throw()
+    bool RSA::decrypt(integer& data, const Keyschedule<integer>& k) 
     {
       try{
 	
@@ -71,7 +71,7 @@ namespace whiteice
     }
     
     
-    bool RSA::encrypt(data_source<integer>& data, const Keyschedule<integer>& k) throw()
+    bool RSA::encrypt(data_source<integer>& data, const Keyschedule<integer>& k) 
     {
       try{
 	
@@ -94,7 +94,7 @@ namespace whiteice
     }
     
     
-    bool RSA::decrypt(data_source<integer>& data, const Keyschedule<integer>& k) throw()
+    bool RSA::decrypt(data_source<integer>& data, const Keyschedule<integer>& k) 
     {
       try{
 	
@@ -201,32 +201,32 @@ namespace whiteice
     
     
 
-    const std::vector<integer>& RSAKey::publickey() const throw()
+    const std::vector<integer>& RSAKey::publickey() const 
     {
       return public_keydata;
     }
     
 
-    const std::vector<integer>& RSAKey::privatekey() const throw()
+    const std::vector<integer>& RSAKey::privatekey() const 
     {
       return private_keydata;
     }
     
     
 
-    unsigned int RSAKey::size() const throw()
+    unsigned int RSAKey::size() const 
     {
       return (private_keydata.size() + public_keydata.size());
     }
     
 
-    unsigned int RSAKey::keybits() const throw()
+    unsigned int RSAKey::keybits() const 
     {
       return bits;
     }
     
 
-    const integer& RSAKey::operator[](unsigned int n) const throw(std::out_of_range)
+    const integer& RSAKey::operator[](unsigned int n) const 
     {
       if(n >= private_keydata.size() + public_keydata.size())
 	throw std::out_of_range("Error no so many key parameter values in RSA");
@@ -249,7 +249,7 @@ namespace whiteice
     /**********************************************************************/
 
     
-    void RSAKey::generate_prime(integer& a, unsigned int a_bits) const throw()
+    void RSAKey::generate_prime(integer& a, unsigned int a_bits) const 
     {
       do{
 	a = 0;
@@ -266,7 +266,7 @@ namespace whiteice
     }
 
     
-    bool RSAKey::random_bit() const throw()
+    bool RSAKey::random_bit() const 
     {
       // terrible unsecure way to generate bits
       // (useful for testing)
@@ -276,7 +276,7 @@ namespace whiteice
     
     
     void RSAKey::choose_random_mod_invertible_number(integer& x,
-						     const integer& phi) const throw()
+						     const integer& phi) const 
     {
       // generates equally probable
       // integer x E [1, phi[  gcd(x,phi) = 1
@@ -298,7 +298,7 @@ namespace whiteice
     }
 
     
-    void RSAKey::reset(integer& a) const throw()
+    void RSAKey::reset(integer& a) const 
     {
       const unsigned int B = a.bits();
       

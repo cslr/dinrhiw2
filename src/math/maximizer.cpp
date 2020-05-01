@@ -23,7 +23,7 @@ namespace whiteice
     
     // symmetrizes near symmetric matrix
     template <typename T>
-    void symmetrize(matrix<T>& M) throw()
+    void symmetrize(matrix<T>& M) 
     {
       const unsigned int DY = M.ysize();
       
@@ -65,7 +65,7 @@ namespace whiteice
     
     
     template <typename T>
-    T StochasticOptimizer<T>::calculate(vertex<T>& v) const throw()
+    T StochasticOptimizer<T>::calculate(vertex<T>& v) const 
     {
       return f->calculate(P*v + mean);
     }
@@ -74,7 +74,7 @@ namespace whiteice
     // does further optimization by using n secs of CPU time
     template <typename T>
     unsigned int StochasticOptimizer<T>::optimize(whiteice::optimized_function<T>* f,
-					       float secs) throw()
+					       float secs) 
     {
       srand(time(0));
       
@@ -322,20 +322,20 @@ namespace whiteice
     
 
     template <typename T>
-    void StochasticOptimizer<T>::initialize() throw(){ assert(0); }
+    void StochasticOptimizer<T>::initialize() { assert(0); }
     
     template <typename T>
-    void StochasticOptimizer<T>::generate() throw(){ assert(0); }
+    void StochasticOptimizer<T>::generate() { assert(0); }
     
     template <typename T>
-    const vertex<T>& StochasticOptimizer<T>::getInternalSolution() const throw()
+    const vertex<T>& StochasticOptimizer<T>::getInternalSolution() const 
     {
       return tr_solution;
     }
     
     
     template <typename T>
-    float StochasticOptimizer<T>::getTime() const throw(){
+    float StochasticOptimizer<T>::getTime() const {
 #ifndef WINOS
       struct tms t1;
       
@@ -380,14 +380,14 @@ namespace whiteice
     
     // initialization
     template <typename T>
-    void IHRSearch<T>::initialize() throw()
+    void IHRSearch<T>::initialize() 
     {
       dir.resize(this->dimensions);
     }
     
     
     template <typename T>
-    void IHRSearch<T>::generate() throw()
+    void IHRSearch<T>::generate() 
     {
       T scaling, smin, smax;
       
@@ -453,7 +453,7 @@ namespace whiteice
     
     
     template <typename T>
-    void GradientDescent<T>::initialize() throw()
+    void GradientDescent<T>::initialize() 
     {
       step = T(0.01f);
       
@@ -465,7 +465,7 @@ namespace whiteice
     
     
     template <typename T>
-    void GradientDescent<T>::generate() throw()
+    void GradientDescent<T>::generate() 
     {
       // calculates smoothed aprox. gradient            
       T bestValue = T(-1000000000000000.0f);

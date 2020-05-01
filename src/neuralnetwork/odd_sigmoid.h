@@ -38,8 +38,8 @@ namespace whiteice
     
     
     // returns parameters
-    T get_scale() const throw();
-    T get_alpha() const throw();
+    T get_scale() const ;
+    T get_alpha() const ;
     
     private:
     

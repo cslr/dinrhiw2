@@ -24,17 +24,17 @@ public:
   }
   
   
-  ~single() throw()
+  ~single() 
   {
     std::cout << "single destroyed" << std::endl;
   }
   
-  const std::string& get() throw(){
+  const std::string& get() {
     return name;
   }
   
   
-  bool set(const char* str) throw(){
+  bool set(const char* str) {
     this->name = str;
     std::cout << "name changed - new name: "
 	      << str << std::endl;
@@ -42,7 +42,7 @@ public:
     return true;    
   }
   
-  bool set(std::string& name) throw(){
+  bool set(std::string& name) {
     this->name = name;
     std::cout << "name changed - new name: "
 	      << name << std::endl;
@@ -70,7 +70,7 @@ public:
   }
   
   bool request(const std::vector<int>& params,
-	       const whiteice::fac<server>& auth) throw()
+	       const whiteice::fac<server>& auth) 
   {
     if(!auth.valid()) return false;
     
@@ -87,7 +87,7 @@ public:
 private:
   bool has_access(const std::string& fid,
 		  const whiteice::fac_applicant<server>& a) 
-    const throw()
+    const 
   {
     
     if(fid != "request") return false;

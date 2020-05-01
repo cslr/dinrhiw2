@@ -161,7 +161,7 @@ namespace whiteice
   
   
   template < typename Parameters, typename T>
-  T HC<Parameters, T>::distance(const  std::vector<T>& v0, const  std::vector<T>& v1) const throw()
+  T HC<Parameters, T>::distance(const  std::vector<T>& v0, const  std::vector<T>& v1) const 
   {
     const unsigned int SIZE = v0.size();
     T result = T(0.0f);
@@ -174,7 +174,7 @@ namespace whiteice
 
   
   template < typename Parameters, typename T>
-  T HC<Parameters, T>::distance(const math::vertex<T>& v0, const math::vertex<T>& v1) const throw()
+  T HC<Parameters, T>::distance(const math::vertex<T>& v0, const math::vertex<T>& v1) const 
   {
     const unsigned int SIZE = v0.size();
     T result = T(0.0f);
@@ -187,7 +187,7 @@ namespace whiteice
   
   
   template < typename Parameters, typename T>
-  T HC<Parameters, T>::distance(const  std::vector<T>& v0, const math::vertex<T>& v1) const throw()
+  T HC<Parameters, T>::distance(const  std::vector<T>& v0, const math::vertex<T>& v1) const 
   {
     const unsigned int SIZE = v0.size();
     T result = T(0.0f);
@@ -200,7 +200,7 @@ namespace whiteice
   
   
   template < typename Parameters, typename T>
-  T HC<Parameters, T>::distance(const math::vertex<T>& v0, const  std::vector<T>& v1) const throw()
+  T HC<Parameters, T>::distance(const math::vertex<T>& v0, const  std::vector<T>& v1) const 
   {
     const unsigned int SIZE = v0.size();
     T result = T(0.0f);

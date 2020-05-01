@@ -34,7 +34,7 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp
 	../neuralnetwork/stackedRBM_pretraining.cpp ../neuralnetwork/DBN.cpp ../neuralnetwork/GBRBM.cpp ../neuralnetwork/BBRBM.cpp ../math/outerproduct.cpp ../math/LBFGS.cpp ../neuralnetwork/LBFGS_GBRBM.cpp ../neuralnetwork/LBFGS_BBRBM.cpp
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -std=c++1y @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes @EXTRA_INCLUDEPATHS@
 
 # -DUSE_SDL `/usr/local/bin/sdl2-config --cflags`
 

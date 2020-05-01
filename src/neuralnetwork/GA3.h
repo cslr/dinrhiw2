@@ -25,19 +25,19 @@ namespace whiteice
     GA3(optimized_function<T>* f);
     ~GA3();
   
-    T getCrossover() const throw(){ return p_crossover; }
-    T getMutation() const throw(){ return p_mutation; }
+    T getCrossover() const { return p_crossover; }
+    T getMutation() const { return p_mutation; }
 
     bool minimize();
 
-    bool isRunning() const throw();
+    bool isRunning() const ;
 
-    bool stop() throw();
+    bool stop() ;
   
     // returns the best solution found so far
-    T getBestSolution(math::vertex<T>& solution) const throw();
+    T getBestSolution(math::vertex<T>& solution) const ;
   
-    unsigned int getGenerations() const throw();
+    unsigned int getGenerations() const ;
   
   private:
     optimized_function<T>* f;

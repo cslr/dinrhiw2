@@ -51,7 +51,7 @@ class radix_sort
   }
   
 
-  unsigned int size() const throw(){ return tableSize; }
+  unsigned int size() const { return tableSize; }
   
   /* changes source data table pointer and size of
    * the table. if new_table is NULL no changes to pointer

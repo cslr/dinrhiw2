@@ -19,7 +19,7 @@ using namespace whiteice;
 
 template <typename T>
 void init_data(std::vector< vertex<T> >& data,
-	       unsigned int dimension) throw();
+	       unsigned int dimension) ;
 
 
 class test_datasource :
@@ -30,23 +30,23 @@ public:
   test_datasource(std::vector< vertex<float> >& data){ datasource = &data; }
   ~test_datasource(){ }
   
-  vertex<float>& operator[](unsigned int index) throw(std::out_of_range)
+  vertex<float>& operator[](unsigned int index) 
   {
     return (*datasource)[index];
   }
   
   
-  const vertex<float>& operator[](unsigned int index) const throw(std::out_of_range)
+  const vertex<float>& operator[](unsigned int index) const 
   {
     return (*datasource)[index];
   }
   
-  unsigned int size() const throw()
+  unsigned int size() const 
   {
     return datasource->size();
   }
   
-  bool good() const throw()
+  bool good() const 
   {
     return true;
   }
@@ -146,7 +146,7 @@ int main()
 // initializes data with white noise
 template <typename T>
 void init_data(std::vector< vertex<T> >& data,
-	       unsigned int dimension) throw()
+	       unsigned int dimension) 
 {
   // creates test data which has three clusters
   std::vector<T> mean[3];

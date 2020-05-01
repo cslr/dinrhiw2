@@ -58,7 +58,7 @@ namespace whiteice {
   }
 
   
-  HMM::HMM(unsigned int visStates, unsigned int hidStates) throw(std::logic_error)
+  HMM::HMM(unsigned int visStates, unsigned int hidStates) 
   {
     this->numVisible = visStates;
     this->numHidden  = hidStates;
@@ -708,7 +708,7 @@ namespace whiteice {
 #define HMM_PARAM_A_CFGSTR "HMM_PARAM_A"
 #define HMM_PARAM_B_CFGSTR "HMM_PARAM_B"
 
-  bool HMM::load(const std::string& filename) throw()
+  bool HMM::load(const std::string& filename) 
   {
     try{
       whiteice::dataset<double> configuration;
@@ -870,7 +870,7 @@ namespace whiteice {
   }
 
   
-  bool HMM::save(const std::string& filename) const throw()
+  bool HMM::save(const std::string& filename) const 
   {
     try{
       whiteice::dataset<double> configuration;

@@ -2375,12 +2375,12 @@ class test_exception : public std::exception
 {
 public:
   
-  test_exception() throw()
+  test_exception() 
   {
     reason = 0;
   }
   
-  test_exception(const std::exception& e) throw()
+  test_exception(const std::exception& e) 
   {
     reason = 0;
     
@@ -2393,7 +2393,7 @@ public:
   }
   
   
-  test_exception(const char* ptr) throw()
+  test_exception(const char* ptr) 
   {
     reason = 0;
     
@@ -2405,7 +2405,7 @@ public:
   }
   
   
-  virtual ~test_exception() throw()
+  virtual ~test_exception() 
   {
     if(reason) free(reason);
     reason = 0;

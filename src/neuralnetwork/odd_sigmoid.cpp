@@ -115,13 +115,13 @@ namespace whiteice
   
   
   template <typename T>
-  T odd_sigmoid<T>::get_scale() const throw(){
+  T odd_sigmoid<T>::get_scale() const {
     return scale;
   }
   
   
   template <typename T>
-  T odd_sigmoid<T>::get_alpha() const throw(){
+  T odd_sigmoid<T>::get_alpha() const {
     return alpha;
   }
   

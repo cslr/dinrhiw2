@@ -112,13 +112,13 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int stretched_function<T>::dimension() const throw(){
+  unsigned int stretched_function<T>::dimension() const {
     return f->dimension();
   }
   
   
   template <typename T>
-  int stretched_function<T>::sign(const T& x) const throw()
+  int stretched_function<T>::sign(const T& x) const 
   {
     if(x > T(0.0)) return 1;
     else if(x == T(0.0)) return 0;
@@ -130,7 +130,7 @@ namespace whiteice
   ////////////////////////////////////////////////////////////
   
   template <typename T>
-  bool stretched_function<T>::hasGradient() const throw()
+  bool stretched_function<T>::hasGradient() const 
   {
     return false;
   }
@@ -150,7 +150,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool stretched_function<T>::hasHessian() const throw()
+  bool stretched_function<T>::hasHessian() const 
   {
     return false;
   }

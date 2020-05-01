@@ -26,7 +26,7 @@ class BBRBM {
   BBRBM(const BBRBM<T>& rbm);
   
   // creates 2-layer: V * H network
-  BBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
+  BBRBM(unsigned int visible, unsigned int hidden) ;
   
   virtual ~BBRBM();
   
@@ -94,17 +94,17 @@ class BBRBM {
 			unsigned int N, // number of samples to use from samples to estimate reconstruction error
 			const math::vertex<T>& a,
 			const math::vertex<T>& b,			
-			const math::matrix<T>& W) const throw(); // weight matrix (parameters) to use
+			const math::matrix<T>& W) const ; // weight matrix (parameters) to use
 
   T reconstructionError(const std::vector< math::vertex<T> >& samples,
-			unsigned int N) const throw() // number of samples to use from samples to estimate reconstruction error
+			unsigned int N) const  // number of samples to use from samples to estimate reconstruction error
   
   { return reconstructionError(samples, N, this->a, this->b, this->W); }
 
   T reconstructionError(const math::vertex<T>& s,
 			const math::vertex<T>& a,
 			const math::vertex<T>& b,
-			const math::matrix<T>& W) const throw(); // weight matrix (parameters) to use
+			const math::matrix<T>& W) const ; // weight matrix (parameters) to use
 
   ////////////////////////////////////////////////////////////
   // U(q) functions used to maximize P(v|data, q) ~ exp(-U(q))
@@ -112,7 +112,7 @@ class BBRBM {
 
   bool setUData(const std::vector< math::vertex<T> >& samples);
 
-  unsigned int qsize() const throw(); // size of q vector q = [vec(W)]
+  unsigned int qsize() const ; // size of q vector q = [vec(W)]
   
   // converts q vector into parameters (W, a, b)
   bool convertParametersToQ(const math::matrix<T>& W, const math::vertex<T>& a, const math::vertex<T>& b,
@@ -128,10 +128,10 @@ class BBRBM {
   // keeps parameters within sane levels (clips overly large parameters and NaNs)
   void safebox(math::vertex<T>& a, math::vertex<T>& b, math::matrix<T>& W) const;
   
-  T U(const math::vertex<T>& q) const throw();
+  T U(const math::vertex<T>& q) const ;
 
   // uses CD-3 to estimate gradient
-  math::vertex<T> Ugrad(const math::vertex<T>& q) throw();
+  math::vertex<T> Ugrad(const math::vertex<T>& q) ;
 
   // prints min/max values of parameters to log
   bool diagnostics() const;
@@ -140,8 +140,8 @@ class BBRBM {
   
   // load & saves RBM data from/to file
   
-  bool load(const std::string& filename) throw();
-  bool save(const std::string& filename) const throw();
+  bool load(const std::string& filename) ;
+  bool save(const std::string& filename) const ;
 
  protected:
 

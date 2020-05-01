@@ -29,7 +29,7 @@ namespace whiteice
   template <typename T>
   VAE<T>::VAE(const nnetwork<T>& encoder, // x -> (z_mean, z_var)
 	      const nnetwork<T>& decoder) // z -> (x_mean)
-    throw(std::invalid_argument)
+    
   {
     if(encoder.output_size() & 1) // odd value
       throw std::invalid_argument("bad encoder/decoder dimensions/arch");
@@ -51,7 +51,7 @@ namespace whiteice
   VAE<T>::VAE(const std::vector<unsigned int> encoderArchitecture, // x -> (z_mean, z_var)
 	      const std::vector<unsigned int> decoderArchitecture) // z -> (x_mean)
     
-    throw(std::invalid_argument)
+    
   {
     if(encoderArchitecture.size() < 2 || decoderArchitecture.size() < 2)
       throw std::invalid_argument("bad encoder/decoder dimensions/arch");
@@ -691,7 +691,7 @@ namespace whiteice
   
 
   template <typename T>
-  bool VAE<T>::load(const std::string& filename) throw()
+  bool VAE<T>::load(const std::string& filename) 
   {
     if(filename.size() <= 0) return false;
     
@@ -715,7 +715,7 @@ namespace whiteice
 
 
   template <typename T>
-  bool VAE<T>::save(const std::string& filename) const throw()
+  bool VAE<T>::save(const std::string& filename) const 
   {
     if(filename.size() <= 0) return false;
     

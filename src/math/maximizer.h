@@ -45,7 +45,7 @@ namespace whiteice
 	// returns number of iterations
 	unsigned int optimize
 	  (whiteice::optimized_function<T>* f,
-	   float secs) throw();
+	   float secs) ;
 	
 	unsigned int optimizeMore(float secs);
       
@@ -55,8 +55,8 @@ namespace whiteice
 	T solutionValue;
       
 	
-	const vertex<T>& getInternalSolution() const throw();
-	T calculate(vertex<T>& v) const throw();
+	const vertex<T>& getInternalSolution() const ;
+	T calculate(vertex<T>& v) const ;
 	
 	// candidate solution
 	vertex<T> candidate;
@@ -72,10 +72,10 @@ namespace whiteice
 	// candidate generation:
 	
 	// initialization of generation
-	virtual void initialize() throw();
+	virtual void initialize() ;
 	
 	// candidate generation
-	virtual void generate() throw();
+	virtual void generate() ;
 	
 	
 	// list of vectors produced by
@@ -98,7 +98,7 @@ namespace whiteice
 	float CLOCKS_SEC;
 	float startTime, endTime;
 	
-	float getTime() const throw();
+	float getTime() const ;
       };
     
     
@@ -110,8 +110,8 @@ namespace whiteice
 	IHRSearch();
 	virtual ~IHRSearch();
 	
-	void initialize() throw();
-	void generate() throw();
+	void initialize() ;
+	void generate() ;
 	
       private:
 	vertex<T> dir;
@@ -130,8 +130,8 @@ namespace whiteice
 	GradientDescent();
 	~GradientDescent();
 	
-	void initialize() throw();
-	void generate() throw();
+	void initialize() ;
+	void generate() ;
 	
       private:
 	T step;

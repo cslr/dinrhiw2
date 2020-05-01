@@ -50,7 +50,7 @@ namespace whiteice
     
     ~RNN_RBM();
 
-    RNN_RBM<T>& operator=(const whiteice::RNN_RBM<T>& rbm) throw(std::invalid_argument);
+    RNN_RBM<T>& operator=(const whiteice::RNN_RBM<T>& rbm) ;
 
     unsigned int getVisibleDimensions() const;
     unsigned int getHiddenDimensions() const;

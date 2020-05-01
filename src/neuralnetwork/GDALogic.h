@@ -29,17 +29,17 @@ namespace whiteice
     
     virtual ~GDALogic(){ }
     
-    bool initialize(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p) throw();
+    bool initialize(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p) ;
     
     whiteice::math::blas_real<float> similarity
       (std::vector< hcnode<GDAParams, whiteice::math::blas_real<float> >* > clusters,
-       unsigned int i, unsigned int j) throw();
+       unsigned int i, unsigned int j) ;
     
     bool merge(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p1,
 	       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p2,
-	       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >& result) const throw();
+	       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >& result) const ;
     
-    whiteice::math::blas_real<float> overlap(const GDAParams& c1, const GDAParams& c2) const throw();
+    whiteice::math::blas_real<float> overlap(const GDAParams& c1, const GDAParams& c2) const ;
     
   };
   

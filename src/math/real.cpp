@@ -75,18 +75,18 @@ namespace whiteice
     ////////////////////////////////////////////////////////////
     
     
-    unsigned long int realnumber::getPrecision() const throw(){
+    unsigned long int realnumber::getPrecision() const {
       return mpf_get_prec(data);
     }
     
     
-    void realnumber::setPrecision(unsigned long int prec) throw(){
+    void realnumber::setPrecision(unsigned long int prec) {
       mpf_set_prec(data, prec);
     }
     
     
     // operators
-    realnumber realnumber::operator+(const realnumber& r) const throw(illegal_operation){
+    realnumber realnumber::operator+(const realnumber& r) const {
       mpf_t rval;
       unsigned long int p1 = mpf_get_prec(data);
       unsigned long int p2 = mpf_get_prec(r.data);
@@ -102,7 +102,7 @@ namespace whiteice
     }
     
     
-    realnumber realnumber::operator-(const realnumber& r) const throw(illegal_operation){
+    realnumber realnumber::operator-(const realnumber& r) const {
       mpf_t rval;
       unsigned long int p1 = mpf_get_prec(data);
       unsigned long int p2 = mpf_get_prec(r.data);
@@ -118,7 +118,7 @@ namespace whiteice
     }
     
     
-    realnumber realnumber::operator*(const realnumber& r) const throw(illegal_operation){
+    realnumber realnumber::operator*(const realnumber& r) const {
       mpf_t rval;
       unsigned long int p1 = mpf_get_prec(data);
       unsigned long int p2 = mpf_get_prec(r.data);
@@ -134,7 +134,7 @@ namespace whiteice
     }
     
     
-    realnumber realnumber::operator/(const realnumber& r) const throw(illegal_operation){
+    realnumber realnumber::operator/(const realnumber& r) const {
       mpf_t rval;
       unsigned long int p1 = mpf_get_prec(data);
       unsigned long int p2 = mpf_get_prec(r.data);
@@ -155,12 +155,12 @@ namespace whiteice
     
     
     // complex conjugate
-    realnumber realnumber::operator!() const throw(illegal_operation){
+    realnumber realnumber::operator!() const {
       return realnumber(*this); // nothing t do
     }
     
     
-    realnumber realnumber::operator-() const throw(illegal_operation){
+    realnumber realnumber::operator-() const {
       mpf_t rval;
       mpf_init2(rval, mpf_get_prec(data));
       mpf_neg(rval, data);
@@ -172,7 +172,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator+=(const realnumber& r) throw(illegal_operation){
+    realnumber& realnumber::operator+=(const realnumber& r) {
       mpf_t temp;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_set(temp, data);
@@ -182,7 +182,7 @@ namespace whiteice
       return (*this);
     }
     
-    realnumber& realnumber::operator-=(const realnumber& r) throw(illegal_operation){
+    realnumber& realnumber::operator-=(const realnumber& r) {
       mpf_t temp;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_set(temp, data);
@@ -192,7 +192,7 @@ namespace whiteice
       return (*this);
     }
     
-    realnumber& realnumber::operator*=(const realnumber& r) throw(illegal_operation){
+    realnumber& realnumber::operator*=(const realnumber& r) {
       mpf_t temp;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_set(temp, data);
@@ -202,7 +202,7 @@ namespace whiteice
       return (*this);
     }
     
-    realnumber& realnumber::operator/=(const realnumber& r) throw(illegal_operation){
+    realnumber& realnumber::operator/=(const realnumber& r) {
       mpf_t temp;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_set(temp, data);
@@ -213,7 +213,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator=(const realnumber& r) throw(illegal_operation){
+    realnumber& realnumber::operator=(const realnumber& r) {
       if(this != &r){
 	mpf_set_prec(data, mpf_get_prec(r.data));
 	mpf_set(data, r.data);
@@ -226,39 +226,39 @@ namespace whiteice
     /*************************************************************/
     
     
-    bool realnumber::operator==(const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator==(const realnumber& r) const {
       return (mpf_cmp(data, r.data) == 0);
     }
     
-    bool realnumber::operator!=(const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator!=(const realnumber& r) const {
       return (mpf_cmp(data, r.data) != 0);
     }
     
-    bool realnumber::operator>=(const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator>=(const realnumber& r) const {
       return (mpf_cmp(data, r.data) >= 0);
     }
     
-    bool realnumber::operator<=(const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator<=(const realnumber& r) const {
       return (mpf_cmp(data, r.data) <= 0);
     }
     
-    bool realnumber::operator< (const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator< (const realnumber& r) const {
       return (mpf_cmp(data, r.data) < 0);
     }
     
-    bool realnumber::operator> (const realnumber& r) const throw(uncomparable){
+    bool realnumber::operator> (const realnumber& r) const {
       return (mpf_cmp(data, r.data) > 0);
     }
     
     
     // scalar operation
-    realnumber& realnumber::operator= (const double& s) throw(illegal_operation){
+    realnumber& realnumber::operator= (const double& s) {
       mpf_set_d(data, s);
       return (*this);
     }
     
     
-    realnumber  realnumber::operator+ (const double& s) const throw(){
+    realnumber  realnumber::operator+ (const double& s) const {
       mpf_t temp, ss;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_init2(ss, mpf_get_prec(data));
@@ -273,7 +273,7 @@ namespace whiteice
     }
     
     
-    realnumber  realnumber::operator- (const double& s) const throw(){
+    realnumber  realnumber::operator- (const double& s) const {
       mpf_t temp, ss;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_init2(ss, mpf_get_prec(data));
@@ -288,7 +288,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator+=(const double& s) throw(){
+    realnumber& realnumber::operator+=(const double& s) {
       mpf_t temp, ss;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_init2(ss, mpf_get_prec(data));
@@ -302,7 +302,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator-=(const double& s) throw(){
+    realnumber& realnumber::operator-=(const double& s) {
       mpf_t temp, ss;
       mpf_init2(temp, mpf_get_prec(data));
       mpf_init2(ss, mpf_get_prec(data));
@@ -316,7 +316,7 @@ namespace whiteice
     }
     
     
-    realnumber  realnumber::operator* (const double& s) const throw(){
+    realnumber  realnumber::operator* (const double& s) const {
       mpf_t ss, res;
       mpf_init2(ss, mpf_get_prec(data));
       mpf_init2(res, mpf_get_prec(data));
@@ -330,7 +330,7 @@ namespace whiteice
       return ret;
     }
     
-    realnumber  realnumber::operator/ (const double& s) const throw(std::invalid_argument){
+    realnumber  realnumber::operator/ (const double& s) const {
       mpf_t ss, res;
       mpf_init2(ss, mpf_get_prec(data));
       mpf_init2(res, mpf_get_prec(data));
@@ -345,7 +345,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator*=(const double& s) throw(){
+    realnumber& realnumber::operator*=(const double& s) {
       mpf_t ss, temp;
       mpf_init2(ss, mpf_get_prec(data));
       mpf_init2(temp, mpf_get_prec(data));
@@ -359,7 +359,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::operator/=(const double& s) throw(std::invalid_argument){
+    realnumber& realnumber::operator/=(const double& s) {
       mpf_t ss, temp;
       mpf_init2(ss, mpf_get_prec(data));
       mpf_init2(temp, mpf_get_prec(data));
@@ -374,68 +374,68 @@ namespace whiteice
     
     
     // scalar comparisions
-    bool realnumber::operator==(const double d) const throw(){
+    bool realnumber::operator==(const double d) const {
       return (mpf_cmp_d(data, d) == 0);
     }
     
     
-    bool realnumber::operator!=(const double d) const throw(){
+    bool realnumber::operator!=(const double d) const {
       return (mpf_cmp_d(data, d) != 0);
     }
     
     
-    bool realnumber::operator>=(const double d) const throw(){
+    bool realnumber::operator>=(const double d) const {
       return (mpf_cmp_d(data, d) >= 0);
     }
     
     
-    bool realnumber::operator<=(const double d) const throw(){
+    bool realnumber::operator<=(const double d) const {
       return (mpf_cmp_d(data, d) <= 0);
     }
     
     
-    bool realnumber::operator< (const double d) const throw(){
+    bool realnumber::operator< (const double d) const {
       return (mpf_cmp_d(data, d) < 0);
     }
     
     
-    bool realnumber::operator> (const double d) const throw(){
+    bool realnumber::operator> (const double d) const {
       return (mpf_cmp_d(data, d) > 0);
     }
     
     
-    bool realnumber::operator==(const signed long int i) const throw(){
+    bool realnumber::operator==(const signed long int i) const {
       return (mpf_cmp_si(data, i) == 0);
     }
     
     
-    bool realnumber::operator!=(const signed long int i) const throw(){
+    bool realnumber::operator!=(const signed long int i) const {
       return (mpf_cmp_si(data, i) != 0);
     }
     
     
-    bool realnumber::operator>=(const signed long int i) const throw(){
+    bool realnumber::operator>=(const signed long int i) const {
       return (mpf_cmp_si(data, i) >= 0);
     }
     
     
-    bool realnumber::operator<=(const signed long int i) const throw(){
+    bool realnumber::operator<=(const signed long int i) const {
       return (mpf_cmp_si(data, i) <= 0);
     }
     
     
-    bool realnumber::operator< (const signed long int i) const throw(){
+    bool realnumber::operator< (const signed long int i) const {
       return (mpf_cmp_si(data, i) < 0);
     }
     
     
-    bool realnumber::operator> (const signed long int i) const throw(){
+    bool realnumber::operator> (const signed long int i) const {
       return (mpf_cmp_si(data, i) > 0);
     }
     
     
     
-    realnumber& realnumber::abs() throw(){
+    realnumber& realnumber::abs() {
       mpf_t sd;
       mpf_init2(sd, mpf_get_prec(data));
       mpf_set(sd, data);
@@ -446,7 +446,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::ceil() throw(){
+    realnumber& realnumber::ceil() {
       mpf_t sd;
       mpf_init2(sd, mpf_get_prec(data));
       mpf_set(sd, data);
@@ -457,7 +457,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::floor() throw(){
+    realnumber& realnumber::floor() {
       mpf_t sd;
       mpf_init2(sd, mpf_get_prec(data));
       mpf_set(sd, data);
@@ -468,7 +468,7 @@ namespace whiteice
     }
     
     
-    realnumber& realnumber::trunc() throw(){
+    realnumber& realnumber::trunc() {
       mpf_t sd;
       mpf_init2(sd, mpf_get_prec(data));
       mpf_set(sd, data);
@@ -481,19 +481,19 @@ namespace whiteice
     
     // returns sign of real number
     // returns 1 if r > 0, 0 if r == 0 and -1 if r < 0
-    int realnumber::sign() const throw(){
+    int realnumber::sign() const {
       return mpf_sgn(data);
     }
     
     
     double& realnumber::operator[](const unsigned long& index)
-      throw(std::out_of_range, illegal_operation){
+      {
       
       throw illegal_operation("whiteice::math::realnumber: no subelements");
     }
     
     const double& realnumber::operator[](const unsigned long& index) const
-      throw(std::out_of_range, illegal_operation){
+      {
       throw illegal_operation("whitece::math::realnumber: no subelements");
     }
     
@@ -502,16 +502,16 @@ namespace whiteice
     // conversions
     
     // rounds to closest double
-    double realnumber::getDouble() const throw(){
+    double realnumber::getDouble() const {
       return mpf_get_d(data);
     }
     
     // returns floor(realnumber) conversion to integer
-    // integer realnumber::getInteger() const throw(); ****** TODO *******
+    // integer realnumber::getInteger() const ; ****** TODO *******
     
     // returns human-readable and realnumber(std::string) ctor
     // understandable representation of realnumber
-    std::string realnumber::getString(size_t ndigits) const throw()
+    std::string realnumber::getString(size_t ndigits) const 
     {
       mp_exp_t exp_ = 1;
       char* str = mpf_get_str(NULL, &exp_, 10, ndigits, data);

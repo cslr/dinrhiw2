@@ -30,11 +30,11 @@ namespace whiteice
       virtual ~RSA();
       
       // data must be 64 bit and Keyschedule should be DESKey
-      bool encrypt(integer& data, const Keyschedule<integer>& k) throw();
-      bool decrypt(integer& data, const Keyschedule<integer>& k) throw();
+      bool encrypt(integer& data, const Keyschedule<integer>& k) ;
+      bool decrypt(integer& data, const Keyschedule<integer>& k) ;
       
-      bool encrypt(data_source<integer>& data, const Keyschedule<integer>& k) throw();
-      bool decrypt(data_source<integer>& data, const Keyschedule<integer>& k) throw();      
+      bool encrypt(data_source<integer>& data, const Keyschedule<integer>& k) ;
+      bool decrypt(data_source<integer>& data, const Keyschedule<integer>& k) ;      
       
     private:
       
@@ -59,21 +59,21 @@ namespace whiteice
       
 	     
       // gets n:th key from the key schedule
-      const std::vector<integer>& publickey() const throw();
+      const std::vector<integer>& publickey() const ;
       
       // gets n:th key from the key schedule
-      const std::vector<integer>& privatekey() const throw();
+      const std::vector<integer>& privatekey() const ;
       
       
       // returns number of keys in a keyschedule
       // or negative value for infinity
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
       // returns number of bits in a single key
-      unsigned int keybits() const throw();
+      unsigned int keybits() const ;
       
       // gets n:th key from the key schedule
-      const integer& operator[](unsigned int n) const throw(std::out_of_range);
+      const integer& operator[](unsigned int n) const ;
       
       // Keyschedules can copy itself
       Keyschedule<integer>* copy() const;
@@ -81,11 +81,11 @@ namespace whiteice
       
     private:
       
-      void generate_prime(integer& a, unsigned int bits) const throw();
-      bool random_bit() const throw();
+      void generate_prime(integer& a, unsigned int bits) const ;
+      bool random_bit() const ;
       void choose_random_mod_invertible_number(integer& x,
-					       const integer& phi) const throw();
-      void reset(integer& a) const throw();
+					       const integer& phi) const ;
+      void reset(integer& a) const ;
       
     private:
       

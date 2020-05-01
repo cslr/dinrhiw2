@@ -20,19 +20,19 @@ namespace whiteice
     dynamic_array(const array<D,T>& a);
     virtual ~dynamic_array();
     
-    unsigned int size() const throw();
-    bool resize(const T& n) throw();
+    unsigned int size() const ;
+    bool resize(const T& n) ;
     
-    void clear() throw();
+    void clear() ;
         
-    D& operator[](const T& n) throw(std::out_of_range);
-    const D& operator[](const T& n) const throw(std::out_of_range);
+    D& operator[](const T& n) ;
+    const D& operator[](const T& n) const ;
     
-    bool push(const D& d) throw();
-    D pop() throw(std::logic_error);
+    bool push(const D& d) ;
+    D pop() ;
     
-    bool enqueue(const D& data) throw();
-    D dequeue() throw(std::logic_error);
+    bool enqueue(const D& data) ;
+    D dequeue() ;
     
     
     private:
@@ -48,10 +48,10 @@ namespace whiteice
     darray_node *first, *last;
     T size_of_array;
     
-    void add_empty_node() throw(std::bad_alloc);
-    void add_node(const D& data) throw(std::bad_alloc);
-    D remove_node() throw();
-    D remove_node(const T& n) throw();
+    void add_empty_node() ;
+    void add_node(const D& data) ;
+    D remove_node() ;
+    D remove_node(const T& n) ;
     
   };
   

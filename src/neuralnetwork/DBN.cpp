@@ -81,7 +81,7 @@ namespace whiteice
   }
 
   template <typename T>
-  whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() throw(std::invalid_argument)
+  whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() 
   {
     if(binaryInput)
       throw std::invalid_argument("DBN<T>::getInputGBRBM() - but network is BBRBM network");
@@ -89,7 +89,7 @@ namespace whiteice
   }
 
   template <typename T>
-  whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() throw(std::invalid_argument)
+  whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() 
   {
     if(binaryInput == false)
       throw std::invalid_argument("DBN<T>::getInputBBRBM() - but network is GBRBM network");
@@ -97,7 +97,7 @@ namespace whiteice
   }
 
   template <typename T>
-  const whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() const throw(std::invalid_argument)
+  const whiteice::GBRBM<T>& DBN<T>::getInputGBRBM() const 
   {
     if(binaryInput)
       throw std::invalid_argument("DBN<T>::getInputGBRBM() - but network is BBRBM network");
@@ -105,7 +105,7 @@ namespace whiteice
   }
 
   template <typename T>
-  const whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() const throw(std::invalid_argument)
+  const whiteice::BBRBM<T>& DBN<T>::getInputBBRBM() const 
   {
     if(binaryInput == false)
       throw std::invalid_argument("DBN<T>::getInputBBRBM() - but network is GBRBM network");
@@ -121,7 +121,7 @@ namespace whiteice
   
   // layer is [0..getNumberOfLayers-2]
   template <typename T>
-  whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) throw(std::invalid_argument)
+  whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) 
   {
     if(layer >= layers.size())
       throw std::invalid_argument("DBN<T>::getHiddenLayer() - layer out of range");
@@ -130,7 +130,7 @@ namespace whiteice
 
 
   template <typename T>
-  const whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) const throw(std::invalid_argument)
+  const whiteice::BBRBM<T>& DBN<T>::getHiddenLayer(unsigned int layer) const 
   {
     if(layer >= layers.size())
       throw std::invalid_argument("DBN<T>::getHiddenLayer() - layer out of range");

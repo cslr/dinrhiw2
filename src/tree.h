@@ -20,18 +20,18 @@ namespace whiteice
       virtual ~tree(){ }
       
       // inserts value to search tree
-      virtual bool insert(const T& t) throw() = 0;
+      virtual bool insert(const T& t)  = 0;
       
       // remove()s value to tree
-      virtual bool remove(T& t) throw() = 0;
+      virtual bool remove(T& t)  = 0;
       
       // search()es for given value, updates value and
       // returns true in case of success
-      virtual bool search(T& value) const throw() = 0;
+      virtual bool search(T& value) const  = 0;
       
       // returns maximum & minimum keys/objects from the tree
-      virtual T& maximum() const throw(std::logic_error) = 0;
-      virtual T& minimum() const throw(std::logic_error) = 0;
+      virtual T& maximum() const  = 0;
+      virtual T& minimum() const  = 0;
       
     };
 }

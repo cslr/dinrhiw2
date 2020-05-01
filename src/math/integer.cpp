@@ -42,7 +42,7 @@ namespace whiteice
     
     
     // operators
-    integer integer::operator+(const integer& i) const throw(illegal_operation)
+    integer integer::operator+(const integer& i) const 
     {      
       integer j;
       
@@ -52,7 +52,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator-(const integer& i) const throw(illegal_operation)
+    integer integer::operator-(const integer& i) const 
     {
       integer j;
       
@@ -62,7 +62,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator*(const integer& i) const throw(illegal_operation)
+    integer integer::operator*(const integer& i) const 
     {
       integer j;
       
@@ -72,7 +72,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator/(const integer& i) const throw(illegal_operation)
+    integer integer::operator/(const integer& i) const 
     {
       integer j;
       
@@ -85,7 +85,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator%(const integer& i) const throw(illegal_operation)
+    integer integer::operator%(const integer& i) const 
     {
       integer j;
       
@@ -100,7 +100,7 @@ namespace whiteice
     
     
     // complex conjugate (?)
-    integer integer::operator!() const throw(illegal_operation)
+    integer integer::operator!() const 
     {
       integer i;
       
@@ -110,7 +110,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator-() const throw(illegal_operation)
+    integer integer::operator-() const 
     {
       integer i(*this);
 
@@ -122,7 +122,7 @@ namespace whiteice
     
     
     integer& integer::operator&=(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j(*this);
       
@@ -133,7 +133,7 @@ namespace whiteice
     
     
     integer& integer::operator|=(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j(*this);
       
@@ -144,7 +144,7 @@ namespace whiteice
     
     
     integer& integer::operator^=(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j(*this);
       
@@ -155,7 +155,7 @@ namespace whiteice
     
     
     integer integer::operator&(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j;
       
@@ -166,7 +166,7 @@ namespace whiteice
     
     
     integer integer::operator|(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j;
       
@@ -177,7 +177,7 @@ namespace whiteice
     
     
     integer integer::operator^(const integer& i)
-      throw(illegal_operation)
+      
     {
       integer j;
       
@@ -187,13 +187,13 @@ namespace whiteice
     }
     
     
-    bool integer::getbit(unsigned int index) const throw()
+    bool integer::getbit(unsigned int index) const 
     {
       return ((bool)mpz_tstbit(this->integ, index));
     }
     
     
-    void integer::setbit(unsigned int index, bool value) throw()
+    void integer::setbit(unsigned int index, bool value) 
     {
       if(value)
 	mpz_setbit(this->integ, index);
@@ -202,13 +202,13 @@ namespace whiteice
     }
     
     
-    void integer::clrbit(unsigned int index) throw()
+    void integer::clrbit(unsigned int index) 
     {
       mpz_clrbit(this->integ, index);
     }
     
     
-    integer integer::operator<<(unsigned int left) const throw()
+    integer integer::operator<<(unsigned int left) const 
     {
       integer i;
       
@@ -218,7 +218,7 @@ namespace whiteice
     }
     
     
-    integer integer::operator>>(unsigned int right) const throw()
+    integer integer::operator>>(unsigned int right) const 
     {
       integer i;
       
@@ -228,7 +228,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator<<=(unsigned int left) throw()
+    integer& integer::operator<<=(unsigned int left) 
     {
       integer i(*this);
       
@@ -238,7 +238,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator>>=(unsigned int right) throw()
+    integer& integer::operator>>=(unsigned int right) 
     {
       integer i(*this);
       
@@ -249,7 +249,7 @@ namespace whiteice
     
     
     // left is the positive direction
-    integer& integer::circularshift(int shift) throw()
+    integer& integer::circularshift(int shift) 
     {
       if(shift > 0){ // left shift
 	
@@ -291,7 +291,7 @@ namespace whiteice
     
     
 
-    integer& integer::operator+=(const integer& i) throw(illegal_operation)
+    integer& integer::operator+=(const integer& i) 
     {
       integer j(*this);
       
@@ -301,7 +301,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator-=(const integer& i) throw(illegal_operation)
+    integer& integer::operator-=(const integer& i) 
     {
       integer j(*this);
       
@@ -311,7 +311,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator*=(const integer& i) throw(illegal_operation)
+    integer& integer::operator*=(const integer& i) 
     {
       integer j(*this);
       
@@ -321,7 +321,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator/=(const integer& i) throw(illegal_operation)
+    integer& integer::operator/=(const integer& i) 
     {
       integer j(*this);
       
@@ -334,7 +334,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator%=(const integer& i) throw(illegal_operation)
+    integer& integer::operator%=(const integer& i) 
     {
       integer j(*this);
       
@@ -348,7 +348,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator=(const integer& i) throw(illegal_operation)
+    integer& integer::operator=(const integer& i) 
     {      
       mpz_set(this->integ, i.integ);
       
@@ -356,7 +356,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator++() throw(illegal_operation)
+    integer& integer::operator++() 
     {
       integer j(*this);
       
@@ -366,7 +366,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator--() throw(illegal_operation)
+    integer& integer::operator--() 
     {
       integer j(*this);
       
@@ -376,7 +376,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator++(int d) throw(illegal_operation)
+    integer& integer::operator++(int d) 
     {
       integer j(*this);
       
@@ -386,7 +386,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator--(int d) throw(illegal_operation)
+    integer& integer::operator--(int d) 
     {
       integer j(*this);
       
@@ -396,43 +396,43 @@ namespace whiteice
     }
     
     
-    bool integer::operator==(const integer& i) const throw(uncomparable)
+    bool integer::operator==(const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) == 0);
     }
     
     
-    bool integer::operator!=(const integer& i) const throw(uncomparable)
+    bool integer::operator!=(const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) != 0);
     }
 
     
-    bool integer::operator>=(const integer& i) const throw(uncomparable)
+    bool integer::operator>=(const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) >= 0);
     }
 
     
-    bool integer::operator<=(const integer& i) const throw(uncomparable)
+    bool integer::operator<=(const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) <= 0);
     }
 
     
-    bool integer::operator< (const integer& i) const throw(uncomparable)
+    bool integer::operator< (const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) < 0);
     }
     
     
-    bool integer::operator> (const integer& i) const throw(uncomparable)
+    bool integer::operator> (const integer& i) const 
     {
       return (mpz_cmp(this->integ, i.integ) > 0);
     }
     
     // scalar operation
-    integer& integer::operator= (const int& s) throw(illegal_operation)
+    integer& integer::operator= (const int& s) 
     {
       mpz_set_si(integ, s);
       
@@ -440,7 +440,7 @@ namespace whiteice
     }
     
     
-    integer  integer::operator* (const int& s) const throw()
+    integer  integer::operator* (const int& s) const 
     {
       integer i;
       
@@ -450,7 +450,7 @@ namespace whiteice
     }
     
     
-    integer  integer::operator/ (const int& s) const throw(std::invalid_argument)
+    integer  integer::operator/ (const int& s) const 
     {
       if(s == 0)
 	throw illegal_operation("Divide by zero");
@@ -464,7 +464,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator*=(const int& s) throw()
+    integer& integer::operator*=(const int& s) 
     {
       integer j(*this);
       
@@ -474,7 +474,7 @@ namespace whiteice
     }
     
     
-    integer& integer::operator/=(const int& s) throw(std::invalid_argument)
+    integer& integer::operator/=(const int& s) 
     {
       if(s == 0)
 	throw illegal_operation("Divide by zero");
@@ -488,7 +488,7 @@ namespace whiteice
     }
     
     
-    integer& integer::abs() throw()
+    integer& integer::abs() 
     {
       mpz_abs(integ, integ);
       
@@ -497,13 +497,13 @@ namespace whiteice
     
     
     
-    long int integer::to_int() const throw()
+    long int integer::to_int() const 
     {
       return mpz_get_si(integ);
     }
     
     
-    std::string integer::to_string(unsigned int base) const throw()
+    std::string integer::to_string(unsigned int base) const 
     {
       std::string str;
       
@@ -520,14 +520,14 @@ namespace whiteice
     
     
     // returns true if number is zero or positive
-    bool integer::positive() const throw()
+    bool integer::positive() const 
     {
       return (mpz_sgn(integ) >= 0);
     }
 
     
     // number of bits used by number
-    unsigned long int integer::bits() const throw()
+    unsigned long int integer::bits() const 
     {
       return mpz_sizeinbase(this->integ, 2);
     }

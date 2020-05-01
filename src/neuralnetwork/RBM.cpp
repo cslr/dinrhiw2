@@ -28,7 +28,7 @@ namespace whiteice
   // creates 2-layer: V * H network
   template <typename T>
   RBM<T>::RBM(unsigned int visible, unsigned int hidden)
-    throw(std::invalid_argument)
+    
   {
     if(visible == 0 || hidden == 0)
       throw std::invalid_argument("invalid network architecture");
@@ -323,7 +323,7 @@ namespace whiteice
 #define RBM_WEIGHTS_CFGSTR          "RBM_WEIGHTS"
   
   template <typename T>
-  bool RBM<T>::load(const std::string& filename) throw()
+  bool RBM<T>::load(const std::string& filename) 
   {
     try{
       whiteice::conffile configuration;
@@ -401,7 +401,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool RBM<T>::save(const std::string& filename) const throw()
+  bool RBM<T>::save(const std::string& filename) const 
   {
     try{
       whiteice::conffile configuration;

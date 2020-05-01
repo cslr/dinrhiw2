@@ -67,7 +67,7 @@ namespace whiteice
     // operators    
     template <typename T>
     modular<T> modular<T>::operator+(const modular<T>& a) const 
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -78,7 +78,7 @@ namespace whiteice
     
     template <typename T>
     modular<T> modular<T>::operator-(const modular<T>& a) const 
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -90,7 +90,7 @@ namespace whiteice
     
     template <typename T>
     modular<T> modular<T>::operator*(const modular<T>& a) const 
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -101,7 +101,7 @@ namespace whiteice
     
     template <typename T>
     modular<T> modular<T>::operator/(const modular<T>& a) const 
-      throw(illegal_operation)
+      
     {
       if(a.value == 0)
 	throw illegal_operation("cannot divide by zero");
@@ -116,7 +116,7 @@ namespace whiteice
     // complex conjugate (?)
     template <typename T>
     modular<T> modular<T>::operator!() const 
-      throw(illegal_operation)
+      
     {
       return (*this);
     }
@@ -124,7 +124,7 @@ namespace whiteice
     
     template <typename T>
     modular<T> modular<T>::operator-() const 
-      throw(illegal_operation)
+      
     {
       return modular<T>(((T(1) + whiteice::math::abs(this->value)/this->modulo)*this->modulo) - this->value,
 			this->modulo);
@@ -133,7 +133,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>& modular<T>::operator+=(const modular<T>& a)
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -152,7 +152,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>& modular<T>::operator-=(const modular<T>& a) 
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -172,7 +172,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>& modular<T>::operator*=(const modular<T>& a)
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -193,7 +193,7 @@ namespace whiteice
 
     template <typename T>
     modular<T>& modular<T>::operator/=(const modular<T>& a)
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -299,7 +299,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>& modular<T>::operator=(const modular<T>& a)
-      throw(illegal_operation)
+      
     {
       if(a.modulo != this->modulo)
 	throw illegal_operation("cannot mix numbers of different modulus");
@@ -313,7 +313,7 @@ namespace whiteice
     
     template <typename T>
     modular<T> operator*(const T& s, const modular<T>& a)
-      throw(std::invalid_argument)
+      
     {
       return modular<T>(a.value * s);
     }
@@ -321,7 +321,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator==(const modular<T>& a) const 
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -332,7 +332,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator!=(const modular<T>& a) const
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -343,7 +343,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator>=(const modular<T>& a) const
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -354,7 +354,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator<=(const modular<T>& a) const
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -365,7 +365,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator< (const modular<T>& a) const
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -376,7 +376,7 @@ namespace whiteice
     
     template <typename T>
     bool modular<T>::operator> (const modular<T>& a) const
-      throw(uncomparable)
+      
     {
       if(a.modulo != this->modulo)
 	throw uncomparable("cannot compare numbers with different modulus");
@@ -388,7 +388,7 @@ namespace whiteice
     // scalar operation
     template <typename T>
     modular<T>& modular<T>::operator= (const T& s)
-      throw(illegal_operation)
+      
     {
       this->value = s;
       
@@ -404,7 +404,7 @@ namespace whiteice
     
     
     template <typename T>
-    modular<T>  modular<T>::operator* (const T& s) const throw()
+    modular<T>  modular<T>::operator* (const T& s) const 
     {
       return modular<T>((this->value * s), this->modulo);
     }
@@ -412,7 +412,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>  modular<T>::operator/ (const T& s) const 
-      throw(std::invalid_argument)
+      
     {
       if(s == T(0))
 	throw std::invalid_argument("cannot divide by zero");
@@ -427,7 +427,7 @@ namespace whiteice
     
     
     template <typename T>
-    modular<T>& modular<T>::operator*=(const T& s) throw()
+    modular<T>& modular<T>::operator*=(const T& s) 
     {
       this->value *= s;
       
@@ -444,7 +444,7 @@ namespace whiteice
     
     template <typename T>
     modular<T>& modular<T>::operator/=(const T& s)
-      throw(std::invalid_argument)
+      
     {
       if(s == T(0))
 	throw std::invalid_argument("cannot divide by zero");
@@ -458,7 +458,7 @@ namespace whiteice
     
     
     template <typename T>
-    modular<T>& modular<T>::abs() throw()
+    modular<T>& modular<T>::abs() 
     {
       this->value = whiteice::math::abs(this->value);
       return *this;
@@ -467,7 +467,7 @@ namespace whiteice
     
     template <typename T>
     T& modular<T>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
+      
     {
       if(index == 0)
 	return this->value;
@@ -480,7 +480,7 @@ namespace whiteice
     
     template <typename T>
     const T& modular<T>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       if(index == 0)
 	return this->value;
@@ -512,16 +512,16 @@ namespace whiteice
     
     
     template modular<unsigned int> operator*<unsigned int>
-      (const unsigned int& s, const modular<unsigned int>&) throw(std::invalid_argument);
+      (const unsigned int& s, const modular<unsigned int>&) ;
     
     template modular<unsigned short> operator*<unsigned short>
-      (const unsigned short& s, const modular<unsigned short>&) throw(std::invalid_argument);
+      (const unsigned short& s, const modular<unsigned short>&) ;
     
     template modular<unsigned char> operator*<unsigned char>
-      (const unsigned char& s, const modular<unsigned char>&) throw(std::invalid_argument);
+      (const unsigned char& s, const modular<unsigned char>&) ;
     
     template modular<integer> operator*<integer>
-      (const integer& s, const modular<integer>&) throw(std::invalid_argument);
+      (const integer& s, const modular<integer>&) ;
     
     
     template std::ostream& operator<< <unsigned int>(std::ostream& ios, const whiteice::math::modular<unsigned int>&);

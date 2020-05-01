@@ -66,7 +66,7 @@ GBRBM<T>::GBRBM(const GBRBM<T>& rbm)
 
 // creates 2-layer: V * H network
 template <typename T>
-GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument)
+GBRBM<T>::GBRBM(unsigned int visible, unsigned int hidden) 
 {
     if(visible == 0 || hidden == 0)
       throw std::invalid_argument("invalid network architecture");
@@ -186,14 +186,14 @@ bool GBRBM<T>::resize(unsigned int visible, unsigned int hidden)
 ////////////////////////////////////////////////////////////
 
 template <typename T>
-unsigned int GBRBM<T>::getVisibleNodes() const throw()
+unsigned int GBRBM<T>::getVisibleNodes() const 
 {
 	return W.ysize();
 }
 
 
 template <typename T>
-unsigned int GBRBM<T>::getHiddenNodes() const throw()
+unsigned int GBRBM<T>::getHiddenNodes() const 
 {
 	return W.xsize();
 }
@@ -449,7 +449,7 @@ bool GBRBM<T>::setParameters(const math::matrix<T>& W, const math::vertex<T>& a,
 
 
 template <typename T>
-void GBRBM<T>::getVariance(math::vertex<T>& var) const throw()
+void GBRBM<T>::getVariance(math::vertex<T>& var) const 
 {
 	var.resize(z.size());
 
@@ -459,7 +459,7 @@ void GBRBM<T>::getVariance(math::vertex<T>& var) const throw()
 
 
 template <typename T>
-bool GBRBM<T>::setVariance(const math::vertex<T>& var) throw()
+bool GBRBM<T>::setVariance(const math::vertex<T>& var) 
 {
 	if(var.size() != z.size())
 		return false;
@@ -1262,7 +1262,7 @@ T GBRBM<T>::getUTemperature()
 }
 
 template <typename T>
-unsigned int GBRBM<T>::qsize() const throw() // size of q vector q = [a, b, z, vec(W)]
+unsigned int GBRBM<T>::qsize() const  // size of q vector q = [a, b, z, vec(W)]
 {
 	return (a.size() + b.size() + z.size() + W.ysize()*W.xsize());
 }
@@ -1386,7 +1386,7 @@ void GBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& 
 
 
 template <typename T>
-T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const throw() // calculates U(q) = -log(P(data|q))
+T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const  // calculates U(q) = -log(P(data|q))
 {
         const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well
 
@@ -1590,7 +1590,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 
 
 template <typename T>
-whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q) throw() // calculates grad(U(q))
+whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  // calculates grad(U(q))
 {
         const unsigned int CDk = 2; // was CD-25 !!
         const unsigned int NUMUSAMPLES = 1000; // 1000 seem to work rather well..
@@ -1936,7 +1936,7 @@ void GBRBM<T>::setLearnBothMode() // learn both variance and parameteres
 
 // load & saves RBM data from/to file
 template <typename T>
-bool GBRBM<T>::load(const std::string& filename) throw()
+bool GBRBM<T>::load(const std::string& filename) 
 {
   whiteice::dataset<T> file;
 
@@ -2005,7 +2005,7 @@ bool GBRBM<T>::load(const std::string& filename) throw()
   
 
 template <typename T>
-bool GBRBM<T>::save(const std::string& filename) const throw()
+bool GBRBM<T>::save(const std::string& filename) const 
 {
   whiteice::dataset<T> file;
 

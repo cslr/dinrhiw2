@@ -16,7 +16,7 @@ namespace whiteice
   
   // returns input vectors dimension
   template <typename T>  
-  unsigned int nnetwork_function<T>::dimension() const throw()
+  unsigned int nnetwork_function<T>::dimension() const 
   {
     return net.input_size();
   }
@@ -68,7 +68,7 @@ namespace whiteice
   }
   
   template <typename T>  
-  bool nnetwork_function<T>::hasGradient() const throw()
+  bool nnetwork_function<T>::hasGradient() const 
   {
     return false;
   }

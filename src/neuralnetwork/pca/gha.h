@@ -16,31 +16,31 @@ class GHA : public PCA<T>
   virtual ~GHA();
   
   bool reset(unsigned int input_size,
-	     unsigned int output_size=0) throw();
+	     unsigned int output_size=0) ;
   
   bool train(const std::vector<T>& input)
-    throw(std::out_of_range);
+    ;
   bool batch_train(const std::vector< const std::vector<T> >& input)
-    throw(std::out_of_range);
+    ;
   
    bool code(const std::vector<T>& input,
 	     std::vector<T>& coded)
-     throw(std::out_of_range);
+     ;
    
    bool encode(const std::vector<T>& coded,
 	       std::vector<T>& encoded)
-    throw(std::out_of_range);
+    ;
 
    /* returns input vector size */
-   unsigned int size() throw();
+   unsigned int size() ;
    
   /* returns output size */
-   unsigned int output_size() throw();
+   unsigned int output_size() ;
    
    std::vector<T> eigenvector(unsigned int index)
-     throw(std::out_of_range);
+     ;
    
-   // T eigenvalue(unsigned int index) throw(std:out_of_range);
+   // T eigenvalue(unsigned int index) ;
 
    /* 
     * returns 1 when PCA vectors are orthonormal

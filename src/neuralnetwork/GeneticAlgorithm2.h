@@ -58,34 +58,34 @@ namespace whiteice
     // f(x) > 0  with all x !
     GA(const unsigned int nbits,
        const function<dynamic_bitset, float>& f);
-    ~GA() throw();
+    ~GA() ;
     
-    float& getCrossover() throw(){ return p_crossover; }
-    float& getMutation()  throw(){ return p_mutation; }
+    float& getCrossover() { return p_crossover; }
+    float& getMutation()  { return p_mutation; }
     
     // optimizes with given
     // population size
     bool maximize(const unsigned int numIterations,
-		  const unsigned int size) throw();
+		  const unsigned int size) ;
     bool minimize(const unsigned int numIterations,
-		  const unsigned int size) throw();
+		  const unsigned int size) ;
     
       // continues optimization
-    bool continue_optimization(const unsigned int numIterations) throw();
+    bool continue_optimization(const unsigned int numIterations) ;
       
     // returns value of the best candidate
     // saves it to best
-    float getBest(dynamic_bitset& best) const throw();
+    float getBest(dynamic_bitset& best) const ;
     
     // returns mean value
-    float getMean() const throw();
+    float getMean() const ;
     
     // bad english...
-    bool verbosity(bool v) throw(){ verbose = v; return verbose; }
+    bool verbosity(bool v) { verbose = v; return verbose; }
     
   private:
     
-    bool create_initial_population() throw();
+    bool create_initial_population() ;
     
     const unsigned int bits;
     function<dynamic_bitset, float>* f;

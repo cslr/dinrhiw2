@@ -20,7 +20,7 @@ namespace whiteice
      * if compress() fails otherwise objects data
      * must still be intact
      */
-    virtual bool compress() throw() = 0;
+    virtual bool compress()  = 0;
     
     /* tries to decompress object data 
      * decompress must fail (and do nothing) 
@@ -29,10 +29,10 @@ namespace whiteice
      * if decompress() fails otherwise object's data
      * must still be intact (in a compressed form)
      */
-    virtual bool decompress() throw() = 0;
+    virtual bool decompress()  = 0;
     
     /* tells if data is currently compressed or not */
-    virtual bool iscompressed() const throw() = 0;
+    virtual bool iscompressed() const  = 0;
   };
   
 }

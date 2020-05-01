@@ -83,7 +83,7 @@ public:
   virtual ~gaussian_balls(){
   }
   
-  unsigned int dimension() const throw() {
+  unsigned int dimension() const  {
     return dim;
   }
   
@@ -134,11 +134,11 @@ public:
   
   // dummy functions
   
-  bool hasGradient() const throw(){ return false; }
+  bool hasGradient() const { return false; }
   whiteice::math::vertex< blas_real<float> > grad(whiteice::math::vertex< blas_real<float> >& x) const{ return x; }
   void grad(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::vertex< blas_real<float> >& y) const{ return; }
       
-  bool hasHessian() const throw(){ return false; }
+  bool hasHessian() const { return false; }
   whiteice::math::matrix< blas_real<float> > hessian(whiteice::math::vertex< blas_real<float> >& x) const{ return x.outerproduct(); }
   void hessian(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::matrix< blas_real<float> >& y) const{ return; }
 
@@ -174,7 +174,7 @@ public:
   virtual ~gaussian_halfballs(){
   }
   
-  unsigned int dimension() const throw() {
+  unsigned int dimension() const  {
     return dim;
   }
   
@@ -224,11 +224,11 @@ public:
   
   // dummy functions
   
-  bool hasGradient() const throw(){ return false; }
+  bool hasGradient() const { return false; }
   whiteice::math::vertex< blas_real<float> > grad(whiteice::math::vertex< blas_real<float> >& x) const{ return x; }
   void grad(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::vertex< blas_real<float> >& y) const{ return; }
       
-  bool hasHessian() const throw(){ return false; }
+  bool hasHessian() const { return false; }
   whiteice::math::matrix< blas_real<float> > hessian(whiteice::math::vertex< blas_real<float> >& x) const{ return x.outerproduct(); }
   void hessian(whiteice::math::vertex< blas_real<float> >& x, whiteice::math::matrix< blas_real<float> >& y) const{ return; }
   

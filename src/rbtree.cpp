@@ -13,7 +13,7 @@ namespace whiteice
   /**************************************************/
   
   template <typename T>
-  rbtree<T>::rbtree() throw()
+  rbtree<T>::rbtree() 
   {
     root = 0;
     numberOfNodes = 0;
@@ -21,14 +21,14 @@ namespace whiteice
   
   
   template <typename T>
-  rbtree<T>::~rbtree() throw()
+  rbtree<T>::~rbtree() 
   {
     if(root) free_subtree(root);
   }
   
   
   template <typename T>
-  bool rbtree<T>::insert(const T& t) throw()
+  bool rbtree<T>::insert(const T& t) 
   {
     try{
       rbnode<T>* n = new rbnode<T>(t);
@@ -39,7 +39,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool rbtree<T>::remove(T& t) throw()
+  bool rbtree<T>::remove(T& t) 
   {
     try{    
       rbnode<T>* n = iterative_search(root, t);
@@ -53,7 +53,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool rbtree<T>::search(T& value) const throw()
+  bool rbtree<T>::search(T& value) const 
   {
     try{
       rbnode<T>* t = iterative_search(root, value);
@@ -68,7 +68,7 @@ namespace whiteice
   
   
   template <typename T>
-  T& rbtree<T>::maximum() const throw(std::logic_error)
+  T& rbtree<T>::maximum() const 
   {
     rbnode<T> *k = max_value(root);
     if(!k) throw std::logic_error("no maximum value: empty tree");
@@ -76,7 +76,7 @@ namespace whiteice
   }
   
   template <typename T>
-  T& rbtree<T>::minimum() const throw(std::logic_error)
+  T& rbtree<T>::minimum() const 
   {
     rbnode<T> *k = min_value(root);  
     if(!k) throw std::logic_error("no minimum value: empty tree");
@@ -85,7 +85,7 @@ namespace whiteice
   
   
   template <typename T>
-  void rbtree<T>::clear() throw()
+  void rbtree<T>::clear() 
   {
     if(root) free_subtree(root);
     root = 0;
@@ -94,14 +94,14 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int rbtree<T>::size() const throw()
+  unsigned int rbtree<T>::size() const 
   {
     return numberOfNodes;
   }
   
   
   template <typename T>
-  bool rbtree<T>::list() const throw()
+  bool rbtree<T>::list() const 
   {
     std::vector<rbnode<T>*> A, B;      
     A.push_back(root);
@@ -151,7 +151,7 @@ namespace whiteice
    * maintain red-black property -> balanced trees
    */
   template <typename T>
-  bool rbtree<T>::insert(rbnode<T>* x) throw()
+  bool rbtree<T>::insert(rbnode<T>* x) 
   {
     try{
       if(!basic_insert(x)) return false;
@@ -233,7 +233,7 @@ namespace whiteice
    * normal binary tree insert
    */
   template <typename T>
-  bool rbtree<T>::basic_insert(rbnode<T>* z) throw()
+  bool rbtree<T>::basic_insert(rbnode<T>* z) 
   { 
     try{
       rbnode<T>* y = 0;
@@ -267,7 +267,7 @@ namespace whiteice
   
   
   template <typename T>
-  rbnode<T>* rbtree<T>::tree_search(rbnode<T>* x, T& value) const throw()
+  rbnode<T>* rbtree<T>::tree_search(rbnode<T>* x, T& value) const 
   {
     if(x == 0) return 0;
     if(x->value == value) return x;
@@ -280,7 +280,7 @@ namespace whiteice
   
   
   template <typename T>
-  rbnode<T>* rbtree<T>::iterative_search(rbnode<T>* x, T& value) const throw()
+  rbnode<T>* rbtree<T>::iterative_search(rbnode<T>* x, T& value) const 
   {
     if(x == 0) return 0;
     if(x->value == value) return x;  
@@ -297,7 +297,7 @@ namespace whiteice
   
   
   template <typename T>
-  rbnode<T>* rbtree<T>::min_value(rbnode<T>* x) const throw()
+  rbnode<T>* rbtree<T>::min_value(rbnode<T>* x) const 
   {
     if(x == 0) return 0;
     while(x->left != 0) x = x->left;
@@ -306,7 +306,7 @@ namespace whiteice
   
   
   template <typename T>
-  rbnode<T>* rbtree<T>::max_value(rbnode<T>* x) const throw()
+  rbnode<T>* rbtree<T>::max_value(rbnode<T>* x) const 
   {
     if(x == 0) return 0;
     while(x->right != 0) x = x->right;
@@ -315,7 +315,7 @@ namespace whiteice
   
   
   template <typename T>
-  rbnode<T>* rbtree<T>::tree_successor(rbnode<T>* x) const throw()
+  rbnode<T>* rbtree<T>::tree_successor(rbnode<T>* x) const 
   {
     if(x == 0) return 0;
     if(x->right)
@@ -337,7 +337,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool rbtree<T>::remove(rbnode<T>* z) throw()
+  bool rbtree<T>::remove(rbnode<T>* z) 
   {
     rbnode<T> *y, *x;
     
@@ -416,7 +416,7 @@ namespace whiteice
   
   /* keeps red/black property after delete. */
   template <typename T>
-  void rbtree<T>::rb_delete_fixup(rbnode<T>* x) throw()
+  void rbtree<T>::rb_delete_fixup(rbnode<T>* x) 
   {
     rbnode<T>* w;
     
@@ -510,7 +510,7 @@ namespace whiteice
   
   
   template <typename T>
-  void rbtree<T>::free_subtree(rbnode<T>* x) throw()
+  void rbtree<T>::free_subtree(rbnode<T>* x) 
   {
     if(x){
       free_subtree(x->left);

@@ -9,7 +9,7 @@ namespace whiteice
   }
   
   template <typename T>
-  unsigned int ga3_test_function<T>::dimension() const throw()
+  unsigned int ga3_test_function<T>::dimension() const 
   {
     return 2;
   }
@@ -57,7 +57,7 @@ namespace whiteice
 
   
   template <typename T>
-  bool ga3_test_function<T>::hasGradient() const throw()
+  bool ga3_test_function<T>::hasGradient() const 
   {
     return false;
   }

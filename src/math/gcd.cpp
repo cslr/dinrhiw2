@@ -12,7 +12,7 @@ namespace whiteice
 
   // calculates gcd between two numbers
   template <typename T> 
-  T gcd(T a, T b) throw()
+  T gcd(T a, T b) 
   {
     if(a < b) // after this one a >= b
       std::swap<T>(a,b);
@@ -33,7 +33,7 @@ namespace whiteice
   
   
   template <typename T>
-  void permutation(std::vector<T>& A) throw()
+  void permutation(std::vector<T>& A) 
   {
     if(A.size() <= 1) return;
     
@@ -51,7 +51,7 @@ namespace whiteice
   
   
   template <typename T>
-  void dqpermutation(std::vector<T>& A) throw()
+  void dqpermutation(std::vector<T>& A) 
   {
     if(A.size() <= 1) return;
     

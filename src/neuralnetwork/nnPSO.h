@@ -51,14 +51,14 @@ namespace whiteice
       // (I know that this is somewhat incorrect..)
       T getCurrentValidationError();
       
-      bool verbosity(bool v) throw();
+      bool verbosity(bool v) ;
       
       // samples NN weight vector from PSO swarm
       // samplerate of particle is proportional to goodness
       const math::vertex<T>& sample();
       
-      bool enableOvertraining() throw();
-      bool disableOvertraining() throw();
+      bool enableOvertraining() ;
+      bool disableOvertraining() ;
       
     private:
       
@@ -102,15 +102,15 @@ namespace whiteice
       
       virtual void calculate(const math::vertex<T>& x, T& y) const;
       
-      virtual unsigned int dimension() const throw() PURE_FUNCTION;
+      virtual unsigned int dimension() const  PURE_FUNCTION;
       
       // creates copy of object
       virtual function<math::vertex<T>,T>* clone() const;
       
       // changes error calculation method
-      bool getUseAllData() const throw();
-      void enableUseAllData() throw();
-      void disableUseAllData() throw();
+      bool getUseAllData() const ;
+      void enableUseAllData() ;
+      void disableUseAllData() ;
       
       // calculations validation error
       // if all samples are used returns exactly same error 
@@ -119,13 +119,13 @@ namespace whiteice
       
       //////////////////////////////////////////////////////////////////////
       
-      bool hasGradient() const throw() PURE_FUNCTION;
+      bool hasGradient() const  PURE_FUNCTION;
       
       // gets gradient at given point (faster)
       math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;
       void grad(math::vertex<T>& x, math::vertex<T>& y) const;
       
-      bool hasHessian() const throw() PURE_FUNCTION;
+      bool hasHessian() const  PURE_FUNCTION;
       
       // gets gradient at given point (faster)
       math::matrix<T> hessian(math::vertex<T>& x) const PURE_FUNCTION;

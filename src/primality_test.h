@@ -16,7 +16,7 @@ namespace whiteice
    * pairs in the map are form (prime, number of times)
    */
   template <typename T>
-    bool factorize(T n, std::map<T,T>& f) throw(); 
+    bool factorize(T n, std::map<T,T>& f) ; 
   
 }
 

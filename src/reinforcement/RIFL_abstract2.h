@@ -45,7 +45,7 @@ namespace whiteice
 
     // parameters are dimensions of vectors dimActions and dimStates: R^d
     RIFL_abstract2(unsigned int numActions, unsigned int numStates);
-    ~RIFL_abstract2() throw();
+    ~RIFL_abstract2() ;
 
     // starts Reinforcement Learning thread
     bool start();
@@ -57,16 +57,16 @@ namespace whiteice
 
     // epsilon E [0,1] percentage of actions are chosen according to model
     //                 1-e percentage of actions are random (exploration)
-    bool setEpsilon(T epsilon) throw();
+    bool setEpsilon(T epsilon) ;
 
-    T getEpsilon() const throw();
+    T getEpsilon() const ;
 
     /*
      * sets/gets learning mode 
      * (do we do just control or also try to learn from data)
      */
-    void setLearningMode(bool learn) throw();
-    bool getLearningMode() const throw();
+    void setLearningMode(bool learn) ;
+    bool getLearningMode() const ;
 
     /*
      * hasModel flag means we have a proper model
@@ -75,8 +75,8 @@ namespace whiteice
      * as long as we don't have a proper model
      * we make random actions (initially) 
      */
-    void setHasModel(unsigned int hasModel) throw();
-    unsigned int getHasModel() throw();
+    void setHasModel(unsigned int hasModel) ;
+    unsigned int getHasModel() ;
 
     // saves learnt Reinforcement Learning Model to file
     bool save(const std::string& filename) const;

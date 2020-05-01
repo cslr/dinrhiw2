@@ -30,7 +30,7 @@ namespace whiteice
 
     protected:
       
-      FactoryImpl() throw(std::logic_error);
+      FactoryImpl() ;
       
     public:
       

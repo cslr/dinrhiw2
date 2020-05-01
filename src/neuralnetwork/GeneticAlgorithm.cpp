@@ -33,7 +33,7 @@ namespace whiteice
 
   
   template <typename T>
-  GeneticAlgorithm<T>::~GeneticAlgorithm() throw()
+  GeneticAlgorithm<T>::~GeneticAlgorithm() 
   {
     delete f;
   }
@@ -41,7 +41,7 @@ namespace whiteice
   
   template <typename T>
   bool GeneticAlgorithm<T>::maximize(const unsigned int numIterations,
-				     const unsigned int size) throw()
+				     const unsigned int size) 
   {
     try{
       if(size == 0) return false;
@@ -67,7 +67,7 @@ namespace whiteice
   
   template <typename T>
   bool GeneticAlgorithm<T>::minimize(const unsigned int numIterations,
-				     const unsigned int size) throw()
+				     const unsigned int size) 
   {
     try{
       if(size == 0) return false;
@@ -95,7 +95,7 @@ namespace whiteice
    * currently: slow but perfect
    */
   template <typename T>
-  bool GeneticAlgorithm<T>::continue_optimization(const unsigned int numIterations) throw()
+  bool GeneticAlgorithm<T>::continue_optimization(const unsigned int numIterations) 
   {
     std::vector< std::bitset< sizeof(T)*8> >* tmp_ptr;
     
@@ -254,7 +254,7 @@ namespace whiteice
    * assumes rand() has been initialized with srand().
    */
   template <typename T>
-  bool GeneticAlgorithm<T>::create_initial_population() throw()
+  bool GeneticAlgorithm<T>::create_initial_population() 
   {
     try{
       typename std::vector< std::bitset< sizeof(T)*8> >::iterator i;
@@ -282,7 +282,7 @@ namespace whiteice
   
   template <typename T>
   bool GeneticAlgorithm<T>::create_candidate(const std::bitset< sizeof(T)*8 >& bits,
-					     T& candidate) const throw()
+					     T& candidate) const 
   {
     unsigned char* ptr = (unsigned char*)(&candidate);
     unsigned char value;
@@ -303,7 +303,7 @@ namespace whiteice
   // returns value of the best candidate
   // saves it to best
   template <typename T>
-  double GeneticAlgorithm<T>::getBest(T& best) const throw()
+  double GeneticAlgorithm<T>::getBest(T& best) const 
   {
     best = best_candidate;
     return very_best_value;
@@ -311,7 +311,7 @@ namespace whiteice
   
   // returns mean value
   template <typename T>
-  double GeneticAlgorithm<T>::getMean() const throw()
+  double GeneticAlgorithm<T>::getMean() const 
   {
     return mean_value;
   }

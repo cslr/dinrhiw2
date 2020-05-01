@@ -42,7 +42,7 @@ namespace whiteice
       
       // returns true if last call of find() finished before time limit
       // and managed to find all possible rules
-      bool finished() const throw();
+      bool finished() const ;
       
       // frees all data structures not needed
       // after all rules have been found
@@ -51,8 +51,8 @@ namespace whiteice
       
     private:
       
-      unsigned int calculate_counts(const dynamic_bitset& set) const throw();
-      bool internal_isfinished() const throw();
+      unsigned int calculate_counts(const dynamic_bitset& set) const ;
+      bool internal_isfinished() const ;
       
       // input data
       

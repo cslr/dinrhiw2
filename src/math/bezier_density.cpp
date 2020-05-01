@@ -17,16 +17,16 @@ namespace whiteice
     /**************************************************/
     
     template <typename T, typename S>
-    bezier_density<T,S>::bezier_density() throw(){ }
+    bezier_density<T,S>::bezier_density() { }
     
     
     template <typename T, typename S>
-    bezier_density<T,S>::~bezier_density() throw(){ }
+    bezier_density<T,S>::~bezier_density() { }
     
     /***************************************************/
     
     template <typename T, typename S>
-    unsigned int bezier_density<T,S>::operator()(const std::vector< std::vector< std::vector<T> > >& data) throw()
+    unsigned int bezier_density<T,S>::operator()(const std::vector< std::vector< std::vector<T> > >& data) 
     {
       if(!data.size()) return 0;
       if(!data[0].size()) return 0;
@@ -127,14 +127,14 @@ namespace whiteice
     
     template <typename T, typename S>
     typename bezier_density<T,S>::iterator bezier_density<T,S>::begin()
-      const throw()
+      const 
     {
       return density.begin();
     }
   
     template <typename T, typename S>
     typename bezier_density<T,S>::iterator bezier_density<T,S>::end()
-      const throw()
+      const 
     {
       return density.end();
     }
@@ -145,7 +145,7 @@ namespace whiteice
     template <typename T, typename S>
     std::vector< std::vector<T> >&
     bezier_density<T,S>::operator[](unsigned int index)
-      throw(std::out_of_range)
+      
     {
       return density[index];
     }
@@ -154,20 +154,20 @@ namespace whiteice
     template <typename T, typename S>
     const std::vector< std::vector<T> >&
     bezier_density<T,S>::operator[](unsigned int index)
-      const throw(std::out_of_range)
+      const 
     {
       return density[index];
     }
     
     template <typename T, typename S>
-    unsigned int bezier_density<T,S>::size() const throw()
+    unsigned int bezier_density<T,S>::size() const 
     {
       return density.size();
     }
     
     
     template <typename T, typename S>
-    void bezier_density<T,S>::clear() throw()
+    void bezier_density<T,S>::clear() 
     {
       density.clear();
     }

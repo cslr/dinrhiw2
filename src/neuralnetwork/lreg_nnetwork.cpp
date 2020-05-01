@@ -18,7 +18,7 @@ namespace whiteice
   }
 
   template <typename T>
-  lreg_nnetwork<T>::lreg_nnetwork(const std::vector<unsigned int>& nnarch) throw(std::invalid_argument) : nnetwork<T>(nnarch)
+  lreg_nnetwork<T>::lreg_nnetwork(const std::vector<unsigned int>& nnarch)  : nnetwork<T>(nnarch)
   {
     
   }
@@ -30,14 +30,14 @@ namespace whiteice
   }
   
   template <typename T>
-  inline T lreg_nnetwork<T>::nonlin(const T& input, unsigned int layer) const throw() // non-linearity used in neural network
+  inline T lreg_nnetwork<T>::nonlin(const T& input, unsigned int layer) const  // non-linearity used in neural network
   {
     T output = T(1.0) / (T(1.0) + math::exp(-input));
     return output;
   }
   
   template <typename T>
-  inline T lreg_nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const throw() // derivate of non-linearity used in neural network
+  inline T lreg_nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const  // derivate of non-linearity used in neural network
   {
     T output = T(1.0) + math::exp(-input);
     

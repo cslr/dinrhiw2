@@ -22,13 +22,13 @@ namespace whiteice
     public:
       virtual ~data_source(){ }
       
-      virtual datum& operator[](unsigned int index) throw(std::out_of_range) = 0;
-      virtual const datum& operator[](unsigned int index) const throw(std::out_of_range) = 0;      
+      virtual datum& operator[](unsigned int index)  = 0;
+      virtual const datum& operator[](unsigned int index) const  = 0;      
       
-      virtual unsigned int size() const throw() = 0;
+      virtual unsigned int size() const  = 0;
       
       // returns if reading data can success
-      virtual bool good() const throw() = 0;
+      virtual bool good() const  = 0;
       
       // flushes all data to source if changed and cached
       // throws exception if something goes wrong

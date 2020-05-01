@@ -81,7 +81,7 @@ namespace whiteice
 
   
   template <typename T>
-  void bayesian_nnetwork<T>::diagnosticsInfo() const throw()
+  void bayesian_nnetwork<T>::diagnosticsInfo() const 
   {
     char buffer[80];
 
@@ -98,7 +98,7 @@ namespace whiteice
   
   // number of samples in BNN
   template <typename T>
-  unsigned int bayesian_nnetwork<T>::getNumberOfSamples() const throw(){
+  unsigned int bayesian_nnetwork<T>::getNumberOfSamples() const {
 	  return nnets.size();
   }
 
@@ -430,7 +430,7 @@ namespace whiteice
 
 
   template <typename T>
-  unsigned int bayesian_nnetwork<T>::outputSize() const throw()
+  unsigned int bayesian_nnetwork<T>::outputSize() const 
   {
     if(nnets.size() <= 0) return 0;
 
@@ -438,7 +438,7 @@ namespace whiteice
   }
 
   template <typename T>
-  unsigned int bayesian_nnetwork<T>::inputSize() const throw()
+  unsigned int bayesian_nnetwork<T>::inputSize() const 
   {
     if(nnets.size() <= 0) return 0;
 
@@ -456,7 +456,7 @@ namespace whiteice
   // stores and loads bayesian nnetwork to a text file
   // (saves all samples into files)
   template <typename T>
-  bool bayesian_nnetwork<T>::load(const std::string& filename) throw()
+  bool bayesian_nnetwork<T>::load(const std::string& filename) 
   {
     try{
       // whiteice::conffile configuration;
@@ -651,7 +651,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool bayesian_nnetwork<T>::save(const std::string& filename) const throw()
+  bool bayesian_nnetwork<T>::save(const std::string& filename) const 
   {
     try{
       if(nnets.size() <= 0) return false;

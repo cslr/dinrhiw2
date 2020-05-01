@@ -298,7 +298,7 @@ namespace whiteice
     }
     
     
-    bool AssociationRuleFinder::finished() const throw()
+    bool AssociationRuleFinder::finished() const 
     {
       return search_finished;
     }
@@ -315,7 +315,7 @@ namespace whiteice
     
     
     // calculates number of times given pattern (subset) exists in data
-    unsigned int AssociationRuleFinder::calculate_counts(const dynamic_bitset& bset) const throw()
+    unsigned int AssociationRuleFinder::calculate_counts(const dynamic_bitset& bset) const 
     {
       unsigned int c = 0;
       unsigned int bsetc = bset.count();
@@ -330,7 +330,7 @@ namespace whiteice
     
     // returns true if last call of find() finished before time limit
     // and managed to find all possible rules
-    bool AssociationRuleFinder::internal_isfinished() const throw()
+    bool AssociationRuleFinder::internal_isfinished() const 
     {
       // fset generation:
       if(fset.size() == 0) return false;

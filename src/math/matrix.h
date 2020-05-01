@@ -78,47 +78,47 @@ namespace whiteice
       virtual ~matrix();
       
       
-      matrix<T> operator+(const matrix<T>&) const throw(illegal_operation);
-      matrix<T> operator-(const matrix<T>&) const throw(illegal_operation);
-      matrix<T> operator*(const matrix<T>&) const throw(illegal_operation);
-      matrix<T> operator/(const matrix<T>&) const throw(illegal_operation);
-      matrix<T> operator!() const throw(illegal_operation);
-      matrix<T> operator-() const throw(illegal_operation);
+      matrix<T> operator+(const matrix<T>&) const ;
+      matrix<T> operator-(const matrix<T>&) const ;
+      matrix<T> operator*(const matrix<T>&) const ;
+      matrix<T> operator/(const matrix<T>&) const ;
+      matrix<T> operator!() const ;
+      matrix<T> operator-() const ;
       
-      matrix<T>& operator+=(const matrix<T>&) throw(illegal_operation);
-      matrix<T>& operator-=(const matrix<T>&) throw(illegal_operation);
-      matrix<T>& operator*=(const matrix<T>&) throw(illegal_operation);
-      matrix<T>& operator/=(const matrix<T>&) throw(illegal_operation);
+      matrix<T>& operator+=(const matrix<T>&) ;
+      matrix<T>& operator-=(const matrix<T>&) ;
+      matrix<T>& operator*=(const matrix<T>&) ;
+      matrix<T>& operator/=(const matrix<T>&) ;
       
-      matrix<T>& operator=(const matrix<T>&) throw(illegal_operation);
-      //matrix<T>& operator=(matrix<T>&& t) throw(illegal_operation);
+      matrix<T>& operator=(const matrix<T>&) ;
+      //matrix<T>& operator=(matrix<T>&& t) ;
       
-      bool operator==(const matrix<T>&) const throw(uncomparable);
-      bool operator!=(const matrix<T>&) const throw(uncomparable);
-      bool operator>=(const matrix<T>&) const throw(uncomparable);
-      bool operator<=(const matrix<T>&) const throw(uncomparable);
-      bool operator< (const matrix<T>&) const throw(uncomparable);
-      bool operator> (const matrix<T>&) const throw(uncomparable);
+      bool operator==(const matrix<T>&) const ;
+      bool operator!=(const matrix<T>&) const ;
+      bool operator>=(const matrix<T>&) const ;
+      bool operator<=(const matrix<T>&) const ;
+      bool operator< (const matrix<T>&) const ;
+      bool operator> (const matrix<T>&) const ;
 
       // scalars and matrix interaction
-      matrix<T>& operator= (const T&) throw(illegal_operation);
+      matrix<T>& operator= (const T&) ;
 
-      matrix<T>  operator* (const T&) const throw();
+      matrix<T>  operator* (const T&) const ;
       
       template <typename TT>
-      friend matrix<TT> operator*(const TT&, const matrix<TT>&) throw(std::invalid_argument);
+      friend matrix<TT> operator*(const TT&, const matrix<TT>&) ;
       
       
-      matrix<T>  operator/ (const T&) const throw(std::invalid_argument);
+      matrix<T>  operator/ (const T&) const ;
       
-      matrix<T>& operator*=(const T&) throw();
-      matrix<T>& operator/=(const T&) throw(std::invalid_argument);
+      matrix<T>& operator*=(const T&) ;
+      matrix<T>& operator/=(const T&) ;
       
-      vertex<T> operator*(const vertex<T>&) const throw(std::invalid_argument);      
+      vertex<T> operator*(const vertex<T>&) const ;      
       
       // doesn't behave as expected. returns index:th
       // value from matrix (left->right, top->bottom order)
-      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation)
+      T& operator[](const unsigned int& index) 
       {
 #ifdef _GLIBCXX_DEBUG
 	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -126,7 +126,7 @@ namespace whiteice
 	return data[index]; // no range check
       }
       
-      const T& operator[](const unsigned int& index) const throw(std::out_of_range, illegal_operation)
+      const T& operator[](const unsigned int& index) const 
       {
 #ifdef _GLIBCXX_DEBUG
 	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -135,7 +135,7 @@ namespace whiteice
       }
       
       
-      T& operator()(unsigned int y, unsigned int x) throw(std::out_of_range, illegal_operation)
+      T& operator()(unsigned int y, unsigned int x) 
       {
 #ifdef _GLIBCXX_DEBUG
 	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -145,7 +145,7 @@ namespace whiteice
       }
       
       
-      const T& operator()(unsigned y, unsigned int x) const throw(std::out_of_range, illegal_operation)
+      const T& operator()(unsigned y, unsigned int x) const 
       {
 #ifdef _GLIBCXX_DEBUG
 	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
@@ -156,68 +156,68 @@ namespace whiteice
       matrix<T>& identity();
       matrix<T>& zero();
       
-      matrix<T>& crossproduct(const vertex<T>& v) throw(std::domain_error);
+      matrix<T>& crossproduct(const vertex<T>& v) ;
       
       // euclidean rotation
-      matrix<T>& rotation(const T& xr, const T& yr, const T& zr) throw();
+      matrix<T>& rotation(const T& xr, const T& yr, const T& zr) ;
       
       // translation
-      matrix<T>& translation(const T& dx, const T& dy, const T& dz) throw();
-      matrix<T>& abs() throw();
+      matrix<T>& translation(const T& dx, const T& dy, const T& dz) ;
+      matrix<T>& abs() ;
       
       // transposes itself (changes matrix)
-      matrix<T>& transpose() throw();
+      matrix<T>& transpose() ;
 
       // calculates hermitian matrix (conjugate transpose matrix)
-      matrix<T>& hermite() throw();
+      matrix<T>& hermite() ;
 
-      T det() const throw(std::logic_error); // determinate      
-      T trace() const throw(std::logic_error);
-      void diag(vertex<T>& diagonal) const throw();
+      T det() const ; // determinate      
+      T trace() const ;
+      void diag(vertex<T>& diagonal) const ;
 
       // inverse (returns false if matrix is singular and
       // value of matrix is garbage/undefined)
-      bool inv() throw();
+      bool inv() ;
       
       // calculates pseudoinverse using svd (should not never fail)
-      matrix<T>& pseudoinverse(const T machine_epsilon = T(0.0)) throw();
+      matrix<T>& pseudoinverse(const T machine_epsilon = T(0.0)) ;
 
       // symmetric pseudoinverse (symmetric eig to calculate evd)
-      bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) throw();
+      bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) ;
       
       
-      unsigned int size() const throw();
-      unsigned int ysize() const throw(); // rows      
-      unsigned int xsize() const throw(); // columns
+      unsigned int size() const ;
+      unsigned int ysize() const ; // rows      
+      unsigned int xsize() const ; // columns
       
-      bool resize_x(unsigned int d) throw(); // columns
-      bool resize_y(unsigned int d) throw(); // rows
-      bool resize(unsigned int y, unsigned int x) throw();
+      bool resize_x(unsigned int d) ; // columns
+      bool resize_y(unsigned int d) ; // rows
+      bool resize(unsigned int y, unsigned int x) ;
       
       // calculates 2-norm of row or column subvector. if second coordinate is bigger
       // than number of columns/rows then it will be set to be number of columns/rows
       // (latter coordinate is last element which will be included < x/y size)
       T rownorm(unsigned int y, unsigned int x1,
-		unsigned int x2 = ((unsigned int)-1)) const throw(std::out_of_range);
+		unsigned int x2 = ((unsigned int)-1)) const ;
       
       T colnorm(unsigned int x, unsigned int y1,
-		unsigned int y2 = ((unsigned int)-1)) const throw(std::out_of_range);
+		unsigned int y2 = ((unsigned int)-1)) const ;
       
       // copies row data to a given vector, M(y,x1:x2) -> v
       void rowcopyto(vertex<T>& v, unsigned int y, unsigned int x1 = 0,
-		     unsigned int x2 = ((unsigned int)-1)) const throw(std::out_of_range);
+		     unsigned int x2 = ((unsigned int)-1)) const ;
       
       // copies column data to a given vector, M(y1:y2,x) -> v
       void colcopyto(vertex<T>& v, unsigned int x, unsigned int y1 = 0,
-		     unsigned int y2 = ((unsigned int)-1)) const throw(std::out_of_range);
+		     unsigned int y2 = ((unsigned int)-1)) const ;
       
       // copies data from vector to a row
       void rowcopyfrom(const vertex<T>& v, unsigned int y, unsigned int x1 = 0,
-		       unsigned int x2 = ((unsigned int)-1)) throw(std::out_of_range);
+		       unsigned int x2 = ((unsigned int)-1)) ;
       
       // copies data from vector to a column
       void colcopyfrom(const vertex<T>& v, unsigned int x, unsigned int y1 = 0,
-		       unsigned int y2 = ((unsigned int)-1)) throw(std::out_of_range);
+		       unsigned int y2 = ((unsigned int)-1)) ;
       
       // creates matrix M from submatrix ([x0,x0+xs-1],[y0:y0+ys-1])
       bool submatrix(matrix<T>& M,
@@ -235,20 +235,20 @@ namespace whiteice
       
       
       // normalizes length of each row
-      void normalize() throw();
+      void normalize() ;
       
-      bool comparable() throw();
+      bool comparable() ;
 
       // converts matrix to printable string
-      void toString(std::string& line) const throw();
+      void toString(std::string& line) const ;
       
       //////////////////////////////////////////////////
       // matrix data compression
       
-      bool compress() throw();
-      bool decompress() throw();
-      bool iscompressed() const throw();
-      float ratio() const throw(); // compression ratio
+      bool compress() ;
+      bool decompress() ;
+      bool iscompressed() const ;
+      float ratio() const ; // compression ratio
       
       //////////////////////////////////////////////////
       
@@ -298,7 +298,7 @@ namespace whiteice
     
     
     template <typename T>
-      matrix<T> operator*(const T&, const matrix<T>&) throw(std::invalid_argument);
+      matrix<T> operator*(const T&, const matrix<T>&) ;
     
     template <typename T>
       std::ostream& operator<<(std::ostream& ios, const matrix<T>& M);
@@ -306,7 +306,7 @@ namespace whiteice
 #if 1
     // tries to convert matrix of type S to matrix of type T (B = A)    
     template <typename T, typename S>
-      bool convert(matrix<T>& B, const matrix<S>& A) throw()
+      bool convert(matrix<T>& B, const matrix<S>& A) 
       {
 	try{
 	  if(B.resize(A.ysize(), A.xsize()) == false)
@@ -363,32 +363,32 @@ namespace whiteice
     extern template class matrix< blas_complex<double> >;
     
     
-    extern template matrix<float> operator*<float>(const float&, const matrix<float>&) throw(std::invalid_argument);
-    extern template matrix<double> operator*<double>(const double&, const matrix<double>&) throw(std::invalid_argument);
+    extern template matrix<float> operator*<float>(const float&, const matrix<float>&) ;
+    extern template matrix<double> operator*<double>(const double&, const matrix<double>&) ;
     extern template matrix<complex<float> > operator*<complex<float> >(const complex<float>&, const matrix<complex<float> >&)
-      throw(std::invalid_argument);    
+      ;    
     extern template matrix<complex<double> > operator*<complex<double> >(const complex<double>&, const matrix<complex<double> >&)
-      throw(std::invalid_argument);
+      ;
     
-    //extern template matrix<int> operator*<int>(const int&, const matrix<int>&) throw(std::invalid_argument);
-    //extern template matrix<char> operator*<char>(const char&, const matrix<char>&) throw(std::invalid_argument);
+    //extern template matrix<int> operator*<int>(const int&, const matrix<int>&) ;
+    //extern template matrix<char> operator*<char>(const char&, const matrix<char>&) ;
     //extern template matrix<unsigned int> operator*<unsigned int>(const unsigned int&, const matrix<unsigned int>&)
-    //  throw(std::invalid_argument);
+    //  ;
     //extern template matrix<unsigned char> operator*<unsigned char>(const unsigned char&, const matrix<unsigned char>&)
-    //  throw(std::invalid_argument);
+    //  ;
     
     
     extern template matrix<blas_real<float> > operator*<blas_real<float> >
-      (const blas_real<float>&, const matrix<blas_real<float> >&) throw(std::invalid_argument);
+      (const blas_real<float>&, const matrix<blas_real<float> >&) ;
        
     extern template matrix<blas_real<double> > operator*<blas_real<double> >
-      (const blas_real<double>&, const matrix<blas_real<double> >&) throw(std::invalid_argument);
+      (const blas_real<double>&, const matrix<blas_real<double> >&) ;
     
     
     extern template matrix<blas_complex<float> > operator*<blas_complex<float> >
-      (const blas_complex<float>&, const matrix<blas_complex<float> >&) throw(std::invalid_argument);
+      (const blas_complex<float>&, const matrix<blas_complex<float> >&) ;
     extern template matrix<blas_complex<double> > operator*<blas_complex<double> >
-      (const blas_complex<double>&, const matrix<blas_complex<double> >&) throw(std::invalid_argument);
+      (const blas_complex<double>&, const matrix<blas_complex<double> >&) ;
         
     extern template std::ostream& operator<< <float>(std::ostream& ios, const matrix<float>& M);
     extern template std::ostream& operator<< <double>(std::ostream& ios, const matrix<double>& M);

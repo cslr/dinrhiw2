@@ -39,17 +39,17 @@ namespace whiteice
       
       virtual function<math::vertex<T>,T>* clone() const; // creates copy of object  
       
-      virtual unsigned int dimension() const throw() PURE_FUNCTION;
+      virtual unsigned int dimension() const  PURE_FUNCTION;
       
       
       //////////////////////////////////////////////////
       // not implemented
       
-      virtual bool hasGradient() const throw() PURE_FUNCTION;
+      virtual bool hasGradient() const  PURE_FUNCTION;
       virtual math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;
       virtual void grad(math::vertex<T>& x, math::vertex<T>& y) const;
       
-      virtual bool hasHessian() const throw() PURE_FUNCTION;
+      virtual bool hasHessian() const  PURE_FUNCTION;
       virtual math::matrix<T> hessian(math::vertex<T>& x) const PURE_FUNCTION;
       virtual void hessian(math::vertex<T>& x, math::matrix<T>& y) const;
       
@@ -59,7 +59,7 @@ namespace whiteice
       T minima_value;
       
       // sign() function for function streching
-      int sign(const T& x) const throw();
+      int sign(const T& x) const ;
     };
   
   

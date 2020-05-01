@@ -37,7 +37,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool linear_ETA<T>::start(T begin, T end) throw()
+  bool linear_ETA<T>::start(T begin, T end) 
   {
     time_start = get_time();
     begin_value = begin;
@@ -54,7 +54,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool linear_ETA<T>::update(T current) throw()
+  bool linear_ETA<T>::update(T current) 
   {
     double current_time = get_time();
     
@@ -68,7 +68,7 @@ namespace whiteice
   
   // ETA in seconds when the end value will be reached
   template <typename T>
-  T linear_ETA<T>::estimate() const throw()
+  T linear_ETA<T>::estimate() const 
   {
     return current_eta;
   }
@@ -77,7 +77,7 @@ namespace whiteice
   /**************************************************/
   
   template <typename T>
-  double linear_ETA<T>::get_time() const throw()
+  double linear_ETA<T>::get_time() const 
   {
     struct timeval  tv;
     struct timezone tz;

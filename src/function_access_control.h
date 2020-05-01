@@ -56,7 +56,7 @@ namespace whiteice
       std::string fid;  // function id
       
     public:
-      bool valid() const throw();
+      bool valid() const ;
     };
   
   
@@ -73,16 +73,16 @@ namespace whiteice
       
       unsigned int get_access(const char* fid,
 			      const fac_granter<T>& g)
-	const throw(whiteice::noaccess);
+	const ;
       
       
       unsigned int get_access(const std::string& fid,
 			      const fac_granter<T>& g)
-	const throw(whiteice::noaccess);
+	const ;
       
       
       fac<T>& auth(unsigned int id) const
-	throw(std::logic_error); 
+	; 
       
       
       void clear_access(unsigned int id) const;
@@ -100,7 +100,7 @@ namespace whiteice
     class fac_granter
     {
     public:
-      fac_granter() throw(whiteice::noaccess);
+      fac_granter() ;
       
     protected:
       // inheritator implements / sets
@@ -110,7 +110,7 @@ namespace whiteice
       //  to work'a'round const)
       virtual bool has_access(const std::string& fid,
 			      const fac_applicant<T>& a) const
-	throw() = 0;
+	 = 0;
       
       time_t fac_expiration_time;
       
@@ -121,7 +121,7 @@ namespace whiteice
       // function id, applicant class
       fac<T> get_access(const std::string& fid,
 			const fac_applicant<T>& a)
-	const throw(whiteice::noaccess);
+	const ;
       
     };
   

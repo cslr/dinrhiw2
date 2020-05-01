@@ -22,22 +22,22 @@ namespace whiteice
       public:
 	
 	// ctor & dtor
-	bezier() throw();
-	~bezier() throw();
+	bezier() ;
+	~bezier() ;
 	
 	typedef typename std::vector< vertex<T> >::const_iterator iterator;
 	
 	// calculates bezier curves
-	unsigned int operator()(const std::vector< vertex<T> >& data) throw();
+	unsigned int operator()(const std::vector< vertex<T> >& data) ;
 	
-	iterator begin() const throw();
-	iterator end() const throw();
+	iterator begin() const ;
+	iterator end() const ;
 	
-	vertex<T>& operator[](unsigned int index) throw(std::out_of_range);
-	const vertex<T>& operator[](unsigned int index) const throw(std::out_of_range);
-	unsigned int size() const throw();
+	vertex<T>& operator[](unsigned int index) ;
+	const vertex<T>& operator[](unsigned int index) const ;
+	unsigned int size() const ;
 	
-	void clear() throw();
+	void clear() ;
 	
       private:
 	

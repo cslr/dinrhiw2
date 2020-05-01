@@ -12,7 +12,7 @@ namespace whiteice
   {
     
     // data must be 64 bit and Keyschedule should be DESKey
-    bool DES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool DES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	
@@ -102,7 +102,7 @@ namespace whiteice
     }
     
     
-    bool DES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool DES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	
@@ -197,7 +197,7 @@ namespace whiteice
     bool DES::encrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k,
 		      const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       if(IV.size() != 64 && mode != ECBmode)
 	return false; // IV size is not same as block size and non ECB mode
@@ -256,7 +256,7 @@ namespace whiteice
     bool DES::decrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k,
 		      const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       if(IV.size() != 64 && mode != ECBmode)
 	return false; // IV size is not same as block size and non ECB mode
@@ -314,7 +314,7 @@ namespace whiteice
     
     
     // A is data (32bits), J is key (48bits)
-    bool DES::f(dynamic_bitset& A, const dynamic_bitset& J) throw()
+    bool DES::f(dynamic_bitset& A, const dynamic_bitset& J) 
     {
       dynamic_bitset EA;
       
@@ -551,7 +551,7 @@ namespace whiteice
     // Triple DES extension to DES
     
     
-    bool TDES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool TDES::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
       	// input data must be 64 bits
@@ -581,7 +581,7 @@ namespace whiteice
     }
     
     
-    bool TDES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool TDES::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	// input data must be 64 bits
@@ -616,7 +616,7 @@ namespace whiteice
     bool TDES::encrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k,
 		      const dynamic_bitset& IV,
-		       ModeOfOperation mode) throw()
+		       ModeOfOperation mode) 
     {
       try{
       	// input data must be 64 bits
@@ -649,7 +649,7 @@ namespace whiteice
     bool TDES::decrypt(data_source<dynamic_bitset>& data,
 		       const Keyschedule<dynamic_bitset>& k,
 		       const dynamic_bitset& IV,
-		       ModeOfOperation mode) throw()
+		       ModeOfOperation mode) 
     {
       try{
 	// input data must be 64 bits
@@ -710,20 +710,20 @@ namespace whiteice
     }
     
     
-    unsigned int DESKey::size() const throw()
+    unsigned int DESKey::size() const 
     {
       return 16;
     }
     
     
-    unsigned int DESKey::keybits() const throw()
+    unsigned int DESKey::keybits() const 
     {      
       return 48;
     }
     
     
     const dynamic_bitset& DESKey::operator[](unsigned int n)
-      const throw(std::out_of_range)
+      const 
     {
       // TODO: calculate and return (n+1):th round key
       
@@ -890,7 +890,7 @@ namespace whiteice
     }
     
     
-    unsigned int NDESKey::size() const throw()
+    unsigned int NDESKey::size() const 
     {
       if(keys.size() > 0)
 	return ( ( keys[0]->size() ) * keys.size() );
@@ -899,7 +899,7 @@ namespace whiteice
     }
     
     
-    unsigned int NDESKey::keybits() const throw()
+    unsigned int NDESKey::keybits() const 
     {
       if(keys.size() > 0)
 	return keys[0]->keybits();
@@ -909,7 +909,7 @@ namespace whiteice
     
     
     const dynamic_bitset& NDESKey::operator[](unsigned int n)
-      const throw(std::out_of_range)
+      const 
     {
       // each key has 16 rounds
       
@@ -957,19 +957,19 @@ namespace whiteice
     }
     
     
-    unsigned int PartialKeyschedule::size() const throw()
+    unsigned int PartialKeyschedule::size() const 
     {
       return len;
     }
     
-    unsigned int PartialKeyschedule::keybits() const throw()
+    unsigned int PartialKeyschedule::keybits() const 
     {
       return ks->keybits();
     }
     
     
     const dynamic_bitset& PartialKeyschedule::operator[](unsigned int n)
-      const throw(std::out_of_range)
+      const 
     {
       if(n >= len)
 	throw std::out_of_range("PartialKeyschedule: tried to access round key out of range");

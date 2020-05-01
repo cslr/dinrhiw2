@@ -16,18 +16,18 @@ namespace whiteice
     /**************************************************/
     
     template <typename T, typename S>
-    bezier_surface<T,S>::bezier_surface() throw(){ }
+    bezier_surface<T,S>::bezier_surface() { }
     
     
     template <typename T, typename S>
-    bezier_surface<T,S>::~bezier_surface() throw(){ }
+    bezier_surface<T,S>::~bezier_surface() { }
     
     /***************************************************/
     
     template <typename T, typename S>
     unsigned int
     bezier_surface<T,S>::operator()(const std::vector< std::vector<T> >& data)
-      throw()
+      
     {
       if(!data.size()) return 0;
       if(!data[0].size()) return 0;
@@ -99,14 +99,14 @@ namespace whiteice
     
     template <typename T, typename S>
     typename bezier_surface<T,S>::iterator
-    bezier_surface<T,S>::begin() const throw()
+    bezier_surface<T,S>::begin() const 
     {
       return surface.begin();
     }
     
     template <typename T, typename S>
     typename bezier_surface<T,S>::iterator
-    bezier_surface<T,S>::end() const throw()
+    bezier_surface<T,S>::end() const 
       
     {
       return surface.end();
@@ -117,27 +117,27 @@ namespace whiteice
     
     template <typename T, typename S>
     std::vector<T>& bezier_surface<T,S>::operator[](unsigned int index)
-      throw(std::out_of_range)
+      
     {
       return surface[index];
     }
   
     template <typename T, typename S>
     const std::vector<T>& bezier_surface<T,S>::operator[](unsigned int index)
-      const throw(std::out_of_range)
+      const 
     {
       return surface[index];
     }
   
     template <typename T, typename S>
-    unsigned int bezier_surface<T,S>::size() const throw()
+    unsigned int bezier_surface<T,S>::size() const 
     {
       return surface.size();
     }
     
     
     template <typename T, typename S>
-    void bezier_surface<T,S>::clear() throw()
+    void bezier_surface<T,S>::clear() 
     {
       surface.clear();
     }

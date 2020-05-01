@@ -64,16 +64,16 @@ namespace whiteice
 	
 	// comparision operators
 	
-	bool operator>=(const std::complex<T>& v) const throw(uncomparable){
+	bool operator>=(const std::complex<T>& v) const {
 	  throw uncomparable("Cannot compare complex numbers."); }
 	
-	bool operator<=(const std::complex<T>& v) const throw(uncomparable){
+	bool operator<=(const std::complex<T>& v) const {
 	  throw uncomparable("Cannot compare complex numbers."); }
 	
-	bool operator< (const std::complex<T>& v) const throw(uncomparable){
+	bool operator< (const std::complex<T>& v) const {
 	  throw uncomparable("Cannot compare complex numbers."); }
 	
-	bool operator> (const std::complex<T>& v) const throw(uncomparable){
+	bool operator> (const std::complex<T>& v) const {
 	  throw uncomparable("Cannot compare complex numbers."); }
       };
     
@@ -83,59 +83,59 @@ namespace whiteice
     // and its inverse
 
     template <unsigned int K, typename T>
-      bool fft(vertex< whiteice::math::complex<T> >& v) throw();
+      bool fft(vertex< whiteice::math::complex<T> >& v) ;
 
     template <unsigned int K, typename T>
-      bool ifft(vertex< whiteice::math::complex<T> >& v) throw();
+      bool ifft(vertex< whiteice::math::complex<T> >& v) ;
     
     // TODO:
     // calculates 1d fast hartley transform and its inverse
     // this is only for real value data
     //
     //template <unsigned int K, typename T>
-    //  bool fht(vertex<T, T>& v) throw();
+    //  bool fht(vertex<T, T>& v) ;
     //
     //template <unsigned int K, typename T>
-    //  bool ifht(vertex<T, T>& v) throw();
+    //  bool ifht(vertex<T, T>& v) ;
     
     
     //////////////////////////////////////////
     // convert() functions for float and doubles
     
-    bool convert(float&  B, const float&  A) throw();
-    bool convert(float&  B, const double& A) throw();
-    bool convert(double& B, const float&  A) throw();
-    bool convert(double& B, const double& A) throw();
+    bool convert(float&  B, const float&  A) ;
+    bool convert(float&  B, const double& A) ;
+    bool convert(double& B, const float&  A) ;
+    bool convert(double& B, const double& A) ;
     
-    bool convert(unsigned int& B, const float& A) throw();
-    bool convert(unsigned int& B, const double& A) throw();
-    bool convert(int& B, const float& A) throw();
-    bool convert(int& B, const double& A) throw();
+    bool convert(unsigned int& B, const float& A) ;
+    bool convert(unsigned int& B, const double& A) ;
+    bool convert(int& B, const float& A) ;
+    bool convert(int& B, const double& A) ;
 
-    bool convert(unsigned int& B, const blas_real<float>& A) throw();
-    bool convert(unsigned int& B, const blas_complex<float>& A) throw();
-    bool convert(unsigned int& B, const blas_real<double>& A) throw();
-    bool convert(unsigned int& B, const blas_complex<double>& A) throw();
+    bool convert(unsigned int& B, const blas_real<float>& A) ;
+    bool convert(unsigned int& B, const blas_complex<float>& A) ;
+    bool convert(unsigned int& B, const blas_real<double>& A) ;
+    bool convert(unsigned int& B, const blas_complex<double>& A) ;
 
-    bool convert(int& B, const blas_real<float>& A) throw();
-    bool convert(int& B, const blas_complex<float>& A) throw();
-    bool convert(int& B, const blas_real<double>& A) throw();
-    bool convert(int& B, const blas_complex<double>& A) throw();
+    bool convert(int& B, const blas_real<float>& A) ;
+    bool convert(int& B, const blas_complex<float>& A) ;
+    bool convert(int& B, const blas_real<double>& A) ;
+    bool convert(int& B, const blas_complex<double>& A) ;
 
-    bool convert(float& B, const blas_real<float>& A) throw();
-    bool convert(float& B, const blas_complex<float>& A) throw();
-    bool convert(float& B, const blas_real<double>& A) throw();
-    bool convert(float& B, const blas_complex<double>& A) throw();
+    bool convert(float& B, const blas_real<float>& A) ;
+    bool convert(float& B, const blas_complex<float>& A) ;
+    bool convert(float& B, const blas_real<double>& A) ;
+    bool convert(float& B, const blas_complex<double>& A) ;
     
-    bool convert(double& B, const blas_real<float>& A) throw();
-    bool convert(double& B, const blas_complex<float>& A) throw();
-    bool convert(double& B, const blas_real<double>& A) throw();
-    bool convert(double& B, const blas_complex<double>& A) throw();
+    bool convert(double& B, const blas_real<float>& A) ;
+    bool convert(double& B, const blas_complex<float>& A) ;
+    bool convert(double& B, const blas_real<double>& A) ;
+    bool convert(double& B, const blas_complex<double>& A) ;
     
-    bool convert(double& B, const char& A) throw();
-    bool convert(double& B, const unsigned char A) throw();
-    bool convert(double& B, const int& A) throw();
-    bool convert(double& B, const unsigned int& A) throw();
+    bool convert(double& B, const char& A) ;
+    bool convert(double& B, const unsigned char A) ;
+    bool convert(double& B, const int& A) ;
+    bool convert(double& B, const unsigned int& A) ;
 
     
     bool convert(blas_real<float>& B, const blas_complex<float>& A);
@@ -1492,7 +1492,7 @@ namespace whiteice
      * (GPLed though (so don't look at the exact code, only released public papers))
      */
     template <unsigned int K, typename T>
-      bool fft(vertex< whiteice::math::complex<T> >& v) throw()
+      bool fft(vertex< whiteice::math::complex<T> >& v) 
       {
 	using namespace std;
 	
@@ -1544,7 +1544,7 @@ namespace whiteice
      * K is gives the length of fft, length = 2^K
      */
     template <unsigned int K, typename T>
-      bool ifft(vertex< whiteice::math::complex<T> >& v) throw()
+      bool ifft(vertex< whiteice::math::complex<T> >& v) 
       {
 	using namespace std;
 	

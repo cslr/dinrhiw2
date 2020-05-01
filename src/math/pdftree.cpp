@@ -18,7 +18,7 @@ namespace whiteice
   
     // default contructor, use reset to init
     template <typename T, typename M>
-    pdftree<T,M>::pdftree() throw()
+    pdftree<T,M>::pdftree() 
     {
       root = 0;
       num_data = 0;
@@ -29,7 +29,7 @@ namespace whiteice
     // constructor
     template <typename T, typename M>
     pdftree<T,M>::pdftree(const std::vector<T> min,
-			  const std::vector<T> max) throw()
+			  const std::vector<T> max) 
     {
       using namespace std;
       
@@ -54,7 +54,7 @@ namespace whiteice
     
     
     template <typename T, typename M>
-    pdftree<T,M>::~pdftree() throw()
+    pdftree<T,M>::~pdftree() 
     {
       if(root) remove(root);
       root = 0;
@@ -65,7 +65,7 @@ namespace whiteice
     
     // adds point to distribution
     template <typename T, typename M>
-    bool pdftree<T,M>::add(const std::vector<T>& v) throw()
+    bool pdftree<T,M>::add(const std::vector<T>& v) 
     {
       try{
 	if(!v.size()) return false;
@@ -93,7 +93,7 @@ namespace whiteice
     
     // calculates probability
     template <typename T, typename M>
-    M pdftree<T,M>::pdf(const std::vector<T>& v) const throw()
+    M pdftree<T,M>::pdf(const std::vector<T>& v) const 
     {
       if(!root) return M(1);
       depth_counter = 0;
@@ -113,7 +113,7 @@ namespace whiteice
     
     // todo: calculates probability of area
     // bool probability_area(const std::vector<T>& v0,
-    // const std::vector<T>& v1) const throw()
+    // const std::vector<T>& v1) const 
     //{
     //}
     
@@ -121,7 +121,7 @@ namespace whiteice
     // resets tree to a new tree
     template <typename T, typename M>
     bool pdftree<T,M>::reset(const std::vector<T>& min,
-			     const std::vector<T>& max) throw()
+			     const std::vector<T>& max) 
     {
       using namespace std;
       
@@ -149,7 +149,7 @@ namespace whiteice
     
     // removes data points, not pdf information
     template <typename T, typename M>
-    void pdftree<T,M>::flush() throw()
+    void pdftree<T,M>::flush() 
     {
       if(root) flush(root);
     }
@@ -161,7 +161,7 @@ namespace whiteice
     
     // datapoint node or to subnode
     template <typename T, typename M>
-    bool pdftree<T,M>::add(pdfnode<T>* node, const std::vector<T>& v) throw()
+    bool pdftree<T,M>::add(pdfnode<T>* node, const std::vector<T>& v) 
     {
       if(node->subtrees.size() <= 0){ // add to this node
 	if(node->data.size() + 1 < split_limit){
@@ -242,7 +242,7 @@ namespace whiteice
     template <typename T, typename M>
     unsigned int pdftree<T,M>::pdf(pdfnode<T>* node,
 				   const std::vector<T>& v)
-      const throw()
+      const 
     {
       if(node->subtrees.size() <= 0)
 	return node->counter;
@@ -267,7 +267,7 @@ namespace whiteice
     
     
     template <typename T, typename M>
-    void pdftree<T,M>::flush(pdfnode<T>* node) throw()
+    void pdftree<T,M>::flush(pdfnode<T>* node) 
     {
       node->data.clear();
       
@@ -278,7 +278,7 @@ namespace whiteice
     
     // frees this node and all subtrees
     template <typename T, typename M>
-    void pdftree<T,M>::remove(pdfnode<T>* node) const throw()
+    void pdftree<T,M>::remove(pdfnode<T>* node) const 
     {
       if(!node) return;
       
@@ -297,7 +297,7 @@ namespace whiteice
     // pdfnode constructor
     template <typename U>  
     pdfnode<U>::pdfnode(const std::vector<U>& min,
-			const std::vector<U>& max) throw()
+			const std::vector<U>& max) 
     {
       this->min = min;
       this->max = max;

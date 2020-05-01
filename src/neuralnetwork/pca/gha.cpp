@@ -31,7 +31,7 @@ GHA<T>::~GHA(){ }
  */
 template <typename T>
 bool GHA<T>::reset(unsigned int input_size,
-		   unsigned int output_size) throw()
+		   unsigned int output_size) 
 {
   if(input_size == 0 || output_size == 0)
     return false;
@@ -83,7 +83,7 @@ bool GHA<T>::reset(unsigned int input_size,
  * basic simple GHA implementation
  */
 template <typename T>
-bool GHA<T>::train(const std::vector<T>& input) throw(std::out_of_range)
+bool GHA<T>::train(const std::vector<T>& input) 
 {
   if(weights.size() <= 0) return false;
   if(input.size() != weights[0].size()) return false;
@@ -209,7 +209,7 @@ T GHA<T>::estimate_convergence()
 
 template <typename T>
 bool GHA<T>::batch_train(const std::vector< const std::vector<T> >& input)
-  throw(std::out_of_range)
+  
 {
   typename vector< const vector<T> >::const_iterator i = input.begin();
   bool result = true;
@@ -225,7 +225,7 @@ bool GHA<T>::batch_train(const std::vector< const std::vector<T> >& input)
 
 template <typename T>
 bool GHA<T>::code(const std::vector<T>& input,
-			  std::vector<T>& coded) throw(std::out_of_range)
+			  std::vector<T>& coded) 
 {
   if(weights.size() <= 0) return false;
   if(input.size() != weights[0].size()) return false;
@@ -248,7 +248,7 @@ bool GHA<T>::code(const std::vector<T>& input,
 
 template <typename T>
 bool GHA<T>::encode(const std::vector<T>& coded,
-		    std::vector<T>& encoded) throw(std::out_of_range)
+		    std::vector<T>& encoded) 
 {
   if(weights.size() <= 0) return false;
 
@@ -270,7 +270,7 @@ bool GHA<T>::encode(const std::vector<T>& coded,
 
 /* returns input vector size */
 template <typename T>
-unsigned int GHA<T>::size() throw()
+unsigned int GHA<T>::size() 
 {
   if(weights.size() <= 0) return 0;
 
@@ -280,7 +280,7 @@ unsigned int GHA<T>::size() throw()
 
 /* returns output size */
 template <typename T>
-unsigned int GHA<T>::output_size() throw()
+unsigned int GHA<T>::output_size() 
 {
   return output.size();
 }
@@ -288,7 +288,7 @@ unsigned int GHA<T>::output_size() throw()
 
 template <typename T>
 std::vector<T> GHA<T>::eigenvector(unsigned int index) 
-  throw(std::out_of_range)
+  
 {
   if(weights.size() <= 0)
     throw std::out_of_range("no weights");
@@ -301,7 +301,7 @@ std::vector<T> GHA<T>::eigenvector(unsigned int index)
 
 
 //template <typename T>
-//T GHA<T>::eigenvalue(unsigned int index) throw(std::out_of_range)
+//T GHA<T>::eigenvalue(unsigned int index) 
 //{
 //
 //}

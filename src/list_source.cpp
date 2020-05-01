@@ -19,7 +19,7 @@ namespace whiteice
   list_source<datum>::~list_source(){ }
   
   template <typename datum>
-  datum& list_source<datum>::operator[](unsigned int index) throw(std::out_of_range)
+  datum& list_source<datum>::operator[](unsigned int index) 
   {
     if(index >= list.size())
       throw std::out_of_range("list source: index too big");
@@ -28,7 +28,7 @@ namespace whiteice
   }
   
   template <typename datum>
-  const datum& list_source<datum>::operator[](unsigned int index) const throw(std::out_of_range)
+  const datum& list_source<datum>::operator[](unsigned int index) const 
   {
     if(index >= list.size())
       throw std::out_of_range("list source: index too big");
@@ -37,14 +37,14 @@ namespace whiteice
   }
   
   template <typename datum>
-  unsigned int list_source<datum>::size() const throw()
+  unsigned int list_source<datum>::size() const 
   {
     return list.size();
   }
   
   
   template <typename datum>
-  bool list_source<datum>::good() const throw()
+  bool list_source<datum>::good() const 
   {
     return true;
   }

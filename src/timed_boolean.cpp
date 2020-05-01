@@ -114,27 +114,27 @@ namespace whiteice
   }
   
   
-  bool timed_boolean::operator==(const bool bValue) const throw()
+  bool timed_boolean::operator==(const bool bValue) const 
   {
     update();
     return (bValue == variable);
   }
   
-  bool timed_boolean::operator!=(const bool bValue) const throw()
+  bool timed_boolean::operator!=(const bool bValue) const 
   {
     update();
     return (bValue != variable);
   }
   
   
-  bool timed_boolean::operator==(const timed_boolean& b) const throw()
+  bool timed_boolean::operator==(const timed_boolean& b) const 
   {
     this->update();
     b.update();
     return(this->variable == b.variable);
   }
   
-  bool timed_boolean::operator!=(const timed_boolean& b) const throw()
+  bool timed_boolean::operator!=(const timed_boolean& b) const 
   {
     this->update();
     b.update();
@@ -142,14 +142,14 @@ namespace whiteice
   }
   
   
-  bool timed_boolean::operator!() const throw()
+  bool timed_boolean::operator!() const 
   {
     update();
     return (!variable);
   }
   
   
-  void timed_boolean::update() const throw()
+  void timed_boolean::update() const 
   {
     if(inverted) return;
     
@@ -160,7 +160,7 @@ namespace whiteice
   }
   
   
-  double timed_boolean::time_left() const throw()
+  double timed_boolean::time_left() const 
   {
     double t;
     
@@ -179,7 +179,7 @@ namespace whiteice
   /*
    * returns real world time
    */
-  bool timed_boolean::get_time(double& t) const throw()
+  bool timed_boolean::get_time(double& t) const 
   {  
     struct timeval t1;
     gettimeofday(&t1,0);

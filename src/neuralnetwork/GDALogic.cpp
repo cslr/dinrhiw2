@@ -5,7 +5,7 @@ namespace whiteice
 {
   
   
-  bool GDALogic::initialize(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* node) throw()
+  bool GDALogic::initialize(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* node) 
   {
     if(node->data == 0)
       return false;
@@ -29,7 +29,7 @@ namespace whiteice
   
   whiteice::math::blas_real<float>
   GDALogic::similarity(std::vector< hcnode<GDAParams, whiteice::math::blas_real<float> >* > clusters,
-		       unsigned int i, unsigned int j) throw()
+		       unsigned int i, unsigned int j) 
   {
     // calculates mutual overlap loss [as described in docs/GDA.lyx]
     // after merge of clusters (i and j).
@@ -56,7 +56,7 @@ namespace whiteice
   
   bool GDALogic::merge(whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p1,
 		       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >* p2,
-		       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >& result) const throw()
+		       whiteice::hcnode<GDAParams, whiteice::math::blas_real<float> >& result) const 
   {
     // if(p1 == 0 || p2 == 0) return false; // (no safety checks)
     
@@ -78,7 +78,7 @@ namespace whiteice
   }
   
   
-  whiteice::math::blas_real<float> GDALogic::overlap(const GDAParams& c1, const GDAParams& c2) const throw()
+  whiteice::math::blas_real<float> GDALogic::overlap(const GDAParams& c1, const GDAParams& c2) const 
   {
     // calculates pseudooverlap (logarithm of overlap between clusters)
     

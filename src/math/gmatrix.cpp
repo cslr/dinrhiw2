@@ -66,7 +66,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> gmatrix<T,S>::operator+(const gmatrix<T,S>& m) const
-      throw(illegal_operation)
+      
     {
       if(data.size() != m.data.size() ||
 	 data[0].size() != m.data[0].size()){
@@ -86,7 +86,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> gmatrix<T,S>::operator-(const gmatrix<T,S>& m) const
-      throw(illegal_operation)
+      
     {
       if(data.size() != m.data.size() ||
 	 data[0].size() != m.data[0].size()){
@@ -108,7 +108,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> gmatrix<T,S>::operator*(const gmatrix<T,S>& m) const
-      throw(illegal_operation)
+      
     {	
       gmatrix<T,S> r(*this);    
       r *= m;    
@@ -118,7 +118,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> gmatrix<T,S>::operator/(const gmatrix<T,S>& m) const
-      throw(illegal_operation)
+      
     {
       gmatrix<T,S> r(*this);    
       r /= m;    
@@ -127,14 +127,14 @@ namespace whiteice
     
 
     template <typename T, typename S>
-    gmatrix<T,S> gmatrix<T,S>::operator!() const throw(illegal_operation){    
+    gmatrix<T,S> gmatrix<T,S>::operator!() const {    
       throw illegal_operation("'!'-operator");
     }
     
     
     template <typename T, typename S>
     gmatrix<T,S> gmatrix<T,S>::operator-() const
-      throw(illegal_operation)
+      
     {
       gmatrix<T,S> m(xsize(), ysize());
       
@@ -148,7 +148,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::operator+=(const gmatrix<T,S>& m)
-      throw(illegal_operation)
+      
     {
       if(data.size() != m.data.size() ||
 	 data[0].size() != m.data[0].size())
@@ -165,7 +165,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::operator-=(const gmatrix<T,S>& m)
-      throw(illegal_operation)
+      
     {
       if(data.size() != m.data.size() || 
 	 data[0].size() != m.data[0].size()){
@@ -183,7 +183,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::operator*=(const gmatrix<T,S>& m)
-      throw(illegal_operation)
+      
     {
       if(data[0].size() != m.data.size() ||
 	 data.size() != m.data[0].size())
@@ -224,7 +224,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::operator/=(const gmatrix<T,S>& m)
-      throw(illegal_operation)
+      
     {
       gmatrix<T,S> n(m);
       
@@ -236,7 +236,7 @@ namespace whiteice
 
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::operator=(const gmatrix<T,S>& m) 
-      throw(illegal_operation)
+      
     {
       if(this != &m){
 	if(data.size() != m.data.size())
@@ -259,7 +259,7 @@ namespace whiteice
     
     template <typename T, typename S>
     bool gmatrix<T,S>::operator==(const gmatrix<T,S>& m) const
-      throw(uncomparable)
+      
     {
       if(data.size() <= 0) return false; // empty matrices are same
       
@@ -277,7 +277,7 @@ namespace whiteice
     
     template <typename T, typename S>
     bool gmatrix<T,S>::operator!=(const gmatrix<T,S>& m) const
-      throw(uncomparable)
+      
     {
       if(data.size() <= 0) return false; // empty matrices are same
       
@@ -294,22 +294,22 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::operator>=(const gmatrix<T,S>& m) const throw(uncomparable){
+    bool gmatrix<T,S>::operator>=(const gmatrix<T,S>& m) const {
       throw uncomparable("gmatrix: '>='-operator: matrices cannot be compared");
     }
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::operator<=(const gmatrix<T,S>& m) const throw(uncomparable){
+    bool gmatrix<T,S>::operator<=(const gmatrix<T,S>& m) const {
       throw uncomparable("gmatrix: '<='-operator: matrices cannot be compared");
     }
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::operator< (const gmatrix<T,S>& m) const throw(uncomparable){
+    bool gmatrix<T,S>::operator< (const gmatrix<T,S>& m) const {
       throw uncomparable("gmatrix: '<'-operator: matrices cannot be compared");
     }
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::operator> (const gmatrix<T,S>& m) const throw(uncomparable){
+    bool gmatrix<T,S>::operator> (const gmatrix<T,S>& m) const {
       throw uncomparable("gmatrix: '>'-operator: matrices cannot be compared");
     }
     
@@ -318,7 +318,7 @@ namespace whiteice
 
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::operator=(const S& s) throw(illegal_operation)
+    gmatrix<T,S>& gmatrix<T,S>::operator=(const S& s) 
     {
       const unsigned int H = data.size();
       if(H <= 0) return *this;
@@ -332,7 +332,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>  gmatrix<T,S>::operator* (const S& s) const throw()
+    gmatrix<T,S>  gmatrix<T,S>::operator* (const S& s) const 
     {
       gmatrix<T,S> m(*this);
       
@@ -347,7 +347,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S> operator*(const S& s, const gmatrix<T,S>& n)
-      throw(std::invalid_argument)
+      
     {
       gmatrix<T,S> m(n);
       for(unsigned int i=0;i<m.data.size();i++) m[i] = s*n[i];
@@ -357,7 +357,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>  gmatrix<T,S>::operator/ (const S& s) const 
-      throw(std::invalid_argument)
+      
     {
       gmatrix<T,S> m(*this);
       
@@ -371,7 +371,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::operator*=(const S& s) throw()
+    gmatrix<T,S>& gmatrix<T,S>::operator*=(const S& s) 
     {
       typename gvertex< gvertex<T,S>,S >::iterator i;
       
@@ -383,7 +383,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::operator/=(const S& s) throw(std::invalid_argument)
+    gmatrix<T,S>& gmatrix<T,S>::operator/=(const S& s) 
     {
       typename gvertex< gvertex<T,S>,S >::iterator i;
       
@@ -398,7 +398,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gvertex<T,S> gmatrix<T,S>::operator*(const gvertex<T,S>& v) const
-      throw(std::invalid_argument)
+      
     {
       if(!data.size())
 	throw std::invalid_argument("multiply: incompatible gvertex/gmatrix sizes");
@@ -420,7 +420,7 @@ namespace whiteice
   
     template <typename T, typename S>
     gvertex<T,S>& gmatrix<T,S>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return data[index];
     }
@@ -428,7 +428,7 @@ namespace whiteice
     
     template <typename T, typename S>
     const gvertex<T,S>& gmatrix<T,S>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return data[index];
     }
@@ -436,7 +436,7 @@ namespace whiteice
     
     template <typename T, typename S>
     T& gmatrix<T,S>::operator()(unsigned int y, unsigned int x)
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return data[y][x];
     }
@@ -444,7 +444,7 @@ namespace whiteice
     
     template <typename T, typename S>
     const T& gmatrix<T,S>::operator()(unsigned int y, unsigned int x) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       return data[y][x];
     }
@@ -455,7 +455,7 @@ namespace whiteice
     // crossproduct gmatrix M(z): M(z) * y = z x y
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::crossproduct(const gvertex<T,S>& v)
-      throw(std::domain_error)
+      
     {
       if(v.size() != 3)
 	throw std::out_of_range("crossproduct() requires 3 dimensions");
@@ -478,7 +478,7 @@ namespace whiteice
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::rotation(const S& xr,
 				       const S& yr,
-				       const S& zr) throw()
+				       const S& zr) 
     {
       if( (xsize() != 3 && ysize() != 3) ||
 	  (xsize() != 4 && ysize() != 4) ){
@@ -521,7 +521,7 @@ namespace whiteice
     template <typename T, typename S>
     gmatrix<T,S>& gmatrix<T,S>::translation(const S& dx,
 					  const S& dy,
-					  const S& dz) throw()
+					  const S& dz) 
     {
       if(ysize() != 4){
 	resize_y(4);
@@ -544,7 +544,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::abs() throw()
+    gmatrix<T,S>& gmatrix<T,S>::abs() 
     {
       for(unsigned int j=0;j<data.size();j++){
 	for(unsigned int i=0;i<data[0].size();i++)
@@ -556,7 +556,7 @@ namespace whiteice
 
 
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::conj() throw()
+    gmatrix<T,S>& gmatrix<T,S>::conj() 
     {
       for(unsigned int j=0;j<data.size();j++){
 	for(unsigned int i=0;i<data[0].size();i++)
@@ -568,7 +568,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::transpose() throw()
+    gmatrix<T,S>& gmatrix<T,S>::transpose() 
     {
       const unsigned int orig_x = xsize();
       const unsigned int orig_y = ysize();
@@ -602,7 +602,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>& gmatrix<T,S>::hermite() throw()
+    gmatrix<T,S>& gmatrix<T,S>::hermite() 
     {
       this->transpose();
       this->conj();
@@ -612,7 +612,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    T gmatrix<T,S>::det() const throw(std::logic_error)
+    T gmatrix<T,S>::det() const 
     {
       if(ysize() != xsize())
 	throw std::logic_error("gmatrix::determinate() - non square gmatrix");
@@ -670,7 +670,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    gmatrix<T,S>&  gmatrix<T,S>::inv() throw(std::logic_error)
+    gmatrix<T,S>&  gmatrix<T,S>::inv() 
     {
       // simple and slow: gaussian elimination - works for small matrices
       // big ones: start to use atlas (don't bother to reinvent wheel)
@@ -791,7 +791,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    T gmatrix<T,S>::trace() const throw(std::logic_error)
+    T gmatrix<T,S>::trace() const 
     {
       if(xsize() != ysize())
 	throw std::logic_error("gmatrix::trace() non square gmatrix");
@@ -841,7 +841,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    unsigned int gmatrix<T,S>::xsize() const throw()
+    unsigned int gmatrix<T,S>::xsize() const 
     {
       if(data.size() <= 0)
 	return 0;
@@ -851,20 +851,20 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    unsigned int gmatrix<T,S>::size() const throw()
+    unsigned int gmatrix<T,S>::size() const 
     {
       return data.size();
     }
     
     template <typename T, typename S>
-    unsigned int gmatrix<T,S>::ysize() const throw()
+    unsigned int gmatrix<T,S>::ysize() const 
     {
       return data.size();
     }
     
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::resize(unsigned int y, unsigned int x) throw()
+    bool gmatrix<T,S>::resize(unsigned int y, unsigned int x) 
     {
       if(x != 0 && y != 0){
       
@@ -897,7 +897,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::resize_x(unsigned int d) throw()
+    bool gmatrix<T,S>::resize_x(unsigned int d) 
     {
       if(d != 0)
 	for(unsigned int i=0;i<data.size();i++)
@@ -909,7 +909,7 @@ namespace whiteice
     }
     
     template <typename T, typename S>
-    bool gmatrix<T,S>::resize_y(unsigned int d) throw()
+    bool gmatrix<T,S>::resize_y(unsigned int d) 
     {
       unsigned int old_d = data.size();
       unsigned int size_x = 0;
@@ -929,7 +929,7 @@ namespace whiteice
     
     
     template <typename T, typename S>
-    void gmatrix<T,S>::normalize() throw()
+    void gmatrix<T,S>::normalize() 
     {
       typename gvertex< gvertex<T,S>, S>::iterator i = data.begin();
       
@@ -963,7 +963,7 @@ namespace whiteice
     
     
     template <typename T, typename S, typename L, typename M>
-    bool convert(gmatrix<T,S>& B, const gmatrix<L,M>& A) throw()
+    bool convert(gmatrix<T,S>& B, const gmatrix<L,M>& A) 
     {
       try{
 	if(B.resize(A.ysize(), A.xsize()) == false)

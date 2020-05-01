@@ -34,17 +34,17 @@ namespace whiteice
     unsigned int getInputDimension() const;
     unsigned int getHiddenDimension() const;
 
-    whiteice::GBRBM<T>& getInputGBRBM() throw(std::invalid_argument);
-    whiteice::BBRBM<T>& getInputBBRBM() throw(std::invalid_argument);
-    const whiteice::GBRBM<T>& getInputGBRBM() const throw(std::invalid_argument);
-    const whiteice::BBRBM<T>& getInputBBRBM() const throw(std::invalid_argument);
+    whiteice::GBRBM<T>& getInputGBRBM() ;
+    whiteice::BBRBM<T>& getInputBBRBM() ;
+    const whiteice::GBRBM<T>& getInputGBRBM() const ;
+    const whiteice::BBRBM<T>& getInputBBRBM() const ;
 
     // true if GBRBM<T> is used as input otherwise BBRBM<T>
     bool getGaussianInput() const; 
 
     // layer is [0..getNumberOfLayers-2]
-    whiteice::BBRBM<T>& getHiddenLayer(unsigned int layer) throw(std::invalid_argument);
-    const whiteice::BBRBM<T>& getHiddenLayer(unsigned int layer) const throw(std::invalid_argument);
+    whiteice::BBRBM<T>& getHiddenLayer(unsigned int layer) ;
+    const whiteice::BBRBM<T>& getHiddenLayer(unsigned int layer) const ;
 
     unsigned int getNumberOfLayers() const;
 

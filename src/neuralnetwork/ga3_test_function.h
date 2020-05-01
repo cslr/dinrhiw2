@@ -20,7 +20,7 @@ namespace whiteice
   ga3_test_function();
 
   // returns input vectors dimension
-  virtual unsigned int dimension() const throw() PURE_FUNCTION;
+  virtual unsigned int dimension() const  PURE_FUNCTION;
   
   // calculates value of function
   T operator() (const math::vertex<T>& x) const PURE_FUNCTION;
@@ -35,7 +35,7 @@ namespace whiteice
   // creates copy of object
   virtual function< math::vertex<T>,T>* clone() const;
   
-  virtual bool hasGradient() const throw() PURE_FUNCTION;
+  virtual bool hasGradient() const  PURE_FUNCTION;
   
   // gets gradient at given point
   virtual math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;

@@ -37,10 +37,10 @@ namespace whiteice
     KMeans<T>& operator=(const KMeans<T>& model);
     
     bool learn(unsigned int k,
-	       std::vector< std::vector<T> >& data) throw();
+	       std::vector< std::vector<T> >& data) ;
     
     bool learn(unsigned int k,
-	       std::vector< whiteice::math::vertex<T> >& data) throw();
+	       std::vector< whiteice::math::vertex<T> >& data) ;
     
     // calculates approximative error
     // (samples N=1000 samples or uses everything)
@@ -52,27 +52,27 @@ namespace whiteice
     const std::vector<T>& operator[](unsigned int index) const;
 
     unsigned int getClusterIndex(const whiteice::math::vertex<T>& x) const
-      throw(std::logic_error);
+      ;
     unsigned int getClusterIndex(const std::vector<T>& x) const
-      throw(std::logic_error);
+      ;
     
     // number of clusters
-    unsigned int size() const throw();
+    unsigned int size() const ;
     
     // reads/saves k-means clustering to a file
-    bool save(const std::string& filename) throw();
-    bool load(const std::string& filename) throw();
+    bool save(const std::string& filename) ;
+    bool load(const std::string& filename) ;
     
-    T& rate() throw();
-    const T& rate() const throw();
+    T& rate() ;
+    const T& rate() const ;
     
-    bool& getOptimalMode() throw();
-    const bool& getOptimalMode() const throw();
+    bool& getOptimalMode() ;
+    const bool& getOptimalMode() const ;
     
     // number of times samples are picked and used
     // when running k-means algorithm
-    unsigned int& numSamplingSteps() throw();
-    const unsigned int& numSamplingSteps() const throw();
+    unsigned int& numSamplingSteps() ;
+    const unsigned int& numSamplingSteps() const ;
     
   private:
     T calc_distance(const std::vector<T>& u, const std::vector<T>& v) const;

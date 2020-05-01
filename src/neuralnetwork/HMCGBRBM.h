@@ -20,7 +20,7 @@ public:
 	HMC_GBRBM(const std::vector< math::vertex<T> >& data_, unsigned int numHiddenNodes, bool storeSamples, bool adaptive=false);
 	virtual ~HMC_GBRBM();
 
-	GBRBM<T> getRBM() throw();
+	GBRBM<T> getRBM() ;
 
 	// temperature must be in [0,1] interval
 	// 0 = means most freely changing parameters and RBM is just N(m, S) machine

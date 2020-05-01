@@ -29,7 +29,7 @@ namespace whiteice
     RBM(const RBM<T>& rbm);
     
     // creates 2-layer: V * H network
-    RBM(unsigned int visible, unsigned int hidden) throw(std::invalid_argument);
+    RBM(unsigned int visible, unsigned int hidden) ;
     
     virtual ~RBM();
     
@@ -68,8 +68,8 @@ namespace whiteice
     
     // load & saves RBM data from/to file
     
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
     
     ////////////////////////////////////////////////////////////
     

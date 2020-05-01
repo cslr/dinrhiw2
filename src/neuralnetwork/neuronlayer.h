@@ -40,27 +40,27 @@ namespace whiteice
     virtual ~neuronlayer();
     
     unsigned int input_size();
-    unsigned int size() const throw(); // (output size)
+    unsigned int size() const ; // (output size)
     
-    math::vertex<T>*& input() throw();
-    math::vertex<T>*& output() throw();
+    math::vertex<T>*& input() ;
+    math::vertex<T>*& output() ;
     
-    bool calculate() throw();
-    bool operator()() throw(); // one-step NN activation
+    bool calculate() ;
+    bool operator()() ; // one-step NN activation
     
     bool randomize();
     
-    T& moment() throw();
-    const T& moment() const throw();    
-    T& learning_rate() throw();
-    const T& learning_rate() const throw();
+    T& moment() ;
+    const T& moment() const ;    
+    T& learning_rate() ;
+    const T& learning_rate() const ;
     
 
-    math::vertex<T>& bias() throw();
-    const math::vertex<T>& bias() const throw();
+    math::vertex<T>& bias() ;
+    const math::vertex<T>& bias() const ;
     
-    math::matrix<T>& weights() throw();
-    const math::matrix<T>& weights() const throw();
+    math::matrix<T>& weights() ;
+    const math::matrix<T>& weights() const ;
     
     // clones activation function
     bool set_activation(const activation_function<T>& F);
@@ -72,10 +72,10 @@ namespace whiteice
     const activation_function<T>* get_activation() const;
     
     
-    bool compress() throw();
-    bool decompress() throw();
-    bool iscompressed() const throw();
-    float ratio() const throw(); // compression ratio
+    bool compress() ;
+    bool decompress() ;
+    bool iscompressed() const ;
+    float ratio() const ; // compression ratio
     
     
     private:

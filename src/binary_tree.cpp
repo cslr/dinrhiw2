@@ -8,7 +8,7 @@ namespace whiteice
 {
   
   template <typename T>
-  binarytree<T>::binarytree() throw()
+  binarytree<T>::binarytree() 
   {
     root = 0;
     numberOfNodes = 0;
@@ -16,7 +16,7 @@ namespace whiteice
   
   
   template <typename T>
-  binarytree<T>::~binarytree() throw()
+  binarytree<T>::~binarytree() 
   {
     if(root) free_subtree(root);
   }
@@ -24,7 +24,7 @@ namespace whiteice
   
   // insert data value t to tree or returns false
   template <typename T>
-  bool binarytree<T>::insert(const T& t) throw()
+  bool binarytree<T>::insert(const T& t) 
   {
     try{
       btree_node<T>* n = new btree_node<T>(t);
@@ -41,7 +41,7 @@ namespace whiteice
   
   // removes data with value t
   template <typename T>
-  bool binarytree<T>::remove(T& t) throw()
+  bool binarytree<T>::remove(T& t) 
   {
     try{
       btree_node<T>* n = search(root, t);
@@ -53,7 +53,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool binarytree<T>::search(T& value) const throw()
+  bool binarytree<T>::search(T& value) const 
   {
     btree_node<T>* node = search(root, value);
     if(!node) return false;
@@ -63,7 +63,7 @@ namespace whiteice
   
   
   template <typename T>
-  T& binarytree<T>::maximum() const throw(std::logic_error)
+  T& binarytree<T>::maximum() const 
   {
     btree_node<T>* node = maximum_node(root);
     if(!node) throw std::logic_error("no maximum node");
@@ -72,7 +72,7 @@ namespace whiteice
   
   
   template <typename T>
-  T& binarytree<T>::minimum() const throw(std::logic_error)
+  T& binarytree<T>::minimum() const 
   {
     btree_node<T>* node = minimum_node(root);
     if(!node) throw std::logic_error("no minimum node");
@@ -81,7 +81,7 @@ namespace whiteice
   
   
   template <typename T>
-  void binarytree<T>::clear() throw()
+  void binarytree<T>::clear() 
   {
     if(root) free_subtree(root);
     root = 0;
@@ -90,7 +90,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int binarytree<T>::size() const throw()
+  unsigned int binarytree<T>::size() const 
   {
     return numberOfNodes;
   }
@@ -102,7 +102,7 @@ namespace whiteice
    * search for given key from subtree
    */
   template <typename T>
-  btree_node<T>* binarytree<T>::search(btree_node<T>* x, T& value) const throw()
+  btree_node<T>* binarytree<T>::search(btree_node<T>* x, T& value) const 
   {
     if(x == 0) return 0;
     if(x->key == value) return x;  
@@ -121,7 +121,7 @@ namespace whiteice
    * is node or returns null 
    */
   template <typename T>
-  btree_node<T>* binarytree<T>::minimum_node(btree_node<T>* node) const throw()
+  btree_node<T>* binarytree<T>::minimum_node(btree_node<T>* node) const 
   {
     btree_node<T> *prev = 0, *ptr;
     ptr = node;
@@ -139,7 +139,7 @@ namespace whiteice
    * returns null if there's no maximum
    */
   template <typename T>
-  btree_node<T>* binarytree<T>::maximum_node(btree_node<T>* node) const throw()
+  btree_node<T>* binarytree<T>::maximum_node(btree_node<T>* node) const 
   {
     btree_node<T>* prev = 0, *ptr;
     ptr = node;
@@ -155,7 +155,7 @@ namespace whiteice
   
   /* inserts node to tree */
   template <typename T>
-  bool binarytree<T>::insert(btree_node<T>* z) throw()
+  bool binarytree<T>::insert(btree_node<T>* z) 
   {
     try{
       btree_node<T>* y = 0;
@@ -191,7 +191,7 @@ namespace whiteice
   
   /* deletes node from the tree or returns false */
   template <typename T>
-  bool binarytree<T>::remove(btree_node<T>* z) throw()
+  bool binarytree<T>::remove(btree_node<T>* z) 
   {
     btree_node<T> *y, *x;
     
@@ -224,7 +224,7 @@ namespace whiteice
   
   /* finds successor of node */
   template <typename T>
-  btree_node<T>* binarytree<T>::tree_successor(btree_node<T>* x) const throw()
+  btree_node<T>* binarytree<T>::tree_successor(btree_node<T>* x) const 
   {
     if(x == 0) return 0;
     if(x->right)
@@ -247,7 +247,7 @@ namespace whiteice
   
   /* frees subtree */
   template <typename T>    
-  void binarytree<T>::free_subtree(btree_node<T>* x) throw()
+  void binarytree<T>::free_subtree(btree_node<T>* x) 
   {
     if(x){
       free_subtree(x->left);

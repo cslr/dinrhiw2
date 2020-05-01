@@ -395,40 +395,40 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     
     // conversion function between doubles and floats
-    bool convert(float&  B, const float&  A) throw(){ B = A; return true; }
-    bool convert(float&  B, const double& A) throw(){ B = (float)A; return true; }
-    bool convert(double& B, const float&  A) throw(){ B = (double)A; return true; }
-    bool convert(double& B, const double& A) throw(){ B = A; return true; }
+    bool convert(float&  B, const float&  A) { B = A; return true; }
+    bool convert(float&  B, const double& A) { B = (float)A; return true; }
+    bool convert(double& B, const float&  A) { B = (double)A; return true; }
+    bool convert(double& B, const double& A) { B = A; return true; }
     
-    bool convert(double& B, const char& A) throw(){ B = (double)A; return true; }
-    bool convert(double& B, const unsigned char A) throw(){ B = (double)A; return true; }
-    bool convert(double& B, const int& A) throw(){ B = (double)A; return true; }
-    bool convert(double& B, const unsigned int& A) throw(){ B = (double)A; return true; }
+    bool convert(double& B, const char& A) { B = (double)A; return true; }
+    bool convert(double& B, const unsigned char A) { B = (double)A; return true; }
+    bool convert(double& B, const int& A) { B = (double)A; return true; }
+    bool convert(double& B, const unsigned int& A) { B = (double)A; return true; }
     
-    bool convert(unsigned int& B, const float& A) throw()  { B = (unsigned int)A; return true; }
-    bool convert(unsigned int& B, const double& A) throw() { B = (unsigned int)A; return true; }
-    bool convert(int& B, const float& A) throw()           { B = (int)A; return true; }
-    bool convert(int& B, const double& A) throw()          { B = (int)A; return true; }
+    bool convert(unsigned int& B, const float& A)   { B = (unsigned int)A; return true; }
+    bool convert(unsigned int& B, const double& A)  { B = (unsigned int)A; return true; }
+    bool convert(int& B, const float& A)            { B = (int)A; return true; }
+    bool convert(int& B, const double& A)           { B = (int)A; return true; }
 
-    bool convert(unsigned int& B, const blas_real<float>& A) throw()     { B = (unsigned int)A.c[0]; return true; }
-    bool convert(unsigned int& B, const blas_complex<float>& A) throw()  { B = (unsigned int)A.real(); return true; }
-    bool convert(unsigned int& B, const blas_real<double>& A) throw()    { B = (unsigned int)A.c[0]; return true; }
-    bool convert(unsigned int& B, const blas_complex<double>& A) throw() { B = (unsigned int)A.real(); return true; }
+    bool convert(unsigned int& B, const blas_real<float>& A)      { B = (unsigned int)A.c[0]; return true; }
+    bool convert(unsigned int& B, const blas_complex<float>& A)   { B = (unsigned int)A.real(); return true; }
+    bool convert(unsigned int& B, const blas_real<double>& A)     { B = (unsigned int)A.c[0]; return true; }
+    bool convert(unsigned int& B, const blas_complex<double>& A)  { B = (unsigned int)A.real(); return true; }
 
-    bool convert(int& B, const blas_real<float>& A) throw()              { B = (int)A.c[0]; return true; }
-    bool convert(int& B, const blas_complex<float>& A) throw()           { B = (int)A.real(); return true; }
-    bool convert(int& B, const blas_real<double>& A) throw()             { B = (int)A.c[0]; return true; }
-    bool convert(int& B, const blas_complex<double>& A) throw()          { B = (int)A.real(); return true; }
+    bool convert(int& B, const blas_real<float>& A)               { B = (int)A.c[0]; return true; }
+    bool convert(int& B, const blas_complex<float>& A)            { B = (int)A.real(); return true; }
+    bool convert(int& B, const blas_real<double>& A)              { B = (int)A.c[0]; return true; }
+    bool convert(int& B, const blas_complex<double>& A)           { B = (int)A.real(); return true; }
 
-    bool convert(float& B,  const blas_real<float>& A) throw(){ B = (float)A.c[0]; return true; }
-    bool convert(float& B,  const blas_real<double>& A) throw(){ B = (float)A.c[0]; return true; }
-    bool convert(double& B, const blas_real<float>& A) throw(){ B = (double)A.c[0]; return true; }
-    bool convert(double& B, const blas_real<double>& A) throw(){ B = (double)A.c[0]; return true; }
+    bool convert(float& B,  const blas_real<float>& A) { B = (float)A.c[0]; return true; }
+    bool convert(float& B,  const blas_real<double>& A) { B = (float)A.c[0]; return true; }
+    bool convert(double& B, const blas_real<float>& A) { B = (double)A.c[0]; return true; }
+    bool convert(double& B, const blas_real<double>& A) { B = (double)A.c[0]; return true; }
     
-    bool convert(float& B,  const blas_complex<float>& A) throw(){ B = (float)A.real(); return false; }
-    bool convert(float& B,  const blas_complex<double>& A) throw(){ B = (float)A.real(); return false; }
-    bool convert(double& B, const blas_complex<float>& A) throw(){ B = (double)A.real(); return false; }
-    bool convert(double& B, const blas_complex<double>& A) throw(){ B = (double)A.real(); return false; }
+    bool convert(float& B,  const blas_complex<float>& A) { B = (float)A.real(); return false; }
+    bool convert(float& B,  const blas_complex<double>& A) { B = (float)A.real(); return false; }
+    bool convert(double& B, const blas_complex<float>& A) { B = (double)A.real(); return false; }
+    bool convert(double& B, const blas_complex<double>& A) { B = (double)A.real(); return false; }
 
 
     bool convert(blas_real<float>& B, const blas_complex<float>& A)  { B = (float)A.real(); return true; }

@@ -34,38 +34,38 @@ namespace whiteice
 	keyValue = key_; dataValue = data_;
       }
       
-      inline K& key() throw(){ return keyValue; }
-      inline const K& key() const throw(){ return keyValue; }
+      inline K& key() { return keyValue; }
+      inline const K& key() const { return keyValue; }
       
-      inline D& data() throw(){ return dataValue; }
-      inline const D& data() const throw(){ return dataValue; }
+      inline D& data() { return dataValue; }
+      inline const D& data() const { return dataValue; }
       
-      inline augmented_data<K,D>& operator=(const augmented_data<K,D>& d) throw(){
+      inline augmented_data<K,D>& operator=(const augmented_data<K,D>& d) {
 	keyValue = d.keyValue; dataValue = d.dataValue;
 	return *this;
       }
       
-      inline bool operator==(const augmented_data<K,D>& d) const throw(){
+      inline bool operator==(const augmented_data<K,D>& d) const {
 	return (keyValue == d.keyValue);
       }
       
-      inline bool operator!=(const augmented_data<K,D>& d) const throw(){
+      inline bool operator!=(const augmented_data<K,D>& d) const {
 	return (keyValue != d.keyValue);
       }
       
-      inline bool operator> (const augmented_data<K,D>& d) const throw(){
+      inline bool operator> (const augmented_data<K,D>& d) const {
 	return (keyValue >  d.keyValue);
       }
       
-      inline bool operator>=(const augmented_data<K,D>& d) const throw(){
+      inline bool operator>=(const augmented_data<K,D>& d) const {
 	return (keyValue >= d.keyValue);
       }
       
-      inline bool operator< (const augmented_data<K,D>& d) const throw(){
+      inline bool operator< (const augmented_data<K,D>& d) const {
 	return (keyValue <  d.keyValue);
       }
       
-      inline bool operator<=(const augmented_data<K,D>& d) const throw(){
+      inline bool operator<=(const augmented_data<K,D>& d) const {
 	return (keyValue <= d.keyValue);
       }
       

@@ -28,7 +28,7 @@ namespace whiteice {
   public:
     HMM();
     HMM(unsigned int visibleStates, unsigned int hiddenStates)
-      throw(std::logic_error);
+      ;
     
     HMM(const HMM& hmm);
     virtual ~HMM();
@@ -103,13 +103,13 @@ namespace whiteice {
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
     const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
 
-    unsigned int getNumVisibleStates() const throw() { return numVisible; }
-    unsigned int getNumHiddenStates() const throw() { return numHidden; }
+    unsigned int getNumVisibleStates() const  { return numVisible; }
+    unsigned int getNumHiddenStates() const  { return numHidden; }
 
     
     // saves and loads HMM to binary file
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
     
   private:
     // normalizes parameters by ordering hidden states according to probabilities

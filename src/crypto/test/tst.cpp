@@ -43,16 +43,16 @@ public:
   virtual ~DynamicBitsetVectorSource(){ }
            
   
-  whiteice::dynamic_bitset& operator[](unsigned int index) throw(std::out_of_range)
+  whiteice::dynamic_bitset& operator[](unsigned int index) 
   { return (*data)[index]; }
-  const whiteice::dynamic_bitset& operator[](unsigned int index) const throw(std::out_of_range)
+  const whiteice::dynamic_bitset& operator[](unsigned int index) const 
   { return (*data)[index]; }
   
   // number of dynamic_bitsets available
-  unsigned int size() const throw(){ return data->size(); }
+  unsigned int size() const { return data->size(); }
   
   // tells if the data source access is working correctly (-> can read more data)
-  bool good() const throw(){ return true; }
+  bool good() const { return true; }
   
   void flush() const { }
   
@@ -92,12 +92,12 @@ class test_exception : public std::exception
 {
 public:
   
-  test_exception() throw()
+  test_exception() 
   {
     reason = 0;
   }
   
-  test_exception(const std::exception& e) throw()
+  test_exception(const std::exception& e) 
   {
     reason = 0;
     
@@ -110,7 +110,7 @@ public:
   }
   
   
-  test_exception(const char* ptr) throw()
+  test_exception(const char* ptr) 
   {
     reason = 0;
     
@@ -122,7 +122,7 @@ public:
   }
   
   
-  virtual ~test_exception() throw()
+  virtual ~test_exception() 
   {
     if(reason) free(reason);
     reason = 0;

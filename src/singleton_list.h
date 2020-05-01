@@ -26,8 +26,8 @@ namespace whiteice
     {
     protected:
       
-      singleton_listable() throw(); // -> not directly creatable
-      virtual ~singleton_listable() throw();
+      singleton_listable() ; // -> not directly creatable
+      virtual ~singleton_listable() ;
       
     private:
       friend class singleton_list;  
@@ -43,7 +43,7 @@ namespace whiteice
     {
     public:
       
-      singleton_list() throw(std::logic_error);
+      singleton_list() ;
       ~singleton_list();
       
     private:
@@ -51,9 +51,9 @@ namespace whiteice
       // only singleton_listables (or succesfully claiming to be)
       // can add pointers (private -> only friends = singleton_listable
       // can access.
-      static bool add(singleton_listable& id) throw();
+      static bool add(singleton_listable& id) ;
       
-      static bool remove(singleton_listable& id) throw();
+      static bool remove(singleton_listable& id) ;
       
       friend class singleton_listable;
       

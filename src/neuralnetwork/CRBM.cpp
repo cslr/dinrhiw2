@@ -29,7 +29,7 @@ namespace whiteice
   // creates 2-layer: V * H network
   template <typename T>
   CRBM<T>::CRBM(unsigned int visible, unsigned int hidden)
-    throw(std::invalid_argument)
+    
   {
     if(visible == 0 || hidden == 0)
       throw std::invalid_argument("invalid network architecture");
@@ -293,7 +293,7 @@ namespace whiteice
 #define CRBM_WEIGHTS_CFGSTR          "CRBM_WEIGHTS"
   
   template <typename T>
-  bool CRBM<T>::load(const std::string& filename) throw()
+  bool CRBM<T>::load(const std::string& filename) 
   {
     try{
       whiteice::conffile configuration;
@@ -371,7 +371,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool CRBM<T>::save(const std::string& filename) const throw()
+  bool CRBM<T>::save(const std::string& filename) const 
   {
     try{
       whiteice::conffile configuration;

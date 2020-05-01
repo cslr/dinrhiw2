@@ -34,61 +34,61 @@ namespace whiteice
     {
       public:
       
-      explicit gvertex(unsigned int i=4) throw();
-      gvertex(const gvertex<T,S>& v) throw();
-      gvertex(const std::vector<T>& v) throw();
-      virtual ~gvertex() throw();
+      explicit gvertex(unsigned int i=4) ;
+      gvertex(const gvertex<T,S>& v) ;
+      gvertex(const std::vector<T>& v) ;
+      virtual ~gvertex() ;
       
       typedef typename std::vector<T>::iterator iterator;
       typedef typename std::vector<T>::const_iterator const_iterator;
       
-      unsigned int size() const throw();
-      unsigned int resize(unsigned int d) throw();
+      unsigned int size() const ;
+      unsigned int resize(unsigned int d) ;
       
       // TODO: move norm() to generic number class
-      T norm() const throw();
+      T norm() const ;
       
       // calculates partial norm for gvertex(i:j)
-      T norm(unsigned int i, unsigned int j) const throw();
+      T norm(unsigned int i, unsigned int j) const ;
       
-      bool normalize() throw(); // length = 1
+      bool normalize() ; // length = 1
 
-      gvertex<T,S> operator+(const gvertex<T,S>& v) const throw(illegal_operation);
-      gvertex<T,S> operator-(const gvertex<T,S>& v) const throw(illegal_operation);
+      gvertex<T,S> operator+(const gvertex<T,S>& v) const ;
+      gvertex<T,S> operator-(const gvertex<T,S>& v) const ;
 
       // inner product - returns gvertex with size 1
-      gvertex<T,S> operator*(const gvertex<T,S>& v) const throw(illegal_operation);
+      gvertex<T,S> operator*(const gvertex<T,S>& v) const ;
       
-      gvertex<T,S> operator/(const gvertex<T,S>& v) const throw(illegal_operation);
-      gvertex<T,S> operator!() const throw(illegal_operation);
-      gvertex<T,S> operator-() const throw(illegal_operation);
+      gvertex<T,S> operator/(const gvertex<T,S>& v) const ;
+      gvertex<T,S> operator!() const ;
+      gvertex<T,S> operator-() const ;
 
       // cross product
-      gvertex<T,S> operator^(const gvertex<T,S>& v) const throw(illegal_operation);
+      gvertex<T,S> operator^(const gvertex<T,S>& v) const ;
       
-      gvertex<T,S>& operator+=(const gvertex<T,S>& v) throw(illegal_operation);
-      gvertex<T,S>& operator-=(const gvertex<T,S>& v) throw(illegal_operation);
-      gvertex<T,S>& operator*=(const gvertex<T,S>& v) throw(illegal_operation);
-      gvertex<T,S>& operator/=(const gvertex<T,S>& v) throw(illegal_operation);
+      gvertex<T,S>& operator+=(const gvertex<T,S>& v) ;
+      gvertex<T,S>& operator-=(const gvertex<T,S>& v) ;
+      gvertex<T,S>& operator*=(const gvertex<T,S>& v) ;
+      gvertex<T,S>& operator/=(const gvertex<T,S>& v) ;
       
-      gvertex<T,S>& operator=(const gvertex<T,S>& v) throw(illegal_operation);      
+      gvertex<T,S>& operator=(const gvertex<T,S>& v) ;      
       
-      bool operator==(const gvertex<T,S>& v) const throw(uncomparable);
-      bool operator!=(const gvertex<T,S>& v) const throw(uncomparable);
-      bool operator>=(const gvertex<T,S>& v) const throw(uncomparable);
-      bool operator<=(const gvertex<T,S>& v) const throw(uncomparable);
-      bool operator< (const gvertex<T,S>& v) const throw(uncomparable);
-      bool operator> (const gvertex<T,S>& v) const throw(uncomparable);
+      bool operator==(const gvertex<T,S>& v) const ;
+      bool operator!=(const gvertex<T,S>& v) const ;
+      bool operator>=(const gvertex<T,S>& v) const ;
+      bool operator<=(const gvertex<T,S>& v) const ;
+      bool operator< (const gvertex<T,S>& v) const ;
+      bool operator> (const gvertex<T,S>& v) const ;
 
-      gvertex<T,S>& abs() throw();
-      gvertex<T,S>& conj() throw();
+      gvertex<T,S>& abs() ;
+      gvertex<T,S>& conj() ;
       
       /* scalars */
-      gvertex<T,S>& operator= (const S& s) throw(illegal_operation);
-      gvertex<T,S>  operator* (const S& s) const throw();
-      gvertex<T,S>  operator/ (const S& s) const throw(std::invalid_argument);
-      gvertex<T,S>& operator*=(const S& s) throw();
-      gvertex<T,S>& operator/=(const S& s) throw(std::invalid_argument);
+      gvertex<T,S>& operator= (const S& s) ;
+      gvertex<T,S>  operator* (const S& s) const ;
+      gvertex<T,S>  operator/ (const S& s) const ;
+      gvertex<T,S>& operator*=(const S& s) ;
+      gvertex<T,S>& operator/=(const S& s) ;
       
       // multi from right
       template <typename TT, typename SS>
@@ -96,23 +96,22 @@ namespace whiteice
       
       // multiply from left
       gvertex<T,S>  operator* (const gmatrix<T,S>& m)
-        const throw(std::invalid_argument);
+        const ;
 
       // outer product
-      gmatrix<T,S> outerproduct(const gvertex<T,S>& v) const throw(std::domain_error);
+      gmatrix<T,S> outerproduct(const gvertex<T,S>& v) const ;
       gmatrix<T,S> outerproduct(const gvertex<T,S>& v0,
-			       const gvertex<T,S>& v1) const throw(std::domain_error);
+			       const gvertex<T,S>& v1) const ;
       
-      T& operator[](const unsigned int& index) throw(std::out_of_range, illegal_operation);
-      const T& operator[](const unsigned int& index) const throw(std::out_of_range,
-							  illegal_operation);
+      T& operator[](const unsigned int& index) ;
+      const T& operator[](const unsigned int& index) const ;
       
-      iterator begin() throw(); // iterators
-      iterator end() throw();
-      const_iterator begin() const throw(); // iterators
-      const_iterator end() const throw();
+      iterator begin() ; // iterators
+      iterator end() ;
+      const_iterator begin() const ; // iterators
+      const_iterator end() const ;
       
-      bool comparable() throw(){ return false; }
+      bool comparable() { return false; }
       
       // TODO: add dummy    static const gvertex<T,S> null; for empty/null gvertex
       
@@ -130,7 +129,7 @@ namespace whiteice
     
     // tries to convert gvertex of type S to gvertex of type T (B = A)
     template <typename T, typename S>
-      bool convert(gvertex<T>& B, const gvertex<S>& A) throw();
+      bool convert(gvertex<T>& B, const gvertex<S>& A) ;
     
   }
 }

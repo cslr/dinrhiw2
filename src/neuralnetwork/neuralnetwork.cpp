@@ -131,7 +131,7 @@ namespace whiteice
   template <typename T>
   neuralnetwork<T>::neuralnetwork(const std::vector<unsigned int>& nn_structure,
 				  bool compressed_network)
-    throw(std::invalid_argument)
+    
   {
     std::invalid_argument e("empty/bad network architecture");
     
@@ -232,14 +232,14 @@ namespace whiteice
   /* accessing data / configuration */
   
   template <typename T>
-  math::vertex<T>& neuralnetwork<T>::input() throw()
+  math::vertex<T>& neuralnetwork<T>::input() 
   {
     return input_values;
   }
   
   
   template <typename T>
-  math::vertex<T>& neuralnetwork<T>::output() throw()
+  math::vertex<T>& neuralnetwork<T>::output() 
   {
     return output_values;
   }
@@ -328,11 +328,11 @@ namespace whiteice
   
 
   template <typename T>
-  neuronlayer<T>& neuralnetwork<T>::operator[](unsigned int index) throw(std::out_of_range)
+  neuronlayer<T>& neuralnetwork<T>::operator[](unsigned int index) 
   {
     if(index >= layers.size()){
       std::out_of_range e("neuralnetwork<T>:: index too big");
-      throw(e);
+      ;
     }
     
     // TODO for code-cleaning:
@@ -356,7 +356,7 @@ namespace whiteice
   
   // load & saves neuralnetwork data from file
   template <typename T>
-  bool neuralnetwork<T>::load(const std::string& filename) throw()
+  bool neuralnetwork<T>::load(const std::string& filename) 
   {
     if(compressed) return false;
     
@@ -633,7 +633,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool neuralnetwork<T>::save(const std::string& filename) const throw()
+  bool neuralnetwork<T>::save(const std::string& filename) const 
   {
     if(compressed) return false;
     
@@ -896,7 +896,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool neuralnetwork<T>::exportdata(math::vertex<T>& v) const throw()
+  bool neuralnetwork<T>::exportdata(math::vertex<T>& v) const 
   {
     if(compressed) return false;
     
@@ -963,7 +963,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool neuralnetwork<T>::importdata(const math::vertex<T>& v) throw()
+  bool neuralnetwork<T>::importdata(const math::vertex<T>& v) 
   {
     assert(layers.size() > 0);
     
@@ -1026,7 +1026,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int neuralnetwork<T>::exportdatasize() const throw()
+  unsigned int neuralnetwork<T>::exportdatasize() const 
   {
     typename std::vector< neuronlayer<T>* >::const_iterator i =
       layers.begin();
@@ -1052,7 +1052,7 @@ namespace whiteice
   ////////////////////////////////////////////////////////////
   
   template <typename T>
-  bool neuralnetwork<T>::compress() throw()
+  bool neuralnetwork<T>::compress() 
   {
     neuralnetwork<T>* nncopy = 0;
     
@@ -1098,7 +1098,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool neuralnetwork<T>::decompress() throw()
+  bool neuralnetwork<T>::decompress() 
   {
     neuralnetwork<T>* nncopy = 0;
     
@@ -1143,14 +1143,14 @@ namespace whiteice
   
 
   template <typename T>
-  bool neuralnetwork<T>::iscompressed() const throw()
+  bool neuralnetwork<T>::iscompressed() const 
   {
     return compressed;
   }
   
   
   template <typename T>
-  float neuralnetwork<T>::ratio() const throw()
+  float neuralnetwork<T>::ratio() const 
   {
     if(compressed == false) return 1.0f;
     

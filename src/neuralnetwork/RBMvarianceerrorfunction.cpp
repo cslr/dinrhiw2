@@ -113,7 +113,7 @@ function<math::vertex<T>,T>* GBRBM_variance_error_function<T>::clone() const {
 
 // returns input vectors dimension
 template <typename T>
-unsigned int GBRBM_variance_error_function<T>::dimension() const throw() {
+unsigned int GBRBM_variance_error_function<T>::dimension() const  {
 	if(samples.size() > 0)
 		return samples[0].size();
 	else
@@ -122,7 +122,7 @@ unsigned int GBRBM_variance_error_function<T>::dimension() const throw() {
 
 
 template <typename T>
-bool GBRBM_variance_error_function<T>::hasGradient() const throw() {
+bool GBRBM_variance_error_function<T>::hasGradient() const  {
 	return false;
 }
 

@@ -38,7 +38,7 @@ public:
 	// calculates mean error for the latest N samples, 0 = all samples
 	T getMeanError(unsigned int latestN = 0) const;
 
-	T getAcceptRate() const throw(){
+	T getAcceptRate() const {
 		if(total_tries <= 1.0)
 			return 0.0;
 		else

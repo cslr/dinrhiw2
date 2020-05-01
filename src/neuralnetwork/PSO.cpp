@@ -77,7 +77,7 @@ namespace whiteice
   
   
 	template <typename T>
-	PSO<T>::~PSO() throw()
+	PSO<T>::~PSO() 
 	{
 		if(f) delete f;
 	}
@@ -85,7 +85,7 @@ namespace whiteice
   
 	template <typename T>
 	bool PSO<T>::maximize(const unsigned int numIterations,
-				const unsigned int size) throw()
+				const unsigned int size) 
 	{
 		// transforms task into minimization task
 		optimized_function<T>* old_f = this->f;
@@ -115,7 +115,7 @@ namespace whiteice
 
 	template <typename T>
 	bool PSO<T>::minimize(const unsigned int numIterations,
-			const unsigned int size) throw()
+			const unsigned int size) 
 	{
 		global_iter = 0;
 		maximization_task = false;
@@ -131,7 +131,7 @@ namespace whiteice
 	// with custom starting population
 	template <typename T>
 	bool PSO<T>::maximize(const unsigned int numIterations,
-				const std::vector< math::vertex<T> >& data) throw()
+				const std::vector< math::vertex<T> >& data) 
 	{
 		// transforms task into minimization task
 		optimized_function<T>* old_f = this->f;
@@ -161,7 +161,7 @@ namespace whiteice
 	// with custom starting population
 	template <typename T>
 	bool PSO<T>::minimize(const unsigned int numIterations,
-			const std::vector< math::vertex<T> >& data) throw()
+			const std::vector< math::vertex<T> >& data) 
 	{
 		global_iter = 0;
 		maximization_task = false;
@@ -175,13 +175,13 @@ namespace whiteice
 	
 	
 	template <typename T>
-	bool PSO<T>::improve(const unsigned int numIterations) throw(){
+	bool PSO<T>::improve(const unsigned int numIterations) {
 		return continue_optimization(numIterations);
 	}
 
 
 	template <typename T>
-	bool PSO<T>::continue_optimization(const unsigned int numIterations) throw()
+	bool PSO<T>::continue_optimization(const unsigned int numIterations) 
 	{
 
 		// invalidates possible cumulative distribution
@@ -306,7 +306,7 @@ namespace whiteice
   
   // returns best candidate found so far
   template <typename T>
-  void PSO<T>::getCurrentBest(math::vertex<T>& best) const throw()
+  void PSO<T>::getCurrentBest(math::vertex<T>& best) const 
   {
     best.resize(f->dimension());
     best = global_best.best;
@@ -315,7 +315,7 @@ namespace whiteice
   
   // returns best candidate found so far
   template <typename T>
-  void PSO<T>::getBest(math::vertex<T>& best) const throw()
+  void PSO<T>::getBest(math::vertex<T>& best) const 
   {
     best.resize(f->dimension());
     best = total_best.best;
@@ -412,7 +412,7 @@ namespace whiteice
   
   // swarm size
   template <typename T>
-  unsigned int PSO<T>::size() const throw(){
+  unsigned int PSO<T>::size() const {
     return swarm.size();
   }
   
@@ -494,7 +494,7 @@ namespace whiteice
 
   // creates initial particles from given data
   template <typename T>
-  bool PSO<T>::setup_population(const std::vector< math::vertex<T> >& data) throw()
+  bool PSO<T>::setup_population(const std::vector< math::vertex<T> >& data) 
   {
     try{
       // creates random swarm of particles
@@ -572,7 +572,7 @@ namespace whiteice
   
   
   template <typename T>
-  void PSO<T>::clamp_values_to_range(PSO<T>::particle& p) const throw()
+  void PSO<T>::clamp_values_to_range(PSO<T>::particle& p) const 
   {
 	  // clamps particles values to selected range
 	  auto& r = this->datarange;

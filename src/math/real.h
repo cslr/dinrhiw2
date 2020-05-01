@@ -52,56 +52,56 @@ namespace whiteice
       
 
       // returns realnumber's working precision in bits
-      unsigned long int getPrecision() const throw();
-      void setPrecision(unsigned long int prec) throw();
+      unsigned long int getPrecision() const ;
+      void setPrecision(unsigned long int prec) ;
       
       
       // operators
-      realnumber operator+(const realnumber&) const throw(illegal_operation);
-      realnumber operator-(const realnumber&) const throw(illegal_operation);
-      realnumber operator*(const realnumber&) const throw(illegal_operation);
-      realnumber operator/(const realnumber&) const throw(illegal_operation);
+      realnumber operator+(const realnumber&) const ;
+      realnumber operator-(const realnumber&) const ;
+      realnumber operator*(const realnumber&) const ;
+      realnumber operator/(const realnumber&) const ;
       
       // complex conjugate (?)
-      realnumber operator!() const throw(illegal_operation);
-      realnumber operator-() const throw(illegal_operation);
+      realnumber operator!() const ;
+      realnumber operator-() const ;
       
-      realnumber& operator+=(const realnumber&) throw(illegal_operation);
-      realnumber& operator-=(const realnumber&) throw(illegal_operation);
-      realnumber& operator*=(const realnumber&) throw(illegal_operation);
-      realnumber& operator/=(const realnumber&) throw(illegal_operation);
+      realnumber& operator+=(const realnumber&) ;
+      realnumber& operator-=(const realnumber&) ;
+      realnumber& operator*=(const realnumber&) ;
+      realnumber& operator/=(const realnumber&) ;
       
-      realnumber& operator=(const realnumber&) throw(illegal_operation);      
+      realnumber& operator=(const realnumber&) ;      
       
       // comparisions
 
-      bool operator==(const realnumber&) const throw(uncomparable);
-      bool operator!=(const realnumber&) const throw(uncomparable);
-      bool operator>=(const realnumber&) const throw(uncomparable);
-      bool operator<=(const realnumber&) const throw(uncomparable);
-      bool operator< (const realnumber&) const throw(uncomparable);
-      bool operator> (const realnumber&) const throw(uncomparable);
+      bool operator==(const realnumber&) const ;
+      bool operator!=(const realnumber&) const ;
+      bool operator>=(const realnumber&) const ;
+      bool operator<=(const realnumber&) const ;
+      bool operator< (const realnumber&) const ;
+      bool operator> (const realnumber&) const ;
 
       // scalar operations
-      realnumber& operator= (const double& s) throw(illegal_operation);
-      realnumber  operator+ (const double& s) const throw();
-      realnumber  operator- (const double& s) const throw();
-      realnumber& operator+=(const double& s) throw();
-      realnumber& operator-=(const double& s) throw();
-      realnumber  operator* (const double& s) const throw();
-      realnumber  operator/ (const double& s) const throw(std::invalid_argument);
-      realnumber& operator*=(const double& s) throw();
-      realnumber& operator/=(const double& s) throw(std::invalid_argument);
+      realnumber& operator= (const double& s) ;
+      realnumber  operator+ (const double& s) const ;
+      realnumber  operator- (const double& s) const ;
+      realnumber& operator+=(const double& s) ;
+      realnumber& operator-=(const double& s) ;
+      realnumber  operator* (const double& s) const ;
+      realnumber  operator/ (const double& s) const ;
+      realnumber& operator*=(const double& s) ;
+      realnumber& operator/=(const double& s) ;
       
       friend realnumber operator*(const double s, const realnumber& r);
       
       // scalar comparisions
-      bool operator==(const double) const throw();
-      bool operator!=(const double) const throw();
-      bool operator>=(const double) const throw();
-      bool operator<=(const double) const throw();
-      bool operator< (const double) const throw();
-      bool operator> (const double) const throw();
+      bool operator==(const double) const ;
+      bool operator!=(const double) const ;
+      bool operator>=(const double) const ;
+      bool operator<=(const double) const ;
+      bool operator< (const double) const ;
+      bool operator> (const double) const ;
       
       friend bool operator==(const double, const realnumber& r);
       friend bool operator!=(const double, const realnumber& r);
@@ -111,47 +111,47 @@ namespace whiteice
       friend bool operator> (const double, const realnumber& r);
       
       
-      bool operator==(const signed long int) const throw();
-      bool operator!=(const signed long int) const throw();
-      bool operator>=(const signed long int) const throw();
-      bool operator<=(const signed long int) const throw();
-      bool operator< (const signed long int) const throw();
-      bool operator> (const signed long int) const throw();
+      bool operator==(const signed long int) const ;
+      bool operator!=(const signed long int) const ;
+      bool operator>=(const signed long int) const ;
+      bool operator<=(const signed long int) const ;
+      bool operator< (const signed long int) const ;
+      bool operator> (const signed long int) const ;
       
       // basic mathematical functions of for realnumber
-      realnumber& abs() throw();
-      realnumber& ceil() throw();
-      realnumber& floor() throw();
-      realnumber& trunc() throw();
+      realnumber& abs() ;
+      realnumber& ceil() ;
+      realnumber& floor() ;
+      realnumber& trunc() ;
       
       // returns sign of real number
       // returns 1 if r > 0, 0 if r == 0 and -1 if r < 0
-      int sign() const throw();
+      int sign() const ;
       
       double& operator[](const unsigned long& index)
-	throw(std::out_of_range, illegal_operation);
+	;
 
       const double& operator[](const unsigned long& index) const
-	throw(std::out_of_range, illegal_operation);
+	;
       
-      bool comparable() throw(){ return true; }
+      bool comparable() { return true; }
       
       
       //////////////////////////////////////////////////
       // conversions
       
       // rounds to the closest double
-      double  getDouble() const throw();
+      double  getDouble() const ;
       
       // returns floor(realnumber) conversion to integer
-      // integer getInteger() const throw(); ****** TODO *******
+      // integer getInteger() const ; ****** TODO *******
       
       // renders realnumber to a human-digestable and 
       // realnumber() ctor understandable string
       // 
       // ndigits is tells how many digits to show
       // (zero tells to show everthing)
-      std::string getString(size_t ndigits = 0) const throw();
+      std::string getString(size_t ndigits = 0) const ;
 
       
       

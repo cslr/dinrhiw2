@@ -29,48 +29,48 @@ namespace whiteice
 	virtual ~superresolution();
 	
 	// operators
-	superresolution<T,U> operator+(const superresolution<T,U>&) const throw(illegal_operation);
-	superresolution<T,U> operator-(const superresolution<T,U>&) const throw(illegal_operation);
-	superresolution<T,U> operator*(const superresolution<T,U>&) const throw(illegal_operation);
-	superresolution<T,U> operator/(const superresolution<T,U>&) const throw(illegal_operation);
+	superresolution<T,U> operator+(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator-(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator*(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator/(const superresolution<T,U>&) const ;
 	
 	// complex conjugate (?)
-	superresolution<T,U> operator!() const throw(illegal_operation);
-	superresolution<T,U> operator-() const throw(illegal_operation);
+	superresolution<T,U> operator!() const ;
+	superresolution<T,U> operator-() const ;
 	
-	superresolution<T,U>& operator+=(const superresolution<T,U>&) throw(illegal_operation);
-	superresolution<T,U>& operator-=(const superresolution<T,U>&) throw(illegal_operation);
-	superresolution<T,U>& operator*=(const superresolution<T,U>&) throw(illegal_operation);
-	superresolution<T,U>& operator/=(const superresolution<T,U>&) throw(illegal_operation);
+	superresolution<T,U>& operator+=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator-=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
 	
-	superresolution<T,U>& operator=(const superresolution<T,U>&) throw(illegal_operation);      
+	superresolution<T,U>& operator=(const superresolution<T,U>&) ;      
 	
-	bool operator==(const superresolution<T,U>&) const throw(uncomparable);
-	bool operator!=(const superresolution<T,U>&) const throw(uncomparable);
-	bool operator>=(const superresolution<T,U>&) const throw(uncomparable);
-	bool operator<=(const superresolution<T,U>&) const throw(uncomparable);
-	bool operator< (const superresolution<T,U>&) const throw(uncomparable);
-	bool operator> (const superresolution<T,U>&) const throw(uncomparable);
+	bool operator==(const superresolution<T,U>&) const ;
+	bool operator!=(const superresolution<T,U>&) const ;
+	bool operator>=(const superresolution<T,U>&) const ;
+	bool operator<=(const superresolution<T,U>&) const ;
+	bool operator< (const superresolution<T,U>&) const ;
+	bool operator> (const superresolution<T,U>&) const ;
 	
 	// scalar operation
-	superresolution<T,U>& operator= (const T& s) throw(illegal_operation);
-	superresolution<T,U>  operator* (const T& s) const throw();
-	superresolution<T,U>  operator/ (const T& s) const throw(std::invalid_argument);
-	superresolution<T,U>& operator*=(const T& s) throw();
-	superresolution<T,U>& operator/=(const T& s) throw(std::invalid_argument);
+	superresolution<T,U>& operator= (const T& s) ;
+	superresolution<T,U>  operator* (const T& s) const ;
+	superresolution<T,U>  operator/ (const T& s) const ;
+	superresolution<T,U>& operator*=(const T& s) ;
+	superresolution<T,U>& operator/=(const T& s) ;
 	
-	superresolution<T,U>& abs() throw();      
+	superresolution<T,U>& abs() ;      
 	
 	T& operator[](const U& index)
-	  throw(std::out_of_range, illegal_operation);
+	  ;
 	
 	const T& operator[](const U& index) const
-	  throw(std::out_of_range, illegal_operation);	
+	  ;	
 	
 	// superresolution operations
-	void basis_scaling(const T& s) throw(); // uniform
-	bool basis_scaling(const std::vector<T>& s) throw(); // non-uniform scaling
-	T measure(const U& s) throw(); // measures with s-(dimensional) measure-function
+	void basis_scaling(const T& s) ; // uniform
+	bool basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
+	T measure(const U& s) ; // measures with s-(dimensional) measure-function
 	
 	
       private:

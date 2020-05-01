@@ -49,7 +49,7 @@ namespace whiteice
   // creates dataset with given dimensionality
   // data is set of vectors
   template <typename T>
-  dataset<T>::dataset(unsigned int dimension) throw(std::out_of_range)
+  dataset<T>::dataset(unsigned int dimension) 
   {
     // dimension can be zero, this means
     // default cluster cannot be used
@@ -77,7 +77,7 @@ namespace whiteice
   
   
   template <typename T>
-  dataset<T>::~dataset() throw(){
+  dataset<T>::~dataset() {
     clusters.clear();
     namemapping.clear();
   }
@@ -274,26 +274,26 @@ namespace whiteice
   
   // adds data examples
   template <typename T>
-  bool dataset<T>::add(const math::vertex<T>& input, bool nopreprocess) throw(){
+  bool dataset<T>::add(const math::vertex<T>& input, bool nopreprocess) {
     return add(0, input, nopreprocess);
   }
   
   
   template <typename T>
-  bool dataset<T>::add(const std::vector<math::vertex<T> >& inputs, bool nopreprocess) throw()
+  bool dataset<T>::add(const std::vector<math::vertex<T> >& inputs, bool nopreprocess) 
   {
     return add(0, inputs, nopreprocess);
   }
   
   
   template <typename T>  
-  bool dataset<T>::add(const std::string& input, bool nopreprocess) throw(){
+  bool dataset<T>::add(const std::string& input, bool nopreprocess) {
     return add(0, input, nopreprocess);
   }
   
   
   template <typename T>  
-  bool dataset<T>::add(const std::vector<std::string>& inputs, bool nopreprocess) throw()
+  bool dataset<T>::add(const std::vector<std::string>& inputs, bool nopreprocess) 
   {
     return add(0, inputs, nopreprocess);
   }
@@ -303,7 +303,7 @@ namespace whiteice
   // adds data to clusters
   template <typename T>
   bool dataset<T>::add(unsigned int index,
-		       const math::vertex<T>& input, bool nopreprocess) throw()
+		       const math::vertex<T>& input, bool nopreprocess) 
   {
     if(index >= clusters.size()) 
       // slow.. (internal calls need only single check)
@@ -340,7 +340,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::add(unsigned int index,
-		       const std::vector<math::vertex<T> >& inputs, bool nopreprocess) throw()
+		       const std::vector<math::vertex<T> >& inputs, bool nopreprocess) 
   {
     if(index >= clusters.size())
       return false;
@@ -374,7 +374,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::add(unsigned int index, const std::vector<T>& input,
-		       bool nopreprocess) throw()
+		       bool nopreprocess) 
   {
     math::vertex<T> v(input.size());
     
@@ -390,7 +390,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::add(unsigned int index,
-		       const std::string& input, bool nopreprocess) throw()
+		       const std::string& input, bool nopreprocess) 
   {
     if(index >= clusters.size()) // slow.. (internal calls)
       return false;
@@ -415,7 +415,7 @@ namespace whiteice
   template <typename T>
   bool dataset<T>::add(unsigned int index,
 		       const std::vector<std::string>& inputs,
-		       bool nopreprocess) throw()
+		       bool nopreprocess) 
   {
     typename std::vector<std::string >::const_iterator i;
     
@@ -450,7 +450,7 @@ namespace whiteice
   
   template <typename T> // reduces size of data
   bool dataset<T>::resize(unsigned int index,
-			  unsigned int nsize) throw()
+			  unsigned int nsize) 
   {
     if(index >= clusters.size())
       return false;
@@ -491,7 +491,7 @@ namespace whiteice
    * it is larger that given samples. 
    */
   template <typename T>
-  bool dataset<T>::downsampleAll(unsigned int samples) throw()
+  bool dataset<T>::downsampleAll(unsigned int samples) 
   {
     if(clusters.size() <= 0) return false;
 
@@ -594,7 +594,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::getData(unsigned int index, std::vector< math::vertex<T> >& data) const throw(std::out_of_range)
+  bool dataset<T>::getData(unsigned int index, std::vector< math::vertex<T> >& data) const 
   {
     if(index >= clusters.size())
       throw std::out_of_range("cluster index too big");
@@ -607,7 +607,7 @@ namespace whiteice
   
   // iterators for dataset
   template <typename T>
-  typename dataset<T>::iterator dataset<T>::begin(unsigned int index) throw(std::out_of_range)
+  typename dataset<T>::iterator dataset<T>::begin(unsigned int index) 
   {
     if(index >= clusters.size())
       throw std::out_of_range("cluster index too big.");
@@ -616,7 +616,7 @@ namespace whiteice
   }
   
   template <typename T>
-  typename dataset<T>::iterator dataset<T>::end(unsigned int index) throw(std::out_of_range)
+  typename dataset<T>::iterator dataset<T>::end(unsigned int index) 
   {
     if(index >= clusters.size())
       throw std::out_of_range("cluster index too big.");
@@ -625,7 +625,7 @@ namespace whiteice
   }
   
   template <typename T>
-  typename dataset<T>::const_iterator dataset<T>::begin(unsigned int index) const throw(std::out_of_range)
+  typename dataset<T>::const_iterator dataset<T>::begin(unsigned int index) const 
   {
     if(index >= clusters.size())
       throw std::out_of_range("Cluster index too big.");
@@ -634,7 +634,7 @@ namespace whiteice
   }
   
   template <typename T>
-  typename dataset<T>::const_iterator dataset<T>::end(unsigned int index) const throw(std::out_of_range)
+  typename dataset<T>::const_iterator dataset<T>::end(unsigned int index) const 
   {
     if(index >= clusters.size())
       throw std::out_of_range("Cluster index too big.");
@@ -645,7 +645,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::load(const std::string& filename) throw()
+  bool dataset<T>::load(const std::string& filename) 
   {
     // loads datasets which have been saved in
     // dataset format = 1 (older dataset format 0 is not supported)
@@ -995,7 +995,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::save(const std::string& filename) const throw()
+  bool dataset<T>::save(const std::string& filename) const 
   {
     // dataset is saved as binary file in following format.
     // all data is either 32bit unsigned integers or 32bit floats
@@ -1256,7 +1256,7 @@ namespace whiteice
   
 
   template <typename T>
-  bool dataset<T>::exportAscii(const std::string& filename, bool writeHeaders, bool raw) const throw()
+  bool dataset<T>::exportAscii(const std::string& filename, bool writeHeaders, bool raw) const 
   {
     if(filename.length() <= 0)
       return false;
@@ -1320,7 +1320,7 @@ namespace whiteice
    * reads at most LINES of vertex data or unlimited amount of data (if set to 0).
    */
   template <typename T>
-  bool dataset<T>::importAscii(const std::string& filename, unsigned int LINES) throw()
+  bool dataset<T>::importAscii(const std::string& filename, unsigned int LINES) 
   {
     std::vector< math::vertex<T> > import;
 
@@ -1437,7 +1437,7 @@ namespace whiteice
   // accesses zero cluster
   template <typename T>
   const math::vertex<T>& dataset<T>::operator[](unsigned int index) const
-    throw(std::out_of_range)
+    
   {
     if(clusters.size() == 0){
       throw std::out_of_range("dataset: cluster zero doesn't exist.");
@@ -1450,7 +1450,7 @@ namespace whiteice
   }
   
   template <typename T>
-  const math::vertex<T>& dataset<T>::access(unsigned int cluster, unsigned int data) const throw(std::out_of_range)
+  const math::vertex<T>& dataset<T>::access(unsigned int cluster, unsigned int data) const 
   {
     if(cluster >= clusters.size())
       throw std::out_of_range("cluster index out of range");
@@ -1463,7 +1463,7 @@ namespace whiteice
   
   
   template <typename T>
-  const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) throw(std::out_of_range)
+  const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) 
   {
     typename std::map<std::string, unsigned int>::const_iterator i;
     i = namemapping.find(clusterName);
@@ -1481,7 +1481,7 @@ namespace whiteice
 
 
   template <typename T>
-  unsigned int dataset<T>::size(unsigned int index) const throw()  // dataset size  
+  unsigned int dataset<T>::size(unsigned int index) const   // dataset size  
   {
     if(index >= clusters.size())
       return (unsigned int)(-1);
@@ -1490,7 +1490,7 @@ namespace whiteice
   }
   
   template <typename T>
-  bool dataset<T>::clear(unsigned int index) throw()  // data set clear  
+  bool dataset<T>::clear(unsigned int index)   // data set clear  
   {
     if(index >= clusters.size())
       return false;
@@ -1500,7 +1500,7 @@ namespace whiteice
   }
   
   template <typename T>
-  unsigned int dataset<T>::dimension(unsigned int index) const throw()  // dimension of data vectors
+  unsigned int dataset<T>::dimension(unsigned int index) const   // dimension of data vectors
   {
     if(index >= clusters.size())
       return (unsigned int)(-1);
@@ -1511,7 +1511,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::getPreprocessings(unsigned int cluster,
-				     std::vector<data_normalization>& preprocessings) const throw()
+				     std::vector<data_normalization>& preprocessings) const 
   {
     if(cluster >= clusters.size())
       return false;
@@ -1525,7 +1525,7 @@ namespace whiteice
   
   // data preprocessing
   template <typename T>
-  bool dataset<T>::preprocess(unsigned int index, enum data_normalization norm) throw()
+  bool dataset<T>::preprocess(unsigned int index, enum data_normalization norm) 
   {
     if(index >= clusters.size())
       return false;
@@ -1762,7 +1762,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::preprocess(enum data_normalization norm) throw(){
+  bool dataset<T>::preprocess(enum data_normalization norm) {
     return preprocess(0, norm);
   }
   
@@ -1772,7 +1772,7 @@ namespace whiteice
   // and preprocesses everything with parameter data from the whole dataset
   // (dataset may grow after preprocessing)
   template <typename T>
-  bool dataset<T>::repreprocess(unsigned int index) throw()
+  bool dataset<T>::repreprocess(unsigned int index) 
   { 
     if(index >= clusters.size())
       return false;
@@ -1803,7 +1803,7 @@ namespace whiteice
   
   // converts data with same preprocessing as with dataset vectors
   template <typename T>
-  bool dataset<T>::preprocess(unsigned int index, math::vertex<T>& vec) const throw()
+  bool dataset<T>::preprocess(unsigned int index, math::vertex<T>& vec) const 
   {
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
@@ -1836,7 +1836,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::preprocess(unsigned int index,
-			      std::vector< math::vertex<T> >& group) const throw()
+			      std::vector< math::vertex<T> >& group) const 
   {
     if(index >= clusters.size())
       return false;
@@ -1854,19 +1854,19 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::preprocess(math::vertex<T>& vec) const throw(){
+  bool dataset<T>::preprocess(math::vertex<T>& vec) const {
     return preprocess(0, vec);
   }
   
   template <typename T>
-  bool dataset<T>::preprocess(std::vector< math::vertex<T> >& group) const throw(){
+  bool dataset<T>::preprocess(std::vector< math::vertex<T> >& group) const {
     return preprocess(0, group);
   }
   
   
   // inverse preprocess given data vector
   template <typename T>
-  bool dataset<T>::invpreprocess(unsigned int index, math::vertex<T>& vec) const throw()
+  bool dataset<T>::invpreprocess(unsigned int index, math::vertex<T>& vec) const 
   {
     if(index >= clusters.size()) // this is slow (optimize internal calls)
       return false;
@@ -1899,7 +1899,7 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::invpreprocess(unsigned int index,
-				 std::vector<math::vertex<T> >& group) const throw()
+				 std::vector<math::vertex<T> >& group) const 
   {
     if(index >= clusters.size())
       return false;
@@ -1917,20 +1917,20 @@ namespace whiteice
   
   
   template <typename T>
-  bool dataset<T>::invpreprocess(math::vertex<T>& vec) const throw(){
+  bool dataset<T>::invpreprocess(math::vertex<T>& vec) const {
     return invpreprocess(0, vec);
   }
   
   
   template <typename T>
-  bool dataset<T>::invpreprocess(std::vector< math::vertex<T> >& group) const throw(){
+  bool dataset<T>::invpreprocess(std::vector< math::vertex<T> >& group) const {
     return invpreprocess(0, group);
   }
   
   
   // removes all preprocessings from data
   template <typename T>
-  bool dataset<T>::convert(unsigned int index) throw()
+  bool dataset<T>::convert(unsigned int index) 
   {
     if(index >= clusters.size())
       return false;
@@ -2028,7 +2028,7 @@ namespace whiteice
 
 
   template <typename T>
-  bool dataset<T>::preprocess_grad(unsigned int index, math::matrix<T>& W) const throw()
+  bool dataset<T>::preprocess_grad(unsigned int index, math::matrix<T>& W) const 
   {
     if(index >= clusters.size())
       return false;
@@ -2059,7 +2059,7 @@ namespace whiteice
   }
 
   template <typename T>
-  bool dataset<T>::invpreprocess_grad(unsigned int index, math::matrix<T>& W) const throw()
+  bool dataset<T>::invpreprocess_grad(unsigned int index, math::matrix<T>& W) const 
   {
     if(index >= clusters.size())
       return false;
@@ -2090,7 +2090,7 @@ namespace whiteice
   }
 
   template <typename T>
-  bool dataset<T>::diagnostics() const throw()
+  bool dataset<T>::diagnostics() const 
   {
     whiteice::logging.info("dataset::diagnostics()");
     
@@ -2118,7 +2118,7 @@ namespace whiteice
   // is data normalized with given operator?
   template <typename T>
   bool dataset<T>::is_normalized(unsigned int index,
-				 enum data_normalization norm) const throw()
+				 enum data_normalization norm) const 
   {
     typename std::vector<enum data_normalization>::const_iterator i;
     

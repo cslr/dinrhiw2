@@ -46,9 +46,9 @@ namespace whiteice
       virtual function<math::vertex<T>, T>* clone() const;
       
       // returns input vectors dimension
-      virtual unsigned int dimension() const throw() PURE_FUNCTION;
+      virtual unsigned int dimension() const  PURE_FUNCTION;
       
-      virtual bool hasGradient() const throw() PURE_FUNCTION;
+      virtual bool hasGradient() const  PURE_FUNCTION;
       
       // gets gradient at given point
       virtual math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;
@@ -56,7 +56,7 @@ namespace whiteice
       // gets gradient at given point (faster)
       virtual void grad(math::vertex<T>& x, math::vertex<T>& y) const;
       
-      virtual bool hasHessian() const throw() PURE_FUNCTION;
+      virtual bool hasHessian() const  PURE_FUNCTION;
       
       // gets hessian at given point
       virtual math::matrix<T> hessian(math::vertex<T>& x) const PURE_FUNCTION;

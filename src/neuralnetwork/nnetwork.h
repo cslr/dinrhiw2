@@ -50,7 +50,7 @@ namespace whiteice
     nnetwork(); 
     nnetwork(const nnetwork<T>& nn);
     nnetwork(const std::vector<unsigned int>& nnarch,
-	     const nonLinearity nl = sigmoid) throw(std::invalid_argument);
+	     const nonLinearity nl = sigmoid) ;
     
     
     virtual ~nnetwork();
@@ -67,15 +67,15 @@ namespace whiteice
 
     ////////////////////////////////////////////////////////////
     
-    math::vertex<T>& input() throw(){ return inputValues; }
-    math::vertex<T>& output() throw(){ return outputValues; }
-    const math::vertex<T>& input() const throw(){ return inputValues; }
-    const math::vertex<T>& output() const throw(){ return outputValues; }
+    math::vertex<T>& input() { return inputValues; }
+    math::vertex<T>& output() { return outputValues; }
+    const math::vertex<T>& input() const { return inputValues; }
+    const math::vertex<T>& output() const { return outputValues; }
     
     // returns input and output dimensions of neural network
-    unsigned int input_size() const throw();
-    unsigned int output_size() const throw();
-    unsigned int gradient_size() const throw();
+    unsigned int input_size() const ;
+    unsigned int output_size() const ;
+    unsigned int gradient_size() const ;
 
     void getArchitecture(std::vector<unsigned int>& arch) const;
 
@@ -114,38 +114,38 @@ namespace whiteice
      ////////////////////////////////////////////////////////////
     
     // load & saves neuralnetwork data from file
-    bool load(const std::string& filename) throw();
-    bool save(const std::string& filename) const throw();
+    bool load(const std::string& filename) ;
+    bool save(const std::string& filename) const ;
 
     ////////////////////////////////////////////////////////////
     
     // exports and imports neural network parameters to/from vertex
-    bool exportdata(math::vertex<T>& v) const throw();
-    bool importdata(const math::vertex<T>& v) throw();
+    bool exportdata(math::vertex<T>& v) const ;
+    bool importdata(const math::vertex<T>& v) ;
     
     // number of dimensions used by import/export
-    unsigned int exportdatasize() const throw();
+    unsigned int exportdatasize() const ;
 
     ////////////////////////////////////////////////////////////
     
-    unsigned int getLayers() const throw();
-    unsigned int getInputs(unsigned int l) const throw(); // number of inputs per neuron for this layer
-    unsigned int getNeurons(unsigned int l) const throw(); // number of neurons (outputs) per layer
+    unsigned int getLayers() const ;
+    unsigned int getInputs(unsigned int l) const ; // number of inputs per neuron for this layer
+    unsigned int getNeurons(unsigned int l) const ; // number of neurons (outputs) per layer
 
     // gets and sets network parameters: Weight matrixes and biases
-    bool getBias(math::vertex<T>& b, unsigned int layer) const throw();
-    bool setBias(const math::vertex<T>& b, unsigned int layer) throw();
-    bool getWeights(math::matrix<T>& w, unsigned int layer) const throw();
-    bool setWeights(const math::matrix<T>& w, unsigned int layer) throw();
+    bool getBias(math::vertex<T>& b, unsigned int layer) const ;
+    bool setBias(const math::vertex<T>& b, unsigned int layer) ;
+    bool getWeights(math::matrix<T>& w, unsigned int layer) const ;
+    bool setWeights(const math::matrix<T>& w, unsigned int layer) ;
 
     // whole network settings (except that the last layer is set to linear)
     bool setNonlinearity(nonLinearity nl);
     
-    nonLinearity getNonlinearity(unsigned int layer) const throw(); 
+    nonLinearity getNonlinearity(unsigned int layer) const ; 
     bool setNonlinearity(unsigned int layer, nonLinearity nl);
 
-    void getNonlinearity(std::vector<nonLinearity>& nls) const throw();
-    bool setNonlinearity(const std::vector<nonLinearity>& nls) throw();
+    void getNonlinearity(std::vector<nonLinearity>& nls) const ;
+    bool setNonlinearity(const std::vector<nonLinearity>& nls) ;
     
     bool setFrozen(unsigned int layer, bool frozen = true); // nnetwork layers can be set to be "frozen"
     bool setFrozen(const std::vector<bool>& frozen);        // so that gradient for those parameters is 
@@ -162,32 +162,32 @@ namespace whiteice
     // injects (if possible) subnet into net starting from fromLayer:th layer
     bool injectSubnet(const unsigned int fromLayer, nnetwork<T>* nn); 
     
-    unsigned int getSamplesCollected() const throw();
+    unsigned int getSamplesCollected() const ;
 
     /* gets MAXSAMPLES samples or getSamplesCollected() number of samples whichever
      * if smaller. if MAXSAMPLES = 0 gets getSamplesCollected() number of samples */
     bool getSamples(std::vector< math::vertex<T> >& samples,
-		    unsigned int layer, const unsigned int MAXSAMPLES=0) const throw();
-    void clearSamples() throw();
+		    unsigned int layer, const unsigned int MAXSAMPLES=0) const ;
+    void clearSamples() ;
 
     // drop out support:
 
     // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
-    bool setDropOut(T retain_p = T(0.6)) throw();
+    bool setDropOut(T retain_p = T(0.6)) ;
 
     // clears drop out but scales weights according to retain_probability
-    bool removeDropOut(T retain_p = T(0.6)) throw();
+    bool removeDropOut(T retain_p = T(0.6)) ;
     
-    void clearDropOut() throw(); // remove all drop-out without changing weights
+    void clearDropOut() ; // remove all drop-out without changing weights
     
     ////////////////////////////////////////////////////////////
     public:
     
-    T nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // non-linearity used in neural network
-    T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // derivate of non-linearity used in neural network
+    T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
+    T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
 
     
-    T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const throw(); // inverse of non-linearity used [not really used]
+    T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // inverse of non-linearity used [not really used]
     
     private:
     

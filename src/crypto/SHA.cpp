@@ -15,7 +15,7 @@ namespace whiteice
   namespace crypto
   {
     
-    SHA::SHA(unsigned int bits) throw(std::invalid_argument)
+    SHA::SHA(unsigned int bits) 
     {
       if(bits != 160 && bits != 256 && bits != 384 && bits != 512)
 	throw std::invalid_argument("SHA is available only for 160,256,384 and 512 bit lengths");
@@ -45,7 +45,7 @@ namespace whiteice
     
     bool SHA::hash(unsigned char** data,
 		   unsigned int length, // in data length in bytes
-		   unsigned char* sha) const throw()  // memory for SHA
+		   unsigned char* sha) const   // memory for SHA
     {
       bool ok = false;
       
@@ -66,19 +66,19 @@ namespace whiteice
     
     
     // compares two hashes
-    bool SHA::check(const unsigned char* sha1, const unsigned char* sha2) const throw()
+    bool SHA::check(const unsigned char* sha1, const unsigned char* sha2) const 
     {
       return (memcmp(sha1, sha2, (shalen/8)) == 0);
     }
     
     
-    unsigned int SHA::bits() const throw()   // number of bits  in SHA
+    unsigned int SHA::bits() const    // number of bits  in SHA
     {
       return shalen;
     }
     
     
-    unsigned int SHA::bytes() const throw()  // number of bytes in SHA    
+    unsigned int SHA::bytes() const   // number of bytes in SHA    
     {
       return (shalen/8);
     }
@@ -86,7 +86,7 @@ namespace whiteice
     /************************************************************/
     
     // TODO: realloc() and pad data memory
-    bool SHA::sha1_pad(unsigned char** data, unsigned int& length) const throw()
+    bool SHA::sha1_pad(unsigned char** data, unsigned int& length) const 
     {
       // calculates number of padding bits
       unsigned int blen = (448 - length*8 - 1) % 512;
@@ -128,7 +128,7 @@ namespace whiteice
     }
     
     
-    bool SHA::sha512_pad(unsigned char** data, unsigned int& length) const throw()
+    bool SHA::sha512_pad(unsigned char** data, unsigned int& length) const 
     {
       // calculates number of padding bits
       unsigned int blen = (896 - length*8 - 1) % 1024;
@@ -171,7 +171,7 @@ namespace whiteice
     
     
     bool SHA::sha1(unsigned char** data, unsigned int length,
-		   unsigned char* sha) const throw()
+		   unsigned char* sha) const 
     {
       whiteice::uint32* M = 0;
       
@@ -247,7 +247,7 @@ namespace whiteice
     
     
     bool SHA::sha256(unsigned char** data, unsigned int length,
-		     unsigned char* sha) const throw()
+		     unsigned char* sha) const 
     {
       whiteice::uint32* M = 0;
       
@@ -328,7 +328,7 @@ namespace whiteice
     
     
     bool SHA::sha384(unsigned char** data, unsigned int length,
-		     unsigned char* sha) const throw()
+		     unsigned char* sha) const 
     {
       whiteice::uint64* M = 0;
       
@@ -410,7 +410,7 @@ namespace whiteice
     
     
     bool SHA::sha512(unsigned char** data, unsigned int length,
-		     unsigned char* sha) const throw()
+		     unsigned char* sha) const 
     {
       whiteice::uint64* M = 0;
       
@@ -493,7 +493,7 @@ namespace whiteice
     whiteice::uint32 SHA::sha1_fun(whiteice::uint32 x,
 				      whiteice::uint32 y,
 				      whiteice::uint32 z,
-				      unsigned int t) const throw()
+				      unsigned int t) const 
     {
       // ch
       if(t < 20){
@@ -517,7 +517,7 @@ namespace whiteice
     
     whiteice::uint32 SHA::sha256_ch(whiteice::uint32 x,
 				       whiteice::uint32 y,
-				       whiteice::uint32 z) const throw()
+				       whiteice::uint32 z) const 
     {
       return ((x & y) ^ ((~ x) & z));
     }
@@ -525,29 +525,29 @@ namespace whiteice
     
     whiteice::uint32 SHA::sha256_maj(whiteice::uint32 x,
 					whiteice::uint32 y,
-					whiteice::uint32 z) const throw()
+					whiteice::uint32 z) const 
     {
       return ((x & y) ^ (x & z) ^ (y & z));
     }
     
     
     
-    whiteice::uint32 SHA::sha256_bsigma0(whiteice::uint32 x) const throw()
+    whiteice::uint32 SHA::sha256_bsigma0(whiteice::uint32 x) const 
     {
       return ( ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22) );
     }
     
-    whiteice::uint32 SHA::sha256_bsigma1(whiteice::uint32 x) const throw()
+    whiteice::uint32 SHA::sha256_bsigma1(whiteice::uint32 x) const 
     {
       return ( ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25) );
     }
     
-    whiteice::uint32 SHA::sha256_sigma0(whiteice::uint32 x) const throw()
+    whiteice::uint32 SHA::sha256_sigma0(whiteice::uint32 x) const 
     {
       return ( ROTR(x,  7) ^ ROTR(x, 18) ^ SHR(x, 3) );
     }
     
-    whiteice::uint32 SHA::sha256_sigma1(whiteice::uint32 x) const throw()
+    whiteice::uint32 SHA::sha256_sigma1(whiteice::uint32 x) const 
     {
       return ( ROTR(x, 17) ^ ROTR(x, 19) ^ SHR(x, 10) );
     }
@@ -556,7 +556,7 @@ namespace whiteice
     
     whiteice::uint64 SHA::sha512_ch(whiteice::uint64 x,
 				       whiteice::uint64 y,
-				       whiteice::uint64 z) const throw()
+				       whiteice::uint64 z) const 
     {
       return ((x & y) ^ ( (~ x) & z));
     }
@@ -564,35 +564,35 @@ namespace whiteice
     
     whiteice::uint64 SHA::sha512_maj(whiteice::uint64 x,
 					whiteice::uint64 y,
-					whiteice::uint64 z) const throw()
+					whiteice::uint64 z) const 
     {
       return ((x & y) ^ ( x & z) ^ (y & z));
     }
     
     
-    whiteice::uint64 SHA::sha512_bsigma0(whiteice::uint64 x) const throw()
+    whiteice::uint64 SHA::sha512_bsigma0(whiteice::uint64 x) const 
     {
       return (ROTR(x,28) ^ ROTR(x,34) ^ ROTR(x,39));
     }
     
-    whiteice::uint64 SHA::sha512_bsigma1(whiteice::uint64 x) const throw()
+    whiteice::uint64 SHA::sha512_bsigma1(whiteice::uint64 x) const 
     {
       return (ROTR(x,14) ^ ROTR(x,18) ^ ROTR(x,41));
     }
     
-    whiteice::uint64 SHA::sha512_sigma0(whiteice::uint64 x) const throw()
+    whiteice::uint64 SHA::sha512_sigma0(whiteice::uint64 x) const 
     {
       return (ROTR(x, 1) ^ ROTR(x, 8) ^ SHR(x, 7));
     }
     
-    whiteice::uint64 SHA::sha512_sigma1(whiteice::uint64 x) const throw()
+    whiteice::uint64 SHA::sha512_sigma1(whiteice::uint64 x) const 
     {
       return (ROTR(x,19) ^ ROTR(x,61) ^ SHR(x, 6));
     }
     
     
     
-    whiteice::uint32 SHA::sha1_constant(unsigned int t) const throw()
+    whiteice::uint32 SHA::sha1_constant(unsigned int t) const 
     {
       if(t < 20)      return SHA1_TABLE[0];
       else if(t < 40) return SHA1_TABLE[1];
@@ -604,42 +604,42 @@ namespace whiteice
     }
     
     
-    whiteice::uint32 SHA::ROTR(whiteice::uint32 x, unsigned int s) const throw()
+    whiteice::uint32 SHA::ROTR(whiteice::uint32 x, unsigned int s) const 
     {
       return ((x >> s) | (x << (32 - s)));
     }
 
-    whiteice::uint32 SHA::ROTL(whiteice::uint32 x, unsigned int s) const throw()
+    whiteice::uint32 SHA::ROTL(whiteice::uint32 x, unsigned int s) const 
     {
       return ((x << s) | (x >> (32 - s)));
     }
     
-    whiteice::uint32 SHA::SHL(whiteice::uint32 x, unsigned int s) const throw()
+    whiteice::uint32 SHA::SHL(whiteice::uint32 x, unsigned int s) const 
     {
       return (x << s);
     }
     
-    whiteice::uint32 SHA::SHR(whiteice::uint32 x, unsigned int s) const throw()
+    whiteice::uint32 SHA::SHR(whiteice::uint32 x, unsigned int s) const 
     {
       return (x >> s);
     }
     
-    whiteice::uint64 SHA::ROTR(whiteice::uint64 x, unsigned int s) const throw()
+    whiteice::uint64 SHA::ROTR(whiteice::uint64 x, unsigned int s) const 
     {
       return ((x >> s) | (x << (64 - s)));
     }
     
-    whiteice::uint64 SHA::ROTL(whiteice::uint64 x, unsigned int s) const throw()
+    whiteice::uint64 SHA::ROTL(whiteice::uint64 x, unsigned int s) const 
     {
       return ((x << s) | (x >> (64 - s)));
     }
     
-    whiteice::uint64 SHA::SHL(whiteice::uint64 x, unsigned int s) const throw()
+    whiteice::uint64 SHA::SHL(whiteice::uint64 x, unsigned int s) const 
     {
       return (x << s);
     }
     
-    whiteice::uint64 SHA::SHR(whiteice::uint64 x, unsigned int s) const throw()
+    whiteice::uint64 SHA::SHR(whiteice::uint64 x, unsigned int s) const 
     {
       return (x >> s);
     }
@@ -647,12 +647,12 @@ namespace whiteice
     
     
     
-    void SHA::change_endianess(whiteice::uint32& x) const throw()
+    void SHA::change_endianess(whiteice::uint32& x) const 
     {
       x = ((x >> 24) | ((x >> 8) & 0xFF00) | ((x & 0xFF00) << 8) | (x << 24));
     }
     
-    void SHA::change_endianess(whiteice::uint64& x) const throw()
+    void SHA::change_endianess(whiteice::uint64& x) const 
     {
       x = ((x >> 56) | ((x >> 40) & 0xFF00) | ((x >> 24) & 0xFF0000) |
 	   ((x >> 8) & 0xFF000000) | ((x & 0xFF000000) << 8) |

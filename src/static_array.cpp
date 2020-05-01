@@ -78,7 +78,7 @@ namespace whiteice
    * returns size of array
    */
   template <typename D, typename T>
-  unsigned int static_array<D,T>::size() const throw()
+  unsigned int static_array<D,T>::size() const 
   {
     return size_of_array;
   }
@@ -88,7 +88,7 @@ namespace whiteice
    * resizes array
    */
   template <typename D, typename T>
-  bool static_array<D,T>::resize(const T& n) throw()
+  bool static_array<D,T>::resize(const T& n) 
   {
     if(n < 0 || n == size_of_array) return true;
     
@@ -106,14 +106,14 @@ namespace whiteice
   
   
   template <typename D, typename T>
-  void static_array<D,T>::clear() throw(){ resize(0); }
+  void static_array<D,T>::clear() { resize(0); }
   
   
   /*
    * returns Nth element
    */
   template <typename D, typename T>
-  D& static_array<D,T>::operator[](const T& n) throw(std::out_of_range){
+  D& static_array<D,T>::operator[](const T& n) {
     if(n < 0 || n >= size_of_array) throw std::out_of_range("index out of range");
     return array_memory[n];
   }
@@ -122,7 +122,7 @@ namespace whiteice
    * returns Nth element
    */
   template <typename D, typename T>
-  const D& static_array<D,T>::operator[](const T& n) const throw(std::out_of_range){
+  const D& static_array<D,T>::operator[](const T& n) const {
     if(n < 0 || n >= size_of_array) throw std::out_of_range("index out of range");
     return array_memory[n];
   }

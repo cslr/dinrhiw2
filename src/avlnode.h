@@ -19,26 +19,26 @@ namespace whiteice
       ~avlnode();    
       
       // returns true if node is leaf node
-      bool leaf() const throw();
+      bool leaf() const ;
       
       // height of node rooted subtree
-      unsigned int nodes() const throw(){ return numNodes; }
+      unsigned int nodes() const { return numNodes; }
       
-      T& key() throw(){ return value; }
-      const T& key() const throw(){ return value; }	
+      T& key() { return value; }
+      const T& key() const { return value; }	
       
       // returns height of this subtree
-      unsigned int height() const throw();
+      unsigned int height() const ;
       
       // returns height difference between nodes
       // (this.height - node.height)
-      int hdifference(const avlnode<T>& node) const throw();
+      int hdifference(const avlnode<T>& node) const ;
       
     private:
       friend class avltree<T>;
       
       bool equal_height(unsigned int a, unsigned int b)
-	const throw();
+	const ;
       
       unsigned int numNodes; // in this subtree
       T value;

@@ -39,70 +39,70 @@ namespace whiteice
 	typedef typename std::vector<T>::const_iterator iterator;
 	
 	
-	hermite() throw();
-	~hermite() throw();  
+	hermite() ;
+	~hermite() ;  
 	
-	bool set_cardinal_parameter(const S& a) throw();
+	bool set_cardinal_parameter(const S& a) ;
 	
 	
 	int calculate(const std::vector<T>& data,
 		      bool clear_path = true,
 		      curve_types = catmull_rom_spline_curve)
-	  throw(std::domain_error);
+	  ;
 	
 	int operator()(const std::vector<T>& data,
 		       bool clear_path = true,
 		       curve_types = catmull_rom_spline_curve)
-	  throw(std::domain_error);
+	  ;
 	
 	// calculate() using given number of frames MAX_FRAMES
 	int calculate(const std::vector<T>& data,
 		      int MAX_FRAMES,
 		      bool clear_path = true,
 		      curve_types = catmull_rom_spline_curve)
-	  throw(std::domain_error);
+	  ;
 	
 	// operator()  using given number of frames MAX_FRAMES
 	int operator()(const std::vector<T>& data,
 		       int MAX_FRAMES,
 		       bool clear_path = true,
 		       curve_types = catmull_rom_spline_curve)
-	  throw(std::domain_error);
+	  ;
 	
 	
-	iterator begin() const throw(); // iterator      
-	iterator end() const throw();
+	iterator begin() const ; // iterator      
+	iterator end() const ;
 	
-	T& operator[](unsigned int index) throw(std::out_of_range);  
-	const T& operator[](unsigned int index) const throw(std::out_of_range);  
-	unsigned int size() const throw();
+	T& operator[](unsigned int index) ;  
+	const T& operator[](unsigned int index) const ;  
+	unsigned int size() const ;
 	
       private:
 	
 	void cardinal_spline(const std::vector<T>& data,
-			     bool clear_path = true) throw(std::domain_error);
+			     bool clear_path = true) ;
 	
 	// cardinal spline with given number of frames
 	void cardinal_spline(const std::vector<T>& data,
 			     int MAX_FRAMES,
-			     bool clear_path = true) throw(std::domain_error);
+			     bool clear_path = true) ;
 	
 	
 	// not implemented
-	void kb_spline(bool clear_path = true) throw(std::domain_error);
+	void kb_spline(bool clear_path = true) ;
 	
 	
 	void hermite_line(const T& p0, const T& delta0,
 			  const T& p1, const T& delta1,
 			  bool clear_path=true,
-			  bool plot_last_one=true) throw(std::domain_error);
+			  bool plot_last_one=true) ;
 	
 	// hermite line with given number of frames
 	void hermite_line(const T& p0, const T& delta0,
 			  const T& p1, const T& delta1,
 			  int MAX_FRAMES,
 			  bool clear_path,
-			  bool plot_last_one) throw(std::domain_error);
+			  bool plot_last_one) ;
 	
 	std::vector<T> path;
 	S derivate_parameter; // cardinal splines  

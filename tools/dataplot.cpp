@@ -32,18 +32,18 @@ bool init(int argc, char** argv,
 	  std::string& filename,
 	  std::vector<std::string>& options,
 	  std::vector<std::string>& plotsymbols,
-	  Font*& font) throw();
+	  Font*& font) ;
 
-void show_usage() throw();
-bool has_option(std::vector<std::string>& options, std::string opname) throw();
+void show_usage() ;
+bool has_option(std::vector<std::string>& options, std::string opname) ;
 
-void show_statistics(const std::vector<int>& ivalues,         Font* font) throw();
-void show_statistics(const std::vector<float>& fvalues,       Font* font) throw();
-void show_statistics(const std::vector<std::string>& svalues, Font* font) throw();
+void show_statistics(const std::vector<int>& ivalues,         Font* font) ;
+void show_statistics(const std::vector<float>& fvalues,       Font* font) ;
+void show_statistics(const std::vector<std::string>& svalues, Font* font) ;
 		     
-void show_plot(const std::vector<int>& ivalues,         Font* font) throw();
-void show_plot(const std::vector<float>& fvalues,       Font* font) throw();
-void show_plot(const std::vector<std::string>& svalues, Font* font) throw();
+void show_plot(const std::vector<int>& ivalues,         Font* font) ;
+void show_plot(const std::vector<float>& fvalues,       Font* font) ;
+void show_plot(const std::vector<std::string>& svalues, Font* font) ;
 
 void show_scatterplot(const std::vector< math::vertex< math::blas_real<float> > >& data, Font* font,
 		      const std::vector<std::string>& labels, const std::vector<unsigned int>& labeled);
@@ -418,7 +418,7 @@ bool init(int argc, char** argv,
 	  std::string& filename,
 	  std::vector<std::string>& options,
 	  std::vector<std::string>& plotsymbols,
-	  Font*& font) throw()
+	  Font*& font) 
 {
   srand(time(0));
   
@@ -453,13 +453,13 @@ bool init(int argc, char** argv,
 }
 
 
-void show_usage() throw()
+void show_usage() 
 {
   std::cout << "usage: wdv [-l] [-s] [list of symbols] datafilename" << std::endl;
 }
 
 
-bool has_option(std::vector<std::string>& options, std::string opname) throw()
+bool has_option(std::vector<std::string>& options, std::string opname) 
 {
   try{
     std::vector<string>::iterator i = options.begin();
@@ -476,7 +476,7 @@ bool has_option(std::vector<std::string>& options, std::string opname) throw()
 
 
 void show_statistics(const std::vector<int>& ivalues,
-		     Font* font) throw()
+		     Font* font) 
 {
   std::vector<float> ifl;
   ifl.resize(ivalues.size());
@@ -489,7 +489,7 @@ void show_statistics(const std::vector<int>& ivalues,
 
 
 void show_statistics(const std::vector<float>& fvalues,
-		     Font* font) throw()
+		     Font* font) 
 {
   // calculates mean, variance and third moment
   float ex, exx, exxx;
@@ -523,7 +523,7 @@ void show_statistics(const std::vector<float>& fvalues,
 
 
 void show_statistics(const std::vector<std::string>& svalues,
-		     Font* font) throw()
+		     Font* font) 
 {
   // calculates mean, variance and E[x^3] of string length
   float ex, exx, exxx;
@@ -556,7 +556,7 @@ void show_statistics(const std::vector<std::string>& svalues,
 
 
 void show_plot(const std::vector<int>& ivalues,
-	       Font* font) throw()
+	       Font* font) 
 {
   std::vector<float> ifl;
   ifl.resize(ivalues.size());
@@ -573,7 +573,7 @@ void show_plot(const std::vector<int>& ivalues,
  * FIXME: this is ugly coded hack
  */
 void show_plot(const std::vector<float>& fvalues,
-	       Font* font) throw()
+	       Font* font) 
 {
   // finds min, max, mean, var
   // plots traditional graphical data
@@ -721,7 +721,7 @@ void show_plot(const std::vector<float>& fvalues,
 
 
 void show_plot(const std::vector<std::string>& svalues,
-	       Font* font) throw()
+	       Font* font) 
 {
   std::cout << "no string visualization" << std::endl;
 }

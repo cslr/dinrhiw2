@@ -41,7 +41,7 @@ namespace whiteice
 				 T& reinforcement);
 
       // helper function: normalizes theta values back into [-pi, pi] range
-      T normalizeTheta(const T t) const throw();
+      T normalizeTheta(const T t) const ;
 
     protected:
 

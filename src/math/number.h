@@ -23,49 +23,49 @@ namespace whiteice
       virtual ~number(){ }
       
       // operators
-      virtual D operator+(const D&) const throw(illegal_operation) = 0;
-      virtual D operator-(const D&) const throw(illegal_operation) = 0;
-      virtual D operator*(const D&) const throw(illegal_operation) = 0;
-      virtual D operator/(const D&) const throw(illegal_operation) = 0;
+      virtual D operator+(const D&) const  = 0;
+      virtual D operator-(const D&) const  = 0;
+      virtual D operator*(const D&) const  = 0;
+      virtual D operator/(const D&) const  = 0;
       
       // complex conjugate (?)
-      virtual D operator!() const throw(illegal_operation) = 0;
-      virtual D operator-() const throw(illegal_operation) = 0;
+      virtual D operator!() const  = 0;
+      virtual D operator-() const  = 0;
       
-      virtual D& operator+=(const D&) throw(illegal_operation) = 0;
-      virtual D& operator-=(const D&) throw(illegal_operation) = 0;
-      virtual D& operator*=(const D&) throw(illegal_operation) = 0;
-      virtual D& operator/=(const D&) throw(illegal_operation) = 0;
+      virtual D& operator+=(const D&)  = 0;
+      virtual D& operator-=(const D&)  = 0;
+      virtual D& operator*=(const D&)  = 0;
+      virtual D& operator/=(const D&)  = 0;
       
-      virtual D& operator=(const D&) throw(illegal_operation) = 0;      
+      virtual D& operator=(const D&)  = 0;      
 
-      virtual bool operator==(const D&) const throw(uncomparable) = 0;
-      virtual bool operator!=(const D&) const throw(uncomparable) = 0;
-      virtual bool operator>=(const D&) const throw(uncomparable) = 0;
-      virtual bool operator<=(const D&) const throw(uncomparable) = 0;
-      virtual bool operator< (const D&) const throw(uncomparable) = 0;
-      virtual bool operator> (const D&) const throw(uncomparable) = 0;
+      virtual bool operator==(const D&) const  = 0;
+      virtual bool operator!=(const D&) const  = 0;
+      virtual bool operator>=(const D&) const  = 0;
+      virtual bool operator<=(const D&) const  = 0;
+      virtual bool operator< (const D&) const  = 0;
+      virtual bool operator> (const D&) const  = 0;
 
       // scalar operation
-      virtual D& operator= (const S& s) throw(illegal_operation) = 0;
-      virtual D  operator* (const S& s) const throw() = 0;
-      virtual D  operator/ (const S& s) const throw(std::invalid_argument) = 0;
-      virtual D& operator*=(const S& s) throw() = 0;
-      virtual D& operator/=(const S& s) throw(std::invalid_argument) = 0;
+      virtual D& operator= (const S& s)  = 0;
+      virtual D  operator* (const S& s) const  = 0;
+      virtual D  operator/ (const S& s) const  = 0;
+      virtual D& operator*=(const S& s)  = 0;
+      virtual D& operator/=(const S& s)  = 0;
 
-      virtual D& abs() throw() = 0;
+      virtual D& abs()  = 0;
 
       virtual E& operator[](const U& index)
-	throw(std::out_of_range, illegal_operation) = 0;
+	 = 0;
 
       virtual const E& operator[](const U& index) const
-	throw(std::out_of_range, illegal_operation) = 0;
+	 = 0;
       
       // returns true if >,<,>=,<= are fully defined
       // for "same" type of numbers (can be != same class)
       // returns false if >,<,>=,<= can throw exceptions
       // even with same type of numbers. (*)
-      virtual bool comparable() throw() = 0;
+      virtual bool comparable()  = 0;
 
     };
 }

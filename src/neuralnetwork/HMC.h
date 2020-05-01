@@ -68,7 +68,7 @@ namespace whiteice
 		// calculates mean error for the latest N samples, 0 = all samples
 		T getMeanError(unsigned int latestN = 0) const;
 
-		bool getAdaptive() const throw(){ return adaptive; }
+		bool getAdaptive() const { return adaptive; }
 	
     	private:
 	        // performs leapfrog operation (keeps probability function constant)

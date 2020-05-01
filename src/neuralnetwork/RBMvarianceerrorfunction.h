@@ -45,10 +45,10 @@ public:
     virtual function< math::vertex<T>, T>* clone() const;
 
     // returns input vectors dimension
-    unsigned int dimension() const throw() PURE_FUNCTION;
+    unsigned int dimension() const  PURE_FUNCTION;
 
 
-    bool hasGradient() const throw() PURE_FUNCTION;
+    bool hasGradient() const  PURE_FUNCTION;
     math::vertex<T> grad(math::vertex<T>& x) const PURE_FUNCTION;
     void grad(math::vertex<T>& x, math::vertex<T>& y) const;
 

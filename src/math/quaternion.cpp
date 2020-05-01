@@ -19,7 +19,7 @@ namespace whiteice
   {
     
     template <typename T>
-    quaternion<T>::quaternion() throw()
+    quaternion<T>::quaternion() 
     {
       data = new T[4];
       
@@ -29,7 +29,7 @@ namespace whiteice
     
   
     template <typename T>
-    quaternion<T>::quaternion(const quaternion<T>& q) throw()
+    quaternion<T>::quaternion(const quaternion<T>& q) 
     {
       data = new T[4];
       
@@ -39,7 +39,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T>::quaternion(const T& s) throw()
+    quaternion<T>::quaternion(const T& s) 
     {
       data = new T[4];
       
@@ -49,7 +49,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T>::~quaternion() throw()
+    quaternion<T>::~quaternion() 
     {
       delete[] data; data = 0;
     }
@@ -60,7 +60,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T> quaternion<T>::operator+(const quaternion<T>& q1) const
-      throw(illegal_operation)
+      
     {	
       quaternion<T> q;
       const quaternion<T>& q2 = *this;
@@ -74,7 +74,7 @@ namespace whiteice
   
     template <typename T>
     quaternion<T> quaternion<T>::operator-(const quaternion<T>& q1) const
-      throw(illegal_operation)
+      
     {
       quaternion<T> q;
       const quaternion<T>& q2 = *this;
@@ -88,7 +88,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T> quaternion<T>::operator*(const quaternion<T>& q1) const
-      throw(illegal_operation)
+      
     {
       quaternion<T> q;
       const quaternion<T>& q2 = *this;
@@ -110,7 +110,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T> quaternion<T>::operator/(const quaternion<T>& q1) const
-      throw(illegal_operation)
+      
     {
       illegal_operation e;
       
@@ -119,7 +119,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T> quaternion<T>::operator!() const throw(illegal_operation)
+    quaternion<T> quaternion<T>::operator!() const 
     {
       /* should be: complex conjugate / adjoint (right word?) operator */
       
@@ -135,7 +135,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T> quaternion<T>::operator-() const throw(illegal_operation)
+    quaternion<T> quaternion<T>::operator-() const 
     {
       quaternion<T> q;
       
@@ -150,7 +150,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator+=(const quaternion<T>& q)
-      throw(illegal_operation)
+      
     {	
       for(int i=0;i<4;i++)
 	(*this)[i] += q[i];
@@ -161,7 +161,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator-=(const quaternion<T>& q)
-      throw(illegal_operation)
+      
     {
       for(int i=0;i<4;i++)
 	(*this)[i] -= q[i];
@@ -172,7 +172,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator*=(const quaternion<T>& q1)
-      throw(illegal_operation)
+      
     {
       quaternion<T>& q2 = (*this);
       quaternion<T> q;
@@ -196,7 +196,7 @@ namespace whiteice
   
     template <typename T>
     quaternion<T>& quaternion<T>::operator/=(const quaternion<T>& q)
-      throw(illegal_operation)
+      
     {
       illegal_operation e;
       
@@ -208,7 +208,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator=(const quaternion<T>& q)
-      throw(illegal_operation)
+      
     {
       if(this != &q){
 	for(int i=0;i<4;i++)
@@ -223,7 +223,7 @@ namespace whiteice
     
     template <typename T>
     bool quaternion<T>::operator==(const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       const quaternion<T>& q2 = *this;
     
@@ -236,7 +236,7 @@ namespace whiteice
     
     template <typename T>
     bool quaternion<T>::operator!=(const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       const quaternion<T>& q2 = *this;
       
@@ -249,7 +249,7 @@ namespace whiteice
   
     template <typename T>
     bool quaternion<T>::operator>=(const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       illegal_operation e;
       
@@ -259,7 +259,7 @@ namespace whiteice
     
     template <typename T>
     bool quaternion<T>::operator<=(const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       illegal_operation e;
       
@@ -269,7 +269,7 @@ namespace whiteice
     
     template <typename T>
     bool quaternion<T>::operator< (const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       illegal_operation e;
       
@@ -279,7 +279,7 @@ namespace whiteice
   
     template <typename T>
     bool quaternion<T>::operator> (const quaternion<T>& q1) const
-      throw(uncomparable)
+      
     {
       illegal_operation e;
       
@@ -291,7 +291,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator=(const T& k)
-      throw(illegal_operation)
+      
     {
       quaternion<T>& q = *this;
       
@@ -303,7 +303,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T>& quaternion<T>::operator*=(const T& k) throw()
+    quaternion<T>& quaternion<T>::operator*=(const T& k) 
     {	
       for(int i=0;i<4;i++)
 	data[i] *= k;
@@ -314,7 +314,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator/=(const T& k)
-      throw(std::invalid_argument)
+      
     {
       for(int i=0;i<4;i++)
 	(*this)[i] /= k;
@@ -324,7 +324,7 @@ namespace whiteice
     
     
     template <typename T>
-    quaternion<T> quaternion<T>::operator*(const T& k) const throw()
+    quaternion<T> quaternion<T>::operator*(const T& k) const 
     {
       quaternion<T> q;
       
@@ -337,7 +337,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T> quaternion<T>::operator/(const T& k) const
-      throw(std::invalid_argument)
+      
     {
       quaternion<T> q;
       
@@ -353,7 +353,7 @@ namespace whiteice
     
     template <typename T>
     quaternion<T>& quaternion<T>::operator=(const vertex<T>& v)
-      throw(std::invalid_argument)
+      
     {
       if(v.size() != 4)
 	throw std::invalid_argument("quaternion '='-operator: vertex size != 4");
@@ -368,7 +368,7 @@ namespace whiteice
     
     template <typename T>
     T& quaternion<T>::operator[](const unsigned int& index)
-      throw(std::out_of_range, illegal_operation)
+      
     {        
       if(index > 3) // quaternion is 4-dimensional
 	throw std::out_of_range("index too large");
@@ -379,7 +379,7 @@ namespace whiteice
     
     template <typename T>
     const T& quaternion<T>::operator[](const unsigned int& index) const
-      throw(std::out_of_range, illegal_operation)
+      
     {
       if(index > 3) // quaternion is 4-dimensional
 	throw std::out_of_range("index too large");
@@ -393,7 +393,7 @@ namespace whiteice
     
     // creates rotation matrix of quaternion
     template <typename T>
-    matrix<T> quaternion<T>::rotation_matrix() const throw()
+    matrix<T> quaternion<T>::rotation_matrix() const 
     {
       T xx = data[0]*data[0];
       T xy = data[0]*data[1];
@@ -434,7 +434,7 @@ namespace whiteice
     /* calculates quaternion rotator from matrix */
     template <typename T>
     bool quaternion<T>::create_quaternion_rotator(const matrix<T>& m)
-      const throw()
+      const 
     {
       if(m.xsize() != 4 || m.ysize() != 4)
 	return false;
@@ -505,7 +505,7 @@ namespace whiteice
      */
     template <typename T>
     bool quaternion<T>::setup_rotation(T& alpha, const quaternion<T>& axis)
-      throw(std::invalid_argument) // setup rotation quaternion
+       // setup rotation quaternion
     {
       quaternion<T>& q = *this; // nicer
       
@@ -528,7 +528,7 @@ namespace whiteice
      * inverse quaternion, trivial if |q| = 1 unit
      */
     template <typename T>
-    quaternion<T> quaternion<T>::inv() const throw(std::invalid_argument)
+    quaternion<T> quaternion<T>::inv() const 
     {
       quaternion<T> q; // (complex) conjugate
       
@@ -556,7 +556,7 @@ namespace whiteice
     // calculates absolute value of quaternion
     // this is (decided to be) |q|^2
     template <typename T>
-    quaternion<T>& quaternion<T>::abs() throw()
+    quaternion<T>& quaternion<T>::abs() 
     {
       T sum = T(0.0);
       
@@ -577,7 +577,7 @@ namespace whiteice
     
     // normalizes length
     template <typename T>
-    bool quaternion<T>::normalize() throw()
+    bool quaternion<T>::normalize() 
     {
       quaternion<T> A = (*this);
       A.abs();

@@ -10,7 +10,7 @@ namespace whiteice
   {
     
     
-    bool PAD::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool PAD::encrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{	
 	if(k.size() <= 0) return false;
@@ -24,7 +24,7 @@ namespace whiteice
     }
     
     
-    bool PAD::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) throw()
+    bool PAD::decrypt(dynamic_bitset& data, const Keyschedule<dynamic_bitset>& k) 
     {
       try{
 	if(k.size() <= 0) return false;
@@ -42,7 +42,7 @@ namespace whiteice
     
     bool PAD::encrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       for(unsigned int i=0;i<data.size();i++)
 	if(encrypt(data[i], k) == false) return false;
@@ -55,7 +55,7 @@ namespace whiteice
       
     bool PAD::decrypt(data_source<dynamic_bitset>& data,
 		      const Keyschedule<dynamic_bitset>& k, const dynamic_bitset& IV,
-		      ModeOfOperation mode) throw()
+		      ModeOfOperation mode) 
     {
       for(unsigned int i=0;i<data.size();i++)
 	if(decrypt(data[i], k) == false) return false;
@@ -89,12 +89,12 @@ namespace whiteice
     }
     
     
-    unsigned int PADKey::size() const throw(){ return 1; }
+    unsigned int PADKey::size() const { return 1; }
     
-    unsigned int PADKey::keybits() const throw(){ return pad.size(); }
+    unsigned int PADKey::keybits() const { return pad.size(); }
     
     const dynamic_bitset& PADKey::operator[](unsigned int n)
-      const throw(std::out_of_range)
+      const 
     {
       if(n == 0) return pad;
       else throw 

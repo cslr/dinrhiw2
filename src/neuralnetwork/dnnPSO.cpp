@@ -145,7 +145,7 @@ namespace whiteice
   
   
   template <typename T>
-  unsigned int dnnPSO_optimized_function<T>::dimension() const throw()
+  unsigned int dnnPSO_optimized_function<T>::dimension() const 
   {
     return (this->fvector_dimension);
   }
@@ -165,7 +165,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dnnPSO_optimized_function<T>::hasGradient() const throw(){
+  bool dnnPSO_optimized_function<T>::hasGradient() const {
     return false;
   }
   
@@ -183,7 +183,7 @@ namespace whiteice
   
   
   template <typename T>
-  bool dnnPSO_optimized_function<T>::hasHessian() const throw(){
+  bool dnnPSO_optimized_function<T>::hasHessian() const {
     return false;
   }
   

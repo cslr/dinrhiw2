@@ -33,7 +33,7 @@ public:
   virtual ~gaussian_balls(){
   }
   
-  unsigned int dimension() const throw() {
+  unsigned int dimension() const  {
     return dim;
   }
   
@@ -84,7 +84,7 @@ public:
   
   //////////////////////////////////////////////////////////////////////
   
-  bool hasGradient() const throw(){
+  bool hasGradient() const {
     return false;
   }
   
@@ -99,7 +99,7 @@ public:
   
   
       
-  bool hasHessian() const throw(){
+  bool hasHessian() const {
     return false;
   }
       

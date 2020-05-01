@@ -17,10 +17,10 @@ namespace whiteice
       virtual ~container(){ }
       
       /* clear()s container from any data */
-      virtual void clear() throw() = 0;
+      virtual void clear()  = 0;
       
       /* returns number of elements in a container */
-      virtual unsigned int size() const throw() = 0;
+      virtual unsigned int size() const  = 0;
       
     };
   

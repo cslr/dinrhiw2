@@ -16,28 +16,28 @@ namespace whiteice
     class rbtree : public tree<T>
     {
     public:
-      rbtree() throw();
-      ~rbtree() throw();
+      rbtree() ;
+      ~rbtree() ;
       
-      bool insert(const T& t) throw();  
-      bool remove(T& t) throw();
+      bool insert(const T& t) ;  
+      bool remove(T& t) ;
       
-      bool search(T& value) const throw();
-      T& maximum() const throw(std::logic_error);
-      T& minimum() const throw(std::logic_error);
+      bool search(T& value) const ;
+      T& maximum() const ;
+      T& minimum() const ;
       
-      void clear() throw();
+      void clear() ;
       
-      unsigned int size() const throw();
+      unsigned int size() const ;
       
-      bool list() const throw();
+      bool list() const ;
       
 #if 0	
       // iterators
-      iterator begin() throw();
-      iterator end() throw();
-      const_iterator begin() const throw();
-      const_iterator end() const throw();
+      iterator begin() ;
+      iterator end() ;
+      const_iterator begin() const ;
+      const_iterator end() const ;
       
       iterator i;
       i++;
@@ -50,22 +50,22 @@ namespace whiteice
     private:
       friend class rbnode<T>;
       
-      bool insert(rbnode<T>* x) throw();
-      bool basic_insert(rbnode<T>* z) throw(); // normal tree insert
+      bool insert(rbnode<T>* x) ;
+      bool basic_insert(rbnode<T>* z) ; // normal tree insert
       
-      rbnode<T>* tree_search(rbnode<T>* x, T& value) const throw();  
-      rbnode<T>* iterative_search(rbnode<T>* x, T& value) const throw();
+      rbnode<T>* tree_search(rbnode<T>* x, T& value) const ;  
+      rbnode<T>* iterative_search(rbnode<T>* x, T& value) const ;
       
-      rbnode<T>* max_value(rbnode<T>* x) const throw();
-      rbnode<T>* min_value(rbnode<T>* x) const throw();
+      rbnode<T>* max_value(rbnode<T>* x) const ;
+      rbnode<T>* min_value(rbnode<T>* x) const ;
       
-      rbnode<T>* tree_successor(rbnode<T>* x) const throw();
+      rbnode<T>* tree_successor(rbnode<T>* x) const ;
       
-      bool remove(rbnode<T>* z) throw();
-      void rb_delete_fixup(rbnode<T>* x) throw();
+      bool remove(rbnode<T>* z) ;
+      void rb_delete_fixup(rbnode<T>* x) ;
       
       /* deletes subtrees of x and x itself */
-      void free_subtree(rbnode<T>* x) throw();
+      void free_subtree(rbnode<T>* x) ;
       
       unsigned int numberOfNodes;
       

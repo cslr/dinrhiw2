@@ -15,12 +15,12 @@ namespace whiteice
   {
   public:
     
-    ~exception() throw() { }
+    ~exception()  { }
     
-    bool operator==(const whiteice::exception& e) throw();
-    const std::string& message() const throw();
+    bool operator==(const whiteice::exception& e) ;
+    const std::string& message() const ;
     
-    const char* what() const throw() { return msg.c_str(); }
+    const char* what() const throw()  { return msg.c_str(); }
     
   protected:
     
@@ -32,10 +32,10 @@ namespace whiteice
   {
   public:
     
-    uncomparable() throw();
-    uncomparable(const std::string& s) throw();
-    uncomparable(const uncomparable& u) throw();
-    ~uncomparable() throw() { }
+    uncomparable() ;
+    uncomparable(const std::string& s) ;
+    uncomparable(const uncomparable& u) ;
+    ~uncomparable()  { }
     
   };
   
@@ -44,10 +44,10 @@ namespace whiteice
   {
   public:
       
-    illegal_operation() throw();
-    illegal_operation(const std::string& s) throw();
-    illegal_operation(const illegal_operation& u) throw();
-    ~illegal_operation() throw() { }
+    illegal_operation() ;
+    illegal_operation(const std::string& s) ;
+    illegal_operation(const illegal_operation& u) ;
+    ~illegal_operation()  { }
   };
   
   
@@ -57,10 +57,10 @@ namespace whiteice
   class noaccess : public whiteice::exception
   {
   public:
-    noaccess() throw();
-    noaccess(const std::string& s) throw();
-    noaccess(const noaccess& a) throw();
-    ~noaccess() throw(){ }
+    noaccess() ;
+    noaccess(const std::string& s) ;
+    noaccess(const noaccess& a) ;
+    ~noaccess() { }
   };
   
 }

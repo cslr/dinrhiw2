@@ -123,7 +123,7 @@ namespace whiteice
   
   
   // learns given data
-  bool SOM2D::learn(const std::vector < vertex< whiteice::math::blas_real<float> > >& source, bool full) throw()
+  bool SOM2D::learn(const std::vector < vertex< whiteice::math::blas_real<float> > >& source, bool full) 
   {        
     if(source.size() <= 0) return false;
     if(source[0].size() != som_dimension) return false;
@@ -376,7 +376,7 @@ namespace whiteice
   
   
   // randomizes som vertex values
-  bool SOM2D::randomize() throw()
+  bool SOM2D::randomize() 
   {
     // calculates random values to between [-1,1]
     
@@ -400,7 +400,7 @@ namespace whiteice
 
   // randomsizes SOM vertex values to span two highest variance PCA eigenvectors
   bool SOM2D::randomize
-  (const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data) throw()
+  (const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data) 
   {
     if(som_dimension <= 2) return randomize();
     
@@ -509,7 +509,7 @@ namespace whiteice
   }
 
 
-  whiteice::math::blas_real<float> SOM2D::Uvalue() const throw()
+  whiteice::math::blas_real<float> SOM2D::Uvalue() const 
   {
     // calculates average distance between neighbourhood vertexes
 
@@ -565,7 +565,7 @@ namespace whiteice
   
   
   float SOM2D::somdistance(const vertex< whiteice::math::blas_real<float> >& v1,
-			   const vertex< whiteice::math::blas_real<float> >& v2) const throw()
+			   const vertex< whiteice::math::blas_real<float> >& v2) const 
   {
     if(v1.size() != som_dimension || v2.size() != som_dimension)
       return -1.0f; // (error)
@@ -611,7 +611,7 @@ namespace whiteice
   
   
   // returns winner vertex raw index for a given vertex
-  unsigned int SOM2D::activate(const vertex< whiteice::math::blas_real<float> >& v) const throw()
+  unsigned int SOM2D::activate(const vertex< whiteice::math::blas_real<float> >& v) const 
   {
     unsigned int winner = find_winner(v.data);
     
@@ -656,7 +656,7 @@ namespace whiteice
 
   whiteice::math::blas_real<float> SOM2D::getActivity
   (const whiteice::math::vertex< whiteice::math::blas_real<float> >& v,
-   unsigned int i, unsigned int j) const throw()
+   unsigned int i, unsigned int j) const 
   {
 
     if(v.size() != som_dimension) return 0.0f;
@@ -677,7 +677,7 @@ namespace whiteice
     
   
   // reads som vertex given lattice coordinate
-  vertex< whiteice::math::blas_real<float> > SOM2D::operator()(int i, int j) const throw()
+  vertex< whiteice::math::blas_real<float> > SOM2D::operator()(int i, int j) const 
   {
     if(i < 0){ i += (-i/((int)som_width) + 1)*((int)som_width); }
     if(i >= (int)som_width){ i -= (i/((int)som_width))*((int)som_width); }
@@ -718,7 +718,7 @@ namespace whiteice
   
   
   // reads som vertex given direct raw index coordinate to a table
-  vertex< whiteice::math::blas_real<float> > SOM2D::operator()(unsigned int index) const throw()
+  vertex< whiteice::math::blas_real<float> > SOM2D::operator()(unsigned int index) const 
   {
     vertex< whiteice::math::blas_real<float> > v(som_dimension);
     
@@ -728,7 +728,7 @@ namespace whiteice
   }
   
   
-  bool SOM2D::index2coordinates(const unsigned int index, unsigned int& i, unsigned int& j) const throw()
+  bool SOM2D::index2coordinates(const unsigned int index, unsigned int& i, unsigned int& j) const 
   {
     if(index >= som_width*som_height)
       return false;
@@ -743,7 +743,7 @@ namespace whiteice
   
   // handles wrap-around property properly
   bool SOM2D::coordinates2index(const unsigned int i, const unsigned int j,
-				unsigned int& index) const throw()
+				unsigned int& index) const 
   {
     unsigned int ii=i;
     unsigned int jj=j;
@@ -770,7 +770,7 @@ namespace whiteice
   
   // loads SOM data from file , failure puts
   // SOM in unknown state!
-  bool SOM2D::load(const std::string& filename) throw()
+  bool SOM2D::load(const std::string& filename) 
   {
     whiteice::conffile configuration;
     std::vector<int> ints;
@@ -848,7 +848,7 @@ namespace whiteice
   
   
   // saves SOM data to file
-  bool SOM2D::save(const std::string& filename) const throw()
+  bool SOM2D::save(const std::string& filename) const 
   {  
     whiteice::conffile configuration;
     std::vector<int> ints;
@@ -912,7 +912,7 @@ namespace whiteice
   }
   
 
-  bool SOM2D::show(bool on) throw()
+  bool SOM2D::show(bool on) 
   {
 #if 0
     if(graphics_on && on == false){
@@ -931,7 +931,7 @@ namespace whiteice
   
   
   unsigned int SOM2D::find_winner(const whiteice::math::blas_real<float>* vmemory)
-    const throw()
+    const 
   {
     // calculates inner products and finds the biggest one
     const unsigned int N = som_dimension*som_width*som_height;
@@ -955,7 +955,7 @@ namespace whiteice
   
   
   // calculates squared wrap-a-round distance between two coordinates
-  float SOM2D::wraparound_sqdistance(float x1, float x2, float y1, float y2) const throw()
+  float SOM2D::wraparound_sqdistance(float x1, float x2, float y1, float y2) const 
   {
     // wrap'a'round distance
 
@@ -990,7 +990,7 @@ namespace whiteice
   ////////////////////////////////////////////////////////////////////////////////
   
 #if 0
-  bool SOM2D::open_visualization() throw()
+  bool SOM2D::open_visualization() 
   {
     using namespace dlib_global;
     
@@ -1012,7 +1012,7 @@ namespace whiteice
   } 
   
   
-  bool SOM2D::close_visualization() throw()
+  bool SOM2D::close_visualization() 
   {
     using namespace dlib_global;
     
@@ -1030,7 +1030,7 @@ namespace whiteice
   }
   
   
-  bool SOM2D::draw_visualization() throw()
+  bool SOM2D::draw_visualization() 
   {
     using namespace dlib_global;
     
@@ -1254,10 +1254,10 @@ namespace whiteice
 
   
   // size of the som lattice
-  unsigned int SOM2D::width() const throw(){ return som_width; }
-  unsigned int SOM2D::height() const throw(){ return som_height; }
-  unsigned int SOM2D::dimension() const throw(){ return som_dimension; }
-  unsigned int SOM2D::size() const throw(){ return (som_width*som_height); }
+  unsigned int SOM2D::width() const { return som_width; }
+  unsigned int SOM2D::height() const { return som_height; }
+  unsigned int SOM2D::dimension() const { return som_dimension; }
+  unsigned int SOM2D::size() const { return (som_width*som_height); }
   
   
 

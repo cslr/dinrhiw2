@@ -22,14 +22,14 @@ namespace whiteice
 	DataConversion(const DataConversion& dc);
 	virtual ~DataConversion();
 	
-	dynamic_bitset& operator[](unsigned int index) throw(std::out_of_range);
-	const dynamic_bitset& operator[](unsigned int index) const throw(std::out_of_range);
+	dynamic_bitset& operator[](unsigned int index) ;
+	const dynamic_bitset& operator[](unsigned int index) const ;
 	
 	// number of dynamic_bitsets available
-	unsigned int size() const throw();
+	unsigned int size() const ;
 	
 	// tells if the data source access is working correctly (-> can read more data)
-	bool good() const throw();
+	bool good() const ;
 	
 	// flushes all transformed (cached & dirty) dynamic_bitset data
 	// back to provided data memory
