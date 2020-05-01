@@ -232,7 +232,6 @@ namespace whiteice {
    */
   double HMM::train(const std::vector<unsigned int>& observations,
 		    const unsigned int MAXITERS, const bool verbose)
-    throw (std::invalid_argument)
   {
     // uses Baum-Welch algorithm
 
@@ -562,7 +561,7 @@ namespace whiteice {
    * returns log(probability) of the optimum hidden states
    */
   double HMM::ml_states(std::vector<unsigned int>& hidden,
-			const std::vector<unsigned int>& observations) const throw (std::invalid_argument)
+			const std::vector<unsigned int>& observations) const
   {
     std::vector<realnumber> d(ph);
     std::vector<realnumber> dnext(ph);
@@ -609,7 +608,6 @@ namespace whiteice {
   double HMM::next_state(const unsigned int currentState,
 			 unsigned int& nextState,
 			 const unsigned int observation) const
-    throw (std::invalid_argument)
   {
     if(currentState > ph.size()){
       throw std::invalid_argument("HMM::next_state() - currentState out of bounds");
@@ -661,7 +659,7 @@ namespace whiteice {
   /*
    * calculations log(probability) of observations
    */
-  double HMM::logprobability(const std::vector<unsigned int>& observations) const throw (std::invalid_argument)
+  double HMM::logprobability(const std::vector<unsigned int>& observations) const
   {
     // uses forward procedure
     

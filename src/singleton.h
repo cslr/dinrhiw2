@@ -60,8 +60,8 @@ namespace whiteice
       
     public:
       
-      static T& instance() throw(std::bad_alloc,
-				 std::logic_error);
+      static T& instance(); // throw(std::bad_alloc, std::logic_error);
+      
       
       static bool destroy() ;
       

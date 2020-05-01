@@ -27,8 +27,7 @@ namespace whiteice {
   class HMM {
   public:
     HMM();
-    HMM(unsigned int visibleStates, unsigned int hiddenStates)
-      ;
+    HMM(unsigned int visibleStates, unsigned int hiddenStates);
     
     HMM(const HMM& hmm);
     virtual ~HMM();
@@ -56,9 +55,8 @@ namespace whiteice {
      */
     double train(const std::vector<unsigned int>& observations,
 		 const unsigned int MAXITERS = 1000,
-		 const bool verbose = true)
-      throw (std::invalid_argument);
-
+		 const bool verbose = true);
+    
     
     /**
      * samples given length observation stream from HMM
@@ -74,9 +72,8 @@ namespace whiteice {
      * returns log(probability) of the optimum hidden states
      */
     double ml_states(std::vector<unsigned int>& hidden,
-		     const std::vector<unsigned int>& observations) const
-      throw (std::invalid_argument);
-
+		     const std::vector<unsigned int>& observations) const;
+      
     /**
      * predicts the next hidden state given observation and current known state.
      * 
@@ -84,14 +81,12 @@ namespace whiteice {
      */
     double next_state(const unsigned int currentState,
 		      unsigned int& nextState,
-		      const unsigned int observation) const
-      throw (std::invalid_argument);
+		      const unsigned int observation) const;
     
     /*
      * calculations log(probability) of observations
      */
-    double logprobability(const std::vector<unsigned int>& observations) const
-      throw (std::invalid_argument);
+    double logprobability(const std::vector<unsigned int>& observations) const;
 
     
     std::vector< whiteice::math::realnumber >& getPI(){ return ph; }

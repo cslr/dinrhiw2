@@ -59,8 +59,7 @@ namespace whiteice
   
 
   template <typename T>
-  T& singleton<T>::instance() throw(std::bad_alloc,
-				    std::logic_error)
+  T& singleton<T>::instance() // throw(std::bad_alloc, std::logic_error)
   {
     if(instance_ptr)
       return (*(dynamic_cast<T*>(instance_ptr)));
