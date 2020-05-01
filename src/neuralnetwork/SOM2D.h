@@ -19,6 +19,8 @@
 namespace whiteice
 {
 
+  
+
   class SOM2D
   {
   public:
@@ -43,9 +45,9 @@ namespace whiteice
     (const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data) throw();
 
     // uses smaller SOM to initialize weights of this SOM
-    bool initializeHiearchical(const SOM2D& som_prev);
+    bool initializeHierarchical(const SOM2D& som_prev);
     
-
+    
     // calculates average error by using the best match vector for given dataset's vectors
     whiteice::math::blas_real<float> getError(const std::vector< whiteice::math::vertex< whiteice::math::blas_real<float> > >& data);
     
@@ -152,6 +154,11 @@ namespace whiteice
 
     whiteice::RNG< whiteice::math::blas_real<float> > rng;
   };
+
+  // hierarchical training SOM2D
+  bool hierarchicalTraining
+  (SOM2D* som,
+   std::vector<whiteice::math::vertex< whiteice::math::blas_real<float> > >& data);
 };
 
 

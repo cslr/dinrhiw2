@@ -1163,7 +1163,9 @@ int main(int argc, char** argv)
 	    while(ratios.size() > 10)
 	      ratios.pop_front();
 	    
-	    math::blas_real<double> inv = 1.0f/ratios.size();
+	    math::blas_real<double> inv = 1.0f;
+
+	    if(ratios.size() > 0) inv = 1.0f/ratios.size();
 	    
 	    mean_ratio = 1000.0f;
 	    

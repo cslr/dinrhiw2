@@ -84,35 +84,11 @@ int main()
   
   
   {
-    SOM2D* som;
+    SOM2D* som = new SOM2D(100, 100, 10);
 
-    {
-      SOM2D* som_prev;
-      
-      som = new SOM2D(16, 16, 10);
-      som->randomize(pdata); // initialize weights using data points
-      som->learn(pdata, true);
+    hierarchicalTraining(som, pdata);
+    som->show(true);
 
-      som_prev = som;
-      som = new SOM2D(32, 32, 10);
-      som->initializeHiearchical(*som_prev);
-      som->learn(pdata, true);
-
-      delete som_prev;
-      som_prev = som;
-      som = new SOM2D(64, 64, 10);
-      som->initializeHiearchical(*som_prev);
-      som->learn(pdata, true);
-
-      delete som_prev;
-      som_prev = som;
-      som = new SOM2D(100, 100, 10);
-      som->initializeHiearchical(*som_prev);
-      som->learn(pdata, true);
-
-      delete som_prev;
-      //som->show(true);
-    }
     
     // sleep(5);
     

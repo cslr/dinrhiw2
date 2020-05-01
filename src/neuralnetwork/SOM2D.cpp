@@ -444,7 +444,7 @@ namespace whiteice
   }
 
   
-  bool SOM2D::initializeHiearchical(const SOM2D& som_prev)
+  bool SOM2D::initializeHierarchical(const SOM2D& som_prev)
   {
     if(som_prev.width() > this->width() || som_prev.height() > this->height())
       return false; // SOM map is not smaller than current map
@@ -460,7 +460,12 @@ namespace whiteice
       for(int i=0.0f;i<(int)som_width;i++, px += dx){
 	int ix = (int)px;
 
-	const auto v = som_prev(ix, iy);
+	whiteice::math::vertex< whiteice::math::blas_real<float> > v = som_prev(ix, iy);
+	whiteice::math::vertex< whiteice::math::blas_real<float> > e = v;
+	whiteice::math::blas_real<float> s = 0.01f;
+	rng.normal(e);
+	v = v + s*e; // add random noise to lower dimensional SOM vectors
+	
 	this->setVector(i, j, v);
       }
     }
@@ -474,7 +479,7 @@ namespace whiteice
   {
     whiteice::math::blas_real<float> error = 0.0f;
 
-    const unsigned int MINIBATCHSIZE = 500;
+    // const unsigned int MINIBATCHSIZE = 500;
     
 #pragma omp parallel shared(error)
     {
@@ -1335,6 +1340,52 @@ namespace whiteice
       std::cout << secs << " secs " << std::endl;
     else
       std::cout << secs << " sec " << std::endl;
+  }
+
+
+
+  // hierachical training to train tree SOM2D
+  bool hierarchicalTraining(SOM2D* som,
+			    std::vector<whiteice::math::vertex< whiteice::math::blas_real<float> > >& data)
+  {
+    if(som == NULL) return false;
+    if(som->width() != som->height()) return false; // only handle symmetric plane
+
+    if(som->width() <= 16 || som->height() <= 16){
+      return som->learn(data, true);
+    }
+
+    int level = (int)::floorf(::log2f(som->width()));
+
+    SOM2D* prev = NULL;
+
+    for(int l=4;l<level;l++){
+      int size = (int)::powf(2.0f, l);
+      
+      SOM2D* current = new SOM2D(size, size, som->dimension());
+
+      if(prev != NULL)
+	current->initializeHierarchical(*prev);
+      else
+	current->randomize();
+
+      if(current->learn(data) == false) return false;
+
+
+      if(prev) delete prev;
+      prev = current;
+    }
+
+    if(prev != NULL)
+      som->initializeHierarchical(*prev);
+    else
+      som->randomize();
+
+    if(som->learn(data) == false) return false;
+
+    if(prev) delete prev;
+
+    return true;
   }
     
 };
