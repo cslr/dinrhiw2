@@ -26,6 +26,8 @@ ARCH="13-20-1"
 #$NNTOOL -v wine-test.ds $ARCH winenn.cfg mix
 # $NNTOOL -v wine-test.ds $ARCH winenn.cfg lbfgs
 
+################## $NNTOOL -v --samples 2000 wine-test.ds $ARCH winenn.cfg grad
+
 $NNTOOL -v --time 60 wine-test.ds $ARCH winenn.cfg grad
 
 # $NNTOOL -v --time 10 wine-test.ds $ARCH winenn.cfg random

@@ -41,6 +41,10 @@ namespace whiteice
       NNGradDescent(bool heuristics = false, bool errorTerms = false, bool deep_pretraining = false);
       NNGradDescent(const NNGradDescent<T>& grad);
       ~NNGradDescent();
+
+      // sets and gets minibatch settings for estimating gradient
+      void setUseMinibatch();
+      bool getUseMinibatch();
       
       /*
        * starts the optimization process using data as 
@@ -129,6 +133,7 @@ namespace whiteice
       const unsigned int EHISTORY = 20;
 
       whiteice::RNG<T> rng; // we use random numbers
+      bool use_minibatch; // use minibatch to estimate gradient
 	
       mutable std::mutex solution_lock, start_lock, errors_lock;
       

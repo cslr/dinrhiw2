@@ -30,6 +30,7 @@ namespace whiteice
       this->heuristics = heuristics;
       this->errorTerms = errorTerms;
       this->deep_pretraining = deep_pretraining;
+      this->use_minibatch = false;
 
       dropout = false;
 
@@ -58,6 +59,7 @@ namespace whiteice
       this->heuristics = grad.heuristics;
       this->errorTerms = grad.errorTerms;
       this->deep_pretraining = grad.deep_pretraining;
+      this->use_minibatch = grad.use_minibatch;
 
       dropout = grad.dropout;
       regularizer = grad.regularizer;
@@ -99,6 +101,22 @@ namespace whiteice
 
       start_lock.unlock();
     }
+
+
+    template <typename T>
+    void NNGradDescent<T>::setUseMinibatch()
+    {
+      use_minibatch = true;
+    }
+
+    
+    template <typename T>
+    bool NNGradDescent<T>::getUseMinibatch()
+    {
+      return use_minibatch;
+    }
+
+    
     
     /*
      * starts the optimization process using data as 
@@ -232,6 +250,7 @@ namespace whiteice
 	    v = sqrt(abs(v));
 
 	    std::cout << "THREAD " << threadnum << "/" << (int)errors.size()
+		      << " (" << err.second.size() << " samples)"
 		      << ": ERROR CONVERGENCE: " << T(100.0)*v/m << "%% (convergence: "
 		      << T(100.0)*percentage << "%%)"
 		      << std::endl;
@@ -614,55 +633,105 @@ namespace whiteice
 	    sumgrad.resize(nn->exportdatasize());
 	    sumgrad.zero();
 
-	    const unsigned int MINIBATCHSIZE = 100; // number of samples used to estimate gradient
+	    // number of samples used to estimate gradient in minibatch mode
+	    const unsigned int MINIBATCHSIZE = 100; 
 
-
+	    if(use_minibatch){
 #pragma omp parallel shared(sumgrad)
-	    {
-	      T ninv = T(1.0f/MINIBATCHSIZE);
-	      //T ninv = T(1.0f/dtrain.size(0));
-	      math::vertex<T> sgrad, grad;
-	      sgrad.resize(nn->exportdatasize());
-	      sgrad.zero();
-
-	      whiteice::nnetwork<T> nnet(*nn);
-	      math::vertex<T> err;
-	      
-#pragma omp for nowait schedule(dynamic)
-	      for(unsigned int i=0;i<MINIBATCHSIZE;i++){
-		const unsigned int index = rng.rand() % dtrain.size(0);
-		// const unsigned int index = i;
-
-		if(dropout) nnet.setDropOut();
-		
-		nnet.input() = dtrain.access(0, index);
-		nnet.calculate(true);
-
-		if(errorTerms == false){
-		  err = dtrain.access(1,index) - nnet.output();
-		}
-		else{
-		  const auto& doi = dtrain.access(1,index);
-		  err.resize(doi.size());
-		  err.zero();
-		  
-		  for(unsigned int k=0;k<doi.size();k++)
-		    if(whiteice::math::isnan(doi[k]) == false)
-		      err[k] = doi[k] - nnet.output()[k];
-		}
-		
-		if(nnet.gradient(err, grad) == false)
-		  std::cout << "gradient failed." << std::endl;
-		
-		sgrad += ninv*grad;
-	      }
-
-#pragma omp critical
 	      {
-		sumgrad += sgrad;
+		T ninv = T(1.0f/MINIBATCHSIZE);
+		//T ninv = T(1.0f/dtrain.size(0));
+		math::vertex<T> sgrad, grad;
+		sgrad.resize(nn->exportdatasize());
+		sgrad.zero();
+		
+		whiteice::nnetwork<T> nnet(*nn);
+		math::vertex<T> err;
+		
+#pragma omp for nowait schedule(dynamic)
+		for(unsigned int i=0;i<MINIBATCHSIZE;i++){
+		  const unsigned int index = rng.rand() % dtrain.size(0);
+		  // const unsigned int index = i;
+		  
+		  if(dropout) nnet.setDropOut();
+		  
+		  nnet.input() = dtrain.access(0, index);
+		  nnet.calculate(true);
+		  
+		  if(errorTerms == false){
+		    err = dtrain.access(1,index) - nnet.output();
+		  }
+		  else{
+		    const auto& doi = dtrain.access(1,index);
+		    err.resize(doi.size());
+		    err.zero();
+		    
+		    for(unsigned int k=0;k<doi.size();k++)
+		      if(whiteice::math::isnan(doi[k]) == false)
+			err[k] = doi[k] - nnet.output()[k];
+		  }
+		  
+		  if(nnet.gradient(err, grad) == false)
+		    std::cout << "gradient failed." << std::endl;
+		  
+		  sgrad += ninv*grad;
+		}
+		
+#pragma omp critical
+		{
+		  sumgrad += sgrad;
+		}
+	      
+	      }
+	    }
+	    else{ // do not use minibatch but ALL data is used to compute gradient
+#pragma omp parallel shared(sumgrad)
+	      {
+		T ninv = T(1.0f/dtrain.size(0));
+		math::vertex<T> sgrad, grad;
+		sgrad.resize(nn->exportdatasize());
+		sgrad.zero();
+		
+		whiteice::nnetwork<T> nnet(*nn);
+		math::vertex<T> err;
+		
+#pragma omp for nowait schedule(dynamic)
+		for(unsigned int i=0;i<dtrain.size(0);i++){
+		  const unsigned int index = i;
+		  
+		  if(dropout) nnet.setDropOut();
+		  
+		  nnet.input() = dtrain.access(0, index);
+		  nnet.calculate(true);
+		  
+		  if(errorTerms == false){
+		    err = dtrain.access(1,index) - nnet.output();
+		  }
+		  else{
+		    const auto& doi = dtrain.access(1,index);
+		    err.resize(doi.size());
+		    err.zero();
+		    
+		    for(unsigned int k=0;k<doi.size();k++)
+		      if(whiteice::math::isnan(doi[k]) == false)
+			err[k] = doi[k] - nnet.output()[k];
+		  }
+		  
+		  if(nnet.gradient(err, grad) == false)
+		    std::cout << "gradient failed." << std::endl;
+		  
+		  sgrad += ninv*grad;
+		}
+		
+#pragma omp critical
+		{
+		  sumgrad += sgrad;
+		}
+	      
 	      }
 	      
 	    }
+	    
 
 	    {
 	      char buffer[80];
