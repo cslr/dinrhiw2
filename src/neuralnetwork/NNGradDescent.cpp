@@ -104,9 +104,9 @@ namespace whiteice
 
 
     template <typename T>
-    void NNGradDescent<T>::setUseMinibatch()
+    void NNGradDescent<T>::setUseMinibatch(bool minibatch)
     {
-      use_minibatch = true;
+      use_minibatch = minibatch;
     }
 
     
@@ -251,8 +251,8 @@ namespace whiteice
 
 	    std::cout << "THREAD " << threadnum << "/" << (int)errors.size()
 		      << " (" << err.second.size() << " samples)"
-		      << ": ERROR CONVERGENCE: " << T(100.0)*v/m << "%% (convergence: "
-		      << T(100.0)*percentage << "%%)"
+		      << ": ERROR CONVERGENCE: " << T(100.0)*v/m << "% (convergence: "
+		      << T(100.0)*percentage << "%)"
 		      << std::endl;
 
 	    if(v/m <= percentage) // 1% is a good value

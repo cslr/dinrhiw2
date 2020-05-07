@@ -43,7 +43,7 @@ namespace whiteice
       ~NNGradDescent();
 
       // sets and gets minibatch settings for estimating gradient
-      void setUseMinibatch();
+      void setUseMinibatch(bool minibatch = true);
       bool getUseMinibatch();
       
       /*
