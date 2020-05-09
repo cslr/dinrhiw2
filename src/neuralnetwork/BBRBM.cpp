@@ -437,6 +437,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
     math::convert(error, latestError);
     
     printf("BBRBM::learnWeights(): %d/%d START. R: %f\n", 0, EPOCHS, error);
+    fflush(stdout);
   }
   else if(verbose == 2){
     char buffer[128];
@@ -470,6 +471,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	if(es % 100){
 	  printf("\r                                                                             \r");
 	  printf("EPOCH SAMPLES %d/%d [ETA: %.2f minutes]", es, EPOCHSAMPLES, eta.estimate()/60.0);
+	  fflush(stdout);
 	}
       }
       else if(verbose == 2){
@@ -664,6 +666,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
       printf("\n");
       printf("%d/%d EPOCH. R: %f\n", e+1, EPOCHS, error);
+      fflush(stdout);
     }
     else if(verbose == 2){
       char buffer[128];
@@ -744,6 +747,7 @@ T BBRBM<T>::learnWeights2(const std::vector< math::vertex<T> >& samples,
       if((signed)iters > last_iter){
 	if(verbose == 1){
 	  std::cout << "ITER " << iters << ": error = " << error << std::endl;
+	  fflush(stdout);
 	}
 	else if(verbose == 2){
 	  char buffer[128];
@@ -772,6 +776,7 @@ T BBRBM<T>::learnWeights2(const std::vector< math::vertex<T> >& samples,
 		<< ": error = " << error
 		<< " ETA " << eta.estimate()/(3600.0) << " hour(s)"
 		<< std::endl;
+      fflush(stdout);
     }
     else if(verbose == 2){
       char buffer[128];
@@ -810,9 +815,11 @@ T BBRBM<T>::learnWeights2(const std::vector< math::vertex<T> >& samples,
 	                        // within the latest 20 steps
 	delete optimizer[i];
 	
-	if(verbose == 1)
+	if(verbose == 1){
 	  std::cout << "Early stopping.. convergence detected."
 		    << std::endl;
+	  fflush(stdout);
+	}
 	else if(verbose == 2)
 	  whiteice::logging.info("BBRBM::learnWeights(): Early stopping.. convergence detected.");
 	

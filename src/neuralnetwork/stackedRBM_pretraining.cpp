@@ -18,8 +18,10 @@ namespace whiteice
 			      const int verbose,
 			      const bool* running)
   {
-    if(verbose == 1)
+    if(verbose == 1){
       printf("deep_pretrain_nnetwork() started\n");
+      fflush(stdout);
+    }
     else if(verbose == 2)
       whiteice::logging.info("deep_pretrain_nnetwork() started");
     
@@ -81,8 +83,11 @@ namespace whiteice
     auto old_nn = nn;
 
     // .. and converts it to nnetwork (adds final linear layer)
-    if(dbn.convertToNNetwork(data, nn) == false)
+    if(dbn.convertToNNetwork(data, nn) == false){
+      if(nn != nullptr && nn != old_nn) delete nn;
+      nn = old_nn;
       return false;
+    }
 
     if(old_nn) delete old_nn; // deletes old NN
 
@@ -97,8 +102,10 @@ namespace whiteice
 					   const int verbose,
 					   const bool* running)
   {
-    if(verbose == 1)
+    if(verbose == 1){
       printf("deep_pretrain_nnetwork_full_sigmoid() started\n");
+      fflush(stdout);
+    }
     else if(verbose == 2)
       whiteice::logging.info("deep_pretrain_nnetwork_full_sigmoid() started");
     
@@ -154,8 +161,11 @@ namespace whiteice
     auto old_nn = nn;
 
     // .. and converts it to nnetwork (adds final linear layer)
-    if(dbn.convertToNNetwork(nn) == false)
-      return false;
+    if(dbn.convertToNNetwork(nn) == false){
+        if(nn != nullptr && nn != old_nn) delete nn;
+        nn = old_nn;
+        return false;
+    }
 
     if(old_nn) delete old_nn; // deletes old NN
 

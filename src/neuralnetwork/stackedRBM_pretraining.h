@@ -16,6 +16,8 @@ namespace whiteice
   // dataset must contain both input and output datasets
   // (outputs are used to optimize final linear output layer)
   // 
+  // NOTE: neural network pointer is replaced by other neural network pointer allocated with new.
+  //
   // binary = true pure BBRBM network,
   // binary = false GBRBM network input layer + BBRBM hidden layers
   // verbose = 0 no output,

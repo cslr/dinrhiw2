@@ -28,6 +28,10 @@
 #include <vector>
 #include <string>
 
+#ifdef WINNT
+#include <windows.h>
+#endif
+
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
 

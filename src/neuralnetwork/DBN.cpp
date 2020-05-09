@@ -373,6 +373,7 @@ namespace whiteice
 	std::cout << "GBRBM LAYER 0 OPTIMIZATION "
 		  << iters << "/" << ITERLIMIT
 		  << std::endl;
+		fflush(stdout);
       }
       
       
@@ -390,6 +391,7 @@ namespace whiteice
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	  fflush(stdout);
 	}
 	else if(verbose == 2){
 	  char buffer[80];
@@ -425,7 +427,8 @@ namespace whiteice
 	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
-	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "% ( > 5%)" << std::endl;
+	    fflush(stdout);
 	  }
 
 	  if(v/m <= 0.05)
@@ -461,6 +464,7 @@ namespace whiteice
 	std::cout << "BBRBM LAYER 0 OPTIMIZATION "
 		  << iters << "/" << ITERLIMIT
 		  << std::endl;
+	fflush(stdout);
       }
       
       while((error = bb_input.learnWeights2(in, EPOCH_STEPS, verbose)) >= bbErrorLevel
@@ -477,6 +481,7 @@ namespace whiteice
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	  fflush(stdout);
 	}
 	else if(verbose == 2){
 	  char buffer[80];
@@ -512,7 +517,8 @@ namespace whiteice
 	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
-	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "% ( > 5%)" << std::endl;
+	    fflush(stdout);
 	  }
 
 	  if((v/m) <= T(0.05))
@@ -550,6 +556,7 @@ namespace whiteice
 	std::cout << "BBRBM LAYER " << (i+1) << " OPTIMIZATION "
 		  << iters << "/" << ITERLIMIT
 		  << std::endl;
+	fflush(stdout);
       }
 
       errors.clear();
@@ -569,6 +576,7 @@ namespace whiteice
 		    << iters << "/" << ITERLIMIT << ": "
 		    << error << "/" << errorLevel 
 		    << std::endl;
+	  fflush(stdout);
 	}
 	else if(verbose == 2){
 	  char buffer[80];
@@ -605,7 +613,8 @@ namespace whiteice
 	  v = sqrt(abs(v));
 
 	  if(verbose == 1){
-	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "% (> 5%)" << std::endl;
+	    fflush(stdout);
 	  }
 
 	  if((v/m) <= T(0.05))
@@ -677,7 +686,7 @@ namespace whiteice
     // solves min E{ 0.5*||Ah + b - y||^2 }
     // 
     // A = Syh * Shh^-1
-    // b = m_y - A*m_h
+    // b = E[y] - A*E[h]
 
     math::matrix<T> A;
     math::vertex<T> b;
