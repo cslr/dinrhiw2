@@ -21,7 +21,7 @@
 #include "conffile.h"
 #include "compressable.h"
 #include "dataset.h"
-#include "MemoryCompressor.h"
+#include "LoggingInterface.h"
 #include "RNG.h"
 
 #include <vector>
@@ -79,14 +79,18 @@ namespace whiteice
     // divides data to teaching and test
     // datasets (50%/50%)
     //
-    // model_stdev_error(last N iters)/model_mean_error(last N iters) < convergence_ratio 
+    // model_stdev_error(last N iters)/model_mean_error(last N iters) < convergence_ratio
+    //
+    // stops computation loop if *running becomes false
     // 
     bool learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			 T convergence_ratio = T(0.01f), bool verbose = false);
+			 T convergence_ratio = T(0.01f), bool verbose = false,
+			 LoggingInterface* messages = NULL,
+			 bool* running = NULL);
 
     // calculates gradient of parameter p using all samples
     bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
-			   math::vertex<T>& pgradient);
+			   math::vertex<T>& pgradient, LoggingInterface* messages = NULL);
 
 
     bool load(const std::string& filename) ;

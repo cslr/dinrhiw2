@@ -338,29 +338,49 @@ namespace whiteice
   //
   template <typename T>
   bool VAE<T>::learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			       T convergence_ratio, bool verbose)
+			       T convergence_ratio, bool verbose, LoggingInterface* messages,
+			       bool* running)
   {
     // implements gradient descent
     if(convergence_ratio <= T(0.0) || convergence_ratio >= T(1.0))
       return false;
 
+    if(running){
+      if(*running == false){
+	return false;
+      }
+    }
+    
+
     std::list<T> errors;
     T error = getError(xsamples);
     T lrate = T(0.0001);
     unsigned int counter = 0;
+    const int BUFLEN = 1024;
+    char buf[BUFLEN];
     
     
     while(1){
+      if(running){
+	if(*running == false){
+	  printf("VAE::learn() aborting computation\n");
+	  if(messages) messages->printMessage("VAE::learn() aborting computation\n");
+	  break;
+	}
+      }
+	  
+      
       // gradient search of better solution
       math::vertex<T> grad;
-      if(calculateGradient(xsamples, grad) == false){
+      if(calculateGradient(xsamples, grad, messages) == false){
 	if(verbose){
 	  std::cout << "calculateGradient() returns false!" << std::endl;
+	  if(messages) messages->printMessage("VAE::calculateGradient() returns false!\n");
 	  std::cout << std::flush;;
 	}
 	return false;
       }
-
+      
       if(verbose){
 	std::cout << "norm(grad) == " << grad.norm() << std::endl;
 	std::cout << std::flush;;
@@ -411,7 +431,14 @@ namespace whiteice
       if(verbose){
 	std::cout << "[after update] norm(params) = " << params.norm() << std::endl;
 	std::cout << "ERROR " << counter << ": " << error << std::endl;
-	std::cout << std::flush;;
+
+	float errf = 10e10;
+	whiteice::math::convert(errf, error);
+
+	snprintf(buf, BUFLEN, "VAE::learn() iter %d error: %f\n", counter, errf);
+	if(messages) messages->printMessage(buf);
+	
+	std::cout << std::flush;
       }
 
       errors.push_back(error);
@@ -439,7 +466,20 @@ namespace whiteice
 	
 	if(true){
 	  if(verbose){
-	    std::cout << "ERROR CONVERGENCE " << T(100.0)*v/m << "%" << std::endl;
+	    T ratio = T(100.0)*v/m;
+	    
+	    std::cout << "ERROR CONVERGENCE " << ratio << "%" << std::endl;
+
+	    float ratiof = 10e10;
+	    whiteice::math::convert(ratiof, ratio);
+
+	    float convf  = 10e10;
+	    T convp = T(100.0)*convergence_ratio;
+	    whiteice::math::convert(convf, convp);
+	    
+	    snprintf(buf, BUFLEN, "ERROR CONVERGENCE: %f (> %f)\n", ratiof, convf);
+	    if(messages) messages->printMessage(buf);
+	    
 	    std::cout << std::flush;;
 	  }
 	      
@@ -458,7 +498,8 @@ namespace whiteice
   // calculates gradient of parameter p using all samples
   template <typename T>
   bool VAE<T>::calculateGradient(const std::vector< math::vertex<T> >& xsamples,
-				 math::vertex<T>& pgradient)
+				 math::vertex<T>& pgradient,
+				 LoggingInterface* messages)
   {
     pgradient.resize(encoder.gradient_size() + decoder.gradient_size());
     pgradient.zero();
