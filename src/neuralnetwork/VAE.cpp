@@ -24,6 +24,8 @@ namespace whiteice
   {
     this->encoder = vae.encoder;
     this->decoder = vae.decoder;
+
+    this->minibatchMode = vae.minibatchMode;
   }
   
   template <typename T>
@@ -44,6 +46,8 @@ namespace whiteice
 
     this->encoder = encoder;
     this->decoder = decoder;
+
+    this->minibatchMode = false;
   }
 
   
@@ -278,6 +282,19 @@ namespace whiteice
     return true;
   }
 
+  // to set minibatch mode in which we use only sample of 30 data points when calculating gradient
+  template <typename T>
+  void VAE<T>::setUseMinibatch(bool use_minibatch)
+  {
+    minibatchMode = use_minibatch;
+  }
+
+  template <typename T>
+  bool VAE<T>::getUseMinibatch()
+  {
+    return minibatchMode;
+  }
+
   template <typename T>
   void VAE<T>::initializeParameters()
   {
@@ -506,7 +523,12 @@ namespace whiteice
     
     bool failure = false;
     const bool verbose = false;
-    const unsigned int MINIBATCHSIZE = 30; // number of samples ussed to estimate gradient
+    unsigned int MINIBATCHSIZE = 0; // number of samples used to estimate gradient
+
+    if(minibatchMode)
+      MINIBATCHSIZE = 30;
+    else
+      MINIBATCHSIZE = xsamples.size(); // use all samples
 
     if(xsamples.size() <= 0) failure = true;
 
@@ -527,7 +549,15 @@ namespace whiteice
       {
 	if(failure) continue; // do nothing after first failure
 
-	const unsigned int index = rng.rand() % ((unsigned int)xsamples.size());
+	unsigned int index = 0;
+	
+	if(minibatchMode){
+	  index = rng.rand() % ((unsigned int)xsamples.size());
+	}
+	else{
+	  index = i;
+	}
+	
 	
 	if(verbose){
 	  printf("PROCESSING SAMPLE %d/%d\n", index, (int)xsamples.size());

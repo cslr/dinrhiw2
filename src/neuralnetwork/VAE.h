@@ -69,6 +69,10 @@ namespace whiteice
     
     void getParameters(math::vertex<T>& p) const;
     bool setParameters(const math::vertex<T>& p);
+
+    // to set minibatch mode in which we use only sample of 30 data points when calculating gradient
+    void setUseMinibatch(bool use_minibatch);
+    bool getUseMinibatch();
     
     void initializeParameters();
 
@@ -100,6 +104,8 @@ namespace whiteice
     
     nnetwork<T> encoder; // x -> (z mean ,z stdev)
     nnetwork<T> decoder; // z -> (x mean)
+
+    bool minibatchMode;
     
     };
 
