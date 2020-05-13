@@ -385,11 +385,10 @@ namespace whiteice
 	  break;
 	}
       }
-	  
       
       // gradient search of better solution
       math::vertex<T> grad;
-      if(calculateGradient(xsamples, grad, messages) == false){
+      if(calculateGradient(xsamples, grad, messages, running) == false){
 	if(verbose){
 	  std::cout << "calculateGradient() returns false!" << std::endl;
 	  if(messages) messages->printMessage("VAE::calculateGradient() returns false!\n");
@@ -419,6 +418,15 @@ namespace whiteice
       lrate *= T(4.0);
       
       while(eprev <= error && lrate > T(10e-30)){
+          if(running){
+    	if(*running == false){
+    	  printf("VAE::learn() aborting computation\n");
+    	  if(messages) messages->printMessage("VAE::learn()/gradient-search: aborting computation\n");
+    	  break;
+    	}
+          }
+
+
 	p = params;
 	p += lrate*grad;
 	setParameters(p);
@@ -516,7 +524,8 @@ namespace whiteice
   template <typename T>
   bool VAE<T>::calculateGradient(const std::vector< math::vertex<T> >& xsamples,
 				 math::vertex<T>& pgradient,
-				 LoggingInterface* messages)
+				 LoggingInterface* messages,
+				 bool* running)
   {
     pgradient.resize(encoder.gradient_size() + decoder.gradient_size());
     pgradient.zero();
@@ -524,6 +533,9 @@ namespace whiteice
     bool failure = false;
     const bool verbose = false;
     unsigned int MINIBATCHSIZE = 0; // number of samples used to estimate gradient
+
+    const int BUFLEN = 1024;
+    char buffer[BUFLEN];
 
     if(minibatchMode)
       MINIBATCHSIZE = 30;
@@ -548,6 +560,20 @@ namespace whiteice
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
 	if(failure) continue; // do nothing after first failure
+	if(running){
+		if(*running == false){
+			failure = true;
+			continue; // do nothing if computation has been stopped
+		}
+	}
+
+  	{
+  		snprintf(buffer, BUFLEN, "Calculating gradient sample %d/%d..\n", i, MINIBATCHSIZE);
+  	  if(messages) messages->printMessage(buffer);
+  	  printf(buffer);
+  	  fflush(stdout);
+  	}
+
 
 	unsigned int index = 0;
 	

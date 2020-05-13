@@ -94,7 +94,7 @@ namespace whiteice
 
     // calculates gradient of parameter p using all samples
     bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
-			   math::vertex<T>& pgradient, LoggingInterface* messages = NULL);
+			   math::vertex<T>& pgradient, LoggingInterface* messages = NULL, bool* running = NULL);
 
 
     bool load(const std::string& filename) ;
