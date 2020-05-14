@@ -177,6 +177,8 @@ namespace whiteice
     inputValues = nn.inputValues;
     outputValues = nn.outputValues;
     
+    samples = nn.samples;
+
     return (*this);
   }
 
@@ -718,7 +720,12 @@ namespace whiteice
 	mean_covariance_estimate(mx, Cxx, inputdata);
 	mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
 
-	Cxx.symmetric_pseudoinverse();	
+	if(Cxx.symmetric_pseudoinverse() == true){
+		printf("ERROR: nnetwork<>::presetWeightsFromData(): symmetric pseudoinverse FAILED.\n");
+		fflush(stdout);
+		assert(0);
+	}
+
 	W = Cyx*Cxx;
 	b = my - W*mx;
       }
