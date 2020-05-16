@@ -720,7 +720,7 @@ namespace whiteice
 	mean_covariance_estimate(mx, Cxx, inputdata);
 	mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
 
-	if(Cxx.symmetric_pseudoinverse() == true){
+	if(Cxx.symmetric_pseudoinverse() == false){
 		printf("ERROR: nnetwork<>::presetWeightsFromData(): symmetric pseudoinverse FAILED.\n");
 		fflush(stdout);
 		assert(0);

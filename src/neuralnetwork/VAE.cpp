@@ -193,6 +193,7 @@ namespace whiteice
 			    math::vertex<T>& zsample) const
   {
     math::vertex<T> result;
+
     if(encoder.calculate(x, result) == false)
       return false;
 
@@ -307,28 +308,36 @@ namespace whiteice
   T VAE<T>::getError(const std::vector< math::vertex<T> >& xsamples) const
   {
     T error = T(0.0);
+    const unsigned int K = 100; // the number of random samples used to estimate E[error]
+
+    const unsigned int N = K*xsamples.size();
 
 #pragma omp parallel shared(error)
     {
-      math::vertex<T> zmean, zstdev, xmean;
+      math::vertex<T> zmean, zstdev, xmean, epsilon;
       T e = T(0.0);
 
-      whiteice::RNG<T> rng;
-      math::vertex<T> epsilon;
+      zmean.resize(encoder.output_size()/2);
+      zstdev.resize(encoder.output_size()/2);
+      xmean.resize(decoder.output_size());
       epsilon.resize(encoder.output_size()/2);
 
+      whiteice::RNG<T> rng;
+
 #pragma omp for nowait schedule(dynamic)
-      for(unsigned int i=0;i<xsamples.size();i++){
-	encode(xsamples[i], zmean, zstdev);
+      for(unsigned int i=0;i<N;i++){
+    	  const unsigned int index = i/K;
+	encode(xsamples[index], zmean, zstdev);
+	rng.normal(epsilon);
 
 	auto zi = zmean;
-	for(unsigned int k=0;k<zmean.size();k++){
-	  zi[k] += zstdev[k]*epsilon[k];
+	for(unsigned int l=0;l<zmean.size();l++){
+	  zi[l] += zstdev[l]*epsilon[l];
 	}
 	
 	decode(zi, xmean);
 	
-	auto delta = xsamples[i] - xmean;
+	auto delta = xsamples[index] - xmean;
 	e += delta.norm();
       }
 
@@ -339,7 +348,7 @@ namespace whiteice
     }
 
     if(xsamples.size() > 0)
-      error /= T(xsamples.size());
+      error /= T(N);
 
     return error;
   }
