@@ -5,7 +5,7 @@
 <\body>
   <with|font-series|bold|Variational Autonencoder (VAE) implementation notes>
 
-  Tomas Ukkonen, 2020 \<less\>tomas.ukkonen@novelinsight.biz\<gtr\>
+  Tomas Ukkonen, 2020 \<less\>tomas.ukkonen@novelinsight.fi\<gtr\>
 
   \;
 
@@ -95,12 +95,12 @@
   so <math|c=1>
 
   <\math>
-    p<around*|(|\<b-x\>|)>=<around*|(|2*\<pi\>|)><rsup|-D/2>*det<around*|(|\<b-Sigma\>|)><rsup|1/2>*exp<around*|(|-<frac|1|2><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*\<b-Sigma\><rsup|-1><around*|(|\<b-x\>-\<b-mu\>|)>|)>
+    p<around*|(|\<b-x\>|)>=<around*|(|2*\<pi\>|)><rsup|-D<rsub|x>/2>*det<around*|(|\<b-Sigma\>|)><rsup|-1/2>*exp<around*|(|-<frac|1|2><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*\<b-Sigma\><rsup|-1><around*|(|\<b-x\>-\<b-mu\>|)>|)>
   </math>
 
-  <math|log<around*|(|p<around*|(|\<b-x\>|)>|)>=<around*|(|-D/2|)>*log<around*|(|2*\<pi\>|)>+<around*|(|1/2|)>*log<around*|(|det<around*|(|\<b-Sigma\>|)>|)>><math|-<frac|1|2><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*\<b-Sigma\><rsup|-1><around*|(|\<b-x\>-\<b-mu\>|)>>
+  <math|log<around*|(|p<around*|(|\<b-x\>|)>|)>=<around*|(|-D<rsub|x>/2|)>*log<around*|(|2*\<pi\>|)>+log<around*|(|det<around*|(|\<b-Sigma\>|)><rsup|-1/2>|)>><math|-<frac|1|2><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*\<b-Sigma\><rsup|-1><around*|(|\<b-x\>-\<b-mu\>|)>>
 
-  <math|log<around*|(|p<around*|(|\<b-x\>|)>|)>=<around*|(|-D/2|)>*log<around*|(|2*\<pi\>/c|)>><math|-<frac|1|2*c><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*<around*|(|\<b-x\>-\<b-mu\>|)>><math|>
+  <math|log<around*|(|p<around*|(|\<b-x\>|)>|)>=<around*|(|-D<rsub|x>/2|)>*log<around*|(|2*\<pi\>c|)>><math|-<frac|1|2*c><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*<around*|(|\<b-x\>-\<b-mu\>|)>><math|>
 
   Now the gradients are
 
@@ -145,6 +145,47 @@
   <\math>
     <around*|(|-D<rprime|'><rsub|KL>|)>=<frac|1|2>D+<big|sum><rsup|<rsup|D>><rsub|i=1>log<around*|(|\<sigma\><rsub|\<b-z\>,i><around*|(|\<b-x\><rsup|<rsup|>>|)>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|\<sigma\><rsup|><rsub|\<b-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>=\<b-1\><rsup|T>*\<b-s\><around*|(|\<b-x\>|)>-<rsup|><frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2>
   </math>
+
+  \;
+
+  <with|font-series|bold|NOTE>
+
+  As a preset encoder and decoder are preset using data
+  <math|DATA=<around*|{|\<b-x\><rsub|i>|}><rsup|N><rsub|i=1>> by setting
+  weight values <math|\<b-W\><around*|(|k,:|)>=\<b-x\><rsub|k><rsup|T>,k=RANDOM<around*|(|0,N-1|)><infix-and>bias
+  values to zero.> The final layer is optimized using linear optimization to
+  target values. The target and source values for preset encoder/decoder is
+  set using PCA dimension reduction to three parameter values and encoder's
+  variance/sigma values was set to constant
+  <math|log<around*|(|\<sigma\>|)>=log<around*|(|0.2/sqrt<around*|(|D|)>|)>\<approx\>log<around*|(|0.115|)>,D=3>.
+  This will give approximately <math|\<sigma\>=0.2> error distance in
+  <math|D> dimensional space.
+
+  <with|font-series|bold|Experiments>
+
+  version 0.80: <math|log<around*|(|\<sigma\>|)>=log<around*|(|0.2/sqrt<around*|(|D|)>|)>\<approx\>log<around*|(|0.115|)>,D=3>
+  - doesn't work so well.
+
+  version 0.82: <math|log<around*|(|\<sigma\>|)>=log<around*|(|0.866/sqrt<around*|(|D|)>|)>\<approx\>log<around*|(|0.50|)>,D=3>:\ 
+
+  complexity=10 worked, 10 don't work, 20 worked.
+
+  <with|font-series|bold|Correct error measure> / aprox loglikelihood
+
+  Currently, VAE code (in VAE.cpp) uses reconstruction error
+  <math|<big|sum><rsub|i><around*|\<\|\|\>|\<b-x\><rsub|i>-decoder<around*|(|encoder<around*|(|\<b-x\><rsub|i>|)>|)>|\<\|\|\>><rsup|2>>
+  instead of log likelihood when estimating error. In practice we should use
+  <math|<big|sum><rsub|i>log<around*|(|p<around*|(|\<b-x\><rsub|i>|)>|)>> so
+  the error measure should be:
+
+  <math|L<around*|(|\<b-theta\>,\<b-phi\>,\<b-x\>|)>=<frac|1|2>D<rsub|z>+\<b-1\><rsup|T>s<around*|(|\<b-x\>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2><rsup|>+<frac|1|N><big|sum><rsub|i><rsup|N>log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-mu\><rsub|\<b-x\>,\<theta\>><around*|(|\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>,c*\<b-I\>|\<nobracket\>>|\<nobracket\>>|)>><math|>
+
+  <math|=**C+\<b-1\><rsup|T>s<around*|(|\<b-x\>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2><rsup|>-<frac|1|2N><big|sum><rsup|N><rsub|i>><math|<around*|\<\|\|\>|\<b-x\>-\<b-mu\><rsub|\<b-x\>,\<theta\>><around*|(|\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>|\<\|\|\>><rsup|2>>
+
+  <math|C=<frac|1|2>D<rsub|z>-<frac|1|2>D<rsub|x>*log<around*|(|2*\<pi\>|)>>
+
+  Here the maximization of <math|L> means that the last term will be
+  minimized (mean reconstruction error).
 </body>
 
 <initial|<\collection>

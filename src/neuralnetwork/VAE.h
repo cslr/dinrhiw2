@@ -78,6 +78,8 @@ namespace whiteice
 
     T getError(const std::vector< math::vertex<T> >& xsamples) const;
 
+    T getLoglikelihood(const std::vector< math::vertex<T> >& xsamples) const;
+
     // x = samples, learn x = decode(encode(x))
     // optimizes using gradient descent,
     // divides data to teaching and test
