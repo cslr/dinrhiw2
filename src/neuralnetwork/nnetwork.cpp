@@ -589,19 +589,27 @@ namespace whiteice
 	if(frozen[i-1] == false){ // do not touch frozen layers when using randomize()
 	  
 	  // this initialization is as described in the paper of Xavier Glorot
-	  // Understanding the difficulty of training deep neural networks
+	  // "Understanding the difficulty of training deep neural networks"
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
-	  // T scaling = T(2.2);
-	  T scaling = T(0.1);
+	  // T scaling = T(2.2); // for asinh()
+	  // T scaling = T(0.1); // was chosen value
+	  
+	  T scaling = T(1.0); // no scaling so use values as in paper
 	  
 	  var *= scaling;
-	  
-	  for(unsigned int j=start;j<end;j++){
+
+	  // set weight values W
+	  for(unsigned int j=start;j<(end-arch[i]);j++){
 	    T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
 	    data[j] = var*r;
 	    // NOTE: asinh(x) requires aprox 3x bigger values before
 	    // reaching saturation than tanh(x)
+	  }
+
+	  // sets bias terms to zero
+	  for(unsigned int j=(end-arch[i]);j<end;j++){
+	    data[j] = T(0.0);
 	  }
 	  
 #if 0

@@ -28,9 +28,17 @@ void generate(std::vector<float>& x){
 
 int main(int argc, char** argv)
 {
-  if(argc != 2) return -1;
+  if(argc != 2){
+    printf("Usage: gendata <dimension_number>\n");
+    return -1;
+  }
   
-  const unsigned int dimension = atoi(argv[1]);
+  const int dimension = atoi(argv[1]);
+
+  if(dimension <= 0){
+    printf("Usage: gendata <dimension_number>\n");
+    return -1;
+  }
 
   // generates data sets
   srand(time(0));
@@ -39,9 +47,13 @@ int main(int argc, char** argv)
   FILE* handle2 = fopen("gendata_scoring.csv", "wt");
   FILE* handle3 = fopen("gendata_scoring_correct.csv", "wt");
 
+  printf("Generating files..\n");
+  printf("(gendata_training.csf, gendata_scoring.csv, gendata_scoring_correct.csv)\n");
+  
+
   for(unsigned int i=0;i<10000;i++){
     std::vector<float> example;
-    example.resize(dimension);
+    example.resize(dimension+1);
     generate(example);
 
     for(unsigned int j=0;j<example.size();j++){
@@ -49,7 +61,7 @@ int main(int argc, char** argv)
     }
     fprintf(handle1, "\n");
 
-    example.resize(dimension);
+    example.resize(dimension+1);
     generate(example);
 
     for(unsigned int j=0;j<example.size();j++){
