@@ -571,14 +571,24 @@ namespace whiteice
 
     if(type == 0){
       // bulk random [-1,+1] initialization
+      unsigned int start = 0;
+      unsigned int end   = 0;
 
-      T* dptr = data.data();
-      for(unsigned int i=0;i<data.size();i++, dptr++){
-	const T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
-	*dptr = r;
+      for(unsigned int i=1;i<arch.size();i++){
+      	end   += (arch[i-1] + 1)*arch[i];
+
+      	if(frozen[i-1] == false){
+      		for(unsigned int j=start;j<end;j++){
+      			const T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]
+      			data[j] = r;
+      		}
+      	}
+
+      	start += (arch[i-1] + 1)*arch[i];
       }
+
     }
-    else
+    else if(type == 1)
     {
       unsigned int start = 0;
       unsigned int end   = 0;
@@ -593,9 +603,9 @@ namespace whiteice
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
 	  // T scaling = T(2.2); // for asinh()
-	  // T scaling = T(0.1); // was chosen value
+	  T scaling = T(0.1); // was chosen value
 	  
-	  T scaling = T(1.0); // no scaling so use values as in paper
+	  // T scaling = T(1.0); // no scaling so use values as in paper
 	  
 	  var *= scaling;
 
@@ -612,30 +622,47 @@ namespace whiteice
 	    data[j] = T(0.0);
 	  }
 	  
-#if 0
-	  // sets bias terms to zero?
-	  for(unsigned int l=0;l<getLayers();l++){
-	    whiteice::math::vertex<T> bias;
-	    if(getBias(bias, l)){
-	      bias.zero();
-	      setBias(bias,l);
-	    }
-	  }
-	  
-	  whiteice::math::matrix<T> W;
-	  for(unsigned int l=0;l<getLayers();l++){
-	    if(getWeights(W, l)){
-	      W.zero();
-	      setWeights(W,l);
-	    }
-	  }
-#endif
 	}
 	
 	start += (arch[i-1] + 1)*arch[i];
       }
 
       assert(start == data.size()); // we have processed the whole memory area correctly
+    }
+    else{ // type = 2
+    	unsigned int start = 0;
+        unsigned int end   = 0;
+
+        for(unsigned int i=1;i<arch.size();i++){
+        	end   += (arch[i-1] + 1)*arch[i];
+
+        	if(frozen[i-1] == false){ // do not touch frozen layers when using randomize()
+        		// this initialization is as described in the paper of Xavier Glorot
+        		// "Understanding the difficulty of training deep neural networks"
+
+        		// keep data variance aproximately 1
+        		T var = math::sqrt(1.0f / arch[i-1]);
+
+        		T scaling = T(0.1); // was chosen value
+        		var *= scaling;
+
+        		// set weight values W
+        		for(unsigned int j=start;j<(end-arch[i]);j++){
+        			T r = rng.normal();
+        			data[j] = var*r;
+        		}
+
+        		// sets bias terms to zero
+        		for(unsigned int j=(end-arch[i]);j<end;j++){
+        			data[j] = T(0.0);
+        		}
+
+        	}
+
+        	start += (arch[i-1] + 1)*arch[i];
+        }
+
+        assert(start == data.size()); // we have processed the whole memory area correctly
     }
 
     
@@ -649,7 +676,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::presetWeightsFromData(const whiteice::dataset<T>& ds)
   {
-    if(ds.getNumberOfClusters() == 0) return false;
+    if(ds.getNumberOfClusters() < 2) return false;
     if(ds.dimension(0) != input_size()) return false;
     if(ds.size(0) <= 0) return false;
 
@@ -760,6 +787,90 @@ namespace whiteice
     return true;
   }
   
+
+  // set parameters to fit the data from dataset but uses random weights except for the last layer
+  // [experimental code]
+  template <typename T>
+  bool nnetwork<T>::presetWeightsFromDataRandom(const whiteice::dataset<T>& ds)
+  {
+	  if(ds.getNumberOfClusters() < 2) return false;
+	  if(ds.dimension(0) != input_size()) return false;
+	  if(ds.size(0) <= 0) return false;
+
+	  // set weights to match to data so that inner product is matched exactly to some data
+	  std::vector< whiteice::math::vertex<T> > inputdata;
+	  std::vector< whiteice::math::vertex<T> > outputdata;
+	  std::vector< whiteice::math::vertex<T> > realoutput;
+
+	  for(unsigned int i=0;i<ds.size(0);i++)
+		  inputdata.push_back(ds.access(0, i));
+
+	  for(unsigned int i=0;i<ds.size(1);i++)
+		  realoutput.push_back(ds.access(1, i));
+
+	  for(unsigned int l=0;l<getLayers();l++){
+		  math::matrix<T> W;
+		  math::vertex<T> b;
+
+		  getWeights(W, l);
+		  getBias(b, l);
+
+		  if(l != getLayers()-1){ // not the last layer
+
+			  for(unsigned int j=0;j<W.ysize();j++){
+				  T var = math::sqrt(1.0f / W.xsize());
+				  for(unsigned int i=0;i<W.xsize();i++){
+					  W(j,i) = var*rng.normal();
+				  }
+			  }
+
+			  b.zero();
+		  }
+		  else{ // the last layer, calculate linear mapping y=A*x + b
+			  // W = Cyx*inv(Cxx)
+			  // b = E[y] - W*E[x]
+
+			  whiteice::math::vertex<T> mx, my;
+			  whiteice::math::matrix<T> Cxx, Cyx;
+
+			  mean_covariance_estimate(mx, Cxx, inputdata);
+			  mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
+
+			  if(Cxx.symmetric_pseudoinverse() == false){
+				  printf("ERROR: nnetwork<>::presetWeightsFromDataRandom(): symmetric pseudoinverse FAILED.\n");
+				  fflush(stdout);
+				  assert(0);
+			  }
+
+			  W = Cyx*Cxx;
+			  b = my - W*mx;
+		  }
+
+		  setWeights(W, l);
+		  setBias(b, l);
+
+		  outputdata.resize(inputdata.size());
+
+		  // processes data in parallel
+#pragma omp parallel for schedule(dynamic)
+		  for(unsigned int i=0;i<inputdata.size();i++){
+			  auto out = W*inputdata[i] + b;
+			  for(unsigned int n=0;n<out.size();n++)
+				  out[n] = nonlin(out[n], l, n);
+
+			  outputdata[i] = out;
+		  }
+
+		  inputdata = outputdata;
+		  outputdata.clear();
+	  }
+
+	  return true;
+  }
+
+
+
+
   // calculates gradient of [ 1/2*(last_output - network(last_input|w))^2 ] => error*GRAD[function(x,w)]
   // uses values stored by previous computation, this function is very heavily optimized using direct memory
   // accesses to the neural network matrix and vector parameter data (memory block)

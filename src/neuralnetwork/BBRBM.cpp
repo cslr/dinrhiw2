@@ -385,6 +385,33 @@ void BBRBM<T>::getParameters(math::matrix<T>& W,
 template <typename T>
 bool BBRBM<T>::initializeWeights() // initialize weights to small values
 {
+	// TODO BUG: test this untested code
+
+	// use recommendation by Hinton and initialize weights to small random values 0.01*Normal(0,1)
+	T scaling = T(0.01); // st.dev. scaling [0.01,0.1]
+
+	for(unsigned int j=0;j<W.ysize();j++){
+		for(unsigned int i=0;i<W.xsize();i++){
+			T r = scaling*rng.normal();
+			W(j,i) = r;
+		}
+	}
+
+	for(unsigned int j=0;j<a.size();j++){
+		T r = scaling*rng.normal();
+		a[j] = r;
+	}
+
+	for(unsigned int j=0;j<b.size();j++){
+		T r = scaling*rng.normal();
+		b[j] = r;
+	}
+
+
+
+#if 0
+	// bad initialization is probably why BBRBM code doesn't work properly(?)
+
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
       T r = rng.uniform();
@@ -407,6 +434,7 @@ bool BBRBM<T>::initializeWeights() // initialize weights to small values
     r = T(2.0)*r - T(1.0);
     b[j] = r;
   }
+#endif
 
   return true;
 }

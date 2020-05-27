@@ -13,6 +13,8 @@
  */
 
 #include "VAE.h"
+
+#include "linear_ETA.h"
 #include <list>
 
 
@@ -304,6 +306,7 @@ namespace whiteice
   }
 
 
+  // calculates raw reconstruction error ||x - decoder(encoder(x))||^2
   template <typename T>
   T VAE<T>::getError(const std::vector< math::vertex<T> >& xsamples) const
   {
@@ -361,8 +364,11 @@ namespace whiteice
 	  T logp, DL = T(0.0);
 	  T error = T(0.0);
 
+	  // data variance s^2 term: c = Dz/Dx (was: c = Dx)
+	  const float c = ((float)decoder.input_size())/((float)decoder.output_size());
+
 	  // constant term C:
-	  logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI)));
+	  logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
 
 	  const unsigned int K = 100; // the number of random samples used to estimate E[error]
 
@@ -422,7 +428,7 @@ namespace whiteice
       }
 
       if(xsamples.size() > 0){
-    	  error /= T(2*N);
+    	  error /= T(2*N*c);
     	  DL /= xsamples.size();
 
     	  logp += DL - error;
@@ -454,7 +460,6 @@ namespace whiteice
 			  return false;
 		  }
 	  }
-    
 
 	  //std::list<T> errors;
 	  T error = getError(xsamples);
@@ -463,12 +468,19 @@ namespace whiteice
 	  T mloglikelihood = -getLoglikelihood(xsamples);
 
 	  T lrate = T(0.0001);
+
 	  unsigned int counter = 0;
+	  const unsigned int MAXITER = 100;
+
 	  const int BUFLEN = 1024;
 	  char buf[BUFLEN];
     
+	  whiteice::linear_ETA<double> eta;
+	  eta.start(0.0, MAXITER);
+	  eta.update(0.0);
+
     
-	  while(1){
+	  while(counter < MAXITER){
 		  if(running){
 			  if(*running == false){
 				  printf("VAE::learn() aborting computation\n");
@@ -546,11 +558,13 @@ namespace whiteice
 		  }
       
 		  counter++;
+		  eta.update(counter);
 
 		  if(verbose){
 			  error = getError(xsamples);
 
-			  std::cout << "ERROR " << counter << ": " << error << " loglikelihood: " << -mloglikelihood << std::endl;
+			  std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
+					  << "(ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
 
 			  float errf = 10e10;
 			  whiteice::math::convert(errf, error);
@@ -561,8 +575,8 @@ namespace whiteice
 			  //float lratef = 0.0f;
 			  //whiteice::math::convert(lratef, lrate);
 
-			  snprintf(buf, BUFLEN, "Deep learning: learn() iter %d error: %f (loglikelihood: %f)\n",
-					  counter, errf, -mloglikelihoodf);
+			  snprintf(buf, BUFLEN, "Deep learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [%.2f hours]\n",
+					  counter, MAXITER, errf, -mloglikelihoodf, eta.estimate()/3600.0);
 			  if(messages) messages->printMessage(buf);
 	
 			  std::cout << std::flush;
@@ -615,7 +629,7 @@ namespace whiteice
 				  break; // stdev is less than c% of mean (5%)
 		  }
       
-	  } // end of while(1) loop
+	  } // end of while(counter < MAXITER) loop
     
 	  return true;
   }
@@ -635,6 +649,12 @@ namespace whiteice
     const bool verbose = false;
     unsigned int MINIBATCHSIZE = 0; // number of samples used to estimate gradient
 
+    if(xsamples.size() <= 0) return false;
+    if(xsamples[0].size() != encoder.input_size()) return false;
+
+    // data variance term c, this allows errors to be made in reconstruction (0.05: was c = Dx (x.size())
+    const float c = ((float)decoder.input_size())/((float)decoder.output_size());
+
     const int BUFLEN = 1024;
     char buffer[BUFLEN];
 
@@ -642,8 +662,6 @@ namespace whiteice
       MINIBATCHSIZE = 30;
     else
       MINIBATCHSIZE = xsamples.size(); // use all samples
-
-    if(xsamples.size() <= 0) failure = true;
 
 
 #pragma omp parallel shared(pgradient)
@@ -839,8 +857,8 @@ namespace whiteice
 	// HEURISTICS: scales "dimensionality" of p(x) to be same as in p(z) which are both
 	// guessed to be Normal(0,I) distributed.
 	// DISABLED: (NOTE if you scale gradient by alpha, then normal noises st.dev/sigma should be sqrt(D/3))
-	// encoder_gradient *= T((float)zmean.size()/((float)x.size()));
-	// decoder_gradient *= T((float)zmean.size()/((float)x.size()));
+	encoder_gradient *= T(1.0f/c);
+	decoder_gradient *= T(1.0f/c);
 	
 	pg.zero();
 	if(pg.write_subvertex(encoder_gradient, 0) == false){

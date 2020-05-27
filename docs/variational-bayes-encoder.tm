@@ -91,8 +91,9 @@
   </math>
 
   We can further calculate logarithm of the normal distribution to remove
-  exponentation. Additionally, the data variance is normalized to be <math|1>
-  so <math|c=1>
+  exponentation. Additionally, the data variance <math|\<sigma\><rsup|2>> is
+  normalized to be <math|1> so <math|c=1> (<math|c=1> doesn't work well so
+  variance is set to normalize error <math|c=D<rsub|\<b-x\>>>)
 
   <\math>
     p<around*|(|\<b-x\>|)>=<around*|(|2*\<pi\>|)><rsup|-D<rsub|x>/2>*det<around*|(|\<b-Sigma\>|)><rsup|-1/2>*exp<around*|(|-<frac|1|2><around*|(|\<b-x\>-\<b-mu\>|)><rsup|T>*\<b-Sigma\><rsup|-1><around*|(|\<b-x\>-\<b-mu\>|)>|)>
@@ -104,9 +105,9 @@
 
   Now the gradients are
 
-  <math|\<nabla\><rsub|\<theta\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|\<nabla\><rsub|\<theta\>>\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>>
+  <math|\<nabla\><rsub|\<theta\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N*c><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|\<nabla\><rsub|\<theta\>>\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>>
 
-  <math|\<nabla\><rsub|\<phi\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|J<rsub|\<b-z\>>*\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>*<around*|(|\<nabla\><rsub|\<phi\>>\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<nabla\><rsub|\<phi\>>*\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>>
+  <math|\<nabla\><rsub|\<phi\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1*|N*c><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|J<rsub|\<b-z\>>*\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>*<around*|(|\<nabla\><rsub|\<phi\>>\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<nabla\><rsub|\<phi\>>*\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>>
 
   \;
 
@@ -133,10 +134,12 @@
 
   <math|\<b-z\><rsub|i><around*|(|\<b-x\>|)>=\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+diag<around*|(|\<b-varepsilon\><rsub|i>|)>*e<rsup|\<b-s\><rsub|\<phi\>><around*|(|\<b-x\>|)>>>
 
-  <math|\<nabla\><rsub|\<theta\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|\<nabla\><rsub|\<theta\>>\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>>
+  <math|\<nabla\><rsub|\<theta\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N*c><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|\<nabla\><rsub|\<theta\>>\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>>
   [not modified]
 
-  <math|\<nabla\><rsub|\<phi\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|J<rsub|\<b-z\>>*\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>*<around*|(|\<nabla\><rsub|\<phi\>>\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+diag<around*|(|\<b-varepsilon\><rsub|i>*e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|)>*\<nabla\><rsub|\<phi\>>*s<rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>>
+  <math|\<nabla\><rsub|\<phi\>>E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|)>|)>|]>=*<frac|1|N*c><big|sum><rsup|N><rsub|i><around*|(|\<b-x\>-\<b-mu\><rsub|\<b-x\>>|)><rsup|T>*<around*|\<nobracket\>|J<rsub|\<b-z\>>*\<b-mu\><rsub|\<b-x\>,\<theta\>>|(>\<b-z\><rsub|i><around*|(|\<b-x\>|)>|)>*<around*|(|\<nabla\><rsub|\<phi\>>\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+diag<around*|(|\<b-varepsilon\><rsub|i>*e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|)>*\<nabla\><rsub|\<phi\>>*s<rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>>
+
+  <math|=>
 
   <math|\<nabla\><rsub|\<phi\>><around*|(|-D<rprime|'><rsub|KL>|)>=\<b-1\><rsup|T>*\<nabla\><rsub|\<phi\>>\<b-s\><around*|(|\<b-x\>|)>-\<b-mu\><rsup|T><rsub|\<b-z\>><around*|(|\<b-x\>|)>*\<nabla\><rsub|\<phi\>>\<b-mu\><rsub|\<b-z\>><around*|(|\<b-x\>|)>-<around*|[|e<rsup|2*\<b-s\><around*|(|\<b-x\>|)>>|]><rsup|<rsup|T>>*<around*|[|*\<nabla\><rsub|\<phi\>>s<rsub|i><around*|(|\<b-x\>|)>|]>>
 
@@ -168,7 +171,8 @@
 
   version 0.82: <math|log<around*|(|\<sigma\>|)>=log<around*|(|0.866/sqrt<around*|(|D|)>|)>\<approx\>log<around*|(|0.50|)>,D=3>:\ 
 
-  complexity=10 worked, 10 don't work, 20 worked.
+  complexity=10 worked, 10 don't work, 20 worked, 20 worked, 10 did not work,
+  ..
 
   <with|font-series|bold|Correct error measure> / aprox loglikelihood
 
@@ -180,12 +184,22 @@
 
   <math|L<around*|(|\<b-theta\>,\<b-phi\>,\<b-x\>|)>=<frac|1|2>D<rsub|z>+\<b-1\><rsup|T>s<around*|(|\<b-x\>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2><rsup|>+<frac|1|N><big|sum><rsub|i><rsup|N>log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-mu\><rsub|\<b-x\>,\<theta\>><around*|(|\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>,c*\<b-I\>|\<nobracket\>>|\<nobracket\>>|)>><math|>
 
-  <math|=**C+\<b-1\><rsup|T>s<around*|(|\<b-x\>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2><rsup|>-<frac|1|2N><big|sum><rsup|N><rsub|i>><math|<around*|\<\|\|\>|\<b-x\>-\<b-mu\><rsub|\<b-x\>,\<theta\>><around*|(|\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>|\<\|\|\>><rsup|2>>
+  <math|=**C+\<b-1\><rsup|T>s<around*|(|\<b-x\>|)>-<frac|1|2><around*|\<\|\|\>|\<b-mu\><rsub|\<cal-z\>><around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>-<frac|1|2><around*|\<\|\|\>|e<rsup|\<b-s\><around*|(|\<b-x\>|)>>|\<\|\|\>><rsup|2><rsup|>-<frac|1|2N*c><big|sum><rsup|N><rsub|i>><math|<around*|\<\|\|\>|\<b-x\>-\<b-mu\><rsub|\<b-x\>,\<theta\>><around*|(|\<b-mu\><rsub|\<b-z\>,\<phi\>><around*|(|\<b-x\>|)>+\<b-varepsilon\>*<rsub|i>\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>|)>|\<\|\|\>><rsup|2>>
 
-  <math|C=<frac|1|2>D<rsub|z>-<frac|1|2>D<rsub|x>*log<around*|(|2*\<pi\>|)>>
+  <math|C=<frac|1|2>D<rsub|z>-<frac|1|2>D<rsub|x>*log<around*|(|2*\<pi\>*c|)>>
 
   Here the maximization of <math|L> means that the last term will be
   minimized (mean reconstruction error).
+
+  \;
+
+  TODO: add <math|\<b-c\>> variance term to the VAE.cpp code.
+
+  TODO: we have normalized <math|\<b-x\>\<sim\>N<around*|(|0,\<sigma\><rsup|2>=1|)>>
+  so <math|c=0.05> might be good target for
+  <math|\<sigma\><rsub|error<around*|(|\<b-x\>|)>><rsup|2>>.
+
+  \;
 </body>
 
 <initial|<\collection>
