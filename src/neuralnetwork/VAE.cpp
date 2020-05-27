@@ -564,7 +564,7 @@ namespace whiteice
 			  error = getError(xsamples);
 
 			  std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
-					  << "(ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
+					  << " (ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
 
 			  float errf = 10e10;
 			  whiteice::math::convert(errf, error);
@@ -575,7 +575,7 @@ namespace whiteice
 			  //float lratef = 0.0f;
 			  //whiteice::math::convert(lratef, lrate);
 
-			  snprintf(buf, BUFLEN, "Deep learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [%.2f hours]\n",
+			  snprintf(buf, BUFLEN, "Deep learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [ETA %.2f hours]\n",
 					  counter, MAXITER, errf, -mloglikelihoodf, eta.estimate()/3600.0);
 			  if(messages) messages->printMessage(buf);
 	
