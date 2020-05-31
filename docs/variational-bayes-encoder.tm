@@ -197,7 +197,24 @@
 
   TODO: we have normalized <math|\<b-x\>\<sim\>N<around*|(|0,\<sigma\><rsup|2>=1|)>>
   so <math|c=0.05> might be good target for
-  <math|\<sigma\><rsub|error<around*|(|\<b-x\>|)>><rsup|2>>.
+  <math|\<sigma\><rsub|error<around*|(|\<b-x\>|)>><rsup|2>>. This means VAE
+  should have small reconstruction error which on the other side can mean bad
+  generalization errror. (model complexity=20 and PCA prelearned z st.dev. is
+  0.1)
+
+  c=DIMZ/DIMX doesn't give very good results
+
+  c=0.05 results? sound on average a bit better
+
+  c=0.05^2*DIMZ/DIMX: results? results are mostly good (tunefish3 give's bad
+  results)
+
+  c=0.05^2 results? results are maybe better than in other cases.
+  <with|font-series|bold|Use this as the default.>
+
+  \;
+
+  \;
 
   \;
 </body>

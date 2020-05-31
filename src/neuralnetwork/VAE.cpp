@@ -365,7 +365,8 @@ namespace whiteice
 	  T error = T(0.0);
 
 	  // data variance s^2 term: c = Dz/Dx (was: c = Dx)
-	  const float c = ((float)decoder.input_size())/((float)decoder.output_size());
+	  const float c = 0.05f*0.05f;
+	  // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
 
 	  // constant term C:
 	  logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
@@ -652,8 +653,9 @@ namespace whiteice
     if(xsamples.size() <= 0) return false;
     if(xsamples[0].size() != encoder.input_size()) return false;
 
-    // data variance term c, this allows errors to be made in reconstruction (0.05: was c = Dx (x.size())
-    const float c = ((float)decoder.input_size())/((float)decoder.output_size());
+    // data variance term c, this allows errors to be made in reconstruction (0.05: was c = Dx (x.size()), c = Dz/Dx
+    const float c = 0.05f*0.05f;
+    // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
 
     const int BUFLEN = 1024;
     char buffer[BUFLEN];
