@@ -10,6 +10,17 @@
 #include <iostream>
 #include <math.h>
 
+#include <iostream>
+#include <string>
+#include <locale>
+#include <codecvt>
+
+#if defined(WINNT) || defined(WIN32) || defined(_WIN32)
+#ifndef UNICODE
+#define UNICODE
+#endif
+#endif
+
 #include "conffile.h"
 
 
@@ -68,7 +79,13 @@ namespace whiteice
       std::vector<std::string> s;
       std::string str;
       
+#ifdef UNICODE
+      std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+      std::wstring wstr = converter.from_bytes(filename.data());
+      file.open(wstr.c_str());
+#else
       file.open(filename.c_str());
+#endif
       if(!file.is_open()) return false;
       if(!file.good()) return false;
       
@@ -118,12 +135,20 @@ namespace whiteice
     try{
       ofstream file;
       string line;
-      
-      file.open(filename.c_str());    
-      if(!file.good()) return false;
 
-      // printf("CONFSAVE A\n"); fflush(stdout);
-      
+#ifdef UNICODE
+      std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+      std::wstring wstr = converter.from_bytes(filename.data());
+      file.open(wstr.c_str());
+#else
+      file.open(filename.c_str());
+#endif
+      fflush(stdout);
+
+      if(!file.good()){
+    	  return false;
+      }
+
       std::map< std::string, std::vector<int> >::iterator i;
       std::map< std::string, std::vector<float> >::iterator j;
       std::map< std::string, std::vector<std::string> >::iterator k;    

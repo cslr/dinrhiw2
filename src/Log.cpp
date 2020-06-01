@@ -78,6 +78,12 @@ namespace whiteice {
   }
 
 
+  void Log::setPrintOutput(bool print_stdout)
+  {
+	  printStdoutToo = print_stdout;
+  }
+
+
   // logging
   void Log::info(std::string msg){
     std::lock_guard<std::mutex> lock(file_lock);
@@ -86,7 +92,12 @@ namespace whiteice {
     if(handle){
       fputs(buffer, handle);
       fflush(handle);
-    }	  
+    }
+
+    if(printStdoutToo){
+    	printf(buffer);
+    	fflush(stdout);
+    }
   }
   
   
@@ -97,7 +108,12 @@ namespace whiteice {
     if(handle){
       fputs(buffer, handle);
       fflush(handle);
-    }	  
+    }
+
+    if(printStdoutToo){
+        printf(buffer);
+        fflush(stdout);
+    }
   }
   
   void Log::error(std::string msg){
@@ -108,6 +124,11 @@ namespace whiteice {
       fputs(buffer, handle);
       fflush(handle);
     }
+
+    if(printStdoutToo){
+        printf(buffer);
+        fflush(stdout);
+    }
   }
   
   void Log::fatal(std::string msg){
@@ -117,6 +138,11 @@ namespace whiteice {
     if(handle){
       fputs(buffer, handle);
       fflush(handle);
+    }
+
+    if(printStdoutToo){
+        printf(buffer);
+        fflush(stdout);
     }
   }
   

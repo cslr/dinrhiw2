@@ -25,6 +25,9 @@ namespace whiteice {
     
     bool setOutputFile(std::string logFilename);
     
+    void setPrintOutput(bool print_stdout);
+    bool getPrintOutput(){ return printStdoutToo; }
+
     // logging
     void info(std::string msg);
     void warn(std::string msg);
@@ -40,6 +43,8 @@ namespace whiteice {
     static const int BUFLEN = 65536; // 64 KB
     char buffer[BUFLEN];
     
+    bool printStdoutToo = false;
+
     clock::time_point t0;
     std::mutex file_lock;
   };

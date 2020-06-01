@@ -21,6 +21,18 @@
 #include <string.h>
 #include <errno.h>
 
+#include <iostream>
+#include <string>
+#include <locale>
+#include <codecvt>
+
+#if defined(WINNT) || defined(WIN32) || defined(_WIN32)
+#ifndef UNICODE
+#define UNICODE
+#endif
+#endif
+
+
 #include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "eig.h"
@@ -672,7 +684,19 @@ namespace whiteice
     if(filename.length() <= 0)
       return false;
     
-    FILE* fp = (FILE*)fopen(filename.c_str(), "rb");
+    FILE* fp = NULL;
+
+#ifdef UNICODE
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+    std::wstring wstr = converter.from_bytes(filename.data());
+
+    std::string fmode = "rb";
+    std::wstring wmode = converter.from_bytes(fmode.data());
+
+    fp = (FILE*)_wfopen(wstr.c_str(), wmode.c_str());
+#else
+    fp = (FILE*)fopen(filename.c_str(), "rb");
+#endif
     
     if(fp == 0) return false;
     if(feof(fp) || ferror(fp))
@@ -1023,10 +1047,29 @@ namespace whiteice
     if(filename.length() <= 0)
       return false;
     
-    FILE* fp = (FILE*)fopen(filename.c_str(), "wb");
+    FILE* fp = NULL;
+
+#ifdef UNICODE
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+    std::wstring wstr = converter.from_bytes(filename.data());
+
+    std::string fmode = "wb";
+    std::wstring wmode = converter.from_bytes(fmode.data());
+
+    fp = (FILE*)_wfopen(wstr.c_str(), wmode.c_str());
+#else
+    fp = (FILE*)fopen(filename.c_str(), "wb");
+#endif
+    fflush(stdout);
      
-    if(fp == 0) return false;
-    if(ferror(fp)){ fclose(fp); return false; }
+    if(fp == NULL){
+    	return false;
+    }
+
+    if(ferror(fp)){
+    	fclose(fp);
+    	return false;
+    }
 
     const unsigned int version = 1; // 0 was initial version number for previous
     // dataset fileformat (not supported)
@@ -1261,7 +1304,19 @@ namespace whiteice
     if(filename.length() <= 0)
       return false;
     
-    FILE* fp = (FILE*)fopen(filename.c_str(), "wt");
+    FILE* fp = NULL;
+
+#ifdef UNICODE
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+    std::wstring wstr = converter.from_bytes(filename.data());
+
+    std::string fmode = "wt";
+    std::wstring wmode = converter.from_bytes(fmode.data());
+
+    fp = (FILE*)_wfopen(wstr.c_str(), wmode.c_str());
+#else
+    fp = (FILE*)fopen(filename.c_str(), "wt");
+#endif
     
     if(fp == 0) return false;
     if(ferror(fp)){ fclose(fp); return false; }
@@ -1324,7 +1379,20 @@ namespace whiteice
   {
     std::vector< math::vertex<T> > import;
 
-    FILE* fp = fopen(filename.c_str(), "rt");
+    FILE* fp = NULL;
+
+#ifdef UNICODE
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
+    std::wstring wstr = converter.from_bytes(filename.data());
+
+    std::string fmode = "rt";
+    std::wstring wmode = converter.from_bytes(fmode.data());
+
+    fp = (FILE*)_wfopen(wstr.c_str(), wmode.c_str());
+#else
+    fp = fopen(filename.c_str(), "rt");
+#endif
+
     if(fp == 0 || ferror(fp)){
       if(fp) fclose(fp);
       return false;
