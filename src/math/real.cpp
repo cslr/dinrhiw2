@@ -477,6 +477,26 @@ namespace whiteice
       
       return (*this);
     }
+
+    // TODO: NOT TESTED, may fail
+    realnumber& realnumber::round() {
+      mpf_t sd;
+      mpf_init2(sd, mpf_get_prec(data));
+      mpf_floor(sd, data); // data = -D.739203 => sd = -D-1    , -D.21 => sd = -D-1
+      mpf_sub(sd, data, sd); // SD = -D.739203 +D+1 = 0.271    , -D.21 +D+1 = +0.79
+      int compare_int = mpf_cmp_d(sd, 0.5); // sd >= 0.5 , fail, success
+      mpf_floor(sd, data); // sd = -D-1, sd = -D-1
+      if(compare_int > 0){
+	mpf_add_ui(data, sd, 1); // not executed                , sd=-D-1+1 = -D
+      }
+      else{
+	mpf_set(data, sd); // data = -D-1,                      not executed
+      }
+
+      mpf_clear(sd);
+      
+      return (*this);
+    }
     
     
     // returns sign of real number

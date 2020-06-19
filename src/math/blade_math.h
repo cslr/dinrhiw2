@@ -1329,22 +1329,27 @@ namespace whiteice
     double ceil(double x) PURE_FUNCTION;
     double floor(double x) PURE_FUNCTION;
     double trunc(double x) PURE_FUNCTION;
+    double round(double x) PURE_FUNCTION;
     
     float ceil(float x) PURE_FUNCTION;
     float floor(float x) PURE_FUNCTION;
     float trunc(float x) PURE_FUNCTION;
+    float round(float x) PURE_FUNCTION;
     
     int ceil(int x) PURE_FUNCTION;
     int floor(int x) PURE_FUNCTION;
     int trunc(int x) PURE_FUNCTION;
+    int round(int x) PURE_FUNCTION;
     
     unsigned int ceil(unsigned int x) PURE_FUNCTION;
     unsigned int floor(unsigned int x) PURE_FUNCTION;
     unsigned int trunc(unsigned int x) PURE_FUNCTION;
+    unsigned int round(unsigned int x) PURE_FUNCTION;
     
     realnumber ceil(realnumber x);
     realnumber floor(realnumber x);
     realnumber trunc(realnumber x);
+    realnumber round(realnumber x);
     
     template <typename T>
       std::complex<T> ceil(const std::complex<T>& x) PURE_FUNCTION;
@@ -1352,6 +1357,9 @@ namespace whiteice
       std::complex<T> floor(const std::complex<T>& x) PURE_FUNCTION;
     template <typename T>
       std::complex<T> trunc(const std::complex<T>& x) PURE_FUNCTION;
+    template <typename T>
+      std::complex<T> round(const std::complex<T>& x) PURE_FUNCTION;    
+    
     
     template <typename T>
       whiteice::math::complex<T> ceil(const whiteice::math::complex<T>& x) PURE_FUNCTION;
@@ -1359,6 +1367,8 @@ namespace whiteice
       whiteice::math::complex<T> floor(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     template <typename T>
       whiteice::math::complex<T> trunc(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    template <typename T>
+      whiteice::math::complex<T> round(const whiteice::math::complex<T>& x) PURE_FUNCTION;    
     
     template <typename T>
       blas_real<T> ceil(const blas_real<T>& x) PURE_FUNCTION;
@@ -1366,6 +1376,8 @@ namespace whiteice
       blas_real<T> floor(const blas_real<T>& x) PURE_FUNCTION;
     template <typename T>
       blas_real<T> trunc(const blas_real<T>& x) PURE_FUNCTION;
+    template <typename T>
+      blas_real<T> round(const blas_real<T>& x) PURE_FUNCTION;    
     
     template <typename T>
       blas_complex<T> ceil(const blas_complex<T>& x) PURE_FUNCTION;
@@ -1373,6 +1385,8 @@ namespace whiteice
       blas_complex<T> floor(const blas_complex<T>& x) PURE_FUNCTION;
     template <typename T>
       blas_complex<T> trunc(const blas_complex<T>& x) PURE_FUNCTION;
+    template <typename T>
+      blas_complex<T> round(const blas_complex<T>& x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -1380,18 +1394,22 @@ namespace whiteice
     inline double ceil(double x) { return ::ceil(x); }
     inline double floor(double x){ return ::floor(x); }
     inline double trunc(double x){ return ::trunc(x); }
+    inline double round(double x){ return ::round(x); }
     
     inline float ceil(float x) { return ::ceilf(x); }
     inline float floor(float x){ return ::floorf(x); }
     inline float trunc(float x){ return ::truncf(x); }
+    inline float round(float x){ return ::roundf(x); }
     
     inline int ceil(int x) { return x; }
     inline int floor(int x){ return x; }
     inline int trunc(int x){ return x; }
+    inline int round(int x){ return x; }
     
     inline unsigned int ceil(unsigned int x) { return x; }
     inline unsigned int floor(unsigned int x){ return x; }
     inline unsigned int trunc(unsigned int x){ return x; }
+    inline unsigned int round(unsigned int x){ return x; }
     
     inline realnumber ceil(realnumber x){
       return realnumber(x).ceil();
@@ -1404,43 +1422,75 @@ namespace whiteice
     inline realnumber trunc(realnumber x){
       return realnumber(x).trunc();
     }
+
+    inline realnumber round(realnumber x){
+      return realnumber(x).round();
+    }
     
     
     template <typename T>
-    inline std::complex<T> ceil(const std::complex<T>& x){ 
-      x.real() = whiteice::math::ceil(x.real());
-      x.imag() = whiteice::math::ceil(x.imag());
+    inline std::complex<T> ceil(const std::complex<T>& x){
+      std::complex<T> z;
+      z.real() = whiteice::math::ceil(x.real());
+      z.imag() = whiteice::math::ceil(x.imag());
+      return z;
     }
     
     template <typename T>
     inline std::complex<T> floor(const std::complex<T>& x){
-      x.real() = whiteice::math::floor(x.real());
-      x.imag() = whiteice::math::floor(x.imag());
+      std::complex<T> z;
+      z.real() = whiteice::math::floor(x.real());
+      z.imag() = whiteice::math::floor(x.imag());
+      return z;
     }
     
     template <typename T>
     inline std::complex<T> trunc(const std::complex<T>& x){
-      x.real() = whiteice::math::trunc(x.real());
-      x.imag() = whiteice::math::trunc(x.imag());
+      std::complex<T> z;
+      z.real() = whiteice::math::trunc(x.real());
+      z.imag() = whiteice::math::trunc(x.imag());
+      return z;
+    }
+
+    template <typename T>
+    inline std::complex<T> round(const std::complex<T>& x){
+      std::complex<T> z;
+      z.real() = whiteice::math::round(x.real());
+      z.imag() = whiteice::math::round(x.imag());
+      return z;
     }
     
     
     template <typename T>
     inline whiteice::math::complex<T> ceil(const whiteice::math::complex<T>& x){
-      x.real() = whiteice::math::ceil(x.ceil());
-      x.imag() = whiteice::math::ceil(x.imag());
+      whiteice::math::complex<T> z;
+      z.real() = whiteice::math::ceil(x.ceil());
+      z.imag() = whiteice::math::ceil(x.imag());
+      return z;
     }
     
     template <typename T>
     inline whiteice::math::complex<T> floor(const whiteice::math::complex<T>& x){
-      x.real() = whiteice::math::floor(x.real());
-      x.imag() = whiteice::math::floor(x.imag());
+      whiteice::math::complex<T> z;
+      z.real() = whiteice::math::floor(x.real());
+      z.imag() = whiteice::math::floor(x.imag());
+      return z;
     }
     
     template <typename T>
     inline whiteice::math::complex<T> trunc(const whiteice::math::complex<T>& x){
-      x.real() = whiteice::math::trunc(x.real());
-      x.imag() = whiteice::math::trunc(x.imag());
+      whiteice::math::complex<T> z;
+      z.real() = whiteice::math::trunc(x.real());
+      z.imag() = whiteice::math::trunc(x.imag());
+      return z;
+    }
+
+    template <typename T>
+    inline whiteice::math::complex<T> round(const whiteice::math::complex<T>& x){
+      whiteice::math::complex<T> z;
+      z.real() = whiteice::math::round(x.real());
+      z.imag() = whiteice::math::round(x.imag());
+      return z;
     }
     
     
@@ -1457,6 +1507,11 @@ namespace whiteice
     template <typename T>
     inline blas_real<T> trunc(const blas_real<T>& x){
       return blas_real<T>(whiteice::math::trunc(x.c[0]));
+    }
+
+    template <typename T>
+    inline blas_real<T> round(const blas_real<T>& x){
+      return blas_real<T>(whiteice::math::round(x.c[0]));
     }
     
     
@@ -1476,6 +1531,12 @@ namespace whiteice
     inline blas_complex<T> trunc(const blas_complex<T>& x){
       return blas_complex<T>(whiteice::math::trunc(x.c[0]),
 			     whiteice::math::trunc(x.c[1]));
+    }
+
+    template <typename T>
+    inline blas_complex<T> round(const blas_complex<T>& x){
+      return blas_complex<T>(whiteice::math::round(x.c[0]),
+			     whiteice::math::round(x.c[1]));
     }
     
     

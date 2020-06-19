@@ -666,7 +666,7 @@ void test_realnumber()
       
     
     for(unsigned int n=0;n<1000;n++){
-      unsigned int op = rand() % 14;
+      unsigned int op = rand() % 15;
       unsigned int i = n % a.size();
       unsigned int j = (n+50) % a.size();
       unsigned int k = (n+99) % a.size();
@@ -753,6 +753,10 @@ void test_realnumber()
       case 13: // trunc()
 	a[k] = whiteice::math::trunc(a[i]);
 	b[k] = whiteice::math::trunc(b[i]);
+	break;
+      case 14: // tests round() operator
+	a[k] = whiteice::math::round(a[i]);
+	b[k] = whiteice::math::round(b[i]);
 	break;
       default:
 	break;

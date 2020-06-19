@@ -232,6 +232,7 @@ namespace whiteice
       // writes and reads matrix data to/from vertex
       bool save_to_vertex(vertex<T>& out, unsigned int x0 = 0) const;
       bool load_from_vertex(const vertex<T>& in, unsigned int x0 = 0);
+      bool vec(vertex<T>& out) const { return this->save_to_vertex(out, 0); }
       
       
       // normalizes length of each row

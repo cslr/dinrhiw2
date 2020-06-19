@@ -123,6 +123,7 @@ namespace whiteice
       realnumber& ceil() ;
       realnumber& floor() ;
       realnumber& trunc() ;
+      realnumber& round() ;
       
       // returns sign of real number
       // returns 1 if r > 0, 0 if r == 0 and -1 if r < 0

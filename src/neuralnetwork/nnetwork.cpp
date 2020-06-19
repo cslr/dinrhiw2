@@ -603,9 +603,9 @@ namespace whiteice
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
 	  // T scaling = T(2.2); // for asinh()
-	  T scaling = T(0.1); // was chosen value
 	  
-	  // T scaling = T(1.0); // no scaling so use values as in paper
+	  // T scaling = T(0.1); // was chosen value	  
+	  T scaling = T(1.0); // no scaling so use values as in paper
 	  
 	  var *= scaling;
 
@@ -640,10 +640,11 @@ namespace whiteice
         		// this initialization is as described in the paper of Xavier Glorot
         		// "Understanding the difficulty of training deep neural networks"
 
-        		// keep data variance aproximately 1
+        		// keep data variance aproximately 1 (assume inputs x1..xN have unit variance)
         		T var = math::sqrt(1.0f / arch[i-1]);
-
-        		T scaling = T(0.1); // was chosen value
+			
+        		// T scaling = T(0.1); // was chosen value
+			T scaling = T(1.0);
         		var *= scaling;
 
         		// set weight values W
@@ -1267,12 +1268,23 @@ namespace whiteice
     
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
-      T output = T(1.0) / (T(1.0) + math::exp(-input));
+      T in = input;
+
+      if(in > T(+60.0f)) in = T(+30.0);
+      else if(in < T(-60.0f)) in = T(-30.0f);
+      
+      T output = T(1.0) / (T(1.0) + math::exp(-in));
       return output;
     }
     else if(nonlinearity[layer] == stochasticSigmoid){
       // non-linearity motivated by restricted boltzman machines..
-      T output = T(1.0) / (T(1.0) + math::exp(-input));
+      T output = T(0.0f);
+      T in = input;
+
+      if(in > T(+60.0f)) in = T(+30.0);
+      else if(in < T(-60.0f)) in = T(-30.0f);
+
+      output = T(1.0) / (T(1.0) + math::exp(-in));
       
       const T r = T(((double)rand())/((double)RAND_MAX));
 
@@ -1282,15 +1294,17 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == tanh){
-      // const T a = T(1.7159);
-      // const T b = T(2.0/3.0);
-      const T a = T(1.0);
-      const T b = T(1.0);
+      const T a = T(1.7159);
+      const T b = T(2.0/3.0);
+      // const T a = T(1.0);
+      // const T b = T(1.0);
       
-      if(input > T(10.0)) return a;
-      else if(input < T(-10.0)) return -a;
+      T in = input;
+
+      if(in > T(+10.0f)) in = T(+10.0);
+      else if(in < T(-10.0f)) in = T(-10.0f);
       
-      const T e2x = whiteice::math::exp(T(2.0)*b*input);
+      const T e2x = whiteice::math::exp(T(2.0)*b*in);
       const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
       const T output = a*tanhbx;
 
@@ -1362,36 +1376,41 @@ namespace whiteice
 
     if(nonlinearity[layer] == sigmoid){
       // non-linearity motivated by restricted boltzman machines..
-      if(input <= T(-60.0)){ return T(0.0); }
-      else if(input >= T(+60.0)){ return T(0.0); }
+      T in = input;
       
-      T output = T(1.0) + math::exp(-input);
-      output = math::exp(-input) / (output*output);
+      if(in > T(+30.0f)) in = T(+30.0);
+      else if(in < T(-30.0f)) in = T(-30.0f);
+      
+      T output = T(1.0) + math::exp(-in);
+      output = math::exp(-in) / (output*output);
       return output;
     }
     else if(nonlinearity[layer] == stochasticSigmoid){
       // FIXME: what is "correct" derivate here? I guess we should calculate E{g'(x)} or something..
       // in general stochastic layers should be frozen so that they are optimized
       // through other means than following the gradient..
+      T in = input;
 
-      if(input <= T(-60.0)){ return T(0.0); }
-      else if(input >= T(+60.0)){ return T(0.0); }
+      if(in > T(+30.0f)) in = T(+30.0);
+      else if(in < T(-30.0f)) in = T(-30.0f);
       
       // non-linearity motivated by restricted boltzman machines..
-      T output = T(1.0) + math::exp(-input);
-      output = math::exp(-input) / (output*output);
+      T output = T(1.0) + math::exp(-in);
+      output = math::exp(-in) / (output*output);
       return output;
     }
     else if(nonlinearity[layer] == tanh){
-      // const T a = T(1.7159);
-      // const T b = T(2.0/3.0);
-      const T a = T(1.0);
-      const T b = T(1.0);
+      const T a = T(1.7159);
+      const T b = T(2.0/3.0);
+      // const T a = T(1.0);
+      // const T b = T(1.0);
+
+      T in = input;
+
+      if(in > T(+10.0f)) in = T(+10.0);
+      else if(in < T(-10.0f)) in = T(-10.0f);
       
-      if(input > T(10.0)) return T(0.0);
-      else if(input < T(-10.0)) return T(0.0);
-      
-      const T e2x = whiteice::math::exp(T(2.0)*b*input);
+      const T e2x = whiteice::math::exp(T(2.0)*b*in);
       const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
 
       T output = a*b*(T(1.0) - tanhbx*tanhbx);

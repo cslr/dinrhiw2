@@ -39,6 +39,8 @@
 
 #include "VAE.h"
 
+#include "globaloptimum.h"
+
 #include "BFGS.h"
 #include "BFGS_nnetwork.h"
 #include "pBFGS_nnetwork.h"
