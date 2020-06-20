@@ -23,7 +23,7 @@ namespace whiteice {
    * be thread-safe.
    *
    * NOTE: It seems that software C++ RNG is actually faster in generating
-   *       normally distributed variables than this when using software RNG.
+   *       normally distributed variables than this software RNG using hardware RNG
    *       => Currently only use this when thread-safety is an issue.
    *       => Study C++ normal distribution random number generation in detail.
    */

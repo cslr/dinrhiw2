@@ -283,6 +283,10 @@ void simple_global_optimum_test()
 
   // 1. test case: create random neural network and generate 10.000 training samples.
   //    test how well neural network learns with and without global optimum pretraining.
+  // 
+  //
+  // TODO: create testcase which uses digits of decimal as output
+  //       output(j) = (int)(10^j * input(i)) % 10;
   {
     std::cout << "1. Test learning random neural network." << std::endl;
 
@@ -291,12 +295,13 @@ void simple_global_optimum_test()
     whiteice::nnetwork<> rand_net;
     std::vector<unsigned int> arch;
     arch.push_back(10);
-    arch.push_back(50);
-    arch.push_back(50);
+    //arch.push_back(50);
+    //arch.push_back(50);
     arch.push_back(50);
     arch.push_back(2);
     
     rand_net.setArchitecture(arch, whiteice::nnetwork<>::tanh); // sigmoid
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::sigmoid);
     // rand_net.setArchitecture(arch, whiteice::nnetwork<>::halfLinear);
 			     
     rand_net.randomize(0);
@@ -307,10 +312,38 @@ void simple_global_optimum_test()
     whiteice::RNG<> rng;
     math::vertex<> v, w;
     v.resize(rand_net.input_size());
+    w.resize(rand_net.output_size());
+
+    std::vector< std::vector<unsigned int> > pairs;
+    for(unsigned int i=0;i<rand_net.output_size();i++){
+      std::vector<unsigned int> p;
+      
+      unsigned int pN = 1 + (rng.rand() % 3);
+      
+      for(unsigned int pi=0;pi<pN;pi++){
+	int p1 = rng.rand() % rand_net.input_size();
+	p.push_back(p1);
+      }
+      
+      pairs.push_back(p);
+    }
 
     for(unsigned int n=0;n<N;n++){
       rng.normal(v);
-      rand_net.calculate(v, w);
+
+      //rand_net.calculate(v, w);
+      for(unsigned int i=0;i<w.size();i++){
+	math::blas_real<float> value = (1.0f);
+	
+	// is this XOR-like non-linearity
+	for(unsigned int pi=0;pi<pairs[i].size();pi++)
+	  value *= v[ pairs[i][pi] ];
+	
+	w[i] = whiteice::math::pow(whiteice::math::abs(value), (1.0f)/((float)pairs[i].size()));
+	if(value < (0.0f)) w[i] = -w[i];
+      }
+
+      
       input.push_back(v);
       output.push_back(w);
     }
@@ -336,7 +369,8 @@ void simple_global_optimum_test()
       whiteice::nnetwork<> net(rand_net);
 
       // initializes weights using data
-      net.presetWeightsFromData(train_data);
+      // net.presetWeightsFromData(train_data);
+      net.randomize();
 
       whiteice::math::NNGradDescent<> grad;
       grad.setUseMinibatch(true);
@@ -386,7 +420,7 @@ void simple_global_optimum_test()
     {
       whiteice::nnetwork<> net(rand_net);
 
-      const unsigned int N = 1000; // only 100 random neural networks are used to estimate weights
+      const unsigned int N = 100; // only 100 random neural networks are used to estimate weights
       const unsigned int M = 10000; // only 1000 random training points per NN
       const unsigned int K = 16;    // discretizes each variables to 16 bins
 
@@ -416,6 +450,8 @@ void simple_global_optimum_test()
 	  printf("Optimizing error %d: %f.\n", Nconverged, errorf);
 	}
       }
+
+      
 
       grad.stopComputation();
 

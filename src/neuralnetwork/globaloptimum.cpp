@@ -27,18 +27,31 @@ namespace whiteice
     std::vector< math::vertex<T> > linear_parameters_u;
     std::vector< math::vertex<T> > nnetwork_parameters_w;
 
+    linear_parameters_u.resize(N);
+    nnetwork_parameters_w.resize(N);
+
     whiteice::linear_ETA<> eta;
     eta.start(0.0f, (float)N);
+    unsigned int counter = 0;
 
+    bool failure = false;
+
+#pragma omp parallel
     {
+
+      // OpenMPfied code
+#pragma omp for nowait schedule(dynamic)
       for(unsigned int n=0;n<N;n++){
+
+	if(failure) continue;
+	
 	{
 	  whiteice::math::blas_real<float> t = eta.estimate();
 	  float tf = 0.0f;
 	  whiteice::math::convert(tf, t);
 	  
 	  printf("Training data generation iteration %d/%d (ETA: %f minutes).\n",
-		 n+1, N, tf/60.0f);
+		 counter+1, N, tf/60.0f);
 	}
 	
 	dataset<T> train_data, discrete_data;
@@ -55,20 +68,50 @@ namespace whiteice
 	  math::vertex<T> v, w;
 	  v.resize(nnet.input_size());
 	  w.resize(nnet.output_size());
+
+	  // creates random XOR like non-linearities
+	  std::vector< std::vector<unsigned int> > pairs;
+	  for(unsigned int i=0;i<nnet.output_size();i++){
+	    std::vector<unsigned int> p;
+
+	    unsigned int pN = 1 + (rng.rand() % 3);
+
+	    for(unsigned int pi=0;pi<pN;pi++){
+	      int p1 = rng.rand() % nnet.input_size();
+	      p.push_back(p1);
+	    }
+	    
+	    pairs.push_back(p);
+	  }
 	  
 	  for(unsigned int m=0;m<M;m++){
 	    rng.normal(v);
-	    nnet.calculate(v, w);
+
+	    // nnet.calculate(v, w);
+	    for(unsigned int i=0;i<w.size();i++){
+	      T value = T(1.0f);
+
+	      // is this XOR-like non-linearity
+	      for(unsigned int pi=0;pi<pairs[i].size();pi++)
+		value *= v[ pairs[i][pi] ];
+	      
+	      w[i] = whiteice::math::pow(whiteice::math::abs(value), T(1.0f)/T((float)pairs[i].size()));
+	      if(value < T(0.0f)) w[i] = -w[i];
+	    }
 
 	    train_data.add(0, v);
 	    train_data.add(1, w);
 	  }
 
-	  if(train_data.preprocess(0, dataset<T>::dnMeanVarianceNormalization) == false)
-	    return false;
+	  if(train_data.preprocess(0, dataset<T>::dnMeanVarianceNormalization) == false){
+	    failure = true;
+	    continue;
+	  }
 	  
-	  if(train_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false)
-	    return false;
+	  if(train_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false){
+	    failure = true;
+	    continue;
+	  }
 	  
 	  // sets weights from data
 	  {
@@ -85,7 +128,8 @@ namespace whiteice
 	      unsigned int Nconverged = 0;
 	      
 	      if(grad.getSolutionStatistics(error, Nconverged) == false){
-		return false;
+		failure = true;
+		continue;
 	      }
 	      else{
 		float errorf = 0.0f;
@@ -102,7 +146,8 @@ namespace whiteice
 	      unsigned int Nconverged;
 	      
 	      if(grad.getSolution(nn, error, Nconverged) == false){
-		return false;
+		failure = true;
+		continue;
 	      }
 
 	      nnet = nn;
@@ -112,27 +157,6 @@ namespace whiteice
 	  }
 
 	  // now solution has converged
-	  
-	  // we re-create training data
-	  train_data.clearAll(0);
-	  train_data.clearAll(1);
-	  
-	  for(unsigned int m=0;m<M;m++){
-	    rng.normal(v);
-	    train_data.add(0, v);
-	  }
-	  
-	  if(train_data.preprocess(0, dataset<T>::dnMeanVarianceNormalization) == false)
-	    return false;
-	  
-	  for(unsigned int m=0;m<M;m++){
-	    v = train_data.access(0, m);
-	    nnet.calculate(v, w);
-	    train_data.add(1, w);
-	  }
-
-	  if(train_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false)
-	    return false;
 	  
 	  // now we discretize data
 	  discrete_data.createCluster("input", nnet.input_size()*K);
@@ -162,8 +186,10 @@ namespace whiteice
 	    discrete_data.add(1, w);
 	  }
 
-	  if(discrete_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false)
-	    return false;
+	  if(discrete_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false){
+	    failure = true;
+	    continue;
+	  }
 	}
 
 	
@@ -175,33 +201,54 @@ namespace whiteice
 	  // solves linear optimization problem
 	  if(global_linear_optimizer(train_data, K, A, b) == false){
 	    printf("ERROR: global_linear_optimizer() call failed.\n");
-	    return false;
+	    failure = true;
+	    continue;
 	  }
 
 	  math::vertex<T> u1;
-	  if(A.vec(u1) == false) // vectorizes matrix (row1, row2, row3, row(COL:th))
-	    return false;
+	  if(A.vec(u1) == false){ // vectorizes matrix (row1, row2, row3, row(COL:th))
+	    failure = true;
+	    continue;
+	  }
 	  
 	  // math::vertex<T> u2 = b;
 	  
 	  math::vertex<T> u;
 	  u.resize(u1.size() + b.size());
-	  if(u.write_subvertex(u1, 0) == false) return false;
-	  if(u.write_subvertex(b, u1.size()) == false) return false;
+	  if(u.write_subvertex(u1, 0) == false){
+	    failure = true;
+	    continue;
+	  }
+	  
+	  if(u.write_subvertex(b, u1.size()) == false){
+	    failure = true;
+	    continue;
+	  }
 
 	  // neural network weights
 	  math::vertex<T> w;
 
-	  if(nnet.exportdata(w) == false) return false;
+	  if(nnet.exportdata(w) == false){
+	    failure = true;
+	    continue;
+	  }
 	  
-	  linear_parameters_u.push_back(u);
-	  nnetwork_parameters_w.push_back(w);
+	  linear_parameters_u[n] = u; // OpenMPfied code
+	  nnetwork_parameters_w[n] = w;
 	}
 
-	eta.update((float)(n+1));
+	// OpenMPfied code
+#pragma omp critical
+	{
+	  counter++;
+	  eta.update((float)(counter));
+	}
+	
       } // for(N)
       
     }
+
+    if(failure) return false;
 
       
     // 2. now we have N linear optimum and non-linear local optimum weights
@@ -347,7 +394,7 @@ namespace whiteice
   
 
 
-  // discretizes each variable to K bins: [-4*stdev, 4*stdev]/K
+  // discretizes each variable to K bins: [-3*stdev, 3*stdev]/K
   template <typename T>
   bool discretize_problem(const unsigned int K,
 			  const std::vector< math::vertex<T> >& input,
