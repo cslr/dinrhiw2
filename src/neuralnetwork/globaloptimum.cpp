@@ -56,9 +56,8 @@ namespace whiteice
 		 counter+1, N, tf/60.0f);
 	}
 	
-	dataset<T> train_data, discrete_data;
+	dataset<T> train_data;
 	nnetwork<T> nnet(net);
-	nnet.randomize();
 
 	// generates training data
 	{

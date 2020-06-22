@@ -548,6 +548,8 @@ namespace whiteice
 	    nl[l] = whiteice::nnetwork<T>::pureLinear;
 	  else if(ints[l] == 4)
 	    nl[l] = whiteice::nnetwork<T>::tanh;
+	  else if(ints[l] == 5)
+	    nl[l] = whiteice::nnetwork<T>::rectifier;
 	  else
 	    return false; // bad data
 	}
@@ -740,6 +742,8 @@ namespace whiteice
 	      ints.push_back(3);
 	    else if(nl[l] == whiteice::nnetwork<T>::tanh)
 	      ints.push_back(4);
+	    else if(nl[l] == whiteice::nnetwork<T>::rectifier)
+	      ints.push_back(5);
 	    else
 	      return false;
 	  }

@@ -11,16 +11,16 @@ rm -f wdbc-test.ds
 ./dstool -import:0 wdbc-test.ds wdbc.in
 ./dstool -import:1 wdbc-test.ds wdbc.out
 ./dstool -padd:0:meanvar wdbc-test.ds
-./dstool -padd:0:pca wdbc-test.ds
+## ./dstool -padd:0:pca wdbc-test.ds
 ./dstool -padd:1:meanvar wdbc-test.ds
 
 ./dstool -list wdbc-test.ds
 
-ARCH="30-1"
+ARCH="30-30-30-30-30-1"
 # uses nntool trying to learn from dataset
 
-./nntool -v --negfb --time 400 wdbc-test.ds $ARCH wdbcnn.cfg random
-# ./nntool -v --negfb wdbc-test.ds 30-30-30-30-30-1 wdbcnn.cfg lbfgs
+# ./nntool -v --negfb --time 400 wdbc-test.ds $ARCH wdbcnn.cfg random
+./nntool -v wdbc-test.ds $ARCH wdbcnn.cfg lbfgs
 
 ##################################################
 # testing

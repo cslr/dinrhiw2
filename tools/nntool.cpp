@@ -279,7 +279,7 @@ int main(int argc, char** argv)
 
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
-      whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
 
     if(pseudolinear){
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
@@ -294,8 +294,8 @@ int main(int argc, char** argv)
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else{
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh);
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
       nn->setNonlinearity(nn->getLayers()-1,
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }

@@ -1377,11 +1377,15 @@ namespace whiteice
     else if(nonlinearity[layer] == rectifier){
       if(input < T(0.0f)){
 	const T a = T(0.1);
-	
+
 	T in = input;
 	if(in < T(-30.0f)) in = T(-30.0f);
-
+#if 0
 	return (a*(math::exp(in) - T(1.0f)));
+#else
+	// use ReLU instead (rectifier leaky unit)
+	return T(0.01)*in;
+#endif
       }
       else return input;
     }
@@ -1497,8 +1501,12 @@ namespace whiteice
 
 	T in = input;
 	if(in < T(-30.0f)) in = T(-30.0f);
-
+#if 0
 	return (a*math::exp(in));
+#else
+	// use ReLU instead (leaky rectifier)
+	return T(0.01f);
+#endif	
       }
       else return T(1.0f);
     }
@@ -1605,8 +1613,9 @@ namespace whiteice
       {
 	// version number = integer/1000
 	ints.push_back(2000); // 2.000
-	if(!configuration.set(FNN_VERSION_CFGSTR, ints))
+	if(!configuration.set(FNN_VERSION_CFGSTR, ints)){
 	  return false;
+	}
 	
 	ints.clear();
       }
@@ -1616,8 +1625,9 @@ namespace whiteice
 	for(unsigned int i=0;i<arch.size();i++)
 	  ints.push_back(arch[i]);
 
-	if(!configuration.set(FNN_ARCH_CFGSTR, ints))
+	if(!configuration.set(FNN_ARCH_CFGSTR, ints)){
 	  return false;
+	}
 	
 	ints.clear();
       }
@@ -1626,8 +1636,9 @@ namespace whiteice
       {
 	math::vertex<T> w;
 	
-	if(this->exportdata(w) == false)
+	if(this->exportdata(w) == false){
 	  return false;
+	}
 	
 	for(unsigned int i=0;i<w.size();i++){
 	  float f;
@@ -1635,8 +1646,9 @@ namespace whiteice
 	  floats.push_back(f);
 	}
 	
-	if(!configuration.set(FNN_VWEIGHTS_CFGSTR, floats))
+	if(!configuration.set(FNN_VWEIGHTS_CFGSTR, floats)){
 	  return false;
+	}
 	
 	floats.clear();
       }
@@ -1665,8 +1677,9 @@ namespace whiteice
 	  else return false; // error!
 	}
 
-	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints))
+	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints)){
 	  return false;
+	}
 
 	ints.clear();
       }
@@ -1683,8 +1696,9 @@ namespace whiteice
 	  }
 	}
 
-	if(!configuration.set(FNN_FROZEN_CFGSTR, ints))
+	if(!configuration.set(FNN_FROZEN_CFGSTR, ints)){
 	  return false;
+	}
 
 	ints.clear();
       }
