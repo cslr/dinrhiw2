@@ -281,14 +281,19 @@ void simple_global_optimum_test()
 {
   std::cout << "Global Optimum pretraining tests." << std::endl;
 
-  // 1. test case: create random neural network and generate 10.000 training samples.
+  // 0. test case: create random neural network and generate 10.000 training samples.
   //    test how well neural network learns with and without global optimum pretraining.
-  // 
   //
-  // TODO: create testcase which uses digits of decimal as output
-  //       output(j) = (int)(10^j * input(i)) % 10;
+
   {
-    std::cout << "1. Test learning random neural network." << std::endl;
+    // not implemented (random neural network works better without global optimum prelearning)
+  }
+
+  // 2. test case: create XOR-like neural network and generate 10.000 training samples
+  //    test how well neural network learns with and without global optimum pretraining
+  //
+  if(0){
+    std::cout << "2. Test learning XOR-like neural network." << std::endl;
 
     const unsigned int N = 10000;
 
@@ -297,12 +302,12 @@ void simple_global_optimum_test()
     arch.push_back(10);
     //arch.push_back(50);
     //arch.push_back(50);
-    arch.push_back(50);
+    arch.push_back(50);    
     arch.push_back(2);
     
-    rand_net.setArchitecture(arch, whiteice::nnetwork<>::tanh); // sigmoid
-    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::sigmoid);
-    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::halfLinear);
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::tanh); // sigmoid
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::rectifier);
+    rand_net.setArchitecture(arch, whiteice::nnetwork<>::halfLinear);
 			     
     rand_net.randomize(0);
 
@@ -349,6 +354,215 @@ void simple_global_optimum_test()
     }
 
 
+    
+    float final_error1 = 0.0f, final_error2 = 0.0f;
+
+    whiteice::dataset<> train_data;
+    
+    train_data.createCluster("input", rand_net.input_size());
+    train_data.createCluster("output", rand_net.output_size());
+    
+    train_data.add(0, input);
+    train_data.add(1, output);
+    
+    train_data.preprocess(0, dataset<>::dnMeanVarianceNormalization);
+    train_data.preprocess(1, dataset<>::dnMeanVarianceNormalization);
+    
+
+    // learn without global optimum pretraining
+    {
+      whiteice::nnetwork<> net(rand_net);
+
+      // initializes weights using data
+      //net.presetWeightsFromData(train_data);
+      net.randomize();
+
+      whiteice::math::NNGradDescent<> grad;
+      grad.setUseMinibatch(true);
+      grad.startOptimize(train_data, net, 1);
+
+      while(grad.hasConverged(0.01) == false){
+	sleep(1);
+	whiteice::math::blas_real<float> error = 0.0f;
+	unsigned int Nconverged = 0;
+	
+	if(grad.getSolutionStatistics(error, Nconverged) == false){
+	  printf("ERROR: grad.getSolutionStatistics() failed.\n");
+	  return;
+	}
+	else{
+	  float errorf = 0.0f;
+	  whiteice::math::convert(errorf, error);
+	  printf("Optimizing error %d: %f.\n", Nconverged, errorf);
+	}
+      }
+
+      grad.stopComputation();
+
+      {
+	nnetwork<> nn;
+	whiteice::math::blas_real<float> error;
+	unsigned int Nconverged;
+	
+	if(grad.getSolution(nn, error, Nconverged) == false){
+	  printf("ERROR: grad.getSolution() failed.\n");
+	  return;
+	}
+	
+	net = nn;
+
+	float errorf = 0.0f;
+	whiteice::math::convert(errorf, error);
+
+	printf("Optimization converged. Error: %f. STOP.\n", errorf);
+	final_error1 = errorf;
+      }
+      
+    }
+
+    
+    // learn WITH global optimum pretraining
+    {
+      whiteice::nnetwork<> net(rand_net);
+
+      const unsigned int N = 100; // only 100 random neural networks are used to estimate weights
+      const unsigned int M = 10000; // only 1000 random training points per NN
+      const unsigned int K = 16;    // discretizes each variables to 16 bins
+
+      // initializes weights using data
+      net.presetWeightsFromData(train_data);
+      if(global_optimizer_pretraining(net, train_data, N, M, K) == false){
+	printf("ERROR: global optimizer pretraining FAILED.\n");
+	return;
+      }
+
+      whiteice::math::NNGradDescent<> grad;
+      grad.setUseMinibatch(true);
+      grad.startOptimize(train_data, net, 1);
+
+      while(grad.hasConverged(0.01) == false){
+	sleep(1);
+	whiteice::math::blas_real<float> error = 0.0f;
+	unsigned int Nconverged = 0;
+	
+	if(grad.getSolutionStatistics(error, Nconverged) == false){
+	  printf("ERROR: grad.getSolutionStatistics() failed.\n");
+	  return;
+	}
+	else{
+	  float errorf = 0.0f;
+	  whiteice::math::convert(errorf, error);
+	  printf("Optimizing error %d: %f.\n", Nconverged, errorf);
+	}
+      }
+
+      
+
+      grad.stopComputation();
+
+      {
+	nnetwork<> nn;
+	whiteice::math::blas_real<float> error;
+	unsigned int Nconverged;
+	
+	if(grad.getSolution(nn, error, Nconverged) == false){
+	  printf("ERROR: grad.getSolution() failed.\n");
+	  return;
+	}
+	
+	net = nn;
+
+	float errorf = 0.0f;
+	whiteice::math::convert(errorf, error);
+
+	printf("Optimization converged (Global Optimum pretraining). Error: %f. STOP.\n", errorf);
+	final_error2 = errorf;
+      }
+    }
+
+    printf("Final optimization error without pretraining: %f.\n", final_error1);
+    printf("Final optimization error with global optimum pretraining: %f.\n", final_error2);
+  }
+  
+  // 3. test case: create testcase which uses XOR of digits of decimal as output,
+  //    generates 10.000 training samples
+  //    test how well neural network learns with and without global optimum pretraining
+  //       x, y = (int)(10^k(i) * input(i)) % 10;  output(j) = x*y
+  if(0){
+    std::cout << "3. Test learning Kth digit XOR/multi neural network." << std::endl;
+
+    const unsigned int N = 10000;
+
+    whiteice::nnetwork<> rand_net;
+    std::vector<unsigned int> arch;
+    arch.push_back(10);
+    //arch.push_back(50);
+    //arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(2);
+    
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::tanh); // sigmoid
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::sigmoid);
+    rand_net.setArchitecture(arch, whiteice::nnetwork<>::halfLinear);
+			     
+    rand_net.randomize(0);
+
+    std::vector< math::vertex<> > input;
+    std::vector< math::vertex<> > output;
+
+    whiteice::RNG<> rng;
+    math::vertex<> v, w;
+    v.resize(rand_net.input_size());
+    w.resize(rand_net.output_size());
+
+    std::vector< std::vector<unsigned int> > pair;
+    std::vector< std::vector<unsigned int> > digit;
+    for(unsigned int i=0;i<rand_net.output_size();i++){
+      std::vector<unsigned int> e;
+      const unsigned int d1 = 1 + (rng.rand() % 3); // digit = [1,3]:th decimal position
+      const unsigned int d2 = 1 + (rng.rand() % 3); // digit = [1,3]:th decimal position
+      e.push_back(d1);
+      e.push_back(d2);
+      digit.push_back(e);
+
+      e.clear();
+      const unsigned int k1 = rng.rand() % rand_net.input_size();
+      const unsigned int k2 = rng.rand() % rand_net.input_size();
+      e.push_back(k1);
+      e.push_back(k2);
+      pair.push_back(e);
+    }
+
+    for(unsigned int n=0;n<N;n++){
+      rng.normal(v);
+      w.zero();
+
+      //rand_net.calculate(v, w);
+      for(unsigned int i=0;i<w.size() && i<v.size();i++){
+	math::blas_real<float> value = (0.0f);
+	value = v[ pair[i][0] ]*whiteice::math::pow(10.0f, (float)digit[i][0]);
+	int k1 = 0;
+	whiteice::math::convert(k1, value);
+	int t = whiteice::math::abs(k1) % 10;
+	if(k1 >= 0) k1 = t;
+	else k1 = -t;
+	  
+	value = v[ pair[i][1] ]*whiteice::math::pow(10.0f, (float)digit[i][1]);
+	int k2 = 0;
+	whiteice::math::convert(k2, value);
+	t = whiteice::math::abs(k2) % 10;
+	if(k2 >= 0) k2 = t;
+	else k2 = -t;
+
+	w[i] = ((float)(k1)) * ((float)k2);
+      }
+      
+      
+      input.push_back(v);
+      output.push_back(w);
+    }
+
+    
     
     float final_error1 = 0.0f, final_error2 = 0.0f;
 
@@ -426,6 +640,184 @@ void simple_global_optimum_test()
 
       // initializes weights using data
       net.presetWeightsFromData(train_data);
+      if(global_optimizer_pretraining(net, train_data, N, M, K) == false){
+	printf("ERROR: global optimizer pretraining FAILED.\n");
+	return;
+      }
+
+      whiteice::math::NNGradDescent<> grad;
+      grad.setUseMinibatch(true);
+      grad.startOptimize(train_data, net, 1);
+
+      while(grad.hasConverged(0.01) == false){
+	sleep(1);
+	whiteice::math::blas_real<float> error = 0.0f;
+	unsigned int Nconverged = 0;
+	
+	if(grad.getSolutionStatistics(error, Nconverged) == false){
+	  printf("ERROR: grad.getSolutionStatistics() failed.\n");
+	  return;
+	}
+	else{
+	  float errorf = 0.0f;
+	  whiteice::math::convert(errorf, error);
+	  printf("Optimizing error %d: %f.\n", Nconverged, errorf);
+	}
+      }
+
+      
+
+      grad.stopComputation();
+
+      {
+	nnetwork<> nn;
+	whiteice::math::blas_real<float> error;
+	unsigned int Nconverged;
+	
+	if(grad.getSolution(nn, error, Nconverged) == false){
+	  printf("ERROR: grad.getSolution() failed.\n");
+	  return;
+	}
+	
+	net = nn;
+
+	float errorf = 0.0f;
+	whiteice::math::convert(errorf, error);
+
+	printf("Optimization converged (Global Optimum pretraining). Error: %f. STOP.\n", errorf);
+	final_error2 = errorf;
+      }
+    }
+
+    printf("Final optimization error without pretraining: %f.\n", final_error1);
+    printf("Final optimization error with global optimum pretraining: %f.\n", final_error2);
+  }
+
+
+  // 4. test case: input is 
+  //    generates 10.000 training samples
+  if(1){
+    std::cout << "4. Test learning Two Rings problem." << std::endl;
+
+    const unsigned int N = 10000;
+
+    whiteice::nnetwork<> rand_net;
+    std::vector<unsigned int> arch;
+    arch.push_back(10);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(2);
+    
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::tanh); // sigmoid
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::sigmoid);
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::halfLinear);
+    // rand_net.setArchitecture(arch, whiteice::nnetwork<>::pureLinear);
+    rand_net.setArchitecture(arch, whiteice::nnetwork<>::rectifier);
+    rand_net.randomize();
+
+    std::vector< math::vertex<> > input;
+    std::vector< math::vertex<> > output;
+
+    whiteice::RNG<> rng;
+    math::vertex<> v, w;
+    v.resize(rand_net.input_size());
+    w.resize(rand_net.output_size());
+
+    
+    for(unsigned int n=0;n<N;n++){
+      whiteice::math::blas_real<float> r = (float)(rng.rand() & 1);
+      if(r >= 1.0f) r = 20.0f;
+      rng.normal(v);
+      v = r*v;
+      
+      w.zero();
+
+      //rand_net.calculate(v, w);
+      for(unsigned int i=0;i<w.size() && i<v.size();i++){
+	w[i] = r;
+      }
+      
+      input.push_back(v);
+      output.push_back(w);
+    }
+
+    
+    
+    float final_error1 = 0.0f, final_error2 = 0.0f;
+
+    whiteice::dataset<> train_data;
+    
+    train_data.createCluster("input", rand_net.input_size());
+    train_data.createCluster("output", rand_net.output_size());
+    
+    train_data.add(0, input);
+    train_data.add(1, output);
+    
+    train_data.preprocess(0, dataset<>::dnMeanVarianceNormalization);
+    train_data.preprocess(1, dataset<>::dnMeanVarianceNormalization);
+    
+
+    // learn without global optimum pretraining
+    {
+      whiteice::nnetwork<> net(rand_net);
+
+      net.randomize();
+
+      whiteice::math::NNGradDescent<> grad;
+      grad.setUseMinibatch(true);
+      grad.startOptimize(train_data, net, 1);
+
+      while(grad.hasConverged(0.01) == false){
+	sleep(1);
+	whiteice::math::blas_real<float> error = 0.0f;
+	unsigned int Nconverged = 0;
+	
+	if(grad.getSolutionStatistics(error, Nconverged) == false){
+	  printf("ERROR: grad.getSolutionStatistics() failed.\n");
+	  return;
+	}
+	else{
+	  float errorf = 0.0f;
+	  whiteice::math::convert(errorf, error);
+	  printf("Optimizing error %d: %f.\n", Nconverged, errorf);
+	}
+      }
+
+      grad.stopComputation();
+
+      {
+	nnetwork<> nn;
+	whiteice::math::blas_real<float> error;
+	unsigned int Nconverged;
+	
+	if(grad.getSolution(nn, error, Nconverged) == false){
+	  printf("ERROR: grad.getSolution() failed.\n");
+	  return;
+	}
+	
+	net = nn;
+
+	float errorf = 0.0f;
+	whiteice::math::convert(errorf, error);
+
+	printf("Optimization converged. Error: %f. STOP.\n", errorf);
+	final_error1 = errorf;
+      }
+      
+    }
+
+    
+    // learn WITH global optimum pretraining
+    {
+      whiteice::nnetwork<> net(rand_net);
+
+      const unsigned int N = 100; // only 100 random neural networks are used to estimate weights
+      const unsigned int M = 10000; // only 1000 random training points per NN
+      const unsigned int K = 16;    // discretizes each variables to 16 bins
+
+      // net.presetWeightsFromData(train_data);
       if(global_optimizer_pretraining(net, train_data, N, M, K) == false){
 	printf("ERROR: global optimizer pretraining FAILED.\n");
 	return;

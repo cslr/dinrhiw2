@@ -143,7 +143,9 @@ int gaussiani(float mean, float var)
 
 void rng_test()
 {
-	RNG<> rng;
+        RNG<> rng(true);
+	
+	srand(rng.rand());
 	
 	printf("RAND_MAX: %d\n", RAND_MAX);
 
@@ -151,13 +153,20 @@ void rng_test()
 		std::cout << rng.uniform() << std::endl;
 
 	const unsigned int SAMPLES=10000000; // 10.000.000 random numbers
-
+	
 	math::vertex<> v;
 	v.resize(SAMPLES);
-
+	
 	auto t0=std::chrono::high_resolution_clock::now();
-	rng.uniform(v);
+	for(unsigned int i=0;i<v.size();i++){
+	  v[i] = ((float)rand()/((float)RAND_MAX));
+	}
 	auto t1=std::chrono::high_resolution_clock::now();
+	auto ccc_uni_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
+	
+	t0=std::chrono::high_resolution_clock::now();
+	rng.uniform(v);
+	t1=std::chrono::high_resolution_clock::now();
 	auto own_uni_time = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
 
 	math::blas_real<float> m, s;
@@ -246,6 +255,7 @@ void rng_test()
 	std::cout << "Uniform RNG     [samples/ms]: " << ((double)SAMPLES)/own_uni_time << std::endl;
 	std::cout << "Normal RNG      [samples/ms]: " << ((double)SAMPLES)/own_nrm_time << std::endl;
 	std::cout << "Exponential RNG [samples/ms]: " << ((double)SAMPLES)/own_exp_time << std::endl;
+	std::cout << "C Uniform RNG   [samples/ms]: " << ((double)SAMPLES)/ccc_uni_time << std::endl;
 	std::cout << "C++ Normal RNG  [samples/ms]: " << ((double)SAMPLES)/cpp_nrm_time << std::endl;
 
 }

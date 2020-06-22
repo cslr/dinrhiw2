@@ -1306,10 +1306,35 @@ namespace whiteice
 
 	convert(DD, D); // converts matrixes to blas_real format
 	convert(XX, X);
+
+	int counter = 0;
+	const int MAXCOUNT = 20;
 	
 	while(symmetric_eig(DD, XX) == false){ // this = X*D*X^h
-	  whiteice::logging.error("matrix::symmetric_pseudoinverse(): computation of symmetric evd failed.");
-	  return false;
+	  if(counter > MAXCOUNT){
+	    whiteice::logging.error("matrix::symmetric_pseudoinverse(): computation of symmetric evd failed.");
+	    return false;
+	  }
+
+	  // assumes failure is because of diagonal zeros
+
+	  convert(DD, D); // converts matrixes to blas_real format
+	  convert(XX, X);
+
+	  blas_real<float> tol = 0.0f;
+	  convert(tol, tolerance);
+	  tol = whiteice::math::abs(tol);
+
+	  // adds regularizer constant (HACK to diagonalize matrix)
+	  const blas_real<float> e =
+	    whiteice::math::pow(2.0f, (float)counter);
+	  tol = tol*e;
+
+	  for(unsigned int i=0;i<(this->numRows);i++){
+	    DD(i,i) += tol; // regularizes eigenvalue decomposition
+	  }
+
+	  counter++;
 	}
 
 	convert(D, DD);

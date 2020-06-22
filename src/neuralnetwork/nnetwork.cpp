@@ -10,6 +10,10 @@
 #include <stdexcept>
 #include <typeinfo>
 
+// remove define if you want large initialization arguments
+// (good for deep nnetworks(?))
+// #define SMALL_RANDOMIZE_INIT 1 [DON'T ENABLE / DON'T WORK WITH DEEP NETWORKS]
+
 #include "nnetwork.h"
 #include "dinrhiw_blas.h"
 #include "Log.h"
@@ -50,7 +54,7 @@ namespace whiteice
 
     nonlinearity.resize(arch.size()-1);
     for(unsigned int i=0;i<nonlinearity.size();i++)
-      nonlinearity[i] = tanh;
+      nonlinearity[i] = rectifier;
     
     nonlinearity[nonlinearity.size()-1] = pureLinear;
 
@@ -603,9 +607,12 @@ namespace whiteice
 	  
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
 	  // T scaling = T(2.2); // for asinh()
-	  
-	  // T scaling = T(0.1); // was chosen value	  
+
+#ifdef SMALL_RANDOMIZE_INIT	  
+	  T scaling = T(0.1); // was chosen value
+#else
 	  T scaling = T(1.0); // no scaling so use values as in paper
+#endif
 	  
 	  var *= scaling;
 
@@ -642,9 +649,13 @@ namespace whiteice
 
         		// keep data variance aproximately 1 (assume inputs x1..xN have unit variance)
         		T var = math::sqrt(1.0f / arch[i-1]);
-			
-        		// T scaling = T(0.1); // was chosen value
+
+#ifdef SMALL_RANDOMIZE_INIT
+			T scaling = T(0.1); // was chosen value
+#else
 			T scaling = T(1.0);
+#endif
+			
         		var *= scaling;
 
         		// set weight values W
@@ -1270,8 +1281,8 @@ namespace whiteice
       // non-linearity motivated by restricted boltzman machines..
       T in = input;
 
-      if(in > T(+60.0f)) in = T(+30.0);
-      else if(in < T(-60.0f)) in = T(-30.0f);
+      if(in > T(+30.0f)) in = T(+30.0);
+      else if(in < T(-30.0f)) in = T(-30.0f);
       
       T output = T(1.0) / (T(1.0) + math::exp(-in));
       return output;
@@ -1281,8 +1292,8 @@ namespace whiteice
       T output = T(0.0f);
       T in = input;
 
-      if(in > T(+60.0f)) in = T(+30.0);
-      else if(in < T(-60.0f)) in = T(-30.0f);
+      if(in > T(+30.0f)) in = T(+30.0);
+      else if(in < T(-30.0f)) in = T(-30.0f);
 
       output = T(1.0) / (T(1.0) + math::exp(-in));
       
@@ -1294,10 +1305,15 @@ namespace whiteice
       return output;
     }
     else if(nonlinearity[layer] == tanh){
+
+#ifdef SMALL_RANDOMIZE_INIT
+      const T a = T(1.0);
+      const T b = T(1.0);
+#else      
       const T a = T(1.7159);
       const T b = T(2.0/3.0);
-      // const T a = T(1.0);
-      // const T b = T(1.0);
+#endif
+
       
       T in = input;
 
@@ -1314,10 +1330,13 @@ namespace whiteice
       // tanh(x) + 0.5x: from a research paper statistically
       // better gradiets for deep neural networks
       {
-	// const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
-	// const T b = T(2.0/3.0);
+#ifdef SMALL_RANDOMIZE_INIT	
 	const T a = T(1.0);
 	const T b = T(1.0);
+#else
+	const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
+	const T b = T(2.0/3.0);
+#endif
 	
 	if(input > T(10.0)) return a + T(0.5)*a*b*input;
 	else if(input < T(-10.0)) return -a + T(0.5)*a*b*input;
@@ -1354,6 +1373,17 @@ namespace whiteice
     }
     else if(nonlinearity[layer] == pureLinear){
       return input; // all layers/neurons are linear..
+    }
+    else if(nonlinearity[layer] == rectifier){
+      if(input < T(0.0f)){
+	const T a = T(0.1);
+	
+	T in = input;
+	if(in < T(-30.0f)) in = T(-30.0f);
+
+	return (a*(math::exp(in) - T(1.0f)));
+      }
+      else return input;
     }
     else{
       assert(0);
@@ -1460,6 +1490,17 @@ namespace whiteice
     }
     else if(nonlinearity[layer] == pureLinear){
       return 1.0; // all layers/neurons are linear..
+    }
+    else if(nonlinearity[layer] == rectifier){
+      if(input < T(0.0f)){
+	const T a = T(0.1);
+
+	T in = input;
+	if(in < T(-30.0f)) in = T(-30.0f);
+
+	return (a*math::exp(in));
+      }
+      else return T(1.0f);
     }
     else{
       assert(0);
@@ -1618,6 +1659,9 @@ namespace whiteice
 	  else if(nonlinearity[l] == tanh){
 	    ints.push_back(4);
 	  }
+	  else if(nonlinearity[l] == rectifier){
+	    ints.push_back(5);
+	  }
 	  else return false; // error!
 	}
 
@@ -1746,7 +1790,7 @@ namespace whiteice
 	for(unsigned int i=0;i<nonlinearity.size();i++)
 	  nonlinearity[i] = tanh;
 
-	// nonlinearity[nonlinearity.size()-1] = pureLinear;
+	nonlinearity[nonlinearity.size()-1] = pureLinear;
 	
 	ints.clear();
       }
@@ -1793,6 +1837,9 @@ namespace whiteice
 	  }
 	  else if(ints[l] == 4){
 	    nonlinearity[l] = tanh;
+	  }
+	  else if(ints[l] == 5){
+	    nonlinearity[l] = rectifier;
 	  }
 	  else{
 	    return false;

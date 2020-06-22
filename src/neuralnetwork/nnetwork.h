@@ -40,7 +40,8 @@ namespace whiteice
       stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
       halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
       pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
-      tanh = 4 // tanh non-linearity (output: [-1,+1] (input: [-1,1])
+      tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
+      rectifier = 5 // ExpLU rectifier f(x) = max(a*(exp(x)-1),x) - deep networks [biologically motivated]
     };
 
 
@@ -50,7 +51,7 @@ namespace whiteice
     nnetwork(); 
     nnetwork(const nnetwork<T>& nn);
     nnetwork(const std::vector<unsigned int>& nnarch,
-	     const nonLinearity nl = sigmoid) ;
+	     const nonLinearity nl = rectifier) ;
     
     
     virtual ~nnetwork();
@@ -81,7 +82,7 @@ namespace whiteice
 
     // invalidates all data and essentially creates a new network over previous one
     bool setArchitecture(const std::vector<unsigned int>& arch,
-			 const nonLinearity nl = sigmoid); // all layers except the last one (linear) has this non-linearity
+			 const nonLinearity nl = rectifier); // all layers except the last one (linear) has this non-linearity
     
     
     bool calculate(bool gradInfo = false, bool collectSamples = false);

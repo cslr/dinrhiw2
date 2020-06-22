@@ -26,7 +26,7 @@ namespace whiteice
       typename std::vector< vertex<T> >::const_iterator i = data.begin();
       const unsigned int N = data[0].size();
       
-      R.resize(N, N);
+      if(R.resize(N, N) == false) return false;
       R.zero();
       
       T s = T(1.0f) / T(data.size());
@@ -151,7 +151,7 @@ namespace whiteice
       const unsigned int N = W.ysize(); // meaning is swapped from cblas_ssyrk() parameters
       const unsigned int K = W.xsize(); // (N is number of vectors here and K is dimension)
       
-      R.resize(K, K);
+      if(R.resize(K, K) == false) return false;
       R.zero(); // not necessary..
       
       T s = T(1.0) / T((double)N);
@@ -232,11 +232,12 @@ namespace whiteice
       
       typename std::vector< vertex<T> >::const_iterator i = data.begin();
       const unsigned int N = data[0].size();
-      
-      R.resize(N, N);
+
+      // expect's mem allocation to succeed
+      if(R.resize(N, N) == false) return false;
       R.zero();
       
-      m.resize(N);
+      if(m.resize(N) != N) return false;
       m.zero();
       
       T s = T(1.0f) / T(data.size());

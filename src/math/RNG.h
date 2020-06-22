@@ -32,7 +32,7 @@ namespace whiteice {
   public:
 
   // uses regular rand() if rdrand is not supported or usehw = false
-  RNG(const bool usehw = false); 
+  RNG(const bool usehw = true); 
   virtual ~RNG(){ }
   
   unsigned int rand() const; // 32bit

@@ -29,7 +29,9 @@ namespace whiteice
 
     linear_parameters_u.resize(N);
     nnetwork_parameters_w.resize(N);
-
+    
+    whiteice::RNG<T> rng;
+    
     whiteice::linear_ETA<> eta;
     eta.start(0.0f, (float)N);
     unsigned int counter = 0;
@@ -60,8 +62,6 @@ namespace whiteice
 
 	// generates training data
 	{
-	  whiteice::RNG<T> rng;
-	  
 	  train_data.createCluster("input", nnet.input_size());
 	  train_data.createCluster("output", nnet.output_size());
 
@@ -69,40 +69,101 @@ namespace whiteice
 	  v.resize(nnet.input_size());
 	  w.resize(nnet.output_size());
 
-	  // creates random XOR like non-linearities
+	  // creates random XOR like non-linearities and select Nth digit from random input nonlins
 	  std::vector< std::vector<unsigned int> > pairs;
-	  for(unsigned int i=0;i<nnet.output_size();i++){
-	    std::vector<unsigned int> p;
+	  std::vector< std::vector<unsigned int> > digit;
 
-	    unsigned int pN = 1 + (rng.rand() % 3);
+	  const unsigned int problem = rng.rand() % 3;
 
-	    for(unsigned int pi=0;pi<pN;pi++){
-	      int p1 = rng.rand() % nnet.input_size();
-	      p.push_back(p1);
+	  if(problem == 0){ // XOR-like non-linearity
+	  
+	    for(unsigned int i=0;i<nnet.output_size();i++){
+	      std::vector<unsigned int> p;
+	      
+	      unsigned int pN = 1 + (rng.rand() % 3);
+	      
+	      for(unsigned int pi=0;pi<pN;pi++){
+		unsigned int p1 = rng.rand() % nnet.input_size();
+		p.push_back(p1);
+	      }
+	      
+	      pairs.push_back(p);
+	    }
+
+	    for(unsigned int m=0;m<M;m++){
+	      rng.normal(v);
+	      
+	      // nnet.calculate(v, w);
+	      for(unsigned int i=0;i<w.size();i++){
+		T value = T(1.0f);
+		
+		// is this XOR-like non-linearity
+		for(unsigned int pi=0;pi<pairs[i].size();pi++)
+		  value *= v[ pairs[i][pi] ];
+		
+		w[i] = whiteice::math::pow(whiteice::math::abs(value), T(1.0f)/T((float)pairs[i].size()));
+		if(value < T(0.0f)) w[i] = -w[i];
+	      }
+	      
+	      train_data.add(0, v);
+	      train_data.add(1, w);
+	    }
+
+	  }
+	  else if(problem == 1){ // D:th digit non-linearity
+
+	    for(unsigned int i=0;i<nnet.output_size();i++){
+	      std::vector<unsigned int> p;
+	      
+	      const unsigned int k = rng.rand() % nnet.input_size(); // random input
+	      const unsigned int d = 1 + (rng.rand() % 3); // digit = [1,3]:th decimal position
+	      
+	      p.push_back(k);
+	      p.push_back(d);
+	      
+	      digit.push_back(p);
+	    }
+
+	    for(unsigned int m=0;m<M;m++){
+	      rng.normal(v);
+	      
+	      // nnet.calculate(v, w);
+	      for(unsigned int i=0;i<w.size();i++){
+		T value = T(0.0f);
+		value = v[ digit[i][0] ]*whiteice::math::pow(T(10.0f), T((float)digit[i][1]));
+		int k = 0;
+		whiteice::math::convert(k, value);
+		
+		w[i] = (float)(k % 10);
+	      }
+		    
+	      train_data.add(0, v);
+	      train_data.add(1, w);
+	    }
+	  }
+	  else{ // problem == 2 // overlapping gaussians (two rings)
+	    
+	    
+	    for(unsigned int m=0;m<M;m++){
+	      T r = (float)(rng.rand() & 1);
+	      if(r >= 1.0f) r = 20.0f;
+	      rng.normal(v);
+	      v = r*v; // ring of radius 1 or 20
+	      
+	      w.zero();
+	      
+	      //rand_net.calculate(v, w);
+	      for(unsigned int i=0;i<w.size() && i<v.size();i++){
+		w[i] = r;
+	      }
+
+	      train_data.add(0, v);
+	      train_data.add(1, w);
 	    }
 	    
-	    pairs.push_back(p);
 	  }
 	  
-	  for(unsigned int m=0;m<M;m++){
-	    rng.normal(v);
-
-	    // nnet.calculate(v, w);
-	    for(unsigned int i=0;i<w.size();i++){
-	      T value = T(1.0f);
-
-	      // is this XOR-like non-linearity
-	      for(unsigned int pi=0;pi<pairs[i].size();pi++)
-		value *= v[ pairs[i][pi] ];
-	      
-	      w[i] = whiteice::math::pow(whiteice::math::abs(value), T(1.0f)/T((float)pairs[i].size()));
-	      if(value < T(0.0f)) w[i] = -w[i];
-	    }
-
-	    train_data.add(0, v);
-	    train_data.add(1, w);
-	  }
-
+	  
 	  if(train_data.preprocess(0, dataset<T>::dnMeanVarianceNormalization) == false){
 	    failure = true;
 	    continue;
@@ -113,9 +174,8 @@ namespace whiteice
 	    continue;
 	  }
 	  
-	  // sets weights from data
 	  {
-	    nnet.presetWeightsFromData(train_data);
+	    nnet.randomize();
 	    
 	    // trains neural network
 	    whiteice::math::NNGradDescent<T> grad;
@@ -131,11 +191,13 @@ namespace whiteice
 		failure = true;
 		continue;
 	      }
+#if 0
 	      else{
 		float errorf = 0.0f;
 		whiteice::math::convert(errorf, error);
 		printf("Optimizing error %d: %f\n", Nconverged, errorf);
 	      }
+#endif
 	    }
 
 	    grad.stopComputation();
@@ -151,45 +213,17 @@ namespace whiteice
 	      }
 
 	      nnet = nn;
+	      
+	      float errorf = 0.0f;
+	      whiteice::math::convert(errorf, error);
+	      
+	      printf("Optimization converged (%d: error = %f). STOP.\n",
+		     Nconverged, errorf);
 	    }
 
-	    printf("Optimization converged. STOP.\n");
 	  }
 
 	  // now solution has converged
-	  
-	  // now we discretize data
-	  discrete_data.createCluster("input", nnet.input_size()*K);
-	  discrete_data.createCluster("output", nnet.output_size());
-	  
-	  T mean = T(0.0f);
-	  T stdev = T(1.0f);
-	  
-	  for(unsigned int m=0;m<M;m++){
-	    v = train_data.access(0, m);
-	    w = train_data.access(1, m);
-	    
-	    math::vertex<T> d;
-	    d.resize(v.size()*K);
-	    d.zero();
-	    
-	    for(unsigned int i=0;i<v.size();i++){
-	      int sk = discretize(v[i], K, mean, stdev);
-	      unsigned int k = 0;
-	      if(sk < 0) k = 0;
-	      else if(sk > (int)K) k = K-1;
-	      else k = (unsigned int)k;
-	      d[i*K+k] = T(1.0f);
-	    }
-	    
-	    discrete_data.add(0, d);
-	    discrete_data.add(1, w);
-	  }
-
-	  if(discrete_data.preprocess(1, dataset<T>::dnMeanVarianceNormalization) == false){
-	    failure = true;
-	    continue;
-	  }
 	}
 
 	
@@ -258,6 +292,8 @@ namespace whiteice
     math::vertex<T> umean, ustdev;
 
     {
+      printf("Computing linear to non-linear function parameter mapping.\n");
+      
       // linear_parameters_u => nnetwork_parameters_w
       dataset<T> dmap;
       
@@ -271,9 +307,7 @@ namespace whiteice
 
       if(global_linear_optimizer(dmap, K, A, b) == false) return false;
 
-      std::vector< math::vertex<T> > inputDiscrete;
-      
-      if(discretize_problem(K, linear_parameters_u, inputDiscrete, umean, ustdev) == false)
+      if(data_statistics(linear_parameters_u, umean, ustdev) == false)
 	return false;
       
     }
@@ -360,7 +394,9 @@ namespace whiteice
 	u.zero();
 
 	for(unsigned int i=0;i<v.size();i++){
-	  unsigned int k = discretize(v[i], K, mean, stdev);
+	  int k = discretize(v[i], K, mean, stdev);
+	  if(k < 0) return false;
+	  else if(k >= (signed)K) k = K-1;
 	  u[i*K + k] = T(1.0f);
 	}
 
@@ -463,8 +499,8 @@ namespace whiteice
   }
   
 
-  // discretizes each variable to K bins: [-4*stdev, 4*stdev]/K
-  // discretization is calculated (K/2)*((x-mean)/4*stdev)+K/2 => [0,K[ (clipped to interval)
+  // discretizes each variable to K bins: [-3*stdev, 3*stdev]/K
+  // discretization is calculated (K/2)*((x-mean)/3*stdev)+K/2 => [0,K[ (clipped to interval)
   // it is recommended that K is even number
   template <typename T>
   int discretize(const T& x, const unsigned int K, const T& mean, const T& stdev)
@@ -489,7 +525,44 @@ namespace whiteice
     return k;
   }
   
+  
+  // statistics to calculate discretization
+  template <typename T>
+  bool data_statistics(const std::vector< math::vertex<T> >& input,
+		       whiteice::math::vertex<T>& mean,
+		       whiteice::math::vertex<T>& stdev)
+  {
 
+    if(input.size() <= 1) return false;
+
+    math::vertex<T> x2;
+    {
+      mean.resize(input[0].size());
+      x2.resize(input[0].size());
+      stdev.resize(input[0].size());
+      mean.zero();
+      x2.zero();
+      stdev.zero();
+      
+      for(const auto& x : input){
+	mean += x;
+	for(unsigned int j=0;j<x2.size();j++)
+	  x2[j] += x[j]*x[j];
+      }
+      
+      mean /= T(input.size());
+      x2 /= T(input.size());
+
+      for(unsigned int j=0;j<x2.size();j++){
+	stdev[j] = x2[j] - mean[j]*mean[j];
+	stdev[j] = sqrt(abs(stdev[j]));
+	if(stdev[j] <= T(0.001))
+	  stdev[j] = T(0.001);
+      }
+    }
+
+    return true;
+  }
 
   //////////////////////////////////////////////////////////////////////
 
@@ -596,4 +669,23 @@ namespace whiteice
 			  const double& stdev);
 
   
+  template 
+  bool data_statistics(const std::vector< math::vertex< math::blas_real<float> > >& input,
+		       whiteice::math::vertex< math::blas_real<float> >& mean,
+		       whiteice::math::vertex< math::blas_real<float> >& stdev);
+  
+  template 
+  bool data_statistics(const std::vector< math::vertex< math::blas_real<double> > >& input,
+		       whiteice::math::vertex< math::blas_real<double> >& mean,
+		       whiteice::math::vertex< math::blas_real<double> >& stdev);
+  
+  template 
+  bool data_statistics(const std::vector< math::vertex< float > >& input,
+		       whiteice::math::vertex< float >& mean,
+		       whiteice::math::vertex< float >& stdev);
+  
+  template 
+  bool data_statistics(const std::vector< math::vertex< double > >& input,
+		       whiteice::math::vertex< double >& mean,
+		       whiteice::math::vertex< double >& stdev);
 };

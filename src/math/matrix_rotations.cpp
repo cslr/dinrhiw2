@@ -168,6 +168,45 @@ namespace whiteice
 	    beta += nrm;
 	  else
 	    beta -= nrm;
+
+#if 1
+	  // handle small values causing floating point exception
+	  if(typeid(T) == typeid(blas_real<float>) ||
+	     typeid(T) == typeid(float)){
+	    if(whiteice::math::abs(beta) < 1e-30f)
+	      return false;
+	  }
+	  else if(typeid(T) == typeid(blas_real<double>) ||
+		  typeid(T) == typeid(double)){
+	    if(whiteice::math::abs(beta) < 1e-300)
+	      return false;
+	  }
+#else
+	  // HACK: handle small values causing floating point exception
+	  // we increase value to be large enough
+	  if(typeid(T) == typeid(blas_real<float>) ||
+	     typeid(T) == typeid(float)){
+	    if(whiteice::math::abs(beta) < 1e-30f){
+	      if(beta >= T(0.0f)){
+		beta = T(1e-30f);
+	      }
+	      else if(beta < T(0.0f)){
+		beta = T(-1e-30f);
+	      }
+	    }
+	  }
+	  else if(typeid(T) == typeid(blas_real<double>) ||
+		  typeid(T) == typeid(double)){
+	    if(whiteice::math::abs(beta) < 1e-300){
+	      if(beta >= T(0.0f)){
+		beta = T(1e-300);
+	      }
+	      else if(beta < T(0.0f)){
+		beta = T(-1e-300);
+	      }
+	    }
+	  }
+#endif	  
 	  
 	  v /= beta;
 	}

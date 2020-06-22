@@ -257,13 +257,13 @@ double RNG<T>::unid() const
 template <typename T>
 unsigned int RNG<T>::_rdrand32() const
 {
-	unsigned int lvalue;
-	unsigned char ok = 0;
-
-	while(!ok)
-		asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
-
-	return lvalue;
+  unsigned int lvalue;
+  unsigned char ok = 0;
+  
+  while(!ok)
+    asm volatile ("rdrand %0; setc %1" : "=r" (lvalue), "=qm" (ok));
+  
+  return lvalue;
 }
 
 
@@ -282,8 +282,8 @@ unsigned long long RNG<T>::_rdrand64() const
 template <typename T>
 unsigned int RNG<T>::_rand32() const
 {
-  unsigned int r1 = (unsigned int)::rand();
-  unsigned int r2 = (unsigned int)::rand();
+  unsigned int r1 = ((unsigned int)::rand()) & 0x0000FFFF;
+  unsigned int r2 = ((unsigned int)::rand()) & 0x0000FFFF;
   unsigned int r = (r1 << 16) ^ (r2);
 
   return r;
@@ -292,10 +292,10 @@ unsigned int RNG<T>::_rand32() const
 template <typename T>
 unsigned long long RNG<T>::_rand64() const
 {
-  unsigned long long r1 = (unsigned long long)::rand();
-  unsigned long long r2 = (unsigned long long)::rand();
-  unsigned long long r3 = (unsigned long long)::rand();
-  unsigned long long r4 = (unsigned long long)::rand();
+  unsigned long long r1 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
+  unsigned long long r2 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
+  unsigned long long r3 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
+  unsigned long long r4 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
 
   return ((r1) ^ (r2 << 16) ^ (r3 << 32) ^ (r4 << 48));
 }

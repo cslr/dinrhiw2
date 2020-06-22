@@ -277,8 +277,9 @@ int main(int argc, char** argv)
     nnetwork< whiteice::math::blas_real<double> >* nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
+    // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
-      whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
 
     if(pseudolinear){
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
@@ -293,8 +294,8 @@ int main(int argc, char** argv)
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
     else{
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh);
       nn->setNonlinearity(nn->getLayers()-1,
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
@@ -560,6 +561,10 @@ int main(int argc, char** argv)
     else if(lmethod == "bbrbm" || lmethod == "gbrbm"){
       // greedely learns Bernoulli-Bernoulli RBM or Gaussian-Bernoulli RBM
       // where the last layer is linear predictor/regression layer
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
 
       // the idea here is that we train N-M-output neural network where M is much larger than input
       // RBM does non-linear transformation and calculates features which are then linearly combined.
