@@ -28,9 +28,16 @@ $DSTOOL -padd:1:meanvar $DSFILE
 
 #######################################################################
 # use nntool attempting to learn the dataset using L-BFGS/GRAD learning
-ARCH="10-50-1"
+ARCH="10-100-100-1"
 
-$NNTOOL -v --samples 1000 $DSFILE $ARCH $NNFILE grad
+# error was: 0.069748 (using sigmoid non-linearity which gives bad results): 10-50-1
+# modified nntool to use tanh(x) and 10-100-100-1 non-linearity: 0.05529/0.066
+# modifier nntool to use tanh(x) and 10-500-1 two-layer non-linearity: ~0.068
+$NNTOOL -v --samples 2500 $DSFILE $ARCH $NNFILE grad
+
+# Test bayesian neural network results.
+# This will take into account uncertainty. DO NOT WORK WELL (DISABLED)
+#### $NNTOOL -v --samples 10000 --adaptive --load $DSFILE $ARCH $NNFILE bayes
 
 #######################################################################
 # test NN performance
