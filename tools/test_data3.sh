@@ -18,6 +18,10 @@ rm -f commviol-test.ds
 
 ARCH="141-141-141-141-4"
 
+### This will result in the KILL (probably out of memory kill).
+### Happens before saving neural network. Figure out where it happens exactly
+###ARCH="141-500-500-500-500-500-500-500-500-500-500-500-500-500-500-500-500-500-500-500-4"
+
 # DO NOT WORK CURRENTLY (SOME PROBLEMS): ./nntool -v --samples 1000 commviol-test.ds 141-1000-4 commviol-nn.cfg grad
 
 # ./nntool -v --negfb --overfit --samples 1000 --threads 4 commviol-test.ds 141-141-4 commviol-nn.cfg grad
@@ -29,7 +33,10 @@ ARCH="141-141-141-141-4"
 
 # ./nntool -v --samples 1000 commviol-test.ds 141-141-4 commviol-nn.cfg mix
 
-./nntool -v --samples 1000 commviol-test.ds $ARCH commviol-nn.cfg lbfgs
+# ./nntool -v --samples 1000 commviol-test.ds $ARCH commviol-nn.cfg lbfgs
+
+./nntool -v --samples 100 commviol-test.ds $ARCH commviol-nn.cfg grad
+# ./nntool -v --time 1000 --threads 1 commviol-test.ds $ARCH commviol-nn.cfg pgrad
 
 
 #./nntool -v --load  --negfb --samples 1000 commviol-test.ds 141-141-141-141-4 commviol-nn.cfg grad

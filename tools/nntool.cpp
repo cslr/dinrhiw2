@@ -353,7 +353,9 @@ int main(int argc, char** argv)
      */
     else if((lmethod != "use" && lmethod != "minimize") && no_init == false && load == false)
     {
-
+      nn->randomize();
+      
+#if 0
       if(verbose)
 	std::cout << "Heuristics: NN weights normalization initialization."
 		  << std::endl;
@@ -369,6 +371,7 @@ int main(int argc, char** argv)
 	math::blas_real<double> alpha = 0.5f;
 	negative_feedback_between_neurons(*nn, data, alpha);
       }
+#endif
       
     }
     else if(load == true || lmethod  == "info"){
@@ -1044,7 +1047,7 @@ int main(int argc, char** argv)
       
       
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
-
+      grad.setUseMinibatch(true);
       const bool dropout = false;
 
       if(samples > 0)
@@ -1176,28 +1179,28 @@ int main(int argc, char** argv)
 
 	    if(ratios.size() > 0) inv = 1.0f/ratios.size();
 	    
-	    mean_ratio = 1000.0f;
+	    mean_ratio = 1.0f;
 	    
-	    for(auto& r : ratios) // min ratio of the past 10 iters
-	      if(r < mean_ratio)
-		mean_ratio = r;
+	    for(auto& r : ratios){ // mean ratio of the past 10 iters
+	      mean_ratio *= r;
+	    }
 	    
-	    // mean_ratio = math::pow(mean_ratio, inv);
+	    mean_ratio = math::pow(mean_ratio, inv);
 	    
 	    if(overfit == false){
-	      if(mean_ratio > 3.0f)
+	      if(mean_ratio > 1.50)
 		if(counter > 10) break; // do not stop immediately
 	    }
 	    
 	    prev_error = error;
-	    error = 0.0f;
+	    error = 0.0;
 
 	    // goes through data, calculates gradient
 	    // exports weights, weights -= lrate*gradient
 	    // imports weights back
 
 	    math::vertex< whiteice::math::blas_real<double> > sumgrad;
-	    math::blas_real<double> ninv = 1.0f/SAMPLE_SIZE;
+	    math::blas_real<double> ninv = 1.0/SAMPLE_SIZE;
 
 	    sumgrad.resize(nn->gradient_size());
 	    sumgrad.zero();
@@ -1296,7 +1299,7 @@ int main(int argc, char** argv)
 	      
 	      delta_error = (prev_error - error);
 	    }
-	    while(delta_error < 0.0f && lrate > 10e-20);
+	    while(delta_error < 0.0f && lrate > 10e-25);
 
 	    
 	    // keeps top best results
@@ -1367,6 +1370,7 @@ int main(int argc, char** argv)
 	
       }
 
+#if 0
       // storing now multiple results (best TOPSIZE results)
       // so that E[f(w)] contains most likely results
       {
@@ -1377,6 +1381,12 @@ int main(int argc, char** argv)
 
 	bnn->importSamples(*nn, weights);
       }
+#else
+      {
+	// stores only the best weights found using gradient descent
+	bnn->importSamples(*nn, best_weights);
+      }
+#endif
       
       
     }

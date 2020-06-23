@@ -764,9 +764,11 @@ namespace whiteice
 	      sumgrad += regularizer*w0;
 	    }
 	    
-	    
-	    lrate *= 4;
 
+	    // restarts gradient descent from lrate = 0.50
+	    // lrate *= 4;
+	    lrate = 0.50f;
+	    
 	    // line search: (we should maybe increase lrate to both directions lrate_next = 2.0*lrate and lrate_next2 = 0.5*lrate...
 	    do{
 	      weights = w0;

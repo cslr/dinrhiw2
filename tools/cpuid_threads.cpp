@@ -72,27 +72,27 @@ int numberOfCPUThreads()
 {
   // uses CPUID instruction
 
-	  unsigned int regs[4];
-
-	  // Get vendor
-	  char vendor[12];
-	  cpuID(0, regs);
-	  ((unsigned *)vendor)[0] = regs[1]; // EBX
-	  ((unsigned *)vendor)[1] = regs[3]; // EDX
-	  ((unsigned *)vendor)[2] = regs[2]; // ECX
-	  std::string cpuVendor = std::string(vendor, 12);
-
-	  // Get CPU features
-	  // cpuID(1, regs);
-	  // unsigned int cpuFeatures = regs[3]; // EDX
-
-	  // Logical core count per CPU(?)
-	  cpuID(1, regs);
-	  unsigned int logical = (regs[1] >> 16) & 0xff; // EBX[23:16]
-	  // std::cout << " logical cpus: " << logical << std::endl;
-	  unsigned int cores = logical;
-
-	  if (cpuVendor == "GenuineIntel") {
+  unsigned int regs[4];
+  
+  // Get vendor
+  char vendor[12];
+  cpuID(0, regs);
+  ((unsigned *)vendor)[0] = regs[1]; // EBX
+  ((unsigned *)vendor)[1] = regs[3]; // EDX
+  ((unsigned *)vendor)[2] = regs[2]; // ECX
+  std::string cpuVendor = std::string(vendor, 12);
+  
+  // Get CPU features
+  // cpuID(1, regs);
+  // unsigned int cpuFeatures = regs[3]; // EDX
+  
+  // Logical core count per CPU(?)
+  cpuID(1, regs);
+  unsigned int logical = (regs[1] >> 16) & 0xff; // EBX[23:16]
+  // std::cout << " logical cpus: " << logical << std::endl;
+  unsigned int cores = logical;
+  
+  if (cpuVendor == "GenuineIntel") {
     // Get DCP cache info
     cpuID(4, regs);
     cores = ((regs[0] >> 26) & 0x3f) + 1; // EAX[31:26] + 1
