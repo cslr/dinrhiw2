@@ -874,7 +874,7 @@ bool exportdata(const std::string& filename,
     }
     
     for(unsigned int j=1;j<v.size();j++){
-      fprintf(fp, ", %f", v[j].value());
+      fprintf(fp, " %f", v[j].value());
     }
     
     fprintf(fp, "\n");
