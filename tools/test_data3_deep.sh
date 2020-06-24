@@ -19,7 +19,13 @@ rm -f commviol-test.ds
 # training error is 0.050528/0.011249/0.011249 (deep) [141-500-4]
 # ./nntool --deep --samples 100 -v commviol-test.ds 141-500-4 commviol-nn.cfg lbfgs
 # ./nntool --deep --samples 100 -v commviol-test.ds 141-100000-4 commviol-nn.cfg lbfgs
-./nntool --deep=gaussian --samples 100 -v commviol-test.ds 141-1000-4 commviol-nn.cfg pgrad
+## ./nntool --deep=gaussian --samples 100 -v commviol-test.ds 141-1000-4 commviol-nn.cfg pgrad
+
+# 5 layers deep
+ARCH="141-300-300-300-300-4"
+
+# overfitting solutio
+./nntool --overfit --samples 10000 -v commviol-test.ds $ARCH commviol-nn.cfg grad
 
 # training error is 0.042815/0.00981616/0.00981616 (non-deep) [141-500-4]
 # training error is 0.041531/0.00981616/3.86269    (non-deep) [141-1000-4]
@@ -34,7 +40,7 @@ rm -f commviol-test.ds
 ##################################################
 # testing
 
-./nntool -v commviol-test.ds 141-1000-4  commviol-nn.cfg use
+./nntool -v commviol-test.ds $ARCH  commviol-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
@@ -43,7 +49,7 @@ cp -f commviol-test.ds commviol-pred.ds
 ./dstool -clear:1 commviol-pred.ds
 # ./dstool -remove:1 wine-pred.ds
 
-./nntool -v commviol-pred.ds 141-1000-4 commviol-nn.cfg use
+./nntool -v commviol-pred.ds $ARCH commviol-nn.cfg use
 
 ./dstool -print:1:2204:2214 commviol-pred.ds
 tail commviol.out

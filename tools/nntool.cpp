@@ -38,6 +38,23 @@
 #undef __STRICT_ANSI__
 #include <fenv.h>
 
+// enables floating point exceptions, these are good for debugging 
+// to notice BAD floating point values that come from software bugs..
+#include <fenv.h>
+
+extern "C" {
+
+  // traps floating point exceptions..
+#define _GNU_SOURCE 1
+#ifdef __linux__
+#include <fenv.h>
+  static void __attribute__ ((constructor))
+  trapfpe(){
+    feenableexcept(FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
+  }
+#endif
+  
+}
 
 
 void print_usage(bool all);
@@ -1105,11 +1122,8 @@ int main(int argc, char** argv)
 	  std::cout << "Early stopping (testing dataset)." << std::endl;
       }
 
-      // heuristic from HMC samplers: keeps TOPSIZE best results and
-      // calculate E[f(w)]
-      const unsigned int TOPSIZE = 50;
-      std::multimap<double, math::vertex< whiteice::math::blas_real<double> > > top;
-      
+      math::vertex< whiteice::math::blas_real<double> > best_weights;
+      whiteice::RNG< whiteice::math::blas_real<double> > rng(true); // hardware random number generator
 
       {
 	// divide data to training and testing sets
@@ -1124,16 +1138,16 @@ int main(int argc, char** argv)
 	dtest.clearData(1);
 	
 	for(unsigned int i=0;i<data.size(0);i++){
-	  const unsigned int r = (rand() & 1);
+	  const unsigned int r = (rng.rand() & 3);
 	  
-	  if(r == 0){
+	  if(r != 0){ // 75% go to training data (was: 50%)
 	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
 	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
 	    dtrain.add(0, in,  true);
 	    dtrain.add(1, out, true);
 	  }
-	  else{
+	  else{ // 25% go to testing data (was: 50%)
 	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
 	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
@@ -1142,10 +1156,21 @@ int main(int argc, char** argv)
 	  }
 	}
 
+	
+	if(overfit){ // HACK: keep full data both in training and testing sets
+	  dtrain = data;
+	  dtest  = data;
+	}
+
+	if(dtrain.size(0) == 0 || dtest.size(0) == 0){ // too little data to make division
+	  dtrain = data;
+	  dtest  = data;
+	}
+
 	// 1. normal gradient descent optimization using dtrain dataset
 	{
-	  math::vertex< whiteice::math::blas_real<double> > grad, err, weights;	  
-	  math::vertex< whiteice::math::blas_real<double> > best_weights;
+	  //math::vertex< whiteice::math::blas_real<double> > grad, err, weights;
+	  math::vertex< whiteice::math::blas_real<double> > weights;	  
 	  time_t t0 = time(0);
 	  unsigned int counter = 0;
 	  math::blas_real<double> error, mean_ratio;
@@ -1156,10 +1181,15 @@ int main(int argc, char** argv)
 	  math::blas_real<double> minimum_error = 10000000000.0f;
 	  
 	  std::list< math::blas_real<double> > ratios;
+	  int noimprovement_counter = 0; // used to diagnosize stuck to local minimum (no overfitting allowed)
+	  const MAX_NOIMPROVE_ITERS = 1000;
+
+	  nn->exportdata(best_weights);
+	  nn->exportdata(weights);
 	  
 	  error = 1000.0f;
 	  prev_error = 1000.0f;
-	  mean_ratio = 1.0f;	 	  
+	  mean_ratio = 1.0f;
 
 	  whiteice::linear_ETA<double> eta;
 	  if(samples > 0)
@@ -1188,10 +1218,17 @@ int main(int argc, char** argv)
 	    mean_ratio = math::pow(mean_ratio, inv);
 	    
 	    if(overfit == false){
-	      if(mean_ratio > 1.50)
+#if 0
+	      if(mean_ratio > 3.0)
 		if(counter > 10) break; // do not stop immediately
+#endif
+	      if(noimprovement_counter >= MAX_NOIMPROVE_ITERS){
+		// stop if there has not been improvement for sometime
+		break;
+	      }
 	    }
-	    
+
+	    nn->importdata(weights);
 	    prev_error = error;
 	    error = 0.0;
 
@@ -1208,18 +1245,19 @@ int main(int argc, char** argv)
 	    const bool dropout = false; // drop out code do NOT work
 
 	    
-	    // #pragma omp parallel shared(sumgrad)
+#pragma omp parallel shared(sumgrad)
 	    {
-	      //nnetwork< math::blas_real<double> > net(*nn);
-	      nnetwork< math::blas_real<double> >& net = *nn;
+	      nnetwork< math::blas_real<double> > net(*nn);
+	      //nnetwork< math::blas_real<double> >& net = *nn;
+	      math::vertex< whiteice::math::blas_real<double> > grad, err;
 	      math::vertex< whiteice::math::blas_real<double> > sgrad(sumgrad.size());
 	      sgrad.zero();
 
-	      // #pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(dynamic)
 	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
 		if(dropout) net.setDropOut();
 		
-		const unsigned index = rand() % dtrain.size(0);
+		const unsigned index = rng.rand() % dtrain.size(0);
 		
 		net.input() = dtrain.access(0, index);
 		net.calculate(true);
@@ -1231,7 +1269,7 @@ int main(int argc, char** argv)
 		sgrad += ninv*grad;
 	      }
 	      
-	      // #pragma omp critical
+#pragma omp critical
 	      {
 		sumgrad += sgrad;
 	      }
@@ -1270,6 +1308,7 @@ int main(int argc, char** argv)
 	      // calculates error from the testing dataset (should use train?)
 #pragma omp parallel shared(error)
 	      {
+		math::vertex< whiteice::math::blas_real<double> > err; // THIS SHOULD FIX PROBLEMS OR CAUSE THIS TO NOT WORK
 		math::blas_real<double> e = 0.0;
 		
 #pragma omp for nowait schedule(dynamic)		
@@ -1298,33 +1337,29 @@ int main(int argc, char** argv)
 	      // we try again with smaller lrate
 	      
 	      delta_error = (prev_error - error);
-	    }
-	    while(delta_error < 0.0f && lrate > 10e-25);
 
-	    
-	    // keeps top best results
-	    {
-	      std::pair<double, math::vertex< whiteice::math::blas_real<double> > > p;
-	      // negative error so we always remove largest error
-	      p.first = -error.c[0]; 
-	      p.second = w;
-	      
-	      top.insert(p);
-	      while(top.size() > TOPSIZE)
-		top.erase(top.begin());
-	      
+	      // leaky error reduction, we sometimes allow jump to worse position in gradient direction
+	      if((rng.rand() % 5) == 0) delta_error = +1.0;
 	    }
+	    while(delta_error < 0.0 && lrate > 10e-25);
 
+	    weights = w;
 	    
 	    if(error < minimum_error){
-	      best_weights = w;
-	      minimum_error = error;	      
+	      best_weights = weights;
+	      minimum_error = error;
+	      noimprovement_counter = 0;
 	    }
+	    else{
+	      noimprovement_counter++;
+	    }
+#if 0
 	    // on averare every 128th iteration reset back to the known best solution
 	    else if((rand() & 0xFF) == 0xFF){ 
-	      w = best_weights;
+	      weights = best_weights;
 	      error = minimum_error;
 	    }
+#endif
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
 	    ratios.push_back(ratio);
@@ -1342,51 +1377,41 @@ int main(int argc, char** argv)
 	    if(samples > 0){
 	      printf("%d/%d iterations: %f (%f) <%f> [%.1f minutes]",
 		     counter, samples, error.c[0], mean_ratio.c[0],
-		     -std::prev(top.end())->first,
+		     minimum_error.c[0],
 		     eta.estimate()/60.0);	      
 	    }
 	    else{ // secs
 	      printf("%d iterations: %f (%f) <%f> [%.1f minutes]",
 		     counter, error.c[0], mean_ratio.c[0],
-		     -std::prev(top.end())->first,
+		     minimum_error.c[0],
 		     (secs - counter)/60.0);
 	    }
 	    
 	    fflush(stdout);
 	  }
 
-
 	  
-	  if(best_weights.size() > 1)
-	    nn->importdata(best_weights);
+	  if(nn->importdata(best_weights) == false){
+	    printf("ERROR: importing best weights FAILED.\n");
+	    return -1;
+	  }
 
 	  printf("\r                                                                                   \r");
 	  printf("%d/%d : %f (%f) <%f> [%.1f minutes]\n",
 		 counter, samples, error.c[0], mean_ratio.c[0],
-		 -(top.begin()->first),
+		 minimum_error.c[0],
 		 eta.estimate()/60.0);
 	  fflush(stdout);
 	}
 	
       }
 
-#if 0
-      // storing now multiple results (best TOPSIZE results)
-      // so that E[f(w)] contains most likely results
       {
-	std::vector< math::vertex< math::blas_real<double> > > weights; \
-	for(auto i = top.begin();i != top.end();i++){
-	  weights.push_back(i->second);
-	}
-
-	bnn->importSamples(*nn, weights);
-      }
-#else
-      {
+	std::vector< math::vertex< math::blas_real<double> > > weightslist;
+	weightslist.push_back(best_weights);
 	// stores only the best weights found using gradient descent
-	bnn->importSamples(*nn, best_weights);
+	bnn->importSamples(*nn, weightslist);
       }
-#endif
       
       
     }
