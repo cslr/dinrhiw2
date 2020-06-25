@@ -1182,7 +1182,7 @@ int main(int argc, char** argv)
 	  
 	  std::list< math::blas_real<double> > ratios;
 	  int noimprovement_counter = 0; // used to diagnosize stuck to local minimum (no overfitting allowed)
-	  const MAX_NOIMPROVE_ITERS = 1000;
+	  const int MAX_NOIMPROVE_ITERS = 1000;
 
 	  nn->exportdata(best_weights);
 	  nn->exportdata(weights);

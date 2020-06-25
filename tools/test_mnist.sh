@@ -14,13 +14,14 @@ DATAPREDOUT="mnist_digit_test_output.out"
 NNFILE="mnist-nn.cfg"
 CSVPRED="mnist_digit_pred.csv"
 
+rm -f $DSFILE
 
-# create empty datafile
+## create empty datafile
 $DSTOOL -create $DSFILE
 $DSTOOL -create:784:input $DSFILE
 $DSTOOL -create:10:output $DSFILE
 
-#populate it with data preprocess using mean=0,var=1 mean/variance removal
+##populate it with data preprocess using mean=0,var=1 mean/variance removal
 $DSTOOL -import:0 $DSFILE $DATAINPUT
 $DSTOOL -import:1 $DSFILE $DATAOUTPUT
 $DSTOOL -padd:0:meanvar $DSFILE
@@ -61,5 +62,5 @@ $DSTOOL -export:1 $DSFILE_PRED $DATAPREDOUT
 #######################################################################
 # converts $DATAPREDOUT TO KAGGLE SUBMISSION CSVFILE
 
-## ./mnist_kaggle_export.py
-echo "Conversion script not done"
+./mnist_kaggle_export.py
+
