@@ -47,16 +47,16 @@ namespace whiteice
       
       
       for(unsigned int i=0;i<data.size(0);i++){
-	const unsigned int r = (rand() & 1);
+	const unsigned int r = (rand() & 3);
 	
-	if(r == 0){
+	if(r != 0){ // 75% will to training data
 	  math::vertex<T> in  = data.access(0,i);
 	  math::vertex<T> out = data.access(1,i);
 	  
 	  dtrain.add(0, in,  true);
 	  dtrain.add(1, out, true);
 	}
-	else{
+	else{ // 25% will go to testing data
 	  math::vertex<T> in  = data.access(0,i);
 	  math::vertex<T> out = data.access(1,i);
 	  

@@ -12,47 +12,47 @@ namespace whiteice
   LBFGS_nnetwork<T>::LBFGS_nnetwork(const nnetwork<T>& nn, const dataset<T>& d, bool overfit, bool negativefeedback) :
     whiteice::math::LBFGS<T>(overfit), net(nn), data(d)
   {
-	  this->negativefeedback = negativefeedback;
-
-	  // divides data to to training and testing sets
-	  ///////////////////////////////////////////////
-
-	  dtrain = data;
-	  dtest  = data;
+    this->negativefeedback = negativefeedback;
     
-	  dtrain.clearData(0);
-	  dtrain.clearData(1);
-	  dtest.clearData(0);
-	  dtest.clearData(1);
+    // divides data to to training and testing sets
+    ///////////////////////////////////////////////
     
-
-	  for(unsigned int i=0;i<data.size(0);i++){
-		  const unsigned int r = (rand() & 1);
-
-		  if(r == 0){
-			  math::vertex<T> in  = data.access(0,i);
-			  math::vertex<T> out = data.access(1,i);
-
-			  dtrain.add(0, in,  true);
-			  dtrain.add(1, out, true);
-		  }
-		  else{
-			  math::vertex<T> in  = data.access(0,i);
-			  math::vertex<T> out = data.access(1,i);
+    dtrain = data;
+    dtest  = data;
+    
+    dtrain.clearData(0);
+    dtrain.clearData(1);
+    dtest.clearData(0);
+    dtest.clearData(1);
+    
+    
+    for(unsigned int i=0;i<data.size(0);i++){
+      const unsigned int r = (rand() & 3);
+      
+      if(r != 0){ // 75% will go to training data
+	math::vertex<T> in  = data.access(0,i);
+	math::vertex<T> out = data.access(1,i);
 	
-			  dtest.add(0, in,  true);
-			  dtest.add(1, out, true);
-		  }
-	  }
-
-	  // we cannot never have zero training or testing set size
-	  // in such a small cases (very little data) we just use
-	  // all the data both for training and testing and overfit
-	  if(dtrain.size(0) == 0 || dtest.size(0) == 0){
-		  dtrain = data;
-		  dtest  = data;
-	  }
-
+	dtrain.add(0, in,  true);
+	dtrain.add(1, out, true);
+      }
+      else{ // 25% will go to testing data
+	math::vertex<T> in  = data.access(0,i);
+	math::vertex<T> out = data.access(1,i);
+	
+	dtest.add(0, in,  true);
+	dtest.add(1, out, true);
+      }
+    }
+    
+    // we cannot never have zero training or testing set size
+    // in such a small cases (very little data) we just use
+    // all the data both for training and testing and overfit
+    if(dtrain.size(0) == 0 || dtest.size(0) == 0){
+      dtrain = data;
+      dtest  = data;
+    }
+    
   }
 
   

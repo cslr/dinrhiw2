@@ -28,7 +28,9 @@ $DSTOOL -padd:1:meanvar $DSFILE
 
 #######################################################################
 # use nntool attempting to learn the dataset using L-BFGS/GRAD learning
-ARCH="10-30-30-30-30-30-30-1"
+ARCH="10-30-30-1"
+## ARCH="10-30-30-30-30-30-30-1"
+
 
 # error was: 0.069748 (using sigmoid non-linearity which gives bad results): 10-50-1 (grad: 50%)
 # modified nntool to use tanh(x) and 10-100-100-1 non-linearity: 0.05529/0.066 (grad: 50%)
@@ -39,8 +41,11 @@ ARCH="10-30-30-30-30-30-30-1"
 # 10-20-20-20-20-1 (grad: 75%): 0.047751/0.0679106
 # 10-30-30-30-30-30-30-1 (grad: 100%): 0.031581/0.0395085 [current was: 0.039512]
 # nntool 10-1 linear activation function as a test:
-## $NNTOOL -v --overfit --samples 50000 $DSFILE $ARCH $NNFILE grad
-$NNTOOL -v --samples 10000 $DSFILE $ARCH $NNFILE grad
+##$NNTOOL -v --overfit --samples 100000 $DSFILE $ARCH $NNFILE grad
+##$NNTOOL -v --samples 10000 $DSFILE $ARCH $NNFILE grad
+##$NNTOOL -v --samples 10000 $DSFILE $ARCH $NNFILE grad
+
+$NNTOOL -v --time 10000 $DSFILE $ARCH $NNFILE pgrad
 
 # Try bayesian neural network sampling from overfitten best solution.
 # This will take into account uncertainty. DO NOT WORK WELL

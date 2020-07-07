@@ -1,7 +1,5 @@
 // simple program creating machine learning example data that is difficult to learn
-// y = max(x). The function is simple but learning it requires sorting input vectors
-//             numbers and selecting the biggest one. Feedforward neural network cannot
-//             learn this easily so recurrent neural networks should be maybe used.
+// y = sort(x). 
 
 
 #include <stdio.h>
@@ -10,18 +8,35 @@
 #include <vector>
 #include <time.h>
 #include <math.h>
+#include <assert.h>
+
+int qcompare(const void* a, const void* b){
+  float f = (*(float*)a - *(float*)b);
+
+  if(f < 0.0f) return -1.0f;
+  else if(f == 0.0f) return 0.0f;
+  else return 1.0f;
+}
 
 // generates examples used on machine learning
-void generate(std::vector<float>& x){
+void generate(std::vector<float>& x)
+{
+  assert(x.size() != 0);
+  assert((x.size() & 1) == 0); // even number
 
-  float max = -INFINITY;
+  std::vector<float> v;
+  v.resize(x.size()/2);
 
-  for(unsigned int i=0;i<x.size();i++){
-    x[i] = ((float)rand())/((float)RAND_MAX);
-    if(i != x.size()-1) if(x[i] > max) max = x[i];
+  for(unsigned int i=0;i<v.size();i++){
+    v[i] = 2.0f*((float)rand())/((float)RAND_MAX) - 1.0f; // [-1,1]
+    x[i] = v[i];
   }
 
-  x[x.size()-1] = max;
+  qsort(v.data(), v.size(), sizeof(float), qcompare);
+
+  for(unsigned int i=0;i<v.size();i++){
+    x[i+v.size()] = v[i];
+  }
 }
 
 
@@ -44,17 +59,17 @@ int main(int argc, char** argv)
   // generates data sets
   srand(time(0));
   
-  FILE* handle1 = fopen("gendata_training.csv", "wt");
-  FILE* handle2 = fopen("gendata_scoring.csv", "wt");
-  FILE* handle3 = fopen("gendata_scoring_correct.csv", "wt");
+  FILE* handle1 = fopen("sort_test.csv", "wt");
+  FILE* handle2 = fopen("sort_train_input.csv", "wt");
+  FILE* handle3 = fopen("sort_train_output.csv", "wt");
 
   printf("Generating files (%d data points)..\n", NUMDATA);
-  printf("(gendata_training.csv, gendata_scoring.csv, gendata_scoring_correct.csv)\n");
+  printf("(sort_test.csv, sort_train_input.csv, sort_train_output.csv)\n");
   
 
   for(unsigned int i=0;i<NUMDATA;i++){
     std::vector<float> example;
-    example.resize(dimension+1);
+    example.resize(2*dimension);
     generate(example);
 
     for(unsigned int j=0;j<example.size();j++){
@@ -62,11 +77,11 @@ int main(int argc, char** argv)
     }
     fprintf(handle1, "\n");
 
-    example.resize(dimension+1);
+    example.resize(2*dimension);
     generate(example);
 
     for(unsigned int j=0;j<example.size();j++){
-      if(j != example.size()-1)
+      if(j < (example.size()/2))
 	fprintf(handle2, "%f ", example[j]);
       else
 	fprintf(handle3, "%f ", example[j]);

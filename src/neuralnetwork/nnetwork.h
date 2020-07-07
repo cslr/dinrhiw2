@@ -41,7 +41,7 @@ namespace whiteice
       halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
       pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
       tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
-      rectifier = 5 // ExpLU rectifier f(x) = max(a*(exp(x)-1),x) - deep networks [biologically motivated]
+      rectifier = 5 // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
     };
 
 
@@ -177,10 +177,10 @@ namespace whiteice
     // drop out support:
 
     // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
-    bool setDropOut(T retain_p = T(0.6)) ;
+    bool setDropOut(T retain_p = T(0.8)) ;
 
     // clears drop out but scales weights according to retain_probability
-    bool removeDropOut(T retain_p = T(0.6)) ;
+    bool removeDropOut(T retain_p = T(0.8)) ;
     
     void clearDropOut() ; // remove all drop-out without changing weights
     

@@ -20,19 +20,19 @@ namespace whiteice {
   class Log {
   public:
     Log();
-    Log(std::string logFilename);
+    Log(const std::string logFilename);
     virtual ~Log();
     
-    bool setOutputFile(std::string logFilename);
+    bool setOutputFile(const std::string logFilename);
     
     void setPrintOutput(bool print_stdout);
     bool getPrintOutput(){ return printStdoutToo; }
 
     // logging
-    void info(std::string msg);
-    void warn(std::string msg);
-    void error(std::string msg);
-    void fatal(std::string msg);
+    void info(const std::string msg);
+    void warn(const std::string msg);
+    void error(const std::string msg);
+    void fatal(const std::string msg);
     
     
   protected:

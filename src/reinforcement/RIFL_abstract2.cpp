@@ -290,9 +290,9 @@ namespace whiteice
     //  policy nnetwork (calculating gradients) dont work with sigmoid)
     const bool deep = false; 
     
-    // ENABLED deep pretraining of nnetwork
-    whiteice::math::NNGradDescent<T> grad(false, false, deep); // Q(state,action) model optimizer
-
+    // ENABLED deep pretraining of nnetwork (NOTE "deep" is ignored)
+    whiteice::math::NNGradDescent<T> grad; // Q(state,action) model optimizer
+    
     whiteice::CreateRIFL2dataset<T>* dataset_thread = nullptr;
     whiteice::CreatePolicyDataset<T>* dataset2_thread = nullptr;
 

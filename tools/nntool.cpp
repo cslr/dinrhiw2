@@ -80,14 +80,13 @@ int main(int argc, char** argv)
     std::vector<unsigned int> arch;
     unsigned int cmdmode;
     bool no_init, verbose;
-    bool load, help = false;
+    bool load = false, help = false;
     
     bool overfit = false;
     bool adaptive = false;
     bool negfeedback = false;
     unsigned int deep = 0;
-    bool pseudolinear = false;
-    bool purelinear = false;
+    bool crossvalidation = false;
 
     bool subnet = false;
 
@@ -109,6 +108,9 @@ int main(int argc, char** argv)
     feenableexcept(FE_INVALID |
 		   FE_DIVBYZERO);
 #endif
+
+    // special value to enable writing to console
+    // whiteice::logging.setOutputFile("<stdout>"); 
     
     parse_commandline(argc,
 		      argv,
@@ -129,8 +131,7 @@ int main(int argc, char** argv)
 		      adaptive,
 		      negfeedback,
 		      deep,
-		      pseudolinear,
-		      purelinear,
+		      crossvalidation,
 		      help,
 		      verbose);
     srand(time(0));
@@ -261,32 +262,14 @@ int main(int argc, char** argv)
       exit(-1);
     }
 
-    if(pseudolinear && deep){
-      fprintf(stderr,"Cannot set both deep and pseudolinear options at the same time.\n");
+    if(crossvalidation && lmethod != "grad"){
+      fprintf(stderr, "error: crossvalidation currently only works with 'grad' method.\n");
       exit(-1);
     }
-
-    if(purelinear && deep){
-      fprintf(stderr,"Cannot set both deep and purelinear options at the same time.\n");
-      exit(-1);
-    }
-
-    if(pseudolinear && purelinear){
-      fprintf(stderr,"Cannot set both pseudolinear and purelinear options at the same time.\n");
-      exit(-1);
-    }
-
+    
     if(SIMULATION_DEPTH > 1){
       if(verbose){
-	if(pseudolinear){
-	  printf("Simple recurrent neural network (pseudolinear).\n");
-	}
-	else if(purelinear){
-	  printf("Simple recurrent neural network (purelinear).\n");
-	}
-	else{
-	  printf("Simple recurrent neural network (sigmoid).\n");
-	}
+	printf("Simple recurrent neural network (leaky rectifier).\n");
       }
     }
     
@@ -298,19 +281,7 @@ int main(int argc, char** argv)
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
       whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
 
-    if(pseudolinear){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear);
-      nn->setNonlinearity(nn->getLayers()-1,
-			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
-    }
-    else if(purelinear){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
-      nn->setNonlinearity(nn->getLayers()-1,
-			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
-    }
-    else{
+    {
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
       nn->setNonlinearity(nn->getLayers()-1,
@@ -1070,7 +1041,7 @@ int main(int argc, char** argv)
       if(samples > 0)
 	grad.startOptimize(data, *nn, threads, samples, dropout);
       else
-	grad.startOptimize(data, *nn, threads, 10000, dropout);
+	grad.startOptimize(data, *nn, threads, 0xFFFFFFFF, dropout);
 
       
       {
@@ -1080,7 +1051,7 @@ int main(int argc, char** argv)
 	unsigned int solutions = 0;
 	
 	
-	while(counter < secs && !stopsignal) // compute max SECS seconds
+	while((counter < secs) && grad.isRunning() && !stopsignal) // compute max SECS seconds
 	{
 	  grad.getSolution(*nn, error, solutions);
 
@@ -1092,6 +1063,7 @@ int main(int argc, char** argv)
 	  printf("\r                                                            \r");
 	  printf("%d tries: %f [%.1f minutes]", solutions, error.c[0], (secs - counter)/60.0f);
 	  fflush(stdout);
+	  
 	}
 
 	printf("\r                                                            \r");
@@ -1122,15 +1094,38 @@ int main(int argc, char** argv)
 	  std::cout << "Early stopping (testing dataset)." << std::endl;
       }
 
+      // number of crossvalidation datasets to compute
+      unsigned int CROSSVALIDATION_K = 0;
+      if(crossvalidation == false){
+	CROSSVALIDATION_K = 1;
+      }
+      else{
+	CROSSVALIDATION_K = 10;
+      }
+      
+      std::vector< math::vertex< whiteice::math::blas_real<double> > > best_weights_list;
+      auto initial_nn = *nn;
+      
+      
       math::vertex< whiteice::math::blas_real<double> > best_weights;
       whiteice::RNG< whiteice::math::blas_real<double> > rng(true); // hardware random number generator
 
-      {
+      for(unsigned int cvdk=0;cvdk<CROSSVALIDATION_K && stopsignal == false;cvdk++){
+	if(CROSSVALIDATION_K > 1)
+	  printf("Crossvalidation dataset %d/%d.\n", cvdk+1, CROSSVALIDATION_K);
+
+	if(load == false){
+	  nn->randomize();
+	}
+	else{
+	  *nn = initial_nn;
+	}
+	
 	// divide data to training and testing sets
 	dataset< whiteice::math::blas_real<double> > dtrain, dtest;
 	
-	dtrain = data;
-	dtest  = data;
+	dtrain  = data;
+	dtest   = data;
 	
 	dtrain.clearData(0);
 	dtrain.clearData(1);
@@ -1138,33 +1133,36 @@ int main(int argc, char** argv)
 	dtest.clearData(1);
 	
 	for(unsigned int i=0;i<data.size(0);i++){
-	  const unsigned int r = (rng.rand() & 3);
+	  const unsigned int r = (rng.rand() % 10); // was & 3
 	  
-	  if(r != 0){ // 75% go to training data (was: 50%)
+	  if(r < 9){ // 90% go to training data (was: 80%, 75%, 50%)
 	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
 	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
 	    dtrain.add(0, in,  true);
 	    dtrain.add(1, out, true);
 	  }
-	  else{ // 25% go to testing data (was: 50%)
+	  else if(r == 9){ // 10% go to testing data (was: 10%, 25%, 50%)
 	    math::vertex< whiteice::math::blas_real<double> > in  = data.access(0,i);
 	    math::vertex< whiteice::math::blas_real<double> > out = data.access(1,i);
 	    
 	    dtest.add(0, in,  true);
 	    dtest.add(1, out, true);	    
 	  }
+	  else{
+	    assert(0); // error this should never happen
+	  }
 	}
 
 	
-	if(overfit){ // HACK: keep full data both in training and testing sets
-	  dtrain = data;
-	  dtest  = data;
+	if(overfit){ // we keep full data both in training and testing sets
+	  dtrain  = data;
+	  dtest   = data;
 	}
 
 	if(dtrain.size(0) == 0 || dtest.size(0) == 0){ // too little data to make division
-	  dtrain = data;
-	  dtest  = data;
+	  dtrain  = data;
+	  dtest   = data;
 	}
 
 	// 1. normal gradient descent optimization using dtrain dataset
@@ -1181,8 +1179,13 @@ int main(int argc, char** argv)
 	  math::blas_real<double> minimum_error = 10000000000.0f;
 	  
 	  std::list< math::blas_real<double> > ratios;
+
+	  // early stopping if error has not decreased within MAX_NOIMPROVE_ITERS iterations of training
 	  int noimprovement_counter = 0; // used to diagnosize stuck to local minimum (no overfitting allowed)
 	  const int MAX_NOIMPROVE_ITERS = 1000;
+
+	  const bool dropout = true; // drop out code do works (0.8) reasonably well
+	  const double retain_probability = 0.8;
 
 	  nn->exportdata(best_weights);
 	  nn->exportdata(weights);
@@ -1242,20 +1245,20 @@ int main(int argc, char** argv)
 	    sumgrad.resize(nn->gradient_size());
 	    sumgrad.zero();
 	    
-	    const bool dropout = false; // drop out code do NOT work
 
-	    
 #pragma omp parallel shared(sumgrad)
 	    {
 	      nnetwork< math::blas_real<double> > net(*nn);
 	      //nnetwork< math::blas_real<double> >& net = *nn;
-	      math::vertex< whiteice::math::blas_real<double> > grad, err;
-	      math::vertex< whiteice::math::blas_real<double> > sgrad(sumgrad.size());
+	      math::vertex< whiteice::math::blas_real<double> > grad(nn->gradient_size()), err(nn->output_size());
+	      math::vertex< whiteice::math::blas_real<double> > sgrad(nn->gradient_size());
 	      sgrad.zero();
-
+	      grad.zero();
+	      err.zero();							     
+	      
 #pragma omp for nowait schedule(dynamic)
 	      for(unsigned int i=0;i<SAMPLE_SIZE;i++){
-		if(dropout) net.setDropOut();
+		if(dropout) net.setDropOut(retain_probability);
 		
 		const unsigned index = rng.rand() % dtrain.size(0);
 		
@@ -1292,11 +1295,7 @@ int main(int argc, char** argv)
 
 	      nn->importdata(w);
 
-	      if(dropout){
-		nn->removeDropOut();
-		nn->exportdata(w);
-	      }
-
+	      
 	      if(negfeedback){
 		// using negative feedback heuristic
 		math::blas_real<double> alpha = 0.5f;
@@ -1308,17 +1307,21 @@ int main(int argc, char** argv)
 	      // calculates error from the testing dataset (should use train?)
 #pragma omp parallel shared(error)
 	      {
-		math::vertex< whiteice::math::blas_real<double> > err; // THIS SHOULD FIX PROBLEMS OR CAUSE THIS TO NOT WORK
+		math::vertex< whiteice::math::blas_real<double> > err;
 		math::blas_real<double> e = 0.0;
+		nnetwork< math::blas_real<double> > net(*nn);
 		
 #pragma omp for nowait schedule(dynamic)		
-		for(unsigned int i=0;i<dtest.size(0);i++){
-		  const unsigned int index = i; // rand() % dtest.size(0);
-		  auto input = dtest.access(0, index);
-		  auto output = dtest.access(1, index);
+		for(unsigned int i=0;i<dtrain.size(0);i++){
+		  const unsigned int index = i; // rand() % dtrain.size(0);
+		  auto input = dtrain.access(0, index);
+		  auto output = dtrain.access(1, index);
+
+		  if(dropout) net.setDropOut(retain_probability);
 		  
-		  nn->calculate(input, output); // thread-safe
-		  err = dtest.access(1, index) - output;
+		  //nn->calculate(input, output); // thread-safe
+		  net.calculate(input, output); // thread-safe
+		  err = dtrain.access(1, index) - output;
 		  
 		  e += (err*err)[0] / math::blas_real<double>((double)err.size());
 		}
@@ -1330,7 +1333,7 @@ int main(int argc, char** argv)
 	      }
 	      
 	      
-	      error /= dtest.size(0);
+	      error /= dtrain.size(0);
 	      error *= math::blas_real<double>(0.5f); // missing scaling constant
 
 	      // if the error is negative (error increases)
@@ -1339,27 +1342,63 @@ int main(int argc, char** argv)
 	      delta_error = (prev_error - error);
 
 	      // leaky error reduction, we sometimes allow jump to worse position in gradient direction
-	      if((rng.rand() % 5) == 0) delta_error = +1.0;
+	      // if((rng.rand() % 5) == 0) delta_error = +1.0;
+	      if((rng.rand() % 5) == 0 && error < 10.0)
+		delta_error = +1.0;
 	    }
 	    while(delta_error < 0.0 && lrate > 10e-25);
 
 	    weights = w;
+
+	    // check if error has decreased in testing set (early stopping)
+	    {
+	      whiteice::math::blas_real<double> test_error = 0.0;
+	      nn->importdata(weights);
+
+	      // calculates error from the testing dataset (should use train?)
+#pragma omp parallel shared(test_error)
+	      {
+		math::vertex< whiteice::math::blas_real<double> > err;
+		math::blas_real<double> e = 0.0;
+		nnetwork< math::blas_real<double> > net(*nn);
+		
+#pragma omp for nowait schedule(dynamic)		
+		for(unsigned int i=0;i<dtest.size(0);i++){
+		  const unsigned int index = i; // rand() % dtest.size(0);
+		  auto input = dtest.access(0, index);
+		  auto output = dtest.access(1, index);
+
+		  if(dropout) net.setDropOut(retain_probability);
+		  
+		  //nn->calculate(input, output); // thread-safe
+		  net.calculate(input, output); // thread-safe
+		  err = dtest.access(1, index) - output;
+		  
+		  e += (err*err)[0] / math::blas_real<double>((double)err.size());
+		}
+
+#pragma omp critical
+		{
+		  test_error += e;
+		}
+	      }
+	      
+	      
+	      test_error /= dtest.size(0);
+	      test_error *= math::blas_real<double>(0.5f); // missing scaling constant
+
+	      
+	      // check if we have new best solution
+	      if(test_error < minimum_error){
+		best_weights = weights;
+		minimum_error = test_error;
+		noimprovement_counter = 0;
+	      }
+	      else{
+		noimprovement_counter++;
+	      }
+	    }
 	    
-	    if(error < minimum_error){
-	      best_weights = weights;
-	      minimum_error = error;
-	      noimprovement_counter = 0;
-	    }
-	    else{
-	      noimprovement_counter++;
-	    }
-#if 0
-	    // on averare every 128th iteration reset back to the known best solution
-	    else if((rand() & 0xFF) == 0xFF){ 
-	      weights = best_weights;
-	      error = minimum_error;
-	    }
-#endif
 	    
 	    math::blas_real<double> ratio = error / minimum_error;
 	    ratios.push_back(ratio);
@@ -1375,13 +1414,13 @@ int main(int argc, char** argv)
 
 	    printf("\r                                                                                   \r");
 	    if(samples > 0){
-	      printf("%d/%d iterations: %f (%f) <%f> [%.1f minutes]",
+	      printf("%d/%d iters: %f (%f) <%f> [%.1f minutes]",
 		     counter, samples, error.c[0], mean_ratio.c[0],
 		     minimum_error.c[0],
 		     eta.estimate()/60.0);	      
 	    }
 	    else{ // secs
-	      printf("%d iterations: %f (%f) <%f> [%.1f minutes]",
+	      printf("%d secs: %f (%f) <%f> [%.1f minutes]",
 		     counter, error.c[0], mean_ratio.c[0],
 		     minimum_error.c[0],
 		     (secs - counter)/60.0);
@@ -1395,6 +1434,11 @@ int main(int argc, char** argv)
 	    printf("ERROR: importing best weights FAILED.\n");
 	    return -1;
 	  }
+	  
+	  if(dropout){
+	    nn->removeDropOut(retain_probability);
+	    nn->exportdata(best_weights);
+	  }
 
 	  printf("\r                                                                                   \r");
 	  printf("%d/%d : %f (%f) <%f> [%.1f minutes]\n",
@@ -1403,14 +1447,13 @@ int main(int argc, char** argv)
 		 eta.estimate()/60.0);
 	  fflush(stdout);
 	}
-	
+
+	best_weights_list.push_back(best_weights);
       }
 
       {
-	std::vector< math::vertex< math::blas_real<double> > > weightslist;
-	weightslist.push_back(best_weights);
 	// stores only the best weights found using gradient descent
-	bnn->importSamples(*nn, weightslist);
+	bnn->importSamples(*nn, best_weights_list);
       }
       
       
@@ -2120,32 +2163,32 @@ void print_usage(bool all)
   
   
   printf("Create, train and use neural network(s).\n\n");
-  printf("-v             shows ETA and other details\n");
-  printf("--help         shows this help\n");
-  printf("--version      displays version and exits\n");
-  printf("--info         prints network architecture information\n");
-  printf("--no-init      don't use heuristics when initializing net");
-  printf("--overfit      do not use early stopping (grad,lbfgs)\n");
-  printf("--deep=*       pretrains neural network as a RBM\n");
-  printf("               (* = binary or gaussian input layer)\n");
-  printf("--pseudolinear sets nonlinearity to be 50%% linear\n");
-  printf("--recurrent N  simple recurrent network (lbfgs, use)\n");
-  printf("--adaptive     adaptive step in bayesian HMC (bayes)\n");
-  printf("--negfb        use negative feedback between neurons\n");
-  printf("--load         use previously computed weights (grad,lbfgs,bayes)\n");
-  printf("--time TIME    sets time limit for computations\n");
-  printf("--samples N    use N samples or optimize for N iterations\n");
-  printf("--threads N    uses N parallel threads (pgrad, plbfgs)\n");
-  printf("--data N       only use N random samples of data\n");
-  printf("[data]         dstool file containing data (binary file)\n");
-  printf("[arch]         architecture of net (Eg. 3-10-9)\n");
-  printf("<nnfile>       used/loaded/saved neural network weights file\n");
-  printf("[lmethod]      method: use, random, grad, pgrad, bayes,\n"); 
-  printf("               lbfgs, plbfgs, edit, (gbrbm, bbrbm, mix)\n");
-  printf("               edit edits net to have new architecture\n");
-  printf("               previous weights are preserved if possible\n");
+  printf("-v                shows ETA and other details\n");
+  printf("--help            shows this help\n");
+  printf("--version         displays version and exits\n");
+  printf("--info            prints network architecture information\n");
+  printf("--no-init         don't use heuristics when initializing net\n");
+  printf("--overfit         do not use early stopping (grad,lbfgs)\n");
+  printf("--deep=*          pretrains neural network as a RBM\n");
+  printf("                  (* = binary or gaussian input layer)\n");
+  printf("--crossvalidation random crossvalidation (K=10)\n");
+  printf("--recurrent N     simple recurrent network (lbfgs, use)\n");
+  printf("--adaptive        adaptive step in bayesian HMC (bayes)\n");
+  printf("--negfb           use negative feedback between neurons\n");
+  printf("--load            use previously computed weights (grad,lbfgs,bayes)\n");
+  printf("--time TIME       sets time limit for computations\n");
+  printf("--samples N       use N samples or optimize for N iterations\n");
+  printf("--threads N       uses N parallel threads (pgrad, plbfgs)\n");
+  printf("--data N          only use N random samples of data\n");
+  printf("[data]            dstool file containing data (binary file)\n");
+  printf("[arch]            architecture of net (Eg. 3-10-9)\n");
+  printf("<nnfile>          used/loaded/saved neural network weights file\n");
+  printf("[lmethod]         method: use, random, grad, pgrad, bayes,\n"); 
+  printf("                  lbfgs, plbfgs, edit, (gbrbm, bbrbm, mix)\n");
+  printf("                  edit edits net to have new architecture\n");
+  printf("                  previous weights are preserved if possible\n");
   printf("\n");
-  printf("               Ctrl-C shutdowns the program.\n");
+  printf("                  Ctrl-C shutdowns the program.\n");
   printf("\n");
   printf("This program is distributed under GPL license.\n");
   printf("<tomas.ukkonen@iki.fi> (commercial license available).\n");

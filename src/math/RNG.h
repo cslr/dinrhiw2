@@ -74,6 +74,7 @@ namespace whiteice {
   
   void cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4]);
   };
+
   
 } /* namespace whiteice */
 

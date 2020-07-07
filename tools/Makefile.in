@@ -16,7 +16,7 @@ CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall `pkg-config dinrhiw --cfl
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
 SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
-	nntool.cpp argparser.tab.cpp cpuid_threads.cpp datatool.cpp gendata.cpp
+	nntool.cpp argparser.tab.cpp cpuid_threads.cpp datatool.cpp gendata.cpp gendata2.cpp
 
 
 AESCIPHER_LIBS = `pkg-config dinrhiw --libs` -lgmp
@@ -44,11 +44,15 @@ GENDATA_OBJECTS  = gendata.o
 GENDATA_TARGET   = gendata
 GENDATA_LIBS     = `pkg-config dinrhiw --libs` -lpthread
 
+GENDATA2_OBJECTS  = gendata2.o
+GENDATA2_TARGET   = gendata
+GENDATA2_LIBS     = `pkg-config dinrhiw --libs` -lpthread
+
 ##################################################
 
-all: aescipher nntools datatool gendata
+all: aescipher nntools datatool gendata gendata2
 
-clean: aescipher_clean dataplot_clean mmap_clean nntools_clean datatool_clean gendata_clean
+clean: aescipher_clean dataplot_clean mmap_clean nntools_clean datatool_clean gendata_clean gendata2_clean
 	$(RM) -f *~
 
 install: all
@@ -105,6 +109,13 @@ gendata: $(GENDATA_OBJECTS)
 gendata_clean:
 	$(RM) -f $(GENDATA_TARGET)
 	$(RM) -f $(GENDATA_OBJECTS)
+
+gendata2: $(GENDATA2_OBJECTS)
+	$(CXX) -o $(GENDATA2_TARGET) $(CXXFLAGS) $(GENDATA2_OBJECTS) $(GENDATA2_LIBS)
+
+gendata2_clean:
+	$(RM) -f $(GENDATA2_TARGET)
+	$(RM) -f $(GENDATA2_OBJECTS)
 
 depend:
 	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend

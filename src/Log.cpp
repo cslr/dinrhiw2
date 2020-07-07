@@ -29,7 +29,7 @@ namespace whiteice {
     handle = nullptr;
   }
   
-  Log::Log(std::string logFilename)
+  Log::Log(const std::string logFilename)
   {
     {
       std::lock_guard<std::mutex> lock(file_lock);
@@ -37,12 +37,18 @@ namespace whiteice {
       t0 = clock::now();
       
       handle = nullptr;
-      handle = fopen(logFilename.c_str(), "wt");
-      
-      if(handle == 0)
-	fprintf(stderr,
-		"F: Starting logging mechanism failed: %s\n",
-		logFilename.c_str());
+
+      if(logFilename.compare("<stdout>") == 0){
+	handle = stdout;
+      }
+      else{
+	handle = fopen(logFilename.c_str(), "wt");
+	
+	if(handle == 0)
+	  fprintf(stderr,
+		  "F: Starting logging mechanism failed: %s\n",
+		  logFilename.c_str());
+      }
     }
     
     info("Logging system started..");
@@ -53,25 +59,35 @@ namespace whiteice {
 
     std::lock_guard<std::mutex> lock(file_lock);
 
-    if(handle)
+    if(handle && handle != stdout)
       fclose(handle);
     
     handle = nullptr;
   }
   
   
-  bool Log::setOutputFile(std::string logFilename)
+  bool Log::setOutputFile(const std::string logFilename)
   {
-    auto new_handle = fopen(logFilename.c_str(), "wt");
-    if(new_handle == nullptr) return false;
-
-    {
-      std::lock_guard<std::mutex> lock(file_lock);
-      
-      if(handle != 0) fclose(handle);
-      handle = new_handle;
+    if(logFilename.compare("<stdout>") == 0){
+      {
+	std::lock_guard<std::mutex> lock(file_lock);
+	
+	if(handle != 0 && handle != stdout) fclose(handle);
+	handle = stdout;
+      }
     }
+    else{
+      auto new_handle = fopen(logFilename.c_str(), "wt");
+      if(new_handle == nullptr) return false;
 
+      {
+	std::lock_guard<std::mutex> lock(file_lock);
+	
+	if(handle != 0 && handle != stdout) fclose(handle);
+	handle = new_handle;
+      }
+    }
+      
     info("Logging system (re)started..");
 
     return true;
@@ -85,7 +101,7 @@ namespace whiteice {
 
 
   // logging
-  void Log::info(std::string msg){
+  void Log::info(const std::string msg){
     std::lock_guard<std::mutex> lock(file_lock);
     double ms = std::chrono::duration_cast<milliseconds>(clock::now() - t0).count()/1000.0;
     snprintf(buffer, BUFLEN, "INFO %5.5f %s\n", ms, msg.c_str());
@@ -101,7 +117,7 @@ namespace whiteice {
   }
   
   
-  void Log::warn(std::string msg){
+  void Log::warn(const std::string msg){
     std::lock_guard<std::mutex> lock(file_lock);
     double ms = std::chrono::duration_cast<milliseconds>(clock::now() - t0).count()/1000.0;
     snprintf(buffer, BUFLEN, "WARN %5.5f %s\n", ms, msg.c_str());
@@ -116,7 +132,7 @@ namespace whiteice {
     }
   }
   
-  void Log::error(std::string msg){
+  void Log::error(const std::string msg){
     std::lock_guard<std::mutex> lock(file_lock);
     double ms = std::chrono::duration_cast<milliseconds>(clock::now() - t0).count()/1000.0;
     snprintf(buffer, BUFLEN, "ERRO %5.5f %s\n", ms, msg.c_str());
@@ -131,7 +147,7 @@ namespace whiteice {
     }
   }
   
-  void Log::fatal(std::string msg){
+  void Log::fatal(const std::string msg){
     std::lock_guard<std::mutex> lock(file_lock);
     double ms = std::chrono::duration_cast<milliseconds>(clock::now() - t0).count()/1000.0;
     snprintf(buffer, BUFLEN, "FATA %5.5f %s\n", ms, msg.c_str());

@@ -2313,7 +2313,7 @@ namespace whiteice
     // scales weights according to retain_probability
     // (except the first layer and last layer where we keep all input/outputs)
 
-    for(unsigned int l=1;l<(getLayers()-1);l++){
+    for(unsigned int l=1;l<getLayers();l++){
       math::matrix<T> w;
       getWeights(w, l);
       w = probability*w;
@@ -2490,6 +2490,7 @@ namespace whiteice
     if(compressed) return compressor->ratio();
     else return 1.0f;
   }
+  
 #endif
   
   

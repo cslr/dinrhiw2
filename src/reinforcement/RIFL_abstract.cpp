@@ -249,7 +249,7 @@ namespace whiteice
     // FIXME/DEBUG disable??? (heuristics keep weights at unity..)
     // whiteice::math::NNGradDescent<T> grad(true);
     // ENABLES deep pretraining for nnetwork..
-    whiteice::math::NNGradDescent<T> grad(false, false, true);
+    whiteice::math::NNGradDescent<T> grad;
 
     // used to calculate dataset in background for NNGradDescent..
     whiteice::CreateRIFLdataset<T>* dataset_thread = nullptr;
