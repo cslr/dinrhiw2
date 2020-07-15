@@ -147,7 +147,12 @@ int main()
   srand(seed);
   
   try{
-    simple_global_optimum_test();
+    recurrent_nnetwork_test();
+    
+    return 0;
+	
+    
+    simple_global_optimum_test(); // DOES NOT WORK WELL
 
       
     // simple_vae_test();
@@ -164,8 +169,6 @@ int main()
 
     bayesian_nnetwork_test();
     
-    recurrent_nnetwork_test(); // DO NOT WORK?!?!
-
     nnetwork_test();
 
     
@@ -1178,6 +1181,7 @@ void recurrent_nnetwork_test()
   whiteice::RNG< math::blas_real<double> > rng;
   
   const unsigned int DEEPNESS = 10; // 10
+  const unsigned int RDIM = 5; // recursion data dimension
 
   printf("DEEPNESS = %d\n", DEEPNESS);
 
@@ -1228,10 +1232,10 @@ void recurrent_nnetwork_test()
     std::vector< unsigned int > arch;
 
     if(DEEPNESS > 1){
-      arch.push_back(data.dimension(0)+data.dimension(1));
+      arch.push_back(data.dimension(0)+RDIM);
       arch.push_back(10*(data.dimension(0)+data.dimension(1)));
       arch.push_back(10*(data.dimension(0)+data.dimension(1)));
-      arch.push_back(data.dimension(1));
+      arch.push_back(data.dimension(1)+RDIM);
     }
     else{
       arch.push_back(data.dimension(0));
@@ -1242,17 +1246,20 @@ void recurrent_nnetwork_test()
     
     
     nn = new whiteice::nnetwork< math::blas_real<double> >(arch);
-    nn->randomize();
+    //nn->randomize(2, true); // SETS SMALL INITIAL VALUES
+    nn->randomize(2); // SETS LARGE VALUES
   }
 
   math::vertex< math::blas_real<double> > w;
 
   nn->exportdata(w);
-  nn->setNonlinearity(nnetwork< math::blas_real<double> >::halfLinear);
+  nn->setNonlinearity(nnetwork< math::blas_real<double> >::rectifier);
 
   // deepness of recursiveness
   whiteice::rLBFGS_nnetwork< math::blas_real<double> >
     optimizer(*nn, data, DEEPNESS, false, false);
+
+  //optimizer.setGradientOnly(true); // follow only gradient
 
   optimizer.minimize(w); // starts optimization
 

@@ -18,28 +18,28 @@ rm -f iris-test.ds
 
 # uses nntool trying to learn from dataset (deep learning mode)
 
-./nntool -v --samples 20000 --recurrent 10 --pseudolinear --no-init iris-test.ds 5-500-500-1 iris-nn.cfg lbfgs
+./nntool -v --samples 20000 --recurrent 10 iris-test.ds 5-500-500-1 iris-nn.cfg lbfgs
 # ./nntool -v --time 100 iris-test.ds 4-1 iris-nn.cfg random
 
 ##################################################
 # testing
 
-./nntool -v --recurrent 10 --pseudolinear iris-test.ds 5-500-500-1 iris-nn.cfg use
+./nntool -v --recurrent 10 iris-test.ds 5-500-500-1 iris-nn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]
 
 cp -f iris-test.ds iris-pred.ds
 ./dstool -clear:1 iris-pred.ds
-# ./dstool -remove:1 wine-pred.ds
+./dstool -remove:1 iris-pred.ds
 
-./nntool -v --recurrent 10 --pseudolinear iris-pred.ds 5-500-500-1 iris-nn.cfg use
+./nntool -v --recurrent 10 iris-pred.ds 5-500-500-1 iris-nn.cfg use
 
 # ./dstool -list iris-test.ds
 # ./dstool -list iris-pred.ds
 # 
-# ./dstool -print:1 iris-pred.ds
-# tail iris.out
+./dstool -print:1 iris-pred.ds
+tail iris.out
 
 
 

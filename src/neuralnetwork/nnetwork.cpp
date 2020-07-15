@@ -569,7 +569,8 @@ namespace whiteice
   
   
   template <typename T>
-  bool nnetwork<T>::randomize(const unsigned int type)
+  bool nnetwork<T>::randomize(const unsigned int type,
+			      const bool smallvalues)
   {
     memset(data.data(), 0, sizeof(T)*data.size()); // TODO remove after debugging
 
@@ -612,7 +613,10 @@ namespace whiteice
 	  T scaling = T(0.1); // was chosen value
 #else
 	  T scaling = T(1.0); // no scaling so use values as in paper
+	  if(smallvalues)
+	    scaling = T(0.1);
 #endif
+	  
 	  
 	  var *= scaling;
 
@@ -654,6 +658,8 @@ namespace whiteice
 			T scaling = T(0.1); // was chosen value
 #else
 			T scaling = T(1.0);
+			if(smallvalues)
+			  scaling = T(0.1);
 #endif
 			
         		var *= scaling;

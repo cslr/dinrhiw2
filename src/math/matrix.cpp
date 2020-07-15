@@ -1751,8 +1751,12 @@ namespace whiteice
     {
       if(x0+xs > numCols || y0+ys > numRows)
 	return false;
+
+      if(xs == 0 | ys == 0) return false;
+
+      if(M.xsize() != xs || M.ysize() != ys)
+	if(M.resize(ys, xs) == false) return false;
       
-      M.resize(ys, xs);
       T* from = this->data + x0 + y0*numCols;
       T* to   = M.data;      
       

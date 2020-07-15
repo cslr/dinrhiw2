@@ -10,6 +10,7 @@
 
 #include "dinrhiw_blas.h"
 #include "vertex.h"
+#include "RNG.h"
 
 
 #ifndef LBFGS_h
@@ -65,6 +66,12 @@ namespace whiteice
 
         // returns true if optimization thread is running
         bool isRunning() const;
+
+	// NOTE: This DOES NOT work!
+	// follow only gradient instead of 2nd order H aprox
+	void setGradientOnly(bool gradientOnly=true){
+	  this->onlygradient = gradientOnly;
+	}
 	
       private:
       
@@ -72,6 +79,8 @@ namespace whiteice
 			T& scale,
 			const vertex<T>& x,
 			const vertex<T>& d) const;
+
+	bool box_values(vertex<T>& x) const;
             
 
         bool wolfe_conditions(const vertex<T>& x0,
@@ -83,7 +92,8 @@ namespace whiteice
 	T besty;
         volatile unsigned int iterations;
       
-        bool overfit;  
+        bool overfit;
+	bool onlygradient; // only follow gradient (no 2nd order aprox)
 	
         volatile bool sleep_mode, thread_running, solution_converged;
       
@@ -93,6 +103,9 @@ namespace whiteice
         
         std::thread* optimizer_thread;
         mutable std::mutex sleep_mutex, thread_mutex, solution_mutex;
+
+      protected:
+	whiteice::RNG<T> rng;
 	
       private:
 	void optimizer_loop();

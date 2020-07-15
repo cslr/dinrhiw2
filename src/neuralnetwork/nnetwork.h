@@ -97,7 +97,8 @@ namespace whiteice
 
     // set nnetworks parameters to random values
     // type = 0: random [-1,+1] values, type 1 = smart initialization, type 2 more stable initialization
-    bool randomize(const unsigned int type = 2);
+      bool randomize(const unsigned int type = 2,
+		     const bool smallvalues = false);
 
       // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);

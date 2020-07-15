@@ -11,28 +11,33 @@ namespace whiteice
 
   template <typename T>
   rLBFGS_nnetwork<T>::rLBFGS_nnetwork(const nnetwork<T>& nn,
-				    const dataset<T>& d,
-				    const unsigned int deepness_,
-				    bool overfit,
-				    bool negativefeedback) :
+				      const dataset<T>& d,
+				      const unsigned int deepness_,
+				      bool overfit,
+				      bool negativefeedback) :
     whiteice::math::LBFGS<T>(overfit), deepness(deepness_),
     net(nn), data(d)
   {
     this->negativefeedback = negativefeedback;
-
+    
     assert(data.getNumberOfClusters() == 2);
 
     // checks network has correct architecture
     if(deepness > 1)
     {
-      assert(net.input_size() == data.dimension(0)+data.dimension(1));
+      const unsigned int RDIM = net.input_size()-data.dimension(0);
+
+      assert(RDIM >= 1);
+      
+      assert(net.input_size() == data.dimension(0)+RDIM);
+      assert(net.output_size() == data.dimension(1)+RDIM);
     }
     else{
       assert(net.input_size() == data.dimension(0));
+      assert(net.output_size() == data.dimension(1));
     }
-
-    assert(net.output_size() == data.dimension(1));
     
+
     // divides data to to training and testing sets
     ///////////////////////////////////////////////
     {
@@ -127,12 +132,17 @@ namespace whiteice
 	math::vertex<T> err;
 	T esum = T(0.0f);
 	
+	const unsigned int INPUT_DATA_DIM = dtest.dimension(0);
+	const unsigned int OUTPUT_DATA_DIM = dtest.dimension(1);
+	const unsigned int RDIM = nnet.output_size() - OUTPUT_DATA_DIM;
+
+	math::vertex<T> input, output;
+	input.resize(dtest.dimension(0)+RDIM);
+	output.resize(RDIM);
 	
 	// E = SUM 0.5*e(i)^2
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtest.size(0);i++){
-	  math::vertex<T> input;
-	  input.resize(dtest.dimension(0)+dtest.dimension(1));
 	  input.zero();
 	  input.write_subvertex(dtest.access(0,i), 0);
 
@@ -140,11 +150,14 @@ namespace whiteice
 	  //             calculates error
 	  for(unsigned int d = 0;d<deepness;d++){
 	    nnet.input() = input;
-	    nnet.calculate(false);	    
-	    input.write_subvertex(nnet.output(), dtest.dimension(0));
+	    nnet.calculate(false);
+	    
+	    nnet.output().subvertex(output, dtest.dimension(1), RDIM);
+	    assert(input.write_subvertex(output, INPUT_DATA_DIM));
 	  }
-	  
-	  err = dtest.access(1, i) - nnet.output();
+
+	  nnet.output().subvertex(err, 0, dtest.dimension(1));
+	  err -= dtest.access(1, i);
 	  err = (err*err);
 	  esum += T(0.5f)*err[0];
 	}
@@ -161,6 +174,7 @@ namespace whiteice
     
     return e;
   }
+
   
 
   template <typename T>
@@ -204,26 +218,40 @@ namespace whiteice
 	nnet.importdata(x);
 	math::vertex<T> err;
 	T esum = T(0.0f);
+
+	const unsigned int INPUT_DATA_DIM = dtrain.dimension(0);
+	const unsigned int OUTPUT_DATA_DIM = dtrain.dimension(1);
+	const unsigned int RDIM = nnet.output_size() - OUTPUT_DATA_DIM;
+
+	math::vertex<T> input, output;
+	input.resize(nnet.input_size());
+	output.resize(RDIM);
 	
 	// E = SUM 0.5*e(i)^2
 #pragma omp for nowait schedule(dynamic)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
-	  math::vertex<T> input;
-	  input.resize(nnet.input_size());
 	  input.zero();
 	  assert(input.write_subvertex(dtrain.access(0,i), 0));
-
+	  
 	  // recurrency: feebacks output back to inputs and
 	  //             calculates error
 	  for(unsigned int d = 0;d<deepness;d++){
 	    nnet.input() = input;
 	    nnet.calculate(false);
-	    err = dtrain.access(1, i) - nnet.output();
-	    
-	    err = (err*err);
-	    esum += T(0.5f)*err[0];
 
-	    assert(input.write_subvertex(nnet.output(), nnet.output_size()));
+	    //if(d == (deepness - 1))
+	    {
+	      // only the last error term E(N) matters
+	      nnet.output().subvertex(err, 0, dtrain.dimension(1));
+	      err -= dtrain.access(1, i);
+	      
+	      err = (err*err);
+	      esum += T(0.5f)*err[0];
+	    }
+
+	    
+	    nnet.output().subvertex(output, dtrain.dimension(1),RDIM);
+	    assert(input.write_subvertex(output, INPUT_DATA_DIM));
 	  }
 	  
 	}
@@ -234,15 +262,17 @@ namespace whiteice
 	}
 	
       }
-      
-    }
-      
 
-    {
-	T alpha = T(0.01);   // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
-	auto err = T(0.5)*alpha*(x*x);
-	e += err[0];
     }
+      
+#if 0
+    {
+      // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
+      T alpha = T(0.01);
+      auto err = T(0.5)*alpha*(x*x);
+      e += err[0];
+    }
+#endif
 
 
     e /= T(dtrain.size(0));
@@ -250,7 +280,193 @@ namespace whiteice
     return (e);    
   }
 
+  template <typename T>
+  math::vertex<T> rLBFGS_nnetwork<T>::Ugrad(const math::vertex<T>& x) const
+  {
+
+    if(deepness <= 1){ // non-recurrent neural network (normal gradient)
+      math::vertex<T> sumgrad;
+      sumgrad = x;
+      sumgrad.zero();
+      
+#pragma omp parallel shared(sumgrad)
+      {
+	whiteice::nnetwork<T> nnet(this->net);
+	nnet.importdata(x);
+	
+	math::vertex<T> grad, err;
+	math::vertex<T> sgrad;
+	sgrad = x;
+	sgrad.zero();
+	
+#pragma omp for nowait schedule(dynamic)
+	for(unsigned int i=0;i<dtrain.size(0);i++){
+	  nnet.input() = dtrain.access(0, i);
+	  nnet.calculate(true);
+	  err = dtrain.access(1,i) - nnet.output();
+	  
+	  if(nnet.gradient(err, grad) == false){
+	    std::cout << "gradient failed." << std::endl;
+	    assert(0); // FIXME
+	  }
+
+	  sgrad += grad;
+	}
+	
+#pragma omp critical
+	{
+	  sumgrad += sgrad;
+	}
+	
+      }
+
+#if 0
+      {
+	// regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
+	T alpha = T(0.01);
+	auto err = alpha*x;
+
+	sumgrad += alpha*x;
+      }
+#endif
+
+      sumgrad /= T(dtrain.size(0));
+
+      return sumgrad;
+    }
+    else{
+      // recurrent neural network!
+      math::vertex<T> sumgrad;
+      sumgrad = x;
+      sumgrad.zero();
+
+      const unsigned int INPUT_DATA_DIM = dtrain.dimension(0);
+      const unsigned int OUTPUT_DATA_DIM = dtrain.dimension(1);
+      const unsigned int RDIM = net.output_size() - OUTPUT_DATA_DIM;
+      const unsigned int RDIM2 = net.input_size() - INPUT_DATA_DIM;
+      assert(RDIM == RDIM2);
+      
+#pragma omp parallel shared(sumgrad)
+      {
+	whiteice::nnetwork<T> nnet(this->net);
+	nnet.importdata(x);
+	
+	math::vertex<T> grad, err;
+	math::vertex<T> sgrad;
+	sgrad = x;
+	sgrad.zero();
+	grad = x;
+
+	math::vertex<T> input, output;
+	input.resize(dtrain.dimension(0)+RDIM);
+	output.resize(RDIM);
+
+	math::matrix<T> UGRAD;
+	UGRAD.resize(dtrain.dimension(1)+RDIM, nnet.gradient_size());
+
+	math::matrix<T> URGRAD;
+	URGRAD.resize(RDIM, nnet.gradient_size());
+
+	math::matrix<T> UYGRAD;
+	UYGRAD.resize(dtrain.dimension(1), nnet.gradient_size());
+
+	math::matrix<T> FGRAD;
+	FGRAD.resize(dtrain.dimension(1)+RDIM, nnet.gradient_size());
+
+	math::matrix<T> FRGRAD;
+	FRGRAD.resize(RDIM, nnet.output_size());
+
+	math::matrix<T> FGRADTMP;
+	FGRADTMP.resize(dtrain.dimension(1)+RDIM, RDIM);
+
+#pragma omp for nowait schedule(dynamic)
+	for(unsigned int i=0;i<dtrain.size(0);i++){
+	  UGRAD.zero();
+	  grad.zero();
+	  input.zero();
+	  input.write_subvertex(dtrain.access(0,i), 0);
+	  
+	  for(unsigned int d=0;d<deepness;d++){
+	    
+	    assert(nnet.gradient(input, FGRAD) == true);
+	    // df/dw (dtrain.dimension(1)+RDIM, nnet.gradient_size())
+
+	    {
+	      assert(nnet.gradient_value(input, FGRADTMP) == true);
+	      // df/dinput (dtrain.dimension(1)+RDIM,dtrain.dimension(0)+RDIM)
+
+	      // df/dr
+	      assert(FGRADTMP.submatrix(FRGRAD,
+					dtrain.dimension(0), 0,
+					RDIM, nnet.output_size()) == true);
+
+	      // KAPPA_r = I
+
+	      // df/dr (dtrain.dimension(1)+RDIM, RDIM)
+	      // dU/dw (dtrain.dimension(1)+RDIM, nnet.gradient_size())
+
+	      // KAPPA_r operation to UGRAD to select only R terms
+	      assert(UGRAD.submatrix(URGRAD,
+				     0,dtrain.dimension(1),
+				     nnet.gradient_size(), RDIM) == true);
+	    }
+
+	    // dU(n+1)/dw = df/dw + df/dr * KAPPA_r * dU(n)/dw
+	    UGRAD = FGRAD + FRGRAD*URGRAD;
+
+	    nnet.input() = input;
+	    nnet.calculate(false);
+	    
+	    //if(d == (deepness - 1))
+	    { // only last E(N) error term matters
+	      // calculate gradient value
+	      nnet.output().subvertex(err, 0, dtrain.dimension(1));
+	      err -= dtrain.access(1,i);
+
+	      // selects only Y terms from UGRAD
+	      assert(UGRAD.submatrix
+		     (UYGRAD,
+		      0,0,
+		      nnet.gradient_size(), dtrain.dimension(1)));
+
+	      grad = err*UYGRAD;
+
+	      sgrad += grad;
+	    }
+
+	    nnet.output().subvertex(output, dtrain.dimension(1),RDIM);
+	    assert(input.write_subvertex(output, INPUT_DATA_DIM));
+	  }
+
+	}
+	
+#pragma omp critical
+	{
+	  sumgrad += sgrad;
+	}
+	
+      }
+
+#if 0
+      {
+	// regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
+	T alpha = T(0.01);
+	auto err = alpha*x;
+
+	sumgrad += alpha*x;
+      }
+#endif
+
+      sumgrad /= T(dtrain.size(0));
+
+      return sumgrad;
+    }
+
+
+  }
   
+
+#if 0
   template <typename T>
   math::vertex<T> rLBFGS_nnetwork<T>::Ugrad(const math::vertex<T>& x) const
   {
@@ -794,6 +1010,7 @@ namespace whiteice
     }
 
   }
+#endif
   
   
   template <typename T>
@@ -809,58 +1026,6 @@ namespace whiteice
       nnet.exportdata(x);
     }
 
-#if 0
-    // for each layer we select minimum norm solutions and replace them with random
-    {
-      whiteice::nnetwork<T> nnet(this->net);
-      nnet.importdata(x);
-
-      for(unsigned int l=0;l<(nnet.getLayers()-1);l++){ // do not process the last layer..
-	whiteice::math::vertex<T> b;
-	whiteice::math::matrix<T> W;
-
-	nnet.getBias(b, l);
-	nnet.getWeights(W, l);
-	
-	for(unsigned int n=0;n<nnet.getNeurons(l);n += 2){
-	  b[n] = b[n+1];
-	  for(unsigned int j=0;j<W.xsize();j++){
-	    W(n,j) = W(n+1,j);
-	  }
-	}
-
-	nnet.setBias(b,l);
-	nnet.setWeights(W,l);
-      }
-    }
-#endif
-
-#if 0
-    {
-      whiteice::nnetwork<T> nnet(this->net);
-      nnet.importdata(x);
-      
-      for(unsigned int l=0;l<(nnet.getLayers()-1);l++){ // do not process the last layer..
-	whiteice::math::vertex<T> b;
-	whiteice::math::matrix<T> W;
-
-	nnet.getBias(b, l);
-	nnet.getWeights(W, l);
-	
-	for(unsigned int n=0;n<nnet.getNeurons(l);n += 2){
-	  b[n] = b[n+1];
-	  for(unsigned int j=0;j<W.xsize();j++){
-	    W(n,j) = W(n+1,j);
-	  }
-	}
-
-	nnet.setBias(b,l);
-	nnet.setWeights(W,l);
-      }
-	    
-    }
-#endif
-    
     return true;
   }
   

@@ -45,7 +45,7 @@ GENDATA_TARGET   = gendata
 GENDATA_LIBS     = `pkg-config dinrhiw --libs` -lpthread
 
 GENDATA2_OBJECTS  = gendata2.o
-GENDATA2_TARGET   = gendata
+GENDATA2_TARGET   = gendata2
 GENDATA2_LIBS     = `pkg-config dinrhiw --libs` -lpthread
 
 ##################################################

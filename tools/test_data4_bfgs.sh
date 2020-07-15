@@ -11,14 +11,14 @@ rm -f iris-test.ds
 ./dstool -import:0 iris-test.ds iris.in
 ./dstool -import:1 iris-test.ds iris.out
 ./dstool -padd:0:meanvar iris-test.ds
-./dstool -padd:0:pca iris-test.ds
+##./dstool -padd:0:pca iris-test.ds
 ./dstool -padd:1:meanvar iris-test.ds
 
 ./dstool -list iris-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --time 200 iris-test.ds 4-4-4-1 iris-nn.cfg parallelbfgs
+./nntool -v --time 200 iris-test.ds 4-4-4-1 iris-nn.cfg plbfgs
 
 ##################################################
 # testing

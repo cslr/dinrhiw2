@@ -52,9 +52,7 @@ namespace whiteice
       bool negativefeedback;
     
       dataset<T> dtrain;
-      dataset<T> dtest;
-
-      whiteice::RNG<T> rng;
+      dataset<T> dtest;      
       
     };
 
