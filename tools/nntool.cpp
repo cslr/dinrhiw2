@@ -191,7 +191,14 @@ int main(int argc, char** argv)
       if(arch[0] <= 0){
 	if(SIMULATION_DEPTH > 1){
 	  if(data.getNumberOfClusters() >= 2){
-	    arch[0] = data.dimension(0)+data.dimension(1);
+	    const int RDIM2 = ((int)arch[arch.size()-1]) - ((int)data.dimension(1));
+	    if(RDIM2 > 0){
+	      arch[0] = data.dimension(0)+RDIM2;
+	    }
+	    else{
+	      fprintf(stderr, "error: cannot compute recurrent network input layer size.\n");
+	      exit(-1);
+	    }
 	  }
 	  else{
 	    fprintf(stderr, "error: cannot compute recurrent network input layer size.\n");
@@ -205,8 +212,10 @@ int main(int argc, char** argv)
       else{
 	if(SIMULATION_DEPTH > 1){
 	  if(data.getNumberOfClusters() >= 2){
-	    if(arch[0] != data.dimension(0)+data.dimension(1)){
-	      fprintf(stderr, "error: bad recurrent network input layer size, input data dimension pair.\n");
+	    const int RDIM1 = ((int)arch[0]) - ((int)data.dimension(0));
+
+	    if(RDIM1 <= 0){
+	      fprintf(stderr, "error: bad recurrent network input layer size.\n");
 	      exit(-1);
 	    }
 	  }
@@ -221,7 +230,15 @@ int main(int argc, char** argv)
       
       if(arch[arch.size()-1] <= 0){
 	if(data.getNumberOfClusters() >= 2){
-	  arch[arch.size()-1] = data.dimension(1);
+	  const int RDIM1 = ((int)arch[0]) - ((int)data.dimension(0));
+
+	  if(RDIM1 > 0){
+	    arch[arch.size()-1] = data.dimension(1) + RDIM1;
+	  }
+	  else{
+	    fprintf(stderr, "error: bad recurrent network input/output layer size.\n");
+	    exit(-1);
+	  }
 	}
 	else{
 	  fprintf(stderr, "error: neural network do not have proper output dimension.\n");
@@ -230,7 +247,14 @@ int main(int argc, char** argv)
       }
       else{
 	if(data.getNumberOfClusters() >= 2){
-	  if(arch[arch.size()-1] != data.dimension(1)){
+	  const int RDIM1 = ((int)arch[0]) - ((int)data.dimension(0));
+
+	  if(RDIM1 <= 0 && SIMULATION_DEPTH > 1){
+	    fprintf(stderr, "error: bad recurrent network input layer size.\n");
+	    exit(-1);
+	  }
+	  
+	  if(arch[arch.size()-1] != data.dimension(1)+RDIM1){
 	    fprintf(stderr, "error: bad network output layer size, output data dimension pair.\n");
 	    exit(-1);
 	  }
@@ -297,14 +321,21 @@ int main(int argc, char** argv)
 	printf("Processing %d data points (%d parameters in neural network).\n", data.size(0), w.size());
       }
       else{
-	if(SIMULATION_DEPTH <= 1)
+	if(SIMULATION_DEPTH <= 1){
 	  printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
 		 data.size(0), data.dimension(0), data.dimension(1),
 		 w.size());
-	else
-	  printf("%d data points for %d+%d -> %d mapping (%d parameters in neural network).\n",
-		 data.size(0), data.dimension(0), data.dimension(1), data.dimension(1),
+	}
+	else{
+	  const int RDIM1 = ((int)arch[0]) - data.dimension(0);
+	  const int RDIM2 = ((int)arch[arch.size()-1]) - data.dimension(1);
+	  
+	  printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
+		 data.size(0),
+		 data.dimension(0)-RDIM1,
+		 data.dimension(1)-RDIM2,
 		 w.size());
+	}
       }
     }
     
@@ -1779,7 +1810,9 @@ int main(int argc, char** argv)
 	nn = NULL;
 	return -1;
       }
-      
+
+      const int RDIM1 = ((int)bnn->inputSize()) - ((int)data.dimension(0));
+      const int RDIM2 = ((int)bnn->outputSize()) - ((int)data.dimension(1));
       
       if(bnn->inputSize() != data.dimension(0) && SIMULATION_DEPTH == 1){
 	std::cout << "Neural network input dimension mismatch for input dataset ("
@@ -1790,7 +1823,7 @@ int main(int argc, char** argv)
 	nn = NULL;
 	return -1;
       }
-      else if(bnn->inputSize() != data.dimension(0)+bnn->outputSize() && SIMULATION_DEPTH > 1){
+      else if((RDIM1 != RDIM2 || (RDIM1 <= 0 || RDIM2 <= 0)) && SIMULATION_DEPTH > 1){
 	std::cout << "Recurrent neural network input dimension mismatch for input dataset ("
 		  << bnn->inputSize() << " != " << data.dimension(0)+bnn->outputSize() << ")"
 		  << std::endl;
@@ -1809,8 +1842,10 @@ int main(int argc, char** argv)
 	   data.size(0) == data.size(1)){
 	  compare_clusters = true;
 	}
+
+	const int RDIM1 = ((int)bnn->inputSize()) - ((int)data.dimension(0));
 	  
-	if(bnn->outputSize() != data.dimension(1)){
+	if(bnn->outputSize() != data.dimension(1)+RDIM1){
 	  std::cout << "Neural network output dimension mismatch for dataset ("
 		    << bnn->outputSize() << " != " << data.dimension(1) << ")"
 		    << std::endl;
@@ -1824,8 +1859,10 @@ int main(int argc, char** argv)
 	   data.size(0) == data.size(1)){
 	  compare_clusters = true;
 	}
+
+	const int RDIM1 = ((int)bnn->inputSize()) - ((int)data.dimension(0));
 	
-	if(bnn->outputSize() != data.dimension(1)){
+	if(bnn->outputSize() != data.dimension(1)+RDIM1){
 	  std::cout << "Neural network output dimension mismatch for dataset ("
 		    << bnn->outputSize() << " != " << data.dimension(1) << ")"
 		    << std::endl;
@@ -1834,7 +1871,7 @@ int main(int argc, char** argv)
 	  return -1;	    
 	}
 
-	if(bnn->outputSize() != data.dimension(2)){
+	if(bnn->outputSize() != data.dimension(2)+RDIM1){
 	  std::cout << "Neural network output dimension mismatch for dataset ("
 		    << bnn->outputSize() << " != " << data.dimension(2) << ")"
 		    << std::endl;
@@ -1851,14 +1888,7 @@ int main(int argc, char** argv)
 	return -1;	    
       }
 
-#if 0
-      {
-	printf("DEBUG (USE)\n");
-	
-	bnn->printInfo();
-      }
-#endif
-	
+      
       if(compare_clusters == true){
 	math::blas_real<double> error1 = math::blas_real<double>(0.0f);
 	math::blas_real<double> error2 = math::blas_real<double>(0.0f);
@@ -1873,10 +1903,10 @@ int main(int argc, char** argv)
 	w.zero();
 
 	for(auto& wi : weights)
-		w += wi;
+	  w += wi;
 
 	w /= weights.size(); // E[w]
-
+	
 	
 	{
 	  std::vector<unsigned int> arch2;
@@ -1925,7 +1955,11 @@ int main(int argc, char** argv)
 
 	for(unsigned int i=0;i<data.size(0) && !stopsignal;i++){
 	  math::vertex< whiteice::math::blas_real<double> > out1;
+	  math::vertex< whiteice::math::blas_real<double> > rdim;
 	  math::matrix< whiteice::math::blas_real<double> > cov;
+
+	  rdim.resize(bnn->inputSize() - data.dimension(0));
+	  rdim.zero();
 
 	  bnn->calculate(data.access(0, i), out1, cov, SIMULATION_DEPTH, 0);
 	  err = data.access(1,i) - out1;
@@ -1938,23 +1972,36 @@ int main(int argc, char** argv)
 	  single_nn.input().write_subvertex(data.access(0, i), 0);	  
 	  
 	  for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
-	    if(SIMULATION_DEPTH > 1)
-	      single_nn.input().write_subvertex(single_nn.output(), data.access(0, i).size());
+	    if(SIMULATION_DEPTH > 1){
+	      single_nn.input().write_subvertex(rdim, data.dimension(0));
+	    }
+	    
 	    single_nn.calculate(false, false);
+
+	    if(SIMULATION_DEPTH > 1){
+	      single_nn.output().subvertex(rdim, data.dimension(1), rdim.size());
+	    }
 	  }
 	  
-	  err = data.access(1, i) - single_nn.output();
+	  if(SIMULATION_DEPTH > 1){
+	    single_nn.output().subvertex(out1, 0, data.dimension(1));
+	  }
+	  else{
+	    out1 = single_nn.output();
+	  }
+	  
+	  err = data.access(1, i) - out1;
 
 	  for(unsigned int i=0;i<err.size();i++)
 	    error2 += c*(err[i]*err[i]) / math::blas_real<double>((double)err.size());
 
 	  eta.update((double)(i+1));
 
-	  double percent = 100.0f*((double)i)/((double)data.size(0));
+	  double percent = 100.0f*((double)i+1)/((double)data.size(0));
 	  double etamin  = eta.estimate()/60.0f;
 
 	  printf("\r                                                            \r");
-	  printf("%d/%d (%.1f%%) [ETA: %.1f minutes]", i, data.size(0), percent, etamin);
+	  printf("%d/%d (%.1f%%) [ETA: %.1f minutes]", i+1, data.size(0), percent, etamin);
 	  fflush(stdout);
 
 	  counter++;
@@ -2035,6 +2082,10 @@ int main(int argc, char** argv)
 	    data.add(2, var, true);
 	  }
 	}
+	else{
+	  printf("Bad dataset data (no data?)\n");
+	  exit(-1);
+	}
 
 	if(stopsignal){
 	  if(bnn) delete bnn;
@@ -2043,11 +2094,14 @@ int main(int argc, char** argv)
 	  exit(-1);
 	}
 	
-	if(data.save(datafn) == true)
+	if(data.save(datafn) == true){
 	  std::cout << "Storing results to dataset file: " 
 		    << datafn << std::endl;
-	else
+	}
+	else{
 	  std::cout << "Storing results to dataset file FAILED." << std::endl;
+	}
+	
       }
     }
 

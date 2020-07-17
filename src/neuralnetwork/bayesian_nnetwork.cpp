@@ -361,9 +361,11 @@ namespace whiteice
     if(nnets.size() <= 0) return false;
     if(latestN > (signed)nnets.size()) return false;
     if(latestN <= 0) latestN = nnets.size();
+
+    const int RDIM = nnets[0]->input_size() - input.size();
     
     if(SIMULATION_DEPTH > 1){
-      if(nnets[0]->output_size() + input.size() != nnets[0]->input_size())
+      if(((int)nnets[0]->output_size()) - RDIM <= 0 || RDIM <= 0)
 	return false;
     }
     else{
@@ -371,14 +373,14 @@ namespace whiteice
 	return false;
     }
 
-    const unsigned int D = nnets[0]->output_size();
-    mean.resize(D);
-    covariance.resize(D,D);
+    const unsigned int DIM = nnets[0]->output_size() - RDIM;
+    mean.resize(DIM);
+    covariance.resize(DIM,DIM);
     
     mean.zero();
     covariance.zero();
 
-    if(latestN <= (signed)D)
+    if(latestN <= (signed)DIM)
       covariance.identity(); // regularizer term for small datasize
     
 #pragma omp parallel shared(mean, covariance)
@@ -386,8 +388,8 @@ namespace whiteice
       math::matrix<T> cov;
       math::vertex<T> m;
       
-      m.resize(D);
-      cov.resize(D,D);
+      m.resize(DIM);
+      cov.resize(DIM,DIM);
       m.zero();
       cov.zero();
       
@@ -396,18 +398,32 @@ namespace whiteice
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
 	math::vertex<T> in(nnets[0]->input_size());
-	math::vertex<T> out(D);
+	math::vertex<T> out(DIM), out_nn(nnets[0]->output_size());
+	math::vertex<T> rdim(RDIM);
 
 	in.zero();
 	out.zero();
+	out_nn.zero();
+	rdim.zero();
 
 	in.write_subvertex(input, 0); // writes input section
 	
 	for(unsigned int d=0;d<SIMULATION_DEPTH;d++){
 	  if(SIMULATION_DEPTH > 1){
-	    in.write_subvertex(out, input.size());
+	    in.write_subvertex(rdim, input.size());
 	  }
-	  nnets[i]->calculate(in, out); // recurrent calculations if needed
+	  
+	  nnets[i]->calculate(in, out_nn); // recurrent calculations if needed
+	  if(SIMULATION_DEPTH > 1){
+	    out_nn.subvertex(rdim, DIM, rdim.size());
+	  }
+	}
+	
+	if(SIMULATION_DEPTH > 1){
+	  out_nn.subvertex(out, 0, DIM);
+	}
+	else{
+	  out = out_nn;
 	}
 	
 	m += ninv*out;

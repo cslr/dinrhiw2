@@ -17,21 +17,20 @@ rm -f wine-test.ds
 ./dstool -list wine-test.ds
 
 # uses nntool trying to learn from dataset
+ARCH="14-20-2"
 
-./nntool -v --recurrent 10 --pseudolinear wine-test.ds 14-20-1 winenn.cfg lbfgs
-# ./nntool -v --time 10 wine-test.ds 13-1 winenn.cfg random
+./nntool -v --recurrent 10 wine-test.ds $ARCH winenn.cfg lbfgs
 
 # testing
 
-./nntool -v --recurrent 10 --pseudolinear wine-test.ds 14-20-1 winenn.cfg use
+./nntool -v --recurrent 10 wine-test.ds $ARCH winenn.cfg use
 
 # predicting [stores results to dataset]
 
 cp -f wine-test.ds wine-pred.ds
 ./dstool -clear:1 wine-pred.ds
-# ./dstool -remove:1 wine-pred.ds
 
-./nntool -v --recurrent 10 --pseudolinear wine-pred.ds 14-20-1 winenn.cfg use
+./nntool -v --recurrent 10 wine-pred.ds $ARCH winenn.cfg use
 
 ./dstool -list wine-test.ds
 ./dstool -list wine-pred.ds
