@@ -2,7 +2,7 @@
 #ifndef nntool_h
 #define nntool_h
 
-#define NNTOOL_VERSION "0.73"
+#define NNTOOL_VERSION "0.75"
 
 void print_usage(bool all);
 

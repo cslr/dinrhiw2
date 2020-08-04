@@ -327,13 +327,10 @@ int main(int argc, char** argv)
 		 w.size());
 	}
 	else{
-	  const int RDIM1 = ((int)arch[0]) - data.dimension(0);
-	  const int RDIM2 = ((int)arch[arch.size()-1]) - data.dimension(1);
-	  
 	  printf("%d data points for %d -> %d mapping (%d parameters in neural network).\n",
 		 data.size(0),
-		 data.dimension(0)-RDIM1,
-		 data.dimension(1)-RDIM2,
+		 data.dimension(0),
+		 data.dimension(1),
 		 w.size());
 	}
       }
@@ -645,6 +642,8 @@ int main(int argc, char** argv)
 
       
       rLBFGS_nnetwork< whiteice::math::blas_real<double> > bfgs(*nn, data, SIMULATION_DEPTH, overfit, negfeedback);
+
+      bfgs.setGradientOnly(true);
       
       {
 	time_t t0 = time(0);

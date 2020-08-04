@@ -279,7 +279,7 @@ namespace whiteice
 	  }
 	}
 
-#if 0
+#if 1
 	// HACK:
 	// heuristics: allows going to worse solution with 20% prob
 	// (small step length values to gradient direction)

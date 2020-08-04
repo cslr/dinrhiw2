@@ -168,6 +168,7 @@ namespace whiteice
 	}
 	
       }
+      
     }
     
     e /= T( (float)dtest.size(0) ); // per N
@@ -182,100 +183,196 @@ namespace whiteice
   {
     T e = T(0.0f);
 
-    if(deepness <= 1){
+    const bool use_minibatch = true;
+
+    if(use_minibatch){
+      const unsigned int MINIBATCHSIZE = 100;
+
+      if(deepness <= 1){
 #pragma omp parallel
-      {
-	whiteice::nnetwork<T> nnet(this->net);
-	
-	nnet.importdata(x);
-	math::vertex<T> err;
-	T esum = T(0.0f);
-	
-	// E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
-	for(unsigned int i=0;i<dtrain.size(0);i++){
-	  nnet.input() = dtrain.access(0, i);
-	  nnet.calculate(false);
-	  err = dtrain.access(1, i) - nnet.output();
-	  err = (err*err); // /T(dtrain.size(0));
-	  esum += T(0.5f)*err[0];
-	}
-	
-#pragma omp critical
 	{
-	  e += esum;
-	}
-	
-      }
-      
-    }
-    else{ // recurrent neural network
-      
-#pragma omp parallel shared(e)
-      {
-	whiteice::nnetwork<T> nnet(this->net);
-	
-	nnet.importdata(x);
-	math::vertex<T> err;
-	T esum = T(0.0f);
-
-	const unsigned int INPUT_DATA_DIM = dtrain.dimension(0);
-	const unsigned int OUTPUT_DATA_DIM = dtrain.dimension(1);
-	const unsigned int RDIM = nnet.output_size() - OUTPUT_DATA_DIM;
-
-	math::vertex<T> input, output;
-	input.resize(nnet.input_size());
-	output.resize(RDIM);
-	
-	// E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
-	for(unsigned int i=0;i<dtrain.size(0);i++){
-	  input.zero();
-	  assert(input.write_subvertex(dtrain.access(0,i), 0));
+	  whiteice::nnetwork<T> nnet(this->net);
 	  
-	  // recurrency: feebacks output back to inputs and
-	  //             calculates error
-	  for(unsigned int d = 0;d<deepness;d++){
-	    nnet.input() = input;
+	  nnet.importdata(x);
+	  math::vertex<T> err;
+	  T esum = T(0.0f);
+	  
+	  // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+	  for(unsigned int i=0;i<MINIBATCHSIZE;i++){
+	    const unsigned int index =
+	      whiteice::math::LBFGS<T>::rng.rand() % dtrain.size(0);
+	    nnet.input() = dtrain.access(0, index);
 	    nnet.calculate(false);
-
-	    //if(d == (deepness - 1))
-	    {
-	      // only the last error term E(N) matters
-	      nnet.output().subvertex(err, 0, dtrain.dimension(1));
-	      err -= dtrain.access(1, i);
-	      
-	      err = (err*err);
-	      esum += T(0.5f)*err[0];
-	    }
-
+	    err = dtrain.access(1, index) - nnet.output();
+	    err = (err*err); // /T(dtrain.size(0));
+	    esum += T(0.5f)*err[0];
+	  }
+	  
+#pragma omp critical
+	  {
+	    e += esum;
+	  }
+	
+	}
+      
+      }
+      else{ // recurrent neural network
+	
+#pragma omp parallel shared(e)
+	{
+	  whiteice::nnetwork<T> nnet(this->net);
+	  
+	  nnet.importdata(x);
+	  math::vertex<T> err;
+	  T esum = T(0.0f);
+	  
+	  const unsigned int INPUT_DATA_DIM = dtrain.dimension(0);
+	  const unsigned int OUTPUT_DATA_DIM = dtrain.dimension(1);
+	  const unsigned int RDIM = nnet.output_size() - OUTPUT_DATA_DIM;
+	  
+	  math::vertex<T> input, output;
+	  input.resize(nnet.input_size());
+	  output.resize(RDIM);
+	  
+	  // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+	  for(unsigned int i=0;i<MINIBATCHSIZE;i++){
+	    const unsigned int index =
+	      whiteice::math::LBFGS<T>::rng.rand() % dtrain.size(0);
+	    input.zero();
+	    assert(input.write_subvertex(dtrain.access(0,index), 0));
 	    
-	    nnet.output().subvertex(output, dtrain.dimension(1),RDIM);
-	    assert(input.write_subvertex(output, INPUT_DATA_DIM));
+	    // recurrency: feebacks output back to inputs and
+	    //             calculates error
+	    for(unsigned int d = 0;d<deepness;d++){
+	      nnet.input() = input;
+	      nnet.calculate(false);
+	      
+	      if(d == (deepness - 1))
+	      {
+		// only the last error term E(N) matters
+		nnet.output().subvertex(err, 0, dtrain.dimension(1));
+		err -= dtrain.access(1, index);
+		
+		err = (err*err);
+		esum += T(0.5f)*err[0];
+	      }
+	      
+	      
+	      nnet.output().subvertex(output, dtrain.dimension(1),RDIM);
+	      assert(input.write_subvertex(output, INPUT_DATA_DIM));
+	    }
+	    
+	  }
+	  
+#pragma omp critical
+	  {
+	    e += esum;
 	  }
 	  
 	}
 	
-#pragma omp critical
+      }
+      
+      e /= T(MINIBATCHSIZE);
+    }
+    else{ // don't use minibatch
+
+      if(deepness <= 1){
+#pragma omp parallel
 	{
-	  e += esum;
+	  whiteice::nnetwork<T> nnet(this->net);
+	  
+	  nnet.importdata(x);
+	  math::vertex<T> err;
+	  T esum = T(0.0f);
+	  
+	  // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+	  for(unsigned int i=0;i<dtrain.size(0);i++){
+	    nnet.input() = dtrain.access(0, i);
+	    nnet.calculate(false);
+	    err = dtrain.access(1, i) - nnet.output();
+	    err = (err*err); // /T(dtrain.size(0));
+	    esum += T(0.5f)*err[0];
+	  }
+	  
+#pragma omp critical
+	  {
+	    e += esum;
+	  }
+	
+	}
+      
+      }
+      else{ // recurrent neural network
+	
+#pragma omp parallel shared(e)
+	{
+	  whiteice::nnetwork<T> nnet(this->net);
+	  
+	  nnet.importdata(x);
+	  math::vertex<T> err;
+	  T esum = T(0.0f);
+	  
+	  const unsigned int INPUT_DATA_DIM = dtrain.dimension(0);
+	  const unsigned int OUTPUT_DATA_DIM = dtrain.dimension(1);
+	  const unsigned int RDIM = nnet.output_size() - OUTPUT_DATA_DIM;
+	  
+	  math::vertex<T> input, output;
+	  input.resize(nnet.input_size());
+	  output.resize(RDIM);
+	  
+	  // E = SUM 0.5*e(i)^2
+#pragma omp for nowait schedule(dynamic)
+	  for(unsigned int i=0;i<dtrain.size(0);i++){
+	    input.zero();
+	    assert(input.write_subvertex(dtrain.access(0,i), 0));
+	    
+	    // recurrency: feebacks output back to inputs and
+	    //             calculates error
+	    for(unsigned int d = 0;d<deepness;d++){
+	      nnet.input() = input;
+	      nnet.calculate(false);
+	      
+	      if(d == (deepness - 1))
+	      {
+		// only the last error term E(N) matters
+		nnet.output().subvertex(err, 0, dtrain.dimension(1));
+		err -= dtrain.access(1, i);
+		
+		err = (err*err);
+		esum += T(0.5f)*err[0];
+	      }
+	      
+	      
+	      nnet.output().subvertex(output, dtrain.dimension(1),RDIM);
+	      assert(input.write_subvertex(output, INPUT_DATA_DIM));
+	    }
+	    
+	  }
+	  
+#pragma omp critical
+	  {
+	    e += esum;
+	  }
+	  
 	}
 	
       }
-
-    }
       
 #if 0
-    {
-      // regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
-      T alpha = T(0.01);
-      auto err = T(0.5)*alpha*(x*x);
-      e += err[0];
-    }
+      {
+	// regularizer exp(-0.5*||w||^2) term, w ~ Normal(0,I)
+	T alpha = T(0.01);
+	auto err = T(0.5)*alpha*(x*x);
+	e += err[0];
+      }
 #endif
 
-
-    e /= T(dtrain.size(0));
+      e /= T(dtrain.size(0));
+    } 
     
     return (e);    
   }
@@ -417,7 +514,7 @@ namespace whiteice
 	    nnet.input() = input;
 	    nnet.calculate(false);
 	    
-	    //if(d == (deepness - 1))
+	    if(d == (deepness - 1))
 	    { // only last E(N) error term matters
 	      // calculate gradient value
 	      nnet.output().subvertex(err, 0, dtrain.dimension(1));

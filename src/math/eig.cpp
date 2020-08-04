@@ -721,7 +721,7 @@ namespace whiteice
 
       A = Uh*A*V; // singular values
 
-      std::cout << "S = " << A << std::endl;
+      // std::cout << "S = " << A << std::endl;
 
       // FIXME: we must reorder A to be diagonal matrix again (+ EIG should have more numeric accuracy to be useful..)
 
