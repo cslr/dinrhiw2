@@ -1,0 +1,96 @@
+# Makefile
+############################################################
+
+CC = gcc
+CXX = g++
+
+OPTIMIZE_FLAGS=-fPIC -O3 -g -DAMD64 -ffast-math -fopenmp -mtune=native
+
+CFLAGS = -g -O2 -Wall -g  -I. -I.. -I../.. -I../neuralnetwork -I../crypto \
+	$(OPTIMIZE_FLAGS) -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-deprecated -I/usr/include/ -I/usr/local/include -DOPENBLAS -I/opt/OpenBLAS/include/ -DWINOS
+
+CXXFLAGS = $(CFLAGS)
+
+OBJECTS = blade_math.o ownexception.o outerproduct.o \
+	vertex.o quaternion.o matrix.o real.o \
+	matrix_rotations.o linear_equations.o linear_algebra.o \
+	hermite.o bezier.o bezier_surface.o bezier_density.o \
+	pdftree.o simplex.o BFGS.o LBFGS.o gcd.o integer.o modular.o \
+	gmatrix.o gvertex.o correlation.o norms.o eig.o \
+	ica.o RungeKutta.o maximizer.o fastpca.o RNG.o \
+	../MemoryCompressor.o ../conffile.o ../dynamic_bitset.o \
+	../Log.o
+
+
+SOURCES = blade_math.cpp ownexception.cpp outerproduct.cpp \
+	vertex.cpp quaternion.cpp matrix.cpp real.cpp \
+	matrix_rotations.cpp linear_equations.cpp linear_algebra.cpp \
+	hermite.cpp bezier.cpp bezier_surface.cpp bezier_density.cpp \
+	pdftree.cpp simplex.cpp BFGS.cpp LBFGS.cpp gcd.cpp integer.cpp modular.cpp \
+	gmatrix.cpp gvertex.cpp eig.cpp correlation.cpp norms.cpp eig.cpp \
+	ica.cpp RungeKutta.cpp maximizer.cpp fastpca.cpp RNG.cpp \
+	../MemoryCompressor.cpp ../conffile.cpp  ../dynamic_bitset.cpp \
+	tst/test.cpp tst/test2.cpp 
+
+
+
+LIBS = -L/usr/local/lib -lgmp -lz -lpthread -L/usr/lib/  -L/opt/OpenBLAS/bin/ -lopenblas
+
+TEST_OBJ = tst/test.o
+TARGET = testsuite
+
+
+OBJECTS2 = $(OBJECTS)
+TEST_OBJ2 = tst/test2.o
+TARGET2 = tests2
+
+OBJECTS3 = $(OBJECTS)
+TEST_OBJ3 = tst/test3.o
+TARGET3 = tests3
+
+######################################################################
+
+all: $(TARGET) $(TARGET2) $(TARGET3)
+
+$(TARGET): $(OBJECTS) $(TEST_OBJ) $(EXTRA_OBJECTS)
+	$(CXX) -o $(TARGET) $(CXXFLAGS) $(OBJECTS) $(EXTRA_OBJECTS) $(TEST_OBJ) $(LIBS)
+
+$(TARGET2): $(OBJECTS2) $(EXTRA_OBJECTS) $(TEST_OBJ2)
+	$(CXX) -o $(TARGET2) $(CXXFLAGS) $(OBJECTS2) $(EXTRA_OBJECTS) $(TEST_OBJ2) $(LIBS)
+
+$(TARGET3): $(OBJECTS3) $(EXTRA_OBJECTS) $(TEST_OBJ3)
+	$(CXX) -o $(TARGET3) $(CXXFLAGS) $(OBJECTS3) $(EXTRA_OBJECTS) $(TEST_OBJ3) $(LIBS)
+
+clean: clean2 clean3
+	$(RM) $(OBJECTS)
+	$(RM) $(TEST_OBJ)
+	$(RM) $(TARGET)
+	$(RM) *~
+
+clean2:
+	$(RM) $(OBJECTS2)
+	$(RM) $(TEST_OBJ2)
+	$(RM) $(TARGET2)
+	$(RM) *~
+
+clean3:
+	$(RM) $(OBJECTS3)
+	$(RM) $(TEST_OBJ3)
+	$(RM) $(TARGET3)
+	$(RM) *~
+
+clean_rpo:
+	$(RM) *.rpo
+	$(RM) tst/*.rpo
+
+realclean: clean clean_rpo
+
+depend:
+	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend
+
+######################################################################
+
+include Makefile.depend
+
+
+

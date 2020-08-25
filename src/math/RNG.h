@@ -20,7 +20,7 @@ namespace whiteice {
    * Implements **thread-safe** hardware random number generator
    * using Intel RDRAND if it is available (& usehw = true). 
    * Otherwise falls back to C rand() which is NOT guaranteed to 
-   * be thread-safe.
+   * be thread-safe (known bug for older CPUs).
    *
    * NOTE: It seems that software C++ RNG is actually faster in generating
    *       normally distributed variables than this software RNG using hardware RNG

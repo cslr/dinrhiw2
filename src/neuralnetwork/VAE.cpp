@@ -87,16 +87,27 @@ namespace whiteice
     this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::halfLinear);
     this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::halfLinear);
   }
-
-
+  
+  
   template <typename T>
   void VAE<T>::getModel(nnetwork<T>& encoder,
-			nnetwork<T>& decoder)
+			nnetwork<T>& decoder) const
   {
     encoder = this->encoder;
     decoder = this->decoder;
   }
-  
+
+  template <typename T>
+  nnetwork<T>& VAE<T>::getEncoder()
+  {
+    return this->encoder;
+  }
+
+  template <typename T>
+  nnetwork<T>& VAE<T>::getDecoder()
+  {
+    return this->decoder;
+  }
   
   template <typename T>
   bool VAE<T>::setModel(const nnetwork<T>& encoder,
@@ -158,6 +169,7 @@ namespace whiteice
   // x -> z (hidden) [returns N(zm,zv) distribution parameters]
   template <typename T>
   bool VAE<T>::encode(const math::vertex<T>& x,
+		      const nnetwork<T>& encoder,
 		      math::vertex<T>& zmean,
 		      math::vertex<T>& zstdev) const
   {
@@ -192,6 +204,7 @@ namespace whiteice
   // x -> z (hidden) [returns sample from ~ Normal(zm(x),zv(x))]
   template <typename T>
   bool VAE<T>::encodeSample(const math::vertex<T>& x,
+			    const nnetwork<T>& encoder,
 			    math::vertex<T>& zsample) const
   {
     math::vertex<T> result;
@@ -199,7 +212,6 @@ namespace whiteice
     if(encoder.calculate(x, result) == false)
       return false;
 
-    RNG<T> rng;
     zsample.resize(decoder.input_size());
 
     if(decoder.input_size()*2 != result.size())
@@ -226,6 +238,7 @@ namespace whiteice
   // z (hidden) -> xmean (variance = I)
   template <typename T>
   bool VAE<T>::decode(const math::vertex<T>& z,
+		      const nnetwork<T>& decoder,
 		      math::vertex<T>& xmean) const
   {
     if(decoder.calculate(z, xmean) == false)
@@ -263,7 +276,8 @@ namespace whiteice
 
 
   template <typename T>
-  bool VAE<T>::setParameters(const math::vertex<T>& p)
+  bool VAE<T>::setParameters(const math::vertex<T>& p,
+			     const bool dropout)
   {
     math::vertex<T> p_encoder, p_decoder;
     if(encoder.exportdata(p_encoder) == false || decoder.exportdata(p_decoder) == false)
@@ -281,6 +295,11 @@ namespace whiteice
     if(encoder.importdata(p_encoder) == false ||
        decoder.importdata(p_decoder) == false)
       return false;
+
+    if(dropout){
+      encoder.removeDropOut();
+      decoder.removeDropOut();
+    }
     
     return true;
   }
@@ -324,13 +343,20 @@ namespace whiteice
       zstdev.resize(encoder.output_size()/2);
       xmean.resize(decoder.output_size());
       epsilon.resize(encoder.output_size()/2);
-
-      whiteice::RNG<T> rng;
+      
+      nnetwork<T> encoder(this->encoder);
+      nnetwork<T> decoder(this->decoder);
 
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<N;i++){
-    	  const unsigned int index = i/K;
-	encode(xsamples[index], zmean, zstdev);
+	const unsigned int index = i/K;
+
+	if(dropout){
+	  encoder.setDropOut();
+	  decoder.setDropOut();
+	}
+	
+	encode(xsamples[index], encoder, zmean, zstdev);
 	rng.normal(epsilon);
 
 	auto zi = zmean;
@@ -338,7 +364,7 @@ namespace whiteice
 	  zi[l] += zstdev[l]*epsilon[l];
 	}
 	
-	decode(zi, xmean);
+	decode(zi, decoder, xmean);
 	
 	auto delta = xsamples[index] - xmean;
 	e += delta.norm();
@@ -361,81 +387,87 @@ namespace whiteice
   template <typename T>
   T VAE<T>::getLoglikelihood(const std::vector< math::vertex<T> >& xsamples) const
   {
-	  T logp, DL = T(0.0);
-	  T error = T(0.0);
-
-	  // data variance s^2 term: c = Dz/Dx (was: c = Dx)
-	  const float c = 0.05f*0.05f;
-	  // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
-
-	  // constant term C:
-	  logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
-
-	  const unsigned int K = 100; // the number of random samples used to estimate E[error]
-
-	  const unsigned int N = K*xsamples.size();
+    T logp = T(0.0), DL = T(0.0);
+    T error = T(0.0);
+    
+    // data variance s^2 term: c = Dz/Dx (was: c = Dx)
+    const float c = 0.05f*0.05f;
+    // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
+    
+    // constant term C:
+    logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
+    
+    const unsigned int K = 100; // the number of random samples used to estimate E[error]
+    
+    const unsigned int N = K*xsamples.size();
 
 #pragma omp parallel shared(error, logp)
-      {
-		  math::vertex<T> zmean, zstdev, xmean, epsilon;
-		  T e = T(0.0);
-		  T l = T(0.0);
+    {
+      math::vertex<T> zmean, zstdev, xmean, epsilon;
+      T e = T(0.0);
+      T l = T(0.0);      
+      
+      zmean.resize(encoder.output_size()/2);
+      zstdev.resize(encoder.output_size()/2);
+      xmean.resize(decoder.output_size());
+      epsilon.resize(encoder.output_size()/2);
 
-		  zmean.resize(encoder.output_size()/2);
-		  zstdev.resize(encoder.output_size()/2);
-		  xmean.resize(decoder.output_size());
-		  epsilon.resize(encoder.output_size()/2);
-
-		  whiteice::RNG<T> rng;
-
+      nnetwork<T> encoder(this->encoder);
+      nnetwork<T> decoder(this->decoder);
+      
 #pragma omp for nowait schedule(dynamic)
-		  for(unsigned int i=0;i<N;i++){
-			  const unsigned int index = i/K;
-			  const unsigned int mod   = i % K;
+      for(unsigned int i=0;i<N;i++){
+	const unsigned int index = i/K;
+	const unsigned int mod   = i % K;
 
-			  encode(xsamples[index], zmean, zstdev);
-
-			  if(mod == 0){ // calculates D_KL term
-				  T li = T(0.0);
-
-				  li -= (T(0.5)*((zmean*zmean)[0]) + T(0.5)*((zstdev*zstdev)[0]));
-
-				  for(unsigned int n=0;n<zstdev.size();n++)
-					  li += log(zstdev[n]);
-
-				  l += li;
-			  }
-
-
-			  rng.normal(epsilon);
-
-			  auto zi = zmean;
-
-			  for(unsigned int n=0;n<zmean.size();n++){
-				  zi[n] += zstdev[n]*epsilon[n];
-			  }
-
-			  decode(zi, xmean);
-
-			  auto delta = xsamples[index] - xmean;
-			  e += (delta*delta)[0];
-		  }
-
+	if(dropout){
+	  encoder.setDropOut();
+	  decoder.setDropOut();
+	}
+	
+	encode(xsamples[index], encoder, zmean, zstdev);
+	
+	if(mod == 0){ // calculates D_KL term
+	  T li = T(0.0);
+	  
+	  li -= (T(0.5)*((zmean*zmean)[0]) + T(0.5)*((zstdev*zstdev)[0]));
+	  
+	  for(unsigned int n=0;n<zstdev.size();n++)
+	    li += log(zstdev[n]);
+	  
+	  l += li;
+	}
+	
+	
+	rng.normal(epsilon);
+	
+	auto zi = zmean;
+	
+	for(unsigned int n=0;n<zmean.size();n++){
+	  zi[n] += zstdev[n]*epsilon[n];
+	}
+	
+	decode(zi, decoder, xmean);
+	
+	auto delta = xsamples[index] - xmean;
+	e += (delta*delta)[0];
+      }
+      
 #pragma omp critical
-		  {
-			  error += e;
-			  DL    += l;
-		  }
+      {
+	error += e;
+	DL    += l;
       }
-
-      if(xsamples.size() > 0){
-    	  error /= T(2*N*c);
-    	  DL /= xsamples.size();
-
-    	  logp += DL - error;
-      }
-
-      return logp;
+    }
+    
+    if(xsamples.size() > 0){
+      error /= T(2*N*c);
+      DL /= xsamples.size();
+      
+      logp += DL - error;
+    }
+    
+    return logp;
   }
 
   
@@ -452,187 +484,232 @@ namespace whiteice
 			       T convergence_ratio, bool verbose, LoggingInterface* messages,
 			       bool* running)
   {
-	  // implements gradient descent
-	  if(convergence_ratio <= T(0.0) || convergence_ratio >= T(1.0))
-		  return false;
+    // implements gradient descent
+    if(convergence_ratio <= T(0.0) || convergence_ratio >= T(1.0))
+      return false;
+    
+    if(running){
+      if(*running == false){
+	return false;
+      }
+    }
+    
+    //std::list<T> errors;
+    T error = getError(xsamples);
+    
+    std::list<T> mlogprobs; // negative log propabilities (-log(P)) [values are [0,inf[ where smaller is better]
+    T mloglikelihood = -getLoglikelihood(xsamples);
+    
+    T lrate = T(0.0001);
+    
+    unsigned int counter = 0;
+    const unsigned int MAXITER = 100;
 
-	  if(running){
-		  if(*running == false){
-			  return false;
-		  }
+    unsigned int noimprove_counter = 0;
+    const unsigned int MAXNOIMPROVE = 50;
+
+    // best solution found so far
+    math::vertex<T> bestparams;
+    T bestmloglikelihood = mloglikelihood;
+    getParameters(bestparams);
+    
+    const int BUFLEN = 1024;
+    char buf[BUFLEN];
+    
+    whiteice::linear_ETA<double> eta;
+    eta.start(0.0, MAXITER);
+    eta.update(0.0);
+    
+    
+    while(counter < MAXITER && noimprove_counter < MAXNOIMPROVE){
+      if(running){
+	if(*running == false){
+	  printf("VAE::learn() aborting computation\n");
+	  if(messages) messages->printMessage("learn(): aborting computation\n");
+	  break;
+	}
+      }
+      
+      // gradient search of better solution (uses dropout to calculate gradient)
+      math::vertex<T> grad;
+      if(calculateGradient(xsamples, grad, messages, running) == false){
+	if(verbose){
+	  std::cout << "calculateGradient() returns false!" << std::endl;
+	  if(messages) messages->printMessage("calculateGradient() returns false!\n");
+	  std::cout << std::flush;;
+	}
+	return false;
+      }
+      
+      
+      // FIXME write proper line search in grad direction
+      math::vertex<T> params, p;
+      getParameters(params);
+      
+      
+      bool found = false;
+      
+      T eprev = error;
+      T mlprev = mloglikelihood;
+      
+      //if(lrate <= T(10e-30)){
+      //lrate = T(0.0001);
+      //}
+      
+      // lrate *= T(4.0);
+      lrate = T(0.50f);
+      
+      // search in gradient direction as long as error is hasn't become smaller
+      while(mlprev <= mloglikelihood && lrate > T(10e-30) && found == false){
+	if(running){
+	  if(*running == false){
+	    printf("VAE::learn() aborting computation\n");
+	    if(messages) messages->printMessage("learn()/gradient-search: aborting computation\n");
+	    break;
 	  }
-
-	  //std::list<T> errors;
-	  T error = getError(xsamples);
-
-	  std::list<T> mlogprobs; // negative log propabilities (-log(P)) [values are [0,inf[ where smaller is better]
-	  T mloglikelihood = -getLoglikelihood(xsamples);
-
-	  T lrate = T(0.0001);
-
-	  unsigned int counter = 0;
-	  const unsigned int MAXITER = 100;
-
-	  const int BUFLEN = 1024;
-	  char buf[BUFLEN];
-    
-	  whiteice::linear_ETA<double> eta;
-	  eta.start(0.0, MAXITER);
-	  eta.update(0.0);
-
-    
-	  while(counter < MAXITER){
-		  if(running){
-			  if(*running == false){
-				  printf("VAE::learn() aborting computation\n");
-				  if(messages) messages->printMessage("learn(): aborting computation\n");
-				  break;
-			  }
-		  }
-      
-		  // gradient search of better solution
-		  math::vertex<T> grad;
-		  if(calculateGradient(xsamples, grad, messages, running) == false){
-			  if(verbose){
-				  std::cout << "calculateGradient() returns false!" << std::endl;
-				  if(messages) messages->printMessage("calculateGradient() returns false!\n");
-				  std::cout << std::flush;;
-			  }
-			  return false;
-		  }
-      
-      
-		  // FIXME write proper line search in grad direction
-		  math::vertex<T> params, p;
-		  getParameters(params);
-
-
-		  bool found = false;
-      
-		  T eprev = error;
-		  T mlprev = mloglikelihood;
-
-		  if(lrate <= T(10e-30)){
-			  lrate = T(0.0001);
-		  }
-
-		  lrate *= T(4.0);
-      
-		  // search in gradient direction as long as error is hasn't become smaller
-		  while(mlprev <= mloglikelihood && lrate > T(10e-30)){
-			  if(running){
-				  if(*running == false){
-					  printf("VAE::learn() aborting computation\n");
-					  if(messages) messages->printMessage("learn()/gradient-search: aborting computation\n");
-					  break;
-				  }
-			  }
-
-
-			  p = params;
-			  p += lrate*grad;
-			  setParameters(p);
-
-			  //error = getError(xsamples);
-			  mloglikelihood = -getLoglikelihood(xsamples);
+	}
+		
+	p = params;
+	p += lrate*grad;
+	setParameters(p, false);
 	
-			  if(mloglikelihood < mlprev){
-				  // std::cout << "GRAD DESCENT FOUND: lrate = " << lrate << std::endl; std::cout << std::flush;
-				  lrate *= T(2.0);
-				  found = true;
-			  }
-			  else if(mloglikelihood >= mlprev){
-				  // std::cout << "GRAD DESCENT NOT FOUND: lrate = " << lrate << std::endl; std::cout << std::flush;
-				  lrate *= T(0.50);
-			  }
-		  }
-		  // next step in gradient direction found or cannot find better solution
-
-		  if(found){
-			  params = p;
-			  setParameters(p);
-		  }
-		  else{
-			  setParameters(params);
-			  //error = getError(xsamples);
-			  mloglikelihood = -getLoglikelihood(xsamples);
-		  }
-      
-		  counter++;
-		  eta.update(counter);
-
-		  if(verbose){
-			  error = getError(xsamples);
-
-			  std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
-					  << " (ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
-
-			  float errf = 10e10;
-			  whiteice::math::convert(errf, error);
-
-			  float mloglikelihoodf = -10e10;
-			  whiteice::math::convert(mloglikelihoodf, mloglikelihood);
-
-			  //float lratef = 0.0f;
-			  //whiteice::math::convert(lratef, lrate);
-
-			  snprintf(buf, BUFLEN, "Deep learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [ETA %.2f hours]\n",
-					  counter, MAXITER, errf, -mloglikelihoodf, eta.estimate()/3600.0);
-			  if(messages) messages->printMessage(buf);
+	//error = getError(xsamples);
+	mloglikelihood = -getLoglikelihood(xsamples);
 	
-			  std::cout << std::flush;
-		  }
+	if(mloglikelihood < mlprev){
+	  // TODO: remove this later after you have found good initial learning rate
+	  std::cout << "GRAD DESCENT FOUND: lrate = " << lrate << std::endl; std::cout << std::flush;
+	  lrate *= T(2.0);
+	  found = true;
+	}
+	else if(mloglikelihood >= mlprev){
+	  // std::cout << "GRAD DESCENT NOT FOUND: lrate = " << lrate << std::endl; std::cout << std::flush;
+	  lrate *= T(0.50);
+	}
 
-		  // update convergence check (errors)
-		  mlogprobs.push_back(mloglikelihood);
-
-		  while(mlogprobs.size() > 20)
-			  mlogprobs.pop_front();
-
-		  // check for convergence
-		  if(mlogprobs.size() >= 20){
-			  T m = T(0.0), v = T(0.0);
-
-			  for(const auto& e : mlogprobs){
-				  m += e;
-			  }
 	
-			  m /= mlogprobs.size();
-	
-			  for(const auto& e : mlogprobs){
-				  v += (e - m)*(e - m);
-			  }
+	// leaky error reduction, we sometimes allow jump to worse
+	// position in gradient direction
+	{
+	  const unsigned int rnd = (rng.rand() % 5);
 	  
-			  v /= (mlogprobs.size() - 1);
+	  printf("RNG::RAND() == %d\n", (int)rnd);
+	  fflush(stdout);
 	  
-			  v = sqrt(abs(v));
+	  //if(rnd == 0 && mloglikelihood > -1e6)
+	  if(rnd == 0){
+	    std::cout << "! JUMP TO WORSE: GO TO GRADIENT DIRECTION BUT ERROR INCREASES."
+		      << std::endl;
+	    found = true;
+	  }
+	}
 	
+      }
 
-			  if(verbose){
-				  T ratio = T(100.0)*v/m;
-	    
-				  std::cout << "LOGLIKELIHOOD CONVERGENCE " << ratio << "%" << std::endl;
-
-				  float ratiof = 10e10;
-				  whiteice::math::convert(ratiof, ratio);
-
-				  float convf  = 10e10;
-				  T convp = T(100.0)*convergence_ratio;
-				  whiteice::math::convert(convf, convp);
-	    
-				  snprintf(buf, BUFLEN, "LOGLIKELIHOOD CONVERGENCE: %.2f%% (> %.2f%%)\n", ratiof, convf);
-				  if(messages) messages->printMessage(buf);
-	    
-				  std::cout << std::flush;;
-			  }
-
-			  if(v/m <= convergence_ratio)
-				  break; // stdev is less than c% of mean (5%)
-		  }
       
-	  } // end of while(counter < MAXITER) loop
+      // next step in gradient direction found or cannot find better solution
+      
+      if(found){
+	params = p;
+	setParameters(p, false);	
+	
+	if(mloglikelihood > bestmloglikelihood){ // no improvement but follow gradient
+	  std::cout << "! No improvement in gradient" << std::endl;
+	  noimprove_counter++;
+	}
+	else{ // true improvement
+	  noimprove_counter = 0;
+	  bestmloglikelihood = mloglikelihood;
+	  bestparams = p;
+	}
+      }
+      else{
+	setParameters(params, false);
+	//error = getError(xsamples);
+	mloglikelihood = -getLoglikelihood(xsamples);
+      }
+      
+      counter++;
+      eta.update(counter);
+      
+      if(verbose){
+	error = getError(xsamples);
+	
+	std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
+		  << " (ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
+	
+	float errf = 10e10;
+	whiteice::math::convert(errf, error);
+	
+	float mloglikelihoodf = -10e10;
+	whiteice::math::convert(mloglikelihoodf, mloglikelihood);
+	
+	//float lratef = 0.0f;
+	//whiteice::math::convert(lratef, lrate);
+	
+	snprintf(buf, BUFLEN, "VAE learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [ETA %.2f hours]\n",
+		 counter, MAXITER, errf, -mloglikelihoodf, eta.estimate()/3600.0);
+	if(messages) messages->printMessage(buf);
+	
+	std::cout << std::flush;
+      }
+      
+      // update convergence check (errors)
+      mlogprobs.push_back(mloglikelihood);
+      
+      while(mlogprobs.size() > 20)
+	mlogprobs.pop_front();
+      
+      // check for convergence
+      if(mlogprobs.size() >= 20){
+	T m = T(0.0), v = T(0.0);
+	
+	for(const auto& e : mlogprobs){
+	  m += e;
+	}
+	
+	m /= mlogprobs.size();
+	
+	for(const auto& e : mlogprobs){
+	  v += (e - m)*(e - m);
+	}
+	
+	v /= (mlogprobs.size() - 1);
+	
+	v = sqrt(abs(v));
+	
+	// FIXME: rewrite me
+	if(verbose){
+	  T ratio = T(100.0)*v/m;
+	  
+	  std::cout << "LOGLIKELIHOOD CONVERGENCE " << ratio << "%" << std::endl;
+	  
+	  float ratiof = 10e10;
+	  whiteice::math::convert(ratiof, ratio);
+	  
+	  float convf  = 10e10;
+	  T convp = T(100.0)*convergence_ratio;
+	  whiteice::math::convert(convf, convp);
+	  
+	  snprintf(buf, BUFLEN, "LOGLIKELIHOOD CONVERGENCE: %.2f%% (> %.2f%%)\n", ratiof, convf);
+	  if(messages) messages->printMessage(buf);
+	  
+	  std::cout << std::flush;;
+	}
+
+#if 0
+	// DISABLED: WE STOP WHEN NUMBER OF NOIMPROVEMENT ITERATIONS IS LARGE ENOUGH
+	if(v/m <= convergence_ratio)
+	  break; // stdev is less than c% of mean (5%)
+#endif
+      }
+      
+    } // end of while(counter < MAXITER && noimprovement_counter < MAXNOIMPROVEROUNDS) loop
+
     
-	  return true;
+    setParameters(bestparams, dropout);
+    
+    return true;
   }
 
   
@@ -641,7 +718,7 @@ namespace whiteice
   bool VAE<T>::calculateGradient(const std::vector< math::vertex<T> >& xsamples,
 				 math::vertex<T>& pgradient,
 				 LoggingInterface* messages,
-				 bool* running)
+				 bool* running) const
   {
     pgradient.resize(encoder.gradient_size() + decoder.gradient_size());
     pgradient.zero();
@@ -668,30 +745,37 @@ namespace whiteice
 
 #pragma omp parallel shared(pgradient)
     {
-      whiteice::RNG<T> rng;
       math::vertex<T> pgrad;
       pgrad.resize(pgradient.size());
       pgrad.zero();
+
+      nnetwork<T> encoder(this->encoder);
+      nnetwork<T> decoder(this->decoder);
 
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
 	if(failure) continue; // do nothing after first failure
 	if(running){
-		if(*running == false){
-			failure = true;
-			continue; // do nothing if computation has been stopped
-		}
+	  if(*running == false){
+	    failure = true;
+	    continue; // do nothing if computation has been stopped
+	  }
 	}
 
   	if(verbose){
-  		snprintf(buffer, BUFLEN, "Calculating gradient sample %d/%d..\n", i, MINIBATCHSIZE);
+	  snprintf(buffer, BUFLEN, "Calculating gradient sample %d/%d..\n", i, MINIBATCHSIZE);
   	  if(messages) messages->printMessage(buffer);
   	  printf(buffer);
   	  fflush(stdout);
   	}
 
-
+	if(dropout){
+	  encoder.setDropOut();
+	  decoder.setDropOut();
+	}
+	
+	
 	unsigned int index = 0;
 	
 	if(minibatchMode){
@@ -889,6 +973,7 @@ namespace whiteice
     if(xsamples.size() > 0)
       pgradient /= T(MINIBATCHSIZE);
 
+    // ENABLED gradient norm calculation
     T nrm = pgradient.norm();
 
     if(nrm > T(0.0)){

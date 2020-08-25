@@ -33,84 +33,93 @@ namespace whiteice
     {
     public:
 
-    VAE(const VAE<T>& vae);
-    VAE(const nnetwork<T>& encoder, // x -> (z_mean, z_var)
-	const nnetwork<T>& decoder) // z -> (x_mean)
-      ;
+      VAE(const VAE<T>& vae);
+      VAE(const nnetwork<T>& encoder,  // x -> (z_mean, z_var)
+	  const nnetwork<T>& decoder); // z -> (x_mean)
+	
+      VAE(const std::vector<unsigned int> encoderArchitecture,
+	  const std::vector<unsigned int> decoderArchitecture);
+      
+      void getModel(nnetwork<T>& encoder,
+		    nnetwork<T>& decoder) const;
 
-    VAE(const std::vector<unsigned int> encoderArchitecture,
-	const std::vector<unsigned int> decoderArchitecture)
-    ;
-    
-    void getModel(nnetwork<T>& encoder,
-		  nnetwork<T>& decoder);
-    
-    bool setModel(const nnetwork<T>& encoder,
-		  const nnetwork<T>& decoder);
-
-    bool setModel(const std::vector<unsigned int> encoderArchitecture,
-		  const std::vector<unsigned int> decoderArchitecture);
-
-
-    // x -> z (hidden)
-    bool encode(const math::vertex<T>& x,
-		math::vertex<T>& zmean,
-		math::vertex<T>& zstdev) const;
-
-    bool encodeSample(const math::vertex<T>& x,
-		      math::vertex<T>& zsample) const;
-    
-    // z (hidden) -> x
-    bool decode(const math::vertex<T>& z,
-		math::vertex<T>& xmean) const;
-
-    unsigned int getDataDimension() const;
-    unsigned int getEncodedDimension() const;
-    
-    void getParameters(math::vertex<T>& p) const;
-    bool setParameters(const math::vertex<T>& p);
-
-    // to set minibatch mode in which we use only sample of 30 data points when calculating gradient
-    void setUseMinibatch(bool use_minibatch);
-    bool getUseMinibatch();
-    
-    void initializeParameters();
-
-    T getError(const std::vector< math::vertex<T> >& xsamples) const;
-
-    T getLoglikelihood(const std::vector< math::vertex<T> >& xsamples) const;
-
-    // x = samples, learn x = decode(encode(x))
-    // optimizes using gradient descent,
-    // divides data to teaching and test
-    // datasets (50%/50%)
-    //
-    // model_stdev_error(last N iters)/model_mean_error(last N iters) < convergence_ratio
-    //
-    // stops computation loop if *running becomes false
-    // 
-    bool learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			 T convergence_ratio = T(0.01f), bool verbose = false,
-			 LoggingInterface* messages = NULL,
-			 bool* running = NULL);
-
-    // calculates gradient of parameter p using all samples
-    bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
-			   math::vertex<T>& pgradient, LoggingInterface* messages = NULL, bool* running = NULL);
-
-
-    bool load(const std::string& filename) ;
-    bool save(const std::string& filename) const ;
-
+      nnetwork<T>& getEncoder();
+      nnetwork<T>& getDecoder();
+      
+      bool setModel(const nnetwork<T>& encoder,
+		    const nnetwork<T>& decoder);
+      
+      bool setModel(const std::vector<unsigned int> encoderArchitecture,
+		    const std::vector<unsigned int> decoderArchitecture);
+      
+      
+      // x -> z (hidden)
+      bool encode(const math::vertex<T>& x,
+		  const nnetwork<T>& encoder,
+		  math::vertex<T>& zmean,
+		  math::vertex<T>& zstdev) const;
+      
+      bool encodeSample(const math::vertex<T>& x,
+			const nnetwork<T>& encoder,
+			math::vertex<T>& zsample) const;
+      
+      // z (hidden) -> x
+      bool decode(const math::vertex<T>& z,
+		  const nnetwork<T>& decoder,
+		  math::vertex<T>& xmean) const;
+      
+      unsigned int getDataDimension() const;
+      unsigned int getEncodedDimension() const;
+      
+      void getParameters(math::vertex<T>& p) const;
+      bool setParameters(const math::vertex<T>& p, const bool dropout);
+      
+      // to set minibatch mode in which we use only sample of 30 data points when calculating gradient
+      void setUseMinibatch(bool use_minibatch);
+      bool getUseMinibatch();
+      
+      void initializeParameters();
+      
+      T getError(const std::vector< math::vertex<T> >& xsamples) const;
+      
+      T getLoglikelihood(const std::vector< math::vertex<T> >& xsamples) const;
+      
+      // x = samples, learn x = decode(encode(x))
+      // optimizes using gradient descent,
+      // TODO: divide data to teaching and test datasets(75%/25%)
+      //
+      // model_stdev_error(last N iters)/model_mean_error(last N iters) < convergence_ratio
+      //
+      // stops computation loop if *running becomes false
+      // 
+      bool learnParameters(const std::vector< math::vertex<T> >& xsamples,
+			   T convergence_ratio = T(0.01f),
+			   bool verbose = false,
+			   LoggingInterface* messages = NULL,
+			   bool* running = NULL);
+      
+      // calculates gradient of parameter p using all samples
+      bool calculateGradient(const std::vector< math::vertex<T> >& xsamples,
+			     math::vertex<T>& pgradient,
+			     LoggingInterface* messages = NULL,
+			     bool* running = NULL) const;
+      
+      
+      bool load(const std::string& filename) ;
+      bool save(const std::string& filename) const ;
+      
     private:
     
-    nnetwork<T> encoder; // x -> (z mean ,z stdev)
-    nnetwork<T> decoder; // z -> (x mean)
+      nnetwork<T> encoder; // x -> (z mean ,z stdev)
+      nnetwork<T> decoder; // z -> (x mean)
 
-    bool minibatchMode;
+      whiteice::RNG<T> rng;
+      
+      bool minibatchMode;
+      const bool dropout = true; // TODO: implement drop out heuristic for optimization
     
     };
-
+  
   
   // extern template class VAE< float >;
   // extern template class VAE< double >;  
