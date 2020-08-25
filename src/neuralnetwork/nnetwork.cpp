@@ -2315,9 +2315,9 @@ namespace whiteice
 
   template <typename T>
   bool nnetwork<T>::removeDropOut(T probability) 
-  {
+  {    
     // scales weights according to retain_probability
-    // (except the first layer and last layer where we keep all input/outputs)
+    // (except the first layer where we always keep all inputs)
 
     for(unsigned int l=1;l<getLayers();l++){
       math::matrix<T> w;

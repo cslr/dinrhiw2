@@ -3,7 +3,7 @@
  * a feedforward neural network
  * optimizer command line tool.
  * 
- * (C) Copyright Tomas Ukkonen 2004, 2005, 2014-2016
+ * (C) Copyright Tomas Ukkonen 2004, 2005, 2014-2020
  *
  *************************************************************
  * 
