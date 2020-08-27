@@ -1,6 +1,6 @@
 test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../math/matrix.h ../math/dinrhiw_blas.h \
- C:/msys64/opt/OpenBLAS/include/cblas.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -16,12 +16,12 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
  ../math/norms.h DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h BBRBM.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
- optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
- ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
- rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
  ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
@@ -300,8 +300,8 @@ VAE.o: VAE.cpp VAE.h nnetwork.h ../math/dinrhiw_blas.h \
  ../math/matrix_rotations.h neuronlayer.h ../math/norms.h \
  ../math/outerproduct.h activation_function.h function.h ../conffile.h \
  ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
- ../LoggingInterface.h ../linear_ETA.h ../ETA.h ../math/blas_primitives.h \
- ../linear_ETA.cpp ../linear_ETA.h
+ ../LoggingInterface.h ../VisualizationInterface.h ../linear_ETA.h \
+ ../ETA.h ../math/blas_primitives.h ../linear_ETA.cpp ../linear_ETA.h
 PSO.o: PSO.cpp PSO.h ../math/vertex.h ../math/dinrhiw_blas.h \
  C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
@@ -417,8 +417,8 @@ KMeans.o: KMeans.cpp KMeans.h ../math/dinrhiw_blas.h \
  ../math/outerproduct.h activation_function.h function.h ../math/RNG.h \
  ../math/RNG.cpp ../math/RNG.h ../conffile.h ../math/blade_math.h
 HC.o: HC.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../math/matrix.h ../math/dinrhiw_blas.h \
- C:/msys64/opt/OpenBLAS/include/cblas.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -434,12 +434,12 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
  ../math/norms.h DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h BBRBM.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
- optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
- ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
- rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
  ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
@@ -486,8 +486,9 @@ HC.o: HC.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h \
  GDALogic.h KMeans.h
 GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h ../math/matrix.h \
- ../math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ ../math/matrix.h ../math/dinrhiw_blas.h \
+ C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -503,12 +504,12 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../Log.h \
  ../math/norms.h DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h BBRBM.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
- optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
- ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
- rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
  ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
@@ -554,8 +555,8 @@ GDALogic.o: GDALogic.cpp GDALogic.h ../dinrhiw.h ../Log.h \
  ../math/superresolution.h ../memory_access_timing.h ../list_source.h \
  ../list_source.cpp test_function.h test_function2.h HCLogic.h hctree.h
 test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../math/matrix.h ../math/dinrhiw_blas.h \
- C:/msys64/opt/OpenBLAS/include/cblas.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -571,12 +572,12 @@ test.o: tst/test.cpp HC.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
  ../math/norms.h DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h BBRBM.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
- optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
- ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
- rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
- nnetwork_function.h optimized_function.h ../hmm/HMM.h ../math/real.h \
- ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
  ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
  ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
  ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
@@ -698,30 +699,30 @@ NNGradDescent.o: NNGradDescent.cpp NNGradDescent.h ../math/dinrhiw_blas.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../math/ica.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h DBN.h GBRBM.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h BBRBM.h nnetwork.h ../conffile.h BBRBM.h \
- GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h ../LoggingInterface.h \
- globaloptimum.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
- pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
- pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
- EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
- ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
- bayesian_nnetwork.h ../reinforcement/CreateRIFLdataset.h \
- ../reinforcement/RIFL_abstract.h ../reinforcement/CartPole.h \
- ../reinforcement/RIFL_abstract2.h ../reinforcement/CreateRIFL2dataset.h \
- ../reinforcement/RIFL_abstract2.h ../reinforcement/CreatePolicyDataset.h \
- ../reinforcement/CartPole2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
- ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
- ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
- ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
- ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
- ../point.h ../point.cpp ../math/ownexception.h \
- ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
- ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
- ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
- ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
- ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
- ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h BBRBM.h \
+ nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
+ VAE.h ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
+ ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
+ ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
+ ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
+ ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
+ ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
+ ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
+ ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
+ ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
+ ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
+ ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
+ ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
  ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -767,30 +768,30 @@ NNRandomSearch.o: NNRandomSearch.cpp NNRandomSearch.h \
  ../math/quaternion.h ../math/gvertex.cpp ../math/matrix_rotations.h \
  neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  activation_function.h function.h ../math/ica.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h DBN.h GBRBM.h ../math/RNG.h \
- ../math/RNG.cpp ../math/RNG.h BBRBM.h nnetwork.h ../conffile.h BBRBM.h \
- GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h ../LoggingInterface.h \
- globaloptimum.h ../math/BFGS.h optimized_function.h BFGS_nnetwork.h \
- pBFGS_nnetwork.h BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h \
- pLBFGS_nnetwork.h LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h \
- EnsembleMeans.h lreg_nnetwork.h nnetwork_function.h optimized_function.h \
- ../hmm/HMM.h ../math/real.h ../reinforcement/RIFL_abstract.h \
- bayesian_nnetwork.h ../reinforcement/CreateRIFLdataset.h \
- ../reinforcement/RIFL_abstract.h ../reinforcement/CartPole.h \
- ../reinforcement/RIFL_abstract2.h ../reinforcement/CreateRIFL2dataset.h \
- ../reinforcement/RIFL_abstract2.h ../reinforcement/CreatePolicyDataset.h \
- ../reinforcement/CartPole2.h ../rnn/RNN_RBM.h nnetwork.h ../array.h \
- ../container.h ../static_array.h ../static_array.cpp ../dynamic_array.h \
- ../stack.h ../queue.h ../dynamic_array.cpp ../search_array.h \
- ../printable.h ../data_source.h ../chainhash.h ../hash_table.h \
- ../chainhash.cpp ../dummystack.h ../priority_queue.h ../dynamic_bitset.h \
- ../point.h ../point.cpp ../math/ownexception.h \
- ../dynamic_ctor_protection.h ../singleton.h ../singleton_list.h \
- ../singleton.cpp ../augmented_data.h ../tree.h ../avltree.h ../avlnode.h \
- ../avlnode.cpp ../avltree.cpp ../rbtree.h ../rbnode.h ../rbnode.cpp \
- ../rbtree.cpp ../binary_tree.h ../btree_node.h ../binary_tree.cpp \
- ../fast_radix.h ../fast_gradix.h ../fast_radixv.h ../radix_sort.h \
- ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ DBN.h GBRBM.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h BBRBM.h \
+ nnetwork.h ../conffile.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h \
+ VAE.h ../LoggingInterface.h ../VisualizationInterface.h globaloptimum.h \
+ ../math/BFGS.h optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h \
+ BFGS_nnetwork.h ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h \
+ LBFGS_nnetwork.h rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h \
+ lreg_nnetwork.h nnetwork_function.h optimized_function.h ../hmm/HMM.h \
+ ../math/real.h ../reinforcement/RIFL_abstract.h bayesian_nnetwork.h \
+ ../reinforcement/CreateRIFLdataset.h ../reinforcement/RIFL_abstract.h \
+ ../reinforcement/CartPole.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreateRIFL2dataset.h ../reinforcement/RIFL_abstract2.h \
+ ../reinforcement/CreatePolicyDataset.h ../reinforcement/CartPole2.h \
+ ../rnn/RNN_RBM.h nnetwork.h ../array.h ../container.h ../static_array.h \
+ ../static_array.cpp ../dynamic_array.h ../stack.h ../queue.h \
+ ../dynamic_array.cpp ../search_array.h ../printable.h ../data_source.h \
+ ../chainhash.h ../hash_table.h ../chainhash.cpp ../dummystack.h \
+ ../priority_queue.h ../dynamic_bitset.h ../point.h ../point.cpp \
+ ../math/ownexception.h ../dynamic_ctor_protection.h ../singleton.h \
+ ../singleton_list.h ../singleton.cpp ../augmented_data.h ../tree.h \
+ ../avltree.h ../avlnode.h ../avlnode.cpp ../avltree.cpp ../rbtree.h \
+ ../rbnode.h ../rbnode.cpp ../rbtree.cpp ../binary_tree.h ../btree_node.h \
+ ../binary_tree.cpp ../fast_radix.h ../fast_gradix.h ../fast_radixv.h \
+ ../radix_sort.h ../radix_sortv.h ../insertion.h ../ETA.h ../linear_ETA.h \
  ../math/blas_primitives.h ../linear_ETA.cpp ../MemoryCompressor.h \
  ../conffile.h ../unique_id.h ../math/number.h ../math/blade_math.h \
  ../math/modular.h ../math/gcd.h ../math/gcd.cpp ../math/gcd.h \
@@ -837,9 +838,10 @@ HMC.o: HMC.cpp HMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
  bayesian_nnetwork.h NNGradDescent.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h DBN.h GBRBM.h BBRBM.h nnetwork.h \
- BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ DBN.h GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h \
+ stackedRBM_pretraining.h DBN.h VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h globaloptimum.h ../math/BFGS.h \
  optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
@@ -1329,9 +1331,10 @@ UHMC.o: UHMC.cpp UHMC.h ../math/vertex.h ../math/dinrhiw_blas.h \
  activation_function.h function.h ../dataset.h ../math/ica.h nnetwork.h \
  ../conffile.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
  bayesian_nnetwork.h NNGradDescent.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h DBN.h GBRBM.h BBRBM.h nnetwork.h \
- BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ DBN.h GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h \
+ stackedRBM_pretraining.h DBN.h VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h globaloptimum.h ../math/BFGS.h \
  optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \
@@ -1466,9 +1469,10 @@ globaloptimum.o: globaloptimum.cpp globaloptimum.h ../math/matrix.h \
  ../math/gvertex.cpp ../math/matrix_rotations.h ../math/outerproduct.h \
  ../math/norms.h ../dataset.h ../math/ica.h nnetwork.h ../conffile.h \
  ../math/RNG.h ../math/RNG.cpp ../math/RNG.h NNGradDescent.h ../dinrhiw.h \
- ../Log.h ../LoggingInterface.h ../math/fastpca.h DBN.h GBRBM.h BBRBM.h \
- nnetwork.h BBRBM.h GBRBM.h stackedRBM_pretraining.h DBN.h VAE.h \
- ../LoggingInterface.h globaloptimum.h ../math/BFGS.h \
+ ../Log.h ../LoggingInterface.h ../VisualizationInterface.h \
+ ../math/fastpca.h DBN.h GBRBM.h BBRBM.h nnetwork.h BBRBM.h GBRBM.h \
+ stackedRBM_pretraining.h DBN.h VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h globaloptimum.h ../math/BFGS.h \
  optimized_function.h BFGS_nnetwork.h pBFGS_nnetwork.h BFGS_nnetwork.h \
  ../math/LBFGS.h LBFGS_nnetwork.h pLBFGS_nnetwork.h LBFGS_nnetwork.h \
  rLBFGS_nnetwork.h Mixture.h EnsembleMeans.h lreg_nnetwork.h \

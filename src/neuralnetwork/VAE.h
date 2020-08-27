@@ -22,6 +22,7 @@
 #include "compressable.h"
 #include "dataset.h"
 #include "LoggingInterface.h"
+#include "VisualizationInterface.h"
 #include "RNG.h"
 
 #include <vector>
@@ -96,6 +97,7 @@ namespace whiteice
 			   T convergence_ratio = T(0.01f),
 			   bool verbose = false,
 			   LoggingInterface* messages = NULL,
+			   VisualizationInterface* gui = NULL,
 			   bool* running = NULL);
       
       // calculates gradient of parameter p using all samples

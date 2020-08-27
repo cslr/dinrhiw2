@@ -79,8 +79,9 @@ norms.o: math/norms.cpp math/norms.h math/vertex.h math/dinrhiw_blas.h \
  math/gvertex.cpp math/matrix_rotations.h neuralnetwork/neuronlayer.h \
  math/outerproduct.h neuralnetwork/activation_function.h \
  neuralnetwork/function.h
-test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
- math/matrix.h math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
+test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h \
+ VisualizationInterface.h math/fastpca.h math/matrix.h \
+ math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h math/blas_primitives.h \
  math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
@@ -99,24 +100,24 @@ test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
  neuralnetwork/BBRBM.h dataset.h math/ica.h neuralnetwork/nnetwork.h \
  conffile.h neuralnetwork/BBRBM.h neuralnetwork/GBRBM.h \
  neuralnetwork/stackedRBM_pretraining.h neuralnetwork/DBN.h \
- neuralnetwork/VAE.h LoggingInterface.h neuralnetwork/globaloptimum.h \
- math/BFGS.h neuralnetwork/optimized_function.h \
- neuralnetwork/BFGS_nnetwork.h neuralnetwork/pBFGS_nnetwork.h \
- neuralnetwork/BFGS_nnetwork.h math/LBFGS.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/rLBFGS_nnetwork.h \
- neuralnetwork/Mixture.h neuralnetwork/EnsembleMeans.h \
- neuralnetwork/lreg_nnetwork.h neuralnetwork/nnetwork_function.h \
- neuralnetwork/optimized_function.h hmm/HMM.h math/real.h \
- reinforcement/RIFL_abstract.h neuralnetwork/bayesian_nnetwork.h \
- reinforcement/CreateRIFLdataset.h reinforcement/RIFL_abstract.h \
- reinforcement/CartPole.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreateRIFL2dataset.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreatePolicyDataset.h reinforcement/CartPole2.h \
- rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h container.h \
- static_array.h static_array.cpp dynamic_array.h stack.h queue.h \
- dynamic_array.cpp search_array.h printable.h data_source.h chainhash.h \
- hash_table.h chainhash.cpp dummystack.h priority_queue.h \
+ neuralnetwork/VAE.h LoggingInterface.h VisualizationInterface.h \
+ neuralnetwork/globaloptimum.h math/BFGS.h \
+ neuralnetwork/optimized_function.h neuralnetwork/BFGS_nnetwork.h \
+ neuralnetwork/pBFGS_nnetwork.h neuralnetwork/BFGS_nnetwork.h \
+ math/LBFGS.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/pLBFGS_nnetwork.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/rLBFGS_nnetwork.h neuralnetwork/Mixture.h \
+ neuralnetwork/EnsembleMeans.h neuralnetwork/lreg_nnetwork.h \
+ neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
+ hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
+ neuralnetwork/bayesian_nnetwork.h reinforcement/CreateRIFLdataset.h \
+ reinforcement/RIFL_abstract.h reinforcement/CartPole.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreateRIFL2dataset.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreatePolicyDataset.h \
+ reinforcement/CartPole2.h rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h \
+ container.h static_array.h static_array.cpp dynamic_array.h stack.h \
+ queue.h dynamic_array.cpp search_array.h printable.h data_source.h \
+ chainhash.h hash_table.h chainhash.cpp dummystack.h priority_queue.h \
  dynamic_bitset.h point.h point.cpp exceptions/ownexception.h \
  dynamic_ctor_protection.h singleton.h singleton_list.h singleton.cpp \
  augmented_data.h tree.h avltree.h avlnode.h avlnode.cpp avltree.cpp \
@@ -173,8 +174,9 @@ function_access_control.o: function_access_control.cpp \
 modtest.o: tst/modtest.cpp singleton.h singleton_list.h singleton.cpp \
  singleton.h function_access_control.h exceptions/ownexception.h \
  unique_id.h function_access_control.cpp function_access_control.h
-dinrhiw.o: dinrhiw.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
- math/matrix.h math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
+dinrhiw.o: dinrhiw.cpp dinrhiw.h Log.h LoggingInterface.h \
+ VisualizationInterface.h math/fastpca.h math/matrix.h \
+ math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h math/blas_primitives.h \
  math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
@@ -193,23 +195,23 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
  neuralnetwork/BBRBM.h dataset.h math/ica.h neuralnetwork/nnetwork.h \
  conffile.h neuralnetwork/BBRBM.h neuralnetwork/GBRBM.h \
  neuralnetwork/stackedRBM_pretraining.h neuralnetwork/DBN.h \
- neuralnetwork/VAE.h LoggingInterface.h neuralnetwork/globaloptimum.h \
- math/BFGS.h neuralnetwork/optimized_function.h \
- neuralnetwork/BFGS_nnetwork.h neuralnetwork/pBFGS_nnetwork.h \
- neuralnetwork/BFGS_nnetwork.h math/LBFGS.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/rLBFGS_nnetwork.h \
- neuralnetwork/Mixture.h neuralnetwork/EnsembleMeans.h \
- neuralnetwork/lreg_nnetwork.h neuralnetwork/nnetwork_function.h \
- neuralnetwork/optimized_function.h hmm/HMM.h math/real.h \
- reinforcement/RIFL_abstract.h neuralnetwork/bayesian_nnetwork.h \
- reinforcement/CreateRIFLdataset.h reinforcement/RIFL_abstract.h \
- reinforcement/CartPole.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreateRIFL2dataset.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreatePolicyDataset.h reinforcement/CartPole2.h \
- rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h container.h \
- static_array.h static_array.cpp dynamic_array.h stack.h queue.h \
- dynamic_array.cpp search_array.h compressable.h printable.h \
+ neuralnetwork/VAE.h LoggingInterface.h VisualizationInterface.h \
+ neuralnetwork/globaloptimum.h math/BFGS.h \
+ neuralnetwork/optimized_function.h neuralnetwork/BFGS_nnetwork.h \
+ neuralnetwork/pBFGS_nnetwork.h neuralnetwork/BFGS_nnetwork.h \
+ math/LBFGS.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/pLBFGS_nnetwork.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/rLBFGS_nnetwork.h neuralnetwork/Mixture.h \
+ neuralnetwork/EnsembleMeans.h neuralnetwork/lreg_nnetwork.h \
+ neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
+ hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
+ neuralnetwork/bayesian_nnetwork.h reinforcement/CreateRIFLdataset.h \
+ reinforcement/RIFL_abstract.h reinforcement/CartPole.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreateRIFL2dataset.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreatePolicyDataset.h \
+ reinforcement/CartPole2.h rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h \
+ container.h static_array.h static_array.cpp dynamic_array.h stack.h \
+ queue.h dynamic_array.cpp search_array.h compressable.h printable.h \
  data_source.h chainhash.h hash_table.h chainhash.cpp dummystack.h \
  priority_queue.h dynamic_bitset.h point.h point.cpp \
  exceptions/ownexception.h dynamic_ctor_protection.h singleton.h \
@@ -253,8 +255,9 @@ dinrhiw.o: dinrhiw.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
  math/superresolution.cpp math/superresolution.h memory_access_timing.h \
  list_source.h list_source.cpp neuralnetwork/test_function.h \
  neuralnetwork/test_function2.h
-test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
- math/matrix.h math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
+test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h \
+ VisualizationInterface.h math/fastpca.h math/matrix.h \
+ math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h math/blas_primitives.h \
  math/ownexception.h math/number.h compressable.h MemoryCompressor.h \
@@ -273,24 +276,24 @@ test.o: tst/test.cpp dinrhiw.h Log.h LoggingInterface.h math/fastpca.h \
  neuralnetwork/BBRBM.h dataset.h math/ica.h neuralnetwork/nnetwork.h \
  conffile.h neuralnetwork/BBRBM.h neuralnetwork/GBRBM.h \
  neuralnetwork/stackedRBM_pretraining.h neuralnetwork/DBN.h \
- neuralnetwork/VAE.h LoggingInterface.h neuralnetwork/globaloptimum.h \
- math/BFGS.h neuralnetwork/optimized_function.h \
- neuralnetwork/BFGS_nnetwork.h neuralnetwork/pBFGS_nnetwork.h \
- neuralnetwork/BFGS_nnetwork.h math/LBFGS.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/pLBFGS_nnetwork.h \
- neuralnetwork/LBFGS_nnetwork.h neuralnetwork/rLBFGS_nnetwork.h \
- neuralnetwork/Mixture.h neuralnetwork/EnsembleMeans.h \
- neuralnetwork/lreg_nnetwork.h neuralnetwork/nnetwork_function.h \
- neuralnetwork/optimized_function.h hmm/HMM.h math/real.h \
- reinforcement/RIFL_abstract.h neuralnetwork/bayesian_nnetwork.h \
- reinforcement/CreateRIFLdataset.h reinforcement/RIFL_abstract.h \
- reinforcement/CartPole.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreateRIFL2dataset.h reinforcement/RIFL_abstract2.h \
- reinforcement/CreatePolicyDataset.h reinforcement/CartPole2.h \
- rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h container.h \
- static_array.h static_array.cpp dynamic_array.h stack.h queue.h \
- dynamic_array.cpp search_array.h printable.h data_source.h chainhash.h \
- hash_table.h chainhash.cpp dummystack.h priority_queue.h \
+ neuralnetwork/VAE.h LoggingInterface.h VisualizationInterface.h \
+ neuralnetwork/globaloptimum.h math/BFGS.h \
+ neuralnetwork/optimized_function.h neuralnetwork/BFGS_nnetwork.h \
+ neuralnetwork/pBFGS_nnetwork.h neuralnetwork/BFGS_nnetwork.h \
+ math/LBFGS.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/pLBFGS_nnetwork.h neuralnetwork/LBFGS_nnetwork.h \
+ neuralnetwork/rLBFGS_nnetwork.h neuralnetwork/Mixture.h \
+ neuralnetwork/EnsembleMeans.h neuralnetwork/lreg_nnetwork.h \
+ neuralnetwork/nnetwork_function.h neuralnetwork/optimized_function.h \
+ hmm/HMM.h math/real.h reinforcement/RIFL_abstract.h \
+ neuralnetwork/bayesian_nnetwork.h reinforcement/CreateRIFLdataset.h \
+ reinforcement/RIFL_abstract.h reinforcement/CartPole.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreateRIFL2dataset.h \
+ reinforcement/RIFL_abstract2.h reinforcement/CreatePolicyDataset.h \
+ reinforcement/CartPole2.h rnn/RNN_RBM.h neuralnetwork/nnetwork.h array.h \
+ container.h static_array.h static_array.cpp dynamic_array.h stack.h \
+ queue.h dynamic_array.cpp search_array.h printable.h data_source.h \
+ chainhash.h hash_table.h chainhash.cpp dummystack.h priority_queue.h \
  dynamic_bitset.h point.h point.cpp exceptions/ownexception.h \
  dynamic_ctor_protection.h singleton.h singleton_list.h singleton.cpp \
  augmented_data.h tree.h avltree.h avlnode.h avlnode.cpp avltree.cpp \

@@ -1,6 +1,6 @@
 test.o: tst/test.cpp ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../math/matrix.h ../math/dinrhiw_blas.h \
- C:/msys64/opt/OpenBLAS/include/cblas.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../math/matrix.h \
+ ../math/dinrhiw_blas.h C:/msys64/opt/OpenBLAS/include/cblas.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  C:/msys64/opt/OpenBLAS/include/openblas_config.h \
  ../math/blas_primitives.h ../math/ownexception.h ../math/number.h \
@@ -21,7 +21,7 @@ test.o: tst/test.cpp ../dinrhiw.h ../Log.h ../LoggingInterface.h \
  ../dataset.h ../math/ica.h ../neuralnetwork/nnetwork.h ../conffile.h \
  ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
  ../neuralnetwork/stackedRBM_pretraining.h ../neuralnetwork/DBN.h \
- ../neuralnetwork/VAE.h ../LoggingInterface.h \
+ ../neuralnetwork/VAE.h ../LoggingInterface.h ../VisualizationInterface.h \
  ../neuralnetwork/globaloptimum.h ../math/BFGS.h \
  ../neuralnetwork/optimized_function.h ../neuralnetwork/BFGS_nnetwork.h \
  ../neuralnetwork/pBFGS_nnetwork.h ../neuralnetwork/BFGS_nnetwork.h \

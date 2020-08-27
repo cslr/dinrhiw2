@@ -17,7 +17,17 @@
   and decoder <math|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|\<nobracket\>>|)>\<thicksim\>N<around*|(|\<b-mu\><rsub|\<b-x\>><around*|(|\<b-z\>|)>,c*\<b-I\>|)>>
   for hidden parameters <math|\<b-z\>> as well as that we have decided
   distribution of hidden parameters <math|\<b-z\>>,
-  <math|p<around*|(|\<b-z\>|)>\<thicksim\>N<around*|(|\<b-0\>,\<b-I\>|)>>
+  <math|p<around*|(|\<b-z\>|)>\<thicksim\>N<around*|(|\<b-0\>,\<b-I\>|)>>.\ 
+
+  ADDITION: Additionally we have parameter mapping function
+  <math|f<around*|(|\<b-x\>|)>=\<b-y\>> which assigns metadata to data. We
+  want to have that <math|*<around*|\<\|\|\>|f<around*|(|\<b-x\><rsub|1>|)>-f<around*|(|\<b-x\><rsub|2>|)>|\<\|\|\>>=\<alpha\><around*|\<\|\|\>|\<b-z\><rsub|1>-\<b-z\><rsub|2>|\<\|\|\>>>,
+  that is that distances between metadata resembles those distances in
+  encoded data. <math|\<b-d\><rsub|i*j>=f<around*|(|\<b-x\><rsub|i>|)>-f<around*|(|\<b-x\><rsub|j>|)>=><math|\<b-z\><rsub|i>-\<b-z\><rsub|j>\<thicksim\>N<around*|(|\<b-mu\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|i>|)>-\<b-mu\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|j>|)>,<around*|(|\<b-sigma\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|i>|)>+\<b-sigma\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|j>|)>|)>\<b-I\>|)>>
+  where <math|f<around*|(|\<b-x\><rsub|>|)>> metadata has been scaled to be
+  <math|N<around*|(|\<b-0\>,\<b-I\>|)>>. This will mean we will have
+  <math|log<around*|(|p<around*|(|\<b-d\><rsub|i*j><around*|\|||\<nobracket\>>\<b-mu\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|i>|)>-\<b-mu\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|j>|)>,<around*|(|\<b-sigma\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|i>|)>+\<b-sigma\><rsub|\<b-z\>><around*|(|\<b-x\><rsub|j>|)>|)>\<b-I\>|)>|)>>
+  terms which gradient one needs to solve.
 
   \;
 
@@ -36,7 +46,7 @@
   same, so we ignore it and maximize lower bound <math|L> instead which can
   be rewritten as
 
-  <math|L<around*|(|\<b-theta\>,\<b-phi\>,\<b-x\>|)>=-<big|int>><math|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)><frac|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)>|p<rsub|\<theta\>><around*|(|\<b-z\>|)>>*d\<b-z\>+<big|int>log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|\<nobracket\>>|)>|)>*q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)>*d\<b-z\>=-D<rprime|'><rsub|KL>+E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|\<nobracket\>>|)>|)>|]>>
+  <math|L<around*|(|\<b-theta\>,\<b-phi\>,\<b-x\>|)>=-<big|int>><math|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)>log<around*|(|<frac|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)>|p<rsub|\<theta\>><around*|(|\<b-z\>|)>>|)>*d\<b-z\>+<big|int>log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|\<nobracket\>>|)>|)>*q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\<nobracket\>>|)>*d\<b-z\>=-D<rprime|'><rsub|KL>+E<rsub|q<rsub|\<phi\>><around*|(|\<b-z\><around*|\||\<b-x\>|\|>|)>><around*|[|log<around*|(|p<rsub|\<theta\>><around*|(|\<b-x\><around*|\||\<b-z\>|\<nobracket\>>|)>|)>|]>>
 
   In the formula distributions are only distributions which we know so we can
   maximize it using gradient descent (<math|\<nabla\><rsub|\<b-theta\>,\<b-phi\>>L<around*|(|\<b-x\>|)>>).
@@ -191,6 +201,8 @@
   Here the maximization of <math|L> means that the last term will be
   minimized (mean reconstruction error).
 
+  Max <math|s>: <math|f<around*|(|s|)>=s-0.5*e<rsup|2*s>>,<math|f<rprime|'><around*|(|s|)>=1-e<rsup|2*s>=0\<Rightarrow\>s=0\<Rightarrow\>\<sigma\>=1<rsup|>>
+
   \;
 
   TODO: add <math|\<b-c\>> variance term to the VAE.cpp code.
@@ -212,9 +224,9 @@
   c=0.05^2 results? results are maybe better than in other cases.
   <with|font-series|bold|Use this as the default.>
 
-  \;
+  c=0.05^2*DIMX/DIMZ results?
 
-  \;
+  \V
 
   \;
 </body>

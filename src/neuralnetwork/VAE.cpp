@@ -84,8 +84,11 @@ namespace whiteice
 	throw std::invalid_argument("bad encoder/decoder dimensions/arch");
     }
     
-    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::halfLinear);
-    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::halfLinear);
+    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::rectifier);
+    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::rectifier);
+
+    this->initializeParameters();
+    this->minibatchMode = false;
   }
   
   
@@ -159,8 +162,10 @@ namespace whiteice
 	return false;
     }
     
-    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::halfLinear);
-    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::halfLinear);
+    this->encoder.setArchitecture(encoderArchitecture, nnetwork<T>::rectifier);
+    this->decoder.setArchitecture(decoderArchitecture, nnetwork<T>::rectifier);
+
+    this->initializeParameters();
 
     return true;
   }
@@ -376,8 +381,10 @@ namespace whiteice
       }
     }
 
-    if(xsamples.size() > 0)
+    if(xsamples.size() > 0){
       error /= T(N);
+      error /= T(xsamples[0].size()); // scales to per dimension E[|error|]
+    }
 
     return error;
   }
@@ -391,8 +398,9 @@ namespace whiteice
     T error = T(0.0);
     
     // data variance s^2 term: c = Dz/Dx (was: c = Dx)
-    const float c = 0.05f*0.05f;
+    // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
+    const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
     
     // constant term C:
     logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
@@ -481,7 +489,9 @@ namespace whiteice
   //
   template <typename T>
   bool VAE<T>::learnParameters(const std::vector< math::vertex<T> >& xsamples,
-			       T convergence_ratio, bool verbose, LoggingInterface* messages,
+			       T convergence_ratio, bool verbose,
+			       LoggingInterface* messages,
+			       VisualizationInterface* gui, 
 			       bool* running)
   {
     // implements gradient descent
@@ -511,6 +521,7 @@ namespace whiteice
     // best solution found so far
     math::vertex<T> bestparams;
     T bestmloglikelihood = mloglikelihood;
+    T besterror = error;
     getParameters(bestparams);
     
     const int BUFLEN = 1024;
@@ -519,7 +530,11 @@ namespace whiteice
     whiteice::linear_ETA<double> eta;
     eta.start(0.0, MAXITER);
     eta.update(0.0);
-    
+
+    if(gui){
+      gui->show();
+      gui->clear();
+    }
     
     while(counter < MAXITER && noimprove_counter < MAXNOIMPROVE){
       if(running){
@@ -587,17 +602,18 @@ namespace whiteice
 	  lrate *= T(0.50);
 	}
 
+	error = getError(xsamples);
 	
 	// leaky error reduction, we sometimes allow jump to worse
 	// position in gradient direction
 	{
-	  const unsigned int rnd = (rng.rand() % 5);
+	  const unsigned int rnd = (rng.rand() % 20);
 	  
 	  printf("RNG::RAND() == %d\n", (int)rnd);
 	  fflush(stdout);
 	  
-	  //if(rnd == 0 && mloglikelihood > -1e6)
-	  if(rnd == 0){
+	  //if(rnd == 0 && mloglikelihood < 1e6)
+	  if(rnd == 0 && error <= 1.0f){
 	    std::cout << "! JUMP TO WORSE: GO TO GRADIENT DIRECTION BUT ERROR INCREASES."
 		      << std::endl;
 	    found = true;
@@ -607,8 +623,8 @@ namespace whiteice
       }
 
       
-      // next step in gradient direction found or cannot find better solution
       
+      // updates parameters based on the found solution
       if(found){
 	params = p;
 	setParameters(p, false);	
@@ -620,6 +636,7 @@ namespace whiteice
 	else{ // true improvement
 	  noimprove_counter = 0;
 	  bestmloglikelihood = mloglikelihood;
+	  besterror = error;
 	  bestparams = p;
 	}
       }
@@ -633,25 +650,64 @@ namespace whiteice
       eta.update(counter);
       
       if(verbose){
-	error = getError(xsamples);
+	
 	
 	std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
 		  << " (ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
 	
 	float errf = 10e10;
-	whiteice::math::convert(errf, error);
+	whiteice::math::convert(errf, besterror);
 	
 	float mloglikelihoodf = -10e10;
-	whiteice::math::convert(mloglikelihoodf, mloglikelihood);
+	whiteice::math::convert(mloglikelihoodf, bestmloglikelihood);
 	
 	//float lratef = 0.0f;
 	//whiteice::math::convert(lratef, lrate);
 	
-	snprintf(buf, BUFLEN, "VAE learning: learn() iter %d/%d error: %.2f (loglikelihood: %.2f) [ETA %.2f hours]\n",
+	snprintf(buf, BUFLEN, "VAE: learn() iter %d/%d best error: %.2f (loglikelihood: %.2f) [ETA %.2f hours]\n",
 		 counter, MAXITER, errf, -mloglikelihoodf, eta.estimate()/3600.0);
 	if(messages) messages->printMessage(buf);
 	
 	std::cout << std::flush;
+      }
+
+      // visualizes current location of xsamples
+      if(gui != 0 && getEncodedDimension() >= 2){
+
+	const unsigned int XMAX = gui->getScreenX();
+	const unsigned int YMAX = gui->getScreenY();
+	gui->clear();
+
+	math::vertex<T> zmean, zstdev;
+
+	for(const auto& x : xsamples){
+	  this->encode(x, encoder, zmean, zstdev);
+
+	  float x0 = 0.0f;
+	  whiteice::math::convert(x0, zmean[0]);
+	  x0 /= 2.0f;
+	  if(x0 < -1.0f) x0 = -1.0f;
+	  if(x0 > +1.0f) x0 = +1.0f;
+
+	  x0 = (x0 + 1.0f)/2.0f;
+	  x0 = x0 * (XMAX - 1);
+
+	  float y0 = 0.0f;
+	  whiteice::math::convert(y0, zmean[1]);
+	  y0 /= 2.0f;
+	  if(y0 < -1.0f) x0 = -1.0f;
+	  if(y0 > +1.0f) x0 = +1.0f;
+
+	  y0 = (y0 + 1.0f)/2.0f;
+	  y0 = y0 * (YMAX - 1);
+
+	  const unsigned int xx = (unsigned int)whiteice::math::round(x0);
+	  const unsigned int yy = (unsigned int)whiteice::math::round(y0);
+
+	  gui->plot(xx, yy);
+	}
+
+	gui->updateScreen();
       }
       
       // update convergence check (errors)
@@ -731,8 +787,9 @@ namespace whiteice
     if(xsamples[0].size() != encoder.input_size()) return false;
 
     // data variance term c, this allows errors to be made in reconstruction (0.05: was c = Dx (x.size()), c = Dz/Dx
-    const float c = 0.05f*0.05f;
+    // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
+    const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
 
     const int BUFLEN = 1024;
     char buffer[BUFLEN];

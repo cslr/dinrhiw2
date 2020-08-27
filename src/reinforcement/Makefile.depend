@@ -19,19 +19,19 @@ RIFL_abstract.o: RIFL_abstract.cpp RIFL_abstract.h ../math/dinrhiw_blas.h \
  ../neuralnetwork/bayesian_nnetwork.h ../neuralnetwork/nnetwork.h \
  ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h CreateRIFLdataset.h ../neuralnetwork/NNGradDescent.h \
- ../dinrhiw.h ../Log.h ../LoggingInterface.h ../math/fastpca.h \
- ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h ../neuralnetwork/BBRBM.h \
- ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
- ../neuralnetwork/stackedRBM_pretraining.h ../neuralnetwork/DBN.h \
- ../neuralnetwork/VAE.h ../LoggingInterface.h \
- ../neuralnetwork/globaloptimum.h ../math/BFGS.h \
- ../neuralnetwork/optimized_function.h ../neuralnetwork/BFGS_nnetwork.h \
- ../neuralnetwork/pBFGS_nnetwork.h ../neuralnetwork/BFGS_nnetwork.h \
- ../math/LBFGS.h ../neuralnetwork/LBFGS_nnetwork.h \
- ../neuralnetwork/pLBFGS_nnetwork.h ../neuralnetwork/LBFGS_nnetwork.h \
- ../neuralnetwork/rLBFGS_nnetwork.h ../neuralnetwork/Mixture.h \
- ../neuralnetwork/EnsembleMeans.h ../neuralnetwork/lreg_nnetwork.h \
- ../neuralnetwork/nnetwork_function.h \
+ ../dinrhiw.h ../Log.h ../LoggingInterface.h ../VisualizationInterface.h \
+ ../math/fastpca.h ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h \
+ ../neuralnetwork/BBRBM.h ../neuralnetwork/BBRBM.h \
+ ../neuralnetwork/GBRBM.h ../neuralnetwork/stackedRBM_pretraining.h \
+ ../neuralnetwork/DBN.h ../neuralnetwork/VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h ../neuralnetwork/globaloptimum.h \
+ ../math/BFGS.h ../neuralnetwork/optimized_function.h \
+ ../neuralnetwork/BFGS_nnetwork.h ../neuralnetwork/pBFGS_nnetwork.h \
+ ../neuralnetwork/BFGS_nnetwork.h ../math/LBFGS.h \
+ ../neuralnetwork/LBFGS_nnetwork.h ../neuralnetwork/pLBFGS_nnetwork.h \
+ ../neuralnetwork/LBFGS_nnetwork.h ../neuralnetwork/rLBFGS_nnetwork.h \
+ ../neuralnetwork/Mixture.h ../neuralnetwork/EnsembleMeans.h \
+ ../neuralnetwork/lreg_nnetwork.h ../neuralnetwork/nnetwork_function.h \
  ../neuralnetwork/optimized_function.h ../hmm/HMM.h ../math/real.h \
  RIFL_abstract.h CartPole.h RIFL_abstract.h RIFL_abstract2.h \
  CreateRIFL2dataset.h RIFL_abstract2.h CreatePolicyDataset.h CartPole2.h \
@@ -130,11 +130,12 @@ PolicyGradAscent.o: PolicyGradAscent.cpp PolicyGradAscent.h \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/ica.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../neuralnetwork/BBRBM.h \
- ../neuralnetwork/nnetwork.h ../conffile.h ../neuralnetwork/BBRBM.h \
- ../neuralnetwork/GBRBM.h ../neuralnetwork/stackedRBM_pretraining.h \
- ../neuralnetwork/DBN.h ../neuralnetwork/VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../neuralnetwork/DBN.h \
+ ../neuralnetwork/GBRBM.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../neuralnetwork/BBRBM.h ../neuralnetwork/nnetwork.h ../conffile.h \
+ ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
+ ../neuralnetwork/stackedRBM_pretraining.h ../neuralnetwork/DBN.h \
+ ../neuralnetwork/VAE.h ../LoggingInterface.h ../VisualizationInterface.h \
  ../neuralnetwork/globaloptimum.h ../math/BFGS.h \
  ../neuralnetwork/optimized_function.h ../neuralnetwork/BFGS_nnetwork.h \
  ../neuralnetwork/pBFGS_nnetwork.h ../neuralnetwork/BFGS_nnetwork.h \
@@ -224,11 +225,11 @@ RIFL_abstract2.o: RIFL_abstract2.cpp RIFL_abstract2.h \
  ../conffile.h ../dataset.h ../math/ica.h ../math/RNG.h ../math/RNG.cpp \
  ../math/RNG.h CreateRIFL2dataset.h CreatePolicyDataset.h \
  ../neuralnetwork/NNGradDescent.h ../dinrhiw.h ../Log.h \
- ../LoggingInterface.h ../math/fastpca.h ../neuralnetwork/DBN.h \
- ../neuralnetwork/GBRBM.h ../neuralnetwork/BBRBM.h \
+ ../LoggingInterface.h ../VisualizationInterface.h ../math/fastpca.h \
+ ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h ../neuralnetwork/BBRBM.h \
  ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
  ../neuralnetwork/stackedRBM_pretraining.h ../neuralnetwork/DBN.h \
- ../neuralnetwork/VAE.h ../LoggingInterface.h \
+ ../neuralnetwork/VAE.h ../LoggingInterface.h ../VisualizationInterface.h \
  ../neuralnetwork/globaloptimum.h ../math/BFGS.h \
  ../neuralnetwork/optimized_function.h ../neuralnetwork/BFGS_nnetwork.h \
  ../neuralnetwork/pBFGS_nnetwork.h ../neuralnetwork/BFGS_nnetwork.h \
@@ -560,11 +561,12 @@ NNGradDescent.o: ../neuralnetwork/NNGradDescent.cpp \
  ../neuralnetwork/neuronlayer.h ../math/norms.h ../math/outerproduct.h \
  ../neuralnetwork/activation_function.h ../neuralnetwork/function.h \
  ../math/ica.h ../dinrhiw.h ../Log.h ../LoggingInterface.h \
- ../math/fastpca.h ../neuralnetwork/DBN.h ../neuralnetwork/GBRBM.h \
- ../math/RNG.h ../math/RNG.cpp ../math/RNG.h ../neuralnetwork/BBRBM.h \
- ../neuralnetwork/nnetwork.h ../conffile.h ../neuralnetwork/BBRBM.h \
- ../neuralnetwork/GBRBM.h ../neuralnetwork/stackedRBM_pretraining.h \
- ../neuralnetwork/DBN.h ../neuralnetwork/VAE.h ../LoggingInterface.h \
+ ../VisualizationInterface.h ../math/fastpca.h ../neuralnetwork/DBN.h \
+ ../neuralnetwork/GBRBM.h ../math/RNG.h ../math/RNG.cpp ../math/RNG.h \
+ ../neuralnetwork/BBRBM.h ../neuralnetwork/nnetwork.h ../conffile.h \
+ ../neuralnetwork/BBRBM.h ../neuralnetwork/GBRBM.h \
+ ../neuralnetwork/stackedRBM_pretraining.h ../neuralnetwork/DBN.h \
+ ../neuralnetwork/VAE.h ../LoggingInterface.h ../VisualizationInterface.h \
  ../neuralnetwork/globaloptimum.h ../math/BFGS.h \
  ../neuralnetwork/optimized_function.h ../neuralnetwork/BFGS_nnetwork.h \
  ../neuralnetwork/pBFGS_nnetwork.h ../neuralnetwork/BFGS_nnetwork.h \

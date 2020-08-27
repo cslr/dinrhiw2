@@ -174,8 +174,18 @@ namespace whiteice
 
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
-      best_error = getError(nn, data, (regularizer>0.0f), false);
-      best_pure_error = getError(nn, data, false, false);
+      best_error = getError(nn, data, (regularizer>0.0f), dropout);
+      if(dropout){
+	auto nn_without_dropout = nn;
+	nn_without_dropout.removeDropOut();
+	best_pure_error = getError(nn_without_dropout, data, false, false);
+      }
+      else{
+	best_pure_error = getError(nn, data, false, false);
+      }
+
+      std::cout << "INITIAL BEST PURE ERROR: " << best_pure_error << std::endl;
+      std::cout << std::flush;
       
       {
 	std::lock_guard<std::mutex> lock(noimprove_lock);
@@ -447,6 +457,8 @@ namespace whiteice
 	  error += esum;
 	}
       }
+
+      error /= T((float)dtest.access(1,0).size()); // divides per output dimension
 
       if(regularize){
 	whiteice::math::vertex<T> w;
@@ -898,14 +910,14 @@ namespace whiteice
 
 	      // leaky error reduction, we sometimes allow jump to worse
 	      // position in gradient direction
-	      if((rng.rand() % 5) == 0 && error < 10.0)
+	      if((rng.rand() % 5) == 0 && error < 0.50)
 		break;
 	    }
 	    while(delta_error < T(0.0) && lrate >= T(10e-25) && running);
 
 	    
 	    // replaces error with TESTing set error
-	    error = getError(*nn, dtest, (regularizer>0.0f),dropout);
+	    error = getError(*nn, dtest, (regularizer>0.0f), dropout);
 
 	    {
 	      if(error > local_thread_best_error){

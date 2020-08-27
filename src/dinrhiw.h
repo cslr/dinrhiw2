@@ -27,6 +27,8 @@
 #include "Log.h"
 #include "LoggingInterface.h"
 
+#include "VisualizationInterface.h"
+
 #include "fastpca.h"
 // #include "ultradeep.h"
 

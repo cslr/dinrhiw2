@@ -895,8 +895,8 @@ void simple_vae_test()
     arch_d.push_back(20);
     arch_d.push_back(10);
     
-    encoder.setArchitecture(arch_e, whiteice::nnetwork<>::halfLinear);
-    decoder.setArchitecture(arch_d, whiteice::nnetwork<>::halfLinear);
+    encoder.setArchitecture(arch_e, whiteice::nnetwork<>::rectifier);
+    decoder.setArchitecture(arch_d, whiteice::nnetwork<>::rectifier); 
     
     whiteice::VAE<> vae(encoder, decoder);
     

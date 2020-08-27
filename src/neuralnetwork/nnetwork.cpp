@@ -729,41 +729,14 @@ namespace whiteice
 	  if(norm1 <= T(0.0f)) norm1 = T(1.0f);
 	  if(norm2 <= T(0.0f)) norm2 = T(1.0f);
 
-#if 0
-	  // for now we just use vectors randomly [does this work well if number nodes is > data?]
 	  for(unsigned int i=0;i<W.xsize();i++){
-	    W(j,i) = inputdata[k1][i]/norm1;
+	    W(j,i) = T(0.5f)*inputdata[k1][i]/norm1 + T(0.5f)*inputdata[k2][i]/norm2;
 	  }
-#endif
-#if 1
-	  if(inputdata.size() > W.ysize()){ // was "<" (but don't work)
-	    for(unsigned int i=0;i<W.xsize();i++){
-	      W(j,i) = inputdata[k1][i]/norm1;
-	    }
-	  }
-	  else{
-	    if(j < inputdata.size()){
-	      T norm = inputdata[j].norm(); norm = norm*norm;
-	      if(norm <= T(0.0f)) norm = T(1.0f);
-
-	      for(unsigned int i=0;i<W.xsize();i++){
-		W(j,i) = inputdata[j][i]/norm;
-	      }
-	    }
-	    else{ // if there are more weights than training samples then use also mixtures.
-	      for(unsigned int i=0;i<W.xsize();i++){
-		W(j,i) = T(0.5f)*inputdata[k1][i]/norm1 + T(0.5f)*inputdata[k2][i]/norm2;
-	      }
-	    }
-	    
-	  }
-#endif
 	}
 
 	b.zero();
       }
       else{ // the last layer, calculate linear mapping y=A*x + b
-
 	// W = Cyx*inv(Cxx)
 	// b = E[y] - W*E[x]
 	
@@ -774,9 +747,9 @@ namespace whiteice
 	mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
 
 	if(Cxx.symmetric_pseudoinverse() == false){
-		printf("ERROR: nnetwork<>::presetWeightsFromData(): symmetric pseudoinverse FAILED.\n");
-		fflush(stdout);
-		assert(0);
+	  printf("ERROR: nnetwork<>::presetWeightsFromData(): symmetric pseudoinverse FAILED.\n");
+	  fflush(stdout);
+	  assert(0);
 	}
 
 	W = Cyx*Cxx;
