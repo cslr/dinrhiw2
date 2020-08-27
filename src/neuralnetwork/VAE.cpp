@@ -704,7 +704,10 @@ namespace whiteice
 	  const unsigned int xx = (unsigned int)whiteice::math::round(x0);
 	  const unsigned int yy = (unsigned int)whiteice::math::round(y0);
 
-	  gui->plot(xx, yy);
+	  if(gui->plot(xx, yy)){
+	    printf("PLOTTED: %d %d\n", xx, yy);
+	    fflush(stdout);
+	  }
 	}
 
 	gui->updateScreen();
