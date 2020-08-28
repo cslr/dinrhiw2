@@ -1,19 +1,13 @@
 Code is only tested and known to compile on Debian/Linux (amd64) and 
 Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
-* SVD (singular value decomposition) testcases fail and is not working
+* t-SNE is not implemented nor tested (TODO)
 
-* LBFGS optimizer can produce NaNs and do not work!
-  (inf minus inf in nnetwork<>::calculate but
-   I have no idea where those infinites come from)
-     THIS IS PROBABLY RELATED TO OpenBLAS linking bugs.. TEST IF THIS STILL HAPPENS
+* VAE code (Variational Autoencoder) currently doesn't handle learning z-space model variance well.
+  is it possible to alter computation to use zvariance = encoder_stdev(x)*encoder_stdev(x) and handle related math correctly?
 
 * HMC (bayes nnetwork) do not work properly on more that
   one output dimension nnetwork? (recheck)
-  
-* BFGS optimizer (but not L-BFGS) fails mysteriously
-  when optimizing large nnetworks
-  (vertex dimension mismatch with large nnetworks) {maybe fixed/recheck)
 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.
@@ -27,6 +21,6 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
   
 * Sylvester Equation solver hasn't been working for a long time but is not needed (won't fix)
 
-* matrix<T>::symmetric_pseudoinverse() call calls assert(0) for now, fix it by fixing
+* matrix<T>::symmetric_pseudoinverse() don't handle complex numbers correctly.
   symmetric_eig() to properly handle complex numbers so the code can be enabled.
   
