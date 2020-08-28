@@ -16,6 +16,27 @@
 
   \;
 
+  The <math|p<rsub|i*j>> values are calculated from data using formulas.
+
+  \;
+
+  <math|p<rsub|i<around*|\||j|\<nobracket\>>>=<frac|e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|j>|\<\|\|\>><rsup|2>/2*\<sigma\><rsup|2><rsub|i>>|<big|sum><rsub|k\<neq\>i>e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|k>|\<\|\|\>>/2\<sigma\><rsup|2><rsub|i>>>>,
+  <math|p<rsub|i<around*|\||i|\<nobracket\>>>=0>,
+  <math|<big|sum><rsub|j>p<rsub|j<around*|\||i|\<nobracket\>>>=1>
+
+  \;
+
+  Symmetric probability values are computed from conditional probabilities
+  using the formula
+
+  <math|p<rsub|i*j>=<frac|p<rsub|j<around*|\||i|\<nobracket\>>>+p<rsub|i<around*|\||j|\<nobracket\>>>|2*N>>,<math|<big|sum><rsub|i,j>p<rsub|i*j>=1>
+
+  \;
+
+  \;
+
+  <with|font-series|bold|Gradient>
+
   \;
 
   We need to calculate gradient for each <math|\<b-y\><rsub|i>> in
