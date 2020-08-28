@@ -165,13 +165,6 @@
 
 #include "dataset.h"
 #include "activation_function.h"
-#include "backpropagation.h"
-#include "neuralnetwork.h"
-#include "neuron.h"
-#include "neuronlayer.h"
-#include "nnPSO.h"
-#include "dnnPSO.h"
-#include "nn_iterative_correction.h"
 
 #include "nnetwork.h"
 #include "NNGradDescent.h"

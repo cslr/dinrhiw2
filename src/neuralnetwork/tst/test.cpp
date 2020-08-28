@@ -6,10 +6,6 @@
 
 #include "HC.h"
 
-#include "neuralnetwork.h"
-#include "backpropagation.h"
-#include "neuronlayer.h"
-#include "neuron.h"
 #include "activation_function.h"
 #include "odd_sigmoid.h"
 
@@ -21,7 +17,6 @@
 #include "EnsembleMeans.h"
 
 #include "dataset.h"
-#include "nnPSO.h"
 #include "dinrhiw_blas.h"
 
 #include "bayesian_nnetwork.h"
@@ -88,10 +83,12 @@ using namespace whiteice;
 
 void activation_test();
 
+/* OLD CODE: DISABLED
 void neuron_test();
 void neuronlayer_test();
 void neuronlayer_test2();
 void neuralnetwork_test();
+*/
 
 void nnetwork_test();
 void lreg_nnetwork_test();
@@ -2935,7 +2932,7 @@ void rechcprint_test(hcnode< GDAParams, math::blas_real<float> >* node,
 
 
 /************************************************************/
-
+#if 0
 void compressed_neuralnetwork_test()
 {
   std::cout << "COMPRESSED NEURAL NETWORK TEST" << std::endl;
@@ -3100,7 +3097,7 @@ void compressed_neuralnetwork_test()
   
   
 }
-
+#endif
 
 
 void simple_dataset_test()
@@ -3173,6 +3170,7 @@ void simple_dataset_test()
 
 
 
+#if 0
 
 void neuralnetwork_pso_test()
 {
@@ -3449,11 +3447,11 @@ void neuralnetwork_saveload_test()
     assert(0);
   }
 }
-
+#endif
 
 /************************************************************/
 
-
+#if 0
 void neuronlayer_test()
 {
   // checks neuronlayer is ok
@@ -3754,9 +3752,9 @@ void neuronlayer_test()
 	      << e.what() << std::endl;
   }
 }
+#endif
 
-
-
+#if 0
 void backprop_test(const unsigned int size)
 {
   {
@@ -4110,7 +4108,7 @@ void neuron_test()
   
   cout << "neuron(" << n.local_field() << ") = " << v << endl; // should be zero
 }
-
+#endif
 
 
 template <typename T>

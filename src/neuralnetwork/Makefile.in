@@ -5,10 +5,10 @@ CC = @CC@
 CXX = @CXX@
 
 SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
-	neuron.cpp neuronlayer.cpp activation_function.cpp odd_sigmoid.cpp identity_activation.cpp \
-	multidimensional_gaussian.cpp neuralnetwork.cpp backpropagation.cpp stretched_function.cpp \
+	activation_function.cpp odd_sigmoid.cpp identity_activation.cpp \
+	multidimensional_gaussian.cpp stretched_function.cpp \
 	optimized_nnetwork_function.cpp VAE.cpp TSNE.cpp \
-	PSO.cpp test_function.cpp negative_function.cpp nnPSO.cpp dnnPSO.cpp \
+	PSO.cpp test_function.cpp negative_function.cpp \
 	SOM2D.cpp KMeans.cpp HC.cpp GDALogic.cpp \
 	tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
 	GeneticAlgorithm.cpp GeneticAlgorithm2.cpp test_function2.cpp \
@@ -20,11 +20,10 @@ SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
 	stackedRBM_pretraining.cpp rLBFGS_nnetwork.cpp Mixture.cpp EnsembleMeans.cpp \
 	globaloptimum.cpp
 
-OBJECTS= neuron.o neuronlayer.o \
-	activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
-	neuralnetwork.o backpropagation.o stretched_function.o optimized_function.o \
+OBJECTS= activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
+	stretched_function.o optimized_function.o \
 	optimized_nnetwork_function.o VAE.o TSNE.o \
-	PSO.o test_function.o negative_function.o nnPSO.o dnnPSO.o \
+	PSO.o test_function.o negative_function.o \
 	SOM2D.o KMeans.o nnetwork.o HC.o GDALogic.o \
 	GeneticAlgorithm.o GeneticAlgorithm2.o test_function2.o \
 	NNGradDescent.o NNRandomSearch.o HMC.o bayesian_nnetwork.o HMC_abstract.o HMC_gaussian.o \

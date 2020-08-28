@@ -23,12 +23,7 @@
 
 namespace whiteice
 {
-  template <typename T>
-    class neuronlayer;
   
-  template <typename T>
-    class backpropagation;
-    
   namespace math
   {
     
@@ -254,8 +249,6 @@ namespace whiteice
       //////////////////////////////////////////////////
       
       friend class vertex<T>;
-      friend class whiteice::neuronlayer<T>;
-      friend class whiteice::backpropagation<T>;
       
       
       friend bool gramschmidt<T>(matrix<T>& B,
@@ -337,8 +330,6 @@ namespace whiteice
 #include "linear_algebra.h"
 #include "correlation.h"
 #include "matrix_rotations.h"
-#include "backpropagation.h"
-#include "neuronlayer.h"  
 #include "vertex.h"
 #include "norms.h"
 #include "outerproduct.h"

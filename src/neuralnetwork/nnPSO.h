@@ -1,7 +1,8 @@
 /*
  * nnPSO - neural network particle swarm optimizer
  * 
- * 
+ * THIS SOURCE CODE IS DISABLED AND NOT ANYMORE PART OF COMPILATION
+ * TODO: modify to use nnetwork.h implementation instead. 
  */
 #include "neuralnetwork.h"
 #include "dataset.h"

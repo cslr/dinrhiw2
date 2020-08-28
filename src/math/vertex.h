@@ -27,9 +27,6 @@ namespace whiteice
 {
   class SOM2D;
   
-  template <typename T> class neuronlayer;
-  template <typename T> class backpropagation;
-  
   
   namespace math
   {
@@ -216,8 +213,6 @@ namespace whiteice
       // friend list
       friend class matrix<T>;
       
-      friend class whiteice::neuronlayer<T>;
-      friend class whiteice::backpropagation<T>;
       friend class whiteice::SOM2D;
       
       friend bool gramschmidt<T>(matrix<T>& B,
@@ -286,9 +281,6 @@ namespace whiteice
   };
 };
 
-
-#include "backpropagation.h"
-#include "neuronlayer.h"
 
 #include "linear_algebra.h"
 #include "correlation.h"

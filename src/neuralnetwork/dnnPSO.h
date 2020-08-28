@@ -1,4 +1,6 @@
 /*
+ * OUTDATED CODE: DOES NOT COMPILE
+ *
  * dnnPSO
  * 
  * distance learning PSO learner
