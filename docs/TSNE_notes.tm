@@ -26,7 +26,7 @@
 
   \;
 
-  <math|p<rsub|i<around*|\||j|\<nobracket\>>>=<frac|e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|j>|\<\|\|\>><rsup|2>/2*\<sigma\><rsup|2><rsub|i>>|<big|sum><rsub|k\<neq\>i>e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|k>|\<\|\|\>>/2\<sigma\><rsup|2><rsub|i>>>>,
+  <math|p<rsub|i<around*|\||j|\<nobracket\>>>=<frac|e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|j>|\<\|\|\>><rsup|2>/2*\<sigma\><rsup|2><rsub|i>>|<big|sum><rsub|k\<neq\>i>e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|k>|\<\|\|\>><rsup|2>/2\<sigma\><rsup|2><rsub|i>>>>,
   <math|p<rsub|i<around*|\||i|\<nobracket\>>>=0>,
   <math|<big|sum><rsub|j>p<rsub|j<around*|\||i|\<nobracket\>>>=1>
 
@@ -92,7 +92,7 @@
 
   \;
 
-  And when <math|y=i> we need to derivate the upper part too.
+  And when <math|y=i> or <math|y=j> we need to derivate the upper part too.
 
   \;
 
