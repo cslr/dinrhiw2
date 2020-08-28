@@ -3,7 +3,13 @@
 <\body>
   <with|font-series|bold|t-SNE algorithm implementation>
 
-  Tomas Ukkonen 2020, tomas.ukkonen@novelinsight.fi
+  Tomas Ukkonen 2020, <with|font-family|tt|tomas.ukkonen@novelinsight.fi>
+
+  \;
+
+  Implementation is in <with|font-family|tt|src/neuralnetwork/TSNE.h> and
+  <with|font-family|tt|TSNE.cpp> in <with|font-family|tt|dinrhiw2>
+  repository.
 
   \;
 
@@ -99,6 +105,22 @@
   With these derivates we can then calculate derivate of <math|D<rsub|KL>>
   for each <math|\<b-y\>>. We just select step length for the gradient which
   causes increase in <math|D<rsub|KL>>.
+
+  \;
+
+  <with|font-series|bold|Optimization of computation>
+
+  \;
+
+  For large number of points the update rule is slow
+  (<math|O<around*|(|N<rsup|2>|)>> scaling). Extra speed can be archieved by
+  combining large away data points to a single point which is then used to
+  calculate the divergence and gradient. This can be done by using
+  <with|font-shape|italic|Barnes-Hut approximation> which changes
+  computational complexity to near linear
+  <math|O<around*|(|N*log<around*|(|N|)>|)>>.
+
+  \;
 </body>
 
 <initial|<\collection>
