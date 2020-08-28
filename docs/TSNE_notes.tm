@@ -26,7 +26,7 @@
 
   \;
 
-  <math|p<rsub|i<around*|\||j|\<nobracket\>>>=<frac|e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|j>|\<\|\|\>><rsup|2>/2*\<sigma\><rsup|2><rsub|i>>|<big|sum><rsub|k\<neq\>i>e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|i>-\<b-x\><rsub|k>|\<\|\|\>><rsup|2>/2\<sigma\><rsup|2><rsub|i>>>>,
+  <math|p<rsub|j<around*|\||i|\<nobracket\>>>=<frac|e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|j>-\<b-x\><rsub|i>|\<\|\|\>><rsup|2>/2*\<sigma\><rsup|2><rsub|i>>|<big|sum><rsub|k\<neq\>i>e<rsup|-<around*|\<\|\|\>|\<b-x\><rsub|k>-\<b-x\><rsub|i>|\<\|\|\>><rsup|2>/2\<sigma\><rsup|2><rsub|i>>>>,
   <math|p<rsub|i<around*|\||i|\<nobracket\>>>=0>,
   <math|<big|sum><rsub|j>p<rsub|j<around*|\||i|\<nobracket\>>>=1>
 
@@ -36,6 +36,21 @@
   using the formula
 
   <math|p<rsub|i*j>=<frac|p<rsub|j<around*|\||i|\<nobracket\>>>+p<rsub|i<around*|\||j|\<nobracket\>>>|2*N>>,<math|<big|sum><rsub|i,j>p<rsub|i*j>=1>
+
+  \;
+
+  The variance terms of each data point <math|\<sigma\><rsup|2><rsub|i>> is
+  calculated using values <math|p<rsub|j<around*|\||i|\<nobracket\>>>> to
+  search for target perplexity <math|perp<around*|(|P<rsub|i>|)>=2<rsup|H<around*|(|P<rsub|i>|)>>=2<rsup|-<big|sum><rsub|j>p<rsub|j<around*|\||i|\<nobracket\>>>*log<rsub|2><around*|(|p<rsub|j<around*|\||i|\<nobracket\>>>|)>>>.
+  Good general perplexity value is maybe 30 so we need to solve
+  <math|\<sigma\><rsup|2><rsub|i>> value using bisection method.
+
+  First we set minimum <math|\<sigma\><rsup|2><rsub|min>=0> and
+  <math|\<sigma\><rsub|max><rsup|2>=trace<around*|(|\<b-Sigma\><rsub|\<b-x\>>|)>>.
+  We then always select <math|\<sigma\><rsup|2><rsub|next>=<frac|\<sigma\><rsup|2><rsub|min>+\<sigma\><rsup|2><rsub|msx>|2>>
+  to half the interval and calculate perplexity at
+  <math|\<sigma\><rsub|next><rsup|2>> to figure out which half contains the
+  target perpelexity value and stop if error is smaller than <math|0.1>.
 
   \;
 
