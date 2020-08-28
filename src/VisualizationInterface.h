@@ -34,6 +34,9 @@ namespace whiteice {
 
     // updates plotted pixels to screen
     virtual bool updateScreen() = 0;
+
+    // blocks until key have been pressed
+    virtual bool waitKeypress() = 0;
     
   };
   

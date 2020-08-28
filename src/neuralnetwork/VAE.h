@@ -77,7 +77,11 @@ namespace whiteice
       
       // to set minibatch mode in which we use only sample of 30 data points when calculating gradient
       void setUseMinibatch(bool use_minibatch);
-      bool getUseMinibatch();
+      bool getUseMinibatch() const;
+
+      // set dropout mode
+      void setDropout(bool dropout = true);
+      bool getDropout() const;
       
       void initializeParameters();
       
@@ -117,8 +121,8 @@ namespace whiteice
 
       whiteice::RNG<T> rng;
       
-      bool minibatchMode;
-      const bool dropout = true; // TODO: implement drop out heuristic for optimization
+      bool minibatchMode = true;
+      bool dropout = false; // drop out heuristic for optimization [DISABLED]
     
     };
   

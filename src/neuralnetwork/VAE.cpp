@@ -263,7 +263,7 @@ namespace whiteice
   template <typename T>
   unsigned int VAE<T>::getEncodedDimension() const
   {
-    return encoder.output_size();
+    return decoder.input_size();
   }
   
 
@@ -317,9 +317,21 @@ namespace whiteice
   }
 
   template <typename T>
-  bool VAE<T>::getUseMinibatch()
+  bool VAE<T>::getUseMinibatch() const
   {
     return minibatchMode;
+  }
+
+  template <typename T>
+  void VAE<T>::setDropout(bool dropout)
+  {
+    this->dropout = dropout;
+  }
+
+  template <typename T>
+  bool VAE<T>::getDropout() const
+  {
+    return this->dropout;
   }
 
   template <typename T>
@@ -334,10 +346,15 @@ namespace whiteice
   template <typename T>
   T VAE<T>::getError(const std::vector< math::vertex<T> >& xsamples) const
   {
+    if(xsamples.size() == 0) return T(0.0f);
+    
     T error = T(0.0);
     const unsigned int K = 100; // the number of random samples used to estimate E[error]
+    const unsigned int MINIBATCHSIZE = 30;
 
-    const unsigned int N = K*xsamples.size();
+    unsigned int N = K*xsamples.size();
+
+    if(minibatchMode) N = K*MINIBATCHSIZE;
 
 #pragma omp parallel shared(error)
     {
@@ -354,7 +371,10 @@ namespace whiteice
 
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<N;i++){
-	const unsigned int index = i/K;
+	unsigned int index = i/K;
+
+	if(minibatchMode)
+	  index = rng.rand() % xsamples.size();
 
 	if(dropout){
 	  encoder.setDropOut();
@@ -674,14 +694,46 @@ namespace whiteice
       // visualizes current location of xsamples
       if(gui != 0 && getEncodedDimension() >= 2){
 
+	math::vertex<T> z, zvar; // removes mean away from the encoded vectors
+	math::vertex<T> zmean, zstdev;
+
+	z.resize(getEncodedDimension());
+	z.zero();
+
+	zvar.resize(getEncodedDimension());
+	zvar.zero();
+
+	for(const auto& x : xsamples){
+	  this->encode(x, encoder, zmean, zstdev);
+
+	  z += zmean;
+
+	  for(unsigned int i=0;i<zvar.size();i++)
+	    zvar[i] += zmean[i]*zmean[i];
+	}
+
+	z /= T(xsamples.size());
+	zvar /= T(xsamples.size());
+
+	for(unsigned int i=0;i<zvar.size();i++){
+	  zvar[i] -= z[i]*z[i];
+	  zvar[i] = whiteice::math::sqrt(whiteice::math::abs(zvar[i]));
+	}
+
+	std::cout << "Z-SPACE MEAN  = " << z << std::endl;
+	std::cout << "Z-SPACE STDEV = " << zvar << std::endl;
+	std::cout << "Z-MODEL STDEV = " << zstdev << std::endl;
+	std::cout << std::flush;
+
+
 	const unsigned int XMAX = gui->getScreenX();
 	const unsigned int YMAX = gui->getScreenY();
 	gui->clear();
 
-	math::vertex<T> zmean, zstdev;
-
 	for(const auto& x : xsamples){
 	  this->encode(x, encoder, zmean, zstdev);
+
+	  zmean -= z; // removes mean from the encoded vectors but keeps variance
 
 	  float x0 = 0.0f;
 	  whiteice::math::convert(x0, zmean[0]);
@@ -695,8 +747,8 @@ namespace whiteice
 	  float y0 = 0.0f;
 	  whiteice::math::convert(y0, zmean[1]);
 	  y0 /= 2.0f;
-	  if(y0 < -1.0f) x0 = -1.0f;
-	  if(y0 > +1.0f) x0 = +1.0f;
+	  if(y0 < -1.0f) y0 = -1.0f;
+	  if(y0 > +1.0f) y0 = +1.0f;
 
 	  y0 = (y0 + 1.0f)/2.0f;
 	  y0 = y0 * (YMAX - 1);
@@ -704,10 +756,7 @@ namespace whiteice
 	  const unsigned int xx = (unsigned int)whiteice::math::round(x0);
 	  const unsigned int yy = (unsigned int)whiteice::math::round(y0);
 
-	  if(gui->plot(xx, yy)){
-	    printf("PLOTTED: %d %d\n", xx, yy);
-	    fflush(stdout);
-	  }
+	  gui->plot(xx, yy);
 	}
 
 	gui->updateScreen();

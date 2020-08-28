@@ -40,6 +40,7 @@
 #include "stackedRBM_pretraining.h"
 
 #include "VAE.h"
+#include "TSNE.h"
 
 #include "globaloptimum.h"
 
