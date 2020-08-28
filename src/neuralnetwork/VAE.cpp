@@ -694,7 +694,7 @@ namespace whiteice
       // visualizes current location of xsamples
       if(gui != 0 && getEncodedDimension() >= 2){
 
-	math::vertex<T> z, zvar; // removes mean away from the encoded vectors
+	math::vertex<T> z, zvar, model_zstdev; // removes mean away from the encoded vectors
 	math::vertex<T> zmean, zstdev;
 
 	z.resize(getEncodedDimension());
@@ -703,10 +703,14 @@ namespace whiteice
 	zvar.resize(getEncodedDimension());
 	zvar.zero();
 
+	model_zstdev.resize(getEncodedDimension());
+	model_zstdev.zero();
+
 	for(const auto& x : xsamples){
 	  this->encode(x, encoder, zmean, zstdev);
 
 	  z += zmean;
+	  model_zstdev += zstdev;
 
 	  for(unsigned int i=0;i<zvar.size();i++)
 	    zvar[i] += zmean[i]*zmean[i];
@@ -714,6 +718,7 @@ namespace whiteice
 
 	z /= T(xsamples.size());
 	zvar /= T(xsamples.size());
+	model_zstdev /= T(xsamples.size());
 
 	for(unsigned int i=0;i<zvar.size();i++){
 	  zvar[i] -= z[i]*z[i];
@@ -722,7 +727,7 @@ namespace whiteice
 
 	std::cout << "Z-SPACE MEAN  = " << z << std::endl;
 	std::cout << "Z-SPACE STDEV = " << zvar << std::endl;
-	std::cout << "Z-MODEL STDEV = " << zstdev << std::endl;
+	std::cout << "Z-MODEL STDEV = " << model_zstdev << std::endl;
 	std::cout << std::flush;
 
 

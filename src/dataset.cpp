@@ -1648,8 +1648,8 @@ namespace whiteice
 	      if(k < clusters[index].data_dimension){
 		clusters[index].variance[k] -= (clusters[index].mean[k])*(clusters[index].mean[k]);
 			    
-		if(clusters[index].variance[k] < 0.0)
-		  clusters[index].variance[k] = T(0.0);
+		if(clusters[index].variance[k] < 0.0000001)
+		  clusters[index].variance[k] = T(0.0000001);
 		
 		clusters[index].variance[k]  = whiteice::math::sqrt(clusters[index].variance[k]);
 		k++;
@@ -2209,8 +2209,10 @@ namespace whiteice
     vec -= clusters[index].mean;
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(clusters[index].variance[i] > T(10e-8))
-	vec[i] /= (T(2.0)*clusters[index].variance[i]);
+      if(clusters[index].variance[i] > T(10e-8)){
+	//vec[i] /= (T(2.0)*clusters[index].variance[i]);
+	vec[i] /= (T(1.0)*clusters[index].variance[i]);
+      }
     }
     
   }
@@ -2223,8 +2225,10 @@ namespace whiteice
     // [x' * sqrt(var)] + mean
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(clusters[index].variance[i] > T(10e-8))
-	vec[i] *= (T(2.0)*clusters[index].variance[i]);
+      if(clusters[index].variance[i] > T(10e-8)){
+	// vec[i] *= (T(2.0)*clusters[index].variance[i]);
+	vec[i] *= (T(1.0)*clusters[index].variance[i]);
+      }
     }
     
     vec += clusters[index].mean;

@@ -32,7 +32,7 @@ namespace whiteice
     
     // calculates mean and covariance matrix (E[(x-mean)(x-mean)']) from given data
     template <typename T>
-      bool mean_covariance_estimate(vertex<T>& m, matrix<T>& R,
+      bool mean_covariance_estimate(vertex<T>& mx, matrix<T>& Cxx,
 				    const std::vector< vertex<T> >& data);
     
     // calculates mean and covariance matrix from given data with
