@@ -643,7 +643,6 @@ namespace whiteice
       }
 
       
-      
       // updates parameters based on the found solution
       if(found){
 	params = p;
@@ -691,10 +690,10 @@ namespace whiteice
 	std::cout << std::flush;
       }
 
-      // visualizes current location of xsamples
-      if(gui != 0 && getEncodedDimension() >= 2){
-
-	math::vertex<T> z, zvar, model_zstdev; // removes mean away from the encoded vectors
+      // prints Z-space statistics
+      math::vertex<T> z;
+      {
+	math::vertex<T> zvar, model_zstdev; // removes mean away from the encoded vectors
 	math::vertex<T> zmean, zstdev;
 
 	z.resize(getEncodedDimension());
@@ -729,7 +728,12 @@ namespace whiteice
 	std::cout << "Z-SPACE STDEV = " << zvar << std::endl;
 	std::cout << "Z-MODEL STDEV = " << model_zstdev << std::endl;
 	std::cout << std::flush;
-
+      }
+      
+      // visualizes current location of xsamples
+      if(gui != 0 && getEncodedDimension() >= 2){
+	
+	math::vertex<T> zmean, zstdev;
 
 	const unsigned int XMAX = gui->getScreenX();
 	const unsigned int YMAX = gui->getScreenY();
