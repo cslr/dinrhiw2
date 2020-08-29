@@ -533,7 +533,7 @@ namespace whiteice
     T lrate = T(0.0001);
     
     unsigned int counter = 0;
-    const unsigned int MAXITER = 500;
+    const unsigned int MAXITER = 1000;
 
     unsigned int noimprove_counter = 0;
     const unsigned int MAXNOIMPROVE = 50;
@@ -824,8 +824,18 @@ namespace whiteice
       
     } // end of while(counter < MAXITER && noimprovement_counter < MAXNOIMPROVEROUNDS) loop
 
-    
-    setParameters(bestparams, dropout);
+    {
+      float besterrorf = 0.0f;
+      whiteice::math::convert(besterrorf, besterror);
+
+      float bestmloglikelihoodf = 0.0f;
+      whiteice::math::convert(bestmloglikelihoodf, bestmloglikelihood);
+      
+      printf("Computation stopped. Best error: %f. Best loglikeligood %f.\n",
+	     besterrorf, bestmloglikelihoodf);
+    }
+      
+    setParameters(bestparams, dropout); // remove dropout only here
     
     return true;
   }
