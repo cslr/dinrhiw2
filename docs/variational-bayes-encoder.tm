@@ -123,6 +123,9 @@
 
   NEEDED(?):
 
+  <with|font-series|bold|NOTE: CALCULATING LOGARITHM OF VARIANCE DON'T WORK
+  WITH SMART INITIALIZATION BUT WORKS WITH RANDOM INITIALIZATION!>
+
   To handle parameter sigma <math|\<sigma\><rsub|\<phi\>,\<b-z\>><around*|(|\<b-x\>|)>>
   better we will remap proper values from <math|<around*|[|0,\<infty\>|)>> to
   open interval <math|<around*|(|-\<infty\>,\<infty\>|)>> by using mapping
