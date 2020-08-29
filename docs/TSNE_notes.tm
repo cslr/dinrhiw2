@@ -54,8 +54,6 @@
 
   \;
 
-  \;
-
   <with|font-series|bold|Gradient>
 
   \;
@@ -134,6 +132,138 @@
   <with|font-shape|italic|Barnes-Hut approximation> which changes
   computational complexity to near linear
   <math|O<around*|(|N*log<around*|(|N|)>|)>>.
+
+  \;
+
+  <with|font-series|bold|Improvement of KL divergence based distribution
+  comparision>
+
+  \;
+
+  The information theoretic distribution comparision metric <math|D<rsub|KL>>
+  can be improved by using absolute values. This also symmetrices comparision
+  a bit. (See my other notes about information theory/also at the end of this
+  section.)
+
+  \;
+
+  <math|<around*|\||D|\|><rsub|KL><around*|(|\<b-y\><rsub|1>\<ldots\>\<b-y\><rsub|N>|)>=<big|sum><rsub|i\<neq\>j>p<rsub|i*j>*<around*|\||log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|\|>>
+
+  \;
+
+  Gradient of the absolute value can be computed using a simple trick.
+
+  \;
+
+  <math|D<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>>=D<sqrt|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>>=<frac|1|2<sqrt|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>>>*D<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>=<frac|f<around*|(|\<b-x\>|)>|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>>>\<nabla\>f<around*|(|\<b-x\>|)>=sign<around*|(|f<around*|(|\<b-x\>|)>|)>\<nabla\>f<around*|(|\<b-x\>|)>*>
+
+  \;
+
+  This means the improved gradient is:
+
+  \;
+
+  <math|\<nabla\><rsub|\<b-y\><rsub|m>><around*|\||D|\|><rsub|KL>=><math|<big|sum><rsub|i\<neq\>j>p<rsub|i*j>*\<nabla\><rsub|\<b-y\><rsub|m>><around*|\||log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|\|>=-<big|sum><rsub|i\<neq\>j><frac|p<rsub|i*j>|q<rsub|i*j>>*sign<around*|(|log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|)>\<nabla\><rsub|\<b-y\><rsub|m>>q<rsub|i*j>>
+
+  \;
+
+  This means we only need to add <math|sign<around*|(|x|)>> non-linearity to
+  the gradient calculation code. The <math|sign<around*|(|x|)>> non-linearity
+  is well defined everywhere else except at zero where we can select
+  <math|sign<around*|(|0|)>=1> without having much problems in practice.
+
+  \;
+
+  <with|font-series|bold|Justification of the modified KL divergence>
+
+  \;
+
+  The absolute value can be justified by following calculations. Geometric
+  mean of observed symbol string is <math|P> and the number of symbols
+  <math|l=1\<ldots\>L> in <math|N> symbol long string is <math|n<rsub|l>>.
+  Additionally we let the length of string to go to infinity
+  <math|<around*|(|N\<rightarrow\>\<infty\>|)>>:
+
+  \;
+
+  <math|P=<around*|(|<big|prod><rsup|N><rsub|k>p<around*|(|\<b-x\><rsub|k>|)>|)><rsup|1/N>=<around*|(|<big|prod><rsup|L><rsub|l>p<around*|(|l|)><rsub|><rsup|n<rsub|l>>|)><rsup|1/N>\<approx\><big|prod><rsup|L><rsub|l>p<around*|(|l|)><rsup|p<rsub|<around*|(|l|)>>>>
+
+  \;
+
+  By taking the logarithm of <math|P> we get formula for entropy:
+  <math|log<around*|(|P|)>=<big|sum><rsub|l>p<around*|(|l|)>*log<around*|(|p<around*|(|l|)>|)>=-H<around*|(|L|)>>.
+
+  \;
+
+  Comparing distributions probabilities we can write
+  (<math|N\<rightarrow\>\<infty\>>):
+
+  \;
+
+  <math|Q<rsub|\<b-x\>>=<around*|(|<frac|<big|prod><rsup|N><rsub|k>p<around*|(|\<b-x\><rsub|k>|)>|<big|prod><rsup|N><rsub|k>p<around*|(|\<b-y\><rsub|k>|)>>|)><rsup|1/N>=<around*|(|<big|prod><rsup|L><rsub|l><around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)><rsup|n<rsub|l>>|)><rsup|1/N>\<approx\><big|prod><rsup|L><rsub|l><around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)><rsup|p<rsub|\<b-x\>><around*|(|l|)>>>.
+
+  \;
+
+  And by taking the logarithm of <math|Q> we get Kullback-Leibler divergence:
+
+  \;
+
+  <math|log<around*|(|Q<rsub|\<b-x\>>|)>=<big|sum><rsub|l>p<rsub|\<b-x\>><around*|(|l|)>log<around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)>=D<rsub|KL>>
+
+  \;
+
+  Now by always taking the maximum ratio of probabilties when computing
+  <math|Q> we don't have the problem that multiplication (in
+  <math|<big|prod><rsup|L><rsub|l><around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)><rsup|n<rsub|l>>>-term)
+  of probability ratios would cancel each other reducing the usability of
+  comparision.
+
+  \;
+
+  <math|<around*|\||Q<rsub|\<b-x\>>|\|>=<around*|(|<big|prod><rsup|L><rsub|l>max<around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>,<frac|p<rsub|\<b-y\>><around*|(|l|)>|p<rsub|\<b-x\>><around*|(|l|)>>|)><rsup|n<rsub|l>>|)><rsup|1/N>\<approx\><big|prod><rsup|L><rsub|l>max<around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>,<frac|p<rsub|\<b-y\>><around*|(|l|)>|p<rsub|\<b-x\>><around*|(|l|)>>|)><rsup|p<rsub|\<b-x\>><around*|(|l|)>>>
+
+  \;
+
+  <math|log<around*|\||Q<rsub|\<b-x\>>|\|>=<big|sum><rsub|l>p<rsub|\<b-x\>><around*|(|l|)>log<around*|(|max<around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>,<frac|p<rsub|\<b-y\>><around*|(|l|)>|p<rsub|\<b-x\>><around*|(|l|)>>|)>|)>=<big|sum><rsub|l>p<rsub|\<b-x\>><around*|(|l|)><around*|\||log<around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)>|\|>=<around*|\||D<rsub|\<b-x\>>|\|><rsub|KL>>
+
+  \;
+
+  Further symmetrization can be done by taking the geometric mean:
+
+  \;
+
+  <math|<around*|\||Q|\|>=<around*|(|<around*|\||Q<rsub|\<b-x\>>|\|>*<around*|\||Q<rsub|\<b-y\>>|\|>|)><rsup|1/2>>,
+  <math|log<around*|(|<around*|\||Q|\|>|)>=<frac|1|2><around*|(|log<around*|\||Q<rsub|\<b-x\>>|\|>+log<around*|\||Q<rsub|\<b-y\>>|\|>|)>=<frac|1|2><around*|(|<around*|\||D<rsub|\<b-x\>>|\|><rsub|KL>+<around*|\||D<rsub|\<b-y\>>|\|><rsub|KL>|)>>.
+
+  \;
+
+  \;
+
+  <with|font-series|bold|Improvement of the MSE calculation code>
+
+  \;
+
+  Calculating a gradient of absolute value can be also used in minimum least
+  squares (MSE) optimization where we can then easily use norm instead
+  (minimum norm error - MNE) of the squared error which is then less affected
+  by large outlier values.
+
+  \;
+
+  <math|MSE<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>*\<b-y\>><around*|[|<frac|1|2><around*|\<\|\|\>|\<b-y\>-f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>|]>>,
+  <math|\<nabla\><rsub|\<b-w\>>*MSE<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>*\<b-y\>><around*|[|<around*|(|f<around*|(|\<b-x\>|)>-\<b-y\>|)><rsup|T>\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\>|)>|]>>
+
+  \;
+
+  <math|MNE<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>*\<b-y\>><around*|[|<around*|\<\|\|\>|\<b-y\>-f<around*|(|\<b-x\>|)>|\<\|\|\>>|]>>,
+  <math|\<nabla\><rsub|\<b-w\>>*MNE<around*|(|\<b-w\>|)>=E<rsub|\<b-x\>*\<b-y\>><around*|[|<frac|<around*|(|f<around*|(|\<b-x\>|)>-\<b-y\>|)><rsup|T>|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>-\<b-y\>|\<\|\|\>>>\<nabla\><rsub|\<b-w\>>\<b-f\><around*|(|\<b-x\>|)>|]>>
+
+  \;
+
+  This means we have to just to scale the backpropagation gradient of each
+  term <math|i> by dividing with <math|<around*|\<\|\|\>|\<b-y\><rsub|i>-f<around*|(|\<b-x\><rsub|i>|)>|\<\|\|\>>>.
+  This means that for the large errors the effect to gradient is now smaller
+  and small values have equal effect to gradient.
 
   \;
 </body>
