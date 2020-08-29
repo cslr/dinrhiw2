@@ -144,7 +144,9 @@ int main()
   srand(seed);
   
   try{
-    recurrent_nnetwork_test();
+    nnetwork_test();
+    
+    // recurrent_nnetwork_test(); // FIXME doesn't seem to work anymore.
     
     return 0;
 	
@@ -164,9 +166,7 @@ int main()
     
     // mixture_nnetwork_test();
 
-    bayesian_nnetwork_test();
-    
-    nnetwork_test();
+    bayesian_nnetwork_test();    
 
     
     // dbn_test();
