@@ -533,7 +533,7 @@ namespace whiteice
     T lrate = T(0.0001);
     
     unsigned int counter = 0;
-    const unsigned int MAXITER = 100;
+    const unsigned int MAXITER = 500;
 
     unsigned int noimprove_counter = 0;
     const unsigned int MAXNOIMPROVE = 50;
@@ -649,8 +649,11 @@ namespace whiteice
 	setParameters(p, false);	
 	
 	if(mloglikelihood > bestmloglikelihood){ // no improvement but follow gradient
-	  std::cout << "! No improvement in gradient" << std::endl;
 	  noimprove_counter++;
+	  
+	  std::cout << "! No improvement in loglikelihood ("
+		    << noimprove_counter << "/" << MAXNOIMPROVE << ")"
+		    << std::endl;
 	}
 	else{ // true improvement
 	  noimprove_counter = 0;
@@ -669,8 +672,6 @@ namespace whiteice
       eta.update(counter);
       
       if(verbose){
-	
-	
 	std::cout << "ERROR " << counter << "/" << MAXITER << ": " << error << " loglikelihood: " << -mloglikelihood
 		  << " (ETA " << eta.estimate()/3600.0 << " hours)" << std::endl;
 	
@@ -706,7 +707,7 @@ namespace whiteice
 	model_zstdev.zero();
 
 	for(const auto& x : xsamples){
-	  this->encode(x, encoder, zmean, zstdev);
+	  this->encode(x, this->encoder, zmean, zstdev);
 
 	  z += zmean;
 	  model_zstdev += zstdev;
@@ -870,6 +871,20 @@ namespace whiteice
       nnetwork<T> encoder(this->encoder);
       nnetwork<T> decoder(this->decoder);
 
+      // encoder values
+      math::vertex<T> zmean, zstdev;
+      math::vertex<T> output;
+      math::vertex<T> ones;
+
+      zmean.resize(encoder.output_size()/2);
+      zstdev.resize(encoder.output_size()/2);
+      ones.resize(encoder.output_size()/2);
+      
+      math::matrix<T> J; // Jacobian matrix
+      math::matrix<T> Jmean, Jstdev;
+
+      math::vertex<T> decoder_gradient, encoder_gradient;
+      
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
@@ -907,19 +922,11 @@ namespace whiteice
 	const auto& x = xsamples[index];
 	// 1. first calculate gradient of "-D_KL" term
 	
-	// encoder values
-	math::vertex<T> zmean, zstdev;
-	math::vertex<T> output;
-	math::vertex<T> ones;
 	
 	if(encoder.calculate(x, output) == false){
 	  failure = true;
 	  continue;
 	}
-	
-	zmean.resize(output.size()/2);
-	zstdev.resize(output.size()/2);
-	ones.resize(output.size()/2);
 	
 	if(output.subvertex(zmean, 0, zmean.size()) == false){
 	  failure = true;
@@ -944,8 +951,6 @@ namespace whiteice
 	}
 	
 	// gradient of encoder
-	math::matrix<T> J; // Jacobian matrix
-	math::matrix<T> Jmean, Jstdev;
 	
 	if(encoder.gradient(x, J) == false){
 	  failure = true;
@@ -980,8 +985,7 @@ namespace whiteice
 	auto g1 = T(-1.0)*zmean*Jmean + (ones + T(-1.0)*zvar)*Jstdev;
 	
 	
-	// 2. second calculate gradient
-	math::vertex<T> decoder_gradient, encoder_gradient;
+	// 2. second calculate gradient	
 	decoder_gradient.resize(decoder.gradient_size());
 	encoder_gradient.resize(encoder.gradient_size());
 	decoder_gradient.zero();
@@ -1095,7 +1099,8 @@ namespace whiteice
     T nrm = pgradient.norm();
 
     if(nrm > T(0.0)){
-      pgradient /= nrm; // is this really needed?
+      // is this really needed? (adaptive gradient descent don't work well without this)
+      pgradient /= nrm; 
     }
     
     return true;

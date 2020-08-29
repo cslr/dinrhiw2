@@ -195,6 +195,9 @@ namespace whiteice
 	data = 0;
 	dataSize = 0;
       }
+      else if(d == dataSize){
+	return dataSize; // nothing to do
+      }
       else{
 	T* new_area = 0;
 	
