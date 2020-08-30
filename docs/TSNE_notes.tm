@@ -20,7 +20,7 @@
 
   \;
 
-  <math|D<rsub|KL><around*|(|\<b-y\><rsub|1>\<ldots\>\<b-y\><rsub|N>|)>=<big|sum><rsub|i\<neq\>j>p<rsub|i*j>*log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>>,
+  <math|D<rsub|KL><around*|(|\<b-y\><rsub|1>\<ldots\>\<b-y\><rsub|N>|)>=<big|sum><rsub|i\<neq\>j>p<rsub|i*j>*log<around*|(|<frac|p<rsub|i*j>*|q<rsub|i*j>>|)>>,
   <math|q<rsub|i*j>=<frac|<around*|(|1+<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>><rsup|2>|)><rsup|-1>|<big|sum><rsub|k><big|sum><rsub|l\<neq\>k><around*|(|1+<around*|\<\|\|\>|\<b-y\><rsub|k>-\<b-y\><rsub|l>|\<\|\|\>><rsup|2>|)><rsup|-1>>>
 
   \;
@@ -61,7 +61,7 @@
 
   \;
 
-  We need to calculate gradient for each <math|\<b-y\><rsub|i>> in
+  We need to calculate gradient for each <math|\<b-y\><rsub|m>> in
   <math|D<rsub|KL>>.
 
   \;
@@ -121,6 +121,90 @@
   With these derivates we can then calculate derivate of <math|D<rsub|KL>>
   for each <math|\<b-y\>>. We just select step length for the gradient which
   causes increase in <math|D<rsub|KL>>.
+
+  \;
+
+  \;
+
+  <with|font-series|bold|Optimized gradient>
+
+  \;
+
+  We can rewrite the gradient of <math|D<rsub|KL>> by taking partial
+  derivates of distance variables <math|d<rsub|i*j>> and <math|d<rsub|j*i>>,
+  <math|d<rsub|i*j>=<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>
+
+  \;
+
+  <math|\<nabla\><rsub|\<b-y\><rsub|i>>D<rsub|KL>=<big|sum><rsub|j><around*|(|<frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|i*j>>*<frac|\<partial\>*d<rsub|i*j>|\<partial\>*\<b-y\><rsub|i>>+<frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|j*i>>*<frac|\<partial\>*d<rsub|j*i>|\<partial\>*\<b-y\><rsub|i>>|)>=<big|sum><rsub|j><around*|(|<frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|i*j>>*+<frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|j*i>>*|)><frac|\<partial\>*d<rsub|j*i>|\<partial\>*\<b-y\><rsub|i>>=2*<big|sum><rsub|j><frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|i*j>>*<frac|\<partial\>*d<rsub|j*i>|\<partial\>*\<b-y\><rsub|i>>*>
+
+  \;
+
+  The gradient of the distance variable <math|d<rsub|j*i>> is
+
+  \;
+
+  <math|<frac|\<partial\>*d<rsub|j*i>|\<partial\>*\<b-y\><rsub|i>>=D<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>=<frac|d|d*\<b-y\><rsub|i>><sqrt|<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>><rsup|2>>=<frac|1|2<sqrt|><around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>><rsup|2>>*D<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>><rsup|2>=<frac|\<b-y\><rsub|i>-\<b-y\><rsub|j>|*<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>*.>
+  Note that the research paper gives different derivate which seems to be
+  <with|font-series|bold|<with|font-shape|italic|wrong>> (?).
+
+  Gradient of the <math|D<rsub|KL>> term is (we use auxiliary variable
+  <math|Z=<big|sum><rsub|k\<neq\>l><around*|(|1+d<rsup|2><rsub|k*l>|)><rsup|-1>>).
+
+  \;
+
+  <\math>
+    <frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|i*j>>=-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l><frac|\<partial\><around*|(|log<around*|(|q<rsub|k*l>|)>|)>|\<partial\>*d<rsub|i*j>>=-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l><frac|\<partial\><around*|(|log<around*|(|q<rsub|k*l>Z|)>-log<around*|(|Z|)>|)>|\<partial\>*d<rsub|i*j>>
+
+    =-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<around*|(|<frac|1|q<rsub|k*l>Z>*<frac|\<partial\><around*|(|1+d<rsup|2><rsub|k*l>|)><rsup|-1>|\<partial\>*d<rsub|i*j>>-<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>|)>=2*<frac|p<rsub|i*j>|q<rsub|i*j>Z>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-2>+<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>
+
+    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2*<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>*
+
+    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2*<around*|(|<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>|)>=2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2**q<rsub|i*j><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>
+
+    =2*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>
+  </math>
+
+  \;
+
+  So we now get a simple formula for the gradient
+
+  \;
+
+  <math|\<nabla\><rsub|\<b-y\><rsub|i>>D<rsub|KL>=<big|sum><rsub|j>2*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|<frac|\<b-y\><rsub|i>-\<b-y\><rsub|j>|*<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>*|)>>.
+
+  \;
+
+  To get even better results we want to use absolute value
+  <math|<around*|\||D|\|><rsub|KL>> (See later in this paper). This means we
+  will compute altered gradient.
+
+  \;
+
+  <math|D<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>>=D<sqrt|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>>=<frac|1|2<sqrt|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>>>*D<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>><rsup|2>=<frac|f<around*|(|\<b-x\>|)>|<around*|\<\|\|\>|f<around*|(|\<b-x\>|)>|\<\|\|\>>>\<nabla\>f<around*|(|\<b-x\>|)>=sign<around*|(|f<around*|(|\<b-x\>|)>|)>\<nabla\>f<around*|(|\<b-x\>|)>*>
+
+  \;
+
+  \;
+
+  <\math>
+    <frac|\<partial\><around*|\||D|\|><rsub|KL>|\<partial\>*d<rsub|i*j>>=<big|sum><rsub|k\<neq\>l>p<rsub|k*l>*<frac|1|\<partial\>*d<rsub|i*j>><around*|\||log<around*|(|<frac|p<rsub|k*l>|q<rsub|k*l>>|)>|\|>=-<big|sum><rsub|k\<neq\>l>sign<around*|(|log<around*|(|<frac|p<rsub|k*l>|q<rsub|k*l>>|)>|)>*p<rsub|k*l>**<frac|\<partial\><around*|(|log<around*|(|q<rsub|k*l>|)>|)>|\<partial\>*d<rsub|i*j>>
+  </math>
+
+  \;
+
+  This means we only need to modify our gradient formula by multiplication of
+  <math|sign<around*|(|x|)>> function.
+
+  \;
+
+  <math|\<nabla\><rsub|\<b-y\><rsub|i>><around*|\||D|\|><rsub|KL>=<big|sum><rsub|j>2**sign<around*|(|log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|)>*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|<frac|\<b-y\><rsub|i>-\<b-y\><rsub|j>|*<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>*|)>>.
+
+  \;
+
+  This optimized gradient is faster because it scales as
+  <math|O<around*|(|N<rsup|2>|)>> instead of slower
+  <math|O<around*|(|N<rsup|3>|)>> of the direct method.
 
   \;
 
