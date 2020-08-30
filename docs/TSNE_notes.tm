@@ -7,7 +7,10 @@
 
   \;
 
-  Implementation is in <with|font-family|tt|src/neuralnetwork/TSNE.h> and
+  The algorithm is based on a t-SNE paper <with|font-shape|italic|Visualizing
+  Data using t-SNE. Laurens van der Maaten and Geoffrey Hinton. Journal of
+  Machine Learning Research 9 (11/2008)>. The implementation is in
+  <with|font-family|tt|src/neuralnetwork/TSNE.h> and
   <with|font-family|tt|TSNE.cpp> in <with|font-family|tt|dinrhiw2>
   repository.
 
@@ -42,7 +45,7 @@
   The variance terms of each data point <math|\<sigma\><rsup|2><rsub|i>> is
   calculated using values <math|p<rsub|j<around*|\||i|\<nobracket\>>>> to
   search for target perplexity <math|perp<around*|(|P<rsub|i>|)>=2<rsup|H<around*|(|P<rsub|i>|)>>=2<rsup|-<big|sum><rsub|j>p<rsub|j<around*|\||i|\<nobracket\>>>*log<rsub|2><around*|(|p<rsub|j<around*|\||i|\<nobracket\>>>|)>>>.
-  Good general perplexity value is maybe 30 so we need to solve
+  Good general perplexity value is maybe 30 which we use to solve
   <math|\<sigma\><rsup|2><rsub|i>> value using bisection method.
 
   First we set minimum <math|\<sigma\><rsup|2><rsub|min>=0> and
@@ -135,7 +138,7 @@
 
   \;
 
-  <with|font-series|bold|Improvement of KL divergence based distribution
+  <with|font-series|bold|Improvement of the KL divergence based distribution
   comparision>
 
   \;
@@ -169,7 +172,7 @@
 
   This means we only need to add <math|sign<around*|(|x|)>> non-linearity to
   the gradient calculation code. The <math|sign<around*|(|x|)>> non-linearity
-  is well defined everywhere else except at zero where we can select
+  is well defined everywhere else except at zero where we can set
   <math|sign<around*|(|0|)>=1> without having much problems in practice.
 
   \;
@@ -216,7 +219,7 @@
   <math|Q> we don't have the problem that multiplication (in
   <math|<big|prod><rsup|L><rsub|l><around*|(|<frac|p<rsub|\<b-x\>><around*|(|l|)>|p<rsub|\<b-y\>><around*|(|l|)>>|)><rsup|n<rsub|l>>>-term)
   of probability ratios would cancel each other reducing the usability of
-  comparision.
+  <math|D<rsub|KL>> divergence when used for distribution comparision.
 
   \;
 

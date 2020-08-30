@@ -39,6 +39,7 @@
 #include "DBN.h"
 
 #include "VAE.h"
+#include "TSNE.h"
 
 #include "globaloptimum.h"
 
@@ -120,6 +121,8 @@ void simple_dataset_test();
 
 void simple_vae_test();
 
+void simple_tsne_test();
+
 void simple_global_optimum_test();
 
 
@@ -144,7 +147,9 @@ int main()
   srand(seed);
   
   try{
-    nnetwork_test();
+    simple_tsne_test();
+    
+    // nnetwork_test();
     
     // recurrent_nnetwork_test(); // FIXME doesn't seem to work anymore.
     
@@ -274,6 +279,64 @@ private:
   char* reason;
   
 };
+
+/************************************************************/
+
+void simple_tsne_test()
+{
+  std::cout << "t-SNE dimension reducer test" << std::endl;
+
+  // testcase 1: test that computations happen correctly
+  {
+    std::cout << "TESTCASE 1" << std::endl;
+    std::cout << std::flush;
+
+    // we generate HIGHDIM dimensional gaussian balls N(mean,I) in random locations
+    // in hypercube [-10,10]^HIGHDIM. mean = random([-10,10]^HIGHDIM)
+
+    const unsigned int HIGHDIM = 20;
+    const unsigned int CLUSTERS = 5; // number of clusters
+    const unsigned int N = 20; // number of samples per cluster (was: 100)
+
+    whiteice::RNG<> rng;
+
+    // generate training data
+    std::vector< whiteice::math::vertex<> > data;
+    whiteice::math::vertex<> x;
+    whiteice::math::vertex<> mean;
+
+    mean.resize(HIGHDIM);
+    x.resize(HIGHDIM);
+
+    for(unsigned int c=0;c<CLUSTERS;c++){
+      rng.uniform(mean);
+      for(unsigned int i=0;i<HIGHDIM;i++){
+	whiteice::math::blas_real<float> v1 = 20.0f;
+	whiteice::math::blas_real<float> v2 = 10.0f;
+	mean[i] = v1*mean[i] - v2;
+      }
+
+      for(unsigned int n=0;n<N;n++){
+	rng.normal(x);
+	x += mean;
+	data.push_back(x);
+      }
+    }
+
+    // calculate dimension reduction
+    whiteice::TSNE<> tsne;
+    std::vector< whiteice::math::vertex<> > ydata;
+
+    if(tsne.calculate(data, 2, ydata) == false){
+      printf("ERROR: calculating t-SNE dimension reduction FAILED.\n");
+    }
+    else{
+      printf("GOOD: t-SNE computation proceeded without errors.\n");
+    }
+
+    fflush(stdout);
+  }
+}
 
 /************************************************************/
 

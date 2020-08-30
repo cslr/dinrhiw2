@@ -14,6 +14,8 @@
 #include "function.h"
 #include "real.h"
 
+#include "global.h"
+
 // #include <cstdio>
 #include <stddef.h>
 #include <assert.h>
@@ -223,10 +225,41 @@ namespace whiteice
     inline bool isnan(blas_complex<float> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
     inline bool isnan(blas_complex<double> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
     
-    inline std::string tohex(float v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v)); return std::string(buffer); }
-    inline std::string tohex(double v){ char buffer[80]; snprintf(buffer, 80, "0x%llx", *((unsigned long long*)&v)); return std::string(buffer); }
-    inline std::string tohex(blas_real<float> v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0]))); return std::string(buffer); }
-    inline std::string tohex(blas_real<double> v){ char buffer[80]; snprintf(buffer, 80, "0x%llx", *((unsigned long long*)&(v.c[0]))); return std::string(buffer); }
+    inline std::string tohex(float v)
+    {
+      char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v));
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(double v)
+    {
+      whiteice::dword lower = 0, upper = 0;
+      lower = ((whiteice::dword*)(&v))[0];
+      upper = ((whiteice::dword*)(&v))[1];
+      
+      char buffer[80];
+      snprintf(buffer, 80, "0x%x%x",
+	       (unsigned int)upper, (unsigned int)lower);
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(blas_real<float> v)
+    {
+      char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0])));
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(blas_real<double> v)
+    {
+      whiteice::dword lower = 0, upper = 0;
+      lower = ((whiteice::dword*)(&v))[0];
+      upper = ((whiteice::dword*)(&v))[1];
+      
+      char buffer[80];
+      snprintf(buffer, 80, "0x%x%x",
+	       (unsigned int)upper, (unsigned int)lower);
+      return std::string(buffer);
+    }
     
     //////////////////////////////////////////////////////////////////////
     // square root

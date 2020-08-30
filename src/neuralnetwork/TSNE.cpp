@@ -7,6 +7,8 @@
 
 #include "TSNE.h"
 
+#include "linear_ETA.h"
+
 
 namespace whiteice
 {
@@ -15,13 +17,14 @@ namespace whiteice
   template <typename T>
   TSNE<T>::TSNE()
   {
-    
+    // absolute value KL divergence should give better results (see TSNE_notes.tm)
+    kl_absolute_value = true;
   }
 
   template <typename T>
   TSNE<T>::TSNE(const TSNE<T>& tsne)
   {
-    
+    this->kl_absolute_value = tsne.kl_absolute_value;
   }
   
   // dimension reduces samples to DIM dimensional vectors using t-SNE algorithm
@@ -46,28 +49,103 @@ namespace whiteice
     
     // initializes y values as gaussian unit variance around zero
     std::vector< math::vertex<T> > yvalues;
+    T initial_ysigma = T(0.01f); // initial st.dev. is is 0.01 and var = 0.01^2
     
     yvalues.resize(samples.size());
     
     for(auto& y : yvalues){
       y.resize(DIM);
       rng.normal(y);
+      // y *= initial_ysigma;
     }
 
     
-    // gradient descent search of yvalues (TODO: NOT IMPLEMENTED YET)
+    // gradient ascend search of yvalues
     {
       std::vector< std::vector<T> > qij;
-      T qsum;
+      T qsum = T(0.0f);
+
+      std::vector< math::vertex<T> > ygrad;
+      ygrad = yvalues; // dummy initializer
+
+      unsigned int iter = 0;
+      const unsigned int MAXITER = 100;
+
+      T lrate = T(100.0f);
+
+      whiteice::linear_ETA<double> eta;
+      eta.start(0.0, MAXITER);
+      eta.update(0.0);
+      
+
+      while(iter < MAXITER)
+      {
+	// calculates qij values
+	if(calculate_qvalues(yvalues, qij, qsum) == false)
+	  return false;
+	
+	// calculate and report the current KL divergence
+	{
+	  T klvalue = T(0.0f);
+	  if(kl_divergence(pij, qij, klvalue) == false)
+	    return false;
+	  
+	  float klvaluef = 0.0f;
+	  whiteice::math::convert(klvaluef, klvalue);
+	  if(iter > 0)
+	    printf("ITER %d / %d. KL DIVERGENCE: %f (ETA %f hours)\n",
+		   iter, MAXITER, klvaluef, eta.estimate()/3600.0);
+	  else
+	    printf("ITER %d / %d. KL DIVERGENCE: %f\n",
+		   iter, MAXITER, klvaluef);
+	  fflush(stdout);
+	}
+      
+	// calculate gradient
+	// (minimize KL divergence to match distributions as well as possible)
+	if(kl_gradient(pij, qij, qsum, yvalues, ygrad) == false)
+	  return false;
+
+	for(unsigned int i=0;i<ygrad.size();i++){
+	  auto& y = yvalues[i];
+	  auto& g = ygrad[i];
+
+#if 0
+	  {
+	    T n = ygrad[i].norm();
+	    float nf = 0.0f;
+	    whiteice::math::convert(nf, n);
+	    printf("|GRAD y(%d)| = %f\n", i, nf);
+	  }
+#endif
+
+	  y = y - lrate*g;
+	}
+
+	iter++;
+	eta.update(iter);
+      }
 
       // calculates qij values
       if(calculate_qvalues(yvalues, qij, qsum) == false)
 	return false;
       
-      // does gradient descent
-      assert(0); // IMPLEMENT ME
+      // calculate and report the current KL divergence
+      {
+	T klvalue = T(0.0f);
+	if(kl_divergence(pij, qij, klvalue) == false)
+	  return false;
+	
+	float klvaluef = 0.0f;
+	whiteice::math::convert(klvaluef, klvalue);
+	printf("ITER %d / %d. KL DIVERGENCE: %f\n", iter, MAXITER, klvaluef);
+	fflush(stdout);
+      }
+      
     }
 
+    results = yvalues;
+    
     return true;
   }
 
@@ -76,7 +154,7 @@ namespace whiteice
   bool TSNE<T>::calculate_pvalue_given_sigma(const std::vector< math::vertex<T> >& x,
 					     const unsigned int index, // to x vector
 					     const T sigma2,
-					     std::vector<T>& pj)
+					     std::vector<T>& pj) const
   {
     if(index >= x.size()) return false;
     
@@ -114,7 +192,7 @@ namespace whiteice
 
   // calculates distribution's perplexity
   template <typename T>
-  T TSNE<T>::calculate_perplexity(const std::vector<T>& pj)
+  T TSNE<T>::calculate_perplexity(const std::vector<T>& pj) const
   {
     if(pj.size() == 0) return T(1.0f);
 
@@ -136,7 +214,7 @@ namespace whiteice
   template <typename T>
   bool TSNE<T>::calculate_pvalues(const std::vector< math::vertex<T> >& x,
 				  const T perplexity,
-				  std::vector< std::vector<T> >& pij)
+				  std::vector< std::vector<T> >& pij) const
   {
     if(x.size() == 0) return false;
     
@@ -237,6 +315,24 @@ namespace whiteice
 	// we found sigma variance and probability distribution with target perplexity
 	rji[j] = pj;
 	rji[j][j] = T(0.0f);
+
+#if 0
+	T psum = T(0.0f);
+	for(unsigned int i=0;i<rji.size();i++){
+	  if(rji[j][i] < T(0.0f))
+	    std::cout << "NEGATIVE PROBABILITY!. INDEX: " << i << std::endl;
+	  else if(rji[j][i] == T(0.0f))
+	    std::cout << "ZERO PROBABILITY: INDEXES: " << j << " " << i << std::endl;
+	  else
+	    std::cout << "NON-ZERO PROBABILITY: " << rji[j][i] << std::endl;
+	  psum += rji[j][i];
+	}
+
+	std::cout << "PSUM: " << psum << std::endl;
+	std::cout << "FINAL PERPLEXITY: " << perp_next << std::endl;
+	std::cout << "FINAL SIGMA: " << sigma2_next << std::endl;
+	std::cout << std::flush;
+#endif
       }
       
     }
@@ -264,7 +360,8 @@ namespace whiteice
   // calculate dimension reduced y samples probability distribution values q
   template <typename T>
   bool TSNE<T>::calculate_qvalues(const std::vector< math::vertex<T> >& y,
-				  std::vector< std::vector<T> >& qij, T& qsum)
+				  std::vector< std::vector<T> >& qij,
+				  T& qsum) const
   {
     if(y.size() == 0) return false;
     
@@ -283,7 +380,12 @@ namespace whiteice
 	  if(i == j) continue; // skip same values
 	  delta = y[i] - y[j];
 	  auto nrm2 = (delta*delta)[0];
-	  qsum += T(1.0f)/(T(1.0f) + nrm2);
+	  auto pvalue = T(1.0f)/(T(1.0f) + nrm2);
+
+	  if(pvalue < T(10e-10))
+	    pvalue = T(10e-10);
+	  
+	  qsum += pvalue;
 	}
       }
       
@@ -293,7 +395,12 @@ namespace whiteice
 	  if(i == j) continue; // skip same values
 	  delta = y[i] - y[j];
 	  auto nrm2 = (delta*delta)[0];
-	  qij[i][j] = ( T(1.0f)/(T(1.0f) + nrm2) ) / qsum;
+	  auto pvalue = ( T(1.0f)/(T(1.0f) + nrm2) );
+
+	  if(pvalue < T(10e-10))
+	    pvalue = T(10e-10);
+	  
+	  qij[i][j] = pvalue / qsum;
 	}
 
 	qij[i][i] = T(0.0f);
@@ -307,22 +414,45 @@ namespace whiteice
   template <typename T>
   bool TSNE<T>::kl_divergence(const std::vector< std::vector<T> >& pij,
 			      const std::vector< std::vector<T> >& qij,
-			      T& klvalue)
+			      T& klvalue) const
   {
+    printf("kl_divergence()\n"); fflush(stdout);
+    
     if(pij.size() <= 0 || qij.size() <= 0) return false;
-    if(pij.size() != pij[0].size()) return false;
     if(qij.size() != pij.size()) return false;
+    if(pij.size() != pij[0].size()) return false;
     if(qij.size() != qij[0].size()) return false;
 
     // calculates KL divergence
     klvalue = T(0.0f);
-    
-    for(unsigned int i=0;i<pij.size();i++){
-      for(unsigned int j=0;j<pij.size();j++){
-	if(i == j) continue; // skip zero values
 
-	klvalue += pij[i][j]*whiteice::math::log(pij[i][j]/qij[i][j]);
+#pragma omp parallel shared(klvalue)
+    {
+      T klv = T(0.0f); // threadwise KL divergence terms
+
+#pragma omp for nowait schedule(dynamic)  
+      for(unsigned int i=0;i<pij.size();i++){
+	for(unsigned int j=0;j<pij.size();j++){
+	  if(i == j) continue; // skip same values
+	  
+	  if(pij[i][j] == T(0.0f)) // skip zero values (0*log(0) = 0)
+	    continue;
+
+	  // ignores zero q values (should not happen after the fix)
+	  if(qij[i][j] > T(0.0f)){
+	    if(kl_absolute_value)
+	      klv += pij[i][j]*whiteice::math::abs(whiteice::math::log(pij[i][j]/qij[i][j]));
+	    else
+	      klv += pij[i][j]*whiteice::math::log(pij[i][j]/qij[i][j]);
+	  }
+	}
       }
+
+#pragma omp critical
+      {
+	klvalue += klv;
+      }
+      
     }
     
     return true;
@@ -335,92 +465,115 @@ namespace whiteice
 			    const std::vector< std::vector<T> >& qij,
 			    const T& qsum,
 			    const std::vector< math::vertex<T> >& y,
-			    std::vector< math::vertex<T> >& ygrad)
+			    std::vector< math::vertex<T> >& ygrad) const
   {
+    printf("kl_gradient()\n"); fflush(stdout);
+    
     if(pij.size() != y.size()) return false;
     if(pij.size() <= 0 || y.size() <= 0) return false;
     if(pij.size() != pij[0].size()) return false;
 
     ygrad.resize(y.size());
 
-    math::vertex<T> delta;
-    delta.resize(y[0].size());
     
     // calculates gradient for each y value
-    for(unsigned int m=0;m<ygrad.size();m++){
-      ygrad[m].resize(y[0].size());
-      ygrad[m].zero();
+#pragma omp parallel
+    {
+      // thread-wise variables
+      math::vertex<T> delta;
+      delta.resize(y[0].size());
 
-      // calculates gradient of each KL divergence term
-      for(unsigned int i=0;i<y.size();i++){
-	for(unsigned int j=0;j<y.size();j++){
-	  if(i == j) continue; // skip zero/same values
+      
+#pragma omp for nowait schedule(dynamic)
+      for(unsigned int m=0;m<ygrad.size();m++){
+	ygrad[m].resize(y[0].size());
+	ygrad[m].zero();
 
-	  const T scaling = -pij[i][j]/qij[i][j];
-
-	  // gradient of qij term
-	  if(m == i || m == j){
+	// calculates gradient of each KL divergence term
+	for(unsigned int i=0;i<y.size();i++){
+	  for(unsigned int j=0;j<y.size();j++){
+	    if(i == j) continue; // skip same values
 	    
-	    // the first part of derivate
-	    {
-	      const T extra_scaling = T(1.0f)/qsum;
+	    if(pij[i][j] <= T(0.0f)) // skip zero values
+	      continue;
+	    
+	    if(qij[i][j] <= T(0.0f)) // skip zero values (should not happen after the fix
+	      continue;
+
+	    const T ratio   = pij[i][j]/qij[i][j];
+	    T scaling = -ratio;
+
+	    if(kl_absolute_value){
+	      T lr = whiteice::math::log(ratio);
+	      if(lr < T(0.0f)) scaling = -scaling; // multiply by sign(lr)
+	    }
+	    
+	    // gradient of qij term
+	    if(m == i || m == j){
 	      
-	      if(m == i)
+	      // the first part of derivate
+	      {
+		const T extra_scaling = T(1.0f)/qsum;
+		
+		if(m == i)
+		  delta = y[i] - y[j];
+		else
+		  delta = y[j] - y[i];
+		
+		T qterm = (T(1.0f) + (delta*delta)[0]);
+		qterm = T(-2.0f)/(qterm*qterm);
+		
+		ygrad[m] += scaling*extra_scaling*qterm*delta;
+	      }
+	      
+	      
+	      // the second part of the derivate
+	      {
 		delta = y[i] - y[j];
-	      else
-		delta = y[j] - y[i];
-	      
-	      T qterm = (T(1.0f) + (delta*delta)[0]);
-	      qterm = T(-2.0f)/(qterm*qterm);
-	      
-	      ygrad[m] += scaling*extra_scaling*qterm*delta;
-	    }
-
-	    
-	    // the second part of the derivate
-	    {
-	      delta = y[i] - y[j];
-	      const T extra_scaling = -(T(1.0f)/(T(1.0f) + (delta*delta)[0]))/(qsum*qsum);
-	      
-	      // gradient
-	      for(unsigned int l=0;l<y.size();l++){
-		if(l == m) continue;
-		delta = y[m] - y[l];
+		const T extra_scaling = -(T(1.0f)/(T(1.0f) + (delta*delta)[0]))/(qsum*qsum);
 		
-		T qterm = (T(1.0f) + (delta*delta)[0]);
-		qterm = -T(4.0f)/(qterm*qterm);
-		
-		ygrad[m] += scaling*extra_scaling*qterm*delta;
+		// gradient
+		for(unsigned int l=0;l<y.size();l++){
+		  if(l == m) continue;
+		  delta = y[m] - y[l];
+		  
+		  T qterm = (T(1.0f) + (delta*delta)[0]);
+		  qterm = -T(4.0f)/(qterm*qterm);
+		  
+		  ygrad[m] += scaling*extra_scaling*qterm*delta;
+		}
 	      }
-	    }
-	    
-	  }
-	  else{ // m != i || m != j
-
-	    // no need for the first part of the derivate
-
-	    // the second part of the derivate
-	    {
-	      delta = y[i] - y[j];
-	      const T extra_scaling = -(T(1.0f)/(T(1.0f) + (delta*delta)[0]))/(qsum*qsum);
 	      
-	      // gradient
-	      for(unsigned int l=0;l<y.size();l++){
-		if(l == m) continue;
-		delta = y[m] - y[l];
+	    }
+	    else{ // m != i || m != j
+	      
+	      // no need for the first part of the derivate
+	      
+	      // the second part of the derivate
+	      {
+		delta = y[i] - y[j];
+		const T extra_scaling = -(T(1.0f)/(T(1.0f) + (delta*delta)[0]))/(qsum*qsum);
 		
-		T qterm = (T(1.0f) + (delta*delta)[0]);
-		qterm = -T(4.0f)/(qterm*qterm);
-		
-		ygrad[m] += scaling*extra_scaling*qterm*delta;
+		// gradient
+		for(unsigned int l=0;l<y.size();l++){
+		  if(l == m) continue;
+		  delta = y[m] - y[l];
+		  
+		  T qterm = (T(1.0f) + (delta*delta)[0]);
+		  qterm = -T(4.0f)/(qterm*qterm);
+		  
+		  ygrad[m] += scaling*extra_scaling*qterm*delta;
+		}
 	      }
-	    }
 	      
+	    }
 	  }
 	}
-      }
+
+      } // parallel OpenMP for-loop ends (ygrad[m])
+
       
-    }
+    } // OpenMP block ends
 
     // calculated all qterms
     return true;

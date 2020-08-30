@@ -421,6 +421,7 @@ namespace whiteice
     // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
     const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
+    // const float c = ((float)decoder.output_size())/((float)decoder.input_size());
     
     // constant term C:
     logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
@@ -862,6 +863,7 @@ namespace whiteice
     // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
     const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
+    // const float c = ((float)decoder.output_size())/((float)decoder.input_size());
 
     const int BUFLEN = 1024;
     char buffer[BUFLEN];
