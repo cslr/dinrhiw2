@@ -894,6 +894,15 @@ namespace whiteice
       math::matrix<T> Jmean, Jstdev;
 
       math::vertex<T> decoder_gradient, encoder_gradient;
+
+      math::vertex<T> epsilon;
+      
+      math::vertex<T> zi;
+      math::vertex<T> xmean;
+      math::matrix<T> grad_meanx;
+      math::matrix<T> J_meanx_value;
+      math::vertex<T> gzx;
+      math::matrix<T> Jstdev_epsilon;
       
 #pragma omp for nowait schedule(dynamic)
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
@@ -1003,10 +1012,8 @@ namespace whiteice
 	
 	const unsigned int N = 15;
 	
-	math::vertex<T> epsilon;
 	epsilon.resize(zmean.size());
 	
-
 	if(verbose){
 	  printf("%d/%d: CALCULATING 2ND GRADIENT\n", index, (int)xsamples.size());
 	  fflush(stdout);
@@ -1015,19 +1022,18 @@ namespace whiteice
 	for(unsigned int j=0;j<N;j++){
 	  // epsilon is ~ Normal(0,I)
 	  rng.normal(epsilon);
-	  
-	  auto zi = zmean;
+
+	  zi = zmean;
 	  for(unsigned int k=0;k<zmean.size();k++){
 	    zi[k] += zstdev[k]*epsilon[k];
 	  }
-	  
-	  auto xmean = x;
+
+	  xmean = x;
 	  if(decoder.calculate(zi, xmean) == false){
 	    failure = true;
 	    continue;
 	  }
 	  
-	  math::matrix<T> grad_meanx;
 	  if(decoder.gradient(zi, grad_meanx) == false){
 	    failure = true;
 	    continue;
@@ -1035,16 +1041,14 @@ namespace whiteice
 	  
 	  decoder_gradient += (x - xmean)*grad_meanx;
 	  
-	  math::matrix<T> J_meanx_value;
 	  if(decoder.gradient_value(zi, J_meanx_value) == false){
 	    failure = true;
 	    continue;
 	  }
+	  
+	  gzx = (x - xmean)*J_meanx_value; // first part of gradient
 
-	  
-	  auto gzx = (x - xmean)*J_meanx_value; // first part of gradient
-	  
-	  auto Jstdev_epsilon = Jstdev;
+	  Jstdev_epsilon = Jstdev;
 	  for(unsigned int y=0;y<Jstdev.ysize();y++)
 	    for(unsigned int x=0;x<Jstdev.xsize();x++)
 	      Jstdev_epsilon(y,x) = epsilon[y]*zstdev[y]*Jstdev(y,x);

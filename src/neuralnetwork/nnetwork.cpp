@@ -15,6 +15,7 @@
 // #define SMALL_RANDOMIZE_INIT 1 [DON'T ENABLE / DON'T WORK WITH DEEP NETWORKS]
 
 #include "nnetwork.h"
+#include "dataset.h"
 #include "dinrhiw_blas.h"
 #include "Log.h"
 
@@ -1355,15 +1356,15 @@ namespace whiteice
     }
     else if(nonlinearity[layer] == rectifier){
       if(input < T(0.0f)){
-	const T a = T(0.1);
-
+#if 0
 	T in = input;
 	if(in < T(-30.0f)) in = T(-30.0f);
-#if 0
+	
+	const T a = T(0.1);
 	return (a*(math::exp(in) - T(1.0f)));
 #else
 	// use ReLU instead (rectifier leaky unit)
-	return T(0.01)*in;
+	return T(0.01f)*input;
 #endif
       }
       else return input;
@@ -1476,11 +1477,11 @@ namespace whiteice
     }
     else if(nonlinearity[layer] == rectifier){
       if(input < T(0.0f)){
-	const T a = T(0.1);
-
+#if 0
 	T in = input;
 	if(in < T(-30.0f)) in = T(-30.0f);
-#if 0
+
+	const T a = T(0.1);
 	return (a*math::exp(in));
 #else
 	// use ReLU instead (leaky rectifier)
@@ -1576,11 +1577,129 @@ namespace whiteice
 #define FNN_STOCHASTIC_CFGSTR       "FNN_STOCHASTIC"
 #define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEAR"
 #define FNN_FROZEN_CFGSTR           "FNN_FROZEN"
+#define FNN_TIMESTAMP_CFGSTR        "FNN_TIMESTAMP"
+#define FNN_RETAIN_CFGSTR           "FNN_RETAIN"
 
   //////////////////////////////////////////////////////////////////////
 
   template <typename T>
-  bool nnetwork<T>::save(const std::string& filename) const {
+  bool nnetwork<T>::save(const std::string& filename) const
+  {
+    try{
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> data;
+
+      // writes version information
+      {
+	if(conf.createCluster(FNN_VERSION_CFGSTR, 1) == false) return false;
+	// version number = float
+	data.resize(1);
+	data[0] = T(3.000); // version 3.0
+	if(conf.add(0, data) == false) return false;
+      }
+
+      // writes architecture information
+      {
+	if(conf.createCluster(FNN_ARCH_CFGSTR, arch.size()) == false) return false;
+	data.resize(arch.size());
+	for(unsigned int i=0;i<arch.size();i++)
+	  data[i] = T((float)arch[i]);
+	if(conf.add(1, data) == false) return false;
+      }
+
+      // weights: we just convert everything to a big vertex vector and write it
+      {
+	if(this->exportdata(data) == false) return false;
+	
+	if(conf.createCluster(FNN_VWEIGHTS_CFGSTR, data.size()) == false) return false;
+	if(conf.add(2, data) == false) return false;
+      }
+
+      // used non-linearity
+      {
+	data.resize(this->nonlinearity.size());
+
+	for(unsigned int l=0;l<nonlinearity.size();l++){
+	  if(nonlinearity[l] == sigmoid){
+	    data[l] = T(0.0);
+	  }
+	  else if(nonlinearity[l] == stochasticSigmoid){
+	    data[l] = T(1.0);
+	  }	  
+	  else if(nonlinearity[l] == halfLinear){
+	    data[l] = T(2.0);
+	  }
+	  else if(nonlinearity[l] == pureLinear){
+	    data[l] = T(3.0);
+	  }
+	  else if(nonlinearity[l] == tanh){
+	    data[l] = T(4.0);
+	  }
+	  else if(nonlinearity[l] == rectifier){
+	    data[l] = T(5.0);
+	  }
+	  else return false; // error!
+	}
+
+	if(conf.createCluster(FNN_NONLINEARITY_CFGSTR, data.size()) == false) return false;
+	if(conf.add(3, data) == false) return false;
+      }
+
+      // frozen status of each layer
+      {
+	data.resize(this->frozen.size());
+	
+	for(unsigned int l=0;l<frozen.size();l++){
+	  if(frozen[l] == false){
+	    data[l] = T(0.0);
+	  }
+	  else{
+	    data[l] = T(1.0);
+	  }
+	}
+
+	if(conf.createCluster(FNN_FROZEN_CFGSTR, data.size()) == false) return false;
+	if(conf.add(4, data) == false) return false;
+      }
+
+      // saves retain probability and other parameters
+      {
+	data.resize(1);
+	data[0] = this->retain_probability;
+
+	if(conf.createCluster(FNN_RETAIN_CFGSTR, data.size()) == false) return false;
+	if(conf.add(5, data) == false) return false;
+      }
+
+      // timestamp
+      {
+	char buffer[128];
+	time_t now = time(0);
+	snprintf(buffer, 128, "%s", ctime(&now));
+	
+	std::string timestamp = buffer;
+
+	if(conf.createCluster(FNN_TIMESTAMP_CFGSTR, timestamp.length()) == false)
+	  return false;
+	if(conf.add(6, timestamp) == false) return false;
+      }
+
+      // don't save dropout or retain probability
+      
+      return conf.save(filename);
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      
+      return false;
+    }
+
+    return false;
+
+#if 0
     try{
       whiteice::conffile configuration;
       
@@ -1693,6 +1812,7 @@ namespace whiteice
       
       return false;
     }
+#endif
   } 
   
   
@@ -1701,7 +1821,187 @@ namespace whiteice
 
   // load neuralnetwork data from file
   template <typename T>
-  bool nnetwork<T>::load(const std::string& filename) {
+  bool nnetwork<T>::load(const std::string& filename)
+  {
+    try{
+      whiteice::dataset<T> conf;
+      whiteice::math::vertex<T> conf_data;
+
+      // loaded parameters of neural network
+      
+      std::vector<unsigned int> conf_arch;
+      whiteice::math::vertex<T> conf_weights;
+      std::vector<nonLinearity> conf_nonlins;
+      std::vector<bool> conf_frozen;
+      T conf_retain = T(1.0);
+      
+      if(conf.load(filename) == false) return false;
+
+      // checks version number
+      {
+	const unsigned int cluster = conf.getCluster(FNN_VERSION_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false;
+	if(conf.dimension(cluster) != 1) return false;
+
+	conf_data = conf.access(cluster, 0);
+	
+	if(conf_data[0] != T(3.000)) // only handles version 3.0 files
+	  return false;
+      }
+
+      // checks number of clusters (7 in version 3.0 files)
+      {
+	if(conf.getNumberOfClusters() != 7) return false;
+      }
+
+      // gets architecture information
+      {
+	const int unsigned cluster = conf.getCluster(FNN_ARCH_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) < 2) return false; // bad architecture size
+
+	conf_data = conf.access(cluster, 0);
+
+	if(conf_data.size() < 2) return false; // bad architecture size;
+
+	conf_arch.resize(conf_data.size());
+
+	for(unsigned int i=0;i<conf_arch.size();i++){
+	  int value = 0;
+	  whiteice::math::convert(value, conf_data[i]);
+
+	  if(value <= 0) return false; // bad data
+
+	  conf_arch[i] = (unsigned int)value;
+	}
+      }
+
+      // gets weights parameter vector
+      {
+	const unsigned int cluster = conf.getCluster(FNN_VWEIGHTS_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) < 2) return false; // bad weight size
+	
+	conf_weights = conf.access(cluster, 0);
+      }
+
+      // gets non-linearities
+      {
+	const unsigned int cluster = conf.getCluster(FNN_NONLINEARITY_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) != conf_arch.size()-1)
+	  return false; // number of layers don't match architecture size
+
+	conf_data = conf.access(cluster, 0);
+
+	conf_nonlins.resize(conf_data.size());
+
+	for(unsigned int l=0;l<conf_data.size();l++){
+	  if(conf_data[l] == T(0.0)) conf_nonlins[l] = sigmoid;
+	  else if(conf_data[l] == T(1.0)) conf_nonlins[l] = stochasticSigmoid;
+	  else if(conf_data[l] == T(2.0)) conf_nonlins[l] = halfLinear;
+	  else if(conf_data[l] == T(3.0)) conf_nonlins[l] = pureLinear;
+	  else if(conf_data[l] == T(4.0)) conf_nonlins[l] = tanh;
+	  else if(conf_data[l] == T(5.0)) conf_nonlins[l] = rectifier;
+	  else return false; // unknown non-linearity
+	}
+      }
+
+      // gets frozen status of each layer
+      {
+	const unsigned int cluster = conf.getCluster(FNN_FROZEN_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) != conf_arch.size()-1)
+	  return false; // number of layers don't match architecture size
+	
+	conf_data = conf.access(cluster, 0);
+
+	conf_frozen.resize(conf_data.size());
+
+	for(unsigned int l=0;l<conf_frozen.size();l++){
+	  if(conf_data[l] == T(0.0)) conf_frozen[l] = false;
+	  else if(conf_data[l] == T(1.0)) conf_frozen[l] = true;
+	  else return false; // unknown value
+	}
+      }
+
+      // gets misc parameters (retain_probability)
+      {
+	const unsigned int cluster = conf.getCluster(FNN_RETAIN_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) != 1)
+	  return false; // only single parameter saved
+	
+	conf_data = conf.access(cluster, 0);
+
+	if(conf_data.size() != 1) return false;
+
+	conf_retain = conf_data[0];
+
+	if(conf_retain < T(0.0) || conf_retain > T(1.0))
+	  return false; // correct interval for data
+      }
+
+      // don't check timestamp metainformation
+
+      // parameters where successfully loaded from the disk.
+      // now calculates all the parameters and set them as neural network values
+      {
+	this->arch = conf_arch;
+
+	unsigned int memuse = 0;
+	maxwidth = arch[0];
+	
+	unsigned int i = 1;
+	while(i < arch.size()){
+	  memuse += (arch[i-1] + 1)*arch[i];
+	  
+	  if(arch[i] > maxwidth)
+	    maxwidth = arch[i];
+	  i++;
+	}
+
+	this->data.resize(memuse);
+
+	state.resize(maxwidth);
+	temp.resize(maxwidth);
+	lgrad.resize(maxwidth);
+
+	hasValidBPData = false;
+	bpdata.resize(1);
+	size = memuse;
+	
+	inputValues.resize(arch[0]);
+	outputValues.resize(arch[arch.size() - 1]);
+
+	this->frozen = conf_frozen;
+	this->nonlinearity = conf_nonlins;
+	this->retain_probability = conf_retain;
+	
+	if(this->importdata(conf_weights) == false) // this should never fail
+	  return false;
+	
+	dropout.clear(); // dropout is disabled in saved networks
+      }
+
+      return true;
+    }
+    catch(std::exception& e){
+      std::cout << "Unexpected exception "
+		<< "File: " << __FILE__ << " "
+		<< "Line: " << __LINE__ << " "
+		<< e.what() << std::endl;
+      
+      return false;
+    }
+
+#if 0
     try{
       whiteice::conffile configuration;
       std::vector<std::string> strings;
@@ -1875,6 +2175,7 @@ namespace whiteice
       
       return false;
     }
+#endif
   }
 
   
