@@ -15,10 +15,10 @@ namespace whiteice
 
 
   template <typename T>
-  TSNE<T>::TSNE()
+  TSNE<T>::TSNE(const bool absolute_value)
   {
     // absolute value KL divergence should give better results (see TSNE_notes.tm)
-    kl_absolute_value = true;
+    kl_absolute_value = absolute_value;
   }
 
   template <typename T>
@@ -31,7 +31,10 @@ namespace whiteice
   template <typename T>
   bool TSNE<T>::calculate(const std::vector< math::vertex<T> >& samples,
 			  const unsigned int DIM,
-			  std::vector< math::vertex<T> >& results)
+			  std::vector< math::vertex<T> >& results,
+			  const bool verbose,
+			  LoggingInterface* const messages,
+			  VisualizationInterface* const gui)
   {
     if(DIM <= 0) return false;
     if(samples.size() <= 0) return false;
@@ -69,16 +72,28 @@ namespace whiteice
       ygrad = yvalues; // dummy initializer
 
       unsigned int iter = 0;
-      const unsigned int MAXITER = 100;
+      const unsigned int MAXITER = 10000;
+
+      unsigned int noimprove_counter = 0;
+      const unsigned int MAXNOIMPROVE = 100;
 
       T lrate = T(100.0f);
+      T best_klvalue = T(1000.0f);
+      T klvalue = T(1000.0f);
+      T prev_round_klvalue = T(1000.f);
 
       whiteice::linear_ETA<double> eta;
       eta.start(0.0, MAXITER);
       eta.update(0.0);
-      
 
-      while(iter < MAXITER)
+      char buffer[128];
+
+      if(gui && DIM >= 2){
+	gui->show();
+	gui->clear();
+      }
+      
+      while(iter < MAXITER && noimprove_counter < MAXNOIMPROVE)
       {
 	// calculates qij values
 	if(calculate_qvalues(yvalues, qij, qsum) == false)
@@ -86,19 +101,75 @@ namespace whiteice
 	
 	// calculate and report the current KL divergence
 	{
-	  T klvalue = T(0.0f);
+	  prev_round_klvalue = klvalue;
+	  
 	  if(kl_divergence(pij, qij, klvalue) == false)
 	    return false;
+
+	  if(iter == 0){
+	    best_klvalue = klvalue;
+	  }
 	  
 	  float klvaluef = 0.0f;
-	  whiteice::math::convert(klvaluef, klvalue);
-	  if(iter > 0)
-	    printf("ITER %d / %d. KL DIVERGENCE: %f (ETA %f hours)\n",
-		   iter, MAXITER, klvaluef, eta.estimate()/3600.0);
-	  else
-	    printf("ITER %d / %d. KL DIVERGENCE: %f\n",
-		   iter, MAXITER, klvaluef);
-	  fflush(stdout);
+	  whiteice::math::convert(klvaluef, best_klvalue);
+
+	  if(iter > 0){
+	    snprintf(buffer, 128, "ITER %d / %d. (NOIMPROVE: %d/%d). BEST KL DIVERGENCE: %f (ETA %f hours)\n",
+		     iter, MAXITER, noimprove_counter, MAXNOIMPROVE,
+		     klvaluef, eta.estimate()/3600.0);
+	  }
+	  else{
+	    snprintf(buffer, 128, "ITER %d / %d. (NOIMPROVE: %d/%d) BEST KL DIVERGENCE: %f\n",
+		   iter, MAXITER, noimprove_counter, MAXNOIMPROVE,
+		   klvaluef);	    
+	  }
+
+	  if(verbose){
+	    printf(buffer);
+	    fflush(stdout);
+	  }
+
+	  if(messages != NULL){
+	    messages->printMessage(buffer);
+	  }
+	  
+	}
+
+	// check if solution improved
+	{
+	  if(klvalue <= best_klvalue){
+	    best_klvalue = klvalue;
+	    results = yvalues;
+	    noimprove_counter = 0;
+	  }
+	  else{
+	    noimprove_counter++;
+	  }
+	  
+	  // adaptive learning rate
+	  if(klvalue < prev_round_klvalue){
+	    lrate *= T(1.5f); // solution improved so increase learning rate
+	  }
+	  else{ // solution worsened so use smaller step length
+	    lrate /= T(1.5f);
+	  }
+	}
+
+	if(gui && DIM >= 2){
+	  // converts points to floating point values
+	  std::vector< math::vertex< math::blas_real<float> > > points;
+	  points.resize(results.size());
+	  
+	  for(unsigned int j=0;j<results.size();j++){
+	    points[j].resize(results[j].size());
+	    for(unsigned int i=0;i<results[j].size();i++){
+	      whiteice::math::convert(points[j][i], results[j][i]);
+	    }
+	  }
+	    
+	  gui->clear();
+	  gui->adaptiveScatterPlot(points);
+	  gui->updateScreen();
 	}
       
 	// calculate gradient
@@ -106,18 +177,11 @@ namespace whiteice
 	if(kl_gradient(pij, qij, qsum, yvalues, ygrad) == false)
 	  return false;
 
+	// TODO: adaptive lrate!
+
 	for(unsigned int i=0;i<ygrad.size();i++){
 	  auto& y = yvalues[i];
 	  auto& g = ygrad[i];
-
-#if 0
-	  {
-	    T n = ygrad[i].norm();
-	    float nf = 0.0f;
-	    whiteice::math::convert(nf, n);
-	    printf("|GRAD y(%d)| = %f\n", i, nf);
-	  }
-#endif
 
 	  y = y - lrate*g;
 	}
@@ -125,26 +189,13 @@ namespace whiteice
 	iter++;
 	eta.update(iter);
       }
-
-      // calculates qij values
-      if(calculate_qvalues(yvalues, qij, qsum) == false)
-	return false;
-      
-      // calculate and report the current KL divergence
-      {
-	T klvalue = T(0.0f);
-	if(kl_divergence(pij, qij, klvalue) == false)
-	  return false;
-	
-	float klvaluef = 0.0f;
-	whiteice::math::convert(klvaluef, klvalue);
-	printf("ITER %d / %d. KL DIVERGENCE: %f\n", iter, MAXITER, klvaluef);
-	fflush(stdout);
-      }
       
     }
 
-    results = yvalues;
+    
+    if(gui && DIM >= 2)
+      gui->hide();
+    
     
     return true;
   }
@@ -160,28 +211,47 @@ namespace whiteice
     
     pj.resize(x.size());
     
-    math::vertex<T> delta;
-    delta.resize(x[0].size());
-    delta.zero();
-    
     T rsum = T(0.0f); // calculates rsum for this index
 
-    for(unsigned int k=0;k<x.size();k++){
-      if(index == k) continue;
-      delta = x[k] - x[index];
-      
-      T v = -(delta*delta)[0]/sigma2;
+#pragma omp parallel shared(rsum)
+    {
+      T rs = T(0.0f);
 
-      rsum += whiteice::math::exp(v);
+      math::vertex<T> delta;
+      delta.resize(x[0].size());
+      delta.zero();
+
+#pragma omp for nowait schedule(auto)
+      for(unsigned int k=0;k<x.size();k++){
+	if(index == k) continue;
+	delta = x[k] - x[index];
+	
+	T v = -(delta*delta)[0]/sigma2;
+	
+	rs += whiteice::math::exp(v);
+      }
+
+#pragma omp critical
+      {
+	rsum += rs;
+      }
     }
+
+    #pragma omp parallel
+    {
+      math::vertex<T> delta;
+      delta.resize(x[0].size());
+      delta.zero();
       
-    for(unsigned int j=0;j<x.size();j++){
-      if(index == j) continue;
-
-      delta = x[j] - x[index];
-      T v = -(delta*delta)[0]/sigma2;
-
-      pj[j] = whiteice::math::exp(v)/rsum;
+#pragma omp for nowait schedule(auto)      
+      for(unsigned int j=0;j<x.size();j++){
+	if(index == j) continue;
+	
+	delta = x[j] - x[index];
+	T v = -(delta*delta)[0]/sigma2;
+	
+	pj[j] = whiteice::math::exp(v)/rsum;
+      }
     }
 
     pj[index] = T(0.0f);
@@ -198,9 +268,20 @@ namespace whiteice
 
     T H = T(0.0f); // entropy
 
-    for(const auto& p : pj){
-      if(p > T(0.0f))
-	H += -p*math::log(p)/math::log(T(2.0f));
+#pragma omp parallel shared(H)
+    {
+      T h = T(0.0f);
+
+#pragma omp for nowait schedule(auto)
+      for(unsigned int i=0;i<pj.size();i++){
+	if(pj[i] > T(0.0f))
+	  H += -pj[i]*math::log(pj[i])/math::log(T(2.0f));
+      }
+
+#pragma omp critical
+      {
+	H += h;
+      }
     }
 
     const T perplexity = math::pow(T(2.0f),H);
@@ -231,7 +312,7 @@ namespace whiteice
       math::vertex<T> mx;
       math::matrix<T> Cxx;
 
-      if(math::mean_covariance_estimate(mx, Cxx, x) == false)
+      if(math::mean_covariance_estimate(mx, Cxx, x) == false) // parallel now
 	return false;
 
       total_var = T(0.0f);
@@ -244,98 +325,117 @@ namespace whiteice
 
     const T TOTAL_SIGMA2 = total_var;  // total variance in data
     const T MIN_SIGMA2   = TOTAL_SIGMA2/T(1000000000.0f);
-    
-    
-    for(unsigned int j=0;j<x.size();j++){
-      
-      // searches for sigma2 variance value for x[j] centered distribution
-      
-      rji[j].resize(x.size());
-      
-      T sigma2_min = MIN_SIGMA2;
-      T sigma2_max = TOTAL_SIGMA2; // maximum sigma value
-      T perp_min, perp_max;
 
+    bool error = false;
+
+#pragma omp parallel
+    {
       std::vector<T> pj;
-      
-      {
-	// searches for minimum sigma2 value
-	calculate_pvalue_given_sigma(x, j, sigma2_min, pj);
-	perp_min = calculate_perplexity(pj);
+
+#pragma omp for nowait schedule(auto)
+      for(unsigned int j=0;j<x.size();j++){
+	if(error) continue; // stopped to error
 	
-	while(perp_min > perplexity && sigma2_min > T(0.0f)){
-	  sigma2_min /= T(2.0f);
+	// searches for sigma2 variance value for x[j] centered distribution
+	
+	rji[j].resize(x.size());
+	
+	T sigma2_min = MIN_SIGMA2;
+	T sigma2_max = TOTAL_SIGMA2; // maximum sigma value
+	T perp_min, perp_max;
+	
+	{
+	  // searches for minimum sigma2 value
 	  calculate_pvalue_given_sigma(x, j, sigma2_min, pj);
-	  perp_min = calculate_perplexity(pj);	  
-	}
-
-	if(perp_min > perplexity)
-	  return false; // could not find minimum value
-
-	// searches for maximum sigma2 value
-	calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
-	perp_max = calculate_perplexity(pj);
-	
-	while(perp_max < perplexity && sigma2_max < T(10e9)){
-	  sigma2_max *= T(2.0f);
+	  perp_min = calculate_perplexity(pj);
+	  
+	  while(perp_min > perplexity && sigma2_min > T(0.0f)){
+	    sigma2_min /= T(2.0f);
+	    calculate_pvalue_given_sigma(x, j, sigma2_min, pj);
+	    perp_min = calculate_perplexity(pj);	  
+	  }
+	  
+	  if(perp_min > perplexity){
+	    error = true;
+	    continue;
+	    // return false; // could not find minimum value
+	  }
+	  
+	  // searches for maximum sigma2 value
 	  calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
 	  perp_max = calculate_perplexity(pj);
+	  
+	  while(perp_max < perplexity && sigma2_max < T(10e9)){
+	    sigma2_max *= T(2.0f);
+	    calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
+	    perp_max = calculate_perplexity(pj);
+	  }
+	  
+	  if(perp_max < perplexity){
+	    error = true;
+	    continue;
+	    // return false; // could not find maximum value
+	  }
 	}
-
-	if(perp_max < perplexity)
-	  return false; // could not find maximum value
-      }
-
-      // no we have minimum and maximum value for sigma2 variance term
-      // search for sigma2 term with target perplexity
-      {
-	T sigma2_next = (sigma2_min + sigma2_max)/T(2.0f);
 	
-	calculate_pvalue_given_sigma(x, j, sigma2_next, pj);
-	T perp_next = calculate_perplexity(pj);
-
-	while(math::abs(perplexity - perp_next) > T(0.10f) &&
-	      (sigma2_max - sigma2_min) > T(10e-9)){
-	  if(perplexity < perp_next){
-	    sigma2_max = sigma2_next;
-	  }
-	  else{ // perplexity > perp_next
-	    sigma2_min = sigma2_next;
-	  }
-
-	  sigma2_next = (sigma2_min + sigma2_max)/T(2.0f);
-	
+	// no we have minimum and maximum value for sigma2 variance term
+	// search for sigma2 term with target perplexity
+	{
+	  T sigma2_next = (sigma2_min + sigma2_max)/T(2.0f);
+	  
 	  calculate_pvalue_given_sigma(x, j, sigma2_next, pj);
-	  perp_next = calculate_perplexity(pj);
-	}
+	  T perp_next = calculate_perplexity(pj);
+	  
+	  while(math::abs(perplexity - perp_next) > T(0.01f) &&
+		(sigma2_max - sigma2_min) > T(1e-10))
+	  {
+	    if(perplexity < perp_next){
+	      sigma2_max = sigma2_next;
+	    }
+	    else{ // perplexity > perp_next
+	      sigma2_min = sigma2_next;
+	    }
+	    
+	    sigma2_next = (sigma2_min + sigma2_max)/T(2.0f);
+	    
+	    calculate_pvalue_given_sigma(x, j, sigma2_next, pj);
+	    perp_next = calculate_perplexity(pj);
+	  }
+	  
+	  if(sigma2_max - sigma2_min <= T(1e-10)){
+	    error = true;
+	    continue;
+	    // return false; // could not find target perplexity
+	  }
 
-	if(sigma2_max - sigma2_min <= T(10e-9))
-	  return false; // could not find target perplexity
-
-	// we found sigma variance and probability distribution with target perplexity
-	rji[j] = pj;
-	rji[j][j] = T(0.0f);
-
+	  // we found sigma variance and probability distribution with target perplexity
+	  rji[j] = pj;
+	  rji[j][j] = T(0.0f);
+	  
 #if 0
-	T psum = T(0.0f);
-	for(unsigned int i=0;i<rji.size();i++){
-	  if(rji[j][i] < T(0.0f))
-	    std::cout << "NEGATIVE PROBABILITY!. INDEX: " << i << std::endl;
-	  else if(rji[j][i] == T(0.0f))
-	    std::cout << "ZERO PROBABILITY: INDEXES: " << j << " " << i << std::endl;
-	  else
-	    std::cout << "NON-ZERO PROBABILITY: " << rji[j][i] << std::endl;
-	  psum += rji[j][i];
-	}
-
-	std::cout << "PSUM: " << psum << std::endl;
-	std::cout << "FINAL PERPLEXITY: " << perp_next << std::endl;
-	std::cout << "FINAL SIGMA: " << sigma2_next << std::endl;
-	std::cout << std::flush;
+	  T psum = T(0.0f);
+	  for(unsigned int i=0;i<rji.size();i++){
+	    if(rji[j][i] < T(0.0f))
+	      std::cout << "NEGATIVE PROBABILITY!. INDEX: " << i << std::endl;
+	    else if(rji[j][i] == T(0.0f))
+	      std::cout << "ZERO PROBABILITY: INDEXES: " << j << " " << i << std::endl;
+	    else
+	      std::cout << "NON-ZERO PROBABILITY: " << rji[j][i] << std::endl;
+	    psum += rji[j][i];
+	  }
+	  
+	  std::cout << "PSUM: " << psum << std::endl;
+	  std::cout << "FINAL PERPLEXITY: " << perp_next << std::endl;
+	  std::cout << "FINAL SIGMA: " << sigma2_next << std::endl;
+	  std::cout << std::flush;
 #endif
+	}
+	  
       }
       
     }
+
+    if(error) return false;
 
     
     // calculates symmetric p-values
@@ -416,8 +516,6 @@ namespace whiteice
 			      const std::vector< std::vector<T> >& qij,
 			      T& klvalue) const
   {
-    printf("kl_divergence()\n"); fflush(stdout);
-    
     if(pij.size() <= 0 || qij.size() <= 0) return false;
     if(qij.size() != pij.size()) return false;
     if(pij.size() != pij[0].size()) return false;
@@ -430,7 +528,7 @@ namespace whiteice
     {
       T klv = T(0.0f); // threadwise KL divergence terms
 
-#pragma omp for nowait schedule(dynamic)  
+#pragma omp for nowait schedule(auto)  
       for(unsigned int i=0;i<pij.size();i++){
 	for(unsigned int j=0;j<pij.size();j++){
 	  if(i == j) continue; // skip same values
@@ -467,13 +565,46 @@ namespace whiteice
 			    const std::vector< math::vertex<T> >& y,
 			    std::vector< math::vertex<T> >& ygrad) const
   {
-    printf("kl_gradient()\n"); fflush(stdout);
-    
     if(pij.size() != y.size()) return false;
     if(pij.size() <= 0 || y.size() <= 0) return false;
     if(pij.size() != pij[0].size()) return false;
 
     ygrad.resize(y.size());
+
+    T Ps = T(0.0f);
+    if(kl_absolute_value){
+
+#pragma omp parallel shared(Ps)
+      {
+	T psi = T(0.0f);
+
+#pragma omp for nowait schedule(auto)	
+	for(unsigned int k=0;k<y.size();k++){
+	  for(unsigned int l=0;l<y.size();l++){
+	    if(k == l) continue;
+	    
+	    T ratio = 1.0f;
+
+	    if(qij[k][l] <= T(0.0f)) ratio = T(100.0f); // positive infinity means sign(x)=1
+	    else if(pij[k][l] <= T(0.0f)) ratio = T(0.00001); // zero means sign(x)=-1
+	    else ratio = pij[k][l]/qij[k][l];
+	    
+	    const T logratio = whiteice::math::log(ratio);
+
+	    if(logratio >= T(0.0f))
+	      psi += pij[k][l];
+	    else
+	      psi -= pij[k][l];
+	  }
+	}
+
+#pragma omp critical
+	{
+	  Ps += psi;
+	}
+
+      }
+    }
 
     
     // calculates gradient for each y value
@@ -483,12 +614,44 @@ namespace whiteice
       math::vertex<T> delta;
       delta.resize(y[0].size());
 
-      
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int m=0;m<ygrad.size();m++){
 	ygrad[m].resize(y[0].size());
 	ygrad[m].zero();
 
+	if(kl_absolute_value == false){
+	  for(unsigned int j=0;j<y.size();j++){
+	    if(m == j) continue;
+	    
+	    delta = y[m] - y[j];
+	    
+	    ygrad[m] += (pij[m][j]-qij[m][j])*(T(4.0f)/(T(1.0f) + (delta*delta)[0]))*delta;
+	  }
+	}
+	else{
+
+	  for(unsigned int j=0;j<y.size();j++){
+	    if(m == j) continue;
+	    
+	    T ratio = 1.0f;
+
+	    if(qij[m][j] <= T(0.0f)) ratio = T(100.0f); // positive infinity means sign(x)=1
+	    else if(pij[m][j] <= T(0.0f)) ratio = T(0.00001); // zero means sign(x)=-1
+	    else ratio = pij[m][j]/qij[m][j];
+	    
+	    const T logratio = whiteice::math::log(ratio);
+	    
+	    delta = y[m] - y[j];
+
+	    // multiply gradient by sign(log(pij/qij))
+	    if(logratio >= T(0.0f))
+	      ygrad[m] += (pij[m][j]-Ps*qij[m][j])*(T(4.0f)/(T(1.0f) + (delta*delta)[0]))*delta;
+	    else
+	      ygrad[m] += (-pij[m][j]-Ps*qij[m][j])*(T(4.0f)/(T(1.0f) + (delta*delta)[0]))*delta;
+	  }
+	}
+
+#if 0
 	// calculates gradient of each KL divergence term
 	for(unsigned int i=0;i<y.size();i++){
 	  for(unsigned int j=0;j<y.size();j++){
@@ -569,6 +732,7 @@ namespace whiteice
 	    }
 	  }
 	}
+#endif
 
       } // parallel OpenMP for-loop ends (ygrad[m])
 

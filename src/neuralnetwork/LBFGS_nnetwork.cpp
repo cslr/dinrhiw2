@@ -77,7 +77,7 @@ namespace whiteice
       
       
       // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtest.size(0);i++){
 	// std::cout << "data in  = " << dtest.access(0, i) << std::endl;
 	// std::cout << "data out = " << dtest.access(1, i) << std::endl;
@@ -117,7 +117,7 @@ namespace whiteice
       T esum = T(0.0f);
     
       // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	nnet.input() = dtrain.access(0, i);
 	nnet.calculate(false);
@@ -183,7 +183,7 @@ namespace whiteice
       sgrad = x;
       sgrad.zero();
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	nnet.input() = dtrain.access(0, i);
 	nnet.calculate(true);
@@ -250,7 +250,7 @@ namespace whiteice
       sgrad = x;
       sgrad.zero();
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	// generates negative particle
 	auto x = dtrain.access(0, rng.rand() % dtrain.size(0));

@@ -274,7 +274,7 @@ bool GBRBM<T>::reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
 {
   // calculates reconstruction v -> h -> v'
   
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
   for(unsigned int i=0;i<samples.size();i++){
     auto& v = samples[i];
     
@@ -785,7 +785,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	while(!convergence && epoch < EPOCHS)
 	{
 	  
-// #pragma omp parallel for schedule(dynamic) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
+// #pragma omp parallel for schedule(auto) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
 	          for(unsigned int i=0;i<1000;i++){
 		        math::vertex<T> aa, bb, zz;
 			math::matrix<T> WW;
@@ -955,9 +955,9 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			  T lrate2 = lrate, lrate2z = lratez;
 
-#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
+#pragma omp parallel for schedule(auto) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
 			  for(unsigned int j=0;j<3;j++){
-			    //#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
+			    //#pragma omp parallel for schedule(auto) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
 			    //for(unsigned int i=0;i<3;i++){
 			      T lrate1 = lrate, lrate1z = lratez;
 
@@ -1429,7 +1429,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const  // calculates U(q) = -l
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
-#pragma omp parallel for schedule(dynamic) shared(u)
+#pragma omp parallel for schedule(auto) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
@@ -1555,7 +1555,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
-#pragma omp parallel for schedule(dynamic) shared(u)
+#pragma omp parallel for schedule(auto) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
@@ -1653,7 +1653,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 		}
 
 		// for(auto& v : Usamples){
-#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
+#pragma omp parallel for schedule(auto) shared(ga) shared(gb) shared(gz) shared(gW)
 		for(unsigned int ui=0;ui<NUMUSAMPLES;ui++)
 		{
 			auto& v = Usamples[rng.rand()%Usamples.size()];
@@ -1720,7 +1720,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 			// ais_sampling(vs, NEGSAMPLES, Umean, Uvariance, qa, qb, qz, qW);
 
 			// uses CD-1 to get samples [fast]
-#pragma omp parallel for schedule(dynamic) shared(vs)
+#pragma omp parallel for schedule(auto) shared(vs)
 			for(unsigned int s=0;s<NEGSAMPLES;s++){
 				const unsigned int index = rng.rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
@@ -1735,7 +1735,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 
 			const T scaling = T((double)1.0)/T((double)NEGSAMPLES);
 
-#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
+#pragma omp parallel for schedule(auto) shared(ga) shared(gb) shared(gz) shared(gW)
 			for(unsigned int i=0;i<vs.size();i++){
 			        const auto& v = vs[i];
 				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )
@@ -2125,7 +2125,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 	    const unsigned int index0 = r.size();
 	    r.resize(r.size() + STEPSIZE);
 
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 	    for(unsigned int index=0;index<STEPSIZE;index++){
 	    	auto& v = vs[index];
 	        // free-energy
@@ -2338,7 +2338,7 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 		vs.resize(SAMPLES);
 
 		// TODO parallelize this to use thread-safe random number generators..
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 		for(unsigned int i=0;i<SAMPLES;i++){
 			math::vertex<T> vv;
 

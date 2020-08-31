@@ -222,7 +222,7 @@ namespace whiteice
     
     
     
-    
+    // mean_covariance_estimate() is now parallelized (requires extra memory)
     template <typename T>
     bool mean_covariance_estimate(vertex<T>& m, matrix<T>& R,
 				  const std::vector< vertex<T> >& data)
@@ -230,7 +230,6 @@ namespace whiteice
       if(data.size() <= 0)
 	return false;
       
-      typename std::vector< vertex<T> >::const_iterator i = data.begin();
       const unsigned int N = data[0].size();
 
       // expect's mem allocation to succeed
@@ -244,15 +243,35 @@ namespace whiteice
 
       
       if(typeid(T) == typeid(blas_real<float>)){	
-	
-	while(i != data.end()){
-	  cblas_sspr(CblasRowMajor, CblasUpper, N, 
-		     *((float*)&s), (float*)(i->data), 1, (float*)R.data);
-	  m += *i;
-	  
-	  i++;
-	}
 
+#pragma omp parallel shared(m) shared(R)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  R.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    cblas_sspr(CblasRowMajor, CblasUpper, N, 
+		       *((float*)&s), (float*)(v.data), 1, (float*)Ri.data);
+
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+	  
 	// converts packed symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
@@ -260,24 +279,43 @@ namespace whiteice
 		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
 		 sizeof(T) * (i+1));
 	}
-
+	
 	for(unsigned int i=0;i<(N-1);i++)
 	  cblas_scopy(N - i - 1, 
 		      (float*)&(R.data[i*N + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*N + i]), N);
-
+	
 	m *= s;
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
-	
-	while(i != data.end()){
-	  cblas_chpr(CblasRowMajor, CblasUpper, N,
-		     *((float*)&s), (float*)(i->data), 1, (float*)R.data);
-	  m += *i;
+
+#pragma omp parallel shared(m) shared(R)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
 	  
-	  i++;
+	  Ri.resize(N,N);
+	  R.zero();
+	  
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];	  
+	    
+	    cblas_chpr(CblasRowMajor, CblasUpper, N,
+		       *((float*)&s), (float*)(v.data), 1, (float*)Ri.data);
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
 	}
-	
+	  
 	// converts packed symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
@@ -291,17 +329,36 @@ namespace whiteice
 	  cblas_ccopy(N - i - 1, 
 		      (float*)&(R.data[i*N + 1 + i]), 1,
 		      (float*)&(R.data[(i+1)*N + i]), N);
-	
+	  
 	m *= s;
       }
       else if(typeid(T) == typeid(blas_real<double>)){
-	
-	while(i != data.end()){
-	  cblas_dspr(CblasRowMajor, CblasUpper, N, 
-		     *((double*)&s), (double*)(i->data), 1, (double*)(R.data));
-	  m += *i;
-	  
-	  i++;
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  R.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    cblas_dspr(CblasRowMajor, CblasUpper, N, 
+		       *((double*)&s), (double*)(v.data), 1, (double*)(Ri.data));
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
@@ -321,13 +378,32 @@ namespace whiteice
 	m *= s;
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
-	
-	while(i != data.end()){
-	  cblas_zhpr(CblasRowMajor, CblasUpper, N,
-		     *((double*)&s), (double*)(i->data), 1, (double*)R.data);
-	  m += *i;
-	  
-	  i++;
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  R.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    cblas_zhpr(CblasRowMajor, CblasUpper, N,
+		       *((double*)&s), (double*)(v.data), 1, (double*)Ri.data);
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
@@ -347,13 +423,31 @@ namespace whiteice
 	m *= s;
       }
       else{ // generic code
-	
-	while(i != data.end()){
-	  
-	  R += (*i).outerproduct((*i));
-	  m += *i;
-	  
-	  i++;
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  R.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    Ri += v.outerproduct(v);
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
 	}
 	
 	R *= s;
@@ -363,6 +457,7 @@ namespace whiteice
       
       // removes mean from R = E[xx^t]
 
+#pragma omp parallel for schedule(auto)
       for(unsigned int j=0;j<N;j++){
 	for(unsigned int i=0;i<=j;i++){
 	  T tmp = m[j]*m[i];
@@ -371,7 +466,7 @@ namespace whiteice
 	    R(i,j) -= tmp;
 	}
       }
-
+      
       
       return true;
     }

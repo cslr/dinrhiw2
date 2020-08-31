@@ -486,7 +486,7 @@ namespace whiteice
       whiteice::math::blas_real<float> err = 0.0f;
 
       //for(unsigned int i=0;i<MINIBATCHSIZE;i++){
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<data.size();i++){
 	//const unsigned int index = rng.rand() % data.size();
 	const unsigned int index = i;
@@ -520,7 +520,7 @@ namespace whiteice
     {
       whiteice::math::blas_real<float> uval = 0.0f; // per thread
 
-#pragma omp for nowait schedule(dynamic)      
+#pragma omp for nowait schedule(auto)      
       for(int index=0;index<N;index++){
 	int i = index % som_width;
 	int j = index / som_width;

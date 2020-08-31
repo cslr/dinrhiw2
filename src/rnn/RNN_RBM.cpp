@@ -601,7 +601,7 @@ namespace whiteice
 
       whiteice::BBRBM<T> rbm(this->rbm);
       
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int n=0;n<timeseries.size();n++){
 	
 	whiteice::math::vertex<T> r(dimRecurrent);
@@ -734,7 +734,7 @@ namespace whiteice
 
 	whiteice::BBRBM<T> rbm(this->rbm);
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int n=0;n<timeseries.size();n++){
 
 	  if(running == false) continue;
@@ -896,7 +896,7 @@ namespace whiteice
 	  // calculates normal log probability gradient but changes gradient sign
 	  // so we reduce probability of randomly generated time-series
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	  for(unsigned int n=0;n<negativeseries.size();n++){
 
 	    if(running == false) continue;

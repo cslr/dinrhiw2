@@ -78,7 +78,7 @@ namespace whiteice
 			math::vertex<T> err;
 			T e = T(0.0f);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(false);
@@ -122,7 +122,7 @@ namespace whiteice
 			whiteice::nnetwork<T> nnet(this->nnet);
 			nnet.importdata(q);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(true);
@@ -176,7 +176,7 @@ namespace whiteice
 	    
 	    zratio.resize(index0 + BLOCKSIZE); // increases zratio size
 	    
-#pragma omp parallel for shared(zratio) schedule(dynamic)
+#pragma omp parallel for shared(zratio) schedule(auto)
 	    for(unsigned int index=0;index<BLOCKSIZE;index++){
 	      // generates negative particle (x side)
 	      
@@ -618,7 +618,7 @@ namespace whiteice
 	    math::vertex<T> err;
 	    T e = T(0.0f);
 	    
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	    for(unsigned int i=0;i<data.size(0);i++){
 	      nnet.input() = data.access(0, i);
 	      nnet.calculate(false);

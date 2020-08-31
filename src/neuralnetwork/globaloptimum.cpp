@@ -42,7 +42,7 @@ namespace whiteice
     {
 
       // OpenMPfied code
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int n=0;n<N;n++){
 
 	if(failure) continue;

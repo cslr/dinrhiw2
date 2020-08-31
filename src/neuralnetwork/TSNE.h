@@ -14,6 +14,8 @@
 #include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "RNG.h"
+#include "LoggingInterface.h"
+#include "VisualizationInterface.h"
 
 #include <vector>
 
@@ -25,13 +27,17 @@ namespace whiteice
     {
     public:
 
-      TSNE();
+      TSNE(const bool absolute_value = true);
       TSNE(const TSNE<T>& tsne);
       
       // dimension reduces samples to DIM dimensional vectors using t-SNE algorithm
       bool calculate(const std::vector< math::vertex<T> >& samples,
 		     const unsigned int DIM,
-		     std::vector< math::vertex<T> >& results);
+		     std::vector< math::vertex<T> >& results,
+		     const bool verbose = false,
+		     LoggingInterface* const messages = NULL,
+		     VisualizationInterface* const gui = NULL);
+		     
       
     private:
       

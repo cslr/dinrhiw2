@@ -395,7 +395,7 @@ namespace whiteice
       
       T ninv  = T(1.0f/latestN);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
 	math::vertex<T> in(nnets[0]->input_size());
 	math::vertex<T> out(DIM), out_nn(nnets[0]->output_size());

@@ -334,7 +334,7 @@ namespace whiteice {
 	}
       }
       
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int t=1;t<=T;t++){
 	realnumber ab(0.0, precision);
 	
@@ -379,7 +379,7 @@ namespace whiteice {
 	}
       }
 
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int t=1;t<=T;t++){
 	for(unsigned int i=0;i<numHidden;i++){
 	  auto& yti = y[t-1][i];
@@ -395,14 +395,14 @@ namespace whiteice {
       // now we can calculate new parameter values based on EM
       
       // pi
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<numHidden;i++){
 	const unsigned int t = 1;
 	ph[i] = y[t-1][i];
       }
       
       // state transitions A[i][j]
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<numHidden;i++){
 	for(unsigned int j=0;j<numHidden;j++){
 	  
@@ -419,7 +419,7 @@ namespace whiteice {
       }
       
       // visible state probabilities B[i][j][k]
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<numHidden;i++){
 	for(unsigned int j=0;j<numHidden;j++){
 	  for(unsigned int k=0;k<numVisible;k++){

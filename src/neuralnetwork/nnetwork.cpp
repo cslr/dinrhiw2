@@ -763,7 +763,7 @@ namespace whiteice
       outputdata.resize(inputdata.size());
 
       // processes data in parallel
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<inputdata.size();i++){
 	auto out = W*inputdata[i] + b;
 	for(unsigned int n=0;n<out.size();n++)
@@ -844,7 +844,7 @@ namespace whiteice
 		  outputdata.resize(inputdata.size());
 
 		  // processes data in parallel
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 		  for(unsigned int i=0;i<inputdata.size();i++){
 			  auto out = W*inputdata[i] + b;
 			  for(unsigned int n=0;n<out.size();n++)

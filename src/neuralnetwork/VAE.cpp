@@ -369,7 +369,7 @@ namespace whiteice
       nnetwork<T> encoder(this->encoder);
       nnetwork<T> decoder(this->decoder);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<N;i++){
 	unsigned int index = i/K;
 
@@ -444,7 +444,7 @@ namespace whiteice
       nnetwork<T> encoder(this->encoder);
       nnetwork<T> decoder(this->decoder);
       
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<N;i++){
 	const unsigned int index = i/K;
 	const unsigned int mod   = i % K;
@@ -906,7 +906,7 @@ namespace whiteice
       math::vertex<T> gzx;
       math::matrix<T> Jstdev_epsilon;
       
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
 	if(failure) continue; // do nothing after first failure

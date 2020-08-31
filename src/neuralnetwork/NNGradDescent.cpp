@@ -433,7 +433,7 @@ namespace whiteice
 	math::vertex<T> err;
 
 	// calculates error from the testing dataset
-#pragma omp for nowait schedule(dynamic)	    	    
+#pragma omp for nowait schedule(auto)	    	    
 	for(unsigned int i=0;i<dtest.size(0);i++){
 	  const unsigned int index = i; // rng.rand() % dtest.size(0);
 	  math::vertex<T> out;
@@ -757,7 +757,7 @@ namespace whiteice
 		whiteice::nnetwork<T> nnet(*nn);
 		math::vertex<T> err;
 		
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 		for(unsigned int i=0;i<MINIBATCHSIZE;i++){
 		  const unsigned int index = rng.rand() % dtrain.size(0);
 		  // const unsigned int index = i;
@@ -793,7 +793,7 @@ namespace whiteice
 		whiteice::nnetwork<T> nnet(*nn);
 		math::vertex<T> err;
 		
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 		for(unsigned int i=0;i<dtrain.size(0);i++){
 		  const unsigned int index = i;
 		  

@@ -156,13 +156,13 @@
   <\math>
     <frac|\<partial\>D<rsub|K*L>|\<partial\>d<rsub|i*j>>=-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l><frac|\<partial\><around*|(|log<around*|(|q<rsub|k*l>|)>|)>|\<partial\>*d<rsub|i*j>>=-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l><frac|\<partial\><around*|(|log<around*|(|q<rsub|k*l>Z|)>-log<around*|(|Z|)>|)>|\<partial\>*d<rsub|i*j>>
 
-    =-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<around*|(|<frac|1|q<rsub|k*l>Z>*<frac|\<partial\><around*|(|1+d<rsup|2><rsub|k*l>|)><rsup|-1>|\<partial\>*d<rsub|i*j>>-<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>|)>=2*<frac|p<rsub|i*j>|q<rsub|i*j>Z>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-2>+<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>
+    =-<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<around*|(|<frac|1|q<rsub|k*l>Z>*<frac|\<partial\><around*|(|1+d<rsup|2><rsub|k*l>|)><rsup|-1>|\<partial\>*d<rsub|i*j>>-<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>|)>=2*<frac|p<rsub|i*j>|q<rsub|i*j>Z>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-2>*d<rsub|i*j>+<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|1|Z>*<frac|\<partial\>*Z|\<partial\>*d<rsub|i*j>>
 
-    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2*<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>*
+    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>*d<rsub|i*j>-2*<big|sum><rsub|k\<neq\>l>*p<rsub|k*l>*<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>*d<rsub|i*j>*
 
-    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2*<around*|(|<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>|)>=2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>-2**q<rsub|i*j><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>
+    =2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>*d<rsub|i*j>-2*<around*|(|<frac|<around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-2>|Z>|)>*d<rsub|i*j>=2*p<rsub|i*j>*<around*|(|1+d<rsup|2><rsub|i*j>|)><rsup|-1>*d<rsub|i*j>-2**q<rsub|i*j><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>*d<rsub|i*j>
 
-    =2*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>
+    =2*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1>*d<rsub|i*j>
   </math>
 
   \;
@@ -171,7 +171,7 @@
 
   \;
 
-  <math|\<nabla\><rsub|\<b-y\><rsub|i>>D<rsub|KL>=<big|sum><rsub|j>2*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|<frac|\<b-y\><rsub|i>-\<b-y\><rsub|j>|*<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>*|)>>.
+  <math|\<nabla\><rsub|\<b-y\><rsub|i>>D<rsub|KL>=4*<big|sum><rsub|j><around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|\<b-y\><rsub|i>-\<b-y\><rsub|j>|)>>.
 
   \;
 
@@ -194,11 +194,16 @@
   \;
 
   This means we only need to modify our gradient formula by multiplication of
-  <math|sign<around*|(|x|)>> function.
+  <math|sign<around*|(|x|)>> function for the first term and for the second
+  term we need to calculate one additional term <math|P<rsub|sign>>.
 
   \;
 
-  <math|\<nabla\><rsub|\<b-y\><rsub|i>><around*|\||D|\|><rsub|KL>=<big|sum><rsub|j>2**sign<around*|(|log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|)>*<around*|(|p<rsub|i*j>-q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|<frac|\<b-y\><rsub|i>-\<b-y\><rsub|j>|*<around*|\<\|\|\>|\<b-y\><rsub|i>-\<b-y\><rsub|j>|\<\|\|\>>>*|)>>.
+  <math|P<rsub|s>=<big|sum><rsub|k\<neq\>l>sign<around*|(|log<around*|(|<frac|p<rsub|k*l>|q<rsub|k*l>>|)>|)>*p<rsub|k*l>*>
+
+  \;
+
+  <math|\<nabla\><rsub|\<b-y\><rsub|i>><around*|\||D|\|><rsub|KL>=4*<big|sum><rsub|j><around*|(|sign<around*|(|log<around*|(|<frac|p<rsub|i*j>|q<rsub|i*j>>|)>|)>*p<rsub|i*j>-P<rsub|s>*q<rsub|i*j>|)><around*|(|1+d<rsup|2><rsub|<rsup|>i*j>|)><rsup|-1><around*|(|\<b-y\><rsub|i>-\<b-y\><rsub|j>|)>>.
 
   \;
 
@@ -212,12 +217,12 @@
 
   \;
 
-  For large number of points the update rule is slow
-  (<math|O<around*|(|N<rsup|2>|)>> scaling). Extra speed can be archieved by
+  For large number of points the update rule is still slow with
+  <math|O<around*|(|N<rsup|2>|)>> scaling. Extra speed can be archieved by
   combining large away data points to a single point which is then used to
   calculate the divergence and gradient. This can be done by using
   <with|font-shape|italic|Barnes-Hut approximation> which changes
-  computational complexity to near linear
+  computational complexity to nearly linear
   <math|O<around*|(|N*log<around*|(|N|)>|)>>.
 
   \;

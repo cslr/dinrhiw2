@@ -295,8 +295,8 @@ void simple_tsne_test()
     // in hypercube [-10,10]^HIGHDIM. mean = random([-10,10]^HIGHDIM)
 
     const unsigned int HIGHDIM = 20;
-    const unsigned int CLUSTERS = 5; // number of clusters
-    const unsigned int N = 20; // number of samples per cluster (was: 100)
+    const unsigned int CLUSTERS = 10; // number of clusters
+    const unsigned int N = 100; // number of samples per cluster (total of 1000 datapoints)
 
     whiteice::RNG<> rng;
 
@@ -324,10 +324,10 @@ void simple_tsne_test()
     }
 
     // calculate dimension reduction
-    whiteice::TSNE<> tsne;
+    whiteice::TSNE<> tsne(true);
     std::vector< whiteice::math::vertex<> > ydata;
 
-    if(tsne.calculate(data, 2, ydata) == false){
+    if(tsne.calculate(data, 2, ydata, true) == false){
       printf("ERROR: calculating t-SNE dimension reduction FAILED.\n");
     }
     else{

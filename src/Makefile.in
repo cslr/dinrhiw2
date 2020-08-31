@@ -10,6 +10,7 @@ OBJECTS = point.o static_array.o dynamic_array.o \
 	conversion.o unique_id.o \
 	conffile.o linear_ETA.o \
 	dynamic_bitset.o list_source.o \
+	VisualizationInterface.o \
 	MemoryCompressor.o timed_boolean.o \
 	Log.o \
 	dinrhiw.o
@@ -27,6 +28,7 @@ SOURCES = point.cpp static_array.cpp dynamic_array.cpp \
 	dataset.cpp \
 	conversion.cpp unique_id.cpp \
 	conffile.cpp linear_ETA.cpp \
+	VisualizationInterface.cpp \
 	MemoryCompressor.cpp timed_boolean.cpp \
 	math/vertex.cpp math/matrix.cpp math/ownexception.cpp \
 	math/norms.cpp \
