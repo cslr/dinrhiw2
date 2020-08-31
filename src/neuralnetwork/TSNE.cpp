@@ -193,10 +193,6 @@ namespace whiteice
     }
 
     
-    if(gui && DIM >= 2)
-      gui->hide();
-    
-    
     return true;
   }
 

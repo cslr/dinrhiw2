@@ -250,7 +250,7 @@ namespace whiteice
 	  vertex<T> mi;
 
 	  Ri.resize(N,N);
-	  R.zero();
+	  Ri.zero();
 
 	  mi.resize(N);
 	  mi.zero();
@@ -295,7 +295,7 @@ namespace whiteice
 	  vertex<T> mi;
 	  
 	  Ri.resize(N,N);
-	  R.zero();
+	  Ri.zero();
 	  
 	  mi.resize(N);
 	  mi.zero();
@@ -340,7 +340,7 @@ namespace whiteice
 	  vertex<T> mi;
 
 	  Ri.resize(N,N);
-	  R.zero();
+	  Ri.zero();
 
 	  mi.resize(N);
 	  mi.zero();
@@ -385,7 +385,7 @@ namespace whiteice
 	  vertex<T> mi;
 
 	  Ri.resize(N,N);
-	  R.zero();
+	  Ri.zero();
 
 	  mi.resize(N);
 	  mi.zero();
@@ -430,7 +430,7 @@ namespace whiteice
 	  vertex<T> mi;
 
 	  Ri.resize(N,N);
-	  R.zero();
+	  Ri.zero();
 
 	  mi.resize(N);
 	  mi.zero();
