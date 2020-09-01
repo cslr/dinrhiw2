@@ -38,18 +38,43 @@ namespace whiteice
   {
     if(DIM <= 0) return false;
     if(samples.size() <= 0) return false;
-    
-    // perplexity of 30 seem to give reasonable good results
-    const T PERPLEXITY = T(30.0f);
 
     whiteice::RNG<T> rng;
 
+    // perplexity of 30 seem to give reasonable good results
+    const T PERPLEXITY = T(30.0f);
+    
     char buffer[128];
+    
+    // visible points plotted by GUI
+    std::vector<unsigned int> guipoints;
+
+    if(gui)
+    {
+      guipoints.resize(samples.size());
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<guipoints.size();i++){
+	guipoints[i] = i;
+      }
+
+      if(samples.size() > 10000){ // only plots 10.000 random points
+
+	// randomly reorders points
+	for(unsigned int i=0;i<guipoints.size();i++){
+	  const unsigned int index = rng.rand() % guipoints.size();
+	  std::swap(guipoints[i], guipoints[index]);
+	}
+
+	if(guipoints.size() > 10000)
+	  guipoints.resize(10000); // keeps only 10.000 first points
+      }
+    }
     
     {
       float perplexityf = 0.0f;
       whiteice::math::convert(perplexityf, PERPLEXITY);
-      snprintf(buffer, 128, "ESTIMATING P-VALUES WITH PERPLEXITY: %f\n",
+      snprintf(buffer, 128, "Estimating p-values (perplexity %f).\n",
 	       perplexityf);
 
       if(verbose){
@@ -67,16 +92,14 @@ namespace whiteice
     if(calculate_pvalues(samples, PERPLEXITY, pij) == false)
       return false;
     
-    // initializes y values as gaussian unit variance around zero
+    // initializes y values as gaussian unit variance around zero N(0,I)
     std::vector< math::vertex<T> > yvalues;
-    T initial_ysigma = T(0.01f); // initial st.dev. is is 0.01 and var = 0.01^2
     
     yvalues.resize(samples.size());
     
     for(auto& y : yvalues){
       y.resize(DIM);
       rng.normal(y);
-      // y *= initial_ysigma;
     }
 
     
@@ -129,14 +152,15 @@ namespace whiteice
 	  whiteice::math::convert(klvaluef, best_klvalue);
 
 	  if(iter > 0){
-	    snprintf(buffer, 128, "ITER %d / %d. (NOIMPROVE: %d/%d). BEST KL DIVERGENCE: %f (ETA %f hours)\n",
-		     iter, MAXITER, noimprove_counter, MAXNOIMPROVE,
-		     klvaluef, eta.estimate()/3600.0);
+	    snprintf(buffer, 128,
+		     "%d/%d: model kl divergence %f. ETA %f hour(s) (%f minute(s))\n",
+		     iter, MAXITER,
+		     klvaluef, eta.estimate()/3600.0, eta.estimate()/60.0);
 	  }
 	  else{
-	    snprintf(buffer, 128, "ITER %d / %d. (NOIMPROVE: %d/%d) BEST KL DIVERGENCE: %f\n",
-		   iter, MAXITER, noimprove_counter, MAXNOIMPROVE,
-		   klvaluef);	    
+	    snprintf(buffer, 128, "%d/%d: model kl divergence %f.\n",
+		     iter, MAXITER, 
+		     klvaluef);	    
 	  }
 
 	  if(verbose){
@@ -153,8 +177,7 @@ namespace whiteice
 	// check if solution improved
 	{
 	  if(klvalue <= best_klvalue){
-	    best_klvalue = klvalue;
-	    results = yvalues;
+	    best_klvalue = klvalue;	    
 	    noimprove_counter = 0;
 	  }
 	  else{
@@ -173,13 +196,14 @@ namespace whiteice
 	if(gui && DIM >= 2){
 	  // converts points to floating point values
 	  std::vector< math::vertex< math::blas_real<float> > > points;
-	  points.resize(results.size());
+	  points.resize(guipoints.size());
 
 # pragma omp parallel for schedule(auto)
-	  for(unsigned int j=0;j<results.size();j++){
-	    points[j].resize(results[j].size());
+	  for(unsigned int k=0;k<guipoints.size();k++){
+	    const unsigned int j = guipoints[k];
+	    points[k].resize(results[j].size());
 	    for(unsigned int i=0;i<results[j].size();i++){
-	      whiteice::math::convert(points[j][i], results[j][i]);
+	      whiteice::math::convert(points[k][i], results[j][i]);
 	    }
 	  }
 	  
@@ -204,9 +228,9 @@ namespace whiteice
 	iter++;
 	eta.update(iter);
       }
-      
     }
-
+    
+    results = yvalues;
     
     return true;
   }
@@ -237,9 +261,11 @@ namespace whiteice
 	if(index == k) continue;
 	delta = x[k] - x[index];
 	
-	T v = -(delta*delta)[0]/sigma2;
+	const T v = -(delta*delta)[0]/sigma2;
+	const T pvalue = whiteice::math::exp(v);
 	
-	rs += whiteice::math::exp(v);
+	pj[k] = pvalue;
+	rs += pvalue;
       }
 
 #pragma omp critical
@@ -248,25 +274,16 @@ namespace whiteice
       }
     }
 
-    #pragma omp parallel
-    {
-      math::vertex<T> delta;
-      delta.resize(x[0].size());
-      delta.zero();
-      
-#pragma omp for nowait schedule(auto)      
-      for(unsigned int j=0;j<x.size();j++){
-	if(index == j) continue;
-	
-	delta = x[j] - x[index];
-	T v = -(delta*delta)[0]/sigma2;
-	
-	pj[j] = whiteice::math::exp(v)/rsum;
-      }
-    }
-
     pj[index] = T(0.0f);
 
+
+#pragma omp parallel for schedule(auto)
+    for(unsigned int j=0;j<x.size();j++){
+      if(index == j) continue;
+      
+      pj[j] = pj[j]/rsum;
+    }
+    
     return true;
   }
 
@@ -286,7 +303,7 @@ namespace whiteice
 #pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<pj.size();i++){
 	if(pj[i] > T(0.0f))
-	  H += -pj[i]*math::log(pj[i])/math::log(T(2.0f));
+	  h += -pj[i]*math::log(pj[i])/math::log(T(2.0f));
       }
 
 #pragma omp critical
@@ -424,28 +441,11 @@ namespace whiteice
 	  // we found sigma variance and probability distribution with target perplexity
 	  rji[j] = pj;
 	  rji[j][j] = T(0.0f);
-	  
-#if 0
-	  T psum = T(0.0f);
-	  for(unsigned int i=0;i<rji.size();i++){
-	    if(rji[j][i] < T(0.0f))
-	      std::cout << "NEGATIVE PROBABILITY!. INDEX: " << i << std::endl;
-	    else if(rji[j][i] == T(0.0f))
-	      std::cout << "ZERO PROBABILITY: INDEXES: " << j << " " << i << std::endl;
-	    else
-	      std::cout << "NON-ZERO PROBABILITY: " << rji[j][i] << std::endl;
-	    psum += rji[j][i];
-	  }
-	  
-	  std::cout << "PSUM: " << psum << std::endl;
-	  std::cout << "FINAL PERPLEXITY: " << perp_next << std::endl;
-	  std::cout << "FINAL SIGMA: " << sigma2_next << std::endl;
-	  std::cout << std::flush;
-#endif
+
 	}
 	  
       }
-      
+
     }
 
     if(error) return false;
@@ -453,7 +453,7 @@ namespace whiteice
     
     // calculates symmetric p-values
     pij.resize(x.size());
-
+    
 #pragma omp parallel for schedule(auto)
     for(unsigned int i=0;i<x.size();i++){
       pij[i].resize(x.size());
@@ -663,7 +663,7 @@ namespace whiteice
 	    
 	    delta = y[m] - y[j];
 
-	    // multiply gradient by sign(log(pij/qij))
+	    // multiply pij gradient by sign(log(pij/qij))
 	    if(logratio >= T(0.0f))
 	      ygrad[m] += (pij[m][j]-Ps*qij[m][j])*(T(4.0f)/(T(1.0f) + (delta*delta)[0]))*delta;
 	    else
