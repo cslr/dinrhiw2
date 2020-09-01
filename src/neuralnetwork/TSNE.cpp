@@ -44,6 +44,23 @@ namespace whiteice
 
     whiteice::RNG<T> rng;
 
+    char buffer[128];
+    
+    {
+      float perplexityf = 0.0f;
+      whiteice::math::convert(perplexityf, PERPLEXITY);
+      snprintf(buffer, 128, "ESTIMATING P-VALUES WITH PERPLEXITY: %f\n",
+	       perplexityf);
+
+      if(verbose){
+	printf(buffer);
+	fflush(stdout);
+      }
+
+      if(messages != NULL)
+	messages->printMessage(buffer);
+    }
+
     // calculate p-values
     std::vector< std::vector<T> > pij;
     
@@ -85,8 +102,6 @@ namespace whiteice
       whiteice::linear_ETA<double> eta;
       eta.start(0.0, MAXITER);
       eta.update(0.0);
-
-      char buffer[128];
 
       if(gui && DIM >= 2){
 	gui->show();
@@ -159,14 +174,15 @@ namespace whiteice
 	  // converts points to floating point values
 	  std::vector< math::vertex< math::blas_real<float> > > points;
 	  points.resize(results.size());
-	  
+
+# pragma omp parallel for schedule(auto)
 	  for(unsigned int j=0;j<results.size();j++){
 	    points[j].resize(results[j].size());
 	    for(unsigned int i=0;i<results[j].size();i++){
 	      whiteice::math::convert(points[j][i], results[j][i]);
 	    }
 	  }
-	    
+	  
 	  gui->clear();
 	  gui->adaptiveScatterPlot(points);
 	  gui->updateScreen();
@@ -177,13 +193,12 @@ namespace whiteice
 	if(kl_gradient(pij, qij, qsum, yvalues, ygrad) == false)
 	  return false;
 
-	// TODO: adaptive lrate!
-
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<ygrad.size();i++){
 	  auto& y = yvalues[i];
-	  auto& g = ygrad[i];
+	  const auto& g = ygrad[i];
 
-	  y = y - lrate*g;
+	  y -= lrate*g;
 	}
 
 	iter++;
@@ -373,7 +388,7 @@ namespace whiteice
 	    // return false; // could not find maximum value
 	  }
 	}
-	
+
 	// no we have minimum and maximum value for sigma2 variance term
 	// search for sigma2 term with target perplexity
 	{
@@ -381,9 +396,11 @@ namespace whiteice
 	  
 	  calculate_pvalue_given_sigma(x, j, sigma2_next, pj);
 	  T perp_next = calculate_perplexity(pj);
-	  
+
+	  const T epsilon = T(1e-12);
+
 	  while(math::abs(perplexity - perp_next) > T(0.01f) &&
-		(sigma2_max - sigma2_min) > T(1e-10))
+		(sigma2_max - sigma2_min) > epsilon)
 	  {
 	    if(perplexity < perp_next){
 	      sigma2_max = sigma2_next;
@@ -398,7 +415,7 @@ namespace whiteice
 	    perp_next = calculate_perplexity(pj);
 	  }
 	  
-	  if(sigma2_max - sigma2_min <= T(1e-10)){
+	  if(sigma2_max - sigma2_min <= epsilon){
 	    error = true;
 	    continue;
 	    // return false; // could not find target perplexity
@@ -437,6 +454,7 @@ namespace whiteice
     // calculates symmetric p-values
     pij.resize(x.size());
 
+#pragma omp parallel for schedule(auto)
     for(unsigned int i=0;i<x.size();i++){
       pij[i].resize(x.size());
 
@@ -464,42 +482,48 @@ namespace whiteice
     // calculates qij terms
     qij.resize(y.size());
 
+    qsum = T(0.0f);
+
+    const T epsilon = T(1e-12);
+
+#pragma omp parallel shared(qsum)
     {
       math::vertex<T> delta;
       delta.resize(y[0].size());
       delta.zero();
-      
-      qsum = T(0.0f);
-      
-      for(unsigned int i=0;i<y.size();i++){
-	for(unsigned int j=0;j<y.size();j++){
-	  if(i == j) continue; // skip same values
-	  delta = y[i] - y[j];
-	  auto nrm2 = (delta*delta)[0];
-	  auto pvalue = T(1.0f)/(T(1.0f) + nrm2);
 
-	  if(pvalue < T(10e-10))
-	    pvalue = T(10e-10);
-	  
-	  qsum += pvalue;
-	}
-      }
-      
+      T qs = T(0.0f);
+
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<y.size();i++){
 	qij[i].resize(y.size());
 	for(unsigned int j=0;j<y.size();j++){
 	  if(i == j) continue; // skip same values
 	  delta = y[i] - y[j];
 	  auto nrm2 = (delta*delta)[0];
-	  auto pvalue = ( T(1.0f)/(T(1.0f) + nrm2) );
+	  auto pvalue = T(1.0f)/(T(1.0f) + nrm2);
 
-	  if(pvalue < T(10e-10))
-	    pvalue = T(10e-10);
+	  if(pvalue < epsilon)
+	    pvalue = epsilon;
+
+	  qij[i][j] = pvalue;
 	  
-	  qij[i][j] = pvalue / qsum;
+	  qs += pvalue;
 	}
 
 	qij[i][i] = T(0.0f);
+      }
+
+#pragma omp critical
+      {
+	qsum += qs;
+      }
+    }
+      
+#pragma omp parallel for schedule(auto)
+    for(unsigned int i=0;i<y.size();i++){
+      for(unsigned int j=0;j<y.size();j++){
+	qij[i][j] /= qsum;
       }
     }
 

@@ -5,6 +5,21 @@
  *
  * Mathmatical implementation notes/documentation in docs/TSNE_notes.tm (texmacs)
  * Tomas Ukkonen. 2020.
+ *
+ * Algorithm is loop parallelized (OpenMP) so multicore CPUs with K cores should 
+ * give K-times faster results.
+ *
+ * Algorithm with N datapoints currently scales as O(N^2) as
+ * Barnes-Hut approximation is not implemented (O(N*log(N)). 
+ * This means it is SLOW with large N. 
+ * (N=1000 is about maximum for quick results for 8 thread Intel i5 laptop).
+ *
+ * Absolute value uses improved absolute value KL divergence for comparing
+ * distributions which is better suited for distribution comparision.
+ * abs(D_KL) = SUM p*|log(p/q)|
+ *
+ * FIXME: algorithm doesn't seem to work with large N at all. This may be because
+ * for large N=10000 probability values become small(?).
  * 
  */
 
@@ -27,7 +42,8 @@ namespace whiteice
     {
     public:
 
-      TSNE(const bool absolute_value = true);
+      // absolute value gives better results when results are fed to neural network
+      TSNE(const bool absolute_value = true); 
       TSNE(const TSNE<T>& tsne);
       
       // dimension reduces samples to DIM dimensional vectors using t-SNE algorithm

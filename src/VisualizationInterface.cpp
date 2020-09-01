@@ -7,14 +7,16 @@
 namespace whiteice
 {
 
-  // REAL FUNCTION: plots data points using virtual functions
+  // REAL FUNCTION: plots N data points using virtual functions
   bool VisualizationInterface::adaptiveScatterPlot
-  (const std::vector< math::vertex< math::blas_real<float> > >& points)
+  (const std::vector< math::vertex< math::blas_real<float> > >& points,
+   const unsigned int N)
   {
     // calculates mean and covariance of points
     whiteice::math::vertex< math::blas_real<float> > mx;    
     whiteice::math::matrix< math::blas_real<float> > Cxx;
 
+    // FIXME: doesn't calculate using N datapoints but uses whole data
     if(whiteice::math::mean_covariance_estimate(mx, Cxx, points) == false)
       return false;
 
@@ -30,8 +32,12 @@ namespace whiteice
       scale[k] = whiteice::math::blas_real<float>(1.0f)/whiteice::math::sqrt(whiteice::math::abs(Cxx(k,k))+epsilon); 
     }
 
+    unsigned int K = points.size();
+
+    if(N){ if(N < K) K = N; }
+
     // plots points by removing mean and variance
-    for(unsigned int i=0;i<points.size();i++)
+    for(unsigned int i=0;i<K;i++)
     {
       // removes mean
       auto z = points[i] - mx;

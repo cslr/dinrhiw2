@@ -41,8 +41,8 @@ namespace whiteice {
     // blocks until key have been pressed
     virtual bool waitKeypress() = 0;
 
-    // REAL FUNCTION: plots data points using virtual functions
-    virtual bool adaptiveScatterPlot(const std::vector< math::vertex< math::blas_real<float> > >& points);
+    // REAL FUNCTION: plots N first data points using virtual functions
+    virtual bool adaptiveScatterPlot(const std::vector< math::vertex< math::blas_real<float> > >& points, const unsigned int N=0);
     
   };
   
