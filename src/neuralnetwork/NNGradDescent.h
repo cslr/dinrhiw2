@@ -48,6 +48,11 @@ namespace whiteice
       // (overfitting gives much WORSE results so it SHOULD NOT be used.)
       void setOverfit(bool overfit = true);
       bool getOverfit() const;
+
+      // if true uses Minimum Norm Error ||y-f(x)|| instead of the default
+      // MSE (Minimum Squared Error) ||y-f(x)||^2 as a error measure
+      void setMNE(bool usemne = true);
+      bool getUseMNE() const;
       
       /*
        * starts the optimization process using data as 
@@ -112,6 +117,10 @@ namespace whiteice
       bool heuristics;
       bool dropout; // use dropout heuristics when training
       T regularizer;
+
+      // whether to use minimum norm error ||y-f(x)|| instead of
+      // the standard MSE (minimum squared error) 0.5*||y-f(x)||^2 (default)
+      bool mne; 
       
       vertex<T> bestx;
       T best_error;

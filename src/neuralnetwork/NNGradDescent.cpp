@@ -34,6 +34,7 @@ namespace whiteice
 
       dropout = false;
       overfit = false;
+      mne = false; // use minimum squared error as the default error term
 
       running = false;
       nn = NULL;
@@ -64,7 +65,8 @@ namespace whiteice
       dropout = grad.dropout;
       regularizer = grad.regularizer;
       overfit = grad.overfit;
-
+      mne = grad.mne;
+      
       running = grad.running;
 
       bestx = grad.bestx;
@@ -127,6 +129,18 @@ namespace whiteice
     bool NNGradDescent<T>::getOverfit() const
     {
       return overfit;
+    }
+
+    template <typename T>
+    void NNGradDescent<T>::setMNE(bool usemne)
+    {
+      this->mne = usemne;
+    }
+
+    template <typename T>
+    bool NNGradDescent<T>::getUseMNE() const
+    {
+      return this->mne;
     }
     
     /*
@@ -432,6 +446,7 @@ namespace whiteice
 				 const bool dropout)
     {
       // error term is E[ 0.5*||y-f(x)||^2 ]
+      // in case mne (minimum norm error) error term is E[||y-f(x)||]
       T error = T(0.0);
 
       //const unsigned int MINIBATCHSIZE = 200; // number of samples used to estimate gradient
@@ -457,8 +472,9 @@ namespace whiteice
 	  
 	  err = yvalue - out;
 
-	  for(unsigned int i=0;i<err.size();i++)
-	    esum += T(0.5)*(err[i]*err[i]);
+	  if(mne) esum += err.norm();
+	  else esum += T(0.5f)*((err*err)[0]);
+
 	}
 	
 	esum /= T((float)dtest.size(0));
@@ -470,7 +486,9 @@ namespace whiteice
 	}
       }
 
-      error /= T((float)dtest.access(1,0).size()); // divides per output dimension
+      // divides per output dimension
+      // [error is per one dimension so it is more comparable]
+      error /= T((float)dtest.access(1,0).size());
 
       if(regularize){
 	whiteice::math::vertex<T> w;
@@ -783,6 +801,8 @@ namespace whiteice
 		  nnet.calculate(true);
 		  
 		  err = dtrain.access(1,index) - nnet.output();
+
+		  if(mne) err.normalize(); // minimum norm error gradient instead
 		  
 		  if(nnet.gradient(err, grad) == false)
 		    std::cout << "gradient failed." << std::endl;
@@ -818,6 +838,8 @@ namespace whiteice
 		  nnet.calculate(true);
 		  
 		  err = dtrain.access(1,index) - nnet.output();
+
+		  if(mne) err.normalize(); // minimum norm error gradient instead
 		  
 		  if(nnet.gradient(err, grad) == false)
 		    std::cout << "gradient failed." << std::endl;

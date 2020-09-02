@@ -88,6 +88,9 @@ int main(int argc, char** argv)
     unsigned int deep = 0;
     bool crossvalidation = false;
 
+    // minimum norm error ||y-f(x)|| gradient instead of MSE ||y-f(x)||^2
+    bool MNE = true; 
+
     bool subnet = false;
 
     // should we use recurent neural network or not..
@@ -1294,7 +1297,14 @@ int main(int argc, char** argv)
 		
 		net.input() = dtrain.access(0, index);
 		net.calculate(true);
-		err = dtrain.access(1, index) - net.output();
+
+		if(MNE){
+		  err = dtrain.access(1, index) - net.output();
+		  err.normalize();
+		}
+		else{ // normal MSE error
+		  err = dtrain.access(1, index) - net.output();
+		}
 
 		if(net.gradient(err, grad) == false)
 		  std::cout << "gradient failed." << std::endl;
