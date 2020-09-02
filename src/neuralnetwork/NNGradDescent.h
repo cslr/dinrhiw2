@@ -42,7 +42,12 @@ namespace whiteice
 
       // sets and gets minibatch settings for estimating gradient
       void setUseMinibatch(bool minibatch = true);
-      bool getUseMinibatch();
+      bool getUseMinibatch() const;
+
+      // sets overfitting (uses all data for training and no separate testing dataset)
+      // (overfitting gives much WORSE results so it SHOULD NOT be used.)
+      void setOverfit(bool overfit = true);
+      bool getOverfit() const;
       
       /*
        * starts the optimization process using data as 
@@ -136,6 +141,7 @@ namespace whiteice
 
       whiteice::RNG<T> rng; // we use random numbers
       bool use_minibatch; // use minibatch to estimate gradient
+      bool overfit; // use all data to fit to solution (disabled as default)
 	
       mutable std::mutex solution_lock, start_lock, errors_lock;
       mutable std::mutex convergence_lock, noimprove_lock;

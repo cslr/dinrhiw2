@@ -327,7 +327,7 @@ void simple_tsne_test()
     whiteice::TSNE<> tsne(true);
     std::vector< whiteice::math::vertex<> > ydata;
 
-    if(tsne.calculate(data, 2, ydata, true) == false){
+    if(tsne.calculate(data, 2, ydata, false, true) == false){
       printf("ERROR: calculating t-SNE dimension reduction FAILED.\n");
     }
     else{

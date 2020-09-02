@@ -33,6 +33,7 @@ namespace whiteice
       this->use_minibatch = false;
 
       dropout = false;
+      overfit = false;
 
       running = false;
       nn = NULL;
@@ -62,6 +63,7 @@ namespace whiteice
 
       dropout = grad.dropout;
       regularizer = grad.regularizer;
+      overfit = grad.overfit;
 
       running = grad.running;
 
@@ -110,12 +112,22 @@ namespace whiteice
 
     
     template <typename T>
-    bool NNGradDescent<T>::getUseMinibatch()
+    bool NNGradDescent<T>::getUseMinibatch() const
     {
       return use_minibatch;
     }
 
-    
+    template <typename T>
+    void NNGradDescent<T>::setOverfit(bool overfit)
+    {
+      this->overfit = overfit;
+    }
+
+    template <typename T>
+    bool NNGradDescent<T>::getOverfit() const
+    {
+      return overfit;
+    }
     
     /*
      * starts the optimization process using data as 
@@ -513,48 +525,51 @@ namespace whiteice
       
       dtrain = *data;
       dtest  = *data;
-      
-      dtrain.clearData(0);
-      dtrain.clearData(1);
-      dtest.clearData(0);
-      dtest.clearData(1);
 
-      int counter = 0;
-
-      while((dtrain.size(0) == 0 || dtrain.size(1) == 0 ||
-	     dtest.size(0)  == 0 || dtest.size(1)  == 0) && counter < 10){
-
+      if(overfit == false){ // divides data to separate training and testing datasets
+	
 	dtrain.clearData(0);
 	dtrain.clearData(1);
 	dtest.clearData(0);
 	dtest.clearData(1);
-      
-	for(unsigned int i=0;i<data->size(0);i++){
-	  const unsigned int r = (rand() & 3);
 	
-	  if(r != 0){ // 75% will go to training data
-	    math::vertex<T> in  = data->access(0,i);
-	    math::vertex<T> out = data->access(1,i);
+	int counter = 0;
+	
+	while((dtrain.size(0) == 0 || dtrain.size(1) == 0 ||
+	       dtest.size(0)  == 0 || dtest.size(1)  == 0) && counter < 10){
 	  
-	    dtrain.add(0, in,  true);
-	    dtrain.add(1, out, true);
-	  }
-	  else{ // 25% will go to testing data
-	    math::vertex<T> in  = data->access(0,i);
-	    math::vertex<T> out = data->access(1,i);
+	  dtrain.clearData(0);
+	  dtrain.clearData(1);
+	  dtest.clearData(0);
+	  dtest.clearData(1);
 	  
-	    dtest.add(0, in,  true);
-	    dtest.add(1, out, true);
+	  for(unsigned int i=0;i<data->size(0);i++){
+	    const unsigned int r = (rand() & 3);
+	    
+	    if(r != 0){ // 75% will go to training data
+	      math::vertex<T> in  = data->access(0,i);
+	      math::vertex<T> out = data->access(1,i);
+	      
+	      dtrain.add(0, in,  true);
+	      dtrain.add(1, out, true);
+	    }
+	    else{ // 25% will go to testing data
+	      math::vertex<T> in  = data->access(0,i);
+	      math::vertex<T> out = data->access(1,i);
+	      
+	      dtest.add(0, in,  true);
+	      dtest.add(1, out, true);
+	    }
+	    
 	  }
-
+	  
+	  counter++;
 	}
-
-	counter++;
-      }
-
-      if(counter >= 10){ // too little data to divive datasets
-	dtrain = *data;
-	dtest  = *data;
+	
+	if(counter >= 10){ // too little data to divive datasets
+	  dtrain = *data;
+	  dtest  = *data;
+	}
       }
 
       

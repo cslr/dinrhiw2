@@ -16,7 +16,10 @@
  *
  * Absolute value uses improved absolute value KL divergence for comparing
  * distributions which is better suited for distribution comparision.
- * abs(D_KL) = SUM p*|log(p/q)|
+ * abs(D_KL) = SUM p*|log(p/q)| 
+ * (NOTE that minimizing KL divergence gives better absolute KL divergence but
+ *  results are different and minimizing absolute value KL divergence seem to
+ *  give results that are more "innovative" when used as input for neural network)
  *
  * FIXME: algorithm doesn't seem to work with large N at all. This may be because
  * for large N=10000 probability values become small(?).
@@ -47,13 +50,16 @@ namespace whiteice
       TSNE(const TSNE<T>& tsne);
       
       // dimension reduces samples to DIM dimensional vectors using t-SNE algorithm
+      // PCA initialization gives better results with absolute value KL divergence
+      // but generalization results are worse when given for neural network
+      // for non-linear reconstruction.
       bool calculate(const std::vector< math::vertex<T> >& samples,
 		     const unsigned int DIM,
 		     std::vector< math::vertex<T> >& results,
+		     const bool pca_initialization = false,
 		     const bool verbose = false,
 		     LoggingInterface* const messages = NULL,
 		     VisualizationInterface* const gui = NULL);
-		     
       
     private:
       

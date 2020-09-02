@@ -32,19 +32,22 @@ namespace whiteice
   bool TSNE<T>::calculate(const std::vector< math::vertex<T> >& samples,
 			  const unsigned int DIM,
 			  std::vector< math::vertex<T> >& results,
+			  const bool pca_initialization,
 			  const bool verbose,
 			  LoggingInterface* const messages,
 			  VisualizationInterface* const gui)
   {
     if(DIM <= 0) return false;
     if(samples.size() <= 0) return false;
+    if(samples[0].size() <= DIM) return false;
 
     whiteice::RNG<T> rng;
 
     // perplexity of 30 seem to give reasonable good results
     const T PERPLEXITY = T(30.0f);
-    
-    char buffer[128];
+
+    const unsigned int BUFLEN = 128;
+    char buffer[BUFLEN];
     
     // visible points plotted by GUI
     std::vector<unsigned int> guipoints;
@@ -58,23 +61,22 @@ namespace whiteice
 	guipoints[i] = i;
       }
 
-      if(samples.size() > 10000){ // only plots 10.000 random points
+      if(guipoints.size() > 10000){ // only plots 10.000 random points
 
 	// randomly reorders points
 	for(unsigned int i=0;i<guipoints.size();i++){
 	  const unsigned int index = rng.rand() % guipoints.size();
 	  std::swap(guipoints[i], guipoints[index]);
 	}
-
-	if(guipoints.size() > 10000)
-	  guipoints.resize(10000); // keeps only 10.000 first points
+	
+	guipoints.resize(10000); // keeps only 10.000 first points
       }
     }
     
     {
       float perplexityf = 0.0f;
       whiteice::math::convert(perplexityf, PERPLEXITY);
-      snprintf(buffer, 128, "Estimating p-values (perplexity %f).\n",
+      snprintf(buffer, BUFLEN, "Estimating p-values (perplexity %f).\n",
 	       perplexityf);
 
       if(verbose){
@@ -91,17 +93,63 @@ namespace whiteice
     
     if(calculate_pvalues(samples, PERPLEXITY, pij) == false)
       return false;
-    
-    // initializes y values as gaussian unit variance around zero N(0,I)
-    std::vector< math::vertex<T> > yvalues;
-    
-    yvalues.resize(samples.size());
-    
-    for(auto& y : yvalues){
-      y.resize(DIM);
-      rng.normal(y);
-    }
 
+    
+    std::vector< math::vertex<T> > yvalues;
+
+    // calculates initial yvalues using PCA dimension reduction + scales stdev to 1.
+    if(pca_initialization){
+      math::matrix<T> PCA;
+      math::vertex<T> mean;
+      T v1, v2;
+
+      if(math::pca(samples, DIM, PCA, mean, v1, v2, true) == false){
+	snprintf(buffer, BUFLEN, "PCA computation FAILED.\n");
+
+	if(verbose){
+	  printf(buffer);
+	  fflush(stdout);
+	}
+
+	if(messages != NULL)
+	  messages->printMessage(buffer);
+
+	return false;
+      }
+
+      // reduces data dimensions using PCA (initial yvalues)
+      // (this seem to give better results with real world data)
+      for(const auto& v : samples){
+	auto u = PCA*(v - mean);
+	yvalues.push_back(u);
+      }
+
+      auto& Cxx = PCA; // reuses matrix variable (changes name)
+
+      // scales variance be unit Cxx = I in PCAed space.
+      math::mean_covariance_estimate(mean, Cxx, yvalues);
+
+      const T epsilon = T(1e-12);
+
+      for(unsigned int i=0;i<Cxx.xsize();i++){
+	Cxx(i,i) = T(1.0f)/(epsilon + whiteice::math::sqrt(whiteice::math::abs(Cxx(i,i))));
+      }
+
+      for(auto& v : yvalues){
+	for(unsigned int i=0;i<v.size();i++){
+	  v[i] = v[i] *= Cxx(i,i);
+	}
+      }
+    }
+    else{ // initializes y values as gaussian unit variance around zero N(0,I)
+      yvalues.resize(samples.size());
+      
+      for(auto& y : yvalues){
+	y.resize(DIM);
+	rng.normal(y);
+      }
+    }
+    
     
     // gradient ascend search of yvalues
     {
@@ -152,13 +200,13 @@ namespace whiteice
 	  whiteice::math::convert(klvaluef, best_klvalue);
 
 	  if(iter > 0){
-	    snprintf(buffer, 128,
+	    snprintf(buffer, BUFLEN,
 		     "%d/%d: model kl divergence %f. ETA %f hour(s) (%f minute(s))\n",
 		     iter, MAXITER,
 		     klvaluef, eta.estimate()/3600.0, eta.estimate()/60.0);
 	  }
 	  else{
-	    snprintf(buffer, 128, "%d/%d: model kl divergence %f.\n",
+	    snprintf(buffer, BUFLEN, "%d/%d: model kl divergence %f.\n",
 		     iter, MAXITER, 
 		     klvaluef);	    
 	  }
@@ -201,9 +249,9 @@ namespace whiteice
 # pragma omp parallel for schedule(auto)
 	  for(unsigned int k=0;k<guipoints.size();k++){
 	    const unsigned int j = guipoints[k];
-	    points[k].resize(results[j].size());
-	    for(unsigned int i=0;i<results[j].size();i++){
-	      whiteice::math::convert(points[k][i], results[j][i]);
+	    points[k].resize(yvalues[j].size());
+	    for(unsigned int i=0;i<yvalues[j].size();i++){
+	      whiteice::math::convert(points[k][i], yvalues[j][i]);
 	    }
 	  }
 	  
@@ -234,7 +282,8 @@ namespace whiteice
     
     return true;
   }
-
+  
+  
   // calculates p values for pj|i where i = index and sigma2 for index:th vector is given
   template <typename T>
   bool TSNE<T>::calculate_pvalue_given_sigma(const std::vector< math::vertex<T> >& x,
