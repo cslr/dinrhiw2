@@ -22,7 +22,7 @@ namespace whiteice
        * Original MATLAB implementations:
        * m2_exp.m m1_exp.m
        * Theory: AlgoChapter4.html && AlgoChapter5.html (not by me)
-       * 
+       * ohext
        */
       
       signed long int E;
