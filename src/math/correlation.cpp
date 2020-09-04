@@ -672,10 +672,12 @@ namespace whiteice
 							 const std::vector< vertex<blas_complex<float> > >& data);
     template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
 							  const std::vector< vertex<blas_complex<double> > >& data);
-    template bool autocorrelation<complex<float> >(matrix<complex<float> >& R,
-						   const std::vector< vertex<complex<float> > >& data);
-    template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
-						    const std::vector< vertex<complex<double> > >& data);    
+    /*
+      template bool autocorrelation<complex<float> >(matrix<complex<float> >& R,
+      const std::vector< vertex<complex<float> > >& data);
+      template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
+      const std::vector< vertex<complex<double> > >& data);    
+    */
     // template bool autocorrelation<int>(matrix<int>& R, const std::vector< vertex<int> >& data);
     
     template bool autocorrelation<float>(matrix<float>& R, const matrix<float>& W);
@@ -810,6 +812,22 @@ namespace whiteice
        math::matrix< blas_real<double> >& PCA,
        math::vertex< blas_real<double> >& m,
        blas_real<double>& original_var, blas_real<double>& reduced_var,
+       bool regularizeIfNeeded);
+
+    template bool pca< blas_complex<float> >
+      (const std::vector< vertex< blas_complex<float> > >& data, 
+       const unsigned int dimensions,
+       math::matrix< blas_complex<float> >& PCA,
+       math::vertex< blas_complex<float> >& m,
+       blas_complex<float>& original_var, blas_complex<float>& reduced_var,
+       bool regularizeIfNeeded);
+
+    template bool pca< blas_complex<double> >
+      (const std::vector< vertex< blas_complex<double> > >& data, 
+       const unsigned int dimensions,
+       math::matrix< blas_complex<double> >& PCA,
+       math::vertex< blas_complex<double> >& m,
+       blas_complex<double>& original_var, blas_complex<double>& reduced_var,
        bool regularizeIfNeeded);
     
   };

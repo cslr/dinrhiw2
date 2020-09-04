@@ -128,10 +128,13 @@ namespace whiteice
       bool save(const std::string& filename) const ;
       
       /*
-       * exports dataset values as ascii data without preprocessing (all clusters)
+       * exports dataset values as ascii data without preprocessing (specified cluster)
        * if raw = true, do not remove preprocessings from data before saving
        */
-      bool exportAscii(const std::string& filename, bool writeHeaders = false, bool raw = false) const ;
+      bool exportAscii(const std::string& filename,
+		       const unsigned int cluster_index = 0,
+		       const bool writeHeaders = false,
+		       const bool raw = false) const ;
 
       /*
        * imports space, "," or ";" separated floating point numbers as vectors into cluster 0
@@ -139,10 +142,13 @@ namespace whiteice
        * reads at most LINES of vertex data or unlimited amount of data (if set to 0).
        *
        * NOTE: in general, importAscii() cannot load data written using exportAscii() because
-       *       exportAscii() dumps data from all clusters. However, if there is only a single
-       *       cluster 0 then importAscii() can load data saved by exportAscii()
+       *       exportAscii() dumps data from a given cluster. 
+       *                     However, if there is only a single
+       *                     cluster then importAscii() can load data saved by exportAscii()
        */
-      bool importAscii(const std::string& filename, unsigned int LINES=0) ;
+      bool importAscii(const std::string& filename,
+		       const int cluster_index = -1, // -1 means create new cluster
+		       const unsigned int LINES=0) ;
       
       // accesses data from cluster zero
       const math::vertex<T>& operator[](unsigned int index) const ;
@@ -223,7 +229,7 @@ namespace whiteice
       bool invpreprocess_grad(unsigned int index, math::matrix<T>& W) const ;
 
       // logs clustering statistics per cluster
-      bool diagnostics() const ;
+      bool diagnostics(const int cluster = 0, const bool verbose = false) const ;
       
     private:
       // is data normalized with given operation?
@@ -286,6 +292,8 @@ namespace whiteice
   
   extern template class dataset< whiteice::math::blas_real<float> >;
   extern template class dataset< whiteice::math::blas_real<double> >;
+  extern template class dataset< whiteice::math::blas_complex<float> >;
+  extern template class dataset< whiteice::math::blas_complex<double> >;
   extern template class dataset< float >;
   extern template class dataset< double >;
   

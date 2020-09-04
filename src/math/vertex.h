@@ -118,7 +118,10 @@ namespace whiteice
       vertex<T>& operator*=(const vertex<T>& v) ;
       vertex<T>& operator/=(const vertex<T>& v) ;
       
-      vertex<T>& operator=(const vertex<T>& v) ;      
+      vertex<T>& operator=(const vertex<T>& v) ;
+
+      // template <typename TT, typename UU>
+      // friend vertex<TT>& operator=(const vertex<UU>& v) ;
       //vertex<T>& operator=(vertex<T>&& t) ;      
       
       bool operator==(const vertex<T>& v) const ;
@@ -269,8 +272,12 @@ namespace whiteice
 	  if(B.resize(A.size()) == false)
 	    return false;
 	  
-	  for(unsigned int i=0;i<B.size();i++)
-	    B[i] = static_cast<T>(A[i]);
+	  for(unsigned int i=0;i<B.size();i++){
+	    if(whiteice::math::convert(B[i], A[i]) == false)
+	      return false;
+	    
+	    // B[i] = static_cast<T>(A[i])
+	  }
 	  
 	  return true;
 	}

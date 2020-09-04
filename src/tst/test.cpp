@@ -1,5 +1,5 @@
 /*
- * this is not a testsuite
+ * some unit testing
  */
 
 #include <stdio.h>
@@ -61,6 +61,11 @@ void test_rbtree();
 void test_avltree();
 void test_binary_tree();
 void test_dataset();
+
+// same as test_dataset() but with blas_complex<double>
+// [complex numbers implementation is a buggy in the library]
+void test_dataset_complex(); 
+
 void test_dataset_ica();
 void test_uniqueid();
 void test_conffile();
@@ -97,8 +102,9 @@ int main()
   srand(seed);
 
   test_dataset();
-
   test_dataset_ica();
+
+  test_dataset_complex();
   
   point_test();
   sarray_test();
@@ -117,7 +123,7 @@ int main()
 
   // test_avltree();
   
-  // test_uniqueid(); // FIXME fix this testcases
+  // test_uniqueid(); // FIXME fix this testcase
   test_conffile();
   test_compression();
   test_list_source();
@@ -1839,6 +1845,7 @@ void test_dataset()
     delete A;
     
     printf("DATASET BASIC SAVE&LOAD() IS OK\n");
+    fflush(stdout);
 
   }
   
@@ -1855,8 +1862,10 @@ void test_dataset()
     const unsigned int N = (rand() % 32) + 12;
     std::vector<std::string> names;
     std::vector<unsigned int> dims;
-    
-    
+    std::vector<std::string> snames;
+
+    try{
+      
     for(unsigned int i=0;i<N;i++){
       std::string tmp;
       tmp.resize(4 + rand() % 16);
@@ -1915,8 +1924,7 @@ void test_dataset()
 	return;
       }
     }
-    
-    std::vector<std::string> snames;
+        
     
     {
       if(data.getClusterNames(snames) == false){
@@ -1966,10 +1974,20 @@ void test_dataset()
 	snames.erase(s_iter);
       }
     }
+
+    }
+    catch(std::exception& e){
+      std::cout << "ERROR during: create N>10 clusters, sets N params calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
     
     
     //////////////////////////////////////////////////
     // add [0,K] data to each cluster
+
+    try{
     
     std::vector<unsigned int> datasizes;
     
@@ -2085,8 +2103,17 @@ void test_dataset()
 	}
       }
     }
+
+    }
+    catch(std::exception& e){
+      std::cout << "ERROR during: add [0,K] data to each cluster calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
     
-    
+
+    try{
     
     // check preprocess is ok
     for(unsigned int i=0;i<data.getNumberOfClusters();i++){
@@ -2095,7 +2122,7 @@ void test_dataset()
       
       if(data.size(i) > 2*data.dimension(i)){
 	// there is enough data for all preprocessing methods
-	
+
 	if(data.preprocess(i,dn) == false){
 	  std::cout << "dataset error: preprocessing cluster "
 		    << i << " using method " << dn
@@ -2119,7 +2146,7 @@ void test_dataset()
 	    std::cout << "dnLinearICA" << std::endl;
 	  }	  
 	  else{
-	    std::cout << "unknown method" << std::endl;
+	    std::cout << "unknown method (should be error)" << std::endl;
 	  }
 	  
 	  return;
@@ -2128,37 +2155,35 @@ void test_dataset()
       }
     }
     
+    }
+    catch(std::exception& e){
+      std::cout << "Exception happended during preprocess(cluster) calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+
+    
+    try{
     
     // check invpreprocess(preprocess(x)) = x
+    std::cout << "START invpreprocess(preprocess(x)) == x test." << std::endl;
+    std::cout << std::flush;
+    fflush(stdout);
     
     for(unsigned int i=0;i<data.getNumberOfClusters();i++){
       math::vertex<double> v, u, w;
 
       ////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////
+#if 0
+      // prints cluster debugging info
+      std::cout << std::endl;
+      std::cout << "Cluster: " << i << std::endl;
+      std::cout << "Cluster size: " << data.size(i) << std::endl;
+      std::cout << "Cluster dimensions: " << data.dimension(i) << std::endl;
       
-      std::vector<dataset<double>::data_normalization> pp;
-      
-      if(data.getPreprocessings(i, pp)){
-	/*
-	std::cout << "Cluster size: " << data.size(i) << std::endl;
-	std::cout << "Cluster dimensions: " << data.dimension(i) << std::endl;
-	std::cout << "Preprocessings: " << std::endl;
-	for(std::vector<dataset<double>::data_normalization>::iterator 
-	      j = pp.begin(); j != pp.end(); j++){
-	  // mean-variance norm
-	  if(*j == dataset<double>::dnMeanVarianceNormalization){
-	    std::cout << "mean-variance normalization" << std::endl;
-	  }
-	  else if(*j == dataset<double>::dnSoftMax){ // soft-max
-	    std::cout << "soft-max normalization" << std::endl;
-	  }
-	  else if(*j == dataset<double>::dnCorrelationRemoval){ // PCA
-	    std::cout << "correlation-removal normalization" << std::endl;
-	  }
-	}
-	*/
-      }
+#endif
       
       ////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////
@@ -2170,36 +2195,90 @@ void test_dataset()
       
       u = v;
       w = v;
-      
+
       if(data.preprocess(i, u) == false){
 	std::cout << "dataset error: preprocess vector of cluster "
 		  << i << std::endl;
+	std::cout << std::flush;
 	return;
       }
-      
+
       if(data.invpreprocess(i, u) == false){
 	std::cout << "dataset error: invpreprocess of vector failed."
 		  << " ( " << i << " cluster)" << std::endl;
+	std::cout << std::flush;
 	return;
       }
-      
+
       v -= u;
       
       if(v.norm() > 0.1){
-	std::cout << "dataset error: invpreprocess(preprocess(x)) == x"
-		  << "( " << i << " cluster )"
+	std::cout << "dataset error: invpreprocess(preprocess(x)) == x "
+		  << "(" << i << "/" << data.getNumberOfClusters() << " cluster)"
 		  << std::endl;
-	std::cout << "total number of clusters: " 
-		  << data.getNumberOfClusters() << std::endl;
 	
-	std::cout << "w = " << w << std::endl;
-	std::cout << "u = " << u << std::endl;
-	std::cout << "v [error] = " << v << std::endl;
+	std::cout << "original = " << w << std::endl;
+	std::cout << "invpreprocess(process(x)) = " << u << std::endl;
+	std::cout << "delta [error] = " << v << std::endl;
+	std::cout << std::flush;
+	fflush(stdout);
+
+	
+	std::cout << "FIXME: PCA preprocessing is known to be buggy!" << std::endl;
+	
+	std::vector<dataset<double>::data_normalization> pp;
+	
+	if(data.getPreprocessings(i, pp)){
+	  std::cout << "Preprocessings: " << std::endl;
+	  std::cout << std::flush;
+	  fflush(stdout);
+	  
+	  for(std::vector<dataset<double>::data_normalization>::iterator 
+		j = pp.begin(); j != pp.end(); j++){
+	    // mean-variance norm
+	    if(*j == dataset<double>::dnMeanVarianceNormalization){
+	      std::cout << "mean-variance normalization" << std::endl;
+	    }
+	    else if(*j == dataset<double>::dnSoftMax){ // soft-max
+	      std::cout << "soft-max normalization" << std::endl;
+	    }
+	    else if(*j == dataset<double>::dnCorrelationRemoval){ // PCA
+	      std::cout << "correlation-removal normalization" << std::endl;
+	    }
+	    else if(*j == dataset<double>::dnLinearICA){ // ICA
+	      std::cout << "independent components (ICA) normalization" << std::endl;
+	    }
+	  }
+	  
+	  std::cout << std::flush;
+	  fflush(stdout);
+	}
+	
+	
+	// show diagnostics of this cluster
+	// data.diagnostics(i, true);
 	
 	// return;
       }
+      else{
+	std::cout << "dataset::invpreprocess(preprocess(x)) == x. Good." << std::endl;
+	std::cout << std::flush;
+	fflush(stdout);
+      }
     }
-   
+
+    std::cout << "END invpreprocess(preprocess(x)) == x test." << std::endl;
+    std::cout << std::flush;
+    fflush(stdout);
+
+    }
+    catch(std::exception& e){
+      std::cout << "Exception happended during invprocess(process(x)) == x tests." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+
     
     // test removal, access to unexisting cluster fails
     
@@ -2450,9 +2529,10 @@ void test_dataset()
     std::cout << "DATASET TESTING exportAscii() and importAscii()" << std::endl;
 
     whiteice::dataset<float> test, loaded;
+    const unsigned int DATADIM = 10;
 
-    test.createCluster("test cluster with a longer name than usual", 10);
-
+    test.createCluster("test cluster with a longer name than usual", DATADIM);
+    
     for(unsigned int i=0;i<1000;i++){
       whiteice::math::vertex<float> v(test.dimension(0));
 
@@ -2468,43 +2548,67 @@ void test_dataset()
 
     std::string asciiFilename = "exportedData-test.ds";
 
-    if(test.exportAscii(asciiFilename) == false){
+    if(test.exportAscii(asciiFilename, 0, true) == false){ // writes headers to ASCII file
       std::cout << "ERROR: cannot export data to ascii file" << std::endl;
+    }
+    else{
+      std::cout << "dataset::exportAscii() successful." << std::endl;
     }
 
     if(loaded.importAscii(asciiFilename) == false){
-      std::cout << "ERROR: cannot import ASCII data from file (1)" << std::endl;
+      std::cout << "ERROR: cannot import ASCII data from file," << std::endl;
+    }
+    else{
+      std::cout << "dataset::importAscii() successful." << std::endl;
     }
     
     if(loaded.getNumberOfClusters() <= 0){
-      std::cout << "ERROR: cannot import ASCII data from file (2)" << std::endl;
+      std::cout << "ERROR: zero getNumberOfClusters() after importAscii()." << std::endl;
+    }
+    else{
+      std::cout << "dataset::getNumberOfClusters() is ok after importAscii()." << std::endl;
     }
 
     if(loaded.dimension(0) != test.dimension(0)){
-      std::cout << "ERROR: cannot import ASCII data from file (3)" << std::endl;
+      std::cout << "ERROR: data (3)" << std::endl;
+    }
+    else{
+      std::cout << "dataset::dimension(0) match after importAscii()." << std::endl;
     }
 
     if(loaded.size(0) != test.size(0)){
-      std::cout << "ERROR: cannot import ASCII data from file (4)" << std::endl;
+      std::cout << "ERROR: cluster size mismatch after importAscii() (4)" << std::endl;
+    }
+    else{
+      std::cout << "dataset::size() match after importAscii()." << std::endl;
     }
 
-    for(unsigned int j=0;j<loaded.size(0);j++){
-      auto l = loaded[j];
-      auto t = test[j];
-
-      auto error = l - t;
-
-      if(error.norm() > 0.01f){
-	printf("ERROR: data corrupted in importAscii(exportAscii(data)). Index %d. Error: %f\n",
-	       j, error.norm());
-	break;
+    {
+      bool error = false;
+      
+      for(unsigned int j=0;j<loaded.size(0);j++){
+	auto l = loaded[j];
+	auto t = test[j];
+	
+	auto delta = l - t;
+	
+	if(delta.norm() > 0.01f){
+	  printf("ERROR: data corrupted in importAscii(exportAscii(data)). Index %d. Error: %f\n",
+		 j, delta.norm());
+	  error = true;
+	  break;
+	}
       }
+      
+      if(error == false)
+	printf("Comparision: importAscii() returns correct data after exportAscii(). Good.\n");
+      
     }
 
     //////////////////////////////////////////////////////////////////////
     // tries to load ASCII file AGAIN (with existing data structure) and checks everything works ok.
     
-    if(loaded.importAscii(asciiFilename) == false){
+    if(loaded.importAscii(asciiFilename, 0) == false){
       std::cout << "ERROR: cannot import ASCII data from file (2.1)" << std::endl;
     }
     
@@ -2540,6 +2644,956 @@ void test_dataset()
 
 
 /********************************************************************************/
+
+void test_dataset_complex()
+{
+  printf("*********************** DATASET TESTS (COMPLEX NUMBERS) [has problems]\n");
+  
+  
+  {
+    dataset< math::blas_complex<float> >* A;
+    A = new dataset< math::blas_complex<float> >(10);
+    delete A;
+    
+    A = new dataset< math::blas_complex<float> >(10);
+    
+    std::vector<math::vertex< math::blas_complex<float> > > data;
+    data.resize(100);
+    
+    for(unsigned int i=0;i<data.size();i++){
+      data[i].resize(10);
+      for(unsigned int j=0;j<data[i].size();j++)
+	data[i][j] = ((float)rand())/((float)RAND_MAX);
+    }
+    
+    std::vector<bool> bresults;
+    std::vector<bool> bwanted;
+    std::string test_str("0123456789");
+    std::vector<std::string> test_strs;
+    for(unsigned int i=0;i<10;i++)
+      test_strs.push_back(test_str);
+
+    // positive tests, doesn't test functionality
+    // tests function calls works (force compilation)
+    
+    // add() tests
+    
+    bresults.push_back(A->add(data[0]));   bwanted.push_back(true); // 0
+    bresults.push_back(A->add(data));      bwanted.push_back(true); // 1
+    bresults.push_back(A->add(test_str));  bwanted.push_back(true); // 2
+    bresults.push_back(A->add(test_strs)); bwanted.push_back(true); // 3
+    
+    A->begin(); A->end();
+    (*A)[A->size(0)-1];
+    if(A->dimension(0) != 10) printf("ERROR: BAD DIMENSION\n");
+    
+    bresults.push_back(A->preprocess()); bwanted.push_back(true);   // 4
+    bresults.push_back(A->repreprocess()); bwanted.push_back(true); // 5
+    bresults.push_back(A->preprocess(dataset<float>::dnSoftMax)); // 6
+    // softmax requires data has been normalized to [-1,1] range or something N(0,1) 
+    bwanted.push_back(true); // 6
+
+    bresults.push_back(A->preprocess(data[0])); bwanted.push_back(true); // 7
+    bresults.push_back(A->preprocess(data)); bwanted.push_back(true);    // 8
+
+    bresults.push_back(A->invpreprocess(data)); bwanted.push_back(true); // 9
+    bresults.push_back(A->invpreprocess(data[0])); bwanted.push_back(true); // 10
+    
+    // checks responses
+    for(unsigned int i=0;i<bresults.size();i++){
+      if(bresults[i] != bwanted[i]){
+	printf("ERROR - WRONG RESPONSE, CASE %d\n", i);
+	printf("RESULT: %d, WANTED: %d\n",
+	       (unsigned int)bresults[i], 
+	       (unsigned int)bwanted[i]);
+      }
+    }
+    
+    delete A;
+  }
+  
+  
+  // save and loading test
+  {
+    dataset< math::blas_complex<float> >* A = 0;
+    std::vector<math::vertex< math::blas_complex<float> > > data;
+    data.resize(100);
+    
+    for(unsigned int i=0;i<data.size();i++){
+      data[i].resize(10);
+      for(unsigned int j=0;j<data[i].size();j++){
+	data[i][j].real( ((float)rand())/((float)RAND_MAX) );
+	data[i][j].imag( ((float)rand())/((float)RAND_MAX) );
+      }
+    }
+    
+    
+    A = new dataset< math::blas_complex<float> >(10);
+    
+    if(A->add(data, true) == false){
+      std::cout << "dataset error: adding new data failed." << std::endl;
+      return;
+    }
+
+    if(A->size(0) != data.size()){
+    	std::cout << "dataset error: incorrect size after add()" << std::endl;
+    	return;
+    }
+    
+
+    A->preprocess();
+
+
+    if(A->save("dataset.bin") == false){
+      std::cout << "dataset error: data saving failed." << std::endl;
+      return;
+    }
+
+    for(unsigned int i=0;i<A->size(0);i++){
+      for(unsigned int j=0;j<data[i].size();j++){
+	data[i][j] = (*A)[i][j];
+      }
+    }
+    
+    delete A;
+    
+    A = new dataset< math::blas_complex<float> >(10);
+    
+    if(A->load("dataset.bin") == false){
+      std::cout << "dataset error: data loading failed." << std::endl;
+      return;
+    }
+    
+    
+    for(unsigned int i=0;i<A->size(0);i++){
+      for(unsigned int j=0;j<data[i].size();j++){
+	if((*A)[i][j] != data[i][j]){
+	  std::cout << "dataset error: data corruption" << std::endl;
+	  j = data[i].size();
+	  i = 100;
+	}
+      }
+    }
+    
+    
+    delete A;
+    
+    printf("DATASET BASIC SAVE&LOAD() IS OK\n");
+    fflush(stdout);
+
+  }
+  
+  
+  
+  // multicluster dataset tests
+  // added to version 1 
+  // (other tests also work with dataset version 0)
+  {
+    dataset< math::blas_complex<double> > data;
+    
+    // create N>10 clusters, sets N params
+    
+    const unsigned int N = (rand() % 32) + 12;
+    std::vector<std::string> names;
+    std::vector<unsigned int> dims;
+    std::vector<std::string> snames;
+
+    try{
+      
+    for(unsigned int i=0;i<N;i++){
+      std::string tmp;
+      tmp.resize(4 + rand() % 16);
+      
+      for(unsigned int j=0;j<tmp.length();j++){
+	char ch;
+	do{ ch = rand() % 256; }while(!isalpha(ch));
+	tmp[j] = ch;
+      }
+      
+      unsigned int d = (rand() % 32) + 2;
+      
+      if(data.createCluster(tmp, d) == false){
+	std::cout << "Creating cluster failed: "
+		  << "name : " << tmp 
+		  << " , dim: " << d << std::endl;
+	return;
+      }
+      
+      dims.push_back(d);
+      names.push_back(tmp);
+    }
+    
+    
+    if(data.getNumberOfClusters() != N){
+      std::cout << "dataset::getNumberOfClusters() returned bad value"
+		<< std::endl;
+      return;
+    }
+    
+    // checks params are ok
+    // tests: size(), dimension(), getCluster(), getClusterNames()
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      if(data.size(i) != 0){
+	std::cout << "dataset error: non-zero initial cluster size"
+		  << std::endl;
+	return;
+      }
+      
+      if(data.dimension(i) != dims[i]){
+	std::cout << "dataset error: bad dimension for new cluster"
+		  << std::endl
+		  << "cluster " << i << " : " << dims[i] << " != "
+		  << data.dimension(i) << std::endl;
+	return;
+      }
+      
+      if(data.getCluster(names[i]) != i){
+	std::cout << "dataset error: couldn't find cluster based on its name"
+		  << std::endl
+		  << "cluster " << i << " : '" << names[i] << "'"
+		  << std::endl
+		  << "call returns: " << data.getCluster(names[i])
+		  << std::endl;
+	return;
+      }
+    }
+        
+    
+    {
+      if(data.getClusterNames(snames) == false){
+	std::cout << "dataset error: getClusterNames() call failed."
+		  << std::endl;
+	return;
+      }
+      
+      if(snames.size() != names.size()){
+	std::cout << "dataset error: number of names returned by getClusterNames() is incorrect"
+		  << std::endl;
+	return;
+      }
+      
+      
+      for(unsigned int j=0;j<snames.size();j++){
+	if(snames[j] != snames[j]){
+	  std::cout << "dataset error: wrong name in namelist"
+		    << std::endl;
+	  return;
+	}
+      }
+    }
+     
+    {
+      // remove 2 random clusters
+      
+      for(unsigned int i=0;i<2;i++){
+	unsigned int index = 1 + rand() % (data.getNumberOfClusters() - 1);
+	
+	if(data.removeCluster(index) == false){
+	  std::cout << "dataset error: cluster removal failed (1)." << std::endl;
+	  std::cout << "cluster index: " << index << std::endl;
+	  std::cout << "cluster size : " << data.getNumberOfClusters() << std::endl;
+	  return;
+	}
+	
+	std::vector<unsigned int>::iterator i_iter = dims.begin();
+	std::vector<std::string>::iterator  s_iter = snames.begin();
+	
+	for(unsigned int j=0;j<index;j++){
+	  i_iter++;
+	  s_iter++;
+	}
+	
+	dims.erase(i_iter);
+	snames.erase(s_iter);
+      }
+    }
+
+    }
+    catch(std::exception& e){
+      std::cout << "ERROR during: create N>10 clusters, sets N params calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+    
+    
+    //////////////////////////////////////////////////
+    // add [0,K] data to each cluster
+
+    try{
+    
+    std::vector<unsigned int> datasizes;
+    
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      unsigned int K = 100 + rand() % 100;
+      
+      math::vertex< math::blas_complex<double> > v;
+      std::vector< math::vertex< math::blas_complex<double> > > grp;
+      v.resize(data.dimension(i));
+      grp.resize(K/4 + 1);
+      
+      for(unsigned int k=0;k<grp.size();k++){
+	grp[k].resize(data.dimension(i));
+	for(unsigned l=0;l<data.dimension(i);l++){
+	  grp[k][l].real( (rand()/((float)RAND_MAX)) );
+	  grp[k][l].imag( (rand()/((float)RAND_MAX)) );
+	}
+      }
+      
+      
+      for(unsigned l=0;l<data.dimension(i);l++){
+	v[l].real( (rand()/((float)RAND_MAX)) );
+	v[l].imag( (rand()/((float)RAND_MAX)) );
+      }
+      
+      // add(vertex)
+      for(unsigned int k=0;k<(K/2);k++)
+	data.add(i, v);
+      
+      // add(vector<vertex>)
+      for(unsigned int k=0;k<(K/2);k++)
+	data.add(i, grp);
+      
+      datasizes.push_back(data.size(i));
+    }
+    
+    
+    // remove 2 random clusters
+        
+    {
+      for(unsigned int i=0;i<2;i++){
+	unsigned int index = 1 + rand() % (data.getNumberOfClusters() - 1);
+	
+	if(data.removeCluster(index) == false){
+	  std::cout << "dataset error: cluster removal failed (2)." << std::endl;
+	  std::cout << "cluster index: " << index << std::endl;
+	  std::cout << "cluster size : " << data.getNumberOfClusters() << std::endl;
+	  
+	  return;
+	}
+	
+	std::vector<unsigned int>::iterator i_iter = dims.begin();
+	std::vector<std::string>::iterator  s_iter = snames.begin();
+	std::vector<unsigned int>::iterator i2_iter = datasizes.begin();
+	
+	for(unsigned int j=0;j<index;j++){
+	  i_iter++;
+	  s_iter++;
+	  i2_iter++;
+	}
+	
+	
+	datasizes.erase(i2_iter);
+	dims.erase(i_iter);
+	snames.erase(s_iter);
+      }
+    }
+    
+    
+    
+    //////////////////////////////////////////////////
+    // check parameters are still correct
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      if(data.size(i) != datasizes[i]){
+	std::cout << "dataset error: non-zero initial cluster size"
+		  << std::endl;
+	return;
+      }
+      
+      if(data.dimension(i) != dims[i]){
+	std::cout << "dataset error: bad dimension for new cluster"
+		  << std::endl;
+	return;
+      }
+      
+      if(data.getCluster(snames[i]) != i){
+	std::cout << "dataset error: couldn't find cluster based on its name (2)"
+		  << std::endl;
+	return;
+      }
+    }
+    
+
+    {
+      std::vector<std::string> cnames;
+      if(data.getClusterNames(cnames) == false){
+	std::cout << "dataset error: getClusterNames() call failed."
+		  << std::endl;
+	return;
+      }
+      
+      if(cnames.size() != snames.size()){
+	std::cout << "dataset error: number of names returned by getClusterNames()"
+		  << " is incorrect."
+		  << std::endl;
+	return;
+      }
+      
+      
+      for(unsigned int j=0;j<snames.size();j++){
+	if(cnames[j] != snames[j]){
+	  std::cout << "dataset error: wrong name in namelist"
+		    << std::endl;
+	  return;
+	}
+      }
+    }
+
+    }
+    catch(std::exception& e){
+      std::cout << "ERROR during: add [0,K] data to each cluster calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+    
+
+    try{
+    
+    // check preprocess is ok
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      dataset< math::blas_complex<double> >::data_normalization dn;
+      dn = (dataset< math::blas_complex<double> >::data_normalization)(rand()%3);
+      
+      if(data.size(i) > 2*data.dimension(i)){
+	// there is enough data for all preprocessing methods
+
+	if(data.preprocess(i,dn) == false){
+	  std::cout << "dataset error: preprocessing cluster "
+		    << i << " using method " << dn
+		    << " failed." 
+		    << " cluster size is "
+		    << data.size(i) << "." << std::endl;
+	  
+	  
+	  std::cout << "normalization method: ";
+	  
+	  if(dn == dataset< math::blas_complex<double> >::dnMeanVarianceNormalization){
+	    std::cout << "dnMeanVarianceNormalization" << std::endl;
+	  }
+	  else if(dn == dataset< math::blas_complex<double> >::dnSoftMax){
+	    std::cout << "dnSoftMax" << std::endl;
+	  }
+	  else if(dn == dataset< math::blas_complex<double> >::dnCorrelationRemoval){
+	    std::cout << "dnCorrelationRemoval" << std::endl;
+	  }
+	  else if(dn == dataset< math::blas_complex<double> >::dnLinearICA){
+	    std::cout << "dnLinearICA" << std::endl;
+	  }	  
+	  else{
+	    std::cout << "unknown method (should be error)" << std::endl;
+	  }
+	  
+	  // return;
+	}
+	
+      }
+    }
+    
+    }
+    catch(std::exception& e){
+      std::cout << "Exception happended during preprocess(cluster) calls." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+
+    
+    try{
+    
+    // check invpreprocess(preprocess(x)) = x
+    std::cout << "START invpreprocess(preprocess(x)) == x test." << std::endl;
+    std::cout << std::flush;
+    fflush(stdout);
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      math::vertex< math::blas_complex<double> > v, u, w;
+
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+
+      // prints cluster debugging info
+      std::cout << std::endl;
+      std::cout << "Cluster: " << i << std::endl;
+      std::cout << "Cluster size: " << data.size(i) << std::endl;
+      std::cout << "Cluster dimensions: " << data.dimension(i) << std::endl;
+      
+      ////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
+      
+      v.resize(data.dimension(i));
+      
+      for(unsigned int n=0;n<v.size();n++){
+	v[n].real( rand()/((float)RAND_MAX) );
+	v[n].imag( rand()/((float)RAND_MAX) );
+      }
+      
+      u = v;
+      w = v;
+
+      printf("about to preprocess()\n");
+      fflush(stdout);
+
+      if(data.preprocess(i, u) == false){
+	std::cout << "dataset error: preprocess vector of cluster "
+		  << i << std::endl;
+	std::cout << std::flush;
+	return;
+      }
+
+      printf("about to invpreprocess()\n");
+      fflush(stdout);
+
+
+      if(data.invpreprocess(i, u) == false){
+	std::cout << "dataset error: invpreprocess of vector failed."
+		  << " ( " << i << " cluster)" << std::endl;
+	std::cout << std::flush;
+	return;
+      }
+
+      v -= u;
+
+      printf("about to calculate norm()\n");
+      fflush(stdout);
+      
+      if(abs(v.norm()) > 0.1){
+	std::cout << "dataset error: invpreprocess(preprocess(x)) == x "
+		  << "(" << i << "/" << data.getNumberOfClusters() << " cluster)"
+		  << std::endl;
+	
+	std::cout << "original = " << w << std::endl;
+	std::cout << "invpreprocess(process(x)) = " << u << std::endl;
+	std::cout << "delta [error] = " << v << std::endl;
+	std::cout << std::flush;
+	fflush(stdout);
+
+	
+	std::cout << "FIXME: PCA preprocessing is known to be buggy!" << std::endl;
+	
+	std::vector<dataset< math::blas_complex<double> >::data_normalization> pp;
+	
+	if(data.getPreprocessings(i, pp)){
+	  std::cout << "Preprocessings: " << std::endl;
+	  std::cout << std::flush;
+	  fflush(stdout);
+	  
+	  for(std::vector<dataset< math::blas_complex<double> >::data_normalization>::iterator 
+		j = pp.begin(); j != pp.end(); j++){
+	    // mean-variance norm
+	    if(*j == dataset< math::blas_complex<double> >::dnMeanVarianceNormalization){
+	      std::cout << "mean-variance normalization" << std::endl;
+	    }
+	    else if(*j == dataset< math::blas_complex<double> >::dnSoftMax){ // soft-max
+	      std::cout << "soft-max normalization" << std::endl;
+	    }
+	    else if(*j == dataset< math::blas_complex<double> >::dnCorrelationRemoval){ // PCA
+	      std::cout << "correlation-removal normalization" << std::endl;
+	    }
+	    else if(*j == dataset< math::blas_complex<double> >::dnLinearICA){ // ICA
+	      std::cout << "independent components (ICA) normalization" << std::endl;
+	    }
+	  }
+	  
+	  std::cout << std::flush;
+	  fflush(stdout);
+	}
+	
+	
+	// show diagnostics of this cluster
+	// data.diagnostics(i, true);
+	
+	// return;
+      }
+      else{
+	std::cout << "dataset::invpreprocess(preprocess(x)) == x. Good." << std::endl;
+	std::cout << std::flush;
+	fflush(stdout);
+      }
+    }
+
+    std::cout << "END invpreprocess(preprocess(x)) == x test." << std::endl;
+    std::cout << std::flush;
+    fflush(stdout);
+
+    }
+    catch(std::exception& e){
+      std::cout << "Exception happended during invprocess(process(x)) == x tests." << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
+      std::cout << std::flush;
+      fflush(stdout);
+    }
+
+    
+    // test removal, access to unexisting cluster fails
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      if(data.removeCluster(data.getNumberOfClusters() + rand() % 100)){
+	std::cout << "dataset error: removal of unexisting cluster is ok"
+		  << std::endl;
+	return;
+      }
+    }
+    
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      for(unsigned int j=0;j<data.size(i);j++){
+	try{
+	  data.access(i, data.size(i) + (rand()%100));
+	  std::cout << "dataset error: access to unexisting data was ok"
+		    << std::endl;
+	  return;
+	}
+	catch(std::exception& e){ }
+      }
+      
+      try{
+	data.access(data.getNumberOfClusters() + (rand()%100),
+		    rand()&data.size(i));
+	std::cout << "dataset error: access to unexisting cluster was ok"
+		  << std::endl;
+	return;
+      }
+      catch(std::exception& e){ }
+    }
+    
+    
+    // check adding of badly formated data fails (use all add() calls)
+    // add N random clusters (use different add()s for adding all)
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      math::vertex< math::blas_complex<double> > v;
+      std::vector< math::vertex< math::blas_complex<double> > > grp;
+      
+      v.resize(data.dimension(i) + rand()%100 + 1);
+      if(data.add(i, v)){
+	std::cout << "dataset error: adding ill formated data is ok"
+		  << std::endl;
+	return;
+      }
+      
+      grp.resize(rand()%100 + 1);
+      
+      for(unsigned j=0;j<grp.size();j++){
+	v.resize(data.size(i) + rand()%100 + 1);
+	grp[j] = v;
+      }
+      
+      grp[0].resize(data.size(i));
+      
+      if(data.add(i, grp)){
+	std::cout << "dataset error: adding set of ill formated data is ok"
+		  << std::endl;
+	return;
+	
+      }
+    }
+    
+    
+    // make copy of multicluster dataset (compare)
+    dataset< math::blas_complex<double> >* copy;
+    try{
+      copy = new dataset< math::blas_complex<double> >(data);
+    }
+    catch(std::exception& e){
+      std::cout << "dataset error: creating copy of dataset failed: "
+		<< e.what() << std::endl;
+      return;
+    }
+    
+    if(copy->getNumberOfClusters() != data.getNumberOfClusters()){
+      std::cout << "dataset error: bad copy: number of clusters"
+		<< std::endl;
+      return;
+    }
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      if(data.size(i) != copy->size(i)){
+	std::cout << "dataset error: bad copy: cluster size"
+		  << std::endl;
+	return;
+      }
+      
+      
+      if(data.dimension(i) != copy->dimension(i)){
+	std::cout << "dataset error: bad copy: cluster dimension mismatch"
+		  << std::endl
+		  << "cluster " << i << " : " 
+		  << data.getName(i) << " != "
+		  << copy->dimension(i)
+		  << std::endl;
+	return;
+      }
+      
+      
+      if(data.getName(i) != copy->getName(i)){
+	std::cout << "dataset error: bad copy: cluster name mismatch"
+		  << std::endl
+		  << "cluster " << i << " : " 
+		  << data.getName(i) << " != "
+		  << copy->getName(i)
+		  << std::endl;
+      }
+      
+      
+      dataset< math::blas_complex<double> >::iterator a = data.begin(i);
+      dataset< math::blas_complex<double> >::iterator b = copy->begin(i);
+      
+      while(a != data.end(i) && b != copy->end(i)){
+	if(*a != *b){
+	  std::cout << "dataset error: bad copy: cluster vector"
+		    << std::endl;
+	  return;
+	}
+	
+	a++;
+	b++;
+      }
+      
+      if(a != data.end(i) || b != copy->end(i)){
+	std::cout << "dataset error: bad copy: real cluster size"
+		  << std::endl;
+	return;
+      }
+    }
+    
+    
+    
+    // save multicluster dataset
+    std::string filename = "dataset1file.bin";
+    
+    if(!data.save(filename)){
+      std::cout << "dataset error: file saving failed: "
+		<< filename << std::endl;
+      return;
+    }
+    
+    
+    // removes clusters one by one
+    while(data.getNumberOfClusters() > 1){
+      data.removeCluster(rand()%data.getNumberOfClusters());
+    }
+    
+    
+    // loads multicluster dataset
+    
+    if(!data.load(filename)){
+      std::cout << "dataset error: file loading failed: "
+		<< filename << std::endl;
+      return;
+    }
+    
+    
+    // makes full check that everything is as it should be
+    
+    if(copy->getNumberOfClusters() != data.getNumberOfClusters()){
+      std::cout << "dataset error: loading: number of clusters"
+		<< std::endl;
+      return;
+    }
+    
+    for(unsigned int i=0;i<data.getNumberOfClusters();i++){
+      if(data.size(i) != copy->size(i)){
+	std::cout << "dataset error: loading: cluster size mismatch"
+		  << std::endl
+		  << "cluster " << i << " : " 
+		  << data.getName(i) << " != "
+		  << copy->size(i)
+		  << std::endl;
+	return;
+      }
+
+      if(data.dimension(i) != copy->dimension(i)){
+	std::cout << "dataset error: loading: cluster dimension mismatch"
+		  << std::endl
+		  << "cluster " << i << " : " 
+		  << data.getName(i) << " != "
+		  << copy->dimension(i)
+		  << std::endl;
+	return;
+      }
+      
+      if(data.getName(i) != copy->getName(i)){
+	std::cout << "dataset error: loading: cluster name mismatch"
+		  << std::endl
+		  << "cluster " << i << " : " 
+		  << data.getName(i) << " != "
+		  << copy->getName(i)
+		  << std::endl;
+      }
+      
+      
+      dataset< math::blas_complex<double> >::iterator a = data.begin(i);
+      dataset< math::blas_complex<double> >::iterator b = copy->begin(i);
+      unsigned int counter = 0;
+      
+      while(a != data.end(i) && b != copy->end(i)){
+	math::vertex< math::blas_complex<double> > delta(*b);
+	delta -= *a;
+	
+	if(delta.norm() > 0.0001){
+	  std::cout << "dataset error: loading: cluster vector "
+		    << "cluster " << i << " : data " << counter
+		    << std::endl;
+	  std::cout << "original: " << (*b) << std::endl;
+	  std::cout << "save&loaded: " << (*a) << std::endl;
+	  std::cout << "|delta|: " << delta.norm() << std::endl;
+	  
+	  return;
+	}
+	
+	a++;
+	b++;
+	counter++;
+      }
+      
+      if(a != data.end(i) || b != copy->end(i)){
+	std::cout << "dataset error: loading: real cluster size"
+		  << std::endl;
+	return;
+      }
+    }
+    
+    // free's copy
+    delete copy;
+    copy = 0;
+    
+    
+    // checks loading of unexisting file fails.
+    
+    if(data.load("rqr0q2348349249___Vdffkl.rwreAop0")){
+      std::cout << "dataset error: loading of unexisting file is ok."
+		<< std::endl;
+      return;
+    }
+  }
+
+
+  // dataset: test exportAscii() and importAscii() implementations
+  {
+    std::cout << "DATASET TESTING exportAscii() and importAscii()" << std::endl;
+
+    whiteice::dataset< math::blas_complex<float> > test, loaded;
+    const unsigned int DATADIM = 10;
+
+    test.createCluster("test cluster with a longer name than usual", DATADIM);
+    
+    for(unsigned int i=0;i<1000;i++){
+      whiteice::math::vertex< math::blas_complex<float> > v(test.dimension(0));
+
+      for(unsigned int j=0;j<v.size();j++){
+	v[j].real( (float)rand()/((float)RAND_MAX) - 0.5f );
+	v[j].imag( (float)rand()/((float)RAND_MAX) - 0.5f );
+      }
+
+      if(test.add(0, v) == false){
+	std::cout << "ERROR cannot add vertex to dataset. Index: " << i << std::endl;
+	break;
+      }
+    }
+
+    std::string asciiFilename = "exportedData-test.ds";
+
+    if(test.exportAscii(asciiFilename, 0, true) == false){ // writes headers to ASCII file
+      std::cout << "ERROR: cannot export data to ascii file" << std::endl;
+    }
+    else{
+      std::cout << "dataset::exportAscii() successful." << std::endl;
+    }
+
+    if(loaded.importAscii(asciiFilename) == false){
+      std::cout << "ERROR: cannot import ASCII data from file," << std::endl;
+    }
+    else{
+      std::cout << "dataset::importAscii() successful." << std::endl;
+    }
+    
+    if(loaded.getNumberOfClusters() <= 0){
+      std::cout << "ERROR: zero getNumberOfClusters() after importAscii()." << std::endl;
+    }
+    else{
+      std::cout << "dataset::getNumberOfClusters() is ok after importAscii()." << std::endl;
+    }
+
+    if(loaded.dimension(0) != test.dimension(0)){
+      std::cout << "ERROR: data (3)" << std::endl;
+    }
+    else{
+      std::cout << "dataset::dimension(0) match after importAscii()." << std::endl;
+    }
+
+    if(loaded.size(0) != test.size(0)){
+      std::cout << "ERROR: cluster size mismatch after importAscii() (4)" << std::endl;
+    }
+    else{
+      std::cout << "dataset::size() match after importAscii()." << std::endl;
+    }
+
+    {
+      bool error = false;
+      
+      for(unsigned int j=0;j<loaded.size(0);j++){
+	auto l = loaded[j];
+	auto t = test[j];
+	
+	auto delta = l - t;
+	
+	if(delta.norm() > 0.01f){
+	  printf("ERROR: data corrupted in importAscii(exportAscii(data)). Index %d. Error: %f\n",
+		 j, delta.norm().c[0]);
+	  error = true;
+	  break;
+	}
+      }
+      
+      if(error == false)
+	printf("Comparision: importAscii() returns correct data after exportAscii(). Good.\n");
+      
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // tries to load ASCII file AGAIN (with existing data structure) and checks everything works ok.
+    
+    if(loaded.importAscii(asciiFilename, 0) == false){
+      std::cout << "ERROR: cannot import ASCII data from file (2.1)" << std::endl;
+    }
+    
+    if(loaded.getNumberOfClusters() <= 0){
+      std::cout << "ERROR: cannot import ASCII data from file (2.2)" << std::endl;
+    }
+
+    if(loaded.dimension(0) != test.dimension(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (2.3)" << std::endl;
+    }
+
+    if(loaded.size(0) != test.size(0)){
+      std::cout << "ERROR: cannot import ASCII data from file (2.4)" << std::endl;
+    }
+
+    for(unsigned int j=0;j<loaded.size(0);j++){
+      auto l = loaded[j];
+      auto t = test[j];
+
+      auto error = l - t;
+
+      if(error.norm() > 0.01f){
+	printf("ERROR: data corrupted in importAscii(exportAscii(data)) (2). Index %d. Error: %f\n",
+	       j, error.norm().c[0]);
+	break;
+      }
+    }
+    
+  }
+  
+  
+}
+
+
+/********************************************************************************/
+
 
 /* copy of test_rbtree() */
 void test_binary_tree()

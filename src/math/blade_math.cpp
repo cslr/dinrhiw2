@@ -439,6 +439,12 @@ namespace whiteice
     bool convert(blas_complex<double>& B, const blas_real<float>& A) { B = (double)A.c[0]; return true; }
     bool convert(complex<float>& B, const blas_real<float>& A)       { B = (float)A.c[0]; return true; }
     bool convert(complex<float>& B, const blas_real<double>& A)      { B = (float)A.c[0]; return true; }
+
+    bool convert(float& B, complex<float>& A){ B = (float)std::real(A); return true; }
+    bool convert(double& B, complex<double>& A){ B = (double)std::real(A); return true; }
+    bool convert(double& B, complex<float>& A){ B = (double)std::real(A); return true; }
+    bool convert(float& B, complex<double>& A){ B = (float)std::real(A); return true; }
+    
     bool convert(blas_real<double>& B, const blas_real<float>& A)    { B = (double)A.c[0]; return true; }
     bool convert(blas_real<float>& B, const blas_real<double>& A)    { B = (float)A.c[0]; return true; }
 

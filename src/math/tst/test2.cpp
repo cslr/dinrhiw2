@@ -826,8 +826,8 @@ void test_basic_linear()
     
     if(eig2x2matrix(A, d, X, false) == false){
       
-      matrix< whiteice::math::complex<float> > C, Z;
-      vertex< whiteice::math::complex<float> > w;
+      matrix< whiteice::math::blas_complex<float> > C, Z;
+      vertex< whiteice::math::blas_complex<float> > w;
       
       if(convert(C, A) == false){
 	std::cout << "ERROR: problem related conversion to complex values failed (4)"
@@ -839,10 +839,10 @@ void test_basic_linear()
 		  << std::endl;
       }
       
-      if((std::real(whiteice::math::abs(w[0])) +
-	  std::imag(whiteice::math::abs(w[0]))) < 0.00001 ||
-	 (std::real(whiteice::math::abs(w[1])) +
-	  std::imag(whiteice::math::abs(w[1]))) < 0.00001){
+      if((whiteice::math::real(whiteice::math::abs(w[0])) +
+	  whiteice::math::imag(whiteice::math::abs(w[0]))) < 0.00001 ||
+	 (whiteice::math::real(whiteice::math::abs(w[1])) +
+	  whiteice::math::imag(whiteice::math::abs(w[1]))) < 0.00001){
 	
 	std::cout << "ERROR: solved eigenvalues are probably wrong (6)"
 		  << std::endl;
@@ -980,30 +980,30 @@ void test_basic_linear()
   // TEST CASE 4 - tests with articially generated complex matrix
   try
   {
-    matrix< whiteice::math::complex<float> > A, D, X, XX, XXX;
-    vertex< whiteice::math::complex<float> > d;
+    matrix< whiteice::math::blas_complex<float> > A, D, X, XX, XXX;
+    vertex< whiteice::math::blas_complex<float> > d;
     
     A.resize(2,2);
     X.resize(2,2);
     
     D.resize(2,2);
-    D(0,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					     ((float)rand()/((float)RAND_MAX) - 0.5) );
+    D(0,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						  ((float)rand()/((float)RAND_MAX) - 0.5) );
     
-    D(1,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					     ((float)rand()/((float)RAND_MAX) - 0.5) );
+    D(1,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						  ((float)rand()/((float)RAND_MAX) - 0.5) );
     XX.resize(2,2);
     XXX.resize(2,2);
     
-    XX(0,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-      
-    XX(0,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-    XX(1,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-    XX(1,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(0,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    
+    XX(0,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(1,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(1,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
     XX.transpose();
     XX.normalize(); // normalizes XX(0,:), X(1,:)
     XX.transpose();
@@ -1018,10 +1018,10 @@ void test_basic_linear()
     }
     else{
       // compares eigenvalues
-      if((std::real(whiteice::math::abs(D(0,0) - d[0])) + 
-	  std::real(whiteice::math::abs(D(1,1) - d[1]))) > 0.0001 &&
-	 (std::real(whiteice::math::abs(D(0,0) - d[1])) + 
-	  std::real(whiteice::math::abs(D(1,1) - d[0]))) > 0.0001){
+      if((whiteice::math::real(whiteice::math::abs(D(0,0) - d[0])) + 
+	  whiteice::math::real(whiteice::math::abs(D(1,1) - d[1]))) > 0.0001 &&
+	 (whiteice::math::real(whiteice::math::abs(D(0,0) - d[1])) + 
+	  whiteice::math::real(whiteice::math::abs(D(1,1) - d[0]))) > 0.0001){
 	
 	std::cout << "ERROR eig2x2matrix() returned bad eigenvalues:\n"
 		  << "correct: " << d << std::endl

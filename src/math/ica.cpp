@@ -21,9 +21,13 @@ namespace whiteice
     template bool ica< blas_real<double> >
       (const matrix< blas_real<double> >& D, matrix< blas_real<double> >& W, bool verbose) ;
     template bool ica< float >
-      (const matrix<float>& D, matrix<float>& W, bool verbose) ;
+    (const matrix<float>& D, matrix<float>& W, bool verbose) ;
     template bool ica< double >
-      (const matrix<double>& D, matrix<double>& W, bool verbose) ;
+    (const matrix<double>& D, matrix<double>& W, bool verbose) ;
+    template bool ica< blas_complex<float> >
+    (const matrix< blas_complex<float> >& D, matrix< blas_complex<float> >& W, bool verbose) ;
+    template bool ica< blas_complex<double> >
+    (const matrix< blas_complex<double> >& D, matrix< blas_complex<double> >& W, bool verbose) ;
 
     template bool ica< blas_real<float> >
       (const std::vector< math::vertex< blas_real<float> > >& data, matrix< blas_real<float> >& W, bool verbose) ;
@@ -32,19 +36,28 @@ namespace whiteice
     template bool ica< float >
       (const std::vector< math::vertex<float> >& data, matrix<float>& W, bool verbose) ;
     template bool ica< double >
-      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) ;    
+      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) ;
+    template bool ica< blas_complex<float> >
+    (const std::vector< math::vertex< blas_complex<float> > >& data, matrix< blas_complex<float> >& W, bool verbose) ;
+    template bool ica< blas_complex<double> >
+    (const std::vector< math::vertex< blas_complex<double> > >& data, matrix< blas_complex<double> >& W, bool verbose) ;
     
     template <typename T>
     void __ica_project(vertex<T>& w, const unsigned int n, const matrix<T>& W);
 
     template void __ica_project< blas_real<float> >
-      (vertex< blas_real<float> >& w, const unsigned int n, const matrix< blas_real<float> >& W);
+    (vertex< blas_real<float> >& w, const unsigned int n, const matrix< blas_real<float> >& W);
     template void __ica_project< blas_real<double> >
-      (vertex< blas_real<double> >& w, const unsigned int n, const matrix< blas_real<double> >& W);
+    (vertex< blas_real<double> >& w, const unsigned int n, const matrix< blas_real<double> >& W);
     template void __ica_project<float>
-      (vertex<float>& w, const unsigned int n, const matrix<float>& W);
+    (vertex<float>& w, const unsigned int n, const matrix<float>& W);
     template void __ica_project<double>
-      (vertex<double>& w, const unsigned int n, const matrix<double>& W);
+    (vertex<double>& w, const unsigned int n, const matrix<double>& W);
+    template void __ica_project< blas_complex<float> >
+    (vertex< blas_complex<float> >& w, const unsigned int n, const matrix< blas_complex<float> >& W);
+    template void __ica_project< blas_complex<double> >
+    (vertex< blas_complex<double> >& w, const unsigned int n, const matrix< blas_complex<double> >& W);
+    
     
     
     template <typename T>

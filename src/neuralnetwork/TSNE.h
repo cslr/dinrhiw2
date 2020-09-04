@@ -99,6 +99,7 @@ namespace whiteice
       // internal variables
 
       bool kl_absolute_value; // whether to use absolute value in KL divergence
+      bool verbose; // whether print error messages to console
     
     };
 

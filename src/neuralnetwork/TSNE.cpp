@@ -41,6 +41,8 @@ namespace whiteice
     if(samples.size() <= 0) return false;
     if(samples[0].size() <= DIM) return false;
 
+    this->verbose = verbose;
+
     whiteice::RNG<T> rng;
 
     // perplexity of 30 seem to give reasonable good results
@@ -88,11 +90,21 @@ namespace whiteice
 	messages->printMessage(buffer);
     }
 
+    // preprocesses samples (TODO)
+    {
+      // calculate covariance matrix and drop dimensions which st.dev. < 0.01*trace(COV_x)/dim((x)
+    }
+
     // calculate p-values
     std::vector< std::vector<T> > pij;
     
-    if(calculate_pvalues(samples, PERPLEXITY, pij) == false)
+    if(calculate_pvalues(samples, PERPLEXITY, pij) == false){
+      if(verbose){
+	printf("Estimating p-values FAILED.\n");
+	fflush(stdout);
+      }
       return false;
+    }
 
     
     std::vector< math::vertex<T> > yvalues;
@@ -182,15 +194,21 @@ namespace whiteice
       while(iter < MAXITER && noimprove_counter < MAXNOIMPROVE)
       {
 	// calculates qij values
-	if(calculate_qvalues(yvalues, qij, qsum) == false)
+	if(calculate_qvalues(yvalues, qij, qsum) == false){
+	  printf("Calculating q-values FAILED.\n");
+	  fflush(stdout);
 	  return false;
+	}
 	
 	// calculate and report the current KL divergence
 	{
 	  prev_round_klvalue = klvalue;
 	  
-	  if(kl_divergence(pij, qij, klvalue) == false)
+	  if(kl_divergence(pij, qij, klvalue) == false){
+	    printf("Calculating KL-divergence FAILED.\n");
+	    fflush(stdout);
 	    return false;
+	  }
 
 	  if(iter == 0){
 	    best_klvalue = klvalue;
@@ -262,8 +280,13 @@ namespace whiteice
       
 	// calculate gradient
 	// (minimize KL divergence to match distributions as well as possible)
-	if(kl_gradient(pij, qij, qsum, yvalues, ygrad) == false)
+	if(kl_gradient(pij, qij, qsum, yvalues, ygrad) == false){
+	  if(verbose){
+	    printf("Calculating KL gradient FAILED.\n");
+	    fflush(stdout);
+	  }
 	  return false;
+	}
 
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<ygrad.size();i++){
@@ -433,6 +456,10 @@ namespace whiteice
 	  }
 	  
 	  if(perp_min > perplexity){
+	    if(verbose){
+	      printf("Could not find minimum perplexity.\n");
+	      fflush(stdout);
+	    }
 	    error = true;
 	    continue;
 	    // return false; // could not find minimum value
@@ -442,13 +469,17 @@ namespace whiteice
 	  calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
 	  perp_max = calculate_perplexity(pj);
 	  
-	  while(perp_max < perplexity && sigma2_max < T(10e9)){
+	  while(perp_max < perplexity && sigma2_max < T(10e10f)){
 	    sigma2_max *= T(2.0f);
 	    calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
 	    perp_max = calculate_perplexity(pj);
 	  }
 	  
 	  if(perp_max < perplexity){
+	    if(verbose){
+	      printf("Could not find maximum perplexity.\n");
+	      fflush(stdout);
+	    }
 	    error = true;
 	    continue;
 	    // return false; // could not find maximum value
@@ -463,10 +494,10 @@ namespace whiteice
 	  calculate_pvalue_given_sigma(x, j, sigma2_next, pj);
 	  T perp_next = calculate_perplexity(pj);
 
-	  const T epsilon = T(1e-12);
+	  const T epsilon = T(1e-20f);
 
-	  while(math::abs(perplexity - perp_next) > T(0.01f) &&
-		(sigma2_max - sigma2_min) > epsilon)
+	  while(math::abs(perplexity - perp_next) > T(0.1f) &&
+		math::abs(sigma2_max - sigma2_min) > epsilon)
 	  {
 	    if(perplexity < perp_next){
 	      sigma2_max = sigma2_next;
@@ -481,7 +512,17 @@ namespace whiteice
 	    perp_next = calculate_perplexity(pj);
 	  }
 	  
-	  if(sigma2_max - sigma2_min <= epsilon){
+	  if(math::abs(sigma2_max - sigma2_min) <= epsilon){
+	    if(verbose){
+	      float perplexityf = 0.0f;
+	      float perp_nextf = 0.0f;
+	      whiteice::math::convert(perplexityf, perplexity);
+	      whiteice::math::convert(perp_nextf, perp_next);
+	      printf("Could not find sigma^2 value for the target perplexity.\n");
+	      printf("Target perplexity: %f. Current perplexity: %f\n",
+		     perplexityf, perp_nextf);
+	      fflush(stdout);
+	    }
 	    error = true;
 	    continue;
 	    // return false; // could not find target perplexity

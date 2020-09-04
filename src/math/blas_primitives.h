@@ -11,7 +11,6 @@
 #include <exception>
 #include <complex>
 
-
 namespace whiteice
 {
   namespace math
@@ -36,6 +35,7 @@ namespace whiteice
 	inline blas_real(){ c[0] = (T)0; }
 	inline blas_real(const T& t){ c[0] = t; }
 	inline blas_real(const blas_real<T>& t){ c[0] = t.c[0]; }
+	inline blas_real(const blas_complex<T>& t){ c[0] = t.c[0]; }
 
 	// work arounds stupid compiler..
 	// explicit inline blas_real(const blas_complex<float>& t){ c[0] = t.c[0]; } // takes real part
@@ -158,6 +158,9 @@ namespace whiteice
 
 	inline T imag() { return T(0.0f); }
 	inline const T imag() const { return T(0.0f); }
+
+	inline T real(const T value){ this->c[0] = value; return this->c[0]; }
+	inline T imag(const T value){ return T(0.0f); } // has no imaginary value to set
 	
 	// BUG: DOESN'T COMPILE WITH REFERENCE ALTHOUGH IT SHOULD, removed T&
 	inline T value() { return c[0]; }
@@ -251,7 +254,7 @@ namespace whiteice
 	inline blas_complex(const T& r, const T& i){ c[0] = r; c[1] = i; }
 	inline blas_complex(const blas_complex<T>& r){ c[0] = r.c[0]; c[1] = r.c[1]; }
 	inline blas_complex(const std::complex<T>& z){ c[0] = std::real(z); c[1] = std::imag(z); }
-	  
+	
 	// work arounds stupid compiler..
 	inline blas_complex(const blas_real<float>& r){ c[0] = r.c[0]; c[1] = T(0); }
 	inline blas_complex(const blas_real<double>& r){ c[0] = r.c[0]; c[1] = T(0); }
@@ -309,16 +312,36 @@ namespace whiteice
 	{ return (this->c[0] != t.c[0] && this->c[1] != t.c[1]); }
 	     
 	inline bool operator>=(const blas_complex<T>& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator<=(const blas_complex<T>& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator< (const blas_complex<T>& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator> (const blas_complex<T>& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	
 	inline bool operator==(const T& t) const 
 	{ return (this->c[0] == t && this->c[1] == 0); }
@@ -327,16 +350,36 @@ namespace whiteice
 	{ return (this->c[0] != t && this->c[1] != 0); }
 	     
 	inline bool operator>=(const T& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator<=(const T& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator< (const T& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	     
 	inline bool operator> (const T& t) const 
-	{ throw uncomparable("complex numbers cannot be compared"); }
+	{
+	  const std::string error = "complex numbers cannot be compared";
+	  printf("%s\n", error.c_str());
+	  exit(-1);
+	  throw uncomparable(error);
+	}
 	
 	// scalar operation
 	inline blas_complex<T>& operator= (const T& s) 
@@ -379,7 +422,8 @@ namespace whiteice
 	inline T imag() { return c[1]; }
 	inline const T imag() const { return c[1]; }
 	
-	
+	inline T real(const T value){ this->c[0] = value; return this->c[0]; }
+	inline T imag(const T value){ this->c[1] = value; return this->c[1]; }
 	
 	template <typename A>
 	friend blas_complex<A> operator*(const A& s, const blas_complex<A>& r) ;
@@ -436,22 +480,42 @@ namespace whiteice
     
     template <typename T>
       inline bool operator>=(const T& t, const blas_complex<T>& r) 
-      { throw uncomparable("complex numbers cannot be compared"); }
+      {
+	const std::string error = "complex numbers cannot be compared";
+	printf("%s\n", error.c_str());
+	exit(-1);
+	throw uncomparable(error);
+      }
     
     
     template <typename T>
       inline bool operator<=(const T& t, const blas_complex<T>& r) 
-      { throw uncomparable("complex numbers cannot be compared"); }
+      {
+	const std::string error = "complex numbers cannot be compared";
+	printf("%s\n", error.c_str());
+	exit(-1);
+	throw uncomparable(error);
+      }
     
     
     template <typename T>
       inline bool operator< (const T& t, const blas_complex<T>& r) 
-      { throw uncomparable("complex numbers cannot be compared"); }
+      {
+	const std::string error = "complex numbers cannot be compared";
+	printf("%s\n", error.c_str());
+	exit(-1);
+	throw uncomparable(error);
+      }
     
     
     template <typename T>
       inline bool operator> (const T& t, const blas_complex<T>& r) 
-      { throw uncomparable("complex numbers cannot be compared"); }
+      {
+	const std::string error = "complex numbers cannot be compared";
+	printf("%s\n", error.c_str());
+	exit(-1);
+	throw uncomparable(error);
+      }
 
     
     
@@ -503,35 +567,66 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     // conversion functions
 
-    
     // tries to convert blas_real of type S to blas_real of type T (B = A)
     template <typename T, typename S>
-      inline bool convert(blas_real<T>& B, const blas_real<S>& A) 
-      {
-	try{ B.c[0] = static_cast<T>(A.c[0]); return true; }
-	catch(std::exception& e){ return false; }
-      }
+    inline bool convert(blas_real<T>& B, const blas_real<S>& A) 
+    {
+      try{ B.c[0] = static_cast<T>(A.c[0]); return true; }
+      catch(std::exception& e){ return false; }
+    }
     
     // tries to convert blas_complex of type S to blas_complex of type T (B = A)
     template <typename T, typename S>
-      inline bool convert(blas_complex<T>& B, const blas_complex<S>& A) 
-      {
-	try{
-	  B.c[0] = static_cast<T>(A.c[0]);	
-	  B.c[1] = static_cast<T>(A.c[1]);
-	  return true;
-	}
-	catch(std::exception& e){ return false; }
+    inline bool convert(blas_complex<T>& B, const blas_complex<S>& A) 
+    {
+      try{
+	B.c[0] = static_cast<T>(A.c[0]);	
+	B.c[1] = static_cast<T>(A.c[1]);
+	return true;
       }
+      catch(std::exception& e){ return false; }
+    }
+    
+    // tries to convert blas_real of type S to blas_real of type T (B = A)
+    template <typename T, typename S>
+    inline bool convert(blas_real<T>& B, const blas_complex<S>& A) 
+    {
+      try{ B.c[0] = S(A.real()); return true; }
+      catch(std::exception& e){ return false; }
+    }
+    
+    
+    // tries to convert blas_complex of type S to blas_complex of type T (B = A)
+    template <typename T, typename S>
+    inline bool convert(blas_complex<T>& B, const blas_real<S>& A) 
+    {
+      try{
+	B.c[0] = T(A.c[0]);
+	B.c[1] = T(0.0f);
+	return true;
+      }
+      catch(std::exception& e){ return false; }
+    }
     
     
     // tries to convert blas_real of type S to scalar of type T
     template <typename T, typename S>
-      inline bool convert(T& B, const blas_real<S>& A) 
-      {
-	try{ B = (T)(A.c[0]); return true; }
-	catch(std::exception& e){ return false; }
-      }
+    inline bool convert(T& B, const blas_real<S>& A) 
+    {
+      try{ B = T(A.c[0]); return true; }
+      catch(std::exception& e){ return false; }
+    }
+
+#if 0
+    // tries to convert scalar S to blas_real<T> type
+    template <typename T, typename S>
+    inline bool convert(blas_real<T>& B, const S& A)
+    {
+      try{ B.c[0] = T(A); return true; }
+      catch(std::exception& e){ return false; }
+    }
+#endif
+    
 
     
     

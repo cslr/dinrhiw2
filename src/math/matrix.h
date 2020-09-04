@@ -11,6 +11,8 @@
 #include "compressable.h"
 #include "MemoryCompressor.h"
 
+#include "blade_math.h"
+
 #include <stdexcept>
 #include <exception>
 #include <vector>
@@ -308,7 +310,7 @@ namespace whiteice
 	  
 	  for(unsigned int j=0;j<A.ysize();j++){
 	    for(unsigned int i=0;i<A.xsize();i++){
-	      if(convert(B(j,i), A(j,i)) == false)
+	      if(whiteice::math::convert(B(j,i), A(j,i)) == false)
 		return false;
 	      
 	      // B(j,i) = static_cast<T>(A(j,i));

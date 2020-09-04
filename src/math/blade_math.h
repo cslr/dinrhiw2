@@ -154,8 +154,12 @@ namespace whiteice
     bool convert(blas_real<float>& B, const double& A);
     bool convert(complex<float>& B, const float& A);
     bool convert(complex<double>& B, const double& A);
-		 
+    bool convert(float& B, complex<float>& A);
+    bool convert(double& B, complex<double>& A);
+    bool convert(double& B, complex<float>& A);
+    bool convert(float& B, complex<double>& A);    
 
+    
 #if 0
     // KNOWN BUG: needed by hack in matrix.cpp to handle symmetric_eig() call with complex data
 
@@ -574,8 +578,8 @@ namespace whiteice
       }
     
     template <typename T>
-      inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
-        return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x[0], x[1]) ) );
+    inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
+      return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x.c[0], x.c[1]) ) );
     }
     
     
@@ -636,7 +640,7 @@ namespace whiteice
     template <typename T>
       inline whiteice::math::blas_complex<T> log(whiteice::math::blas_complex<T> x)
       {
-	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x[0], x[1]) ) );
+	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x.c[0], x.c[1]) ) );
       }
     
 

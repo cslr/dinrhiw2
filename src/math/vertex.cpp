@@ -252,7 +252,7 @@ namespace whiteice
 	return len;
       }
       else{ // generic length calculation
-	len = T(0);
+	len = T(0.0f);
 	
 	for(unsigned int i=0;i<dataSize;i++)
 	  len += data[i]*data[i];

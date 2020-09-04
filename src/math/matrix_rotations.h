@@ -142,6 +142,16 @@ namespace whiteice
        const matrix< double >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
+    extern template bool rhouseholder_vector< blas_complex<float> >
+      (vertex< blas_complex<float> >& v,
+       const matrix< blas_complex<float> >& M,
+       unsigned int y, unsigned int x,
+       bool rowdir);
+    extern template bool rhouseholder_vector< blas_complex<double> >
+      (vertex< blas_complex<double> >& v,
+       const matrix< blas_complex<double> >& M,
+       unsigned int y, unsigned int x,
+       bool rowdir);
     
     
     extern template bool rhouseholder_leftrot< blas_real<float> > 
@@ -168,6 +178,18 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< double >& v);
+    extern template bool rhouseholder_leftrot< blas_complex<float> > 
+      (matrix< blas_complex<float> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<float> >& v);
+    extern template bool rhouseholder_leftrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<double> >& v);
     
     
     extern template bool rhouseholder_rightrot< blas_real<float> >
@@ -194,6 +216,18 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< double >& v);
+    extern template bool rhouseholder_rightrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<float> >& v);
+    extern template bool rhouseholder_rightrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<double> >& v);
 
     
     
@@ -205,6 +239,11 @@ namespace whiteice
       (const float& a, const float& b, vertex< float >& p);
     extern template void rgivens< double >
       (const double& a, const double& b, vertex< double >& p);
+
+    extern template void rgivens< blas_complex<float> >
+      (const blas_complex<float>& a, const blas_complex<float>& b, vertex< blas_complex<float> >& p);
+    extern template void rgivens< blas_complex<double> >
+      (const blas_complex<double>& a, const blas_complex<double>& b, vertex< blas_complex<double> >& p);
     
     
     extern template void rgivens_rightrot< blas_real<float> >
@@ -219,6 +258,12 @@ namespace whiteice
     extern template void rgivens_rightrot< double >
       (matrix< double >& A, const vertex< double >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
+    extern template void rgivens_rightrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, const vertex< blas_complex<float> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    extern template void rgivens_rightrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
     
     
     extern template void rgivens_leftrot< blas_real<float> >
@@ -232,6 +277,12 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);
     extern template void rgivens_leftrot< double >
       (matrix< double >& A, const vertex< double >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    extern template void rgivens_leftrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, const vertex< blas_complex<float> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    extern template void rgivens_leftrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
     
   }
