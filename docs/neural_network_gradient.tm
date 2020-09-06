@@ -41,13 +41,14 @@
 
   By analysing the chain rule we can derive generic backpropagation formula
   for the full gradient. Let <math|\<b-v\><rsup|<around*|(|k|)>>> be a
-  <math|k>:th layer's local field, <math|\<b-v\><rsup|<around*|(|k|)>>=\<b-W\><rsup|<around*|(|k|)>>f<around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>+\<b-b\><rsup|<around*|(|k|)>>>.
-  Then local gradient matrices <math|\<b-delta\><rsup|<around*|(|k|)>>> are
+  <math|k>:th layer's local field, <math|\<b-v\><rsup|<around*|(|k|)>>=\<b-W\><rsup|<around*|(|k|)>>f<around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>+\<b-b\><rsup|<around*|(|k|)>>>,
+  <math|\<b-v\><rsup|<around*|(|0|)>>=\<b-x\>>. Then the local jacobian
+  matrices <math|\<b-delta\><rsup|<around*|(|k|)>>> are
 
   <\center>
     <math|\<b-delta\><rsup|<around*|(|L|)>>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|L|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|L|)>>>|)>>
 
-    <math|\<b-delta\><rsup|<around*|(|k-1|)>>=\<b-delta\><rsup|<around*|(|k|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>>
+    <math|\<b-delta\><rsup|<around*|(|k-1|)>>=\<b-delta\><rsup|<around*|(|k|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|T>>\<b-delta\><rsup|<around*|(|k|)>>>
   </center>
 
   And network's parameter gradient matrices for each layer are (only
@@ -62,11 +63,59 @@
   To test that gradient matrix is correctly computed it can be compared with
   normal squared error calculations (normal backpropagation).
 
-  <center|<math|\<varepsilon\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=<frac|1|2><around*|\<\|\|\>|y<rsub|i>-y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
+  <center|<math|MSE<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=<frac|1|2><around*|\<\|\|\>|y<rsub|i>-y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
 
-  <center|<math|<frac|\<partial\>\<varepsilon\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>\<b-w\>>=<around*|(|y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-y<rsub|i>|)><rsup|T>*<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\>>>>
+  <center|<math|<frac|\<partial\>MSE<around*|(|\<b-w\>|)>|\<partial\>\<b-w\>>=<around*|(|y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-y<rsub|i>|)><rsup|T>*<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\>>>>
+
+  <with|font-series|bold|Backpropagation algorithm>
+
+  To implement backpropagation algorithm we can do the forward step as in the
+  previous step and save local field values
+  <math|\<b-v\>*<rsup|<around*|(|k|)>>>. After this we calculate local error
+  \ <math|E<around*|{|MSE<around*|(|\<b-w\>|)>|}>=<frac|1|2><around*|\<\|\|\>|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|\<\|\|\>><rsup|2>>
+  vector gradients <math|\<b-sigma\><rsup|<around*|(|k|)>>> using gradient
+  matrices from the previous section. Notice that by calculating error's
+  gradient we don't have to calculate Jacobian matrix for each layer so the
+  computation is faster.
+
+  <\padded-center>
+    <math|\<b-sigma\><rsup|<around*|(|L|)>>=<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>|\<bar\>>*\<b-delta\><rsup|<around*|(|L|)>>=\<b-delta\><rsup|<around*|(|L|)>>*<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|\<bar\>>>
+
+    <math|\<b-sigma\><rsup|<around*|(|k-1|)>>=\<b-sigma\><rsup|<around*|(|k-1|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|<rsup|T>>>\<b-sigma\><rsup|<around*|(|k-1|)>>>
+  </padded-center>
+
+  The actual gradient value formulas are the same as in the previous section
+  (notice that for complex valued neural networks in MSE minimization you
+  need to calculate conjugate of the Jacobian matrix but not the error term).
+
+  <\center>
+    <math|<frac|\<partial\>*MSE<around*|(|\<b-w\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|k|)>>>=<wide|\<b-sigma\><rsup|<around*|(|k|)>>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>|\<bar\>>>
+
+    <math|<frac|\<partial\>*MSE<around*|(|\<b-w\>|)>|\<partial\>*b<rsub|j><rsup|<around*|(|k|)>>>=<wide|\<b-sigma\><rsup|<around*|(|k|)>><matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>|\<bar\>>>
+  </center>
 
   \;
+
+  Now for complex valued data we have for example in the last layer:
+
+  <math|>
+
+  <\padded-center>
+    <math|<frac|\<partial\>*MSE<around*|(|\<b-w\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|L|)>>>=<wide|\<b-sigma\><rsup|<around*|(|L|)>>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>=|\<bar\>><wide|<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>|\<bar\>>*\<b-delta\><rsup|<around*|(|L|)>>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>|\<bar\>>>
+
+    <math|=<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>*<wide|\<b-delta\><rsup|<around*|(|L|)>><matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>=|\<bar\>><around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T><wide|<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\><rsub|j*i><rsup|<around*|(|L|)>>>|\<bar\>>>.
+  </padded-center>
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  <strong|Gradient of neural network <math|\<b-f\><around*|(|\<b-x\>|)>>
+  input vector <math|\<b-x\>>.>
 
   Sometimes also needs gradient with respect to <math|\<b-x\> > and not
   weights parameters <math|\<b-w\>>. This can be calculated using the chain

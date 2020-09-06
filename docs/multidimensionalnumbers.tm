@@ -3,7 +3,12 @@
 <style|<tuple|generic|old-spacing|old-dots>>
 
 <\body>
-  <with|font-series|bold|Multidimensional numbers>
+  <with|font-series|bold|Increasing Calculation Capacity By Number Theoretic
+  Extension>
+
+  \;
+
+  <with|font-series|bold|1. Multidimensional numbers>
 
   <with|font-shape|italic|\P..to divide divine.\Q>
 
@@ -68,39 +73,79 @@
   higher dimensions into lower dimensions is through division by infinity:
   <math|1/\<alpha\>,\<alpha\>\<rightarrow\>\<infty\>>. Additionally, the
   number of dimensions is restricted to a <with|font-series|bold|prime
-  number> <math|D> in order to create closed system where calculation of
+  number> <math|P> in order to create closed system where calculation of
   inverse is always possible. We now define addition and multiplication as
   follows:
 
   <\center>
-    <math|a+b=<big|sum><rsup|D><rsub|i=0><around*|(|\<alpha\><rsub|i>+\<beta\><rsub|i>|)>r<rsup|i>>
+    <math|a+b=<big|sum><rsup|P><rsub|i=0><around*|(|\<alpha\><rsub|i>+\<beta\><rsub|i>|)>r<rsup|i>>
 
     <math|a*b=<big|sum><rsub|i,j>\<alpha\><rsub|i>*\<beta\><rsub|j>*r<rsup|<around*|(|i+j|)>
-    mod D>>
+    mod P>>
   </center>
 
   By resticting exponents to a modular arithmetic we can create a number
   system which is well defined and always works. This also means that
   \Pdivision by zero\Q is always mathematically well defined and all numbers
   (including \Pzero\Q) has always somekind of inverse although by restricting
-  the number of dimensions to <math|D> means that higher dimensions can
+  the number of dimensions to <math|P> means that higher dimensions can
   \Poverflow\Q back to lower dimensions and results into unintuitive results.
 
   Required: proof that number system defined this way works. (requires
   Fermat's theorem and discrete mathematics). I did this earlier but lost
   documents. Partial mini proof: multiplication of
-  <math|r<rsup|i>*r<rsup|j>=r<rsup|<around*|(|i+j|)> mod D>> leads to number
+  <math|r<rsup|i>*r<rsup|j>=r<rsup|<around*|(|i+j|)> mod P>> leads to number
   system which have always inverse and is well defined (normal modular
   arithmetic). Therefore multiplication of <math|r<rsup|d>>:s are well
-  defined.
+  defined. The right name for this kind of numbers are <em|<strong|polynomial
+  rings>> which are well-studied in discrete mathematics.
 
   <with|font-series|bold|Algorithm for division>
 
   Next we want algorithm to calculate <math|a<rsup|-1>> in order to divide
   <math|a/b> (even by zero). We notice that the circular structure used in
   multiplication is similar to discrete finite Fourier transform which also
-  uses circular buffers. Therefore somekind of transform approach could maybe
-  make sense.
+  uses circular buffers/circular convolution. Therefore somekind of transform
+  approach could maybe make sense.
+
+  <with|font-series|bold|TODO: implement code which creates working
+  multidimensional numbers>
+
+  <verbatim|dinrhiw2/math/modular.h> has integer modular integer code which
+  can be used to implement superdimensional numbers. Modify
+  <verbatim|dinrhiw2/math/superrresolution.h> to work with modular integer
+  math of polynomial exponents. Implement circular convolution and solve
+  multiplication and inverse using Fourier transform and inverse Fourier
+  transform (KissFFT has BSD style license).
+
+  Write testcase to check multidimensional number code work always (real and
+  complex number coefficients) and then use it as datatype for
+  <verbatim|nnetwork\<less\>\<gtr\>>.
+
+  \;
+
+  <with|font-series|bold|2. Extending Neural Network Capacity>
+
+  After showing multidimensional numbers fulfills number theoretic properties
+  of <with|font-series|bold|field/ring(?)>. We can use it as our neural
+  networks numbers and test the improved computing capacities of
+  multidimensional neural network.
+
+  - how to calculate derive and calculate gradient of multidimensional
+  numbers(?). [modular arithmetic loses its capacity to compare largeness of
+  numbers so in general we cannot say functions are continuous in a typical
+  sense. We can define gradient in each dimension <math|d> but what are
+  requirements for general differentiability(?). In complex analysis this is
+  already a problem.
+
+  - initially implement random search and compare its results to real number
+  version. Multiplications are now very non-linear (\Pcryptographic\Q
+  non-linearities) so learning functions should be complicated and gradient
+  descent may not work very well(??).
+
+  \ \ 
+
+  \;
 
   \;
 </body>
