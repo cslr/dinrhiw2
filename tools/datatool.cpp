@@ -870,11 +870,11 @@ bool exportdata(const std::string& filename,
     data->invpreprocess(cluster, v);
     
     if(v.size() > 0){
-      fprintf(fp, "%f", v[0].value());
+      fprintf(fp, "%f", v[0].real());
     }
     
     for(unsigned int j=1;j<v.size();j++){
-      fprintf(fp, " %f", v[j].value());
+      fprintf(fp, " %f", v[j].real());
     }
     
     fprintf(fp, "\n");

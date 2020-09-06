@@ -1297,16 +1297,12 @@ int main(int argc, char** argv)
 		
 		net.input() = dtrain.access(0, index);
 		net.calculate(true);
+		err = net.output() - dtrain.access(1, index);
 
-		if(MNE){
-		  err = dtrain.access(1, index) - net.output();
+		if(MNE)
 		  err.normalize();
-		}
-		else{ // normal MSE error
-		  err = dtrain.access(1, index) - net.output();
-		}
 
-		if(net.gradient(err, grad) == false)
+		if(net.mse_gradient(err, grad) == false)
 		  std::cout << "gradient failed." << std::endl;
 		
 		sgrad += ninv*grad;
