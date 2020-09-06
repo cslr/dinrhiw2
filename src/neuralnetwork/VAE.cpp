@@ -973,7 +973,7 @@ namespace whiteice
 	
 	// gradient of encoder
 	
-	if(encoder.gradient(x, J) == false){
+	if(encoder.jacobian(x, J) == false){
 	  failure = true;
 	  continue;
 	}
@@ -1036,7 +1036,7 @@ namespace whiteice
 	    continue;
 	  }
 	  
-	  if(decoder.gradient(zi, grad_meanx) == false){
+	  if(decoder.jacobian(zi, grad_meanx) == false){
 	    failure = true;
 	    continue;
 	  }

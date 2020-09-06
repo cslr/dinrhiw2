@@ -30,8 +30,6 @@ namespace whiteice
     };
 
   
-  extern template class lreg_nnetwork< float >;
-  extern template class lreg_nnetwork< double >;  
   extern template class lreg_nnetwork< math::blas_real<float> >;
   extern template class lreg_nnetwork< math::blas_real<double> >;
 

@@ -49,8 +49,6 @@ namespace whiteice
   
 
   
-  template class lreg_nnetwork< float >;
-  template class lreg_nnetwork< double >;  
   template class lreg_nnetwork< math::blas_real<float> >;
   template class lreg_nnetwork< math::blas_real<double> >;
 

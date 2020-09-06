@@ -400,9 +400,9 @@ namespace whiteice
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  nnet.input() = dtrain.access(0, i);
 	  nnet.calculate(true);
-	  err = dtrain.access(1,i) - nnet.output();
+	  err = nnet.output() - dtrain.access(1,i);
 	  
-	  if(nnet.gradient(err, grad) == false){
+	  if(nnet.mse_gradient(err, grad) == false){
 	    std::cout << "gradient failed." << std::endl;
 	    assert(0); // FIXME
 	  }
@@ -485,7 +485,7 @@ namespace whiteice
 	  
 	  for(unsigned int d=0;d<deepness;d++){
 	    
-	    assert(nnet.gradient(input, FGRAD) == true);
+	    assert(nnet.jacobian(input, FGRAD) == true);
 	    // df/dw (dtrain.dimension(1)+RDIM, nnet.gradient_size())
 
 	    {
@@ -1127,8 +1127,6 @@ namespace whiteice
   }
   
   
-  template class rLBFGS_nnetwork< float >;
-  template class rLBFGS_nnetwork< double >;
   template class rLBFGS_nnetwork< math::blas_real<float> >;
   template class rLBFGS_nnetwork< math::blas_real<double> >;
 

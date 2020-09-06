@@ -124,10 +124,8 @@ namespace whiteice
 
 namespace whiteice
 {
-	extern template class HMC< float >;
-	extern template class HMC< double >;
-	extern template class HMC< math::blas_real<float> >;
-	extern template class HMC< math::blas_real<double> >;
+  extern template class HMC< math::blas_real<float> >;
+  extern template class HMC< math::blas_real<double> >;
 };
 
 

@@ -126,9 +126,9 @@ namespace whiteice
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(true);
-				err = data.access(1,i) - nnet.output();
+				err = nnet.output() - data.access(1,i);
 
-				if(nnet.gradient(err, grad) == false){
+				if(nnet.mse_gradient(err, grad) == false){
 					std::cout << "gradient failed." << std::endl;
 					assert(0); // FIXME
 				}
@@ -844,8 +844,6 @@ namespace whiteice
 
 namespace whiteice
 {  
-  template class UHMC< float >;
-  template class UHMC< double >;
   template class UHMC< math::blas_real<float> >;
   template class UHMC< math::blas_real<double> >;    
 };

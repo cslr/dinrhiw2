@@ -87,8 +87,6 @@ namespace whiteice
     return;
   }
   
-  template class nnetwork_function< float >;
-  template class nnetwork_function< double >;  
   template class nnetwork_function< math::blas_real<float> >;
   template class nnetwork_function< math::blas_real<double> >;  
 };

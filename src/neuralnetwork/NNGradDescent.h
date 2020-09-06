@@ -53,6 +53,18 @@ namespace whiteice
       // MSE (Minimum Squared Error) ||y-f(x)||^2 as a error measure
       void setMNE(bool usemne = true);
       bool getUseMNE() const;
+
+      // whether to add alpha*0.5*||w||^2 term to error to keep
+      // weight values from exploding. It is RECOMMENDED to enable
+      // this for complex valued neural networks because complex
+      // non-linearities might easily explode to large values
+      //
+      // 0.01 seem to work rather well when complex weights are N(0,I)/dim(W(k,:))
+      // and data is close to N(0,I) too.
+      void setRegularizer(const T alpha = T(0.01f));
+
+      // returns regularizer value, zero means regularizing is disabled
+      T getRegularizer() const;
       
       /*
        * starts the optimization process using data as 
@@ -102,15 +114,15 @@ namespace whiteice
       bool getSolution(whiteice::nnetwork<T>& nn) const;
       
       /* used to stop the optimization process */
-      bool stopComputation();
-      
+	bool stopComputation();
+	
       private:
       
       T getError(const whiteice::nnetwork<T>& net,
 		 const whiteice::dataset<T>& dtest,
 		 const bool regularize = true,
 		 const bool dropout = false);
-      
+	
       
       whiteice::nnetwork<T>* nn; // network architecture and settings
       
@@ -173,10 +185,10 @@ namespace whiteice
 {
   namespace math
   {
-    extern template class NNGradDescent< float >;
-    extern template class NNGradDescent< double >;
     extern template class NNGradDescent< blas_real<float> >;
     extern template class NNGradDescent< blas_real<double> >;
+    extern template class NNGradDescent< blas_complex<float> >;
+    extern template class NNGradDescent< blas_complex<double> >;    
     
     
   };

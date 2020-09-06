@@ -129,8 +129,6 @@ namespace whiteice
     };
 
   
-  extern template class PolicyGradAscent< float >;
-  extern template class PolicyGradAscent< double >;
   extern template class PolicyGradAscent< whiteice::math::blas_real<float> >;
   extern template class PolicyGradAscent< whiteice::math::blas_real<double> >;
 };

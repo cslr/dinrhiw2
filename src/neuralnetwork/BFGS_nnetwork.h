@@ -50,8 +50,6 @@ namespace whiteice
     };
 
 
-  extern template class BFGS_nnetwork< float >;
-  extern template class BFGS_nnetwork< double >;
   extern template class BFGS_nnetwork< math::blas_real<float> >;
   extern template class BFGS_nnetwork< math::blas_real<double> >;
   

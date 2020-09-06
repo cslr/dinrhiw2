@@ -566,6 +566,8 @@ namespace whiteice
 	    nl[l] = whiteice::nnetwork<T>::tanh;
 	  else if(ints[l] == 5)
 	    nl[l] = whiteice::nnetwork<T>::rectifier;
+	  else if(ints[l] == 6)
+	    nl[l] = whiteice::nnetwork<T>::softmax;
 	  else
 	    return false; // bad data
 	}
@@ -760,6 +762,8 @@ namespace whiteice
 	      ints.push_back(4);
 	    else if(nl[l] == whiteice::nnetwork<T>::rectifier)
 	      ints.push_back(5);
+	    else if(nl[l] == whiteice::nnetwork<T>::softmax)
+	      ints.push_back(6);
 	    else
 	      return false;
 	  }
@@ -836,8 +840,6 @@ namespace whiteice
   }
 
   
-  template class bayesian_nnetwork< float >;
-  template class bayesian_nnetwork< double >;  
   template class bayesian_nnetwork< math::blas_real<float> >;
   template class bayesian_nnetwork< math::blas_real<double> >;
   

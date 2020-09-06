@@ -70,8 +70,6 @@ namespace whiteice
   
 
     
-  extern template class pBFGS_nnetwork< float >;
-  extern template class pBFGS_nnetwork< double >;
   extern template class pBFGS_nnetwork< math::blas_real<float> >;
   extern template class pBFGS_nnetwork< math::blas_real<double> >;
 

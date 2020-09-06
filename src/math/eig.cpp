@@ -156,7 +156,7 @@ namespace whiteice
       
       X.resize(2,2);
       
-      if(temp != T(0)){ // different eigenvalues (full rank - unless zero eigenvalues)
+      if(temp != T(0.0f)){ // different eigenvalues (full rank - unless zero eigenvalues)
 	
 	for(unsigned int i=0;i<2;i++){
 	  if(A(0,1) != T(0)){
@@ -190,13 +190,13 @@ namespace whiteice
       else{ // same eigenvalues
 	
 	// eigenvector 1
-	if(A(0,1) != T(0)){
-	  X(0,0) = 1;
+	if(A(0,1) != T(0.0f)){
+	  X(0,0) = T(1.0f);
 	  X(1,0) = (- A(0,0) + d[0])/A(0,1);
 	}
 	else if(A(1,0) != T(0)){
 	  X(0,0) = (- A(1,1) + d[0])/A(1,0);
-	  X(1,0) = 1;
+	  X(1,0) = T(1.0f);
 	}
 	else{
 	  // both diagonals are zero -> X = I
@@ -213,17 +213,17 @@ namespace whiteice
 	
 	
 	// eigenvector 2
-	if(A(0,1) != T(0)){
-	  X(0,1) = 1;
+	if(A(0,1) != T(0.0f)){
+	  X(0,1) = T(1.0f);
 	  X(1,1) = (- A(0,0) + d[1])/A(0,1);
 	}
 	else if(A(1,0) != T(0)){
 	  X(0,1) = (- A(1,1) + d[1])/A(1,0);
-	  X(1,1) = 1;
+	  X(1,1) = T(1.0f);
 	}
 	else{ // note: should be impossible
-	  X(0,1) = 0;
-	  X(1,1) = 1;
+	  X(0,1) = T(0.0f);
+	  X(1,1) = T(1.0f);
 	}
 	
 	
@@ -438,7 +438,9 @@ namespace whiteice
 	T s;
 	T d = (A(M-2,M-2) - A(M-1,M-1))/T(2.0);
 	
-	if(d > T(0.0)){
+	const auto zero = abs(T(0.0f));
+	
+	if(abs(d) > zero){
 	  s = A(M-1,M-1) - (A(M-1,M-2)*A(M-1,M-2)) / 
 	    (d + whiteice::math::sqrt(d*d + A(M-1,M-2)*A(M-1,M-2)));
 	}
@@ -470,7 +472,7 @@ namespace whiteice
 	  }
 	  
 	}
-	
+
 	
 	return true;
       }
@@ -481,13 +483,22 @@ namespace whiteice
     
     
     /***********************************************************************************/
+
+    // helper data structure for sorting eigenvalues in symmetric_eig()
+    template <typename T>
+    class eigvaluepair
+    {
+    public:
+      int index;
+      T value;
+    };
+    
     
     template <typename T>
     inline bool symmetric_eig(matrix<T>& A, matrix<T>& X, bool sort)
     {
       // KNOWN_BUG: only works with real valued data,
       // as a compilation-hack converts values to real values which don't work
-      
       
       try{
 	if(A.xsize() != A.ysize())
@@ -496,8 +507,8 @@ namespace whiteice
 	if(X.resize(A.xsize(),A.xsize()) == false)
 	  return false;
 	
-	T TOLERANCE = T(0.000001);
-	T EPSILON   = T(0.000001);
+	auto TOLERANCE = abs(T(0.000001));
+	auto EPSILON   = abs(T(0.000001));
 	unsigned int N = A.xsize();
 	
 	// special cases for small matrices
@@ -509,18 +520,26 @@ namespace whiteice
 	else if(N == 2){
 	  vertex<T> d;
 
-	  if(!eig2x2matrix(A, d, X, false))
-	    return false;
+	  if(typeid(T) == typeid(blas_complex<float>) || typeid(T) == typeid(blas_complex<double>)){
+	    const bool complex_solution_ok = true;
+	    if(!eig2x2matrix(A, d, X, complex_solution_ok))
+	      return false;
+	  }
+	  else{
+	    const bool complex_solution_ok = false;
+	    if(!eig2x2matrix(A, d, X, complex_solution_ok))
+	      return false;
+	  }
 	  
 	  A(0,0) = d[0];
-	  A(0,1) = T(0.0);
-	  A(1,0) = T(0.0);
+	  A(0,1) = T(0.0f);
+	  A(1,0) = T(0.0f);
 	  A(1,1) = d[1];
 	  
 	  // return true; (need to sort eigenvalues)..
 	}
 	else{
-	    
+
 	  // calculates first hessenberg reduction of A
 	  if(!hessenberg_reduction(A, X))
 	    return false;
@@ -602,7 +621,7 @@ namespace whiteice
 		break;
 	      }
 	    }
-	    
+
 	    
 	    // calculates qr step for the non-diagonal submatrix
 	    if(!implicit_symmetric_qrstep_wilkinson(A, X, e1, (e2 - e1)+1)){
@@ -610,8 +629,6 @@ namespace whiteice
 	      return false;
 	    }
 
-
-	    
 	    if(f1 == e1 && f2 == e2){
 	      iter++;
 	      
@@ -653,13 +670,21 @@ namespace whiteice
 	}
 	
 	
-
 	// sorts eigenvectors according to their variances
 	if(sort){
-	  std::multimap<T, int> var;
 	  
-	  for(unsigned int j=0;j<A.xsize();j++)
-	    var.insert(std::pair<T, int>(A(j,j), j));
+	  std::multimap<double, class eigvaluepair<T> > var;
+	  
+	  for(unsigned int j=0;j<A.xsize();j++){
+	    class eigvaluepair<T> data;
+	    data.index = j;
+	    data.value = A(j,j);
+
+	    double absvalue = 0.0;
+	    whiteice::math::convert(absvalue, abs(A(j,j)));
+	    
+	    var.insert(std::pair<double, class eigvaluepair<T> >(absvalue, data));
+	  }
 	  
 	  int index = A.xsize() - 1;
 	  math::vertex<T> t;
@@ -669,10 +694,10 @@ namespace whiteice
 	  
 	  for(auto& v : var){ // from smallest to the largest eigenvalue
 	    
-	    if(v.second != index){ // we need to move v.second index to index
-	      A(index,index) = v.first;
+	    if(v.second.index != index){ // we need to move v.second index to index
+	      A(index,index) = v.second.value;
 	      
-	      XX.colcopyto(t, v.second);
+	      XX.colcopyto(t, v.second.index);
 	      X.colcopyfrom(t, index);
 	    }
 	    
@@ -680,11 +705,10 @@ namespace whiteice
 	  }
 	}
 	
-	
 	return true;
       }
       catch(std::exception& e){
-	std::cout << "SYMMETRIC EIGENVALUE SOLVER. FATAL ERROR: " << e.what() << std::endl;
+	std::cout << "SYMMETRIC EIGENVALUE SOLVER FAILED. EXCEPTION: " << e.what() << std::endl;
 	return false;
       }
     }

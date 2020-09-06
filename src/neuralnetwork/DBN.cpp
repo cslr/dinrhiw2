@@ -1508,8 +1508,6 @@ namespace whiteice
   }
   
 
-  template class DBN< float >;
-  template class DBN< double >;  
   template class DBN< math::blas_real<float> >;
   template class DBN< math::blas_real<double> >;
   

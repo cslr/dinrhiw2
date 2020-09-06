@@ -51,8 +51,6 @@ namespace whiteice
       
     };
   
-  extern template class nnetwork_function< float >;
-  extern template class nnetwork_function< double >;  
   extern template class nnetwork_function< math::blas_real<float> >;
   extern template class nnetwork_function< math::blas_real<double> >;
 };

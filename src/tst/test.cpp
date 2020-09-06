@@ -2648,7 +2648,9 @@ void test_dataset()
 void test_dataset_complex()
 {
   printf("*********************** DATASET TESTS (COMPLEX NUMBERS) [has problems]\n");
-  
+
+  printf("Dataset basic tests\n");
+  fflush(stdout);
   
   {
     dataset< math::blas_complex<float> >* A;
@@ -2662,8 +2664,10 @@ void test_dataset_complex()
     
     for(unsigned int i=0;i<data.size();i++){
       data[i].resize(10);
-      for(unsigned int j=0;j<data[i].size();j++)
-	data[i][j] = ((float)rand())/((float)RAND_MAX);
+      for(unsigned int j=0;j<data[i].size();j++){
+	data[i][j].real( ((float)rand())/((float)RAND_MAX) );
+	data[i][j].imag( ((float)rand())/((float)RAND_MAX) );
+      }
     }
     
     std::vector<bool> bresults;
@@ -2682,13 +2686,15 @@ void test_dataset_complex()
     bresults.push_back(A->add(data));      bwanted.push_back(true); // 1
     bresults.push_back(A->add(test_str));  bwanted.push_back(true); // 2
     bresults.push_back(A->add(test_strs)); bwanted.push_back(true); // 3
-    
+
     A->begin(); A->end();
     (*A)[A->size(0)-1];
     if(A->dimension(0) != 10) printf("ERROR: BAD DIMENSION\n");
-    
+
     bresults.push_back(A->preprocess()); bwanted.push_back(true);   // 4
+
     bresults.push_back(A->repreprocess()); bwanted.push_back(true); // 5
+
     bresults.push_back(A->preprocess(dataset<float>::dnSoftMax)); // 6
     // softmax requires data has been normalized to [-1,1] range or something N(0,1) 
     bwanted.push_back(true); // 6
@@ -2714,6 +2720,9 @@ void test_dataset_complex()
   
   
   // save and loading test
+  printf("Dataset save() and load()ing tests\n");
+  fflush(stdout);
+  
   {
     dataset< math::blas_complex<float> >* A = 0;
     std::vector<math::vertex< math::blas_complex<float> > > data;
@@ -2788,6 +2797,10 @@ void test_dataset_complex()
   // multicluster dataset tests
   // added to version 1 
   // (other tests also work with dataset version 0)
+  printf("Dataset multicluster dataset tests\n");
+  fflush(stdout);
+  
+  
   {
     dataset< math::blas_complex<double> > data;
     
@@ -2921,6 +2934,9 @@ void test_dataset_complex()
     //////////////////////////////////////////////////
     // add [0,K] data to each cluster
 
+    printf("Dataset: add [0,K] data to each cluster tests\n");
+    fflush(stdout);
+
     try{
     
     std::vector<unsigned int> datasizes;
@@ -3049,7 +3065,10 @@ void test_dataset_complex()
       std::cout << std::flush;
       fflush(stdout);
     }
-    
+
+
+    printf("Dataset: preprocess() tests. (PCA will fail for now with complex numbers).\n");
+    fflush(stdout);
 
     try{
     
@@ -3104,7 +3123,7 @@ void test_dataset_complex()
     
     try{
     
-    // check invpreprocess(preprocess(x)) = x
+    // check invpreprocess(preprocess(x)) == x
     std::cout << "START invpreprocess(preprocess(x)) == x test." << std::endl;
     std::cout << std::flush;
     fflush(stdout);
@@ -3115,11 +3134,13 @@ void test_dataset_complex()
       ////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////
 
+#if 0
       // prints cluster debugging info
       std::cout << std::endl;
       std::cout << "Cluster: " << i << std::endl;
       std::cout << "Cluster size: " << data.size(i) << std::endl;
       std::cout << "Cluster dimensions: " << data.dimension(i) << std::endl;
+#endif
       
       ////////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////////
@@ -3134,19 +3155,12 @@ void test_dataset_complex()
       u = v;
       w = v;
 
-      printf("about to preprocess()\n");
-      fflush(stdout);
-
       if(data.preprocess(i, u) == false){
 	std::cout << "dataset error: preprocess vector of cluster "
 		  << i << std::endl;
 	std::cout << std::flush;
 	return;
       }
-
-      printf("about to invpreprocess()\n");
-      fflush(stdout);
-
 
       if(data.invpreprocess(i, u) == false){
 	std::cout << "dataset error: invpreprocess of vector failed."
@@ -3157,8 +3171,6 @@ void test_dataset_complex()
 
       v -= u;
 
-      printf("about to calculate norm()\n");
-      fflush(stdout);
       
       if(abs(v.norm()) > 0.1){
 	std::cout << "dataset error: invpreprocess(preprocess(x)) == x "
@@ -3229,6 +3241,8 @@ void test_dataset_complex()
 
     
     // test removal, access to unexisting cluster fails
+    printf("Dataset: Test bad calls fails.\n");
+    fflush(stdout);
     
     for(unsigned int i=0;i<data.getNumberOfClusters();i++){
       if(data.removeCluster(data.getNumberOfClusters() + rand() % 100)){
@@ -3363,6 +3377,9 @@ void test_dataset_complex()
     
     
     // save multicluster dataset
+    printf("Dataset: save multicluster dataset.\n");
+    fflush(stdout);
+    
     std::string filename = "dataset1file.bin";
     
     if(!data.save(filename)){
@@ -3429,18 +3446,18 @@ void test_dataset_complex()
       dataset< math::blas_complex<double> >::iterator a = data.begin(i);
       dataset< math::blas_complex<double> >::iterator b = copy->begin(i);
       unsigned int counter = 0;
-      
+
       while(a != data.end(i) && b != copy->end(i)){
 	math::vertex< math::blas_complex<double> > delta(*b);
 	delta -= *a;
-	
-	if(delta.norm() > 0.0001){
+
+	if(abs(delta.norm()) > 0.001){
 	  std::cout << "dataset error: loading: cluster vector "
 		    << "cluster " << i << " : data " << counter
 		    << std::endl;
 	  std::cout << "original: " << (*b) << std::endl;
 	  std::cout << "save&loaded: " << (*a) << std::endl;
-	  std::cout << "|delta|: " << delta.norm() << std::endl;
+	  std::cout << "|delta|: " << abs(delta.norm()) << std::endl;
 	  
 	  return;
 	}
@@ -3463,6 +3480,8 @@ void test_dataset_complex()
     
     
     // checks loading of unexisting file fails.
+    printf("Testing loading unexisting file fails..\n");
+    fflush(stdout);
     
     if(data.load("rqr0q2348349249___Vdffkl.rwreAop0")){
       std::cout << "dataset error: loading of unexisting file is ok."
@@ -3541,7 +3560,7 @@ void test_dataset_complex()
 	
 	auto delta = l - t;
 	
-	if(delta.norm() > 0.01f){
+	if(abs(delta.norm()) > 0.01f){
 	  printf("ERROR: data corrupted in importAscii(exportAscii(data)). Index %d. Error: %f\n",
 		 j, delta.norm().c[0]);
 	  error = true;
@@ -3579,7 +3598,7 @@ void test_dataset_complex()
 
       auto error = l - t;
 
-      if(error.norm() > 0.01f){
+      if(abs(error.norm()) > 0.01f){
 	printf("ERROR: data corrupted in importAscii(exportAscii(data)) (2). Index %d. Error: %f\n",
 	       j, error.norm().c[0]);
 	break;

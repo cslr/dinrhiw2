@@ -238,27 +238,27 @@ namespace whiteice
     for(unsigned int l=0;l<getLayers();l++){
       math::matrix<T> W;
       math::vertex<T> b;
-      T maxvalueW = T(-INFINITY);
-      T maxvalueb = T(-INFINITY);
-      T minvalueW = T(+INFINITY);
-      T minvalueb = T(+INFINITY);
+      auto maxvalueW = -abs(T(INFINITY));
+      auto maxvalueb = -abs(T(INFINITY));
+      auto minvalueW = abs(T(+INFINITY));
+      auto minvalueb = abs(T(+INFINITY));
       
       this->getBias(b, l);
       this->getWeights(W, l);
 
       for(unsigned int i=0;i<b.size();i++){
-	if(maxvalueb < b[i])
-	  maxvalueb = b[i];
-	if(minvalueb > b[i])
-	  minvalueb = b[i];
+	if(maxvalueb < abs(b[i]))
+	  maxvalueb = abs(b[i]);
+	if(minvalueb > abs(b[i]))
+	  minvalueb = abs(b[i]);
       }
 
       for(unsigned int j=0;j<W.ysize();j++){
 	for(unsigned int i=0;i<W.xsize();i++){
-	  if(maxvalueW < W(j, i))
-	    maxvalueW = W(j, i);
-	  if(minvalueW > W(j, i))
-	    minvalueW = W(j, i);
+	  if(maxvalueW < abs(W(j, i)))
+	    maxvalueW = abs(W(j, i));
+	  if(minvalueW > abs(W(j, i)))
+	    minvalueW = abs(W(j, i));
 	}
       }
 
@@ -321,8 +321,35 @@ namespace whiteice
   {
     if(nnarch.size() <= 1) return false;
 
-    for(unsigned int i=0;i<nnarch.size();i++)
-      if(nnarch[i] <= 0) return false;
+    if(arch.size() == nnarch.size()){
+      unsigned int same = true;
+
+      for(unsigned int i=0;i<nnarch.size();i++){
+	if(nnarch[i] <= 0) return false;
+	if(arch[i] != nnarch[i]){
+	  same = false;
+	  break;
+	}
+      }
+
+      for(unsigned int i=0;i<nonlinearity.size();i++){
+	if(nonlinearity[i] != nl){
+	  same = false;
+	  break;
+	}
+      }
+	  
+      
+      if(same == true)
+	return true; // we already have the target NN architecture
+    }
+
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      if(nl == rectifier || nl == sigmoid){
+	printf("nnetwork::setAchitecture() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
+      }
+    }
     
     ///////////////////////////////////////////////////////////////////////////
     // resets nnetwork<T> parameters
@@ -368,6 +395,7 @@ namespace whiteice
     for(unsigned int i=0;i<frozen.size();i++)
       frozen[i] = false;
 
+    dropout.clear(); // removes dropout data after architecture change
     
     hasValidBPData = false;
 
@@ -413,10 +441,10 @@ namespace whiteice
       // saves input to backprogation data
       {
 	memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T));
+	
 	bpptr += arch[aindex];
       }
 
-      
       T* dptr = &(data[0]);
       
       while(aindex+1 < arch.size()){
@@ -430,7 +458,7 @@ namespace whiteice
 	
 	// gemv(a[1], a[0], dptr, state, state); // s = W*s
 	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-	
+
 	// s = b + W*s
 	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
 		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1]);
@@ -439,6 +467,7 @@ namespace whiteice
 	// COPIES LOCAL FIELD v FROM state TO BACKPROGRAGATION DATA
 	{
 	  memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T));
+	  
 	  bpptr += arch[aindex+1];
 	}
 
@@ -447,7 +476,7 @@ namespace whiteice
 	for(unsigned int i=0;i<arch[aindex+1];i++){
 	  state[i] = nonlin(state[i], aindex, i);
 	}
-	
+
 	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
 	
 	aindex++; // next layer
@@ -494,11 +523,11 @@ namespace whiteice
     // FIXME (remove) debugging checks bpdata structure
     if(bpdata.size() > 0)
     {
-      T maxvalue = bpdata[0];
+      auto maxvalue = abs(bpdata[0]);
       
       for(const auto& v : bpdata){
-	if(v > maxvalue)
-	  maxvalue = v;
+	if(abs(v) > maxvalue)
+	  maxvalue = abs(v);
       }
       
       // std::cout << "MAX BPDATA: " << maxvalue << std::endl;
@@ -580,16 +609,22 @@ namespace whiteice
       unsigned int start = 0;
       unsigned int end   = 0;
 
+      const whiteice::math::blas_complex<double> ar(2.0f,0.0f), br(1.0f, 0.0f);
+      const whiteice::math::blas_complex<double> ai(0.0f,2.0f), bi(0.0f, 1.0f);
+
       for(unsigned int i=1;i<arch.size();i++){
       	end   += (arch[i-1] + 1)*arch[i];
 
       	if(frozen[i-1] == false){
-      		for(unsigned int j=start;j<end;j++){
-      			const T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]
-      			data[j] = r;
-      		}
+	  for(unsigned int j=start;j<end;j++){
+	    // RNG is real valued, a and b are complex
+	    // this means value is complex valued [-1,+1]+[-1,+1]i
+	    const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
+	    
+	    whiteice::math::convert(data[j], value); // if we have real data we keep only real part
+	  }
       	}
-
+	
       	start += (arch[i-1] + 1)*arch[i];
       }
 
@@ -610,28 +645,34 @@ namespace whiteice
 	  T var = math::sqrt(6.0f / (arch[i-1] + arch[i]));
 	  // T scaling = T(2.2); // for asinh()
 
-#ifdef SMALL_RANDOMIZE_INIT	  
-	  T scaling = T(0.1); // was chosen value
+#ifdef SMALL_RANDOMIZE_INIT
+	  T scaling = T(0.1f); // was chosen value
 #else
-	  T scaling = T(1.0); // no scaling so use values as in paper
+	  T scaling = T(1.0f); // no scaling so use values as in paper
 	  if(smallvalues)
-	    scaling = T(0.1);
+	    scaling = T(0.1f);
 #endif
-	  
 	  
 	  var *= scaling;
 
+	  const whiteice::math::blas_complex<double> ar(2.0f,0.0f), br(1.0f, 0.0f);
+	  const whiteice::math::blas_complex<double> ai(0.0f,2.0f), bi(0.0f, 1.0f);
+
 	  // set weight values W
 	  for(unsigned int j=start;j<(end-arch[i]);j++){
-	    T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
-	    data[j] = var*r;
+	    // var * ( [-1+1]+[-1,+1]i )
+	    const auto value = ((ar*rng.uniform() - br) + (ai*rng.uniform() - bi))*var;
+	    whiteice::math::convert(data[j], value);
+	    
+	    //T r = T(2.0f)*rng.uniform() - T(1.0f); // [-1,1]    
+	    //data[j] = var*r;
 	    // NOTE: asinh(x) requires aprox 3x bigger values before
 	    // reaching saturation than tanh(x)
 	  }
 
 	  // sets bias terms to zero
 	  for(unsigned int j=(end-arch[i]);j<end;j++){
-	    data[j] = T(0.0);
+	    data[j] = T(0.0f);
 	  }
 	  
 	}
@@ -642,48 +683,48 @@ namespace whiteice
       assert(start == data.size()); // we have processed the whole memory area correctly
     }
     else{ // type = 2
-    	unsigned int start = 0;
-        unsigned int end   = 0;
-
-        for(unsigned int i=1;i<arch.size();i++){
-        	end   += (arch[i-1] + 1)*arch[i];
-
-        	if(frozen[i-1] == false){ // do not touch frozen layers when using randomize()
-        		// this initialization is as described in the paper of Xavier Glorot
-        		// "Understanding the difficulty of training deep neural networks"
-
-        		// keep data variance aproximately 1 (assume inputs x1..xN have unit variance)
-        		T var = math::sqrt(1.0f / arch[i-1]);
-
+      unsigned int start = 0;
+      unsigned int end   = 0;
+      
+      for(unsigned int i=1;i<arch.size();i++){
+	end   += (arch[i-1] + 1)*arch[i];
+	
+	if(frozen[i-1] == false){ // do not touch frozen layers when using randomize()
+	  // this initialization is as described in the paper of Xavier Glorot
+	  // "Understanding the difficulty of training deep neural networks"
+	  
+	  // keep data variance aproximately 1 (assume inputs x1..xN have unit variance)
+	  T var = math::sqrt(1.0f / arch[i-1]);
+	  
 #ifdef SMALL_RANDOMIZE_INIT
-			T scaling = T(0.1); // was chosen value
+	  T scaling = T(0.1); // was chosen value
 #else
-			T scaling = T(1.0);
-			if(smallvalues)
-			  scaling = T(0.1);
+	  T scaling = T(1.0);
+	  if(smallvalues)
+	    scaling = T(0.1);
 #endif
-			
-        		var *= scaling;
+	  
+	  var *= scaling;
 
-        		// set weight values W
-        		for(unsigned int j=start;j<(end-arch[i]);j++){
-        			T r = rng.normal();
-        			data[j] = var*r;
-        		}
-
-        		// sets bias terms to zero
-        		for(unsigned int j=(end-arch[i]);j<end;j++){
-        			data[j] = T(0.0);
-        		}
-
-        	}
-
-        	start += (arch[i-1] + 1)*arch[i];
-        }
-
-        assert(start == data.size()); // we have processed the whole memory area correctly
+	  // set weight values W
+	  for(unsigned int j=start;j<(end-arch[i]);j++){
+	    T r = rng.normal();
+	    data[j] = var*r;
+	  }
+	  
+	  // sets bias terms to zero
+	  for(unsigned int j=(end-arch[i]);j<end;j++){
+	    data[j] = T(0.0f);
+	  }
+	  
+	}
+	
+	start += (arch[i-1] + 1)*arch[i];
+      }
+      
+      assert(start == data.size()); // we have processed the whole memory area correctly
     }
-
+    
     
     
     return true;
@@ -698,6 +739,13 @@ namespace whiteice
     if(ds.getNumberOfClusters() < 2) return false;
     if(ds.dimension(0) != input_size()) return false;
     if(ds.size(0) <= 0) return false;
+
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      printf("Warning/ERROR: nnetwork::presetWeightsFromData() don't work with complex data.\n");
+      printf("make symmetric_pseudoinverse() work to get this function working.\n");
+      return false;
+    }
 
     this->randomize(); // sets biases to random values
 
@@ -785,95 +833,113 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::presetWeightsFromDataRandom(const whiteice::dataset<T>& ds)
   {
-	  if(ds.getNumberOfClusters() < 2) return false;
-	  if(ds.dimension(0) != input_size()) return false;
-	  if(ds.size(0) <= 0) return false;
+    if(ds.getNumberOfClusters() < 2) return false;
+    if(ds.dimension(0) != input_size()) return false;
+    if(ds.size(0) <= 0) return false;
 
-	  // set weights to match to data so that inner product is matched exactly to some data
-	  std::vector< whiteice::math::vertex<T> > inputdata;
-	  std::vector< whiteice::math::vertex<T> > outputdata;
-	  std::vector< whiteice::math::vertex<T> > realoutput;
-
-	  for(unsigned int i=0;i<ds.size(0);i++)
-		  inputdata.push_back(ds.access(0, i));
-
-	  for(unsigned int i=0;i<ds.size(1);i++)
-		  realoutput.push_back(ds.access(1, i));
-
-	  for(unsigned int l=0;l<getLayers();l++){
-		  math::matrix<T> W;
-		  math::vertex<T> b;
-
-		  getWeights(W, l);
-		  getBias(b, l);
-
-		  if(l != getLayers()-1){ // not the last layer
-
-			  for(unsigned int j=0;j<W.ysize();j++){
-				  T var = math::sqrt(1.0f / W.xsize());
-				  for(unsigned int i=0;i<W.xsize();i++){
-					  W(j,i) = var*rng.normal();
-				  }
-			  }
-
-			  b.zero();
-		  }
-		  else{ // the last layer, calculate linear mapping y=A*x + b
-			  // W = Cyx*inv(Cxx)
-			  // b = E[y] - W*E[x]
-
-			  whiteice::math::vertex<T> mx, my;
-			  whiteice::math::matrix<T> Cxx, Cyx;
-
-			  mean_covariance_estimate(mx, Cxx, inputdata);
-			  mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
-
-			  if(Cxx.symmetric_pseudoinverse() == false){
-				  printf("ERROR: nnetwork<>::presetWeightsFromDataRandom(): symmetric pseudoinverse FAILED.\n");
-				  fflush(stdout);
-				  assert(0);
-			  }
-
-			  W = Cyx*Cxx;
-			  b = my - W*mx;
-		  }
-
-		  setWeights(W, l);
-		  setBias(b, l);
-
-		  outputdata.resize(inputdata.size());
-
-		  // processes data in parallel
-#pragma omp parallel for schedule(auto)
-		  for(unsigned int i=0;i<inputdata.size();i++){
-			  auto out = W*inputdata[i] + b;
-			  for(unsigned int n=0;n<out.size();n++)
-				  out[n] = nonlin(out[n], l, n);
-
-			  outputdata[i] = out;
-		  }
-
-		  inputdata = outputdata;
-		  outputdata.clear();
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      printf("Warning/ERROR: nnetwork::presetWeightsFromDataRandom() don't work with complex data.\n");
+      printf("make symmetric_pseudoinverse() work to get this function working.\n");
+      return false;
+    }
+    
+    // set weights to match to data so that inner product is matched exactly to some data
+    std::vector< whiteice::math::vertex<T> > inputdata;
+    std::vector< whiteice::math::vertex<T> > outputdata;
+    std::vector< whiteice::math::vertex<T> > realoutput;
+    
+    for(unsigned int i=0;i<ds.size(0);i++)
+      inputdata.push_back(ds.access(0, i));
+    
+    for(unsigned int i=0;i<ds.size(1);i++)
+      realoutput.push_back(ds.access(1, i));
+    
+    for(unsigned int l=0;l<getLayers();l++){
+      math::matrix<T> W;
+      math::vertex<T> b;
+      
+      getWeights(W, l);
+      getBias(b, l);
+      
+      if(l != getLayers()-1){ // not the last layer
+	
+	for(unsigned int j=0;j<W.ysize();j++){
+	  T var = math::sqrt(1.0f / W.xsize());
+	  for(unsigned int i=0;i<W.xsize();i++){
+	    W(j,i) = var*rng.normal();
 	  }
-
-	  return true;
+	}
+	
+	b.zero();
+      }
+      else{ // the last layer, calculate linear mapping y=A*x + b
+	// W = Cyx*inv(Cxx)
+	// b = E[y] - W*E[x]
+	
+	whiteice::math::vertex<T> mx, my;
+	whiteice::math::matrix<T> Cxx, Cyx;
+	
+	mean_covariance_estimate(mx, Cxx, inputdata);
+	mean_crosscorrelation_estimate(mx, my, Cyx, inputdata, realoutput);
+	
+	if(Cxx.symmetric_pseudoinverse() == false){
+	  printf("ERROR: nnetwork<>::presetWeightsFromDataRandom(): symmetric pseudoinverse FAILED.\n");
+	  fflush(stdout);
+	  assert(0);
+	}
+	
+	W = Cyx*Cxx;
+	b = my - W*mx;
+      }
+      
+      setWeights(W, l);
+      setBias(b, l);
+      
+      outputdata.resize(inputdata.size());
+      
+      // processes data in parallel
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<inputdata.size();i++){
+	auto out = W*inputdata[i] + b;
+	for(unsigned int n=0;n<out.size();n++)
+	  out[n] = nonlin(out[n], l, n);
+	
+	outputdata[i] = out;
+      }
+      
+      inputdata = outputdata;
+      outputdata.clear();
+    }
+    
+    return true;
   }
-
-
-
-
-  // calculates gradient of [ 1/2*(last_output - network(last_input|w))^2 ] => error*GRAD[function(x,w)]
-  // uses values stored by previous computation, this function is very heavily optimized using direct memory
+  
+  
+  
+  
+  // calculates gradient of [ 1/2*(network(last_input|w) - last_output)^2 ]
+  // => error*GRAD[function(x,w)]
+  // uses values stored by previous computation
   // accesses to the neural network matrix and vector parameter data (memory block)
-  // calculates gradient grad(error) = grad(right - output)
   template <typename T>
-  bool nnetwork<T>::gradient(const math::vertex<T>& error,
-			     math::vertex<T>& grad) const
+  bool nnetwork<T>::mse_gradient(const math::vertex<T>& error,
+				 math::vertex<T>& grad) const
   {
     if(!hasValidBPData)
       return false;
 
+    
+    bool complex_data = false;
+    
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>))
+    {
+      // with complex data we need to take conjugate of gradient values
+      complex_data = true;
+    }
+    
+    
     // TODO remove later: for debugging 
     {
       memset(lgrad.data(), 0, lgrad.size()*sizeof(T));
@@ -908,8 +974,14 @@ namespace whiteice
     _bpdata -= rows;
     const T* bptr = _bpdata;
 
+    
     // calculates local gradient
+
     for(unsigned int i=0;i<arch[arch.size()-1];i++){
+      if(complex_data){
+	lgrad[i].conj();
+      }
+      
       lgrad[i] *= Dnonlin(*bptr, layer , i);
       bptr++;
     }
@@ -940,13 +1012,13 @@ namespace whiteice
       gindex -= rows*cols + rows;
       
       const T* dptr = _data;
-      
+
       {
 	// matrix W gradients
 	for(unsigned int y=0;y<rows;y++){
 	  const T* bptr = _bpdata;
 	  for(unsigned int x=0;x<cols;x++,gindex++){
-	    grad[gindex] = -lgrad[y] * nonlin(*bptr, layer-1, x);
+	    grad[gindex] = lgrad[y] * nonlin(*bptr, layer-1, x);
 	    bptr++;
 	  }
 	}
@@ -955,7 +1027,7 @@ namespace whiteice
 	
 	// bias b gradients
 	for(unsigned int y=0;y<rows;y++,gindex++){
-	  grad[gindex] = -lgrad[y];
+	  grad[gindex] = lgrad[y];
 	}
 
 	gindex -= (rows*cols + rows);
@@ -974,7 +1046,7 @@ namespace whiteice
       // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
 
       const T* bptr = _bpdata;
-
+      
       if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
 	
 	cblas_sgemv(CblasRowMajor, CblasTrans,
@@ -1002,7 +1074,7 @@ namespace whiteice
 	
       }
       else
-      {
+	{
 	for(unsigned int x=0;x<cols;x++){
 	  T sum = T(0.0f);
 	  for(unsigned int y=0;y<rows;y++)
@@ -1035,7 +1107,7 @@ namespace whiteice
       
       const unsigned int rows = *a;
       const unsigned int cols = *(a - 1);
-
+      
       _bpdata -= cols;
       _data -= rows*cols + rows;
       gindex -= rows*cols + rows;
@@ -1047,7 +1119,7 @@ namespace whiteice
       for(unsigned int y=0;y<rows;y++){
 	const T* bptr = _bpdata;
 	for(unsigned int x=0;x<cols;x++,gindex++){
-	  grad[gindex] = -lgrad[y] * (*bptr); // bp data is here the input x !!
+	  grad[gindex] = lgrad[y] * (*bptr); // bp data is here the input x !!
 	  bptr++;
 	}
       }
@@ -1056,7 +1128,7 @@ namespace whiteice
       _data += rows*cols;
     
       for(unsigned int y=0;y<rows;y++, gindex++){
-	grad[gindex] = -lgrad[y];
+	grad[gindex] = lgrad[y];
 	// _data[y] += rate*lgrad[y];
       }
 
@@ -1070,6 +1142,13 @@ namespace whiteice
       }
       
     }
+
+    // for complex neural networks we need to calculate conjugate value of
+    // the whole gradient (for this to work we need to calculate conjugate value
+    // of error term (f(z)-y) as the input for the gradient operation
+    if(complex_data){
+      grad.conj();
+    }
     
     
     return true;
@@ -1077,13 +1156,13 @@ namespace whiteice
 
 
   /* 
-   * calculates gradient of parameter weights w f(v|w)
+   * calculates jacobian/gradient of parameter weights w f(v|w)
    *
    * For math documentation read docs/neural_network_gradient.tm
    *
    */
   template <typename T>
-  bool nnetwork<T>::gradient(const math::vertex<T>& input,
+  bool nnetwork<T>::jacobian(const math::vertex<T>& input,
 			     math::matrix<T>& grad) const
   {
     if(input.size() != this->input_size()) return false;
@@ -1095,10 +1174,11 @@ namespace whiteice
 
     // forward pass: calculates local fields
     int l = 0;
+
+    whiteice::math::matrix<T> W;
+    whiteice::math::vertex<T> b;
     
     for(l=0;l<(signed)getLayers();l++){
-      whiteice::math::matrix<T> W;
-      whiteice::math::vertex<T> b;
 
       getWeights(W, l);
       getBias(b, l);
@@ -1131,9 +1211,7 @@ namespace whiteice
     unsigned int index = gradient_size();
 
     for(;l>0;l--){
-      whiteice::math::matrix<T> W;
-      whiteice::math::vertex<T> b;
-
+      
       getWeights(W, l);
       getBias(b, l);
 
@@ -1160,10 +1238,10 @@ namespace whiteice
 	}
 
 	// bias vector gradient
-	for(unsigned int i=0;i<b.size();i++){
+	for(unsigned int j=0;j<b.size();j++){
 	  u.resize(getNeurons(l));
 	  u.zero();
-	  u[i] = T(1.0);
+	  u[j] = T(1.0f);
 
 	  u = lgrad*u;
 
@@ -1182,8 +1260,10 @@ namespace whiteice
       lgrad.resize(temp.ysize(), getNeurons(l-1));
       
       for(unsigned int j=0;j<lgrad.ysize();j++)
-	for(unsigned int i=0;i<lgrad.xsize();i++)
-	  lgrad(j,i) = temp(j,i)*nonlin(v[l-1][i], l-1, i);
+	for(unsigned int i=0;i<lgrad.xsize();i++){
+	  // lgrad(j,i) = temp(j,i)*nonlin(v[l-1][i], l-1, i);
+	  lgrad(j,i) = temp(j,i)*Dnonlin(v[l-1][i], l-1, i);
+	}
       
     }
 
@@ -1195,7 +1275,7 @@ namespace whiteice
 
       getWeights(W, l);
       getBias(b, l);
-      
+
       // calculates gradient
       {
 	whiteice::math::vertex<T> u(getNeurons(l));
@@ -1253,55 +1333,77 @@ namespace whiteice
 
     if(dropout.size() > 0){
       if(dropout[layer][neuron])
-	return T(0.0);
+	return T(0.0f);
     }
 
-    
-    if(nonlinearity[layer] == sigmoid){
+    if(nonlinearity[layer] == softmax){
+      const T k = T(1.50f);
+
+      T in = input;
+      if(abs(in) > abs(T(+20.0f)))
+	in = abs(T(+20.0f))*in/abs(in);
+
+      const T value = T(1.0f) + whiteice::math::exp(k*in);
+      
+      return whiteice::math::log(T(1.0f) + whiteice::math::exp(k*in))/k;
+    }
+    else if(nonlinearity[layer] == sigmoid){
+      // NOTE sigmoid non-linearity give bad values if used with complex varibles
+      //      I guess it goes to 1/f(z), f(z)->0 so large numbers appear even if
+      //      we regularize the problem!
+      
       // non-linearity motivated by restricted boltzman machines..
       T in = input;
 
-      if(in > T(+30.0f)) in = T(+30.0);
-      else if(in < T(-30.0f)) in = T(-30.0f);
+      if(abs(in) > abs(T(+20.0f)))
+	in = abs(T(+20.0f))*in/abs(in);
       
-      T output = T(1.0) / (T(1.0) + math::exp(-in));
+      T output = T(1.0f) / (T(1.0f) + math::exp(-in));
       return output;
     }
     else if(nonlinearity[layer] == stochasticSigmoid){
       // non-linearity motivated by restricted boltzman machines..
-      T output = T(0.0f);
-      T in = input;
+      whiteice::math::blas_complex<double> in, out;
+      whiteice::math::convert(in, input);
 
-      if(in > T(+30.0f)) in = T(+30.0);
-      else if(in < T(-30.0f)) in = T(-30.0f);
-
-      output = T(1.0) / (T(1.0) + math::exp(-in));
+      if(abs(in) > abs(math::blas_complex<double>(+20.0f)))
+	in = abs(math::blas_complex<double>(+20.0f))*in/abs(in);
       
-      const T r = T(((double)rand())/((double)RAND_MAX));
+      out = math::blas_complex<double>(1.0f) / (math::blas_complex<double>(1.0f) + math::exp(-in));
 
-      if(output > r){ output = T(1.0); }
-      else{ output = T(0.0); }
+      // IS THIS REALLY CORRECT(?)
+      const auto rand_real = abs(T(((double)rand())/((double)RAND_MAX)));
+      const auto rand_imag = abs(T(((double)rand())/((double)RAND_MAX)));
+
+      whiteice::math::blas_complex<double> value;
+
+      if(abs(math::real(out)) > rand_real){ value.real(1.0f); }
+      else{ value.real(0.0f); }
       
-      return output;
+      if(abs(math::imag(out)) > rand_imag){ value.imag(1.0f); }
+      else{ value.imag(0.0f); }
+
+      T output_value;
+      whiteice::math::convert(output_value, value);
+      
+      return output_value;
     }
     else if(nonlinearity[layer] == tanh){
 
 #ifdef SMALL_RANDOMIZE_INIT
-      const T a = T(1.0);
-      const T b = T(1.0);
+      const T a = T(1.0f);
+      const T b = T(1.0f);
 #else      
-      const T a = T(1.7159);
-      const T b = T(2.0/3.0);
+      const T a = T(1.7159f);
+      const T b = T(2.0f/3.0f);
 #endif
-
       
       T in = input;
-
-      if(in > T(+10.0f)) in = T(+10.0);
-      else if(in < T(-10.0f)) in = T(-10.0f);
       
-      const T e2x = whiteice::math::exp(T(2.0)*b*in);
-      const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+      if(abs(in) > abs(T(+10.0f))) in = abs(T(+10.0))*in/abs(in);
+      
+      const T e2x = whiteice::math::exp(T(2.0f)*b*in);
+      const T tanhbx = (e2x - T(1.0f)) / (e2x + T(1.0f));
       const T output = a*tanhbx;
 
       return output;
@@ -1311,63 +1413,46 @@ namespace whiteice
       // better gradiets for deep neural networks
       {
 #ifdef SMALL_RANDOMIZE_INIT	
-	const T a = T(1.0);
-	const T b = T(1.0);
+	const T a = T(1.0f);
+	const T b = T(1.0f);
 #else
-	const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
-	const T b = T(2.0/3.0);
+	const T a = T(1.7159f); // suggested by Haykin's neural network book (1999)
+	const T b = T(2.0f/3.0f);
 #endif
+
+	if(abs(input) > abs(T(+10.0f))){
+	  return a*input/abs(input) + T(0.5f)*a*b*input;
+	}
 	
-	if(input > T(10.0)) return a + T(0.5)*a*b*input;
-	else if(input < T(-10.0)) return -a + T(0.5)*a*b*input;
+	// for real valued data
+	//if(input > T(10.0)) return a + T(0.5f)*a*b*input;
+	//else if(input < T(-10.0)) return -a + T(0.5)*a*b*input;
 	
-	const T e2x = whiteice::math::exp(T(2.0)*b*input);
-	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+	const T e2x = whiteice::math::exp(T(2.0f)*b*input);
+	const T tanhbx = (e2x - T(1.0f)) / (e2x + T(1.0f));
 	const T output = a*tanhbx;
 	
-	return (output + T(0.5)*a*b*input);
+	return (output + T(0.5f)*a*b*input);
       }
-            
-#if 0
-      // T output = T(0.0);
       
-      if(neuron & 1){
-	{
-	  const T a = T(1.7159);
-	  const T b = T(2.0/3.0);
-	  
-	  if(input > T(10.0)) return a;
-	  else if(input < T(-10.0)) return -a;
-	  
-	  const T e2x = whiteice::math::exp(T(2.0)*b*input);
-	  const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
-	  const T output = a*tanhbx;
-	  
-	  return output;
-	}
-      }
-      else{
-	return input; // half-the layers nodes are linear!
-      }
-#endif
     }
     else if(nonlinearity[layer] == pureLinear){
       return input; // all layers/neurons are linear..
     }
     else if(nonlinearity[layer] == rectifier){
-      if(input < T(0.0f)){
-#if 0
-	T in = input;
-	if(in < T(-30.0f)) in = T(-30.0f);
-	
-	const T a = T(0.1);
-	return (a*(math::exp(in) - T(1.0f)));
-#else
-	// use ReLU instead (rectifier leaky unit)
-	return T(0.01f)*input;
-#endif
+      math::blas_complex<double> out;
+      out.real(input.real());
+      out.imag(input.imag());
+      
+      if(input.real() < 0.0f){
+	out.real(0.01f*out.real());
       }
-      else return input;
+
+      if(input.real() < 0.0f){
+	out.imag(0.01f*out.imag());
+      }
+
+      return T(out);
     }
     else{
       assert(0);
@@ -1385,17 +1470,29 @@ namespace whiteice
 
     if(dropout.size() > 0){ // drop out is activated
       if(dropout[layer][neuron])
-	return T(0.0); // this neuron is disabled 
+	return T(0.0f); // this neuron is disabled 
     }
 
-    if(nonlinearity[layer] == sigmoid){
-      // non-linearity motivated by restricted boltzman machines..
+    if(nonlinearity[layer] == softmax){
+      const T k = T(1.50f);
+
       T in = input;
       
-      if(in > T(+30.0f)) in = T(+30.0);
-      else if(in < T(-30.0f)) in = T(-30.0f);
+      if(abs(in) > abs(T(+20.0f)))
+	in = abs(T(+20.0f))*in/abs(in);
+
+      const T divider = T(1.0f) + whiteice::math::exp(-k*in);
       
-      T output = T(1.0) + math::exp(-in);
+      return T(1.0f)/divider;
+    }
+	
+    else if(nonlinearity[layer] == sigmoid){
+      // non-linearity motivated by restricted boltzman machines..
+      T in = input;
+
+      if(abs(in) > abs(T(+20.0f))) in = abs(T(+20.0))*in/abs(in);
+
+      T output = T(1.0f) + math::exp(-in);
       output = math::exp(-in) / (output*output);
       return output;
     }
@@ -1405,29 +1502,35 @@ namespace whiteice
       // through other means than following the gradient..
       T in = input;
 
-      if(in > T(+30.0f)) in = T(+30.0);
-      else if(in < T(-30.0f)) in = T(-30.0f);
-      
+      if(abs(in) > abs(T(+20.0f))) in = abs(T(+20.0))*in/abs(in);
+
       // non-linearity motivated by restricted boltzman machines..
-      T output = T(1.0) + math::exp(-in);
+      T output = T(1.0f) + math::exp(-in);
       output = math::exp(-in) / (output*output);
       return output;
     }
     else if(nonlinearity[layer] == tanh){
-      const T a = T(1.7159);
-      const T b = T(2.0/3.0);
-      // const T a = T(1.0);
-      // const T b = T(1.0);
 
+#ifdef SMALL_RANDOMIZE_INIT
+      const T a = T(1.0f);
+      const T b = T(1.0f);
+#else      
+      const T a = T(1.7159f);
+      const T b = T(2.0f/3.0f);
+#endif
+      
       T in = input;
 
-      if(in > T(+10.0f)) in = T(+10.0);
-      else if(in < T(-10.0f)) in = T(-10.0f);
-      
-      const T e2x = whiteice::math::exp(T(2.0)*b*in);
-      const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
+      if(abs(in) > abs(T(+10.0f))) in = abs(T(+10.0))*in/abs(in);
 
-      T output = a*b*(T(1.0) - tanhbx*tanhbx);
+      // for real valued data:
+      //if(in > T(+10.0f)) in = T(+10.0);
+      //else if(in < T(-10.0f)) in = T(-10.0f);
+      
+      const T e2x = whiteice::math::exp(T(2.0f)*b*in);
+      const T tanhbx = (e2x - T(1.0f)) / (e2x + T(1.0f));
+
+      T output = a*b*(T(1.0f) - tanhbx*tanhbx);
       
       return output;
     }
@@ -1436,59 +1539,52 @@ namespace whiteice
       // tanh(x) + 0.5x: from a research paper statistically
       // better gradiets for deep neural networks
       {
-	// const T a = T(1.7159); // suggested by Haykin's neural network book (1999)
-	// const T b = T(2.0/3.0);
-	const T a = T(1.0);
-	const T b = T(1.0);      
-	
-	if(input > T(10.0)) return T(0.0) + T(0.5)*a*b;
-	else if(input < T(-10.0)) return T(0.0) + T(0.5)*a*b;
-	
-	const T e2x = whiteice::math::exp(T(2.0)*b*input);
-	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
-	
-	T output = a*b*(T(1.0) - tanhbx*tanhbx);
-	
-	return (output + T(0.5)*a*b);
-      }
-      
-#if 0
-      if(neuron & 1){
-	if(input > T(10.0)) return T(0.0);
-	else if(input < T(-10.0)) return T(0.0);
-	
-	const T a = T(1.7159);
-	const T b = T(2.0/3.0);
-
-	const T e2x = whiteice::math::exp(T(2.0)*b*input);
-	const T tanhbx = (e2x - T(1.0)) / (e2x + T(1.0));
-	
-	T output = a*b*(T(1.0) - tanhbx*tanhbx);
-	
-	return output;
-      }
-      else{
-	return 1.0; // half-the layers nodes are linear!
-      }
+#ifdef SMALL_RANDOMIZE_INIT
+	const T a = T(1.0f);
+	const T b = T(1.0f);
+#else      
+	const T a = T(1.7159f); // suggested by Haykin's neural network book (1999)
+	const T b = T(2.0f/3.0f);
 #endif
+	if(abs(input) > abs(T(+10.0f))) return T(0.0f) + T(0.5f)*a*b;
+	
+	// for real valued data
+	//if(input > T(10.0)) return T(0.0) + T(0.5)*a*b;
+	//else if(input < T(-10.0)) return T(0.0) + T(0.5)*a*b;
+	
+	const T e2x = whiteice::math::exp(T(2.0f)*b*input);
+	const T tanhbx = (e2x - T(1.0f)) / (e2x + T(1.0f));
+	
+	T output = a*b*(T(1.0f) - tanhbx*tanhbx);
+	
+	return (output + T(0.5f)*a*b);
+      }      
     }
     else if(nonlinearity[layer] == pureLinear){
-      return 1.0; // all layers/neurons are linear..
+      return T(1.0f); // all layers/neurons are linear..
     }
     else if(nonlinearity[layer] == rectifier){
-      if(input < T(0.0f)){
-#if 0
-	T in = input;
-	if(in < T(-30.0f)) in = T(-30.0f);
+      math::blas_complex<double> out;
+      out.real(1.0f);
+      out.imag(1.0f);
 
-	const T a = T(0.1);
-	return (a*math::exp(in));
-#else
-	// use ReLU instead (leaky rectifier)
+      if(input.real() < 0.0f){
+	out.real(0.01f);
+      }
+
+      if(input.imag() < 0.0f){
+	out.imag(0.01f);
+      }
+
+      return T(out);
+      
+#if 0      
+      if(input < T(0.0f)){
+	// use ReLU (leaky rectifier)
 	return T(0.01f);
-#endif	
       }
       else return T(1.0f);
+#endif
     }
     else{
       assert(0);
@@ -1638,6 +1734,9 @@ namespace whiteice
 	  else if(nonlinearity[l] == rectifier){
 	    data[l] = T(5.0);
 	  }
+	  else if(nonlinearity[l] == softmax){
+	    data[l] = T(6.0);
+	  }
 	  else return false; // error!
 	}
 
@@ -1698,121 +1797,6 @@ namespace whiteice
     }
 
     return false;
-
-#if 0
-    try{
-      whiteice::conffile configuration;
-      
-      std::vector<int> ints;
-      std::vector<float> floats;
-      std::vector<std::string> strings;
-      
-      // writes version information
-      {
-	// version number = integer/1000
-	ints.push_back(2000); // 2.000
-	if(!configuration.set(FNN_VERSION_CFGSTR, ints)){
-	  return false;
-	}
-	
-	ints.clear();
-      }
-      
-      // writes architecture information
-      {
-	for(unsigned int i=0;i<arch.size();i++)
-	  ints.push_back(arch[i]);
-
-	if(!configuration.set(FNN_ARCH_CFGSTR, ints)){
-	  return false;
-	}
-	
-	ints.clear();
-      }
-      
-      // weights: we just convert everything to a big vertex vector and write it
-      {
-	math::vertex<T> w;
-	
-	if(this->exportdata(w) == false){
-	  return false;
-	}
-	
-	for(unsigned int i=0;i<w.size();i++){
-	  float f;
-	  math::convert(f, w[i]);
-	  floats.push_back(f);
-	}
-	
-	if(!configuration.set(FNN_VWEIGHTS_CFGSTR, floats)){
-	  return false;
-	}
-	
-	floats.clear();
-      }
-
-      // used non-linearity
-      {
-	for(unsigned int l=0;l<nonlinearity.size();l++){
-	  if(nonlinearity[l] == sigmoid){
-	    ints.push_back(0);
-	  }
-	  else if(nonlinearity[l] == stochasticSigmoid){
-	    ints.push_back(1);
-	  }	  
-	  else if(nonlinearity[l] == halfLinear){
-	    ints.push_back(2);
-	  }
-	  else if(nonlinearity[l] == pureLinear){
-	    ints.push_back(3);
-	  }
-	  else if(nonlinearity[l] == tanh){
-	    ints.push_back(4);
-	  }
-	  else if(nonlinearity[l] == rectifier){
-	    ints.push_back(5);
-	  }
-	  else return false; // error!
-	}
-
-	if(!configuration.set(FNN_NONLINEARITY_CFGSTR, ints)){
-	  return false;
-	}
-
-	ints.clear();
-      }
-
-
-      // frozen status of each layer
-      {
-	for(unsigned int l=0;l<frozen.size();l++){
-	  if(frozen[l] == false){
-	    ints.push_back(0);
-	  }
-	  else{
-	    ints.push_back(1);
-	  }
-	}
-
-	if(!configuration.set(FNN_FROZEN_CFGSTR, ints)){
-	  return false;
-	}
-
-	ints.clear();
-      }
-      
-      
-      return configuration.save(filename);
-    }
-    catch(std::exception& e){
-      std::cout << "Unexpected exception "
-		<< "File: " << __FILE__ << " "
-		<< "Line: " << __LINE__ << " "
-		<< e.what() << std::endl;
-      
-      return false;
-    }
-#endif
   } 
   
   
@@ -1907,6 +1891,7 @@ namespace whiteice
 	  else if(conf_data[l] == T(3.0)) conf_nonlins[l] = pureLinear;
 	  else if(conf_data[l] == T(4.0)) conf_nonlins[l] = tanh;
 	  else if(conf_data[l] == T(5.0)) conf_nonlins[l] = rectifier;
+	  else if(conf_data[l] == T(6.0)) conf_nonlins[l] = softmax;
 	  else return false; // unknown non-linearity
 	}
       }
@@ -1944,7 +1929,7 @@ namespace whiteice
 
 	conf_retain = conf_data[0];
 
-	if(conf_retain < T(0.0) || conf_retain > T(1.0))
+	if(abs(conf_retain) < abs(T(0.0)) || abs(conf_retain) > abs(T(1.0)))
 	  return false; // correct interval for data
       }
 
@@ -2000,182 +1985,7 @@ namespace whiteice
       
       return false;
     }
-
-#if 0
-    try{
-      whiteice::conffile configuration;
-      std::vector<std::string> strings;
-      std::vector<float> floats;
-      std::vector<int> ints;
-      
-      if(!configuration.load(filename))
-	return false;
-      
-      int versionid;
-      
-      // checks version
-      {
-	if(!configuration.get(FNN_VERSION_CFGSTR, ints))
-	  return false;
-	
-	if(ints.size() != 1)
-	  return false;
-	
-	versionid = ints[0];
-	
-	ints.clear();
-      } 
-      
-      if(versionid != 2000) // v2 datafile
-	return false;
-      
-      
-      unsigned int memuse;
-      
-      // gets architecture
-      {
-	if(!configuration.get(FNN_ARCH_CFGSTR,ints))
-	  return false;
-	  
-	if(ints.size() < 2)
-	  return false;
-	
-	for(unsigned int i=0;i<ints.size();i++)
-	  if(ints[i] <= 0) return false;
-	
-	arch.resize(ints.size());
-	
-	for(unsigned int i=0;i<arch.size();i++)
-	  arch[i] = ints[i];
-	
-	memuse = 0;
-	maxwidth = arch[0];
-	
-	unsigned int i = 1;
-	while(i < arch.size()){
-	  memuse += (arch[i-1] + 1)*arch[i];
-	  
-	  if(arch[i] > maxwidth)
-	    maxwidth = arch[i];
-	  i++;
-	}
-
-	data.resize(memuse);
-
-	state.resize(maxwidth);
-	temp.resize(maxwidth);
-	lgrad.resize(maxwidth);
-
-	hasValidBPData = false;
-	bpdata.resize(1);
-	size = memuse;
-	
-	inputValues.resize(arch[0]);
-	outputValues.resize(arch[arch.size() - 1]);
-
-	frozen.resize(arch.size()-1);
-	
-	for(unsigned int i=0;i<frozen.size();i++)
-	  frozen[i] = false;
-
-	nonlinearity.resize(arch.size()-1);
-	
-	for(unsigned int i=0;i<nonlinearity.size();i++)
-	  nonlinearity[i] = tanh;
-
-	nonlinearity[nonlinearity.size()-1] = pureLinear;
-	
-	ints.clear();
-      }
-      
-      
-      // gets layer weights & biases for the new nnetwork
-      {
-	math::vertex<T> w;
-	
-	if(!configuration.get(FNN_VWEIGHTS_CFGSTR, floats))
-	  return false;
-	
-	w.resize(floats.size());
-	
-	for(unsigned int i=0;i<floats.size();i++)
-	  w[i] = T(floats[i]);
-	
-	if(this->importdata(w) == false)
-	  return false;
-	
-	floats.clear();
-      }
-
-      
-      // used nonlinearity
-      {
-	if(!configuration.get(FNN_NONLINEARITY_CFGSTR, ints))
-	  return false;
-
-	if(ints.size() != nonlinearity.size()) return false;
-
-	for(unsigned int l=0;l<nonlinearity.size();l++){
-	  if(ints[l] == 0){
-	    nonlinearity[l] = sigmoid;
-	  }
-	  else if(ints[l] == 1){
-	    nonlinearity[l] = stochasticSigmoid;
-	  }	  
-	  else if(ints[l] == 2){
-	    nonlinearity[l] = halfLinear;
-	  }
-	  else if(ints[l] == 3){
-	    nonlinearity[l] = pureLinear;
-	  }
-	  else if(ints[l] == 4){
-	    nonlinearity[l] = tanh;
-	  }
-	  else if(ints[l] == 5){
-	    nonlinearity[l] = rectifier;
-	  }
-	  else{
-	    return false;
-	  }
-	}
-	
-	ints.clear();
-      }
-
-
-      // frozen status of each nnetwork layer
-      {
-	if(!configuration.get(FNN_FROZEN_CFGSTR, ints))
-	  return false;
-
-	if(ints.size() != frozen.size()) return false;
-
-	for(unsigned int l=0;l<frozen.size();l++){
-	  if(ints[l] == 0){
-	    frozen[l] = false;
-	  }
-	  else{
-	    frozen[l] = true;
-	  }
-	}
-	
-	ints.clear();
-      }
-
-      retain_probability = T(1.0);
-      dropout.clear(); // drop out is disabled in saved networks (disabled after load)
-      
-      return true;
-    }
-    catch(std::exception& e){
-      std::cout << "Unexpected exception "
-		<< "File: " << __FILE__ << " "
-		<< "Line: " << __LINE__ << " "
-		<< e.what() << std::endl;
-      
-      return false;
-    }
-#endif
+    
   }
 
   
@@ -2200,13 +2010,46 @@ namespace whiteice
     if(v.exportData(&(data[0]), size, 0) == false)
       return false;
 
+    const bool verbose = false;
+
     // "safebox" (keeps data always within sane levels)
     for(unsigned int i=0;i<data.size();i++){
-      if(whiteice::math::isnan(data[i])) data[i] = T(0.0);
-      if(data[i] < T(-10000.0)) data[i] = T(-10000.0);
-      else if(data[i] > T(10000.0)) data[i] = T(10000.0);
-    }
+      if(whiteice::math::isnan(data[i])){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad NaN data: " << data[i] << std::endl;
+	data[i] = T(0.0f);
+      }
+      
+      if(whiteice::math::isinf(data[i])){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad Inf data: " << data[i] << std::endl;
+	data[i] = T(0.0f);
+      }
 
+      if(data[i].real() > 10000.0f){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
+	data[i].real(+10000.0f);	
+      }
+      else if(data[i].real() < -10000.0f){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
+	data[i].real(-10000.0f);
+      }
+
+      if(data[i].imag() > 10000.0f){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
+	data[i].imag(+10000.0f);
+      }
+      else if(data[i].imag() < -10000.0f){
+	if(verbose)
+	  std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
+	data[i].imag(-10000.0f);
+      }
+      
+    }
+    
     return true;
   }
   
@@ -2296,8 +2139,8 @@ namespace whiteice
     const T* dptr = &(data[0]);
 
     for(unsigned int i=0;i<layer;i++){
-      dptr = dptr + arch[i]*arch[i+1];
-      dptr = dptr + arch[i+1];
+      dptr = dptr + arch[i]*arch[i+1]; // weight matrix w for layer i
+      dptr = dptr + arch[i+1]; // bias b for layer i
     }
 
     for(unsigned int j=0;j<arch[layer+1];j++)
@@ -2334,6 +2177,13 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::setNonlinearity(nnetwork<T>::nonLinearity nl)
   {
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      if(nl == rectifier || nl == sigmoid){
+	printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
+      }
+    }
+    
     for(unsigned int l=0;l<nonlinearity.size();l++)
       nonlinearity[l] = nl;
 
@@ -2355,6 +2205,13 @@ namespace whiteice
   bool nnetwork<T>::setNonlinearity(unsigned int layer, nonLinearity nl)
   {
     if(layer >= nonlinearity.size()) return false;
+    
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      if(nl == rectifier || nl == sigmoid){
+	printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
+      }
+    }
 
     nonlinearity[layer] = nl;
     
@@ -2371,6 +2228,15 @@ namespace whiteice
   bool nnetwork<T>::setNonlinearity(const std::vector<nonLinearity>& nls) 
   {
     if(nonlinearity.size() != nls.size()) return false;
+
+    for(const auto& nl : nls){
+      if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+	 typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+	if(nl == rectifier || nl == sigmoid){
+	  printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
+	}
+      }
+    }
 
     nonlinearity = nls;
     return true;
@@ -2549,7 +2415,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::setDropOut(T probability) 
   {
-    if(probability <= T(0.0) || probability > T(1.0))
+    if(abs(probability) <= abs(T(0.0)) || abs(probability) > abs(T(1.0)))
       return false; // we cannot set all neurons to be dropout neurons
 
     retain_probability = probability;
@@ -2561,7 +2427,7 @@ namespace whiteice
 	unsigned int numdropped = 0;
 
 	for(unsigned int i=0;i<dropout[l].size();i++){
-	  if(rng.uniform() > retain_probability){
+	  if(abs(rng.uniform()) > abs(retain_probability)){
 	    dropout[l][i] = true;
 	    numdropped++;
 	  }
@@ -2691,7 +2557,7 @@ namespace whiteice
 	
 	std::cout << temp[j] << std::endl;
       }
-#endif         
+#endif
       
       for(unsigned int j=0;j<yd;j++){
 	T sum = b[j];
@@ -2776,9 +2642,13 @@ namespace whiteice
   
   //////////////////////////////////////////////////////////////////////
   
-  template class nnetwork< float >;
-  template class nnetwork< double >;  
+  //template class nnetwork< float >;
+  //template class nnetwork< double >;
+  
   template class nnetwork< math::blas_real<float> >;
   template class nnetwork< math::blas_real<double> >;
+
+  template class nnetwork< math::blas_complex<float> >;
+  template class nnetwork< math::blas_complex<double> >;
   
 };
