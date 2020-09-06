@@ -1900,9 +1900,9 @@ void test_ica()
 	sprintf(buf,"SX_ROW%d", i);
 
 	floats.clear();
-	floats.push_back(SXDATA(i,0).value());
-	floats.push_back(SXDATA(i,1).value());
-	floats.push_back(SXDATA(i,2).value());
+	floats.push_back(SXDATA(i,0).real());
+	floats.push_back(SXDATA(i,1).real());
+	floats.push_back(SXDATA(i,2).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1921,7 +1921,7 @@ void test_ica()
 	
 	floats.clear();
 	for(unsigned int j=0;j<3;j++)
-	  floats.push_back(AX(i,j).value());
+	  floats.push_back(AX(i,j).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1939,9 +1939,9 @@ void test_ica()
 	sprintf(buf,"X_ROW%d", i);
 	
 	floats.clear();
-	floats.push_back(XDATA(i,0).value());
-	floats.push_back(XDATA(i,1).value());
-	floats.push_back(XDATA(i,2).value());
+	floats.push_back(XDATA(i,0).real());
+	floats.push_back(XDATA(i,1).real());
+	floats.push_back(XDATA(i,2).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1960,7 +1960,7 @@ void test_ica()
 	
 	floats.clear();
 	for(unsigned int j=0;j<3;j++)
-	  floats.push_back(W(i,j).value());
+	  floats.push_back(W(i,j).real());
 	
 	datafile.set(buf, floats);
       }

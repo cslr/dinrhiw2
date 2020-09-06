@@ -98,6 +98,8 @@ namespace whiteice
 
       // hermitean transpose of the vector
       void hermite() ;
+
+      inline void conj(){ this->hermite(); }
       
       vertex<T> operator+(const vertex<T>& v) const ;      
       vertex<T> operator-(const vertex<T>& v) const ;

@@ -175,20 +175,7 @@ namespace whiteice
   
   //////////////////////////////////////////////////////////////////////
 
-  template bool deep_pretrain_nnetwork<float>
-    (whiteice::nnetwork<float>*& nn,
-     const whiteice::dataset<float>& data,
-     const bool binary,
-     const int verbose,
-     const bool* running);
-
-  template bool deep_pretrain_nnetwork<double>
-    (whiteice::nnetwork<double>*& nn,
-     const whiteice::dataset<double>& data,
-     const bool binary,
-     const int verbose,
-     const bool* running);
-
+  
   template bool deep_pretrain_nnetwork< math::blas_real<float> >
     (whiteice::nnetwork< math::blas_real<float> >*& nn,
      const whiteice::dataset< math::blas_real<float> >& data,
@@ -203,19 +190,6 @@ namespace whiteice
      const int verbose,
      const bool* running);
 
-  template bool deep_pretrain_nnetwork_full_sigmoid<float>
-  (whiteice::nnetwork<float>*& nn,
-   const whiteice::dataset<float>& data,
-   const bool binary,
-   const int verbose,
-   const bool* running);
-  
-  template bool deep_pretrain_nnetwork_full_sigmoid<double>
-  (whiteice::nnetwork<double>*& nn,
-   const whiteice::dataset<double>& data,
-   const bool binary,
-   const int verbose,
-   const bool* running);
   
   template bool deep_pretrain_nnetwork_full_sigmoid< math::blas_real<float> >
   (whiteice::nnetwork< math::blas_real<float> >*& nn,

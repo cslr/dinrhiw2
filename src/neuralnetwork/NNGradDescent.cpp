@@ -44,7 +44,7 @@ namespace whiteice
       // regularizer = T(0.0001); // 1/10.000 (keep weights from becoming large)
       // regularizer = T(1.0); // this works for "standard" cases
       
-      regularizer = T(0.0);    // regularizer is DISABLED
+      regularizer = T(0.0f);    // regularizer is DISABLED
     }
 
 
@@ -142,6 +142,27 @@ namespace whiteice
     {
       return this->mne;
     }
+
+    // whether to add alpha*0.5*||w||^2 term to error to keep
+    // weight values from exploding. It is RECOMMENDED to enable
+    // this for complex valued neural networks because complex
+    // non-linearities might easily explode to large values
+    //
+    // 0.01 seem to work rather well when complex weights are N(0,I)/dim(W(k,:))
+    // and data is close to N(0,I) too.
+    template <typename T>
+    void NNGradDescent<T>::setRegularizer(const T alpha)
+    {
+      if(real(alpha) >= 0.0f)
+	this->regularizer = alpha;
+    }
+
+    // returns regularizer value, zero means regularizing is disabled
+    template <typename T>
+    T NNGradDescent<T>::getRegularizer() const
+    {
+      return regularizer;
+    }
     
     /*
      * starts the optimization process using data as 
@@ -200,7 +221,7 @@ namespace whiteice
 
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
-      best_error = getError(nn, data, (regularizer>0.0f), dropout);
+      best_error = getError(nn, data, (real(regularizer)>0.0f), dropout);
       if(dropout){
 	auto nn_without_dropout = nn;
 	nn_without_dropout.removeDropOut();
@@ -317,7 +338,7 @@ namespace whiteice
 		      << T(100.0)*percentage << "%)"
 		      << std::endl;
 
-	    if(v/m <= percentage) // 1% is a good value
+	    if(abs(v/m) <= abs(percentage)) // 1% is a good value
 	      convergence.push_back(true);
 	    else
 	      convergence.push_back(false);
@@ -470,7 +491,7 @@ namespace whiteice
 	  
 	  nnet.calculate(dtest.access(0, index), out);
 	  
-	  err = yvalue - out;
+	  err = out - yvalue;
 
 	  if(mne) esum += err.norm();
 	  else esum += T(0.5f)*((err*err)[0]);
@@ -630,20 +651,13 @@ namespace whiteice
 	  // (keep input weights) [the first try is always given imported weights]
 
 	  if(first_time == false){
-#if 0
-	    {
-	      std::ostringstream ss;
-	      ss << std::this_thread::get_id();
-	      std::string str_id = ss.str();
-		
-	      printf("RANDOMIZE NEURAL NETWORK WEIGHTS (%s)\n",
-		     str_id.c_str());
-	      fflush(stdout);
-	    }
-#endif
 	    
 	    nn->randomize();
 
+#if 0
+	    // disable deep pretraining and normalize weights to unity as they
+	    // don't implement complex numbers..
+	    
 	    if(deep_pretraining){
 	      auto ptr = nn.release();
 	      // verbose = 2: logs training to log file..
@@ -669,18 +683,10 @@ namespace whiteice
 	      negative_feedback_between_neurons(*nn, dtrain, alpha);
 #endif
 	    }
+#endif
 	    
 	  }
 	  else{
-	    {
-	      std::ostringstream ss;
-	      ss << std::this_thread::get_id();
-	      std::string str_id = ss.str();
-	      
-	      printf("USE PRESET NEURAL NETWORK WEIGHTS (%s)\n",
-		     str_id.c_str());
-	      fflush(stdout);
-	    }
 	    first_time = false;
 	  }
 
@@ -712,7 +718,7 @@ namespace whiteice
 	  {
 	    solution_lock.lock();
 	    
-	    if(error < best_error){
+	    if(abs(error) < abs(best_error)){
 	      // improvement (smaller error with early stopping)
 	      
 	      if(dropout){
@@ -722,7 +728,7 @@ namespace whiteice
 		const T gerror = getError(nn_without_dropout, *data,
 					  false, false);
 		
-		if(gerror < best_pure_error){
+		if(abs(gerror) < abs(best_pure_error)){
 		  nn_without_dropout.exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -731,7 +737,7 @@ namespace whiteice
 	      else{
 		const T gerror = getError(*nn, *data, false, false);
 
-		if(gerror < best_pure_error){
+		if(abs(gerror) < abs(best_pure_error)){
 		  nn->exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -800,11 +806,11 @@ namespace whiteice
 		  nnet.input() = dtrain.access(0, index);
 		  nnet.calculate(true);
 		  
-		  err = dtrain.access(1,index) - nnet.output();
+		  err = nnet.output() - dtrain.access(1,index);
 
 		  if(mne) err.normalize(); // minimum norm error gradient instead
 		  
-		  if(nnet.gradient(err, grad) == false)
+		  if(nnet.mse_gradient(err, grad) == false)
 		    std::cout << "gradient failed." << std::endl;
 		  
 		  sgrad += ninv*grad;
@@ -837,11 +843,11 @@ namespace whiteice
 		  nnet.input() = dtrain.access(0, index);
 		  nnet.calculate(true);
 		  
-		  err = dtrain.access(1,index) - nnet.output();
+		  err = nnet.output() - dtrain.access(1,index);
 
 		  if(mne) err.normalize(); // minimum norm error gradient instead
 		  
-		  if(nnet.gradient(err, grad) == false)
+		  if(nnet.mse_gradient(err, grad) == false)
 		    std::cout << "gradient failed." << std::endl;
 		  
 		  sgrad += ninv*grad;
@@ -913,15 +919,15 @@ namespace whiteice
 #endif
 	      }
 
-	      error = getError(*nn, dtrain, (regularizer>0.0f), dropout);
+	      error = getError(*nn, dtrain, (abs(regularizer)>0.0f), dropout);
 
 	      delta_error = (prev_error - error);
 	      ratio = abs(delta_error) / abs(error);
 
-	      if(delta_error < T(0.0)){ // if error grows we reduce learning rate
+	      if(real(delta_error) < 0.0f){ // if error grows we reduce learning rate
 		lrate *= T(0.50);
 	      }
-	      else if(delta_error > T(0.0)){ // error becomes smaller we increase learning rate
+	      else if(real(delta_error) > 0.0){ // error becomes smaller we increase learning rate
 		lrate *= T(1.0/0.50);
 	      }
 
@@ -950,14 +956,14 @@ namespace whiteice
 	      if((rng.rand() % 5) == 0 && error < 0.50)
 		break;
 	    }
-	    while(delta_error < T(0.0) && lrate >= T(10e-25) && running);
+	    while(real(delta_error) < T(0.0) && real(lrate) >= 10e-25 && running);
 
 	    
 	    // replaces error with TESTing set error
-	    error = getError(*nn, dtest, (regularizer>0.0f), dropout);
+	    error = getError(*nn, dtest, (abs(regularizer)>0.0f), dropout);
 
 	    {
-	      if(error > local_thread_best_error){
+	      if(real(error) > real(local_thread_best_error)){
 		// no improvement for this iteration
 		std::lock_guard<std::mutex> lock(noimprove_lock);
 		
@@ -1000,7 +1006,7 @@ namespace whiteice
 	    w0 = weights;
 
 	    {
-	      if(error < best_error){
+	      if(real(error) < real(best_error)){
 		std::lock_guard<std::mutex> lock(solution_lock);
 
 		if(dropout){
@@ -1010,7 +1016,7 @@ namespace whiteice
 		  const T gerror = getError(nn_without_dropout, *data,
 					    false, false);
 		  
-		  if(gerror < best_pure_error){
+		  if(real(gerror) < real(best_pure_error)){
 		    nn_without_dropout.exportdata(bestx);
 		    best_error = error;
 		    best_pure_error = gerror;
@@ -1019,7 +1025,7 @@ namespace whiteice
 		else{
 		  const T gerror = getError(*nn, *data, false, false);
 		  
-		  if(gerror < best_pure_error){
+		  if(real(gerror) < real(best_pure_error)){
 		    nn->exportdata(bestx);
 		    best_error = error;
 		    best_pure_error = gerror;
@@ -1054,7 +1060,7 @@ namespace whiteice
 
 	    
 	  }
-	  while(error > T(0.00001f) &&
+	  while(real(error) > 0.00001f &&
 		noimprovements[std::this_thread::get_id()] < MAX_NOIMPROVEMENT_ITERS &&
 		iterations < MAXITERS &&
 		running);
@@ -1105,7 +1111,7 @@ namespace whiteice
 		const T gerror = getError(nn_without_dropout, *data,
 					  false, false);
 
-		if(gerror < best_pure_error){
+		if(real(gerror) < real(best_pure_error)){
 		  nn_without_dropout.exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -1114,7 +1120,7 @@ namespace whiteice
 	      else{
 		const T gerror = getError(*nn, *data, false, false);
 
-		if(gerror < best_pure_error){
+		if(real(gerror) < real(best_pure_error)){
 		  nn->exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -1140,10 +1146,10 @@ namespace whiteice
 
 
     
-    template class NNGradDescent< float >;
-    template class NNGradDescent< double >;
     template class NNGradDescent< blas_real<float> >;
-    template class NNGradDescent< blas_real<double> >;    
+    template class NNGradDescent< blas_real<double> >;
+    template class NNGradDescent< blas_complex<float> >;
+    template class NNGradDescent< blas_complex<double> >;
     
   };
 };

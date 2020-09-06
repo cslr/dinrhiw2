@@ -1049,7 +1049,10 @@ namespace whiteice
     realnumber abs(const realnumber& x);
     
     template <typename T>
-      blas_real<T> abs(blas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> abs(const blas_real<T>& x) PURE_FUNCTION;
+
+    template <typename T>
+      blas_real<T> abs(const blas_complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
       vertex<T> abs(const vertex<T>& x) PURE_FUNCTION;
@@ -1071,7 +1074,7 @@ namespace whiteice
     
     template <typename T>
       whiteice::math::complex<T> abs(const whiteice::math::complex<T>& x) PURE_FUNCTION;
-    
+
     integer abs(const integer& x) PURE_FUNCTION;
 
     
@@ -1092,12 +1095,21 @@ namespace whiteice
     
     
     template <typename T>
-      blas_real<T> abs(blas_real<T>& x)
+      blas_real<T> abs(const blas_real<T>& x)
       {
+	return x.abs();
+#if 0
 	blas_real<T> y(x);
 	y.c[0] = whiteice::math::abs(y.c[0]);
 	
 	return y;
+#endif
+      }
+
+    template <typename T>
+      blas_real<T> abs(const blas_complex<T>& x)
+      {
+	return x.abs();
       }
     
     template <typename T>
@@ -1206,13 +1218,12 @@ namespace whiteice
 	return y.conj();
       }
     
-    // interpret external conjugate of matrix
-    // as hermite M^h operator
+    // conjugates matrix value (no transpose)
     template <typename T, typename S>
       matrix<T> conj(const matrix<T>& X)
       {
 	matrix<T> Y(X);
-	return Y.hermite();
+	return Y.conj();
       }
 
     
@@ -1239,11 +1250,11 @@ namespace whiteice
     template <typename T>
       blas_complex<T> conj(const blas_complex<T>& a)
       {
-	blas_real<T> r;
-	r.c[0] =  a.c[0];
-	r.c[1] = -a.c[1];
+	blas_complex<T> z;
+	z.c[0] =  a.c[0];
+	z.c[1] = -a.c[1];
 	
-	return r;
+	return z;
       }
 
     
@@ -1268,7 +1279,7 @@ namespace whiteice
       blas_real<T> real(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      blas_complex<T> real(const blas_complex<T>& x) PURE_FUNCTION;
+      blas_real<T> real(const blas_complex<T>& x) PURE_FUNCTION;
     
     double imag(double x) PURE_FUNCTION;
     float imag(float x) PURE_FUNCTION;
@@ -1285,9 +1296,9 @@ namespace whiteice
     
     template <typename T>
       blas_real<T> imag(const blas_real<T>& x) PURE_FUNCTION;
-    
+
     template <typename T>
-      blas_complex<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
+      blas_real<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -1319,7 +1330,7 @@ namespace whiteice
       }    
     
     template <typename T>
-      blas_complex<T> real(const blas_complex<T>& x)
+      blas_real<T> real(const blas_complex<T>& x)
       {
 	return x.c[0];
       }
@@ -1355,7 +1366,7 @@ namespace whiteice
       }    
     
     template <typename T>
-      blas_complex<T> imag(const blas_complex<T>& x)
+      blas_real<T> imag(const blas_complex<T>& x)
       {
 	return x.c[1];
       }

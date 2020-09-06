@@ -795,7 +795,7 @@ namespace whiteice
 	      
 	      whiteice::math::matrix<T> fgrad_w;
 	      
-	      nn.gradient(input, fgrad_w);
+	      nn.jacobian(input, fgrad_w);
 	      
 	      whiteice::math::matrix<T> fgrad_input;
 	      
@@ -955,7 +955,7 @@ namespace whiteice
 		
 		whiteice::math::matrix<T> fgrad_w;
 		
-		nn.gradient(input, fgrad_w);
+		nn.jacobian(input, fgrad_w);
 		
 		whiteice::math::matrix<T> fgrad_input;
 		

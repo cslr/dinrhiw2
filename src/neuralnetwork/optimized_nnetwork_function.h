@@ -74,8 +74,6 @@ namespace whiteice
 
 namespace whiteice
 {
-  extern template class optimized_nnetwork_function< float >;
-  extern template class optimized_nnetwork_function< double >;
   extern template class optimized_nnetwork_function< math::blas_real<float> >;
   extern template class optimized_nnetwork_function< math::blas_real<double> >;
 

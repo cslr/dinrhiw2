@@ -127,9 +127,9 @@ namespace whiteice
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(true);
-				err = data.access(1,i) - nnet.output();
+				err = nnet.output() - data.access(1,i);
 
-				if(nnet.gradient(err, grad) == false){
+				if(nnet.mse_gradient(err, grad) == false){
 					std::cout << "gradient failed." << std::endl;
 					assert(0); // FIXME
 				}
@@ -168,9 +168,9 @@ namespace whiteice
 				rng.normal(n);
 				y += n*math::sqrt(sigma2);
 				
-				err = y - nnet.output();
+				err = nnet.output() - y;
 
-				if(nnet.gradient(err, grad) == false){
+				if(nnet.mse_gradient(err, grad) == false){
 					std::cout << "gradient failed." << std::endl;
 					assert(0); // FIXME
 				}
@@ -322,7 +322,7 @@ namespace whiteice
 	    math::vertex<T> fx;
 	    
 	    nnet.calculate(x, fx);
-	    auto z =  data.access(1, i) - fx;
+	    auto z =  fx - data.access(1, i);
 	      
 	    S += z.outerproduct();
 	    m += z;
@@ -986,8 +986,6 @@ namespace whiteice
 
 namespace whiteice
 {  
-  template class HMC< float >;
-  template class HMC< double >;
   template class HMC< math::blas_real<float> >;
   template class HMC< math::blas_real<double> >;    
 };

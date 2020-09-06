@@ -168,6 +168,9 @@ namespace whiteice
       // calculates hermitian matrix (conjugate transpose matrix)
       matrix<T>& hermite() ;
 
+      // just calculates complex conjugate of matrix values
+      matrix<T>& conj();
+
       T det() const ; // determinate      
       T trace() const ;
       void diag(vertex<T>& diagonal) const ;

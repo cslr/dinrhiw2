@@ -123,9 +123,9 @@ namespace whiteice
     for(unsigned int i=0;i<dtrain.size(0);i++){
       nnet.input() = dtrain.access(0, i);
       nnet.calculate(true);
-      err = dtrain.access(1,i) - nnet.output();
+      err = nnet.output() - dtrain.access(1,i);
       
-      if(nnet.gradient(err, grad) == false){
+      if(nnet.mse_gradient(err, grad) == false){
 	std::cout << "gradient failed." << std::endl;
 	assert(0); // FIXME
       }
@@ -165,8 +165,6 @@ namespace whiteice
   }
   
   
-  template class BFGS_nnetwork< float >;
-  template class BFGS_nnetwork< double >;
   template class BFGS_nnetwork< math::blas_real<float> >;
   template class BFGS_nnetwork< math::blas_real<double> >;
 

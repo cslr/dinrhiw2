@@ -57,8 +57,6 @@ namespace whiteice
     };
 
 
-  extern template class rLBFGS_nnetwork< float >;
-  extern template class rLBFGS_nnetwork< double >;
   extern template class rLBFGS_nnetwork< math::blas_real<float> >;
   extern template class rLBFGS_nnetwork< math::blas_real<double> >;
   

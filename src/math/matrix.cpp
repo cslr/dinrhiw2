@@ -990,7 +990,28 @@ namespace whiteice
 	  
 	  for(unsigned int j=0;j<M.numRows;j++)
 	    for(unsigned int i=0;i<M.numCols;i++)
-	      M(j,i) = conj(M(j,i));
+	      M(j,i) = whiteice::math::conj(M(j,i));
+	}
+
+      return (*this);
+    }
+
+
+    // just calculates complex conjugate of matrix values
+    template <typename T>
+    matrix<T>& matrix<T>::conj()
+    {
+      // conjugates complex matrices
+      if(typeid(T) == typeid(complex<float>) ||
+	 typeid(T) == typeid(complex<double>) ||
+	 typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_complex<double>))
+	{
+	  auto& M = (*this);
+	  
+	  for(unsigned int j=0;j<M.numRows;j++)
+	    for(unsigned int i=0;i<M.numCols;i++)
+	      M(j,i) = whiteice::math::conj(M(j,i));
 	}
 
       return (*this);

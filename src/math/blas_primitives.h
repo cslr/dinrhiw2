@@ -6,10 +6,13 @@
 #ifndef blas_primitives_h
 #define blas_primitives_h
 
+#include <stdio.h>
 #include "ownexception.h"
 #include <stdexcept>
 #include <exception>
 #include <complex>
+#include <cassert>
+#include <math.h>
 
 namespace whiteice
 {
@@ -22,6 +25,17 @@ namespace whiteice
     // -> can malloc and use blas_xxx structures as pure types
     //    -> memcpy((T*)(blas_real<T>_pointer), xxx) etc.
     //    -> especially now ATLAS library can access data directly (as memory)
+
+    template <typename T=float>
+    inline void blas_safebox(const T& value){
+#ifdef _GLIBCXX_DEBUG
+      // in debugging mode we stop if data large (algorithms should work with smallish numbers)
+      if(abs(value) > T(1000000.0f)){
+	printf("BLAS VALUE TOO LARGE (larger than 10^6): %f\n", value);
+	assert(0);
+      }
+#endif
+    }
     
     template <typename T>
       struct blas_complex;
@@ -32,14 +46,32 @@ namespace whiteice
       {
 	T c[1] __attribute__ ((packed));
 	
-	inline blas_real(){ c[0] = (T)0; }
-	inline blas_real(const T& t){ c[0] = t; }
-	inline blas_real(const blas_real<T>& t){ c[0] = t.c[0]; }
-	inline blas_real(const blas_complex<T>& t){ c[0] = t.c[0]; }
+	inline blas_real(){
+	  c[0] = T(0.0f);
+	  blas_safebox(c[0]);
+	}
+	
+	inline blas_real(const T& t){
+	  c[0] = t;
+	  blas_safebox(c[0]);
+	}
+	
+	//inline blas_real(const blas_real<T>& t){ c[0] = t.c[0]; }
+	//inline blas_real(const blas_complex<T>& t){ c[0] = t.c[0]; }
 
 	// work arounds stupid compiler..
-	// explicit inline blas_real(const blas_complex<float>& t){ c[0] = t.c[0]; } // takes real part
-	// explicit inline blas_real(const blas_complex<double>& t){ c[0] = t.c[0]; } // takes real part
+	inline blas_real(const blas_complex<float>& t); // takes real part
+	inline blas_real(const blas_complex<double>& t); // takes real part
+	
+	inline blas_real(const blas_real<float>& t){
+	  c[0] = t.c[0];
+	  blas_safebox(c[0]);
+	}
+	
+	inline blas_real(const blas_real<double>& t){
+	  c[0] = t.c[0];
+	  blas_safebox(c[0]);
+	}
 	
 	inline ~blas_real(){ }
 	
@@ -61,27 +93,49 @@ namespace whiteice
 	     
 	inline blas_real<T> operator/(const blas_real<T>& t) const 
 	{ return blas_real<T>(this->c[0] / t.c[0]); } // no division by zero checks
-	  
+
 	inline blas_real<T> operator!() const  // complex conjugate
 	{ return *this;}
-	
+
+	inline void conj(){ }   // complex conjugate (nothing to do with real valued data)
+	  
 	inline blas_real<T> operator-() const 
 	{ return blas_real<T>(-this->c[0]); }
       
 	inline blas_real<T>& operator+=(const blas_real<T>& t) 
-	{ this->c[0] += t.c[0]; return *this; }
+	{
+	  this->c[0] += t.c[0];
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	     
 	inline blas_real<T>& operator-=(const blas_real<T>& t) 
-	{ this->c[0] -= t.c[0]; return *this; }
+	{
+	  this->c[0] -= t.c[0];
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	
 	inline blas_real<T>& operator*=(const blas_real<T>& t) 
-	{ this->c[0] *= t.c[0]; return *this; }
+	{
+	  this->c[0] *= t.c[0];
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	     
 	inline blas_real<T>& operator/=(const blas_real<T>& t) 
-	{ this->c[0] /= t.c[0]; return *this; } // no division by zero checks
+	{
+	  this->c[0] /= t.c[0]; // no division by zero checks
+	  blas_safebox(c[0]);
+	  return *this;
+	} 
 	  
 	inline blas_real<T>& operator=(const blas_real<T>& t) 
-	{ this->c[0] = t.c[0]; return *this; }
+	{
+	  this->c[0] = t.c[0];
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	
 	inline bool operator==(const blas_real<T>& t) const 
 	{ return (this->c[0] == t.c[0]); }
@@ -121,37 +175,52 @@ namespace whiteice
 	
 	// scalar operation
 	inline blas_real<T>& operator= (const T& s) 
-	{ this->c[0] = s; return *this; }
+	{
+	  this->c[0] = s;
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 
 	inline blas_real<T> operator+=(const T& s) 
-	{ this->c[0] += s; return *this; } 
+	{
+	  this->c[0] += s;
+	  blas_safebox(c[0]);
+	  return *this;
+	} 
 	  
 	inline blas_real<T>& operator-=(const T& s) 
-	{ this->c[0] -= s; return *this; }
+	{
+	  this->c[0] -= s;
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	     
 	inline blas_real<T>  operator* (const T& s) const 
-	{ blas_real<T> r; r.c[0] = s * this->c[0]; return r; }
+	{
+	  blas_real<T> r;
+	  r.c[0] = s * this->c[0];
+	  return r;
+	}
 	     
 	inline blas_real<T>  operator/ (const T& s) const 
 	{ blas_real<T> r; r.c[0] =  this->c[0] / s; return r; } // no division by zero checks
 	  
 	inline blas_real<T>& operator*=(const T& s) 
-	{ this->c[0] *= s; return *this; }
+	{
+	  this->c[0] *= s;
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	     
 	inline blas_real<T>& operator/=(const T& s) 
-	{ this->c[0] /= s; return *this; }
+	{
+	  this->c[0] /= s;
+	  blas_safebox(c[0]);
+	  return *this;
+	}
 	     
 	inline blas_real<T> abs() const
 	{ return blas_real<T>( T(fabs((double)c[0])) ); }
-	
-	/*
-	 * inline T& operator[](unsigned int index) 
-	 * { return c[0]; } // doesn't use index!
-	 * 
-	 * inline const T& operator[](unsigned int index) const 
-	 * { return c[0]; } // doesn't use index!
-	 *
-	 */
 	
 	inline T real() { return c[0]; }
 	inline const T real() const { return c[0]; }
@@ -159,12 +228,18 @@ namespace whiteice
 	inline T imag() { return T(0.0f); }
 	inline const T imag() const { return T(0.0f); }
 
-	inline T real(const T value){ this->c[0] = value; return this->c[0]; }
-	inline T imag(const T value){ return T(0.0f); } // has no imaginary value to set
+	inline T real(const T value)
+	{
+	  this->c[0] = value;
+	  blas_safebox(c[0]);
+	  return this->c[0];
+	}
 	
-	// BUG: DOESN'T COMPILE WITH REFERENCE ALTHOUGH IT SHOULD, removed T&
-	inline T value() { return c[0]; }
-	inline const T value() const { return c[0]; }
+	inline T imag(const T value)
+	{
+	  blas_safebox(c[0]);
+	  return T(0.0f); // has no imaginary value to set
+	} 
 	
 	
 	template <typename A>
@@ -249,15 +324,47 @@ namespace whiteice
 	T c[2] __attribute__ ((packed));
 	
 	
-	inline blas_complex(){ c[0] = T(0); c[1] = T(0); }
-	inline blas_complex(const T& r){ c[0] = r; c[1] = T(0); }
-	inline blas_complex(const T& r, const T& i){ c[0] = r; c[1] = i; }
-	inline blas_complex(const blas_complex<T>& r){ c[0] = r.c[0]; c[1] = r.c[1]; }
-	inline blas_complex(const std::complex<T>& z){ c[0] = std::real(z); c[1] = std::imag(z); }
+	inline blas_complex(){
+	  c[0] = T(0.0f); c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	inline blas_complex(const T& r){
+	  c[0] = r; c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	inline blas_complex(const T& r, const T& i){
+	  c[0] = r; c[1] = i;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	//inline blas_complex(const blas_complex<T>& r){ c[0] = r.c[0]; c[1] = r.c[1]; }
+	inline blas_complex(const std::complex<T>& z){
+	  c[0] = std::real(z); c[1] = std::imag(z);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
 	
 	// work arounds stupid compiler..
-	inline blas_complex(const blas_real<float>& r){ c[0] = r.c[0]; c[1] = T(0); }
-	inline blas_complex(const blas_real<double>& r){ c[0] = r.c[0]; c[1] = T(0); }
+	inline blas_complex(const blas_real<float>& r){
+	  c[0] = r.c[0]; c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	inline blas_complex(const blas_real<double>& r){
+	  c[0] = r.c[0]; c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	inline blas_complex(const blas_complex<float>& r){
+	  c[0] = r.c[0]; c[1] = r.c[1];
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
+	
+	inline blas_complex(const blas_complex<double>& r){
+	  c[0] = r.c[0]; c[1] = r.c[1];
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	}
 	
 	inline ~blas_complex(){ }
 	
@@ -280,30 +387,60 @@ namespace whiteice
 	inline blas_complex<T> operator!() const   // complex conjugate
 	{ return blas_complex<T>(this->c[0], -this->c[1]); }
 	
+	inline void conj()   // complex conjugate
+	{
+	  c[1] = -c[1];
+	}
+	
 	inline blas_complex<T> operator-() const 
 	{ return blas_complex<T>(-this->c[0], -this->c[1]); }
       
 	inline blas_complex<T>& operator+=(const blas_complex<T>& t) 
-	{ this->c[0] += t.c[0]; this->c[1] += t.c[1]; return *this; }
+	{
+	  this->c[0] += t.c[0]; this->c[1] += t.c[1];
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	     
 	inline blas_complex<T>& operator-=(const blas_complex<T>& t) 
-	{ this->c[0] -= t.c[0]; this->c[1] -= t.c[1]; return *this; }
+	{
+	  this->c[0] -= t.c[0]; this->c[1] -= t.c[1];
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	
 	inline blas_complex<T>& operator*=(const blas_complex<T>& t) 
-	{ T a = c[0] * t.c[0] - c[1]*t.c[1]; T b = c[1] * t.c[0] + c[0]*t.c[1];
-	  this->c[0] = a; this->c[1] = b; return *this; }
+	{
+	  T a = c[0] * t.c[0] - c[1]*t.c[1];
+	  T b = c[1] * t.c[0] + c[0]*t.c[1];
+	  this->c[0] = a; this->c[1] = b;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	  
 	// no division by zero checks
 	inline blas_complex<T>& operator/=(const blas_complex<T>& t) 
-	{ T a = (c[0]*t.c[0] + c[1]*t.c[1])/(t.c[0]*t.c[0] + t.c[1]*t.c[1]);
+	{
+	  T a = (c[0]*t.c[0] + c[1]*t.c[1])/(t.c[0]*t.c[0] + t.c[1]*t.c[1]);
 	  T b = (c[1]*t.c[0] - c[0]*t.c[1])/(t.c[0]*t.c[0] + t.c[1]*t.c[1]);
-	  this->c[0] = a; this->c[1] = b; return *this; }	  
+	  this->c[0] = a; this->c[1] = b;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	  
 	inline blas_complex<T>& operator=(const blas_complex<T>& t) 
-	{ this->c[0] = t.c[0]; this->c[1] = t.c[1]; return *this; }
+	{
+	  this->c[0] = t.c[0]; this->c[1] = t.c[1];
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	  
 	inline blas_complex<T>& operator=(const blas_real<T>& t) 
-	{ this->c[0] = t.c[0]; this->c[1] = T(0.0); return *this; }
+	{
+	  this->c[0] = t.c[0]; this->c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	
 	inline bool operator==(const blas_complex<T>& t) const 
 	{ return (this->c[0] == t.c[0] && this->c[1] == t.c[1]); }
@@ -383,13 +520,25 @@ namespace whiteice
 	
 	// scalar operation
 	inline blas_complex<T>& operator= (const T& s) 
-	{ this->c[0] = s; this->c[1] = T(0); return *this; }
+	{
+	  this->c[0] = s; this->c[1] = T(0.0f);
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	
 	inline blas_real<T> operator+=(const T& s) 
-	{ this->c[0] += s; return *this; }
+	{
+	  this->c[0] += s;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	
 	inline blas_real<T>& operator-=(const T& s) 
-	{ this->c[0] -= s; return *this; }
+	{
+	  this->c[0] -= s;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	     
 	inline blas_complex<T>  operator* (const T& s) const 
 	{ blas_complex<T> r; r.c[0] = s * this->c[0]; r.c[1] = s * this->c[1]; return r; }
@@ -399,22 +548,21 @@ namespace whiteice
 	{ blas_complex<T> r; r.c[0] =  this->c[0] / s; r.c[1] = this->c[1] / s; return r; }
 	  
 	inline blas_complex<T>& operator*=(const T& s) 
-	{ this->c[0] *= s; this->c[1] *= s; return *this; }
+	{
+	  this->c[0] *= s; this->c[1] *= s;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	     
 	inline blas_complex<T>& operator/=(const T& s) 
-	{ this->c[0] /= s; this->c[1] /= s; return *this; }
+	{
+	  this->c[0] /= s; this->c[1] /= s;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return *this;
+	}
 	     
 	inline blas_real<T> abs() const
 	{ blas_real<T> r; r.c[0] = T(sqrt((double)(c[0]*c[0] + c[1]*c[1]))); return r; }
-	
-	/*
-	 * inline T& operator[](unsigned int index) 
-	 * { return c[index]; }
-	 * 
-	 * inline const T& operator[](unsigned int index) const 
-	 * { return c[index]; }
-	 * 
-	 */
 	
 	inline T real() { return c[0]; }
 	inline const T real() const { return c[0]; }
@@ -422,8 +570,19 @@ namespace whiteice
 	inline T imag() { return c[1]; }
 	inline const T imag() const { return c[1]; }
 	
-	inline T real(const T value){ this->c[0] = value; return this->c[0]; }
-	inline T imag(const T value){ this->c[1] = value; return this->c[1]; }
+	inline T real(const T value)
+	{
+	  this->c[0] = value;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return this->c[0];
+	}
+	
+	inline T imag(const T value)
+	{
+	  this->c[1] = value;
+	  blas_safebox(c[0]); blas_safebox(c[1]);
+	  return this->c[1];
+	}
 	
 	template <typename A>
 	friend blas_complex<A> operator*(const A& s, const blas_complex<A>& r) ;
@@ -452,7 +611,21 @@ namespace whiteice
       } __attribute__ ((packed));
     
     
+    // works around stupid compiler where we cannot define function for blas_complex in blas_real
+    // until blas_complex is defined
+    template <typename T>
+    inline blas_real<T>::blas_real(const blas_complex<float>& t){
+      c[0] = t.c[0]; // takes real part
+      blas_safebox(c[0]);
+    } 
     
+    template <typename T>
+    inline blas_real<T>::blas_real(const blas_complex<double>& t){
+      c[0] = t.c[0]; // takes real part
+      blas_safebox(c[0]);
+    } 
+    
+
 
     template <typename T>
       inline blas_complex<T> operator*(const T& s, const blas_complex<T>& r) 
@@ -541,28 +714,6 @@ namespace whiteice
     
     
 
-    
-    template <typename T>
-      inline blas_real<T> abs(const blas_real<T>& t) 
-      {
-	blas_real<T> u;
-	u.c[0] = T(::fabs((double)t.c[0]));
-	return u;
-      }
-    
-    template <typename T>
-      inline blas_real<T> abs(const blas_complex<T>& t) 
-      {
-	blas_real<T> u;
-	
-	u.c[0] = T(::sqrt((double)(t.c[0]*t.c[0] + t.c[1] + t.c[1])));
-	return u;
-      }
-    
-    
-    // double fabs(const double& t) ;
-    // float fabs(const float& t) ;
-    
     
     //////////////////////////////////////////////////////////////////////
     // conversion functions

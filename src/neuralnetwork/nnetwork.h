@@ -41,7 +41,8 @@ namespace whiteice
       halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
       pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
       tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
-      rectifier = 5 // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
+      rectifier = 5, // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
+      softmax = 6 // for complex neural networks: this derivates ok and is similar to ReLU rectifier
     };
 
 
@@ -107,11 +108,11 @@ namespace whiteice
     bool presetWeightsFromDataRandom(const whiteice::dataset<T>& ds);
 
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
-    // grad(0,5*error^2) = grad(right - output)
-    bool gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    bool mse_gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
 
-    // calculates gradient of parameter weights w f(v|w)
-    bool gradient(const math::vertex<T>& input, math::matrix<T>& grad) const;
+    // calculates jacobian/gradient of parameter weights w f(v|w)
+    bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
@@ -246,10 +247,14 @@ namespace whiteice
   
   
   
-  extern template class nnetwork< float >;
-  extern template class nnetwork< double >;  
+  //extern template class nnetwork< float >;
+  //extern template class nnetwork< double >;
+  
   extern template class nnetwork< math::blas_real<float> >;
   extern template class nnetwork< math::blas_real<double> >;
+
+  extern template class nnetwork< math::blas_complex<float> >;
+  extern template class nnetwork< math::blas_complex<double> >;
   
 };
 

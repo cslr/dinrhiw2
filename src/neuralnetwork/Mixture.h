@@ -87,8 +87,6 @@ namespace whiteice
     };
 
 
-  extern template class Mixture< float >;
-  extern template class Mixture< double >;
   extern template class Mixture< whiteice::math::blas_real<float> >;
   extern template class Mixture< whiteice::math::blas_real<double> >;
   

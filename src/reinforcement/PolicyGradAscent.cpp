@@ -543,7 +543,7 @@ namespace whiteice
 	    
 	    whiteice::math::matrix<T> gradP;
 	    
-	    policy->gradient(state, gradP);
+	    policy->jacobian(state, gradP);
 
 	    const T p = frobenius_norm(gradP);
 
@@ -663,7 +663,7 @@ namespace whiteice
 	      
 	      whiteice::math::matrix<T> gradP;
 	      
-	      pnet.gradient(state, gradP);
+	      pnet.jacobian(state, gradP);
 
 	      gradP *= p_grad_scaling;
 
@@ -993,8 +993,6 @@ namespace whiteice
   //////////////////////////////////////////////////////////////////////
   
 
-  template class PolicyGradAscent< float >;
-  template class PolicyGradAscent< double >;
   template class PolicyGradAscent< whiteice::math::blas_real<float> >;
   template class PolicyGradAscent< whiteice::math::blas_real<double> >;
 };

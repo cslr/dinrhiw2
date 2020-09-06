@@ -207,8 +207,6 @@ namespace whiteice
 
 
     
-    template class NNRandomSearch< float >;
-    template class NNRandomSearch< double >;
     template class NNRandomSearch< blas_real<float> >;
     template class NNRandomSearch< blas_real<double> >;    
     

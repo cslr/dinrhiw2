@@ -373,7 +373,7 @@ namespace whiteice
       if(dataSize <= 0) return;
 
       for(unsigned int i=0;i<dataSize;i++)
-	data[i] = conj(data[i]);
+	data[i] = whiteice::math::conj(data[i]);
     }
     
     

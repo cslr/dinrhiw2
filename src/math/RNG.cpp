@@ -77,6 +77,7 @@ T RNG<T>::uniform() const // [0,1]
 {
   // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
   // return T(rdrand64()/MAX);
+
   return T(unid());
 }
 
@@ -93,25 +94,49 @@ void RNG<T>::uniform(math::vertex<T>& u) const{
 
 
 template <typename T>
-T RNG<T>::normal() const{
-  return T(rnor());
+T RNG<T>::normal() const
+{
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+    T value;
+    whiteice::math::convert(value, Nz);
+    return value;
+  }
+  else return T(rnor()); // real valued normally distributed variable
 }
   
 
 template <typename T>
 void RNG<T>::normal(math::vertex<T>& n) const
 {
-  for(unsigned int i=0;i<n.size();i++)
-    n[i] = T(rnor());
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    for(unsigned int i=0;i<n.size();i++){
+      whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+      whiteice::math::convert(n[i], Nz);
+    }
+  }
+  else{ // real valued normally distributed variable
+    for(unsigned int i=0;i<n.size();i++)
+      n[i] = T(rnor());
+  }
 }
 
 
 template <typename T>
 T RNG<T>::exp() const
 {
-  const float e = rexp();
+  float e = rexp();
+  if(e < 0.0f) e = -e;
   
-  return T(e >= 0.0f ? e : (-e));
+  return T(e);
 }
 
 

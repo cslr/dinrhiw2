@@ -134,8 +134,7 @@ namespace whiteice
     };
   
 
-  extern template class DBN< float >;
-  extern template class DBN< double >;  
+  
   extern template class DBN< math::blas_real<float> >;
   extern template class DBN< math::blas_real<double> >;
 

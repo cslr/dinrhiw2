@@ -185,9 +185,9 @@ namespace whiteice
 
       // data preprocessing
       bool preprocess(unsigned int index,
-		      enum data_normalization norm = dnCorrelationRemoval) ;
+		      enum data_normalization norm = dnMeanVarianceNormalization) ;
       // index = 0
-      bool preprocess(enum data_normalization norm = dnCorrelationRemoval) ;
+      bool preprocess(enum data_normalization norm = dnMeanVarianceNormalization) ;
       
       // inverse preprocess everything, calculates new preprocessing parameters
       // and preprocesses everything with parameter data from the whole dataset

@@ -1722,6 +1722,7 @@ namespace whiteice
     
     try{
       if(norm == dnMeanVarianceNormalization){
+	
 	if(is_normalized(index, dnMeanVarianceNormalization))
 	  return true;
 	
@@ -1798,6 +1799,7 @@ namespace whiteice
 	}
 	
 	clusters[index].preprocessings.push_back(dnMeanVarianceNormalization);
+
 	return true;
       }
       else if(norm == dnSoftMax){
@@ -1826,19 +1828,27 @@ namespace whiteice
 	return true;
       }
       else if(norm == dnCorrelationRemoval){
-	
+
 	if(is_normalized(index, dnCorrelationRemoval))
 	  return true;
-	
+
 	if(is_normalized(index, dnMeanVarianceNormalization) == false)
 	  if(preprocess(index, dnMeanVarianceNormalization) == false)
 	    return false;
-	
+
+	if(typeid(T) == typeid(whiteice::math::blas_complex<float>) || 
+	   typeid(T) == typeid(whiteice::math::blas_complex<double>))
+	{
+	  printf("Warning/FIXME: dataset PCA correlation removal currently FAILS with complex data.\n");
+	  return false;
+	}
+
 	// we can use autocorrelation because mean is already zero
 	if(autocorrelation(clusters[index].Rxx, clusters[index].data) == false){
 	  clusters[index].Rxx.resize(clusters[index].data_dimension, clusters[index].data_dimension);
 	  clusters[index].Rxx.identity();
 	}
+
 	
 	// std::cout << "Rxx = " << clusters[index].Rxx << std::endl;
 
@@ -1847,8 +1857,9 @@ namespace whiteice
 	// in order to be able to compute eig()
 	
 	math::matrix<T> V, Vh, invD, D(clusters[index].Rxx);
-	T dd = T(10e-2);
+	T dd = T(1e-2f);
 	unsigned int counter = 0;
+
 	
 	while(symmetric_eig(D, V) == false){
 	  D = clusters[index].Rxx;
@@ -1875,7 +1886,7 @@ namespace whiteice
 	    
 	  }
 	}
-	
+
 	
 	// std::cout << "typeinfo = " << typeid(T).name() << std::endl;
 	// std::cout << "D = " << D << std::endl;
@@ -1886,7 +1897,7 @@ namespace whiteice
 	for(unsigned int i=0;i<invD.ysize();i++){
 	  T d = invD(i,i);
 
-	  const T epsilon = abs(T(1e-8f));
+	  const auto epsilon = abs(T(1e-8f));
 	  
 	  if(abs(d) > epsilon){
 	    invD(i,i) = whiteice::math::sqrt(T(1.0)/(epsilon + whiteice::math::abs(d)));
@@ -1916,6 +1927,7 @@ namespace whiteice
 	  whiten(index, clusters[index].data[i]);
 	
 	clusters[index].preprocessings.push_back(dnCorrelationRemoval);
+
 	return true;
       }
       else if(norm == dnLinearICA)
