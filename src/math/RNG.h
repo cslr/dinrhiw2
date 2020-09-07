@@ -43,16 +43,19 @@ namespace whiteice {
     // with complex numbers the imaginary part will be zero
     T uniform() const; // [0,1]
     void uniform(math::vertex<T>& u) const;
+    void uniform(math::matrix<T>& U) const;
 
     // normally distributed variables
     // with complex numbers returns complex normal distribution variables CN(0,1)
     T normal() const; // N(0,1)
     void normal(math::vertex<T>& n) const;
+    void normal(math::matrix<T>& N) const;
 
     // exponentially distributed real valued variables
     // with complex numbers the imaginary part will be zero
     T exp() const; // Exp(lambda=2) [not lambda != 1]
     void exp(math::vertex<T>& e) const;
+    void exp(math::matrix<T>& E) const;
     
   protected:
     

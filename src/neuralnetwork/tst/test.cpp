@@ -46,6 +46,8 @@
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
 
+#include "NNGradDescent.h"
+
 #include "RNG.h"
 
 #include "hermite.h"
@@ -80,6 +82,7 @@ extern "C" {
 
 
 using namespace whiteice;
+using namespace whiteice;
 
 
 void activation_test();
@@ -101,6 +104,8 @@ void ensemble_means_test();
 
 void nnetwork_gradient_test();
 void nnetwork_complex_gradient_test();
+
+void nngraddescent_complex_test();
   
 void rbm_test();
 void simple_rbm_test();
@@ -146,14 +151,16 @@ bool saveSamples(const std::string& filename, std::vector< math::vertex< math::b
 int main()
 {
   unsigned int seed = (unsigned int)time(0);
-  seed = 0x5f54fc68;
+  // seed = 0x5f54fc68;
   printf("seed = 0x%x\n", seed);
   srand(seed);
   
   try{
     // nnetwork_test();
 
-    nnetwork_complex_test(); // works about correctly
+    nngraddescent_complex_test();
+
+    // nnetwork_complex_test(); // works about correctly
 
     //nnetwork_gradient_test(); // gradient calculation works
     //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
@@ -347,7 +354,140 @@ void simple_tsne_test()
   }
 }
 
-/************************************************************/
+/*********************************************************************************/
+
+void nngraddescent_complex_test()
+{
+  std::cout << "COMPLEX value NNGradDescent<> optimizer tests." << std::endl;
+
+  nnetwork< math::blas_complex<double> >* nn;
+  dataset< math::blas_complex<double> > data;
+  std::vector<unsigned int> arch;
+
+  for(unsigned int i=0;i<4;i++) // 3 layer neural network
+    arch.push_back(rand()%10 + 10);
+
+  //arch[0] = 2;
+  //arch[arch.size()-1] = 2;
+
+  printf("Neural network architecture: ");
+  for(unsigned int i=0;i<arch.size();i++){
+    if(i == 0) printf("%d", arch[i]);
+    else printf("-%d", arch[i]);
+  }
+  printf("\n");
+
+  // pureLinear optimization works..
+  nn = new nnetwork< math::blas_complex<double> >
+    (arch, nnetwork< math::blas_complex<double> >::rectifier);
+
+  // set last layer to be linear layer
+  nn->setNonlinearity(nn->getLayers()-1, nnetwork< math::blas_complex<double> >::pureLinear);
+  
+  nn->randomize();
+  
+
+  {
+    std::vector< math::vertex< math::blas_complex<double> > > inputs;
+    std::vector< math::vertex< math::blas_complex<double> > > outputs;
+
+    RNG< math::blas_complex<double> > rng;
+
+    math::vertex< math::blas_complex<double> > in, out;
+    in.resize(arch[0]);
+    out.resize(arch[arch.size()-1]);
+
+    math::matrix< math::blas_complex<double> > A;
+    A.resize(arch[arch.size()-1], arch[0]);
+    rng.normal(A); // complex valued N(0,I) values
+    // A.abs(); // takes absolute value (real valued matrix)
+   
+    for(unsigned int n=0;n<1000;n++){
+      rng.normal(in);
+
+      // nonlinear test function (should break Cauchy-Riemann conditions)
+      for(unsigned int i=0;i<in.size();i++){
+	in[i] = whiteice::math::sin(imag(in[i]))*real(in[i]);
+      }
+      
+      out = A*in;
+
+      inputs.push_back(in);
+      outputs.push_back(out);
+    }
+
+    data.createCluster("input", arch[0]);
+    data.createCluster("output", arch[arch.size()-1]);
+    
+    data.add(data.getCluster("input"), inputs);
+    data.add(data.getCluster("output"), outputs);
+
+    data.preprocess(0);
+    data.preprocess(1);
+  }
+
+  printf("Starting neural network optimizer (non-linear problem).\n");
+  fflush(stdout);
+
+  // whiteice::logging.setPrintOutput(true); // for enabling internal logging
+
+  // MNE and dropout heuristics don't work well with complex valued data
+  // 1. MNE gradient maybe needed to be computed differently with complex values
+  // 2. Dropout may modify network so that it doesn't satisfy Cauchy-Riemann conditions
+  //    well anymore meaning that gradient calculation don't work..
+  math::NNGradDescent< math::blas_complex<double> > grad;
+  
+  const unsigned int MAXITERS = 10000;
+  const unsigned int THREADS = 2;
+  const bool dropout = false; 
+  
+  grad.setUseMinibatch(false);
+  grad.setOverfit(false);
+  grad.setMNE(false); // MNE doesn't seem to work well with complex number (is gradient correct)
+  grad.setRegularizer(0.01f); // set regularizer
+  // grad.setRegularizer( 0.01*((double)nn->output_size())/nn->gradient_size() );
+
+  linear_ETA<double> eta;
+  eta.start(0.0, MAXITERS);
+  
+  
+  if(grad.startOptimize(data, *nn, THREADS, MAXITERS, dropout, true) == false){
+    printf("ERROR: NNGradDescent::startOptimize() failed.\n");
+    delete nn;
+    return;
+  }
+
+  printf("NNGradDescent Optimizer started.\n");
+
+  while(grad.hasConverged() == false){
+    unsigned int N;
+    math::blas_complex<double> error;
+
+    eta.update(N);
+
+    if(grad.getSolutionStatistics(error, N) == false){
+      printf("ERROR: NNGradDescent::getSolutionStatistics() failed.\n");
+      delete nn;
+      return;
+    }
+    else{
+      double errorf = 0.0;
+      convert(errorf,error);
+      
+      printf("%d/%d NN model error: %f. [ETA %f hours] (%f minutes)\n",
+	     N, MAXITERS, errorf, eta.estimate()/3600.0, eta.estimate()/60.0);
+      fflush(stdout);
+    }
+
+    sleep(1);
+  }
+
+  printf("Optimization stopped.\n");
+  
+}
+
+
+/*********************************************************************************/
 
 void simple_global_optimum_test()
 {

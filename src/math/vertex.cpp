@@ -255,7 +255,7 @@ namespace whiteice
 	len = T(0.0f);
 	
 	for(unsigned int i=0;i<dataSize;i++)
-	  len += data[i]*data[i];
+	  len += data[i]*whiteice::math::conj(data[i]);
 	
 	len = (T)whiteice::math::sqrt(len);
 	return len;
@@ -834,6 +834,24 @@ namespace whiteice
     {
       for(unsigned int i=0;i<dataSize;i++)
 	data[i] = whiteice::math::abs(data[i]);
+      
+      return (*this);
+    }
+
+    template <typename T>
+    vertex<T>& vertex<T>::real()
+    {
+      for(unsigned int i=0;i<dataSize;i++)
+	data[i] = whiteice::math::real(data[i]);
+      
+      return (*this);
+    }
+
+    template <typename T>
+    vertex<T>& vertex<T>::imag()
+    {
+      for(unsigned int i=0;i<dataSize;i++)
+	data[i] = whiteice::math::imag(data[i]);
       
       return (*this);
     }

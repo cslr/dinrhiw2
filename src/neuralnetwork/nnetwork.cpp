@@ -2415,7 +2415,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::setDropOut(T probability) 
   {
-    if(abs(probability) <= abs(T(0.0)) || abs(probability) > abs(T(1.0)))
+    if(real(probability) <= 0.0f || real(probability) > 1.0f)
       return false; // we cannot set all neurons to be dropout neurons
 
     retain_probability = probability;
@@ -2427,7 +2427,7 @@ namespace whiteice
 	unsigned int numdropped = 0;
 
 	for(unsigned int i=0;i<dropout[l].size();i++){
-	  if(abs(rng.uniform()) > abs(retain_probability)){
+	  if(real(rng.uniform()) > real(retain_probability)){
 	    dropout[l][i] = true;
 	    numdropped++;
 	  }
@@ -2468,7 +2468,7 @@ namespace whiteice
 
     dropout.clear();
 
-    retain_probability = T(1.0);
+    retain_probability = T(1.0f);
 
     return true;
   }

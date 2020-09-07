@@ -94,6 +94,17 @@ void RNG<T>::uniform(math::vertex<T>& u) const{
 
 
 template <typename T>
+void RNG<T>::uniform(math::matrix<T>& U) const{
+  // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
+  
+  for(unsigned int i=0;i<U.size();i++){
+    // u[i] = T(rdrand64()/MAX);
+    U[i] = T(unid());
+  }
+}
+
+
+template <typename T>
 T RNG<T>::normal() const
 {
   if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
@@ -131,6 +142,26 @@ void RNG<T>::normal(math::vertex<T>& n) const
 
 
 template <typename T>
+void RNG<T>::normal(math::matrix<T>& N) const
+{
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    for(unsigned int i=0;i<N.size();i++){
+      whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+      whiteice::math::convert(N[i], Nz);
+    }
+  }
+  else{ // real valued normally distributed variable
+    for(unsigned int i=0;i<N.size();i++)
+      N[i] = T(rnor());
+  }
+}
+
+
+template <typename T>
 T RNG<T>::exp() const
 {
   float e = rexp();
@@ -141,14 +172,22 @@ T RNG<T>::exp() const
 
 
 template <typename T>
-void RNG<T>::exp(math::vertex<T>& ev) const
+void RNG<T>::exp(math::vertex<T>& e) const
 {
-  for(unsigned int i=0;i<ev.size();i++){
-    const float e = rexp();
-    ev[i] = T(e >= 0.0f ? e : (-e));
+  for(unsigned int i=0;i<e.size();i++){
+    const float ef = rexp();
+    e[i] = T(ef >= 0.0f ? ef : (-ef));
   }
 }
 
+template <typename T>
+void RNG<T>::exp(math::matrix<T>& E) const
+{
+  for(unsigned int i=0;i<E.size();i++){
+    const float e = rexp();
+    E[i] = T(e >= 0.0f ? e : (-e));
+  }
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////7

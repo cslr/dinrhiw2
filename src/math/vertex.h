@@ -136,6 +136,8 @@ namespace whiteice
       vertex<T>& operator=(const quaternion<T>&) ;
       
       vertex<T>& abs() ;
+      vertex<T>& real();
+      vertex<T>& imag();
       
       /* scalars */
       vertex<T>& operator= (const T& s) ;

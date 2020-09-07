@@ -231,8 +231,6 @@ namespace whiteice
 	best_pure_error = getError(nn, data, false, false);
       }
 
-      std::cout << "INITIAL BEST PURE ERROR: " << best_pure_error << std::endl;
-      std::cout << std::flush;
       
       {
 	std::lock_guard<std::mutex> lock(noimprove_lock);
@@ -286,8 +284,8 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::hasConverged(T percentage)
     {
-      if(percentage <= T(0.0f)) return true;
-      if(percentage >= T(1.0f)) return false;
+      if(real(percentage) <= 0.0f) return true;
+      if(real(percentage) >= 1.0f) return false;
 
       {
 	std::lock_guard<std::mutex> lock(convergence_lock);
@@ -330,7 +328,7 @@ namespace whiteice
 	    
 	    v /= (err.second.size() - 1);
 	    
-	    v = sqrt(abs(v));
+	    v = sqrt(real(v));
 
 	    std::cout << "THREAD " << threadnum << "/" << (int)errors.size()
 		      << " (" << err.second.size() << " samples)"
@@ -338,7 +336,7 @@ namespace whiteice
 		      << T(100.0)*percentage << "%)"
 		      << std::endl;
 
-	    if(abs(v/m) <= abs(percentage)) // 1% is a good value
+	    if(real(v/m) <= real(percentage)) // 1% is a good value
 	      convergence.push_back(true);
 	    else
 	      convergence.push_back(false);
@@ -468,7 +466,7 @@ namespace whiteice
     {
       // error term is E[ 0.5*||y-f(x)||^2 ]
       // in case mne (minimum norm error) error term is E[||y-f(x)||]
-      T error = T(0.0);
+      T error = T(0.0f);
 
       //const unsigned int MINIBATCHSIZE = 200; // number of samples used to estimate gradient
       
@@ -494,7 +492,10 @@ namespace whiteice
 	  err = out - yvalue;
 
 	  if(mne) esum += err.norm();
-	  else esum += T(0.5f)*((err*err)[0]);
+	  else{
+	    auto n = err.norm();
+	    esum += T(0.5f)*n*n;
+	  }
 
 	}
 	
@@ -516,8 +517,13 @@ namespace whiteice
 
 	net.exportdata(w);
 
-	error += regularizer * T(0.5) * (w*w)[0];
+	auto n = w.norm();
+
+	error += regularizer * T(0.5f) * n*n;
       }
+
+      // shouldn't needed but should help with wierd number problems
+      error = abs(error); 
 
       return error;
     }
@@ -611,7 +617,6 @@ namespace whiteice
 	}
       }
 
-      
       {
 	std::lock_guard<std::mutex> lock(thread_is_running_mutex);
 	thread_is_running++;
@@ -624,6 +629,7 @@ namespace whiteice
 	start_lock.lock();
 	start_lock.unlock();
       }
+
 
       
       while(running && iterations < MAXITERS){
@@ -671,17 +677,18 @@ namespace whiteice
 
 	    
 	    if(heuristics){
-	      normalize_weights_to_unity(*nn);
+	      //normalize_weights_to_unity(*nn);
 	      
-#if 0
+	      /*
 	      if(whiten1d_nnetwork(*nn, dtrain) == false)
 		printf("ERROR: whiten1d_nnetwork failed\n");
-#endif
-#if 0
+
+	      */
+	      /*
 	      normalize_weights_to_unity(*nn);
 	      T alpha = T(0.5f);
 	      negative_feedback_between_neurons(*nn, dtrain, alpha);
-#endif
+	      */
 	    }
 #endif
 	    
@@ -713,12 +720,13 @@ namespace whiteice
 	  T prev_error, error;	  
 	  T delta_error = 0.0f;
 
-	  error = getError(*nn, dtest, (regularizer>0.0f), dropout);
+	  
+	  error = getError(*nn, dtest, (real(regularizer)>0.0f), dropout);
 
 	  {
 	    solution_lock.lock();
 	    
-	    if(abs(error) < abs(best_error)){
+	    if(real(error) < real(best_error)){
 	      // improvement (smaller error with early stopping)
 	      
 	      if(dropout){
@@ -728,7 +736,7 @@ namespace whiteice
 		const T gerror = getError(nn_without_dropout, *data,
 					  false, false);
 		
-		if(abs(gerror) < abs(best_pure_error)){
+		if(real(gerror) < real(best_pure_error)){
 		  nn_without_dropout.exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -737,7 +745,7 @@ namespace whiteice
 	      else{
 		const T gerror = getError(*nn, *data, false, false);
 
-		if(abs(gerror) < abs(best_pure_error)){
+		if(real(gerror) < real(best_pure_error)){
 		  nn->exportdata(bestx);
 		  best_error = error;
 		  best_pure_error = gerror;
@@ -767,7 +775,7 @@ namespace whiteice
 	  T lrate = T(0.01f);
 	  T ratio = T(1.0f);
 	  
-	  error = getError(*nn, dtrain, (regularizer>0.0f), dropout);
+	  error = getError(*nn, dtrain, (real(regularizer)>0.0f), dropout);
 	  
 	  do
 	  {
@@ -888,16 +896,20 @@ namespace whiteice
 
 	    w0 = weights;
 
+	    sumgrad.normalize();
 	    
 	    // adds regularizer to gradient (1/2*||w||^2)
-	    {
+	    if(abs(regularizer) > 0.0f){
 	      sumgrad += regularizer*w0;
 	    }
 	    
 
 	    // restarts gradient descent from lrate = 0.50
 	    // lrate *= 4;
+	    
 	    lrate = 0.50f;
+	    // lrate = 0.01f;
+
 	    
 	    // line search: (we should maybe increase lrate to both directions lrate_next = 2.0*lrate and lrate_next2 = 0.5*lrate...
 	    do{
@@ -908,7 +920,7 @@ namespace whiteice
 		std::cout << "import failed." << std::endl;
 
 	      if(heuristics){
-		normalize_weights_to_unity(*nn);
+		//normalize_weights_to_unity(*nn);
 #if 0
 		if(whiten1d_nnetwork(*nn, dtrain) == false)
 		  printf("ERROR: whiten1d_nnetwork failed\n");
@@ -919,10 +931,10 @@ namespace whiteice
 #endif
 	      }
 
-	      error = getError(*nn, dtrain, (abs(regularizer)>0.0f), dropout);
+	      error = getError(*nn, dtrain, (real(regularizer)>0.0f), dropout);
 
 	      delta_error = (prev_error - error);
-	      ratio = abs(delta_error) / abs(error);
+	      ratio = real(delta_error) / real(error);
 
 	      if(real(delta_error) < 0.0f){ // if error grows we reduce learning rate
 		lrate *= T(0.50);
@@ -930,6 +942,8 @@ namespace whiteice
 	      else if(real(delta_error) > 0.0){ // error becomes smaller we increase learning rate
 		lrate *= T(1.0/0.50);
 	      }
+
+	      // break;
 
 	      {
 		char buffer[256];
@@ -953,14 +967,15 @@ namespace whiteice
 
 	      // leaky error reduction, we sometimes allow jump to worse
 	      // position in gradient direction
-	      if((rng.rand() % 5) == 0 && error < 0.50)
+	      if((rng.rand() % 5) == 0 && real(error) < 1.00f) // was 0.50f
 		break;
 	    }
 	    while(real(delta_error) < T(0.0) && real(lrate) >= 10e-25 && running);
 
 	    
+	    
 	    // replaces error with TESTing set error
-	    error = getError(*nn, dtest, (abs(regularizer)>0.0f), dropout);
+	    error = getError(*nn, dtest, (real(regularizer)>0.0f), dropout);
 
 	    {
 	      if(real(error) > real(local_thread_best_error)){
@@ -1101,7 +1116,7 @@ namespace whiteice
 	  {
 	    solution_lock.lock();
 	    
-	    if(error < best_error){
+	    if(real(error) < real(best_error)){
 	      // improvement (smaller error with early stopping)
 	      
 	      if(dropout){

@@ -160,7 +160,10 @@ namespace whiteice
       
       // translation
       matrix<T>& translation(const T& dx, const T& dy, const T& dz) ;
+      
       matrix<T>& abs() ;
+      matrix<T>& real();
+      matrix<T>& imag();
       
       // transposes itself (changes matrix)
       matrix<T>& transpose() ;
@@ -186,7 +189,7 @@ namespace whiteice
       bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) ;
       
       
-      unsigned int size() const ;
+      unsigned int size() const ;  // rows*columns
       unsigned int ysize() const ; // rows      
       unsigned int xsize() const ; // columns
       

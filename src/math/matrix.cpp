@@ -899,7 +899,28 @@ namespace whiteice
 	  
       return (*this);
     }
-    
+
+    template <typename T>
+    matrix<T>& matrix<T>::real()
+    {
+      const unsigned int N = numRows*numCols;
+      
+      for(unsigned int i=0;i<N;i++)
+	data[i] = whiteice::math::real(data[i]);
+      
+      return (*this);
+    }
+
+    template <typename T>
+    matrix<T>& matrix<T>::imag()
+    {
+      const unsigned int N = numRows*numCols;
+      
+      for(unsigned int i=0;i<N;i++)
+	data[i] = whiteice::math::imag(data[i]);
+      
+      return (*this);
+    }
     
   
     template <typename T>
