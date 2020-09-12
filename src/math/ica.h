@@ -15,11 +15,15 @@ namespace whiteice
     
     // solves independent components from the data and saves
     // dependacy removal matrix to W. Uses deflate method.
+    // data D MUST be already white (PCA preprocessed)
+    // matrix W is transforms data to independent components
     template <typename T>
       bool ica(const matrix<T>& D, matrix<T>& W, bool verbose = false) ;
 
+    // data MUST be already white (PCA preprocessed)
     template <typename T>
-      bool ica(const std::vector< math::vertex<T> >& data, matrix<T>& W, bool verbose = false) ;
+      bool ica(const std::vector< math::vertex<T> >& data,
+	       matrix<T>& W, bool verbose = false);
 
 
     

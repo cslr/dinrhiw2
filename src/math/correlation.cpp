@@ -586,13 +586,14 @@ namespace whiteice
     bool pca(const std::vector< vertex<T> >& data, 
 	     const unsigned int dimensions,
 	     math::matrix<T>& PCA,
-	     math::vertex<T>& m,
+	     math::vertex<T>& mxx,
 	     T& original_var, T& reduced_var,
-	     bool regularizeIfNeeded)
+	     bool regularizeIfNeeded,
+	     bool unitVariance)
     {
-      matrix<T> C;
+      matrix<T> Cxx;
 
-      if(mean_covariance_estimate(m, C, data) == false)
+      if(mean_covariance_estimate(mxx, Cxx, data) == false)
 	return false;
 
       
@@ -602,11 +603,13 @@ namespace whiteice
       if(regularizeIfNeeded){
 	// not optimized
 	
-	matrix<T> CC(C);
+	matrix<T> CC(Cxx);
 	T regularizer = T(0.0f);
+	
 	for(unsigned int j=0;j<CC.ysize();j++)
 	  for(unsigned int i=0;i<CC.xsize();i++)
 	    regularizer += abs(CC(j,i));
+	
 	regularizer /= (CC.ysize()*CC.xsize());
 	regularizer *= T(0.001);
 	if(regularizer <= T(0.0f)) regularizer = T(0.0001f);
@@ -616,7 +619,7 @@ namespace whiteice
 	
 	
 	while(symmetric_eig(CC, X, true) == false){
-	  CC = C;
+	  CC = Cxx;
 	  
 	  for(unsigned int i=0;i<CC.ysize();i++)
 	    CC(i,i) += regularizer;
@@ -628,14 +631,14 @@ namespace whiteice
 	    return false;
 	}
 
-	C = CC;
+	Cxx = CC;
       }
       else{
-	if(symmetric_eig(C, X, true) == false)
+	if(symmetric_eig(Cxx, X, true) == false)
 	  return false;
       }
 
-      // C = X * D * X^t
+      // Cxx = X * D * X^t
 
       // we want to keep only the top variance vectors
 
@@ -643,8 +646,8 @@ namespace whiteice
       reduced_var  = T(0.0f);
 
       for(unsigned int i=0;i<X.xsize();i++){
-	if(i<dimensions) reduced_var += C(i,i);
-	original_var += C(i,i);
+	if(i<dimensions) reduced_var += Cxx(i,i);
+	original_var += Cxx(i,i);
       }
 
       if(X.submatrix(PCA, 0, 0, dimensions, X.xsize()) == false)
@@ -652,6 +655,22 @@ namespace whiteice
 
       PCA.transpose();
 
+
+      if(unitVariance){
+	
+	T epsilon = T(1e-9f);
+	
+	for(unsigned int j=0;j<dimensions;j++){
+	  
+	  T scaling =
+	    T(1.0f)/(epsilon + whiteice::math::sqrt(whiteice::math::abs(Cxx(j,j))));
+	  
+	  for(unsigned int i=0;i<PCA.xsize();i++){
+	    PCA(j,i) = scaling*PCA(j,i);
+	  }
+	}
+      }
+      
       // TODO: tests that PCA matrix works (for debugging)
 
       return true;
@@ -788,7 +807,8 @@ namespace whiteice
        math::matrix<float>& PCA,
        math::vertex<float>& m,
        float& original_var, float& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     template bool pca<double>
       (const std::vector< vertex<double> >& data, 
@@ -796,7 +816,8 @@ namespace whiteice
        math::matrix<double>& PCA,
        math::vertex<double>& m,
        double& original_var, double& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     template bool pca< blas_real<float> >
       (const std::vector< vertex< blas_real<float> > >& data, 
@@ -804,7 +825,8 @@ namespace whiteice
        math::matrix< blas_real<float> >& PCA,
        math::vertex< blas_real<float> >& m,
        blas_real<float>& original_var, blas_real<float>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     template bool pca< blas_real<double> >
       (const std::vector< vertex< blas_real<double> > >& data, 
@@ -812,7 +834,8 @@ namespace whiteice
        math::matrix< blas_real<double> >& PCA,
        math::vertex< blas_real<double> >& m,
        blas_real<double>& original_var, blas_real<double>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     template bool pca< blas_complex<float> >
       (const std::vector< vertex< blas_complex<float> > >& data, 
@@ -820,7 +843,8 @@ namespace whiteice
        math::matrix< blas_complex<float> >& PCA,
        math::vertex< blas_complex<float> >& m,
        blas_complex<float>& original_var, blas_complex<float>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     template bool pca< blas_complex<double> >
       (const std::vector< vertex< blas_complex<double> > >& data, 
@@ -828,7 +852,8 @@ namespace whiteice
        math::matrix< blas_complex<double> >& PCA,
        math::vertex< blas_complex<double> >& m,
        blas_complex<double>& original_var, blas_complex<double>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
     
   };
 };

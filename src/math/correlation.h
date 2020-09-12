@@ -60,7 +60,8 @@ namespace whiteice
 	       math::matrix<T>& PCA,
 	       math::vertex<T>& m,
 	       T& original_var, T& reduced_var,
-	       bool regularizeIfNeeded = false);
+	       bool regularizeIfNeeded = false,
+	       bool unitVariance = false);
     
   }
 }
@@ -197,7 +198,8 @@ namespace whiteice
        math::matrix<float>& PCA,
        math::vertex<float>& m,
        float& original_var, float& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     extern template bool pca<double>
       (const std::vector< vertex<double> >& data, 
@@ -205,7 +207,8 @@ namespace whiteice
        math::matrix<double>& PCA,
        math::vertex<double>& m,
        double& original_var, double& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     extern template bool pca< blas_real<float> >
       (const std::vector< vertex< blas_real<float> > >& data, 
@@ -213,7 +216,8 @@ namespace whiteice
        math::matrix< blas_real<float> >& PCA,
        math::vertex< blas_real<float> >& m,
        blas_real<float>& original_var, blas_real<float>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     extern template bool pca< blas_real<double> >
       (const std::vector< vertex< blas_real<double> > >& data, 
@@ -221,7 +225,8 @@ namespace whiteice
        math::matrix< blas_real<double> >& PCA,
        math::vertex< blas_real<double> >& m,
        blas_real<double>& original_var, blas_real<double>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
 
     extern template bool pca< blas_complex<float> >
@@ -230,7 +235,8 @@ namespace whiteice
        math::matrix< blas_complex<float> >& PCA,
        math::vertex< blas_complex<float> >& m,
        blas_complex<float>& original_var, blas_complex<float>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
 
     extern template bool pca< blas_complex<double> >
       (const std::vector< vertex< blas_complex<double> > >& data, 
@@ -238,7 +244,8 @@ namespace whiteice
        math::matrix< blas_complex<double> >& PCA,
        math::vertex< blas_complex<double> >& m,
        blas_complex<double>& original_var, blas_complex<double>& reduced_var,
-       bool regularizeIfNeeded);
+       bool regularizeIfNeeded,
+       bool unitVariance);
     
     
   }

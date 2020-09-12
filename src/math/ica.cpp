@@ -88,11 +88,7 @@ namespace whiteice
 	const unsigned int num = D.ysize();
 	const unsigned int dim = D.xsize();
 	
-	// data MUST be already white (PCA preprocessed)
-
-	const matrix<T>& X = D; // X = (V * D')'
-	
-	/*
+#if 0
 	matrix<T> V;
 	
 	{
@@ -116,17 +112,27 @@ namespace whiteice
 	V.transpose();
 	matrix<T> X = D * V; // X = (V * D')'
 	V.transpose();
-	*/
+#else
+	// data MUST be already white (PCA preprocessed)
+	const matrix<T>& X = D; // X = (V * D')'
+	
+#endif
+	
 	
 	const T TOLERANCE = T(0.0001);
-	const unsigned int MAXITERS = 200;
+	const unsigned int MAXITERS = 1000;
 	
 	// matrix<T> W;
 	W.resize(dim,dim);
 	
-	for(unsigned int j=0;j<dim;j++)
-	  for(unsigned int i=0;i<dim;i++)
-	    W(j,i) = T((float)rand()) / T((float)RAND_MAX);
+	for(unsigned int j=0;j<dim;j++){
+	  for(unsigned int i=0;i<dim;i++){
+	    float r = ((float)rand())/ ((float)RAND_MAX);
+	    r = 2.0f*r -1.0f; // [-1,+1]
+	    W(j,i) = T(r);
+	  }
+	}
+	
 	
 	vertex<T> w;
 	w.resize(dim);            
@@ -155,8 +161,23 @@ namespace whiteice
 	    w_old = w;
 	    
 	    y = X * w;
-	    
-	    if((iter % 2) == 0){ // tanh non-linearity
+
+	    // FIXME add tanh non-linearity
+
+	    if((iter % 2) == 0){ // g(u) = u^3 non-linearity
+	      
+	      for(unsigned int i=0;i<dim;i++) xgy[i] = T(0.0);
+	      dgy = 0;
+	      
+	      for(unsigned int i=0;i<num;i++){
+		X.rowcopyto(x, i);
+		
+		xgy += scaling * y[i]*y[i]*y[i]*x;
+		dgy += scaling * T(3.0)*y[i]*y[i];
+	      }
+	    }
+	    else{ // g(u) u*exp(-u**2/2) non-linearity	    
+	      
 	      for(unsigned int i=0;i<dim;i++) xgy[i] = T(0.0);
 	      dgy = 0;
 	      
@@ -168,30 +189,24 @@ namespace whiteice
 		dgy += scaling * (temp - (y[i]*y[i])*temp);
 	      }
 	    }
-	    else{ // u*exp(-u**2/2) non-linearity
 	      
-	      for(unsigned int i=0;i<dim;i++) xgy[i] = T(0.0);
-	      dgy = 0;
-	      
-	      for(unsigned int i=0;i<num;i++){
-		X.rowcopyto(x, i);
-		T temp = whiteice::math::exp(-(y[i]*y[i])/T(2.0));
-		
-		xgy += scaling * ((y[i] * temp) * x);
-		dgy += scaling * (temp - (y[i]*y[i])*temp);
-	      }
-	    }
-	    
 	    w = xgy - dgy*w;
 	    w.normalize();
 	    __ica_project(w, n, W); // projection
 	    
+	    
 	    // checks for convergence / stopping critearias
-	    w_old = w_old * w;	  
-	    if((T(1.0) - whiteice::math::abs(w_old[0])) < TOLERANCE)
+	    T dotprod = (w_old * w)[0];
+	    
+	    std::cout << "w = " << w << std::endl;
+	    if(verbose) std::cout << "Dot product: " << dotprod << std::endl;
+	    
+	    if((T(1.0) - dotprod) < TOLERANCE && iter > 10){
 	      convergence = true;
-	    else if(iter >= MAXITERS)
+	    }
+	    else if(iter >= MAXITERS){
 	      break;
+	    }
 	    
 	    iter++;
 	  }
@@ -226,6 +241,8 @@ namespace whiteice
     {
       vertex<T> s(w.size()); // s = (initialized to be) zero vector
       vertex<T> t(w.size());
+
+      s.zero();
       
       for(unsigned int i=0;i<n;i++){
 	W.rowcopyto(t, i); // t = W(i,:)
