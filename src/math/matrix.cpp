@@ -1658,25 +1658,25 @@ namespace whiteice
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cblas_saxpy(MSIZE, *((float*)&s), (float*)data, 1, (float*)M.data, 1);
+	cblas_saxpy(MSIZE, *((float*)&a), (float*)data, 1, (float*)M.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cblas_caxpy(MSIZE, (const float*)&s, (float*)data, 1, (float*)M.data, 1);
+	cblas_caxpy(MSIZE, (const float*)&a, (float*)data, 1, (float*)M.data, 1);
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cblas_daxpy(MSIZE, *((double*)&s), (double*)data, 1, (double*)M.data, 1);
+	cblas_daxpy(MSIZE, *((double*)&a), (double*)data, 1, (double*)M.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	
-	cblas_zaxpy(MSIZE, (const double*)&s, (double*)data, 1, (double*)M.data, 1);
+	cblas_zaxpy(MSIZE, (const double*)&a, (double*)data, 1, (double*)M.data, 1);
       }
       else{ // "normal implementation"
 
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
-	  M.data[i] = data[i]*s;
+	  M.data[i] = data[i]*a;
       }
 
       return M;
@@ -1791,33 +1791,33 @@ namespace whiteice
       }
 
 #else
-      matrix<T> M(N.numRows, N.numCols);
-      const unsigned int MSIZE = N.numRows*N.numCols;
+      matrix<T> R(M.numRows, M.numCols);
+      const unsigned int MSIZE = M.numRows*M.numCols;
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cblas_saxpy(MSIZE, *((float*)&s), (float*)N.data, 1, (float*)M.data, 1);
+	cblas_saxpy(MSIZE, *((float*)&a), (float*)M.data, 1, (float*)R.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cblas_caxpy(MSIZE, (const float*)&s, (float*)N.data, 1, (float*)M.data, 1);
+	cblas_caxpy(MSIZE, (const float*)&a, (float*)M.data, 1, (float*)R.data, 1);
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cblas_daxpy(MSIZE, *((double*)&s), (double*)N.data, 1, (double*)M.data, 1);
+	cblas_daxpy(MSIZE, *((double*)&a), (double*)M.data, 1, (double*)R.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	
-	cblas_zaxpy(MSIZE, (const double*)&s, (double*)N.data, 1, (double*)M.data, 1);
+	cblas_zaxpy(MSIZE, (const double*)&a, (double*)M.data, 1, (double*)R.data, 1);
       }
       else{ // "normal implementation"
 
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
-	  R.data[i] = M.data[i]*s;
+	  R.data[i] = M.data[i]*a;
       }
             
-      return M;
+      return R;
 #endif
     }
     
@@ -1970,25 +1970,25 @@ namespace whiteice
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cblas_sscal(MSIZE, *((float*)&s), (float*)data, 1);
+	cblas_sscal(MSIZE, *((float*)&a), (float*)data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cblas_cscal(MSIZE, (const float*)&s, (float*)data, 1);
+	cblas_cscal(MSIZE, (const float*)&a, (float*)data, 1);
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cblas_dscal(MSIZE, *((double*)&s), (double*)data, 1);
+	cblas_dscal(MSIZE, *((double*)&a), (double*)data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	
-	cblas_zscal(MSIZE, (const double*)&s, (double*)data, 1);
+	cblas_zscal(MSIZE, (const double*)&a, (double*)data, 1);
       }
       else{ // "normal implementation"
-
+	
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
-	  data[i] *= s;
+	  data[i] *= a;
       }
       
       return (*this);
@@ -3512,12 +3512,14 @@ namespace whiteice
 
 	auto AhA = Ah*A; // (numCols x numRows) (numRows x numCols)
 
-	if(AhA.symmetric_pseudoinverse(machine_epsilon) == false)
+	if(AhA.symmetric_pseudoinverse(machine_epsilon) == false){
 	  whiteice::logging.error("matrix::pseudoinverse(): symmetric_pseudoinverse() FAILED");
+	  return false;
+	}
 	
 	*this = AhA * Ah;
 
-	return (*this);
+	return true;
       }
       else{
 	// pinv(A) = A^h * pinv(A A^h)
@@ -3528,12 +3530,14 @@ namespace whiteice
 
 	auto AAh = A*Ah;
 
-	if(AAh.symmetric_pseudoinverse(machine_epsilon) == false)
+	if(AAh.symmetric_pseudoinverse(machine_epsilon) == false){
 	  whiteice::logging.error("matrix::pseudoinverse(): symmetric_pseudoinverse() FAILED");
+	  return false;
+	}
 	
 	*this = Ah * AAh;
 
-	return (*this);
+	return true;
       }
 #else
       // this currently makes copy of itself which is SLOW but
@@ -4880,7 +4884,7 @@ namespace whiteice
       }
       else{ // generic length calculation
 
-#pragma omp paralle for schedule(auto)
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=y1;i<=y2;i++)
 	  data[x + i*numCols] = v[i - y1];
 	
@@ -5376,7 +5380,7 @@ namespace whiteice
 	  f = cblas_dnrm2(numCols, (double*)&(data[j*numCols]), 1);
 	  
 	  if(f == 0.0) continue;
-	  else f = 1.0/whiteice::math::sqrt(f)
+	  else f = 1.0/whiteice::math::sqrt(f);
 	  
 	  cblas_dscal(numCols,  f, (double*)&(data[j*numCols]), 1);
 	}

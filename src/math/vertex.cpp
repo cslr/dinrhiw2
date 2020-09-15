@@ -1831,18 +1831,23 @@ namespace whiteice
 	*this = r;
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
-	blas_complex<float> value;
+	T value;
+	// blas_complex<float> value;
 
+	
 	cblas_cdotu_sub(dataSize, (void*)data, 1, (void*)v.data, 1, &value);
 
+	//whiteice::math::convert(r[0], value);
 	r[0] = value;
 	*this = r;
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
-	blas_complex<double> value;
+	//blas_complex<double> value;
+	T value;
 
 	cblas_zdotu_sub(dataSize, (void*)data, 1, (void*)v.data, 1, &value);
 
+	//whiteice::math::convert(r[0], value);
 	r[0] = value;
 	*this = r;
 
@@ -1862,7 +1867,7 @@ namespace whiteice
 
 #pragma omp critical
 	  {
-	    r[0] += rvalue:
+	    r[0] += rvalue;
 	  }
 	}
       }
@@ -2308,27 +2313,27 @@ namespace whiteice
 	
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cblas_saxpy(dataSize, *((float*)&s), (float*)data, 1, (float*)r.data, 1);
+	cblas_saxpy(dataSize, *((float*)&ss), (float*)data, 1, (float*)r.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cblas_caxpy(dataSize, (const float*)&s, (float*)data, 1, (float*)r.data, 1);
+	cblas_caxpy(dataSize, (const float*)&ss, (float*)data, 1, (float*)r.data, 1);
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cblas_daxpy(dataSize, *((double*)&s), (double*)data, 1, (double*)r.data, 1);
+	cblas_daxpy(dataSize, *((double*)&ss), (double*)data, 1, (double*)r.data, 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	
-	cblas_zaxpy(dataSize, (const double*)&s, (double*)data, 1, (double*)r.data, 1);
+	cblas_zaxpy(dataSize, (const double*)&ss, (double*)data, 1, (double*)r.data, 1);
       }
       else{ // "normal implementation"
 
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<dataSize;i++)
-	  r.data[i] = data[i]*s;
+	  r.data[i] = data[i]*ss;
       }
-
+      
       return r;
 #endif
     }        

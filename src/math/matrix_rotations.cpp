@@ -285,13 +285,14 @@ namespace whiteice
 	vertex<T> w;
 	vertex<T> vv = v * v;
 	T beta = T(-2.0) / vv[0];
-	T zero = T(0.0f);
-	T one = T(1.0f);
 
 	if(w.resize(M) != M || A.ysize() - k != v.size())
 	  return false;
 
 #ifdef CUBLAS
+	
+	const T zero = T(0.0f);
+	const T one = T(1.0f);
 
 	if(typeid(T) == typeid(blas_real<float>)){
 	  // w = beta * A' * v
@@ -468,13 +469,14 @@ namespace whiteice
 	vertex<T> w;
 	vertex<T> vv = v * v;
 	T beta = T(-2.0) / vv[0];
-	T one  = T(1.0f);
-	T zero = T(0.0f);
 
 	if(w.resize(M) != M || A.xsize() - k != v.size())
 	  return false;
 	
 #ifdef CUBLAS
+
+	const T one  = T(1.0f);
+	const T zero = T(0.0f);
 
 	if(typeid(T) == typeid(blas_real<float>)){
 #if 0

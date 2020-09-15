@@ -32,6 +32,19 @@
 extern cublasHandle_t cublas_handle;
 extern cublasStatus_t cublas_status;
 
+// GLOBAL: used to set default GPU sync with on with RAM
+// DO NOT USE/FIXME: NOTE THIS DOES NOT WORK IN MULTITHREADED CODE!!!
+extern volatile bool use_gpu_sync;
+
+inline void gpu_sync(){
+  if(use_gpu_sync) cudaDeviceSynchronize();
+}
+
+#else
+
+// dummy operator if we are not using GPU and it is accidentally called.
+inline void gpu_sync(){ }
+
 #endif
 
 
@@ -168,7 +181,9 @@ namespace whiteice
       
       // element-wise multiplication of vector elements
       vertex<T>& dotmulti(const vertex<T>& v) ;
-      
+
+      // NOTE: If you are using cuBLAS acceleration you have to
+      // call gpu_sync() call after modifying vertex values through direct RAM access
       
       inline T& operator[](const unsigned int& index) 
       {

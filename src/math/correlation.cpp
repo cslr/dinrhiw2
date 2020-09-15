@@ -333,7 +333,7 @@ namespace whiteice
 	  i++;
 	}
 	
-	R *= s;
+	R *= invs;
 	
       }
 
@@ -362,9 +362,11 @@ namespace whiteice
       R.zero(); // not necessary..
 
       T s = T(1.0f) / T((double)N);
-      T t = T(0.0f);
 
 #ifdef CUBLAS
+      
+      const T t = T(0.0f);
+      
       if(typeid(T) == typeid(blas_real<float>)){
 
 	auto r = cublasSsyrk(cublas_handle,

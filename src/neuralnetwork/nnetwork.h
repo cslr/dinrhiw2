@@ -17,11 +17,6 @@
  * ROW major order as well as neural network's gradient. 
  * (ouputs are in same format, internal presentation changes if
  *  CUBLAS is used)
- *
- * FIXME: for cuBLAS calls data stuctures should be in NVIDIA DEVICE memory
- * allocated using cudaManagedMalloc().
- *
- *
  */
 
 #ifndef nnetwork_h
@@ -43,21 +38,22 @@ namespace whiteice
 {
   
   template < typename T = math::blas_real<float> >
-    class nnetwork
-    {
-    public:
-
-    enum nonLinearity {
-      sigmoid = 0, // uses sigmoid non-linearity as the default (0) [output: [0,+1] input (-inf,inf)]
-      stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
-      halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
-      pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
-      tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
-      rectifier = 5, // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
-      softmax = 6 // for complex neural networks: this derivates ok and is similar to ReLU rectifier
-    };
-
-
+  class nnetwork
+  {
+  public:
+    
+    enum nonLinearity
+      {
+       sigmoid = 0, // uses sigmoid non-linearity as the default (0) [output: [0,+1] input (-inf,inf)]
+       stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
+       halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
+       pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
+       tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
+       rectifier = 5, // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
+       softmax = 6 // for complex neural networks: this derivates ok and is similar to ReLU rectifier
+      };
+    
+    
     
     // creates useless 1x1 network. 
     // Use to load some useful network
@@ -68,9 +64,9 @@ namespace whiteice
     
     
     virtual ~nnetwork();
-
+    
     nnetwork<T>& operator=(const nnetwork<T>& nn);
-
+    
     // prints nnetwork information (mostly for debugging purposes)
     void printInfo() const; 
 
@@ -125,6 +121,8 @@ namespace whiteice
 
     // calculates jacobian/gradient of parameter weights w f(v|w)
     bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
+
+    bool jacobian_optimized(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
@@ -199,7 +197,7 @@ namespace whiteice
     void clearDropOut() ; // remove all drop-out without changing weights
     
     ////////////////////////////////////////////////////////////
-    public:
+  public:
     
     T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
     T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
@@ -207,65 +205,66 @@ namespace whiteice
     
     T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // inverse of non-linearity used [not really used]
     
-    private:
+  private:
 
       
-      inline void gemv_gvadd(unsigned int yd, unsigned int xd, 
-			     const T* W, T* x, T* y,
-			     unsigned int dim, T* s, const T* b) const;
-      
-      
-      // data structures which are part of
-      // interface
-      mutable math::vertex<T> inputValues;
-      mutable math::vertex<T> outputValues;
-      
-      
-      bool hasValidBPData;
-      
-      std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer
-      
-      // frozen layers (that are not optimized or set to some values otherwise)
-      std::vector<bool> frozen;  
-      
-      // stochastic retain probability during activation [feedforward]
-      T retain_probability;
-      
-      // drop-out configuration for each layer [if neuron is dropout neuron its non-linearity is zero]
-      std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
-      
-      whiteice::RNG<T> rng;
-      
-      // architecture (eg. 3-2-6) info
-      std::vector<unsigned int> arch;
-      unsigned int maxwidth;    
-      unsigned int size;
-      
-      // USE vertex<T> instead of vector<T> because vertex is allocated
-      // by cuBLAS if needed
-
-      math::vertex<T> data;
-      math::vertex<T> bpdata;
-
-      math::vertex<T> state;
-      mutable math::vertex<T> temp;
-      mutable math::vertex<T> lgrad;
-      
+    inline void gemv_gvadd(unsigned int yd, unsigned int xd, 
+			   const T* W, T* x, T* y,
+			   unsigned int dim, T* s, const T* b,
+			   T* temp) const;
+    
+    
+    // data structures which are part of
+    // interface
+    mutable math::vertex<T> inputValues;
+    mutable math::vertex<T> outputValues;
+    
+    
+    bool hasValidBPData;
+    
+    std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer
+    
+    // frozen layers (that are not optimized or set to some values otherwise)
+    std::vector<bool> frozen;  
+    
+    // stochastic retain probability during activation [feedforward]
+    T retain_probability;
+    
+    // drop-out configuration for each layer [if neuron is dropout neuron its non-linearity is zero]
+    std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
+    
+    whiteice::RNG<T> rng;
+    
+    // architecture (eg. 3-2-6) info
+    std::vector<unsigned int> arch;
+    unsigned int maxwidth;    
+    unsigned int size;
+    
+    // USE vertex<T> instead of vector<T> because vertex is allocated
+    // by cuBLAS if needed
+    
+    math::vertex<T> data;
+    math::vertex<T> bpdata;
+    
+    // math::vertex<T> state;
+    // mutable math::vertex<T> temp;
+    // mutable math::vertex<T> lgrad;
+    
 #if 0
-      std::vector<T> data;
-      std::vector<T> bpdata;
-      
-      std::vector<T> state;
-      mutable std::vector<T> temp;
-      mutable std::vector<T> lgrad;
+    std::vector<T> data;
+    std::vector<T> bpdata;
+    
+    std::vector<T> state;
+    mutable std::vector<T> temp;
+    mutable std::vector<T> lgrad;
 #endif
-      
-      // used to collect samples about data passing through the network,
-      // this will then be used later to do unsupervised regularization of training data
-      std::vector< std::vector< math::vertex<T> > > samples;
-      
-      // bool compressed;
-      // MemoryCompressor* compressor;
+    
+    // used to collect samples about data passing through the network,
+    // this will then be used later to do unsupervised regularization of training data
+    std::vector< std::vector< math::vertex<T> > > samples;
+    
+    // bool compressed;
+    // MemoryCompressor* compressor;
   };
   
   
