@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include "vertex.h"
 #include "eig.h"
+#include "Log.h"
 
 #include <typeinfo>
 #include <string.h>
@@ -29,14 +30,149 @@ namespace whiteice
       if(R.resize(N, N) == false) return false;
       R.zero();
       
-      T s = T(1.0f) / T(data.size());
+      T invs = T(1.0f) / T(data.size());
+
+#ifdef CUBLAS
       
+      if(typeid(T) == typeid(blas_real<float>)){	
+	      
+	while(i != data.end()){
+	  
+	  auto s = cublasSspr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+			      (const float*)&invs, (const float*)(i->data), 1,
+			      (float*)R.data);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("autocorrelation(): cublasSspr() failed.");
+	    throw CUDAException("CUBLAS cublasSspr() call failed.");
+	  }
+	  
+	  i++;
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	float invsf;
+	whiteice::math::convert(invsf, invs);
+	
+	while(i != data.end()){
+	  auto s = cublasChpr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+			      (const float*)&invsf, (const cuComplex*)(i->data), 1,
+			      (cuComplex*)R.data);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("autocorrelation(): cublasChpr() failed.");
+	    throw CUDAException("CUBLAS cublasChpr() call failed.");
+	  }
+	  
+	  i++;
+	}
+	
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	while(i != data.end()){
+	  auto s = cublasDspr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+			      (const double*)&invs, (const double*)(i->data), 1,
+			      (double*)R.data);
+	  
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("autocorrelation(): cublasDspr() failed.");
+	    throw CUDAException("CUBLAS cublasDspr() call failed.");
+	  }
+	}
+	
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	double invsf;
+	whiteice::math::convert(invsf, invs);
+	
+	while(i != data.end()){
+	  
+	  auto s = cublasZhpr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+			      (const double*)&invsf,
+			      (const cuDoubleComplex*)(i->data), 1,
+			      (cuDoubleComplex*)R.data);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("autocorrelation(): cublasZhpr() failed.");
+	    throw CUDAException("CUBLAS cublasZhpr() call failed.");
+	  }
+	  
+	  i++;
+	}
+	
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+      }
+      else{ // generic code
+	
+	while(i != data.end()){
+	  
+	  R += (*i).outerproduct((*i));
+	  i++;
+	}
+	
+	R *= invs;
+	
+      }
+      
+#else
       
       if(typeid(T) == typeid(blas_real<float>)){	
 	
 	while(i != data.end()){
 	  cblas_sspr(CblasRowMajor, CblasUpper, N, 
-		     *((float*)&s), (float*)(i->data), 1, (float*)R.data);
+		     *((float*)&invs), (float*)(i->data), 1, (float*)R.data);
 	  i++;
 	}
 	
@@ -58,7 +194,7 @@ namespace whiteice
 	
 	while(i != data.end()){
 	  cblas_chpr(CblasRowMajor, CblasUpper, N,
-		     *((float*)&s), (float*)(i->data), 1, (float*)R.data);
+		     *((float*)&invs), (float*)(i->data), 1, (float*)R.data);
 	  i++;
 	}
 	
@@ -80,7 +216,7 @@ namespace whiteice
 	
 	while(i != data.end()){
 	  cblas_dspr(CblasRowMajor, CblasUpper, N, 
-		     *((double*)&s), (double*)(i->data), 1, (double*)(R.data));
+		     *((double*)&invs), (double*)(i->data), 1, (double*)(R.data));
 	  i++;
 	}
 	
@@ -102,7 +238,7 @@ namespace whiteice
 	
 	while(i != data.end()){
 	  cblas_zhpr(CblasRowMajor, CblasUpper, N,
-		     *((double*)&s), (double*)(i->data), 1, (double*)R.data);
+		     *((double*)&invs), (double*)(i->data), 1, (double*)R.data);
 	  i++;
 	}
 	
@@ -130,7 +266,9 @@ namespace whiteice
 	
 	R *= s;
 	
-      }      
+      }
+
+#endif
       
       
       return true;
@@ -153,9 +291,151 @@ namespace whiteice
       
       if(R.resize(K, K) == false) return false;
       R.zero(); // not necessary..
-      
-      T s = T(1.0) / T((double)N);
-      
+
+      T s = T(1.0f) / T((double)N);
+      T t = T(0.0f);
+
+#ifdef CUBLAS
+      if(typeid(T) == typeid(blas_real<float>)){
+
+	auto r = cublasSsyrk(cublas_handle,
+			     CUBLAS_FILL_MODE_LOWER,
+			     CUBLAS_OP_T,
+			     K, N,
+			     (const float*)&s,
+			     (const float*)W.data, W.ysize(),
+			     (const float*)&t,
+			     (float*)R.data, R.ysize());
+
+	if(r != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("autocorrelation(): cublasSsyrk() failed.");
+	  throw CUDAException("CUBLAS cublasSsyrk() call failed.");
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
+	  unsigned int c = K - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<K;i++)
+	  for(unsigned int j=(i+1);j<K;j++)
+	    R(i,j) = R(j,i);
+
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	float alpha = 0.0f;
+	float beta  = 0.0f;
+
+	whiteice::math::convert(alpha, s);
+	whiteice::math::convert(beta, t);
+
+	auto r = cublasCherk(cublas_handle,
+			     CUBLAS_FILL_MODE_LOWER,
+			     CUBLAS_OP_T,
+			     K, N,
+			     (const float*)&alpha,
+			     (const cuComplex*)W.data, W.ysize(),
+			     (const float*)&beta,
+			     (cuComplex*)R.data, R.ysize());
+
+	if(r != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("autocorrelation(): cublasCherk() failed.");
+	  throw CUDAException("CUBLAS cublasCherk() call failed.");
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
+	  unsigned int c = K - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<K;i++)
+	  for(unsigned int j=(i+1);j<K;j++)
+	    R(i,j) = R(j,i);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	auto r = cublasDsyrk(cublas_handle,
+			     CUBLAS_FILL_MODE_LOWER,
+			     CUBLAS_OP_T,
+			     K, N,
+			     (const double*)&s,
+			     (const double*)W.data, W.ysize(),
+			     (const double*)&t,
+			     (double*)R.data, R.ysize());
+
+	if(r != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("autocorrelation(): cublasDsyrk() failed.");
+	  throw CUDAException("CUBLAS cublasDsyrk() call failed.");
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
+	  unsigned int c = K - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<K;i++)
+	  for(unsigned int j=(i+1);j<K;j++)
+	    R(i,j) = R(j,i);	
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	double alpha = 0.0f;
+	double beta  = 0.0f;
+
+	whiteice::math::convert(alpha, s);
+	whiteice::math::convert(beta, t);
+
+	auto r = cublasZherk(cublas_handle,
+			     CUBLAS_FILL_MODE_LOWER,
+			     CUBLAS_OP_T,
+			     K, N,
+			     (const double*)&alpha,
+			     (const cuDoubleComplex*)W.data, W.ysize(),
+			     (const double*)&beta,
+			     (cuDoubleComplex*)R.data, R.ysize());
+
+	if(r != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("autocorrelation(): cublasCherk() failed.");
+	  throw CUDAException("CUBLAS cublasCherk() call failed.");
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
+	  unsigned int c = K - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<K;i++)
+	  for(unsigned int j=(i+1);j<K;j++)
+	    R(i,j) = R(j,i);
+	
+      }
+      else{ // generic code
+	matrix<T> V = W;
+	V.transpose();
+	
+	R = V * W;
+	
+	R *= s;
+      }
+#else
       if(typeid(T) == typeid(blas_real<float>)){
 	
 	cblas_ssyrk(CblasRowMajor, CblasUpper, CblasTrans, K, N,
@@ -207,15 +487,14 @@ namespace whiteice
 		      (double*)&(R.data[(i+1)*K + i]), K);
       }
       else{ // generic code
-	
 	matrix<T> V = W;
 	V.transpose();
 	
 	R = V * W;
 	
 	R *= s;
-	
-      }      
+      }
+#endif
       
       return true;
     }
@@ -241,6 +520,253 @@ namespace whiteice
       
       T s = T(1.0f) / T(data.size());
 
+#ifdef CUBLAS
+      
+      if(typeid(T) == typeid(blas_real<float>)){	
+
+#pragma omp parallel shared(m) shared(R)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  Ri.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    auto r = cublasSspr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+				(const float*)&s, (const float*)(v.data), 1,
+				(float*)Ri.data);
+	    
+	    if(r != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("mean_covariance_estimate(): cublasSspr() failed.");
+	      throw CUDAException("CUBLAS cublasSspr() call failed.");
+	    }
+	    
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+	
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+	
+	m *= s;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	float sf;
+	whiteice::math::convert(sf, s);
+
+#pragma omp parallel shared(m) shared(R)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+	  
+	  Ri.resize(N,N);
+	  Ri.zero();
+	  
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];	  
+	    
+	    auto r = cublasChpr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+				(const float*)&sf, (const cuComplex*)(v.data), 1,
+				(cuComplex*)Ri.data);
+	    
+	    if(r != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("mean_covariance_estimate(): cublasChpr() failed.");
+	      throw CUDAException("CUBLAS cublasChpr() call failed.");
+	    }
+	    
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+	  
+	m *= s;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  Ri.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    auto r = cublasDspr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+				(const double*)&s, (const double*)(v.data), 1,
+				(double*)Ri.data);
+	    
+	    if(r != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("mean_covariance_estimate(): cublasDspr() failed.");
+	      throw CUDAException("CUBLAS cublasDspr() call failed.");
+	    }
+	    
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+	
+	m *= s;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	double sf;
+	whiteice::math::convert(sf, s);
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  Ri.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    auto r = cublasZhpr(cublas_handle, CUBLAS_FILL_MODE_LOWER, (int)N,
+				(const double*)&sf,
+				(const cuDoubleComplex*)(v.data), 1,
+				(cuDoubleComplex*)Ri.data);
+	    
+	    if(r != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("mean_covariance_estimate(): cublasZhpr() failed.");
+	      throw CUDAException("CUBLAS cublasZhpr() call failed.");
+	    }
+	    
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+	
+	
+	// NOT OPTIMIZED [should use cudaMemcpy???]
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	  unsigned int c = N - i - 1;
+	  // copy M(unpacked(c,c)) <- M(packed(c,c))
+	  // c lower mode elements (lower triangular matrix)
+	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	}
+
+	// copies lower triangular elements to upper triangular part of the M matrix
+	for(unsigned int i=0;i<N;i++)
+	  for(unsigned int j=(i+1);j<N;j++)
+	    R(i,j) = R(j,i);
+	
+	m *= s;
+      }
+      else{ // generic code
+
+#pragma omp parallel shared(R) shared(m)
+	{
+	  matrix<T> Ri;
+	  vertex<T> mi;
+
+	  Ri.resize(N,N);
+	  Ri.zero();
+
+	  mi.resize(N);
+	  mi.zero();
+
+#pragma omp for nowait schedule(auto)
+	  for(unsigned int index=0;index<data.size();index++){
+	    auto& v = data[index];
+	    
+	    Ri += v.outerproduct(v);
+	    mi += v;
+	  }
+
+#pragma omp critical
+	  {
+	    m += mi;
+	    R += Ri;
+	  }
+	}
+	
+	R *= s;
+	m *= s;
+      }
+
+#else
       
       if(typeid(T) == typeid(blas_real<float>)){	
 
@@ -261,7 +787,7 @@ namespace whiteice
 	    
 	    cblas_sspr(CblasRowMajor, CblasUpper, N, 
 		       *((float*)&s), (float*)(v.data), 1, (float*)Ri.data);
-
+	    
 	    mi += v;
 	  }
 
@@ -454,9 +980,10 @@ namespace whiteice
 	m *= s;
       }
 
+#endif
       
       // removes mean from R = E[xx^t]
-
+      
 #pragma omp parallel for schedule(auto)
       for(unsigned int j=0;j<N;j++){
 	for(unsigned int i=0;i<=j;i++){
@@ -466,7 +993,6 @@ namespace whiteice
 	    R(i,j) -= tmp;
 	}
       }
-      
       
       return true;
     }

@@ -41,6 +41,8 @@
 #include "simplex.h"
 #include "blade_math.h"
 #include "dinrhiw_blas.h"
+#include "Log.h"
+#include "vertex.h"
 
 #ifdef WINOS
 #include <windows.h>
@@ -75,12 +77,57 @@ namespace whiteice
       numVariables   = _variables;
       constraints.resize(_constraints);
       numArtificials = 0;
+
+      target = NULL;
+      
+      for(auto& c : constraints)
+	c = NULL;
+
+#ifdef CUBLAS
+      // allocates memory from NVIDIA DEVICE
+      
+      auto e = cudaMallocManaged(&target, (_variables+1)*sizeof(T));
+
+      if(e != cudaSuccess || target == NULL){
+	whiteice::logging.error("simplex ctor: cudaMallocManaged() failed.");
+	throw CUDAException("CUBLAS memory allocation failure.");
+      }
+
+      e = cudaMemset(target, 0, (_variables+1)*sizeof(T));
+
+      if(e != cudaSuccess){
+	whiteice::logging.error("simplex ctor: cudaMemset() failed.");
+	throw CUDAException("CUBLAS memory init failure.");
+      }
+
+      for(unsigned int i=0;i<constraints.size();i++){
+
+	e = cudaMallocManaged(&(constraints[i]), (_variables+1)*sizeof(T));
+
+	auto f = cudaMemset(constraints[i], 0, (_variables+1)*sizeof(T));
+
+	if(e != cudaSuccess  || f != cudaSuccess || constraints[i] == NULL){
+	  whiteice::logging.error("simplex ctor: cudaMallocManaged()/cudaMemset() failed.");
+
+	  cudaFree(target); target = NULL;
+	  for(unsigned int j=0;j<i;j++){
+	    cudaFree(constraints[j]);
+	    constraints[j] = NULL;
+	  }
+	  
+	  throw CUDAException("CUBLAS memory allocation/init failure.");
+	}
+      }
+      
+#else
       
       // allocates memory for simplex table
       target = (T*)calloc((_variables+1),sizeof(T));
       
       for(unsigned int i=0;i<constraints.size();i++)
 	constraints[i] = (T*)calloc((_variables+1),sizeof(T));
+
+#endif
 
       ctypes.resize(constraints.size());
     }
@@ -98,6 +145,17 @@ namespace whiteice
       has_result = false;
       
       pthread_mutex_destroy( &simplex_lock );
+
+#ifdef CUBLAS
+
+      if(target)
+	cudaFree(target);
+      
+      for(unsigned int i=0;i<constraints.size();i++)
+	if(constraints[i])
+	  cudaFree(constraints[i]);
+      
+#else
       
       if(target) 
 	free(target);
@@ -105,6 +163,7 @@ namespace whiteice
       for(unsigned int i=0;i<constraints.size();i++)
 	if(constraints[i])
 	  free(constraints[i]);
+#endif
     }
     
     
@@ -317,7 +376,91 @@ namespace whiteice
 	  
 	  // does all memory allocations first
 	  // (target isn't used in removal of pseudoSlacks)
-	  T* temp = 0;
+	  T* temp = NULL;
+
+#ifdef CUBLAS
+
+	  auto e = cudaMallocManaged(&temp,
+				     sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	  if(e != cudaSuccess){
+	    running = false;
+	    has_result = false;
+
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure in a thread loop (no cuda exception)
+	  }
+
+	  if(target) cudaFree(target);
+	  target = temp;
+
+	  e = cudaMallocManaged(&temp,
+				sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	  if(e != cudaSuccess){
+	    running = false;
+	    has_result = false;
+	    
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure in a thread loop (no cuda exception)
+	  }
+
+	  pseudotarget = temp;
+
+	  std::vector<T*> new_constraints = constraints;
+
+	  for(unsigned int i=0;i<new_constraints.size();i++){
+	    e = cudaMallocManaged(&(new_constraints[i]),
+				  sizeof(T)*(numVariables + numArtificials + 1));
+
+	    if(e != cudaSuccess){
+	      cudaFree(pseudotarget);
+
+	      for(unsigned int j=0;j<i;j++)
+		cudaFree(new_constraints[j]);
+	    }
+
+	    running = false;
+	    has_result = false;
+	    
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure
+	  }
+
+	  for(unsigned int i=0;i<constraints.size();i++){
+	    cudaFree(constraints[i]);
+	  }
+
+	  constraints = new_constraints;
+
+	  // sets memory areas to zero (needed?)
+	  {
+	    std::vector<bool> ok;
+	      
+	    e = cudaMemset(target, 0, sizeof(T)*(numVariables + numArtificials + 1));
+	    if(e != cudaSuccess) ok.push_back(false);
+
+	    e = cudaMemset(pseudotarget, 0, sizeof(T)*(numVariables + numArtificials + 1));
+	    if(e != cudaSuccess) ok.push_back(false);
+
+	    for(unsigned int i=0;i<constraints.size();i++){
+	      e = cudaMemset(constraints[i], 0,
+			     sizeof(T)*(numVariables + numArtificials + 1));
+	      if(e != cudaSuccess) ok.push_back(false);
+	    }
+
+	    if(ok.size() > 0){ // failures in memsets
+	      cudaFree(pseudotarget);
+
+	      running = false;
+	      has_result = false;
+	      
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMemset() failed.");
+	      return; // silent failure
+	    }
+	  }
+	  
+#else
 	  
 	  if((temp = (T*)realloc(target,
 				 sizeof(T)*(numVariables + numRealArtificials + 1))) == 0){
@@ -368,13 +511,15 @@ namespace whiteice
 	    
 	    constraints[i] = temp;
 	  }
+
+#endif
 	  
 	  
 	  // memory allocations were ok (in theory)
 	  // actually setups simplex table correctly
 	  
 	  T RHS = target[numVariables];
-	  memset(&(target[numVariables]), 0, numRealArtificials*sizeof(T));
+	  memset(&(target[numVariables]), 0, numRealArtificials*sizeof(T)); // TODO USE CUDA
 	  target[numVariables+numRealArtificials] = RHS;
 	  
 	  unsigned int countReals   = 0;
@@ -389,7 +534,7 @@ namespace whiteice
 	  
 	  for(unsigned int i=0;i<constraints.size();i++){
 	    T RHS = constraints[i][numVariables];
-	    memset(&(constraints[i][numVariables]), 0, numArtificials*sizeof(T));
+	    memset(&(constraints[i][numVariables]), 0, numArtificials*sizeof(T)); // TODO USE CUDA
 	    constraints[i][numVariables+numArtificials] = RHS;
 	    
 	    // setups constraint coefficients
@@ -450,25 +595,70 @@ namespace whiteice
 	      // calculates new lindex row
 	      
 	      T c = T(1.0)/constraints[lindex][eindex];
-	      
+
+#ifdef CUBLAS
+	      auto e = cublasSscal(cublas_handle, numVariables+numArtificials+1,
+				   (const float*)&c,
+				   (float*)constraints[lindex], 1);
+
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasSscal() failed.");
+		cudaFree(pseudotarget);
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      cblas_sscal(numVariables+numArtificials+1, *((float*)&c), 
 			  (float*)constraints[lindex], 1);
+#endif
 	      
 	      // updates pseudotarget
 	      
 	      c = -pseudotarget[eindex];
+
+#ifdef CUBLAS
+	      e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const float*)&c,
+			      (const float*)constraints[lindex], 1,
+			      (float*)pseudotarget, 1);
+
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		cudaFree(pseudotarget);
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      
 	      cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			  (float*)constraints[lindex], 1, (float*)pseudotarget, 1);
+#endif
 	      
 	      // updates other rows
 	      
 	      if(lindex != 0){
 		for(unsigned int i=0;i<lindex;i++){
 		  c = -constraints[i][eindex];
-		  
+
+#ifdef CUBLAS
+		  e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+				  (const float*)&c,
+				  (const float*)constraints[lindex], 1,
+				  (float*)constraints[i], 1);
+
+		  if(e != CUBLAS_STATUS_SUCCESS){
+		    whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		    cudaFree(pseudotarget);
+		    running = false;
+		    has_result = false;
+		    return;
+		  }
+#else
 		  cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			      (float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 		}
 	      }
 	      
@@ -476,9 +666,25 @@ namespace whiteice
 	      if(lindex != constraints.size()-1){
 		for(unsigned int i=lindex+1;i<constraints.size();i++){
 		  c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		  e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+				  (const float*)&c,
+				  (const float*)constraints[lindex], 1,
+				  (float*)constraints[i], 1);
+
+		  if(e != CUBLAS_STATUS_SUCCESS){
+		    whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		    cudaFree(pseudotarget);
+		    running = false;
+		    has_result = false;
+		    return;
+		  }		  
+#else
 		  
 		  cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			      (float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 		}
 	      }
 	      
@@ -535,25 +741,73 @@ namespace whiteice
 		// calculates new lindex row
 	      
 		T c = T(1.0)/constraints[lindex][eindex];
+
+#ifdef CUBLAS
+		auto e = cublasSscal(cublas_handle, numVariables+numArtificials+1,
+				     (const float*)&c,
+				     (float*)constraints[lindex], 1);
 		
+		if(e != CUBLAS_STATUS_SUCCESS){
+		  whiteice::logging.error("simplex<>::threadloop(): cublasSscal() failed.");
+		  cudaFree(pseudotarget);
+		  running = false;
+		  has_result = false;
+		  return;
+		}
+		
+#else
 		cblas_sscal(numVariables+numArtificials+1, *((float*)&c), 
 			    (float*)constraints[lindex], 1);
+#endif
 		
 		// updates pseudotarget
 		
 		c = -pseudotarget[eindex];
+
+#ifdef CUBLAS
 		
+		e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+				(const float*)&c,
+				(const float*)constraints[lindex], 1,
+				(float*)pseudotarget, 1);
+		
+		if(e != CUBLAS_STATUS_SUCCESS){
+		  whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		  cudaFree(pseudotarget);
+		  running = false;
+		  has_result = false;
+		  return;
+		}
+		
+#else
 		cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			    (float*)constraints[lindex], 1, (float*)pseudotarget, 1);
+#endif
 		
 		// updates other rows
 		
 		if(lindex != 0){
 		  for(unsigned int i=0;i<lindex;i++){
 		    c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		    e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+				    (const float*)&c,
+				    (const float*)constraints[lindex], 1,
+				    (float*)constraints[i], 1);
 		    
+		    if(e != CUBLAS_STATUS_SUCCESS){
+		      whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		      cudaFree(pseudotarget);
+		      running = false;
+		      has_result = false;
+		      return;
+		    }
+		    
+#else
 		    cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 				(float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 		  }
 		}
 		
@@ -561,9 +815,25 @@ namespace whiteice
 		if(lindex != constraints.size()-1){
 		  for(unsigned int i=lindex+1;i<constraints.size();i++){
 		    c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		    e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+				    (const float*)&c,
+				    (const float*)constraints[lindex], 1,
+				    (float*)constraints[i], 1);
 		    
+		    if(e != CUBLAS_STATUS_SUCCESS){
+		      whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		      cudaFree(pseudotarget);
+		      running = false;
+		      has_result = false;
+		      return;
+		    }
+		    
+#else
 		    cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 				(float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 		  }
 		}
 		
@@ -607,14 +877,72 @@ namespace whiteice
 	      
 	    }
 	  }
-	  
+
+#ifdef CUBLAS
+	  cudaFree(pseudotarget);
+#else
 	  free(pseudotarget);
+#endif
 	  
 	  // pseudoslacks are now zero so it is
 	  // safe to remove them
 	  
 	  // resizes constraints
+
+#ifdef CUBLAS
+
+	  for(unsigned int i=0;i<constraints.size();i++){
+	    T RHS = constraints[i][numVariables + numArtificials];
+
+	    auto e = cudaMallocManaged(&temp, sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	      
+	      running = false; // silent failure
+	      has_result = false;
+	      return;
+	    }
+
+	    const int original_size = numVariables + numArtificials + 1;
+	    const int new_size = numVariables + numRealArtificials + 1;
+
+	    if(new_size <= original_size){
+	      e = cudaMemcpy(temp, constraints[i], new_size*sizeof(T),
+			     cudaMemcpyDeviceToDevice);
+	    }
+	    else{
+	      e = cudaMemcpy(temp, constraints[i], original_size*sizeof(T),
+			     cudaMemcpyDeviceToDevice);
+	    }
+
+	    if(e != cudaSuccess){
+	      cudaFree(temp);
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMemcpy() failed.");
+	      
+	      running = false; // silent failure
+	      has_result = false;
+	      return;
+	    }
+
+	    cudaFree(constraints[i]);
+	    constraints[i] = temp;
+	    constraints[i][numVariables+numRealArtificials] = RHS;
+	  }
 	  
+	  this->numArtificials = numRealArtificials;
+	  
+	  std::vector<unsigned int>::iterator i;
+	  i = nonbasic.begin();
+	  
+	  while(i != nonbasic.end()){
+	    if(*i >= numVariables + numRealArtificials)
+	      i = nonbasic.erase(i);
+	    else
+	      i++;
+	  }
+	  
+#else
 	  for(unsigned int i=0;i<constraints.size();i++){
 	    T RHS = constraints[i][numVariables + numArtificials];
 	    temp = (T*)realloc(constraints[i], sizeof(T)*(numVariables + numRealArtificials + 1));
@@ -640,10 +968,9 @@ namespace whiteice
 	    else
 	      i++;
 	  }
-	  
+#endif
 	}
-	
-	
+
 	
 	// simplex table fixup
 	// sets target function coefficients of
@@ -666,25 +993,70 @@ namespace whiteice
 	  // calculates new lindex row
 	  
 	  T c = T(1.0)/constraints[lindex][eindex];
+
+#ifdef CUBLAS
 	  
+	  auto e = cublasSscal(cublas_handle, numVariables+numArtificials+1,
+			       (const float*)&c,
+			       (float*)constraints[lindex], 1);
+	  
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("simplex<>::threadloop(): cublasSscal() failed.");
+	    running = false;
+	    has_result = false;
+	    return;
+	  }
+	  
+#else
 	  cblas_sscal(numVariables+numArtificials+1, *((float*)&c), 
 		      (float*)constraints[lindex], 1);
+#endif
 	  
 	  // updates target
 	  
 	  c = -target[eindex];
+
+#ifdef CUBLAS
+
+	  e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+			  (const float*)&c,
+			  (const float*)constraints[lindex], 1,
+			  (float*)target, 1);
 	  
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+	    running = false;
+	    has_result = false;
+	    return;
+	  }
+	  
+#else
 	  cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 		      (float*)constraints[lindex], 1, (float*)target, 1);
+#endif
 	  
 	  // updates other rows
 	  
 	  if(lindex != 0){
 	    for(unsigned int i=0;i<lindex;i++){
 	      c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+	      e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const float*)&c,
+			      (const float*)constraints[lindex], 1,
+			      (float*)constraints[i], 1);
 	      
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			  (float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 	    }
 	  }
 	  
@@ -692,9 +1064,24 @@ namespace whiteice
 	  if(lindex != constraints.size()-1){
 	    for(unsigned int i=lindex+1;i<constraints.size();i++){
 	      c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+	      e = cublasSaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const float*)&c,
+			      (const float*)constraints[lindex], 1,
+			      (float*)constraints[i], 1);
 	      
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasSaxpy() failed.");
+		running = false;
+		has_result = false;
+		return;
+	      }		  
+	      
+#else
 	      cblas_saxpy(numVariables+numArtificials+1, *((float*)&c),
 			  (float*)constraints[lindex], 1, (float*)constraints[i], 1);
+#endif
 	    }
 	  }
 	  
@@ -725,13 +1112,14 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(double))
       {
+	
 	running = true;
 	has_result = false;
 	
 	// sync with maximize()
 	pthread_mutex_lock( &simplex_lock );
 	pthread_mutex_unlock( &simplex_lock );
-      
+	
 	
 	// index of variable to enter (eindex) and leave (lindex)
 	unsigned int eindex, lindex; 
@@ -774,7 +1162,91 @@ namespace whiteice
 	  
 	  // does all memory allocations first
 	  // (target isn't used in removal of pseudoSlacks)
-	  T* temp = 0;
+	  T* temp = NULL;
+
+#ifdef CUBLAS
+
+	  auto e = cudaMallocManaged(&temp,
+				     sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	  if(e != cudaSuccess){
+	    running = false;
+	    has_result = false;
+
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure in a thread loop (no cuda exception)
+	  }
+
+	  if(target) cudaFree(target);
+	  target = temp;
+
+	  e = cudaMallocManaged(&temp,
+				sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	  if(e != cudaSuccess){
+	    running = false;
+	    has_result = false;
+	    
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure in a thread loop (no cuda exception)
+	  }
+
+	  pseudotarget = temp;
+
+	  std::vector<T*> new_constraints = constraints;
+
+	  for(unsigned int i=0;i<new_constraints.size();i++){
+	    e = cudaMallocManaged(&(new_constraints[i]),
+				  sizeof(T)*(numVariables + numArtificials + 1));
+
+	    if(e != cudaSuccess){
+	      cudaFree(pseudotarget);
+
+	      for(unsigned int j=0;j<i;j++)
+		cudaFree(new_constraints[j]);
+	    }
+
+	    running = false;
+	    has_result = false;
+	    
+	    whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	    return; // silent failure
+	  }
+
+	  for(unsigned int i=0;i<constraints.size();i++){
+	    cudaFree(constraints[i]);
+	  }
+
+	  constraints = new_constraints;
+
+	  // sets memory areas to zero (needed?)
+	  {
+	    std::vector<bool> ok;
+	      
+	    e = cudaMemset(target, 0, sizeof(T)*(numVariables + numArtificials + 1));
+	    if(e != cudaSuccess) ok.push_back(false);
+
+	    e = cudaMemset(pseudotarget, 0, sizeof(T)*(numVariables + numArtificials + 1));
+	    if(e != cudaSuccess) ok.push_back(false);
+
+	    for(unsigned int i=0;i<constraints.size();i++){
+	      e = cudaMemset(constraints[i], 0,
+			     sizeof(T)*(numVariables + numArtificials + 1));
+	      if(e != cudaSuccess) ok.push_back(false);
+	    }
+
+	    if(ok.size() > 0){ // failures in memsets
+	      cudaFree(pseudotarget);
+
+	      running = false;
+	      has_result = false;
+	      
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMemset() failed.");
+	      return; // silent failure
+	    }
+	  }
+	  
+#else
 	  
 	  if((temp = (T*)realloc(target,
 				 sizeof(T)*(numVariables + numRealArtificials + 1))) == 0){
@@ -825,13 +1297,15 @@ namespace whiteice
 	    
 	    constraints[i] = temp;
 	  }
+
+#endif
 	  
 	  
 	  // memory allocations were ok (in theory)
 	  // actually setups simplex table correctly
 	  
 	  T RHS = target[numVariables];
-	  memset(&(target[numVariables]), 0, numRealArtificials*sizeof(T));
+	  memset(&(target[numVariables]), 0, numRealArtificials*sizeof(T)); // TODO USE CUDA
 	  target[numVariables+numRealArtificials] = RHS;
 	  
 	  unsigned int countReals   = 0;
@@ -846,7 +1320,7 @@ namespace whiteice
 	  
 	  for(unsigned int i=0;i<constraints.size();i++){
 	    T RHS = constraints[i][numVariables];
-	    memset(&(constraints[i][numVariables]), 0, numArtificials*sizeof(T));
+	    memset(&(constraints[i][numVariables]), 0, numArtificials*sizeof(T)); // TODO USE CUDA
 	    constraints[i][numVariables+numArtificials] = RHS;
 	    
 	    // setups constraint coefficients
@@ -908,24 +1382,69 @@ namespace whiteice
 	      
 	      T c = T(1.0)/constraints[lindex][eindex];
 	      
+#ifdef CUBLAS
+	      auto e = cublasDscal(cublas_handle, numVariables+numArtificials+1,
+				   (const double*)&c,
+				   (double*)constraints[lindex], 1);
+
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasDscal() failed.");
+		cudaFree(pseudotarget);
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      cblas_dscal(numVariables+numArtificials+1, *((double*)&c), 
 			  (double*)constraints[lindex], 1);
+#endif
 	      
 	      // updates pseudotarget
 	      
 	      c = -pseudotarget[eindex];
+
+#ifdef CUBLAS
+	      e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const double*)&c,
+			      (const double*)constraints[lindex], 1,
+			      (double*)pseudotarget, 1);
+
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		cudaFree(pseudotarget);
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      
 	      cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			  (double*)constraints[lindex], 1, (double*)pseudotarget, 1);
+#endif
 	      
 	      // updates other rows
 	      
 	      if(lindex != 0){
 		for(unsigned int i=0;i<lindex;i++){
 		  c = -constraints[i][eindex];
-		  
+
+#ifdef CUBLAS
+		  e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+				  (const double*)&c,
+				  (const double*)constraints[lindex], 1,
+				  (double*)constraints[i], 1);
+
+		  if(e != CUBLAS_STATUS_SUCCESS){
+		    whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		    cudaFree(pseudotarget);
+		    running = false;
+		    has_result = false;
+		    return;
+		  }
+#else
 		  cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			      (double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 		}
 	      }
 	      
@@ -933,9 +1452,25 @@ namespace whiteice
 	      if(lindex != constraints.size()-1){
 		for(unsigned int i=lindex+1;i<constraints.size();i++){
 		  c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		  e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+				  (const double*)&c,
+				  (const double*)constraints[lindex], 1,
+				  (double*)constraints[i], 1);
+
+		  if(e != CUBLAS_STATUS_SUCCESS){
+		    whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		    cudaFree(pseudotarget);
+		    running = false;
+		    has_result = false;
+		    return;
+		  }
+#else
 		  
 		  cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			      (double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 		}
 	      }
 	      
@@ -992,25 +1527,73 @@ namespace whiteice
 		// calculates new lindex row
 	      
 		T c = T(1.0)/constraints[lindex][eindex];
+
+#ifdef CUBLAS
+		auto e = cublasDscal(cublas_handle, numVariables+numArtificials+1,
+				     (const double*)&c,
+				     (double*)constraints[lindex], 1);
 		
+		if(e != CUBLAS_STATUS_SUCCESS){
+		  whiteice::logging.error("simplex<>::threadloop(): cublasDscal() failed.");
+		  cudaFree(pseudotarget);
+		  running = false;
+		  has_result = false;
+		  return;
+		}
+		
+#else
 		cblas_dscal(numVariables+numArtificials+1, *((double*)&c), 
 			    (double*)constraints[lindex], 1);
+#endif
 		
 		// updates pseudotarget
 		
 		c = -pseudotarget[eindex];
+
+#ifdef CUBLAS
 		
+		e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+				(const double*)&c,
+				(const double*)constraints[lindex], 1,
+				(double*)pseudotarget, 1);
+		
+		if(e != CUBLAS_STATUS_SUCCESS){
+		  whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		  cudaFree(pseudotarget);
+		  running = false;
+		  has_result = false;
+		  return;
+		}
+		
+#else
 		cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			    (double*)constraints[lindex], 1, (double*)pseudotarget, 1);
+#endif
 		
 		// updates other rows
 		
 		if(lindex != 0){
 		  for(unsigned int i=0;i<lindex;i++){
 		    c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		    e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+				    (const double*)&c,
+				    (const double*)constraints[lindex], 1,
+				    (double*)constraints[i], 1);
 		    
+		    if(e != CUBLAS_STATUS_SUCCESS){
+		      whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		      cudaFree(pseudotarget);
+		      running = false;
+		      has_result = false;
+		      return;
+		    }
+		    
+#else
 		    cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 				(double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 		  }
 		}
 		
@@ -1018,9 +1601,25 @@ namespace whiteice
 		if(lindex != constraints.size()-1){
 		  for(unsigned int i=lindex+1;i<constraints.size();i++){
 		    c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+		    e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+				    (const double*)&c,
+				    (const double*)constraints[lindex], 1,
+				    (double*)constraints[i], 1);
 		    
+		    if(e != CUBLAS_STATUS_SUCCESS){
+		      whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		      cudaFree(pseudotarget);
+		      running = false;
+		      has_result = false;
+		      return;
+		    }
+		    
+#else
 		    cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 				(double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 		  }
 		}
 		
@@ -1064,14 +1663,73 @@ namespace whiteice
 	      
 	    }
 	  }
-	  
+
+#ifdef CUBLAS
+	  cudaFree(pseudotarget);
+#else
 	  free(pseudotarget);
+#endif
 	  
 	  // pseudoslacks are now zero so it is
 	  // safe to remove them
 	  
 	  // resizes constraints
+
+#ifdef CUBLAS
+
+	  for(unsigned int i=0;i<constraints.size();i++){
+	    T RHS = constraints[i][numVariables + numArtificials];
+	    
+	    auto e = cudaMallocManaged(&temp, sizeof(T)*(numVariables + numRealArtificials + 1));
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMallocManaged() failed.");
+	      
+	      running = false; // silent failure
+	      has_result = false;
+	      return;
+	    }
+
+	    const int original_size = numVariables + numArtificials + 1;
+	    const int new_size = numVariables + numRealArtificials + 1;
+
+	    if(new_size <= original_size){
+	      e = cudaMemcpy(temp, constraints[i], new_size*sizeof(T),
+			     cudaMemcpyDeviceToDevice);
+	    }
+	    else{
+	      e = cudaMemcpy(temp, constraints[i], original_size*sizeof(T),
+			     cudaMemcpyDeviceToDevice);
+	    }
+
+	    if(e != cudaSuccess){
+	      cudaFree(temp);
+	      whiteice::logging.error("simplex<>::threadloop(): cudaMemcpy() failed.");
+	      
+	      running = false; // silent failure
+	      has_result = false;
+	      return;
+	    }
+
+	    cudaFree(constraints[i]);
+	    constraints[i] = temp;
+	    constraints[i][numVariables+numRealArtificials] = RHS;
+	  }
 	  
+	  this->numArtificials = numRealArtificials;
+	  
+	  std::vector<unsigned int>::iterator i;
+	  i = nonbasic.begin();
+	  
+	  while(i != nonbasic.end()){
+	    if(*i >= numVariables + numRealArtificials)
+	      i = nonbasic.erase(i);
+	    else
+	      i++;
+	  }
+	  
+#else
+	
 	  for(unsigned int i=0;i<constraints.size();i++){
 	    T RHS = constraints[i][numVariables + numArtificials];
 	    temp = (T*)realloc(constraints[i], sizeof(T)*(numVariables + numRealArtificials + 1));
@@ -1097,9 +1755,8 @@ namespace whiteice
 	    else
 	      i++;
 	  }
-	  
+#endif
 	}
-	
 	
 	
 	// simplex table fixup
@@ -1123,25 +1780,70 @@ namespace whiteice
 	  // calculates new lindex row
 	  
 	  T c = T(1.0)/constraints[lindex][eindex];
+
+#ifdef CUBLAS
 	  
+	  auto e = cublasDscal(cublas_handle, numVariables+numArtificials+1,
+			       (const double*)&c,
+			       (double*)constraints[lindex], 1);
+	  
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("simplex<>::threadloop(): cublasDscal() failed.");
+	    running = false;
+	    has_result = false;
+	    return;
+	  }
+	  
+#else
 	  cblas_dscal(numVariables+numArtificials+1, *((double*)&c), 
 		      (double*)constraints[lindex], 1);
+#endif
 	  
 	  // updates target
 	  
 	  c = -target[eindex];
+
+#ifdef CUBLAS
+
+	  e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+			  (const double*)&c,
+			  (const double*)constraints[lindex], 1,
+			  (double*)target, 1);
 	  
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+	    running = false;
+	    has_result = false;
+	    return;
+	  }
+	  
+#else
 	  cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 		      (double*)constraints[lindex], 1, (double*)target, 1);
+#endif
 	  
 	  // updates other rows
 	  
 	  if(lindex != 0){
 	    for(unsigned int i=0;i<lindex;i++){
 	      c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+	      e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const double*)&c,
+			      (const double*)constraints[lindex], 1,
+			      (double*)constraints[i], 1);
 	      
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		running = false;
+		has_result = false;
+		return;
+	      }
+#else
 	      cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			  (double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 	    }
 	  }
 	  
@@ -1149,9 +1851,24 @@ namespace whiteice
 	  if(lindex != constraints.size()-1){
 	    for(unsigned int i=lindex+1;i<constraints.size();i++){
 	      c = -constraints[i][eindex];
+
+#ifdef CUBLAS
+	      e = cublasDaxpy(cublas_handle, numVariables+numArtificials+1,
+			      (const double*)&c,
+			      (const double*)constraints[lindex], 1,
+			      (double*)constraints[i], 1);
 	      
+	      if(e != CUBLAS_STATUS_SUCCESS){
+		whiteice::logging.error("simplex<>::threadloop(): cublasDaxpy() failed.");
+		running = false;
+		has_result = false;
+		return;
+	      }		  
+	      
+#else
 	      cblas_daxpy(numVariables+numArtificials+1, *((double*)&c),
 			  (double*)constraints[lindex], 1, (double*)constraints[i], 1);
+#endif
 	    }
 	  }
 	  
@@ -1172,7 +1889,7 @@ namespace whiteice
 	  
 	  this->iter++;
 	}
-	
+    
 	
 	has_result = true;
 	// maximization_thread = 0;

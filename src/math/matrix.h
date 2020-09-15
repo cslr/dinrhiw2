@@ -19,6 +19,7 @@
 
 #include <assert.h>
 
+// TODO check that this isn't used anymore and remove DINRHIW_DEBUG define
 #ifndef DINRHIW_DEBUG
 #define DINRHIW_DEBUG 1
 #endif
@@ -40,7 +41,7 @@ namespace whiteice
     template <typename T> bool autocorrelation(matrix<T>& R, const std::vector< vertex<T> >& data);
     template <typename T> bool autocorrelation(matrix<T>& R, const matrix<T>& W);
     template <typename T> bool mean_covariance_estimate
-      (vertex<T>& m, matrix<T>& R, const std::vector< vertex<T> >& data);
+      (vertex<T>& m, matrix<T>& Cxx, const std::vector< vertex<T> >& data);
       
     // rotations
     template <typename T> bool rhouseholder_leftrot
@@ -118,7 +119,11 @@ namespace whiteice
       T& operator[](const unsigned int& index) 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= numRows*numCols){
+	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("matrix index out of range");
+	}
 #endif
 	return data[index]; // no range check
       }
@@ -126,7 +131,11 @@ namespace whiteice
       const T& operator[](const unsigned int& index) const 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= numRows*numCols){
+	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("matrix index out of range");
+	}
 #endif	
 	return data[index]; // no range checks
       }
@@ -135,19 +144,34 @@ namespace whiteice
       T& operator()(unsigned int y, unsigned int x) 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(y >= numRows || x >= numCols){
+	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex matrix out of range");
+	}
 #endif
-	
+#if CUBLAS
+	return data[y + x*numRows];
+#else
 	return data[y*numCols + x]; // no range checks
+#endif
       }
       
       
       const T& operator()(unsigned y, unsigned int x) const 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
-#endif	
+	if(y >= numRows || x >= numCols){
+	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex index out of range");
+	}
+#endif
+#ifdef CUBLAS
+	return data[y + x*numRows];
+#else
 	return data[y*numCols + x]; // no range checks
+#endif
       }
       
       matrix<T>& identity();
@@ -183,7 +207,7 @@ namespace whiteice
       bool inv() ;
       
       // calculates pseudoinverse using svd (should not never fail)
-      matrix<T>& pseudoinverse(const T machine_epsilon = T(0.0)) ;
+      bool pseudoinverse(const T machine_epsilon = T(0.0)) ;
 
       // symmetric pseudoinverse (symmetric eig to calculate evd)
       bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) ;

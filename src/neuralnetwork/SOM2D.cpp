@@ -21,6 +21,7 @@
 #include "data_source.h"
 #include "linear_ETA.h"
 #include "conffile.h"
+#include "Log.h"
 
 #ifdef OPENBLAS
 #include "cblas.h"
@@ -45,7 +46,7 @@ namespace whiteice
     som_width(w) , som_height(h) , som_dimension(dim),
     som_widthf(w), som_heightf(h), som_dimensionf(dim)
   {
-    somtable = 0;
+    somtable = NULL;
 
     som_widthf = som_width;
     som_heightf = som_height;
@@ -53,12 +54,22 @@ namespace whiteice
     
     // posix_memalign(&somtable, sizeof(void*)*2,
     // som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
+
+#ifdef CUBLAS
+    auto cudaErr = cudaMallocManaged
+      (&somtable, som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
     
+    if(cudaErr != cudaSuccess || somtable == NULL){
+      whiteice::logging.error("SOM2D ctor: cudaMallocManaged() failed.");
+      throw CUDAException("CUBLAS memory allocation failure.");
+    }
+    
+#else
     somtable = (whiteice::math::blas_real<float>*)
       malloc(som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
     
-    if(somtable == 0)
-      throw std::bad_alloc();
+    if(somtable == 0) throw std::bad_alloc();
+#endif
     
     show_visualization = false;
     show_eta = true;
@@ -72,7 +83,7 @@ namespace whiteice
   
   SOM2D::SOM2D(const SOM2D& som)
   {
-    this->somtable = 0;
+    this->somtable = NULL;
     
     this->som_width = som.som_width;
     this->som_height = som.som_height;
@@ -84,28 +95,76 @@ namespace whiteice
     
     // posix_memalign(&somtable, sizeof(void*)*2,
     // som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
+
+#if CUBLAS
+    auto cudaErr = cudaMallocManaged
+      (&somtable, som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
     
+    if(cudaErr != cudaSuccess || somtable == NULL){
+      whiteice::logging.error("SOM2D ctor: cudaMallocManaged() failed.");
+      throw CUDAException("CUBLAS memory allocation failure.");
+    }
+
+    cudaErr = cudaMemcpy
+      (somtable, som.somtable,
+       som_dimension*som_width*som_height*sizeof(whiteice::math::blas_real<float>),
+       cudaMemcpyDeviceToDevice);
+
+    if(cudaErr != cudaSuccess){
+      cudaFree(somtable);
+      whiteice::logging.error("SOM2D ctor: cudaMemcpy() failed.");
+      throw CUDAException("CUBLAS memcopy failed.");
+    }
+    
+#else
     this->somtable = (whiteice::math::blas_real<float>*)
       malloc(som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
     
-    if(this->somtable == 0)
-      throw std::bad_alloc();
+    if(this->somtable == NULL) throw std::bad_alloc();
 
     memcpy((float*)this->somtable, (float*)som.somtable,
 	   som_dimension*som_height*som_width*sizeof(whiteice::math::blas_real<float>));
+#endif
     
     this->show_visualization = som.show_visualization;
     this->show_eta = som.show_eta;
     this->graphics_on = som.graphics_on;
     
-    this->umatrix = 0;
+    this->umatrix = NULL;
+
+#ifdef CUBLAS
+    if(som.umatrix){
+      auto cudaErr = cudaMallocManaged
+	(&umatrix, som_height*som_width*sizeof(whiteice::math::blas_real<float>));
+      
+      if(cudaErr != cudaSuccess || umatrix == NULL){
+	cudaFree(somtable);
+	whiteice::logging.error("SOM2D ctor: cudaMallocManaged() failed.");
+	throw CUDAException("CUBLAS memory allocation failure.");
+      }
+      
+      cudaErr = cudaMemcpy
+	(umatrix, som.umatrix,
+	 som_dimension*som_width*som_height*sizeof(whiteice::math::blas_real<float>),
+	 cudaMemcpyDeviceToDevice);
+      
+      if(cudaErr != cudaSuccess){
+	cudaFree(umatrix);
+	cudaFree(somtable);
+	whiteice::logging.error("SOM2D ctor: cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS memcopy failed.");
+      } 
+      
+    }
     
+#else
     if(som.umatrix){
       this->umatrix = (whiteice::math::blas_real<float>*)
 	malloc(som_width*som_height*sizeof(whiteice::math::blas_real<float>));
       memcpy((float*)this->umatrix, (float*)som.umatrix,
 	     som_width*som_height*sizeof(whiteice::math::blas_real<float>));
     }
+#endif
     
   }
 
@@ -113,8 +172,14 @@ namespace whiteice
   
   SOM2D::~SOM2D()
   {
+#if CUBLAS
+    if(somtable) cudaFree(somtable);
+    if(umatrix) cudaFree(umatrix);
+#else
     if(somtable) free(somtable);
     if(umatrix) free(umatrix);
+#endif
+    
     
 #if 0    
     close_visualization();
@@ -236,14 +301,36 @@ namespace whiteice
 
 	if(h > 0.001){
 	  // printf("H(%d,%d) = %f\n", (int)x, (int)y, h);
+
+#ifdef CUBLAS
+
+	  float h1 = 1.0f - h;
+	  auto s = cublasSscal(cublas_handle, (int)som_dimension,
+			       (const float*)&h1, (float*)&(somtable[index]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("SOM2D<>::learn(): cublasSscal() failed.");
+	    throw CUDAException("CUBLAS cublasSscal() call failed.");
+	  }
+
+	  s = cublasSaxpy(cublas_handle, som_dimension, (const float*)&h,
+			  (const float*)&(somtable[winner]), 1, 
+			  (float*)&(somtable[index]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("SOM2D<>::learn(): cublasSaxpy() failed.");
+	    throw CUDAException("CUBLAS cublasSaxpy() call failed.");
+	  }
 	  
+#else
 	  // w -= h*w <=> w = (1-h) * w
 	  cblas_sscal(som_dimension, (1 - h), (float*)&(somtable[index]), 1);
 	  
-	  // w += h*x
+	  // w += h*x (
 	  cblas_saxpy(som_dimension,  h,
 		      (float*)&(somtable[winner]),  1,
 		      (float*)&(somtable[index]), 1);
+#endif
 	}
 	
 	x++;
@@ -336,6 +423,30 @@ namespace whiteice
 	  h = wraparound_sqdistance(x, wx, y, wy) / (-2.0f * hvariance);
 	  h = 0.01f * expf(h);
 
+#ifdef CUBLAS
+	  if(h > 0.001){
+	    
+	    float h1 = 1.0f - h;
+	    auto s = cublasSscal(cublas_handle, (int)som_dimension,
+				 (const float*)&h1, (float*)&(somtable[index]), 1);
+	    
+	    if(s != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("SOM2D<>::learn(): cublasSscal() failed.");
+	      throw CUDAException("CUBLAS cublasSscal() call failed.");
+	    }
+	    
+	    s = cublasSaxpy(cublas_handle, som_dimension, (const float*)&h,
+			    (const float*)&(somtable[winner]), 1, 
+			    (float*)&(somtable[index]), 1);
+	    
+	    if(s != CUBLAS_STATUS_SUCCESS){
+	      whiteice::logging.error("SOM2D<>::learn(): cublasSaxpy() failed.");
+	      throw CUDAException("CUBLAS cublasSaxpy() call failed.");
+	    }
+	    
+	  }
+	  
+#else
 	  if(h > 0.001){
 	    // w -= h*w <=> w = (1 - h) * w
 	    cblas_sscal(som_dimension, (1 - h), (float*)&(somtable[index]), 1);
@@ -345,6 +456,7 @@ namespace whiteice
 			(float*)&(somtable[winner]), 1,
 			(float*)&(somtable[index]), 1);
 	  }
+#endif
 	  
 	  
 	  // updates coordinates
@@ -383,15 +495,41 @@ namespace whiteice
     const unsigned int N = som_dimension*som_width*som_height;
     
     for(unsigned int i=0;i<N;i++)
-      somtable[i] = rng.rand()/((float)RAND_MAX);
+      somtable[i] = rng.normal();
     
     // normalizes lengt of som vectors
     float len;
     
     for(unsigned int i=0;i<N;i += som_dimension){
+
+#ifdef CUBLAS
+      auto s = cublasSnrm2(cublas_handle, som_dimension,
+			   (const float*)&(somtable[i]), 1, &len);
+
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("SOM2D::randomize(): cublasSnrm2() failed.");
+	throw CUDAException("CUBLAS cublasSnrm2() failed.");
+      }
+
+      if(len != 0.0f){
+	len = 1.0f/whiteice::math::sqrt(len);
+
+	s = cublasSscal(cublas_handle, som_dimension, (const float*)&len,
+			(float*)&(somtable[i]), 1);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("SOM2D::randomize(): cublasSscal() failed.");
+	  throw CUDAException("CUBLAS cublasSscal() failed.");
+	}
+      }
+      
+#else
       len = cblas_snrm2(som_dimension, (float*)&(somtable[i]), 1);
-      if(len != 0.0f) len = 1.0f / len;
-      cblas_sscal(som_dimension, len, (float*)&(somtable[i]), 1);
+      if(len != 0.0f){
+	len = 1.0f / whiteice::math::sqrt(len);
+	cblas_sscal(som_dimension, len, (float*)&(somtable[i]), 1);
+      }
+#endif 
     }
     
     return true;
@@ -416,12 +554,16 @@ namespace whiteice
 
     printf("PCA computed: %d x %d\n", PCA.ysize(), PCA.xsize());
 
-    // initial SOM vector space spans span(v1,v2) where v1 and v2 are the largest eigenvectors
+    // initial SOM vector space spans span(v1,v2) where
+    // v1 and v2 are the largest eigenvectors
 
     vertex<> alpha;
     alpha.resize(2);
 
-    auto invPCA = PCA.pseudoinverse();
+    if(PCA.pseudoinverse() == false)
+      return false; // bad singular eigenvalues for data???
+    
+    auto& invPCA = PCA;
 
     for(int j=0;j<(int)som_height;j++){
       float fy = ((float)j/(float)(som_height-1));
@@ -434,9 +576,21 @@ namespace whiteice
 	vertex<> som_vector = invPCA*alpha + m;
 
 	const unsigned int index = (j*som_width + i)*som_dimension;
+
+#ifdef CUBLAS
+	auto err = cudaMemcpy((float*)&(somtable[index]), (const float*)&(som_vector[0]),
+			      som_vector.size()*sizeof(whiteice::math::blas_real<float>),
+			      cudaMemcpyDeviceToDevice);
+
+	if(err != cudaSuccess){
+	  whiteice::logging.error("SOM2d::randomize(): cudaMemcpy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	}
 	
+#else
 	memcpy((float*)&(somtable[index]), (float*)&(som_vector[0]),
 	       som_vector.size()*sizeof(whiteice::math::blas_real<float>));
+#endif
       }
     }
 
@@ -579,7 +733,61 @@ namespace whiteice
   
     unsigned int winner[2];
     float tmp, result[2];
+
+#ifdef CUBLAS
+
+    auto s = cublasSdot(cublas_handle, som_dimension,
+			(const float*)v1.data, 1, (const float*)somtable, 1,
+			(float*)&(result[0]));
+
+    if(s != CUBLAS_STATUS_SUCCESS){
+      whiteice::logging.error("SOM2D::somdistance(): cublasSdot() failed.");
+      throw CUDAException("CUBLAS cublasSdot() failed.");
+    }
+
+    s = cublasSdot(cublas_handle, som_dimension,
+		   (const float*)v2.data, 1, (const float*)somtable, 1,
+		   (float*)&(result[1]));
+
+    if(s != CUBLAS_STATUS_SUCCESS){
+      whiteice::logging.error("SOM2D::somdistance(): cublasSdot() failed.");
+      throw CUDAException("CUBLAS cublasSdot() failed.");
+    }
+
+    winner[0] = 0; winner[1] = 0;
+
+    for(unsigned int i=som_dimension;i<N;i += som_dimension){
+      
+      auto s = cublasSdot(cublas_handle, som_dimension,
+			  (const float*)v1.data, 1, (const float*)&(somtable[i]), 1,
+			  (float*)&(tmp));
+      
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("SOM2D::somdistance(): cublasSdot() failed.");
+	throw CUDAException("CUBLAS cublasSdot() failed.");
+      }
+
+      if(result[0] < tmp){
+	result[0] = tmp;
+	winner[0] = i/som_dimension;
+      }
+
+      s = cublasSdot(cublas_handle, som_dimension,
+		     (const float*)v2.data, 1, (const float*)&(somtable[i]), 1,
+		     (float*)&(tmp));
+      
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("SOM2D::somdistance(): cublasSdot() failed.");
+	throw CUDAException("CUBLAS cublasSdot() failed.");
+      }
+
+      if(result[1] < tmp){
+	result[1] = tmp;
+	winner[1] = i/som_dimension;
+      }
+    }
     
+#else
     result[0] = cblas_sdot(som_dimension, (const float*)v1.data, 1, (float*)somtable, 1);
     result[1] = cblas_sdot(som_dimension, (const float*)v2.data, 1, (float*)somtable, 1);
     winner[0] = 0; winner[1] = 0;
@@ -598,6 +806,7 @@ namespace whiteice
 	winner[1] = i/som_dimension;
       }
     }
+#endif
     
     // finally converts indexes to coordinates
     
@@ -687,8 +896,23 @@ namespace whiteice
     
     
     vertex< whiteice::math::blas_real<float> > r(som_dimension);
+
+#ifdef CUBLAS
+
+    auto e = cudaMemcpy((float*)r.data,
+			(const float*)&(somtable[(i + j*som_width)*som_dimension]),
+			som_dimension*sizeof(whiteice::math::blas_real<float>),
+			cudaMemcpyDeviceToDevice);
+
+    if(e != cudaSuccess){
+      whiteice::logging.error("SOM2D::operator(): cudaMemcpy() failed.");
+      throw CUDAException("CUBLAS cudaMemcpy() failed.");
+    }
+
+#else
     memcpy((float*)r.data, (float*)&(somtable[(i + j*som_width)*som_dimension]),
 	   som_dimension*sizeof(whiteice::math::blas_real<float>));
+#endif
     
     return r;
   }
@@ -710,8 +934,22 @@ namespace whiteice
     coordinates2index(i, j, index);
     index *= som_dimension;
 
+#ifdef CUBLAS
+
+    auto e = cudaMemcpy((float*)&(somtable[(i + j*som_width)*som_dimension]),
+			(const float*)v.data,
+			som_dimension*sizeof(whiteice::math::blas_real<float>),
+			cudaMemcpyDeviceToDevice);
+
+    if(e != cudaSuccess){
+      whiteice::logging.error("SOM2D::operator(): cudaMemcpy() failed.");
+      throw CUDAException("CUBLAS cudaMemcpy() failed.");
+    }
+    
+#else
     memcpy(((float*)&somtable[index]), (const float*)v.data,
 	   som_dimension*sizeof(whiteice::math::blas_real<float>));
+#endif
 
     return true;
   }
@@ -721,8 +959,23 @@ namespace whiteice
   vertex< whiteice::math::blas_real<float> > SOM2D::operator()(unsigned int index) const 
   {
     vertex< whiteice::math::blas_real<float> > v(som_dimension);
+
+#ifdef CUBLAS
+
+    auto e = cudaMemcpy((float*)v.data,
+			(const float*)&(somtable[index*som_dimension]),
+			som_dimension*sizeof(whiteice::math::blas_real<float>),
+			cudaMemcpyDeviceToDevice);
+
+    if(e != cudaSuccess){
+      whiteice::logging.error("SOM2D::operator(): cudaMemcpy() failed.");
+      throw CUDAException("CUBLAS cudaMemcpy() failed.");
+    }
     
-    memcpy((float*)v.data, (float*)&(somtable[index*som_dimension]), som_dimension*sizeof(whiteice::math::blas_real<float>));
+#else
+    memcpy((float*)v.data, (float*)&(somtable[index*som_dimension]),
+	   som_dimension*sizeof(whiteice::math::blas_real<float>));
+#endif
     
     return v;
   }
@@ -938,7 +1191,36 @@ namespace whiteice
     
     unsigned int winner = 0;
     float tmp, result = 0;
+
+#ifdef CUBLAS
+    auto s = cublasSdot(cublas_handle, som_dimension,
+			(const float*)vmemory, 1, (const float*)&(somtable[0]), 1,
+			(float*)&result);
     
+    if(s != CUBLAS_STATUS_SUCCESS){
+      whiteice::logging.error("SOM2D::find_winner(): cublasSdot() failed.");
+      throw CUDAException("CUBLAS cublasSdot() failed.");
+    }
+    
+    for(unsigned int i=som_dimension;i<N;i+= som_dimension){
+      
+      auto s = cublasSdot(cublas_handle, som_dimension,
+			  (const float*)vmemory, 1, (const float*)&(somtable[i]), 1,
+			  (float*)&tmp);
+      
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("SOM2D::find_winner(): cublasSdot() failed.");
+	throw CUDAException("CUBLAS cublasSdot() failed.");
+      }
+      
+      if(result < tmp){
+	result = tmp;
+	winner = i/som_dimension;
+      }
+      
+    }
+
+#else    
     result = cblas_sdot(som_dimension, (float*)vmemory, 1, (float*)somtable, 1);    
     
     for(unsigned int i=som_dimension;i<N;i+= som_dimension){
@@ -949,6 +1231,8 @@ namespace whiteice
 	winner = i/som_dimension;
       }
     }
+
+#endif
     
     return winner;
   }

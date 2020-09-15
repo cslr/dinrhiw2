@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([whiteice::dinrhiw], [<nop@iki.fi>], [libdinrhiw])
+AC_INIT([whiteice::dinrhiw], [<tomas.ukkonen@iki.fi>], [libdinrhiw])
 
 dnl finds the basic compiling tools
 AC_PROG_CC
@@ -21,6 +21,7 @@ AC_CONFIG_SRCDIR([src/dinrhiw.h])
 
 dnl ----------------------------------------------------------
 dnl do all the magick stuff here
+
 
 dnl checks if -I/usr/local/include is needed
 AC_MSG_CHECKING([is -I/usr/local/include command line parameter needed])
@@ -46,7 +47,8 @@ SHAREDLIBSUFFIX="so"
 if [[ $? -eq 0 ]]; then
    EXTRA_DEFINES="-DWINOS"
    SHAREDLIBSUFFIX="dll"
-    AC_MSG_RESULT([yes, $conf_flags])
+dnl    AC_MSG_RESULT([yes, $conf_flags])
+    AC_MSG_RESULT([yes])
 else
     AC_MSG_RESULT([no])
 fi
@@ -103,7 +105,7 @@ dnl enables CPU specific optimization flags
 AC_ARG_ENABLE([optimize],
 	AS_HELP_STRING([--disable-optimize],[Disable optimization]))
 
-optimization_flags="-O3 -ffast-math"
+optimization_flags="-O3 -ffast-math -mtune=native"
 
 AS_IF([test "x$enable_optimize" == "xno"],[
   optimization_flags="-g"
@@ -114,7 +116,7 @@ AS_IF([test "x$enable_optimize" == "xno"],[
 conf_flags=""
 
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math"
+    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math -mtune=native"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
       optimization_flags="-fPIC -g -DAMD64"
@@ -125,7 +127,7 @@ if [[ $cpufamily = "x86_64" ]]; then
     conf_flags="-fPIC -DAMD64"
 elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
 
-    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math"
+    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math -mtune=native"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
       optimization_flags="-fPIC -g -DIA32"
@@ -322,7 +324,7 @@ AC_ARG_ENABLE([mkl],
 
 MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
 
-AC_MSG_CHECKING([for Intel MKL library])
+AC_MSG_CHECKING([for Intel MKL library (Linux)])
 `g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
@@ -341,21 +343,61 @@ else
    INTELMKL="no"
 fi
 
+dnl Intel MKL in Windows
+MKLROOT=/c/Program\ Files\ \(x86\)/IntelSWTools/compilers_and_libraries/windows/mkl
 
-if [[ $INTELMKL == "no" -a $OPENBLAS == "no" ]]; then
-  AC_MSG_ERROR([NO BLAS DETECTED])
+AC_MSG_CHECKING([for Intel MKL library (Windows)])
+`g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_win -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+  AS_IF([test "x$enable_mkl" == "xno"],[
+     INTELMKL="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     INTELMKL="yes"
+     BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+     BLAS_LIBS="-L$MKLROOT/lib/intel64_win -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+     AC_MSG_RESULT([yes, installed in $MKLROOT])
+  ])
+else
+   AC_MSG_RESULT([no working Intel MKL detected])
+   INTELMKL="no"
 fi
 
-dnl AC_MSG_CHECKING([for NVIDIA CUDA cuBLAS library])
-dnl `gcc -o cublastest blastest.c -lcublas`
-dnl 
-dnl if [[ $? -eq 0 ]]; then
-dnl   BLAS_CFLAGS="-I/include/"
-dnl   BLAS_LIBS="-L/lib/ -lcublas"
-dnl   AC_MSG_RESULT([yes])
-dnl else
-dnl   AC_MSG_RESULT([no cuBLAS detected])
-dnl fi
+
+AC_ARG_ENABLE([cublas],
+	AS_HELP_STRING([--disable-cublas],[Disable NVIDIA cuBLAS library]))
+
+CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
+cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
+CUBLASROOT="$CUBLASROOT/$cublasdir"
+
+AC_MSG_CHECKING([for NVIDIA cuBLAS library (Windows)])
+`g++ -o cublastest cublastest.cpp -DCUBLAS "-I$CUBLASROOT/include/" "-L$CUBLASROOT/lib/x64/" -lcublas -lcudart > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+  AS_IF([test "x$enable_cublas" == "xno"],[
+     NVIDIACUBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     NVIDIACUBLAS="yes"
+     BLAS_CFLAGS="\"-I$CUBLASROOT/include/\" -DCUBLAS"
+     BLAS_LIBS="\"-L$CUBLASROOT/lib/x64/\" -lcublas -lcudart"
+     AC_MSG_RESULT([yes, installed in $CUBLASROOT])
+  ])
+else
+   AC_MSG_RESULT([no NVIDIA cuBLAS detected])
+   NVIDIACUBLAS="no"
+fi
+
+
+if [[ $INTELMKL == "no" -a $OPENBLAS == "no" ]]; then
+   if [[ $NVIDIACUBLAS == "no" ]]; then
+     AC_MSG_ERROR([NO BLAS DETECTED])
+   fi
+fi
 
 
 dnl checking for ZLIB header files and library

@@ -158,17 +158,17 @@ int main()
   try{
     // nnetwork_test();
 
-    nngraddescent_complex_test();
+    // simple_tsne_test();
 
-    // nnetwork_complex_test(); // works about correctly
+    // nngraddescent_complex_test();
+
+    nnetwork_complex_test(); // works about correctly
 
     //nnetwork_gradient_test(); // gradient calculation works
     //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
 
     return 0;
 
-    // simple_tsne_test();
-    
     // recurrent_nnetwork_test(); // FIXME doesn't seem to work anymore.
     
     return 0;
@@ -343,7 +343,7 @@ void simple_tsne_test()
     whiteice::TSNE<> tsne(true);
     std::vector< whiteice::math::vertex<> > ydata;
 
-    if(tsne.calculate(data, 2, ydata, false, true) == false){
+    if(tsne.calculate(data, 2, ydata, true) == false){
       printf("ERROR: calculating t-SNE dimension reduction FAILED.\n");
     }
     else{

@@ -32,7 +32,28 @@ namespace whiteice
     {
       numRows = 0;
       numCols = 0;
-      data = 0;
+      data = NULL;
+      compressor = NULL;
+
+#ifdef CUBLAS
+      
+      cudaError_t cudaStat;
+      void* cudaptr = NULL;
+      cudaStat = cudaMallocManaged(&cudaptr, ysize*xsize*sizeof(T));
+
+      if(cudaStat != cudaSuccess || cudaptr == NULL){
+	whiteice::logging.error("matrix ctor failed. cuBLAS memory allocation failure.");
+	throw CUDAException("CUBLAS memory allocation failure (matrix).");
+      }
+
+      // no memory initialization!!
+      
+      this->data = (T*)cudaptr;
+
+      numRows = ysize;
+      numCols = xsize;
+      
+#else
 
 #ifdef BLAS_MEMALIGN
       // NOTE: electric fence don't know about posix_memalign()
@@ -49,15 +70,93 @@ namespace whiteice
       
       numRows = ysize;
       numCols = xsize;
-      
       compressor = 0;
+#endif
+      
     }
     
     
     template <typename T>
     matrix<T>::matrix(const matrix<T>& M)
     {
-      data = 0;
+      data = NULL;
+      compressor = NULL;
+
+      if(M.compressor != 0)
+	throw illegal_operation("matrix ctor: to be copied matrix is compressed");
+      
+#if CUBLAS
+      
+      if(M.data){
+	cudaError_t cudaErr;
+	cublasStatus_t cudaStat;
+	void* cudaptr = NULL;
+	cudaErr = cudaMallocManaged(&cudaptr, M.numRows*M.numCols*sizeof(T));
+	
+	if(cudaErr != cudaSuccess || cudaptr == NULL){
+	  whiteice::logging.error("matrix ctor failed. cuBLAS memory allocation failure.");
+	  throw CUDAException("CUBLAS memory allocation failure (matrix).");
+	}
+	
+	// cuda copy memory
+	if(typeid(T) == typeid(blas_real<float>)){
+	  cudaStat = cublasScopy(cublas_handle, M.numRows*M.numCols,
+				 (const float*)M.data, 1, (float*)cudaptr, 1);
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	    cudaFree(cudaptr);
+	    whiteice::logging.error("matrix ctor failed. cublasScopy() failed.");
+	    throw CUDAException("CUBLAS cublasScopy() failed.");
+	  }
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+	  cudaStat = cublasDcopy(cublas_handle, M.numRows*M.numCols,
+				 (const double*)M.data, 1, (double*)cudaptr, 1);
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	    cudaFree(cudaptr);
+	    whiteice::logging.error("matrix ctor failed. cublasDcopy() failed.");
+	    throw CUDAException("CUBLAS cublasDcopy() failed.");
+	  }
+	}
+	else if(typeid(T) == typeid(blas_complex<float>)){
+	  cudaStat = cublasCcopy(cublas_handle, M.numRows*M.numCols,
+				 (const cuComplex*)M.data, 1, (cuComplex*)cudaptr, 1);
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	    cudaFree(cudaptr);
+	    whiteice::logging.error("matrix ctor failed. cublasCcopy() failed.");
+	    throw CUDAException("CUBLAS cublasCcopy() failed.");
+	  }
+	}
+	else if(typeid(T) == typeid(blas_complex<double>)){
+	  cudaStat = cublasZcopy(cublas_handle, M.numRows*M.numCols,
+				 (const cuDoubleComplex*)M.data, 1,
+				 (cuDoubleComplex*)cudaptr, 1);
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	    cudaFree(cudaptr);
+	    whiteice::logging.error("matrix ctor failed. cublasZcopy() failed.");
+	    throw CUDAException("CUBLAS cublasZcopy() failed.");
+	  }
+	}
+	else{
+	  // generic memcopy [assumes type T does not allocated memory dynamically]
+	  auto s = cudaMemcpy(cudaptr, M.data, M.numRows*M.numCols*sizeof(T),
+			      cudaMemcpyDeviceToDevice);
+
+	  if(s != cudaSuccess){
+	    whiteice::logging.error("matrix ctor failed. cudaMemcopy() failed.");
+	    cudaFree(cudaptr);
+	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	  }
+	  
+	}
+
+	// memory initialization successful
+	this->data = (T*)cudaptr;
+
+	this->numRows = M.numRows;
+	this->numCols = M.numCols;
+      }
+      
+#else
 
 #ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
@@ -100,6 +199,7 @@ namespace whiteice
       numCols = M.numCols;
       
       compressor = M.compressor;
+#endif
     }
     
 #if 0    
@@ -119,7 +219,33 @@ namespace whiteice
     template <typename T>
     matrix<T>::matrix(const vertex<T>& diagonal)
     {
-      data = 0;
+      data = NULL;
+      compressor = NULL;
+
+#ifdef CUBLAS
+      
+      cudaError_t cudaErr;
+      void* cudaptr = NULL;
+      cudaErr = cudaMallocManaged(&cudaptr,
+				  diagonal.dataSize*diagonal.dataSize*sizeof(T));
+      
+      if(cudaErr != cudaSuccess || cudaptr == NULL){
+	whiteice::logging.error("matrix ctor failed. cudaMallocManaged() failed.");
+	throw CUDAException("CUBLAS memory allocation failure (matrix).");
+      }
+
+      this->data = (T*)cudaptr;
+      this->numCols = diagonal.dataSize;
+      this->numRows = diagonal.dataSize;
+
+      this->zero(); // cuBLAS optimized
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<diagonal.dataSize;i++){
+	data[i + i*numRows] = diagonal[i];
+      }
+      
+#else
 
 #ifdef BLAS_MEMALIGN
       // electric fence don't know about posix_memalign()
@@ -141,15 +267,25 @@ namespace whiteice
 	data[index] = diagonal[i];
 	index += numCols + 1;
       }
+#endif 
       
-      compressor = 0;
     }
     
     
     template <typename T>
-    matrix<T>::~matrix(){
-      if(data) free(data);
+    matrix<T>::~matrix()
+    {
       if(compressor) delete compressor;
+
+#ifdef CUBLAS
+      
+      if(data)
+	cudaFree(data);
+      
+#else
+      if(data) free(data);
+#endif
+      
     }
 
     /**********************************************************************/
@@ -159,16 +295,111 @@ namespace whiteice
     matrix<T> matrix<T>::operator+(const matrix<T>& M) const
       
     {
-      if(M.numCols != numCols ||
-	 M.numRows != numRows)
+      if(M.numCols != numCols || M.numRows != numRows){
+	whiteice::logging.error("matrix::operator+(): matrix dimensions mismatch.");
 	throw illegal_operation("'+' operator: matrix size mismatch");
+      }
+
+#ifdef CUBLAS
       
-      matrix<T> R(*this);
+      matrix<T> R(M.numRows, M.numCols);
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), this->numRows,
+				       (const float*)&alpha,
+				       (const float*)(M.data), M.numRows,
+				       (float*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+(): cublassSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), this->numRows,
+				       (const double*)&alpha,
+				       (const double*)(M.data), M.numRows,
+				       (double*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+(): cublassDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), this->numRows,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(M.data), M.numRows,
+				       (cuComplex*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+(): cublassCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0f);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), this->numRows,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(M.data), M.numRows,
+				       (cuDoubleComplex*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+(): cublassZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<M.numCols*M.numRows;i++)
+	  R.data[i] = data[i] + M.data[i];
+
+	return R;
+      }
+
+#else
+      matrix<T> R(M.numRows, M.numCols);
       
+#pragma omp parallel for schedule(auto)      
       for(unsigned int i=0;i<M.numCols*M.numRows;i++)
-	R.data[i] += M.data[i];
-      
+	R.data[i] = data[i] + M.data[i];
+
       return R;
+      
+#endif
+      
     }
     
     
@@ -176,15 +407,115 @@ namespace whiteice
     matrix<T> matrix<T>::operator-(const matrix<T>& M) const
       
     {
-      if(M.numCols != numCols || M.numRows != numRows)
+      if(M.numCols != numCols || M.numRows != numRows){
+	whiteice::logging.error("matrix::operator-(): matrix dimensions mismatch.");
 	throw illegal_operation("'-' operator: matrix size mismatch");
+      }
+
+#ifdef CUBLAS
       
-      matrix<T> R(*this);
+      matrix<T> R(M.numRows, M.numCols);
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta = T(-1.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), this->numRows,
+				       (const float*)&beta,
+				       (const float*)(M.data), M.numRows,
+				       (float*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0);
+	const T beta = T(-1.0);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), this->numRows,
+				       (const double*)&beta,
+				       (const double*)(M.data), M.numRows,
+				       (double*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta = T(-1.0);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), this->numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)(M.data), M.numRows,
+				       (cuComplex*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(+1.0);
+	const T beta = T(-1.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), this->numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)(M.data), M.numRows,
+				       (cuDoubleComplex*)(R.data), R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+				       
+	return R;
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<M.numCols*M.numRows;i++)
+	  R.data[i] = data[i] - M.data[i];
+
+	return R;
+      }
+
+#else
       
+      matrix<T> R(M.numRows, M.numCols);
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<M.numCols*M.numRows;i++)
-	R.data[i] -= M.data[i];
+	R.data[i] = data[i] - M.data[i];
       
       return R;
+      
+#endif
     }
     
     
@@ -192,9 +523,109 @@ namespace whiteice
     matrix<T> matrix<T>::operator*(const matrix<T>& M) const
       
     {	
-      if(numCols != M.numRows)
+      if(numCols != M.numRows){
+	whiteice::logging.error("matrix::operator*(): matrix dimensions mismatch.");
 	throw illegal_operation("'*' operator: matrix size mismatch");
-      
+      }
+
+#ifdef CUBLAS
+
+      matrix<T> R(numRows, M.numCols);
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	auto s = cublasSgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const float*)&alpha,
+			     (const float*)(this->data), numRows,
+			     (const float*)(M.data), M.numRows,
+			     (const float*)&beta,
+			     (float*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*(): cublasSgemm() failed.");
+	  throw CUDAException("CUBLAS cublasSgemm() failed.");
+	}
+	
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	auto s = cublasDgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const double*)&alpha,
+			     (const double*)(this->data), numRows,
+			     (const double*)(M.data), M.numRows,
+			     (const double*)&beta,
+			     (double*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*(): cublasDgemm() failed.");
+	  throw CUDAException("CUBLAS cublasDgemm() failed.");
+	}
+	
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	auto s = cublasCgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const cuComplex*)&alpha,
+			     (const cuComplex*)(this->data), numRows,
+			     (const cuComplex*)(M.data), M.numRows,
+			     (const cuComplex*)&beta,
+			     (cuComplex*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*(): cublasCgemm() failed.");
+	  throw CUDAException("CUBLAS cublasCgemm() failed.");
+	}
+	
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+	
+	auto s = cublasZgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const cuDoubleComplex*)&alpha,
+			     (const cuDoubleComplex*)(this->data), numRows,
+			     (const cuDoubleComplex*)(M.data), M.numRows,
+			     (const cuDoubleComplex*)&beta,
+			     (cuDoubleComplex*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*(): cublasZgemm() failed.");
+	  throw CUDAException("CUBLAS cublasZgemm() failed.");
+	}
+	
+	return R;
+      }
+      else{
+	// generic matrix multiplication (SLOW)
+	
+	R.zero(); // zero matrix
+	
+	for(unsigned int i=0;i<R.numCols;i++)
+	  for(unsigned int j=0;j<R.numRows;j++)
+	    for(unsigned int k=0;k<numCols;k++)
+	      R(j,i) += (*this)(j,k) * M(k,i);
+	
+	return R;
+      }
+
+#else
       // uses cblas_Xgemm optimized matrix multiplication
       
       matrix<T> R(numRows, M.numCols);
@@ -250,7 +681,8 @@ namespace whiteice
       	
 	
 	return R;
-      }      
+      }
+#endif
     }
     
     
@@ -266,7 +698,8 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T> matrix<T>::operator!() const {    
+    matrix<T> matrix<T>::operator!() const {
+      whiteice::logging.error("matrix::operator!(): illegal operation called.");
       throw illegal_operation("'!'-operator");
     }
     
@@ -275,26 +708,217 @@ namespace whiteice
     matrix<T> matrix<T>::operator-() const
       
     {
-      matrix<T> M(ysize(), xsize());
+#ifdef CUBLAS
+      matrix<T> M(numRows, numCols);
       
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(-1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), this->numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, M.numRows,
+				       (float*)(M.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+				       
+	return M;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(-1.0);
+	const T beta  = T(0.0);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), this->numRows,
+				       (const double*)&beta,
+				       (const double*)(NULL), M.numRows,
+				       (double*)(M.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+				       
+	return M;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(-1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), this->numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)(NULL), M.numRows,
+				       (cuComplex*)(M.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+				       
+	return M;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(-1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), this->numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)(NULL), M.numRows,
+				       (cuDoubleComplex*)(M.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-(): cublassZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+				       
+	return M;
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<M.numCols*M.numRows;i++)
+	  M.data[i] = -data[i];
+
+	return M;
+      }
+      
+#else
+      matrix<T> M(numRows, numCols);
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<numRows*numCols;i++)
 	M.data[i] = -data[i];
       
       return M;
+#endif
     }
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator+=(const matrix<T>& M)
-      
+    matrix<T>& matrix<T>::operator+=(const matrix<T>& M)      
     {
-      if(M.numCols != numCols || M.numRows != numRows)
+      if(M.numCols != numCols || M.numRows != numRows){
+	whiteice::logging.error("matrix::operator+=(): matrix dimensions mismatch.");
 	throw illegal_operation("'+=' operator: matrix size mismatch");
+      }
+
+#ifdef CUBLAS
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), this->numRows,
+				       (const float*)&beta,
+				       (const float*)(M.data), M.numRows,
+				       (float*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+=(): cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cublasSgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), this->numRows,
+				       (const double*)&beta,
+				       (const double*)(M.data), M.numRows,
+				       (double*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+=(): cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cublasDgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), this->numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)(M.data), M.numRows,
+				       (cuComplex*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+=(): cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cublasCgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), this->numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)(M.data), M.numRows,
+				       (cuDoubleComplex*)(this->data), this->numRows);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator+=(): cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cublasZgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<M.numCols*M.numRows;i++)
+	  data[i] += M.data[i];
+
+	return (*this);
+      }
       
+#else
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<M.numCols*M.numRows;i++)
 	data[i] += M.data[i];
       
       return (*this);
+#endif
     }
   
     
@@ -302,13 +926,109 @@ namespace whiteice
     matrix<T>& matrix<T>::operator-=(const matrix<T>& M)
       
     {
-      if(M.numCols != numCols || M.numRows != numRows)
+      if(M.numCols != numCols || M.numRows != numRows){
+	whiteice::logging.error("matrix::operator-=(): matrix dimensions mismatch.");
 	throw illegal_operation("'-=' operator: matrix size mismatch");
+      }
 
+#ifdef CUBLAS
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(-1.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), this->numRows,
+				       (const float*)&beta,
+				       (const float*)(M.data), M.numRows,
+				       (float*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-=(): cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cublasSgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(-1.0);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), this->numRows,
+				       (const double*)&beta,
+				       (const double*)(M.data), M.numRows,
+				       (double*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-=(): cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cublasDgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(-1.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), this->numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)(M.data), M.numRows,
+				       (cuComplex*)(this->data), this->numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-=(): cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cublasCgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(-1.0);
+
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), this->numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)(M.data), M.numRows,
+				       (cuDoubleComplex*)(this->data), this->numRows);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator-=(): cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cublasZgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<M.numCols*M.numRows;i++)
+	  data[i] -= M.data[i];
+
+	return (*this);
+      }
+      
+#else
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<M.numCols*M.numRows;i++)
 	data[i] -= M.data[i];
       
       return (*this);
+#endif
     }
     
     
@@ -316,9 +1036,120 @@ namespace whiteice
     matrix<T>& matrix<T>::operator*=(const matrix<T>& M)
       
     {
-      if(numCols != M.numRows)
+      if(numCols != M.numRows){
+	whiteice::logging.error("matrix::operator*=(): matrix dimensions mismatch.");
 	throw illegal_operation("'*=' operator: matrix size mismatch");
+      }
+
+#if CUBLAS
+
+      // R = alpha*(*this) + beta*M
+      matrix<T> R(numRows, M.numCols);
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	auto s = cublasSgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const float*)&alpha,
+			     (const float*)(this->data), numRows,
+			     (const float*)(M.data), M.numRows,
+			     (const float*)&beta,
+			     (float*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=(): cublasSgemm() failed.");
+	  throw CUDAException("CUBLAS cublasSgemm() failed.");
+	}
+
+	(*this) = R;
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	auto s = cublasDgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const double*)&alpha,
+			     (const double*)(this->data), numRows,
+			     (const double*)(M.data), M.numRows,
+			     (const double*)&beta,
+			     (double*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=(): cublasDgemm() failed.");
+	  throw CUDAException("CUBLAS cublasDgemm() failed.");
+	}
+
+	(*this) = R;
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(1.0f);
+
+	auto s = cublasCgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const cuComplex*)&alpha,
+			     (const cuComplex*)(this->data), numRows,
+			     (const cuComplex*)(M.data), M.numRows,
+			     (const cuComplex*)&beta,
+			     (cuComplex*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=(): cublasCgemm() failed.");
+	  throw CUDAException("CUBLAS cublasCgemm() failed.");
+	}
+
+	(*this) = R;
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(1.0);
+	
+	auto s = cublasZgemm(cublas_handle,
+			     CUBLAS_OP_N, CUBLAS_OP_N,
+			     numRows, M.numCols, numCols,
+			     (const cuDoubleComplex*)&alpha,
+			     (const cuDoubleComplex*)(this->data), numRows,
+			     (const cuDoubleComplex*)(M.data), M.numRows,
+			     (const cuDoubleComplex*)&beta,
+			     (cuDoubleComplex*)R.data, R.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=(): cublasZgemm() failed.");
+	  throw CUDAException("CUBLAS cublasZgemm() failed.");
+	}
+
+	(*this) = R;
+	
+	return (*this);
+      }
+      else{
+	// generic matrix multiplication (SLOW)
+	
+	R.zero(); // zero matrix
+	
+	for(unsigned int i=0;i<R.numCols;i++)
+	  for(unsigned int j=0;j<R.numRows;j++)
+	    for(unsigned int k=0;k<numCols;k++)
+	      R(j,i) += (*this)(j,k) * M(k,i);
+
+	(*this) = R;
+
+	return (*this);
+      }
       
+#else
       // uses cblas_Xgemm optimized matrix multiplication
       
       matrix<T> R(numRows, M.numCols);
@@ -401,21 +1232,23 @@ namespace whiteice
 	
 	return (*this);
       }
-      
+#endif
     }
     
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator/=(const matrix<T>& m) 
+    matrix<T>& matrix<T>::operator/=(const matrix<T>& M) 
     {
       // C BLAS OPTIMIZE ("/" operator, too)
-      matrix<T> n(m);
+      matrix<T> N(M);
 
-      if(!n.inv())
+      if(!N.inv()){
+	whiteice::logging.error("matrix::operator/=() failed. singular matrix.");
 	throw illegal_operation("Cannot 'divide' with singular matrix");
+      }
       
-      (*this) *= n;
+      (*this) *= N;
       
       return (*this);
     }
@@ -424,6 +1257,114 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::operator=(const matrix<T>& M) 
     {
+      if(this == &M) return (*this); // self-assignment
+      
+      if(M.compressor != 0)
+	throw illegal_operation("matrix ctor: to be copied matrix is compressed");
+      
+      if(M.numCols != numCols) resize_x(M.numCols);
+      if(M.numRows != numRows) resize_y(M.numRows);
+      
+#ifdef CUBLAS
+      // copies matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=1, beta=0)
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(M.data), numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator=() failed. cuBlasSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(M.data), numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator=() failed. cuBlasDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+	
+	return (*this);
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(M.data), numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator=() failed. cuBlasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(M.data), numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator=() failed. cuBlasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else{
+
+	auto e = cudaMemcpy(data, M.data, M.numCols*M.numRows*sizeof(T),
+			    cudaMemcpyDeviceToDevice);
+
+	if(e != cudaSuccess){
+	  whiteice::logging.error("matrix::operator=() failed. cudaMemcpy() failed.");
+	  throw CUDAException("CUBLS cudaMemcpy() failed.");
+	}
+	
+	return (*this);
+      }
+      
+#else
+      
       if(this != &M){ // no self-assignment
 	if(M.numCols != numCols) resize_x(M.numCols);
 	if(M.numRows != numRows) resize_y(M.numRows);
@@ -432,6 +1373,7 @@ namespace whiteice
       }
       
       return (*this);
+#endif
     }
     
 #if 0    
@@ -557,9 +1499,10 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::operator=(const T& s) 
     {
-      const unsigned int LIMIT = numRows*numCols;
-      
-      for(unsigned int i=0;i<LIMIT;i++)
+      const unsigned int N = numRows*numCols;
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<N;i++)
 	data[i] = s;
       
       return (*this);
@@ -568,9 +1511,107 @@ namespace whiteice
     
     
     template <typename T>
-    matrix<T>  matrix<T>::operator* (const T& s) const 
-    {      
-      matrix<T> M(numRows,numCols);
+    matrix<T>  matrix<T>::operator* (const T& a) const 
+    {
+#ifdef CUBLAS
+      // multiplies matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=a, beta=0)
+
+      matrix<T> M(numRows, numCols);
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(M.data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+	
+	return M;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(M.data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+	
+	return M;
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(M.data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+
+	return M;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(M.data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+	
+	return M;
+      }
+      else{
+	// SLOW IMPLEMENTATION
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int index=0;index<(M.numCols*M.numRows);index++)
+	  M[index] = a*(*this)[index];
+	
+	return M;
+      }
+      
+#else
+      matrix<T> M(numRows, numCols);
       const unsigned int MSIZE = numRows*numCols;
       
       if(typeid(T) == typeid(blas_real<float>)){
@@ -590,18 +1631,120 @@ namespace whiteice
 	cblas_zaxpy(MSIZE, (const double*)&s, (double*)data, 1, (double*)M.data, 1);
       }
       else{ // "normal implementation"
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
 	  M.data[i] = data[i]*s;
       }
-      
+
       return M;
+      
+#endif
     }
     
     
     template <typename T>
-    matrix<T> operator*(const T& s, const matrix<T>& N)
+    matrix<T> operator*(const T& a, const matrix<T>& M)
       
     {
+#ifdef CUBLAS
+
+      matrix<T> R(M.numRows, M.numCols);
+
+      // multiplies matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=a, beta=0)
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const float*)&alpha,
+				       (const float*)(M.data), M.numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, M.numRows,
+				       (float*)(R.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cublasSgeam() failed.");
+	}
+	
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const double*)&alpha,
+				       (const double*)(M.data), M.numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, M.numRows,
+				       (double*)(R.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cublasDgeam() failed.");
+	}
+	
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(M.data), M.numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, M.numRows,
+				       (cuComplex*)(R.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cublasCgeam() failed.");
+	}
+
+	return R;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       M.numRows, M.numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(M.data), M.numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, M.numRows,
+				       (cuDoubleComplex*)(R.data), M.numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cublasZgeam() failed.");
+	}
+	
+	return R;
+      }
+      else{
+	// SLOW IMPLEMENTATION
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int index=0;index<(M.numCols*M.numRows);index++)
+	  R[index] = a*M[index];
+	
+	return R;
+      }
+
+#else
       matrix<T> M(N.numRows, N.numCols);
       const unsigned int MSIZE = N.numRows*N.numCols;
       
@@ -622,18 +1765,26 @@ namespace whiteice
 	cblas_zaxpy(MSIZE, (const double*)&s, (double*)N.data, 1, (double*)M.data, 1);
       }
       else{ // "normal implementation"
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
-	  M.data[i] = N.data[i]*s;
+	  R.data[i] = M.data[i]*s;
       }
-      
-      
+            
       return M;
+#endif
     }
     
     
     template <typename T>
     matrix<T>  matrix<T>::operator/ (const T& s) const 
     {
+#ifdef CUBLAS
+
+      const T invs = T(1.0f)/s;
+      return ((*this) * invs); // should call CUBLAS optimized code
+      
+#else      
       matrix<T> M(numRows, numCols);
       const unsigned int MSIZE = numRows*numCols;
       T ss = T(1.0)/s;
@@ -660,14 +1811,112 @@ namespace whiteice
       }      
       
       return M;
+#endif
     }
     
     
     template <typename T>
-    matrix<T>& matrix<T>::operator*=(const T& s) 
+    matrix<T>& matrix<T>::operator*=(const T& a) 
     {
+
+#ifdef CUBLAS
+
+      // multiplies matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=a, beta=0)
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=() failed. cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=() failed. cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+	
+	return (*this);
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = a;
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=() failed. cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = a;
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*=() failed. cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else{
+	// SLOW IMPLEMENTATION
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int index=0;index<(numCols*numRows);index++)
+	  (*this)[index] *= a;
+	
+	return (*this);
+      }
+
+#else
       const unsigned int MSIZE = numRows*numCols;
-      
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
@@ -686,20 +1935,30 @@ namespace whiteice
 	cblas_zscal(MSIZE, (const double*)&s, (double*)data, 1);
       }
       else{ // "normal implementation"
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<MSIZE;i++)
 	  data[i] *= s;
       }
       
       return (*this);
+#endif
     }
     
     
     template <typename T>
     matrix<T>& matrix<T>::operator/=(const T& s) 
     {
+#ifdef CUBLAS
+      const T invs = T(1.0f)/s;
+      
+      (*this) *= invs; // makes CUBLAS optimized call
+
+      return (*this);
+      
+#else
       const unsigned int MSIZE = numRows*numCols;
       T ss = T(1.0)/s;
-      
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
@@ -722,7 +1981,8 @@ namespace whiteice
 	  data[i] *= ss;
       }      
       
-      return (*this);      
+      return (*this);
+#endif
     }
     
     
@@ -736,7 +1996,112 @@ namespace whiteice
 	throw std::invalid_argument("multiply: incompatible vertex/matrix sizes");
       if(numCols != v.size())
 	throw std::invalid_argument("multiply: incompatible vertex/matrix sizes");
+
+#ifdef CUBLAS
+
+      // BLAS v2 optimized cublas*gemv() functions
+      // NOTE: cublas keeps matrices in column order so multiplication
+      //       from right r = A*v is slow(??). For faster code
+      //       try to later keep matrices in transposed form in memory
+      //       so vector multiplication works fast (give transposed flag to gemv)
       
+      vertex<T> r(numRows);
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+	
+	cublasStatus_t s = cublasSgemv(cublas_handle,
+				       CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(data), (int)numRows,
+				       (const float*)(v.data), 1,
+				       (const float*)&beta,
+				       (float*)r.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasSgemv() failed.");
+	  throw CUDAException("CUBLAS cublasSgemv() failed.");
+	}
+
+	return r;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasDgemv(cublas_handle,
+				       CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(data), (int)numRows,
+				       (const double*)(v.data), 1,
+				       (const double*)&beta,
+				       (double*)r.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasDgemv() failed.");
+	  throw CUDAException("CUBLAS cublasDgemv() failed.");
+	}
+
+	return r;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+	
+	cublasStatus_t s = cublasCgemv(cublas_handle,
+				       CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(data), (int)numRows,
+				       (const cuComplex*)(v.data), 1,
+				       (const cuComplex*)&beta,
+				       (cuComplex*)r.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasCgemv() failed.");
+	  throw CUDAException("CUBLAS cublasCgemv() failed.");
+	}
+
+	return r;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgemv(cublas_handle,
+				       CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(data), (int)numRows,
+				       (const cuDoubleComplex*)(v.data), 1,
+				       (const cuDoubleComplex*)&beta,
+				       (cuDoubleComplex*)r.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::operator*() failed. cublasZgemv() failed.");
+	  throw CUDAException("CUBLAS cublasZgemv() failed.");
+	}
+
+	return r;
+      }
+      else{
+
+#pragma omp parallel for schedule(auto)
+	for(unsigned int k=0;k<r.size();k++){
+	  r[k] = T(0.0f);
+
+	  for(unsigned int i=0;i<numCols;i++){
+	    r[k] += (*this)(k, i) * v.data[i];
+	  }
+	}
+
+	return r;
+      }
+      
+#else      
       vertex<T> r(numRows);
       
       // BLAS level 2
@@ -773,7 +2138,7 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	blas_complex<double> a, b;
-	a = 1.0f; b = 0.0f;	
+	a = 1.0f; b = 0.0f;
 	
 	cblas_zgemv(CblasRowMajor, CblasNoTrans,
 		    numRows, numCols,
@@ -782,7 +2147,7 @@ namespace whiteice
 	
 	return r;
       }
-      else{ // generic matrix * vertex code
+      else{ // generic matrix * vertex code r = A*v
 	
 	unsigned int k = 0;
 	for(unsigned int j=0;j<r.size();j++){
@@ -792,6 +2157,7 @@ namespace whiteice
 	
 	return r;
       }
+#endif
     }
     
     
@@ -802,8 +2168,10 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::crossproduct(const vertex<T>& v) 
     {
-      if(v.size() != 3)
+      if(v.size() != 3){
+	whiteice::logging.error("matrix::crossproduct() invalid input parameters");
 	throw std::out_of_range("crossproduct() requires 3 dimensions");
+      }
       
       if(numRows != 3 || numCols != 3)
 	if(!resize(3,3)) throw std::bad_alloc();
@@ -829,8 +2197,16 @@ namespace whiteice
     {
       if( (xsize() != 3 && ysize() != 3) ||
 	  (xsize() != 4 && ysize() != 4) ){
-	if(!resize_y(4)) throw std::bad_alloc();
-	if(!resize_x(4)) throw std::bad_alloc();
+	
+	if(!resize_y(4)){
+	  whiteice::logging.error("matrix::rotation(): resize failed.");
+	  throw std::bad_alloc();
+	}
+	
+	if(!resize_x(4)){
+	  whiteice::logging.error("matrix::rotation(): resize failed.");
+	  throw std::bad_alloc();
+	}
       }
       
       T a(cos(xr));
@@ -893,7 +2269,8 @@ namespace whiteice
     matrix<T>& matrix<T>::abs() 
     {
       const unsigned int N = numRows*numCols;
-      
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<N;i++)
 	data[i] = whiteice::math::abs(data[i]);
 	  
@@ -904,7 +2281,8 @@ namespace whiteice
     matrix<T>& matrix<T>::real()
     {
       const unsigned int N = numRows*numCols;
-      
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<N;i++)
 	data[i] = whiteice::math::real(data[i]);
       
@@ -915,7 +2293,8 @@ namespace whiteice
     matrix<T>& matrix<T>::imag()
     {
       const unsigned int N = numRows*numCols;
-      
+
+#pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<N;i++)
 	data[i] = whiteice::math::imag(data[i]);
       
@@ -926,6 +2305,122 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::transpose() 
     {
+
+#ifdef CUBLAS
+      
+      // transposes matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=1, beta=0)
+
+      // FIXME does in-place transpose operation work or not(???)
+      // (we set C=A)
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::transpose(): cuBlasSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::transpose(): cuBlasDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::transpose(): cuBlasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::transpose(): cuBlasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      else{
+	// SLOW IMPLEMENTATION
+	matrix<T> R(numCols, numRows); // transposed matrix
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<numRows;j++)
+	  for(unsigned int i=0;i<numCols;i++)
+	    R(i,j) = (*this)(j,i);
+
+	(*this) = R;
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      
+#else
+      
       const matrix<T> A(*this);
       this->resize(A.xsize(), A.ysize());
       
@@ -989,9 +2484,9 @@ namespace whiteice
 	  }
 	}
       }
-      
-      
+            
       return *this;
+#endif
     }
     
     
@@ -999,6 +2494,121 @@ namespace whiteice
     template <typename T>
     matrix<T>& matrix<T>::hermite() 
     {
+
+#ifdef CUBLAS
+
+      // calculates hermitian matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=1, beta=0)
+
+      // FIXME does in-place transpose/hermite operation work(???)
+      // (C=A)
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)(this->data), numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::hermite(): cuBlasSgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasSgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_T, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)(this->data), numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::hermite(): cuBlasDgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasDgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(1.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_C, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)(this->data), numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::hermite(): cuBlasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(1.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_C, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)(this->data), numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(this->data), numRows);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::hermite(): cuBlasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      else{
+	// SLOW IMPLEMENTATION
+	matrix<T> R(numCols, numRows); // transposed matrix
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<numRows;j++)
+	  for(unsigned int i=0;i<numCols;i++)
+	    R(i,j) = whiteice::math::conj( (*this)(j,i) );
+
+	(*this) = R;
+
+	std::swap(numRows, numCols);
+	
+	return (*this);
+      }
+      
+#else      
       this->transpose();
 
       // conjugates complex matrices
@@ -1015,6 +2625,7 @@ namespace whiteice
 	}
 
       return (*this);
+#endif
     }
 
 
@@ -1023,18 +2634,21 @@ namespace whiteice
     matrix<T>& matrix<T>::conj()
     {
       // conjugates complex matrices
-      if(typeid(T) == typeid(complex<float>) ||
-	 typeid(T) == typeid(complex<double>) ||
-	 typeid(T) == typeid(blas_complex<float>) ||
-	 typeid(T) == typeid(blas_complex<double>))
-	{
-	  auto& M = (*this);
-	  
-	  for(unsigned int j=0;j<M.numRows;j++)
-	    for(unsigned int i=0;i<M.numCols;i++)
-	      M(j,i) = whiteice::math::conj(M(j,i));
-	}
 
+      if(typeid(T) == typeid(blas_complex<float>) ||
+	 typeid(T) == typeid(blas_complex<double>) ||
+	 typeid(T) == typeid(complex<float>) ||
+	 typeid(T) == typeid(complex<double>)){
+	
+	auto& M = (*this);
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<M.numRows;j++)
+	  for(unsigned int i=0;i<M.numCols;i++)
+	    M(j,i) = whiteice::math::conj(M(j,i));
+
+      }
+      
       return (*this);
     }
     
@@ -1042,8 +2656,10 @@ namespace whiteice
     template <typename T>
     T matrix<T>::det() const 
     {
-      if(ysize() != xsize())
+      if(ysize() != xsize()){
+	whiteice::logging.error("matrix::det(): non square matrix");
 	throw std::logic_error("matrix::determinate() - non square matrix");
+      }
                   
       const unsigned int N = numRows;
       
@@ -1113,12 +2729,329 @@ namespace whiteice
     bool  matrix<T>::inv() 
     {
       // simple and slow: gaussian elimination - works for small matrixes
-      // big ones: start to use atlas (don't bother to reinvent wheel)
       
-      if(ysize() != xsize())
+      if(numRows != numCols){ // only square matrices has well-defined inverses
+	whiteice::logging.warn("matrix::inv(): non square matrix");
 	return false;
+      }
+
+#ifdef CUBLAS
+      // cuBLAS code for matrix inverses
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	matrix<T> A(*this);
+
+	std::vector<T*> Aarray;
+	Aarray.push_back((T*)A.data);
+
+	std::vector<int> PivotArray;
+	PivotArray.resize(numRows); // BATCH_SIZE=1
+	
+	std::vector<int> infoArray;
+	infoArray.resize(1); // BATCH_SIZE=1
+	
+	// step 1: perform in-place LU decomposition, P*A = L*U.
+	//      Aarray[i] is n*n matrix A[i]
+	cublasStatus_t s = cublasSgetrfBatched(cublas_handle,
+					       numRows,
+					       (float**)Aarray.data(), numRows,
+					       PivotArray.data(), infoArray.data(), 1);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasSgetrfBatched() failed.");
+	  throw CUDAException("CUBLAS cublasSgetrfBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if factorization of A[i] is successful or not.
+	//      Array[i] contains LU factorization of A[i]
+
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	matrix<T> C(numRows, numCols);
+
+	std::vector<T*> Carray;
+	Carray.push_back((T*)C.data);
+	
+	// step 2: perform out-of-place inversion, Carray[i] = inv(A[i])
+	s = cublasSgetriBatched(cublas_handle,
+				numRows,
+				(float**)Aarray.data(),
+				numRows,
+				PivotArray.data(),
+				(float**)Carray.data(),
+				numRows,
+				infoArray.data(), 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasSgetriBatched() failed.");
+	  throw CUDAException("CUBLAS cublasSgetriBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if inversion of A[i] is successful or not
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	(*this) = C;
+
+	return true;
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	
+	matrix<T> A(*this);
+
+	std::vector<T*> Aarray;
+	Aarray.push_back((T*)A.data);
+
+	std::vector<int> PivotArray;
+	PivotArray.resize(numRows); // BATCH_SIZE=1
+	
+	std::vector<int> infoArray;
+	infoArray.resize(1); // BATCH_SIZE=1
+	
+	// step 1: perform in-place LU decomposition, P*A = L*U.
+	//      Aarray[i] is n*n matrix A[i]
+	cublasStatus_t s = cublasDgetrfBatched(cublas_handle,
+					       numRows,
+					       (double**)Aarray.data(), numRows,
+					       PivotArray.data(), infoArray.data(), 1);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasDgetrfBatched() failed.");
+	  throw CUDAException("CUBLAS cublasDgetrfBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if factorization of A[i] is successful or not.
+	//      Array[i] contains LU factorization of A[i]
+
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	matrix<T> C(numRows, numCols);
+
+	std::vector<T*> Carray;
+	Carray.push_back((T*)C.data);
+	
+	// step 2: perform out-of-place inversion, Carray[i] = inv(A[i])
+	s = cublasDgetriBatched(cublas_handle,
+				numRows,
+				(double**)Aarray.data(),
+				numRows,
+				PivotArray.data(),
+				(double**)Carray.data(),
+				numRows,
+				infoArray.data(), 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasDgetriBatched() failed.");
+	  throw CUDAException("CUBLAS cublasDgetriBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if inversion of A[i] is successful or not
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	(*this) = C;
+
+	return true;
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	matrix<T> A(*this);
+
+	std::vector<T*> Aarray;
+	Aarray.push_back((T*)A.data);
+
+	std::vector<int> PivotArray;
+	PivotArray.resize(numRows); // BATCH_SIZE=1
+	
+	std::vector<int> infoArray;
+	infoArray.resize(1); // BATCH_SIZE=1
+	
+	// step 1: perform in-place LU decomposition, P*A = L*U.
+	//      Aarray[i] is n*n matrix A[i]
+	cublasStatus_t s = cublasCgetrfBatched(cublas_handle,
+					       numRows,
+					       (cuComplex**)Aarray.data(), numRows,
+					       PivotArray.data(), infoArray.data(), 1);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasCgetrfBatched() failed.");
+	  throw CUDAException("CUBLAS cublasDgetrfBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if factorization of A[i] is successful or not.
+	//      Array[i] contains LU factorization of A[i]
+
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	matrix<T> C(numRows, numCols);
+
+	std::vector<T*> Carray;
+	Carray.push_back((T*)C.data);
+	
+	// step 2: perform out-of-place inversion, Carray[i] = inv(A[i])
+	s = cublasCgetriBatched(cublas_handle,
+				numRows,
+				(cuComplex**)Aarray.data(),
+				numRows,
+				PivotArray.data(),
+				(cuComplex**)Carray.data(),
+				numRows,
+				infoArray.data(), 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasCgetriBatched() failed.");
+	  throw CUDAException("CUBLAS cublasDgetriBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if inversion of A[i] is successful or not
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	(*this) = C;
+
+	return true;
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	matrix<T> A(*this);
+
+	std::vector<T*> Aarray;
+	Aarray.push_back((T*)A.data);
+
+	std::vector<int> PivotArray;
+	PivotArray.resize(numRows); // BATCH_SIZE=1
+	
+	std::vector<int> infoArray;
+	infoArray.resize(1); // BATCH_SIZE=1
+	
+	// step 1: perform in-place LU decomposition, P*A = L*U.
+	//      Aarray[i] is n*n matrix A[i]
+	cublasStatus_t s = cublasZgetrfBatched(cublas_handle,
+					       numRows,
+					       (cuDoubleComplex**)Aarray.data(), numRows,
+					       PivotArray.data(), infoArray.data(), 1);
+	
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasZgetrfBatched() failed.");
+	  throw CUDAException("CUBLAS cublasZgetrfBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if factorization of A[i] is successful or not.
+	//      Array[i] contains LU factorization of A[i]
+
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	matrix<T> C(numRows, numCols);
+
+	std::vector<T*> Carray;
+	Carray.push_back((T*)C.data);
+	
+	// step 2: perform out-of-place inversion, Carray[i] = inv(A[i])
+	s = cublasZgetriBatched(cublas_handle,
+				numRows,
+				(cuDoubleComplex**)Aarray.data(),
+				numRows,
+				PivotArray.data(),
+				(cuDoubleComplex**)Carray.data(),
+				numRows,
+				infoArray.data(), 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::inv(): cublasZgetriBatched() failed.");
+	  throw CUDAException("CUBLAS cublasZgetriBatched() failed.");
+	}
+	
+	//      check infoArray[i] to see if inversion of A[i] is successful or not
+	if(infoArray[0] != 0)
+	  return false; // fail with singular matrix
+
+	(*this) = C;
+
+	return true;
+      }
+      else{
+	// general code for solving matrix inverse [long]
+	// copy from cblas section
+	
+	const unsigned int N = numRows;
+	
+	// Gauss-Jordan elimination
+	
+	matrix<T> copy(*this);
+	this->identity();
+	
+	for(unsigned int i=0;i<N;i++){
+	  if(copy(i,i) == T(0.0)){ // resort
+	    // (tries to) finds non-zero entry
+	    bool singular = true;
+	    
+	    for(unsigned int j=i+1;j<N;j++){
+	      if(copy(j,i) != T(0.0)){ // swaps values
+		
+		for(unsigned int k=0;k<N;k++){
+		  std::swap<T>(copy(j,k), copy(i,k));
+		  std::swap<T>((*this)(j,k), (*this)(i,k));
+		}
+		
+		// could find a way to solve apparent
+		// singualirity problem.
+		singular = false;
+		break;
+	      }
+	    }
+	    
+	    if(singular)
+	      return false;
+	  }
+	  
+	  
+	  // sets a_ii = 1
+	  {
+	    T t = copy(i,i);
+	    
+	    for(unsigned int j=0;j<N;j++){
+	      copy(i,j) /= t;
+	      (*this)(i,j) /= t;
+	    }
+	  }
+	  
+	  
+	  if(i >= 1){
+	    // eliminates upper row columns to zero	  
+	    for(unsigned int j=0;j<i;j++){
+	      T k = copy(j,i);
+	      
+	      for(unsigned int r=0;r<N;r++){
+		copy(j,r) -= k * copy(i,r);
+		(*this)(j,r) -= k * (*this)(i,r);
+	      }
+	    }
+	  }
+	  
+	  
+	  if(i < N-1){
+	    // eliminates lower row columns to zero
+	    for(unsigned int j=i+1;j<N;j++){
+	      T k = copy(j,i);
+	      
+	      for(unsigned int r=0;r<N;r++){
+		copy(j,r) -= k * copy(i,r);
+		(*this)(j,r) -= k * (*this)(i,r);
+	      }
+	    }
+	  }
+	  
+	}
+	
+	return true;
+	
+      }
       
-      
+#else
       const unsigned int N = numRows;
       
       // gauss-jordan elimination
@@ -1188,15 +3121,57 @@ namespace whiteice
 	}
 	
       }
-
       
       return true;
+#endif
     }
     
     
     template <typename T>
-    matrix<T>& matrix<T>::pseudoinverse(const T machine_epsilon) 
+    bool matrix<T>::pseudoinverse(const T machine_epsilon) 
     {
+
+#ifdef CUBLAS
+      // slow code for pseudoinverse using cuBLAS matrix inverse code
+      
+      if(numCols <= numRows){ // pinv(A) = inv(A^h*A) * A^h
+
+	auto& A = (*this);
+	auto Ah = (*this);
+	Ah.hermite();
+	
+	auto AhA = Ah*A;
+	
+	if(AhA.inv() == false){
+	  whiteice::logging.error("matrix::pseudoinverse() failed. singular matrix.");
+	  return false;
+	}
+	
+	(*this) = Ah*A * Ah;
+      
+	return true;
+      }
+      else{ // pinv(A) = A^h * pinv(A A^h)
+	
+	auto& A = *this;
+	auto Ah = *this;
+	Ah.hermite();
+
+	auto AAh = A*Ah;
+
+	if(AAh.inv() == false){
+	  whiteice::logging.error("matrix::pseudoinverse() failed. singular matrix.");
+	  return false;
+	}
+	
+	(*this) = Ah * AAh;
+
+	return true;
+	
+      }
+#else
+      
+      
 #if 1
       // calculates pseudoinverse using symmetric_pseudoinverse
 
@@ -1297,12 +3272,20 @@ namespace whiteice
 
       return *this;
 #endif
+#endif
     }
 
 
     template <typename T>
     bool matrix<T>::symmetric_pseudoinverse(const T machine_epsilon) 
     {
+
+#ifdef CUBLAS
+
+      return this->pseudoinverse(machine_epsilon); // "optimized" cuBLAS code
+
+#else
+      
       // TODO: fix symmetric_eig to work with complex numbers!!! so the compilation would work
       assert(1); 
       
@@ -1399,25 +3382,58 @@ namespace whiteice
 
       return true;
 #endif
+
+#endif
     }
     
     
     template <typename T>
     T matrix<T>::trace() const 
     {
-      if(numCols != numRows)
+      if(numCols != numRows){
+	whiteice::logging.error("matrix::trace(): non square matrix");
 	throw std::logic_error("matrix::trace() non square matrix");
+      }
 
-      T tr = T(0);
-      
-      unsigned int j=0;
-      for(unsigned int i=0;i<numRows;i++)
+#ifdef CUBLAS
+      T tr = T(0.0f);
+
+#pragma omp parallel
       {
-	tr += data[j];
-	j += numCols + 1;
+	T t = T(0.0f);
+
+#pragma omp for schedule(auto) nowait
+	for(unsigned int i=0;i<numCols;i++)
+	  t += data[i*(numRows+1)];
+
+#pragma omp critical
+	{
+	  tr += t;
+	}
+      }
+	
+      return tr;
+
+#else
+      T tr = T(0.0f);
+
+#pragma omp parallel
+      {
+	T t = T(0.0f);
+
+#pragma omp for schedule(auto) nowait
+	for(unsigned int i=0;i<numRows;i++){
+	  t += data[i*(numCols+1)];
+	}
+
+#pragma omp critical
+	{
+	  tr += t;
+	}
       }
       
       return tr;
+#endif
     }
 
     
@@ -1429,34 +3445,160 @@ namespace whiteice
       else
 	diagonal.resize(numRows);
 
+#ifdef CUBLAS
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<diagonal.size();i++){
+	diagonal[i] = data[i*(numRows+1)];
+      }
+      
+#else
       unsigned int index = 0;
       for(unsigned int i=0;i<diagonal.size();i++){
 	diagonal[i] = data[index];
 	index += numCols+1;
       }
+#endif
     }
     
     
     template <typename T>
     matrix<T>& matrix<T>::identity()
     {
+#ifdef CUBLAS
+      zero();
+
+      const unsigned int N = (numRows<numCols) ? numRows : numCols;
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<N;i++)
+	data[i*(numRows+1)] = T(1.0f);
+
+      return (*this);
       
+#else
       unsigned int index = 0;
       for(unsigned int j=0;j<numRows;j++){
 	for(unsigned int i=0;i<numCols;i++, index++)
 	{
-	  if(i == j) data[index] = T(1);	  
-	  else data[index] = T(0);
+	  if(i == j) data[index] = T(1.0f);
+	  else data[index] = T(0.0f);
 	}
       }
       
       return (*this);
+#endif
     }
     
     
     template <typename T>
     matrix<T>& matrix<T>::zero()
     {
+
+#ifdef CUBLAS
+
+      // zeros matrix using cublas*geam() calls as recommended
+      // in NVIDIA cuBLAS documentation (alpha=0, beta=0 should clear matrix to zero)
+      // 
+      // NOTE: cudaMemset() is maybe a little slower if cublas*geam() is optimized
+      // and writes whole floats instead of bytes?????
+      //
+      // TODO: compare cudaMemset and cublas*geam() speed with special code
+      //       to optimize zeroing matrix.
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	const T alpha = T(0.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasSgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const float*)&alpha,
+				       (const float*)NULL, numRows,
+				       (const float*)&beta,
+				       (const float*)NULL, numRows,
+				       (float*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::zero(): cublasSgeam() failed.");
+	  throw CUDAException("CUBLAS cublasSgeam() failed.");
+	}
+	
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	const T alpha = T(0.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasDgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const double*)&alpha,
+				       (const double*)NULL, numRows,
+				       (const double*)&beta,
+				       (const double*)NULL, numRows,
+				       (double*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::zero(): cublasDgeam() failed.");
+	  throw CUDAException("CUBLAS cublasDgeam() failed.");
+	}
+	
+	return (*this);
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	const T alpha = T(0.0f);
+	const T beta  = T(0.0f);
+
+	cublasStatus_t s = cublasCgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuComplex*)&alpha,
+				       (const cuComplex*)NULL, numRows,
+				       (const cuComplex*)&beta,
+				       (const cuComplex*)NULL, numRows,
+				       (cuComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::zero(): cublasCgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasCgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	const T alpha = T(0.0);
+	const T beta  = T(0.0);
+	
+	cublasStatus_t s = cublasZgeam(cublas_handle,
+				       CUBLAS_OP_N, CUBLAS_OP_N,
+				       numRows, numCols,
+				       (const cuDoubleComplex*)&alpha,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (const cuDoubleComplex*)&beta,
+				       (const cuDoubleComplex*)NULL, numRows,
+				       (cuDoubleComplex*)(this->data), numRows);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::zero(): cublasZgeam() failed.");
+	  throw CUDAException("CUBLAS cuBlasZgeam() failed.");
+	}
+				       
+	return (*this);
+      }
+      else{
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<numCols*numRows;i++)
+	  data[i] = T(0.0f);
+	
+	return (*this);
+      }
+      
+      
+#else
+      
       if(typeid(T) == typeid(blas_real<float>) ||
 	 typeid(T) == typeid(blas_complex<float>) ||
 	 typeid(T) == typeid(blas_real<double>) ||
@@ -1472,6 +3614,7 @@ namespace whiteice
       }
       
       return (*this);
+#endif
     }
     
     
@@ -1500,6 +3643,8 @@ namespace whiteice
     template <typename T>
     bool matrix<T>::resize(unsigned int y, unsigned int x) 
     {
+      whiteice::logging.warn("matrix::resize(): is slow when not done as elementary operation.");
+      
       if(!resize_x(x)) return false;
       if(!resize_y(y)) return false;      
       
@@ -1509,7 +3654,82 @@ namespace whiteice
     
     template <typename T>
     bool matrix<T>::resize_x(unsigned int d) 
-    {      
+    {
+#ifdef CUBLAS
+      if(d == numCols) return true;
+      else if(d == 0) return false; // no zero dimensions
+      else if(d < numCols){
+
+	// we can directly keep firest d numCols in the new memory area
+
+	cudaError_t err;
+	void* cudaptr = NULL;
+	err = cudaMallocManaged(&cudaptr, numRows*d*sizeof(T));
+
+	if(err != cudaSuccess || cudaptr == NULL){
+	  whiteice::logging.error("matrix::resize_x(): cudaMallocManaged() failed.");
+	  throw CUDAException("CUBLAS memory allocation failure.");
+	}
+
+	// now does raw copy of memory to new area
+	err = cudaMemcpy(cudaptr, data, numRows*d*sizeof(T),
+			 cudaMemcpyDeviceToDevice);
+
+	if(err != cudaSuccess){
+	  cudaFree(cudaptr);
+	  whiteice::logging.error("matrix::resize_x(): cudaMemcpy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed");
+	}
+
+	cudaFree(this->data);
+	this->data = (T*)cudaptr;
+	numCols = d;
+
+	return true;
+      }
+      else{ // d > numCols
+	// we just directly add extra cols at the end of memory area
+	// and set them zero to be safe
+	
+	cudaError_t err;
+	void* cudaptr = NULL;
+	err = cudaMallocManaged(&cudaptr, numRows*d*sizeof(T));
+
+	if(err != cudaSuccess || cudaptr == NULL){
+	  whiteice::logging.error("matrix::resize_x(): cudaMallocManaged() failed.");
+	  throw CUDAException("CUBLAS memory allocation failure.");
+	}
+
+	// now does raw copy of memory to new area (old data area)
+	err = cudaMemcpy(cudaptr, data, numRows*numCols*sizeof(T),
+			 cudaMemcpyDeviceToDevice);
+
+	if(err != cudaSuccess){
+	  cudaFree(cudaptr);
+	  whiteice::logging.error("matrix::resize_x(): cudaMemcpy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed");
+	}
+
+	// zeroes new area
+	unsigned char* bytes = (unsigned char*)cudaptr;
+	
+	err = cudaMemset(&(bytes[numRows*numCols*sizeof(T)]), 0,
+			 numRows*(d - numCols)*sizeof(T));
+	
+	if(err != cudaSuccess){
+	  cudaFree(cudaptr);
+	  whiteice::logging.error("matrix::resize_x(): cudaMemset() failed.");
+	  throw CUDAException("CUBLAS cudaMemset() failed");
+	}
+
+	cudaFree(this->data);
+	this->data = (T*)cudaptr;
+	numCols = d;
+
+	return true;
+      }
+      
+#else
       if(d == numCols){
 	return true;
       }
@@ -1562,12 +3782,68 @@ namespace whiteice
       }
       
       return true;
+#endif
     }
     
     
     template <typename T>
     bool matrix<T>::resize_y(unsigned int d) 
     {
+#ifdef CUBLAS
+
+      if(d == numRows) return true; // nothing to do
+      else if(d == 0) return false; // don't accept zero size matrixes
+      else{
+	// we allocate new memory area and copy columns one by one to target
+	
+	cudaError_t err;
+	void* cudaptr = NULL;
+	err = cudaMallocManaged(&cudaptr, d*numCols*sizeof(T));
+
+	if(err != cudaSuccess || cudaptr == NULL){
+	  whiteice::logging.error("matrix::resize_y(): cudaMallocManaged() failed.");
+	  throw CUDAException("CUBLAS memory allocation failure.");
+	}
+
+	for(unsigned int c=0;c<numCols;c++){
+	  // now does raw copy of memory to new area
+	  T* area = (T*)cudaptr;
+
+	  const unsigned int LEN = (d < numRows) ? d : numRows;
+	  
+	  err = cudaMemcpy(&(area[c*d]), &(data[c*numRows]), LEN*sizeof(T),
+			   cudaMemcpyDeviceToDevice);
+	  
+	  if(err != cudaSuccess){
+	    cudaFree(cudaptr);
+	    whiteice::logging.error("matrix::resize_y(): cudaMemcpy() failed.");
+	    throw CUDAException("CUBLAS cudaMemcpy() failed");
+	  }
+
+	  if(d > numRows){ // set rest of this column to zero
+
+	    unsigned int index = numRows;
+	    if(c > 1) index += (c-1)*d;
+
+	    err = cudaMemset(&(area[index]), 0, (d - numRows)*sizeof(T));
+	    
+	    if(err != cudaSuccess){
+	      cudaFree(cudaptr);
+	      whiteice::logging.error("vertex::resize_y(): cudaMemset() failed.");
+	      throw CUDAException("cudaMemset() failed.");
+	    }
+	  }
+	}
+
+	if(this->data) cudaFree(this->data);
+	this->data = (T*)cudaptr;
+	numRows = d;
+
+	return true;
+      }
+
+      
+#else 
       T* new_area = 0;
       if(d == numRows){
 	return true;
@@ -1593,6 +3869,7 @@ namespace whiteice
       numRows = d;
       
       return true;
+#endif
     }
     
     
@@ -1601,9 +3878,90 @@ namespace whiteice
     T matrix<T>::rownorm(unsigned int y, unsigned int x1, unsigned int x2) const
       
     {
-      if(x2 < x1 || x1 >= numCols || y >= numRows)
+      if(x2 < x1 || x1 >= numCols || y >= numRows){
+	whiteice::logging.error("matrix::rownorm(): bad index parameter to matrix.");
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
+      }
       
+#ifdef CUBLAS
+      
+      if(typeid(T) == typeid(blas_real<float>)){
+	float result;
+
+	auto s = cublasSnrm2(cublas_handle, (int)(x2-x1),
+			     (const float*)&(data[y + x1*numRows]),
+			     numRows, (float*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rownorm(): cublasSnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasSnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	double result;
+
+	auto s = cublasDnrm2(cublas_handle, (int)(x2-x1),
+			     (const double*)&(data[y + x1*numRows]),
+			     numRows, (double*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rownorm(): cublasDnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasDnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	float result;
+	
+	auto s = cublasScnrm2(cublas_handle, (int)(x2-x1),
+			      (const cuComplex*)&(data[y + x1*numRows]),
+			      numRows, (float*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rownorm(): cublasScnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasScnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	double result;
+	
+	auto s = cublasDznrm2(cublas_handle, (int)(x2-x1),
+			      (const cuDoubleComplex*)&(data[y + x1*numRows]),
+			      numRows, (double*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rownorm(): cublasDznrm2() failed.");
+	  throw CUDAException("CUBLAS cublasDznrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else{
+	T len = T(0.0f);
+
+#pragma omp parallel
+	{
+	  T l = T(0.0f);
+
+#pragma omp for schedule(auto) nowait
+	  for(unsigned int i=x1;i<=x2;i++)
+	    l += data[y*numCols + i]*whiteice::math::conj(data[y*numCols + i]);
+
+#pragma omp critical
+	  {
+	    len += l;
+	  }
+	}
+	
+	return whiteice::math::sqrt(whiteice::math::abs(len));
+      }
+      
+#else
       if(x2 >= numCols) x2 = numCols - 1;
       
       if(typeid(T) == typeid(blas_real<float>)){
@@ -1619,24 +3977,118 @@ namespace whiteice
 	return T( cblas_dznrm2(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1) );
       }
       else{ // generic length calculation
-	T len = T(0);
+	T len = T(0.0f);
+
+#pragma omp parallel
+	{
+	  T l = T(0.0f);
+
+#pragma omp for schedule(auto) nowait
+	  for(unsigned int i=x1;i<x2;i++)
+	    l += data[y + i*numRows]*whiteice::math::conj(data[y + i*numRows]);
+
+#pragma omp critical
+	  {
+	    len += l;
+	  }
+	}
 	
-	for(unsigned int i=x1;i<=x2;i++)
-	  len += data[y*numCols + i]*data[y*numCols + i];
-	
-	return whiteice::math::sqrt(len);
+	return whiteice::math::sqrt(whiteice::math::abs(len));
       }
+#endif
     }
     
     
     template <typename T>
-    T matrix<T>::colnorm(unsigned int x, unsigned int y1, unsigned int y2)
-      const 
+    T matrix<T>::colnorm(unsigned int x, unsigned int y1, unsigned int y2) const
     {
-      if(y2 < y1 || y1 >= numRows || x >= numCols)
+      if(y2 < y1 || y1 >= numRows || x >= numCols){
+	whiteice::logging.error("matrix::colnorm(): bad index parameter to matrix.");
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
-      
+      }
+
       if(y2 > numRows) y2 = numRows - 1;
+      
+#ifdef CUBLAS
+      y2++;
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	float result;
+
+	auto s = cublasSnrm2(cublas_handle, (int)(y2-y1),
+			     (const float*)&(data[y1 + x*numRows]),
+			     1, (float*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colnorm(): cublasSnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasSnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	double result;
+
+	auto s = cublasDnrm2(cublas_handle, (int)(y2-y1),
+			     (const double*)&(data[y1 + x*numRows]),
+			     1, (double*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colnorm(): cublasDnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasDnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+	float result;
+	
+	auto s = cublasScnrm2(cublas_handle, (int)(y2-y1),
+			      (const cuComplex*)&(data[y1 + x*numRows]),
+			      1, (float*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colnorm(): cublasScnrm2() failed.");
+	  throw CUDAException("CUBLAS cublasScnrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+	double result;
+	
+	auto s = cublasDznrm2(cublas_handle, (int)(y2-y1),
+			      (const cuDoubleComplex*)&(data[y1 + x*numRows]),
+			      1, (double*)&result);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colnorm(): cublasDznrm2() failed.");
+	  throw CUDAException("CUBLAS cublasDznrm2() failed.");
+	}
+
+	return T(result);
+      }
+      else{
+	T len = T(0.0f);
+
+#pragma omp parallel
+	{
+	  T l = T(0.0f);
+
+#pragma omp for schedule(auto) nowait
+	  for(unsigned int i=y1;i<y2;i++)
+	    l += data[i + x*numRows]*whiteice::math::conj(data[i + x*numRows]);
+
+#pragma omp critical
+	  {
+	    len += l;
+	  }
+	}
+	
+	return whiteice::math::sqrt(whiteice::math::abs(len));
+      }
+
+#else      
       
       if(typeid(T) == typeid(blas_real<float>)){
 	return T( cblas_snrm2(y2 - y1 + 1, (const float*)&(data[y1*numCols + x]), numCols) );
@@ -1651,29 +4103,111 @@ namespace whiteice
 	return T( cblas_dznrm2(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols) );
       }
       else{ // generic length calculation
-	T len = T(0);
-	
-	for(unsigned int i=y1;i<=y2;i++)
-	  len += data[x + i*numCols] * data[x + i*numCols];
+	T len = T(0.0f);
+
+#pragma omp parallel
+	{
+	  T l = T(0.0f);
+	  
+#pragma omp for schedule(auto) nowait
+	  for(unsigned int i=y1;i<=y2;i++)
+	    l += data[x + i*numCols] * data[x + i*numCols];
+
+#pragma omp critical
+	  {
+	    len += l;
+	  }
+	}
 	
 	return whiteice::math::sqrt(len);
       }
+#endif
     }
     
     
     
     // copies row data to a given vector, M(y,x1:x2) -> v
     template <typename T>
-    void matrix<T>::rowcopyto(vertex<T>& v, unsigned int y, unsigned int x1, unsigned int x2)
-      const 
+    void matrix<T>::rowcopyto(vertex<T>& v,
+			      unsigned int y,
+			      unsigned int x1, unsigned int x2) const
     {
-      if(x2 < x1 || x1 >= numCols || y >= numRows)
+      if(x2 < x1 || x1 >= numCols || y >= numRows){
+	whiteice::logging.error("matrix::rowcopyto(): bad index parameter to matrix.");
 	throw std::out_of_range("rowcopyto(): bad indeces to matrix");
-      
+      }
+
       if(x2 >= numCols) x2 = numCols - 1;
-      
-      if(v.resize(x2 - x1 + 1) != x2 - x1 + 1)
+
+#ifdef CUBLAS
+      x2++;
+
+      if(v.resize(x2-x1) != (x2-x1)){
+	whiteice::logging.error("matrix::rowcopyto(): v.resize() failed.");
 	throw std::bad_alloc();
+      }
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	
+	auto s = cublasScopy(cublas_handle, (int)(x2-x1),
+			     (const float*)&(data[y + x1*numRows]), numRows,
+			     (float*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyto(): cublasScopy() failed.");
+	  throw CUDAException("CUBLAS cublasScopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	auto s = cublasDcopy(cublas_handle, (int)(x2-x1),
+			     (const double*)&(data[y + x1*numRows]), numRows,
+			     (double*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyto(): cublasDcopy() failed.");
+	  throw CUDAException("CUBLAS cublasDcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	auto s = cublasCcopy(cublas_handle, (int)(x2-x1),
+			     (const cuComplex*)&(data[y + x1*numRows]), numRows,
+			     (cuComplex*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyto(): cublasCcopy() failed.");
+	  throw CUDAException("CUBLAS cublasCcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	auto s = cublasZcopy(cublas_handle, (int)(x2-x1),
+			     (const cuDoubleComplex*)&(data[y + x1*numRows]), numRows,
+			     (cuDoubleComplex*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyto(): cublasZcopy() failed.");
+	  throw CUDAException("CUBLAS cublasZcopy() failed.");
+	}
+	
+      }
+      else{
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=x1;i<x2;i++)
+	  v[i - x1] = data[y + i*numRows];
+      }
+      
+	
+#else      
+      
+      if(v.resize(x2 - x1 + 1) != x2 - x1 + 1){
+	whiteice::logging.error("matrix::rowcopyto(): v.resize() failed.");
+	throw std::bad_alloc();
+      }
       
       
       if(typeid(T) == typeid(blas_real<float>)){
@@ -1689,9 +4223,13 @@ namespace whiteice
 	cblas_zcopy(x2 - x1 + 1, (const double*)&(data[y*numCols + x1]), 1, (double*)v.data, 1);
       }
       else{ // generic vector copy
+	
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=x1;i<=x2;i++)
 	  v[i - x1] = data[y*numCols + x1];
+	
       }
+#endif
     }
     
     
@@ -1700,10 +4238,76 @@ namespace whiteice
     void matrix<T>::colcopyto(vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
       const 
     {
-      if(y2 < y1 || y1 >= numRows || x >= numCols)
+      if(y2 < y1 || y1 >= numRows || x >= numCols){
+	whiteice::logging.error("matrix::colcopyto(): bad index parameter to matrix.");
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
-      
+      }
+
       if(y2 >= numRows) y2 = numRows - 1;
+
+#ifdef CUBLAS
+      y2++;
+
+      if(v.resize(y2-y1) != (y2-y1)){
+	whiteice::logging.error("matrix::colcopyto(): v.resize() failed.");
+	throw std::bad_alloc();
+      }
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	
+	auto s = cublasScopy(cublas_handle, (int)(y2-y1),
+			     (const float*)&(data[y1 + x*numRows]), 1,
+			     (float*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyto(): cublasScopy() failed.");
+	  throw CUDAException("CUBLAS cublasScopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	auto s = cublasDcopy(cublas_handle, (int)(y2-y1),
+			     (const double*)&(data[y1 + x*numRows]), 1,
+			     (double*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyto(): cublasDcopy() failed.");
+	  throw CUDAException("CUBLAS cublasDcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	auto s = cublasCcopy(cublas_handle, (int)(y2-y1),
+			     (const cuComplex*)&(data[y1 + x*numRows]), 1,
+			     (cuComplex*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyto(): cublasCcopy() failed.");
+	  throw CUDAException("CUBLAS cublasCcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	auto s = cublasZcopy(cublas_handle, (int)(y2-y1),
+			     (const cuDoubleComplex*)&(data[y1 + x*numRows]), 1,
+			     (cuDoubleComplex*)v.data, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyto(): cublasZcopy() failed.");
+	  throw CUDAException("CUBLAS cublasZcopy() failed.");
+	}
+	
+      }
+      else{
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=y1;i<y2;i++)
+	  v[i - y1] = data[i + x*numRows];
+      }
+
+#else      
       
       if(v.resize(y2 - y1 + 1) != y2 - y1 + 1)
 	throw std::bad_alloc();
@@ -1722,21 +4326,92 @@ namespace whiteice
 	cblas_zcopy(y2 - y1 + 1, (const double*)&(data[y1*numCols + x]), numCols, (double*)v.data, 1);
       }
       else{ // generic copy
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=y1;i<=y2;i++)
 	  v[i - y1] = data[x + i*numCols];
+	
       }
+#endif
     }
     
     
     
     template <typename T>
-    void matrix<T>::rowcopyfrom(const vertex<T>& v, unsigned int y, unsigned int x1, unsigned int x2)
+    void matrix<T>::rowcopyfrom(const vertex<T>& v,
+				unsigned int y,
+				unsigned int x1, unsigned int x2)
       
     {
-      if(x2 >= numCols) x2 = numCols - 1;
-      if(x2 < x1 || x1 >= numCols || y >= numRows || v.size() != x2 - x1 + 1)
+      if(x2 < x1 || x1 >= numCols || y >= numRows || v.size() != x2 - x1 + 1){
+	whiteice::logging.error("matrix::rowcopyto(): bad index parameter to matrix.");
 	throw std::out_of_range("rowcopyfrom(): bad indeces to matrix");
+      }
+
+      if(x2 >= numCols) x2 = numCols - 1;
       
+#ifdef CUBLAS
+      x2++; // we use [x1,x2[ range where x2 element is not part of the range
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	
+	auto s = cublasScopy(cublas_handle, (int)(x2-x1),
+			     (const float*)v.data, 1,
+			     (float*)&(data[y + x1*numRows]), numRows);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyfrom(): cublasScopy() failed.");
+	  throw CUDAException("CUBLAS cublasScopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	auto s = cublasDcopy(cublas_handle, (int)(x2-x1),
+			     (const double*)v.data, 1,
+			     (double*)&(data[y + x1*numRows]), numRows);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyfrom(): cublasDcopy() failed.");
+	  throw CUDAException("CUBLAS cublasDcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	auto s = cublasCcopy(cublas_handle, (int)(x2-x1),
+			     (const cuComplex*)v.data, 1,
+			     (cuComplex*)&(data[y + x1*numRows]), numRows);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyfrom(): cublasCcopy() failed.");
+	  throw CUDAException("CUBLAS cublasCcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	auto s = cublasZcopy(cublas_handle, (int)(x2-x1),
+			     (const cuDoubleComplex*)v.data, 1,
+			     (cuDoubleComplex*)&(data[y + x1*numRows]), numRows);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::rowcopyfrom(): cublasZcopy() failed.");
+	  throw CUDAException("CUBLAS cublasZcopy() failed.");
+	}
+	
+      }
+      else{
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=x1;i<x2;i++)
+	  data[y + i*numRows] = v[i - x1];
+      }
+
+#else      
       
       if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(x2 - x1 + 1, (const float*)v.data, 1, (float*)&(data[y*numCols + x1]), 1);
@@ -1751,9 +4426,13 @@ namespace whiteice
 	cblas_zcopy(x2 - x1 + 1, (const double*)v.data, 1, (double*)&(data[y*numCols + x1]), 1);
       }
       else{ // generic vector copy
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=x1;i<=x2;i++)
 	  data[y*numCols + i] = v[i - x1];
+	
       }
+#endif
     }
     
     
@@ -1761,10 +4440,76 @@ namespace whiteice
     void matrix<T>::colcopyfrom(const vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
       
     {
-      if(y2 >= numRows) y2 = numRows - 1;
-      if(y2 < y1 || y1 >= numRows || x >= numCols || v.size() != y2 - y1 + 1)
-	throw std::out_of_range("colnorm(): bad indeces to matrix");      
       
+      if(y2 < y1 || y1 >= numRows || x >= numCols || v.size() != y2 - y1 + 1){
+	whiteice::logging.error("matrix::colcopyto(): bad index parameter to matrix.");
+	throw std::out_of_range("colnorm(): bad indeces to matrix");
+      }
+
+      if(y2 >= numRows) y2 = numRows - 1;
+      
+#ifdef CUBLAS
+      y2++;
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	
+	auto s = cublasScopy(cublas_handle, (int)(y2-y1),
+			     (const float*)v.data, 1,
+			     (float*)&(data[y1 + x*numRows]), 1);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyfrom(): cublasScopy() failed.");
+	  throw CUDAException("CUBLAS cublasScopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	auto s = cublasDcopy(cublas_handle, (int)(y2-y1),
+			     (const double*)v.data, 1,
+			     (double*)&(data[y1 + x*numRows]), 1);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyfrom(): cublasDcopy() failed.");
+	  throw CUDAException("CUBLAS cublasDcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	auto s = cublasCcopy(cublas_handle, (int)(y2-y1),
+			     (const cuComplex*)v.data, 1,
+			     (cuComplex*)&(data[y1 + x*numRows]), 1);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyfrom(): cublasCcopy() failed.");
+	  throw CUDAException("CUBLAS cublasCcopy() failed.");
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	auto s = cublasZcopy(cublas_handle, (int)(y2-y1),
+			     (const cuDoubleComplex*)v.data, 1,
+			     (cuDoubleComplex*)&(data[y1 + x*numRows]), 1);
+			     
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("matrix::colcopyfrom(): cublasZcopy() failed.");
+	  throw CUDAException("CUBLAS cublasZcopy() failed.");
+	}
+	
+      }
+      else{
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=y1;i<y2;i++)
+	  data[i + x*numRows] = v[i - y1];
+      }
+      
+#else
       
       if(typeid(T) == typeid(blas_real<float>)){
 	cblas_scopy(y2 - y1 + 1, (const float*)v.data, 1, (float*)&(data[y1*numCols + x]), numCols);
@@ -1779,9 +4524,14 @@ namespace whiteice
 	cblas_zcopy(y2 - y1 + 1, (const double*)v.data, 1, (double*)&(data[y1*numCols + x]), numCols);
       }
       else{ // generic length calculation
+
+#pragma omp paralle for schedule(auto)
 	for(unsigned int i=y1;i<=y2;i++)
 	  data[x + i*numCols] = v[i - y1];
+	
       }
+
+#endif
     }
     
     
@@ -1791,14 +4541,45 @@ namespace whiteice
 			      unsigned int x0, unsigned int y0,
 			      unsigned int xs, unsigned int ys) const
     {
-      if(x0+xs > numCols || y0+ys > numRows)
+      if(x0+xs > numCols || y0+ys > numRows){
+	whiteice::logging.warn("matrix::submatrix(): bad submatrix parameters/fail.");
 	return false;
+      }
 
-      if(xs == 0 || ys == 0) return false;
+      if(xs == 0 || ys == 0){
+	whiteice::logging.warn("matrix::submatrix(): bad submatrix parameters/fail.");
+	return false;
+      }
 
-      if(M.xsize() != xs || M.ysize() != ys)
-	if(M.resize(ys, xs) == false) return false;
+      if(M.xsize() != xs || M.ysize() != ys){
+	if(M.resize(ys, xs) == false){
+	  whiteice::logging.warn("matrix::submatrix(): resize()/function failed.");
+	  return false;
+	}
+      }
       
+#ifdef CUBLAS
+
+      const T* from = this->data + (y0 + x0*numRows);
+      T* to = M.data;
+
+      // FIXME change to use CUDA 2d array copy for optimized copy
+      for(unsigned int i=0;i<xs;i++){
+	
+	auto s = cudaMemcpy(to, from, ys*sizeof(T), cudaMemcpyDeviceToDevice);
+
+	if(s != cudaSuccess){
+	  whiteice::logging.error("matrix::submatrix(): cudaMemcopy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	}
+
+	from += numRows;
+	to += ys;
+      }
+
+      return true;
+      
+#else
       T* from = this->data + x0 + y0*numCols;
       T* to   = M.data;      
       
@@ -1809,6 +4590,7 @@ namespace whiteice
       }
       
       return true;
+#endif
     }
     
     
@@ -1820,8 +4602,33 @@ namespace whiteice
       const unsigned int ys = M.ysize();
       const unsigned int xs = M.xsize();
       
-      if(x0+xs > numCols || y0+ys > numRows)
+      if(x0+xs > numCols || y0+ys > numRows){
+	whiteice::logging.warn("matrix::write_submatrix(): bad submatrix parameters/fail");
 	return false;
+      }
+
+#ifdef CUBLAS
+
+      const T* from = M.data;
+      T* to = this->data + (y0 + x0*numRows);
+      
+      
+      // FIXME change to use CUDA 2d array copy for optimized copy
+      for(unsigned int i=0;i<xs;i++){
+	
+	auto s = cudaMemcpy(to, from, ys*sizeof(T), cudaMemcpyDeviceToDevice);
+	
+	if(s != cudaSuccess){
+	  whiteice::logging.error("matrix::write_submatrix(): cudaMemcopy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	}
+
+	to += numRows;
+	from += ys;
+      }
+
+      return true;
+#else
       
       T* from = M.data;
       T* to   = this->data + x0 + y0*numCols;
@@ -1831,8 +4638,9 @@ namespace whiteice
 	from += xs;
 	to   += numCols;
       }
-      
+
       return true;
+#endif
     }
     
     
@@ -1842,10 +4650,87 @@ namespace whiteice
     bool matrix<T>::save_to_vertex(vertex<T>& out,
 				   unsigned int x0) const
     {
+#ifdef CUBLAS
+      // NOTE: we store data to vertex as we would have row major matrixes in cublas
+
+      out.resize(x0 + numCols*numRows);
+      
+      for(unsigned int j=0;j<numRows;j++){
+	//memcpy(&(out[index]), data[j], numCols*sizeof(T), j_increment += numRows);
+	//index += numCols
+
+	if(typeid(T) == typeid(blas_real<float>)){
+
+	  auto s = cublasScopy(cublas_handle, numCols,
+			       (const float*)&(data[j]), numRows,
+			       (float*)&(out[x0 + j*numCols]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::save_to_vertex(): cublasScopy() failed.");
+	    throw CUDAException("CUBLAS cublasScopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+
+	  auto s = cublasDcopy(cublas_handle, numCols,
+			       (const double*)&(data[j]), numRows,
+			       (double*)&(out[x0 + j*numCols]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::save_to_vertex(): cublasDcopy() failed.");
+	    throw CUDAException("CUBLAS cublasDcopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_complex<float>)){
+
+	  auto s = cublasCcopy(cublas_handle, numCols,
+			       (const cuComplex*)&(data[j]), numRows,
+			       (cuComplex*)&(out[x0 + j*numCols]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::save_to_vertex(): cublasCcopy() failed.");
+	    throw CUDAException("CUBLAS cublasCcopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_complex<double>)){
+
+	  auto s = cublasZcopy(cublas_handle, numCols,
+			       (const cuDoubleComplex*)&(data[j]), numRows,
+			       (cuDoubleComplex*)&(out[x0 + j*numCols]), 1);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::save_to_vertex(): cublasZcopy() failed.");
+	    throw CUDAException("CUBLAS cublasZcopy() failed.");
+	  }
+	  
+	}
+	else{
+	  // copies whole matrix a whole and don't iterate the loop
+	  
+	  unsigned int index = x0;
+	  
+	  for(unsigned int j=0;j<numRows;j++){
+	    for(unsigned int i=0;i<numCols;i++, index++){
+	      out[index] = (*this)(j,i);
+	    }
+	  }
+
+	  return true;
+	}
+	
+      }
+
+      return true;
+      
+#else
       out.resize(x0 + numCols*numRows);
       memcpy(&(out.data[x0]), this->data, numCols*numRows*sizeof(T));
       
       return true;
+#endif
     }
     
     
@@ -1855,16 +4740,238 @@ namespace whiteice
     {
       if(in.size() < numCols*numRows + x0)
 	return false;
+
+#ifdef CUBLAS
+
+      for(unsigned int j=0;j<numRows;j++){
+	//memcpy(data[j], &(out[index]), numCols*sizeof(T), j_increment += numRows)
+	//index += numCols
+
+	if(typeid(T) == typeid(blas_real<float>)){
+
+	  auto s = cublasScopy(cublas_handle, numCols,
+			       (const float*)&(in[x0 + j*numCols]), 1,
+			       (float*)&(data[j]), numRows);
+			       
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::load_from_vertex(): cublasScopy() failed.");
+	    throw CUDAException("CUBLAS cublasScopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+
+	  auto s = cublasDcopy(cublas_handle, numCols,
+			       (const double*)&(in[x0 + j*numCols]), 1,
+			       (double*)&(data[j]), numRows);
+			       
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::load_from_vertex(): cublasDcopy() failed.");
+	    throw CUDAException("CUBLAS cublasDcopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_complex<float>)){
+
+	  auto s = cublasCcopy(cublas_handle, numCols,
+			       (const cuComplex*)&(in[x0 + j*numCols]), 1,
+			       (cuComplex*)&(data[j]), numRows);
+			       
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::load_from_vertex(): cublasCcopy() failed.");
+	    throw CUDAException("CUBLAS cublasCcopy() failed.");
+	  }
+	  
+	}
+	else if(typeid(T) == typeid(blas_complex<double>)){
+
+	  auto s = cublasZcopy(cublas_handle, numCols,
+			       (const cuDoubleComplex*)&(in[x0 + j*numCols]), 1,
+			       (cuDoubleComplex*)&(data[j]), numRows);
+			       
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::load_from_vertex(): cublasZcopy() failed.");
+	    throw CUDAException("CUBLAS cublasZcopy() failed.");
+	  }
+	  
+	}
+	else{
+	  // copies whole matrix a whole and don't iterate the loop (returns true)
+	  
+	  unsigned int index = x0;
+	  
+	  for(unsigned int j=0;j<numRows;j++){
+	    for(unsigned int i=0;i<numCols;i++, index++){
+	      (*this)(j,i) = in[index];
+	    }
+	  }
+
+	  return true;
+	}
+	
+      }
+
+      return true;
       
+#else
       memcpy(this->data, &(in.data[x0]), numCols*numRows*sizeof(T));
       
       return true;
+#endif
     }
     
     
     template <typename T>
     void matrix<T>::normalize() 
     {
+#ifdef CUBLAS
+
+      if(typeid(T) == typeid(blas_real<float>)){
+
+	// MULTITHREAD DISABLED: does OpenMP work with exception handling??
+	for(unsigned int j=0;j<numRows;j++){
+	  float len;
+
+	  auto s = cublasSnrm2(cublas_handle, numCols,
+			       (const float*)&(data[j]), numRows,
+			       (float*)&len);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasSnrm2() failed.");
+	    throw CUDAException("CUBLAS cublasSnrm2() failed.");
+	  }
+
+	  if(len <= 0.0f)
+	    continue; // skip zero length row vectors
+	  else
+	    len = 1.0f/whiteice::math::sqrt(len);
+
+	  s = cublasSscal(cublas_handle, numCols,
+			  (const float*)&len,
+			  (float*)&(data[j]), numRows);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasSscal() failed.");
+	      throw CUDAException("CUBLAS cublasSscal() failed.");
+	  }
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+
+	for(unsigned int j=0;j<numRows;j++){
+	  double len;
+
+	  auto s = cublasDnrm2(cublas_handle, numCols,
+			       (const double*)&(data[j]), numRows,
+			       (double*)&len);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasDnrm2() failed.");
+	    throw CUDAException("CUBLAS cublasDnrm2() failed.");
+	  }
+
+	  if(len <= 0.0)
+	    continue; // skip zero length row vectors
+	  else
+	    len = 1.0f/whiteice::math::sqrt(len);
+
+	  s = cublasDscal(cublas_handle, numCols,
+			  (const double*)&len,
+			  (double*)&(data[j]), numRows);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasDscal() failed.");
+	      throw CUDAException("CUBLAS cublasDscal() failed.");
+	  }
+	}
+		
+      }
+      else if(typeid(T) == typeid(blas_complex<float>)){
+
+	for(unsigned int j=0;j<numRows;j++){
+	  float len;
+
+	  auto s = cublasScnrm2(cublas_handle, numCols,
+				(const cuComplex*)&(data[j]), numRows,
+				(float*)&len);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasScnrm2() failed.");
+	    throw CUDAException("CUBLAS cublasScnrm2() failed.");
+	  }
+
+	  if(len <= 0.0f)
+	    continue; // skip zero length row vectors
+	  else
+	    len = 1.0f/whiteice::math::sqrt(len);
+
+	  s = cublasCsscal(cublas_handle, numCols,
+			   (const float*)&len,
+			   (cuComplex*)&(data[j]), numRows);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasCsscal() failed.");
+	      throw CUDAException("CUBLAS cublasCsscal() failed.");
+	  }
+	}
+	
+      }
+      else if(typeid(T) == typeid(blas_complex<double>)){
+
+	for(unsigned int j=0;j<numRows;j++){
+	  double len;
+
+	  auto s = cublasDznrm2(cublas_handle, numCols,
+				(const cuDoubleComplex*)&(data[j]), numRows,
+				(double*)&len);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasDznrm2() failed.");
+	    throw CUDAException("CUBLAS cublasDznrm2() failed.");
+	  }
+
+	  if(len <= 0.0f)
+	    continue; // skip zero length row vectors
+	  else
+	    len = 1.0f/whiteice::math::sqrt(len);
+
+	  s = cublasZdscal(cublas_handle, numCols,
+			   (const double*)&len,
+			   (cuDoubleComplex*)&(data[j]), numRows);
+
+	  if(s != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("matrix::normalize(): cublasZdscal() failed.");
+	      throw CUDAException("CUBLAS cublasZdscal() failed.");
+	  }
+	}
+	
+      }
+      else{
+	
+	for(unsigned int j=0;j<numRows;j++){
+	  T len = T(0.0f);
+	  
+	  for(unsigned int i=0;i<numCols;i++){
+	    len += (data[i*numRows+j])*whiteice::math::conj(data[i*numRows+j]);
+	  }
+	  
+	  len = whiteice::math::sqrt(len);
+	  
+	  if(len != T(0.0f)){
+	    for(unsigned int i=0;i<numCols;i++){
+	      data[i*numRows+j] /= len;
+	    }
+	  }
+	}
+	
+      }
+
+#else
       // normalizes each row to have unit length
       // normalization of each column: transpose + normalize  + transpose is slow
       // TODO: write code (and test it) which normalizes each column to have unit length
@@ -1876,8 +4983,8 @@ namespace whiteice
 	for(unsigned int j=0;j<numRows;j++){
 	  f = cblas_snrm2(numCols, (float*)&(data[j*numCols]), 1);
 	  
-	  if(f == 0.0f) return;
-	  else f = 1.0f/f;
+	  if(f == 0.0f) continue;
+	  else f = 1.0f/whiteice::math::sqrt(f);
 	  
 	  cblas_sscal(numCols,  f, (float*)&(data[j*numCols]), 1);
 	}
@@ -1888,8 +4995,8 @@ namespace whiteice
 	for(unsigned int j=0;j<numRows;j++){
 	  f = cblas_scnrm2(numCols, (float*)&(data[j*numCols]), 1);
 	  
-	  if(f == 0.0f) return;
-	  else f = 1.0f/f;
+	  if(f == 0.0f) continue;
+	  else f = 1.0f/whiteice::math::sqrt(f);
 	  
 	  cblas_csscal(numCols,  f, (float*)&(data[j*numCols]), 1);
 	}	
@@ -1900,8 +5007,8 @@ namespace whiteice
 	for(unsigned int j=0;j<numRows;j++){
 	  f = cblas_dnrm2(numCols, (double*)&(data[j*numCols]), 1);
 	  
-	  if(f == 0.0) return;
-	  else f = 1.0/f;
+	  if(f == 0.0) continue;
+	  else f = 1.0/whiteice::math::sqrt(f)
 	  
 	  cblas_dscal(numCols,  f, (double*)&(data[j*numCols]), 1);
 	}
@@ -1912,31 +5019,34 @@ namespace whiteice
 	for(unsigned int j=0;j<numRows;j++){
 	  f = cblas_dznrm2(numCols, (double*)&(data[j*numCols]), 1);
 	  
-	  if(f == 0.0) return;
-	  else f = 1.0/f;
+	  if(f == 0.0) continue;
+	  else f = 1.0/whiteice::math::sqrt(f);
 	  
 	  cblas_zdscal(numCols,  f, (double*)&(data[j*numCols]), 1);
 	}
       }
       else{ // generic normalization of rows
-	
+
+#pragma omp parallel for schedule(auto)
 	for(unsigned int j=0;j<numRows;j++){
 	  T len = T(0.0);
 	  
 	  for(unsigned int i=0;i<numCols;i++){
-	    len += (data[i+j*numRows])*(data[i+j*numRows]);
+	    len += (data[i+j*numCols])*whiteice::math::conj(data[i+j*numCols]);
 	  }
 	  
 	  len = whiteice::math::sqrt(len);
 	  
 	  if(len != T(0.0)){
 	    for(unsigned int i=0;i<numCols;i++){
-	      data[i+j*numRows] /= len;
+	      data[i+j*numCols] /= len;
 	    }
 	  }
 	}
+	
       }
       
+#endif
     }
     
     
@@ -1950,33 +5060,74 @@ namespace whiteice
     void matrix<T>::toString(std::string& line) const 
     {
       if(this->ysize() == 0 && this->xsize() == 0){ line = ""; return; }
-      if(this->ysize() == 1 && this->xsize() == 1){
-	line = "";
-	char buffer[20];
+
+      char buffer[30];
+
+      if(typeid(T) == typeid(blas_real<float>) ||
+	 typeid(T) == typeid(blas_real<double>)){
+	
+	if(this->ysize() == 1 && this->xsize() == 1){
+	  line = "";
+	  double temp = 0.0;
+	  whiteice::math::convert(temp, (*this)(0,0));
+	  snprintf(buffer, 30, "%f", temp);
+	  line += buffer;
+	  return;
+	}
+	
+	line = "[";
 	double temp = 0.0;
-	whiteice::math::convert(temp, (*this)(0,0));
-	snprintf(buffer, 20, "%f", temp);
-	line += buffer;
+	
+	for(unsigned int j=0;j<this->ysize();j++){
+	  for(unsigned int i=0;i<this->xsize();i++){
+	    whiteice::math::convert(temp, (*this)(j,i));
+	    snprintf(buffer, 30, " %f", temp);
+	    line += buffer;
+	  }
+	  
+	  line += "; ";
+	}
+	
+	line += "]";
+
 	return;
       }
+      else{ // prints complex numbers
 
-      line = "[";
-      char buffer[20];
-      double temp = 0.0;
-
-      for(unsigned int j=0;j<this->ysize();j++){
-	for(unsigned int i=0;i<this->xsize();i++){
-	  whiteice::math::convert(temp, (*this)(j,i));
-	  snprintf(buffer, 20, " %f", temp);
+	if(this->ysize() == 1 && this->xsize() == 1){
+	  line = "";
+	  auto r = whiteice::math::real(data[0]);
+	  auto i = whiteice::math::conj(data[0]);
+	  double temp, temp2;
+	  whiteice::math::convert(temp, r);
+	  whiteice::math::convert(temp2, i);
+	  
+	  snprintf(buffer, 30, "%f+%fi", temp, temp2);
 	  line += buffer;
+	  return;
 	}
+	
+	line = "[";
+	double temp, temp2;
+	
+	for(unsigned int j=0;j<this->ysize();j++){
+	  for(unsigned int i=0;i<this->xsize();i++){
+	    auto rv = whiteice::math::real((*this)(j,i));
+	    auto iv = whiteice::math::imag((*this)(j,i));
+	    
+	    whiteice::math::convert(temp, rv);
+	    whiteice::math::convert(temp2, iv);
+	    snprintf(buffer, 30, " %f+%fi", temp, temp2);
+	    line += buffer;
+	  }
+	  
+	  line += "; ";
+	}
+	
+	line += " ]";
 
-	line += "; ";
+	return;
       }
-
-      line += "]";
-
-      return;
     }
     
     ////////////////////////////////////////////////////////////
@@ -2066,7 +5217,7 @@ namespace whiteice
 	ios << "; ";
       }
     
-      ios << "]";
+      ios << " ]";
     
       return ios;
     }

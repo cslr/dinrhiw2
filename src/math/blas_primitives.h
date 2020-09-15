@@ -14,6 +14,10 @@
 #include <cassert>
 #include <math.h>
 
+// disable packing, hopefully this don't break things
+// if NO_PACKED is not defined then using GCC's packed attribute
+#define NO_PACKED 1
+
 namespace whiteice
 {
   namespace math
@@ -27,7 +31,8 @@ namespace whiteice
     //    -> especially now ATLAS library can access data directly (as memory)
 
     template <typename T=float>
-    inline void blas_safebox(const T& value){
+    inline void blas_safebox(const T& value)
+    {
 #ifdef _GLIBCXX_DEBUG
       // in debugging mode we stop if data large (algorithms should work with smallish numbers)
       if(abs(value) > T(1000000.0f)){
@@ -44,7 +49,11 @@ namespace whiteice
     template <typename T=float>
       struct blas_real
       {
+#ifdef NO_PACKED
+	T c[1];
+#else
 	T c[1] __attribute__ ((packed));
+#endif
 	
 	inline blas_real(){
 	  c[0] = T(0.0f);
@@ -265,8 +274,12 @@ namespace whiteice
 	
 	template <typename A>
 	friend bool operator> (const A& t, const blas_real<A>& r) ;
-	
-      } __attribute__ ((packed));
+
+#ifdef NO_PACKED
+    };
+#else
+    } __attribute__ ((packed));
+#endif
     
     
     
@@ -321,7 +334,11 @@ namespace whiteice
     template <typename T=float>
       struct blas_complex
       {
+#ifdef NO_PACKED
+	T c[2];
+#else
 	T c[2] __attribute__ ((packed));
+#endif
 	
 	
 	inline blas_complex(){
@@ -607,8 +624,12 @@ namespace whiteice
 	
 	template <typename A>
 	friend bool operator> (const A& t, const blas_complex<A>& r) ;
-	
-      } __attribute__ ((packed));
+
+#ifdef NO_PACKED
+       };
+#else
+       } __attribute__ ((packed));
+#endif
     
     
     // works around stupid compiler where we cannot define function for blas_complex in blas_real

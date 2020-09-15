@@ -1,6 +1,7 @@
 
 #include "matrix.h"
 #include "vertex.h"
+#include "Log.h"
 
 #include "outerproduct.h"
 
@@ -18,7 +19,51 @@ namespace whiteice
     {
       if(A.numRows != a.dataSize) return false;
       if(A.numCols != b.dataSize) return false;
-      
+
+#ifdef CUBLAS
+
+      if(typeid(T) == typeid(blas_real<float>)){
+	float s = 0.0;
+	convert(s, scalar);
+	
+	auto e = cublasSger(cublas_handle,
+			    A.numRows, A.numCols,
+			    (const float*)&s, (const float*)a.data, 1,
+			    (float*)b.data, 1,
+			    (float*)A.data, A.numRows);
+
+	if(e != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("addouterprodut(): cublasSger() failed.");
+	  throw CUDAException("CUBLAS cublasSger() call failed.");
+	}		    
+	
+      }
+      else if(typeid(T) == typeid(blas_real<double>)){
+	double s = 0.0;
+	convert(s, scalar);
+	
+	auto e = cublasDger(cublas_handle,
+			    A.numRows, A.numCols,
+			    (const double*)&s, (const double*)a.data, 1,
+			    (double*)b.data, 1,
+			    (double*)A.data, A.numRows);
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("addouterprodut(): cublasDger() failed.");
+	  throw CUDAException("CUBLAS cublasDger() call failed.");
+	}
+	
+      }
+      else{
+	// COLUMN MAJOR matrix in cuBLAS
+	for(unsigned int r=0;r<A.numRows;r++){
+	  for(unsigned int c=0;c<A.numCols;c++){
+	    A[r + c*A.numRows] += scalar*a[r]*b[c];
+	  }
+	}
+      }
+
+#else
       if(typeid(T) == typeid(blas_real<float>)){
 	float s = 0.0;
 	convert(s, scalar);
@@ -40,8 +85,8 @@ namespace whiteice
 	    A[r*A.numCols + c] += scalar*a[r]*b[c];
 	  }
 	}
-	
       }
+#endif
 
       return true;
     }

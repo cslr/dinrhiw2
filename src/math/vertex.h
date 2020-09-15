@@ -1,7 +1,6 @@
 /*
- * atlas vertex
- *  implementation of vertex class
- *  using ATLAS library
+ * vertex - implementation of vector class
+ * Uses BLAS or NVIDIA cuBLAS accelerated matrix/vertex math.
  */
 
 #ifndef vertex_h
@@ -21,6 +20,19 @@
 #include <vector>
 
 #include <assert.h>
+
+
+#ifdef CUBLAS
+
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include "cublas_v2.h"
+
+// loading vertex.o object file initializes NVIDIA cuBLAS
+extern cublasHandle_t cublas_handle;
+extern cublasStatus_t cublas_status;
+
+#endif
 
 
 namespace whiteice
@@ -79,10 +91,6 @@ namespace whiteice
       vertex(const std::vector<T>& v);
       virtual ~vertex();
       
-#if 0
-      typedef typename std::vector<T>::iterator iterator;
-      typedef typename std::vector<T>::const_iterator const_iterator;
-#endif
       
       unsigned int size() const ;
       unsigned int resize(unsigned int d) ;
@@ -165,7 +173,10 @@ namespace whiteice
       inline T& operator[](const unsigned int& index) 
       {
 #ifdef _GLIBCXX_DEBUG	
-	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= dataSize){
+	  whiteice::loggign.error("vertex::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex index out of range"); }
 #endif
 	return data[index]; // no range check
       }
@@ -173,21 +184,17 @@ namespace whiteice
       inline const T& operator[](const unsigned int& index) const 
       {	
 #ifdef _GLIBCXX_DEBUG	
-	if(index >= dataSize){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= dataSize){
+	  whiteice::loggign.error("vertex::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex index out of range"); }
 #endif	
 	return data[index]; // no range check
       }
-      
+
       
       bool subvertex(vertex<T>& v, unsigned int x0, unsigned int len) const ;
       bool write_subvertex(const vertex<T>& v, unsigned int x0) ;
-      
-#if 0
-      iterator begin() ; // iterators
-      iterator end() ;
-      const_iterator begin() const ; // iterators
-      const_iterator end() const ;
-#endif
       
       bool comparable() ;
       

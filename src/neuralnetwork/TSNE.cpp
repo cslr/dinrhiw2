@@ -8,7 +8,7 @@
 #include "TSNE.h"
 
 #include "linear_ETA.h"
-
+#include "fastpca.h"
 
 namespace whiteice
 {
@@ -32,7 +32,6 @@ namespace whiteice
   bool TSNE<T>::calculate(const std::vector< math::vertex<T> >& samples,
 			  const unsigned int DIM,
 			  std::vector< math::vertex<T> >& results,
-			  const bool pca_initialization,
 			  const bool verbose,
 			  LoggingInterface* const messages,
 			  VisualizationInterface* const gui)
@@ -90,15 +89,33 @@ namespace whiteice
 	messages->printMessage(buffer);
     }
 
-    // preprocesses samples (TODO)
+    // preprocesses samples to keep 95% of the total variance of data
+    // this mean we will drop low variability constant data or values
+    // that are scaled to be very small
+    std::vector< math::vertex<T> > xsamples;
+    
     {
-      // calculate covariance matrix and drop dimensions which st.dev. < 0.01*trace(COV_x)/dim((x)
+      math::matrix<T> PCA;
+
+      if(whiteice::math::fastpca_p(samples, 0.95f, PCA) == false){
+	printf("ERROR: TSNE::calculate(): fastpca() failed with input data.\n");
+	return false;
+      }
+      else{
+	if(verbose)
+	  printf("TSNE: Preprocessing linear dimension reduction %d->%d.\n",
+		 PCA.xsize(), PCA.ysize());
+	
+	for(const auto& s : samples){
+	  xsamples.push_back(PCA*s);
+	}
+      }
     }
 
     // calculate p-values
     std::vector< std::vector<T> > pij;
     
-    if(calculate_pvalues(samples, PERPLEXITY, pij) == false){
+    if(calculate_pvalues(xsamples, PERPLEXITY, pij) == false){
       if(verbose){
 	printf("Estimating p-values FAILED.\n");
 	fflush(stdout);
@@ -109,51 +126,7 @@ namespace whiteice
     
     std::vector< math::vertex<T> > yvalues;
 
-    // calculates initial yvalues using PCA dimension reduction + scales stdev to 1.
-    if(pca_initialization){
-      math::matrix<T> PCA;
-      math::vertex<T> mean;
-      T v1, v2;
-
-      if(math::pca(samples, DIM, PCA, mean, v1, v2, true) == false){
-	snprintf(buffer, BUFLEN, "PCA computation FAILED.\n");
-
-	if(verbose){
-	  printf(buffer);
-	  fflush(stdout);
-	}
-
-	if(messages != NULL)
-	  messages->printMessage(buffer);
-
-	return false;
-      }
-
-      // reduces data dimensions using PCA (initial yvalues)
-      // (this seem to give better results with real world data)
-      for(const auto& v : samples){
-	auto u = PCA*(v - mean);
-	yvalues.push_back(u);
-      }
-
-      auto& Cxx = PCA; // reuses matrix variable (changes name)
-
-      // scales variance be unit Cxx = I in PCAed space.
-      math::mean_covariance_estimate(mean, Cxx, yvalues);
-
-      const T epsilon = T(1e-12);
-
-      for(unsigned int i=0;i<Cxx.xsize();i++){
-	Cxx(i,i) = T(1.0f)/(epsilon + whiteice::math::sqrt(whiteice::math::abs(Cxx(i,i))));
-      }
-
-      for(auto& v : yvalues){
-	for(unsigned int i=0;i<v.size();i++){
-	  v[i] = v[i] *= Cxx(i,i);
-	}
-      }
-    }
-    else{ // initializes y values as gaussian unit variance around zero N(0,I)
+    { // initializes y values as gaussian unit variance around zero N(0,I)
       yvalues.resize(samples.size());
       
       for(auto& y : yvalues){

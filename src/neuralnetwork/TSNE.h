@@ -56,7 +56,6 @@ namespace whiteice
       bool calculate(const std::vector< math::vertex<T> >& samples,
 		     const unsigned int DIM,
 		     std::vector< math::vertex<T> >& results,
-		     const bool pca_initialization = false,
 		     const bool verbose = false,
 		     LoggingInterface* const messages = NULL,
 		     VisualizationInterface* const gui = NULL);

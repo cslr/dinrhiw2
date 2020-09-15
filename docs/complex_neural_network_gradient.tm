@@ -80,8 +80,8 @@
   <math|r=<around*|(|\<b-x\><rsub|k>,y<rsub|k>|)>\<sim\>\<bbb-R\><rsup|2>>
   where real and imaginary values are separated.\ 
 
-  This can be done using linear mapping <math|\<Delta\>\<b-r\>=<frac|1|2>\<b-J\><rsup|H>\<Delta\>\<b-c\>>,
-  <math|\<Delta\>\<b-c\>=<around*|[|<matrix|<tformat|<table|<row|<cell|\<b-z\>>>|<row|<cell|<wide|\<up-z\>|\<bar\>>>>>>>|]>>
+  This can be done using linear mapping <math|\<b-r\>=<frac|1|2>\<b-J\><rsup|H>\<b-c\>>,
+  <math|\<b-c\>=<around*|[|<matrix|<tformat|<table|<row|<cell|\<b-z\>>>|<row|<cell|<wide|\<up-z\>|\<bar\>>>>>>>|]>>
   <math|>and <math|<frac|\<partial\>f|\<partial\>\<b-r\>>=\<b-J\><rsup|T><frac|\<partial\>f|\<partial\>\<b-c\>>>
   where <math|\<b-J\><rsup|T>=<matrix|<tformat|<table|<row|<cell|I>|<cell|I>>|<row|<cell|I*j>|<cell|-I*j>>>>>>
   so we get results (<math|\<b-w\>=\<b-x\>+\<b-y\>*j>):
@@ -142,6 +142,12 @@
   testing quality of found solutions test how TensorFlow's implementation of
   complex numbers with non-standard functions (automatic derivation)
   performs. >
+
+  <with|font-series|bold|TODO: Calculate also gradient of norm
+  <math|<around*|\<\|\|\>|\<b-f\><around*|(|\<b-z\>|)>-\<b-y\>|\<\|\|\>>>
+  instead of squared error>.
+
+  \ 
 </body>
 
 <initial|<\collection>

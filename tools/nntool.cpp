@@ -2250,7 +2250,7 @@ void print_usage(bool all)
   printf("                  Ctrl-C shutdowns the program.\n");
   printf("\n");
   printf("This program is distributed under GPL license.\n");
-  printf("<tomas.ukkonen@iki.fi> (commercial license available).\n");
+  printf("<tomas.ukkonen@iki.fi> (other licenses available).\n");
   
 }
 

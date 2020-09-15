@@ -1,5 +1,5 @@
 // TODO:
-//   - refactor gradient etc code 
+//   convert to use matrix<> and vertex<> classes instead of memory areas.
 // 
 
 #include <stdio.h>
@@ -433,14 +433,28 @@ namespace whiteice
 	  bpsize += arch[i];
 	
 	bpdata.resize(bpsize);
-	memset((T*)&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
+
+	// NOT NEEDED:
+	// memset((T*)&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
       }
 
       bpptr = &(bpdata[0]);
 
       // saves input to backprogation data
       {
+#ifdef CUBLAS
+
+	auto e = cudaMemcpy(bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T),
+			    cudaMemcpyDeviceToDevice);
+
+	if(e != cudaSuccess){
+	  whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
+	  throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	}
+	
+#else
 	memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T));
+#endif
 	
 	bpptr += arch[aindex];
       }
@@ -452,7 +466,18 @@ namespace whiteice
 	if(collectSamples){
 	  math::vertex<T> x;
 	  x.resize(arch[aindex]);
+
+#ifdef CUBLAS
+	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
+			    cudaMemcpyDeviceToDevice);
+
+	  if(e != cudaSuccess){
+	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
+	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	  }
+#else	  
 	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
+#endif
 	  samples[aindex].push_back(x);
 	}
 	
@@ -466,7 +491,19 @@ namespace whiteice
 	
 	// COPIES LOCAL FIELD v FROM state TO BACKPROGRAGATION DATA
 	{
+#ifdef CUBLAS
+
+	  auto e = cudaMemcpy((void*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T),
+			      cudaMemcpyDeviceToDevice);
+	  
+	  if(e != cudaSuccess){
+	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
+	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	  }
+	  
+#else	  
 	  memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T));
+#endif
 	  
 	  bpptr += arch[aindex+1];
 	}
@@ -491,7 +528,19 @@ namespace whiteice
 	if(collectSamples){
 	  math::vertex<T> x;
 	  x.resize(arch[aindex]);
+
+
+#ifdef CUBLAS
+	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
+			    cudaMemcpyDeviceToDevice);
+
+	  if(e != cudaSuccess){
+	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
+	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
+	  }
+#else
 	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
+#endif
 	  samples[aindex].push_back(x);
 	}
 	
@@ -519,7 +568,8 @@ namespace whiteice
       std::cout << "Failed to import data to vertex from memory." << std::endl;
       return false;
     }
-    
+
+#if 0
     // FIXME (remove) debugging checks bpdata structure
     if(bpdata.size() > 0)
     {
@@ -532,6 +582,7 @@ namespace whiteice
       
       // std::cout << "MAX BPDATA: " << maxvalue << std::endl;
     }
+#endif
     
     
     hasValidBPData = gradInfo;
@@ -602,7 +653,9 @@ namespace whiteice
   bool nnetwork<T>::randomize(const unsigned int type,
 			      const bool smallvalues)
   {
+#if 0
     memset(data.data(), 0, sizeof(T)*data.size()); // TODO remove after debugging
+#endif
 
     if(type == 0){
       // bulk random [-1,+1] initialization
@@ -708,7 +761,7 @@ namespace whiteice
 
 	  // set weight values W
 	  for(unsigned int j=start;j<(end-arch[i]);j++){
-	    T r = rng.normal();
+	    T r = rng.normal(); // RNG returns complex normal values if needed
 	    data[j] = var*r;
 	  }
 	  
@@ -939,15 +992,21 @@ namespace whiteice
       complex_data = true;
     }
     
-    
-    // TODO remove later: for debugging 
+#if 0
+    // TODO remove later: for debugging
     {
       memset(lgrad.data(), 0, lgrad.size()*sizeof(T));
       memset(temp.data(), 0 , temp.size()*sizeof(T));
     }
-    
+#endif
+
+#ifdef CUBLAS
+    T* lgrad = (T*)&(this->lgrad[0]);
+    T* temp  = (T*)&(this->temp[0]);
+#else
     T* lgrad = (T*)this->lgrad.data();
     T* temp  = (T*)this->temp.data();
+#endif
   
     // initial (last layer gradient)
     // error[i] * NONLIN'(v) 
@@ -1014,7 +1073,11 @@ namespace whiteice
       const T* dptr = _data;
 
       {
-	// matrix W gradients
+	// matrix W gradients (gradients are in SAME row major order either you use
+	// cuBLAS or not) W matrix in _data is in column major order
+	// if CUBLAS is defined and row major otherwise
+	// [backprogation local field data and local gradient are vectors so they
+	//  require no changes]
 	for(unsigned int y=0;y<rows;y++){
 	  const T* bptr = _bpdata;
 	  for(unsigned int x=0;x<cols;x++,gindex++){
@@ -1046,7 +1109,115 @@ namespace whiteice
       // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
 
       const T* bptr = _bpdata;
-      
+
+#ifdef CUBLAS
+      // NOTE that CUBLAS implementation is currently slow because
+      // memory is NOT allocated by cudeMalloc()!
+      if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
+	T alpha = T(1.0f);
+	T beta  = T(0.0f);
+
+	auto s = cublasSgemv(cublas_handle, CUBLAS_OP_T,
+			     rows, cols,
+			     (const float*)&alpha,
+			     (const float*)_data, rows,
+			     (const float*)lgrad, 1,
+			     (const float*)&beta,
+			     (float*)temp, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("nnetwork::mse_gradient(): cublasSgemv() failed.");
+	  throw CUDAException("CUBLAS cublasSgemv() call failed.");
+	}
+
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+	
+      }
+      else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
+	T alpha = T(1.0);
+	T beta  = T(0.0);
+
+	auto s = cublasDgemv(cublas_handle, CUBLAS_OP_T,
+			     rows, cols,
+			     (const double*)&alpha,
+			     (const double*)_data, rows,
+			     (const double*)lgrad, 1,
+			     (const double*)&beta,
+			     (double*)temp, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("nnetwork::mse_gradient(): cublasDgemv() failed.");
+	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
+	}
+
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+      }
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
+	T alpha = T(1.0);
+	T beta  = T(0.0);
+
+	auto s = cublasCgemv(cublas_handle, CUBLAS_OP_T,
+			     rows, cols,
+			     (const cuComplex*)&alpha,
+			     (const cuComplex*)_data, rows,
+			     (const cuComplex*)lgrad, 1,
+			     (const cuComplex*)&beta,
+			     (cuComplex*)temp, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("nnetwork::mse_gradient(): cublasCgemv() failed.");
+	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
+	}
+
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+      }
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+	T alpha = T(1.0);
+	T beta  = T(0.0);
+
+	auto s = cublasZgemv(cublas_handle, CUBLAS_OP_T,
+			     rows, cols,
+			     (const cuDoubleComplex*)&alpha,
+			     (const cuDoubleComplex*)_data, rows,
+			     (const cuDoubleComplex*)lgrad, 1,
+			     (const cuDoubleComplex*)&beta,
+			     (cuDoubleComplex*)temp, 1);
+
+	if(s != CUBLAS_STATUS_SUCCESS){
+	  whiteice::logging.error("nnetwork::mse_gradient(): cublasZgemv() failed.");
+	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
+	}
+
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+      }
+      else{
+	// NOTE that W is now COLUMN MAJOR MATRIX so indexing using x and y must be changed.
+	
+	for(unsigned int x=0;x<cols;x++){
+	  T sum = T(0.0f);
+	  for(unsigned int y=0;y<rows;y++)
+	    sum += lgrad[y]*_data[x*rows + y];
+	  
+	  sum *= Dnonlin(*bptr, layer - 1, x);
+	  
+	  temp[x] = sum;
+	  bptr++;
+	}
+      }
+
+#else
       if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
 	
 	cblas_sgemv(CblasRowMajor, CblasTrans,
@@ -1073,8 +1244,36 @@ namespace whiteice
 	}
 	
       }
-      else
-	{
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
+	whiteice::math::blas_complex<float> a, b;
+	a = 1.0f; b = 0.0f;
+	
+	cblas_cgemv(CblasRowMajor, CblasTrans,
+		    rows, cols,
+		    (float*)(&a), (float*)_data, cols, (float*)lgrad, 1,
+		    (float*)(&b), (float*)temp, 1);
+	
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+      }
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+	whiteice::math::blas_complex<double> a, b;
+	a = 1.0; b = 0.0;
+	
+	cblas_zgemv(CblasRowMajor, CblasTrans,
+		    rows, cols,
+		    (double*)(&a), (double*)_data, cols, (double*)lgrad, 1,
+		    (double*)(&b), (double*)temp, 1);
+	
+	for(unsigned int x=0;x<cols;x++){
+	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
+	  bptr++;
+	}
+	
+      }
+      else{
 	for(unsigned int x=0;x<cols;x++){
 	  T sum = T(0.0f);
 	  for(unsigned int y=0;y<rows;y++)
@@ -1086,6 +1285,7 @@ namespace whiteice
 	  bptr++;
 	}
       }
+#endif
       
       // swaps memory pointers
       {
@@ -1160,6 +1360,10 @@ namespace whiteice
    *
    * For math documentation read docs/neural_network_gradient.tm
    *
+   * Write optimized version of this function, test it and 
+   * replace the current one. CURRENTLY THERE ARE LOTS OF 
+   * MULTIPLICATIONS BY ZEROS WHICH CAN BE AVOIDED.
+   *
    */
   template <typename T>
   bool nnetwork<T>::jacobian(const math::vertex<T>& input,
@@ -1215,7 +1419,7 @@ namespace whiteice
       getWeights(W, l);
       getBias(b, l);
 
-      // calculates gradient
+      // calculates gradient [gradient of W is always in ROW MAJOR format!]
       {
 	whiteice::math::vertex<T> u(getNeurons(l));
 	
@@ -2010,8 +2214,11 @@ namespace whiteice
     if(v.exportData(&(data[0]), size, 0) == false)
       return false;
 
+#ifdef _GLIBCXX_DEBUG
+    // ONLY DO RANGE CHECKS IF DEBUGGING FLAG IS DEFINED
+    
     const bool verbose = false;
-
+    
     // "safebox" (keeps data always within sane levels)
     for(unsigned int i=0;i<data.size();i++){
       if(whiteice::math::isnan(data[i])){
@@ -2047,8 +2254,9 @@ namespace whiteice
 	  std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
 	data[i].imag(-10000.0f);
       }
-      
     }
+    
+#endif
     
     return true;
   }
@@ -2143,9 +2351,16 @@ namespace whiteice
       dptr = dptr + arch[i+1]; // bias b for layer i
     }
 
+#ifdef CUBLAS
+    // CUBLAS: data is stored internally in column major order!
+    for(unsigned int i=0;i<arch[layer];i++)
+      for(unsigned int j=0;j<arch[layer+1];j++)
+	w(j,i) = dptr[j + i*arch[layer+1]];
+#else
     for(unsigned int j=0;j<arch[layer+1];j++)
       for(unsigned int i=0;i<arch[layer];i++)
 	w(j,i) = dptr[j*arch[layer] + i];
+#endif
 
     return true;
   }
@@ -2166,9 +2381,16 @@ namespace whiteice
       dptr = dptr + arch[i+1];
     }
 
+#ifdef CUBLAS
+    // CUBLAS: data is stored internally in column major order!
+    for(unsigned int i=0;i<arch[layer];i++)
+      for(unsigned int j=0;j<arch[layer+1];j++)
+	dptr[j + i*arch[layer+1]] = w(j,i);
+#else
     for(unsigned int j=0;j<arch[layer+1];j++)
       for(unsigned int i=0;i<arch[layer];i++)
 	dptr[j*arch[layer] + i] = w(j,i);
+#endif
 
     return true;
   }
@@ -2177,13 +2399,6 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::setNonlinearity(nnetwork<T>::nonLinearity nl)
   {
-    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
-      if(nl == rectifier || nl == sigmoid){
-	printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
-      }
-    }
-    
     for(unsigned int l=0;l<nonlinearity.size();l++)
       nonlinearity[l] = nl;
 
@@ -2206,13 +2421,6 @@ namespace whiteice
   {
     if(layer >= nonlinearity.size()) return false;
     
-    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-       typeid(T) == typeid(whiteice::math::blas_complex<double>)){
-      if(nl == rectifier || nl == sigmoid){
-	printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
-      }
-    }
-
     nonlinearity[layer] = nl;
     
     return true;
@@ -2228,15 +2436,6 @@ namespace whiteice
   bool nnetwork<T>::setNonlinearity(const std::vector<nonLinearity>& nls) 
   {
     if(nonlinearity.size() != nls.size()) return false;
-
-    for(const auto& nl : nls){
-      if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-	 typeid(T) == typeid(whiteice::math::blas_complex<double>)){
-	if(nl == rectifier || nl == sigmoid){
-	  printf("nnetwork::setNonlinearity() warning: chosen non-linearity don't work even with regularized complex-valued neural network.");
-	}
-      }
-    }
 
     nonlinearity = nls;
     return true;
@@ -2388,15 +2587,17 @@ namespace whiteice
   }
   
   template <typename T>
-  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples, unsigned int layer, unsigned int MAXSAMPLES) const 
+  bool nnetwork<T>::getSamples(std::vector< math::vertex<T> >& samples,
+			       unsigned int layer,
+			       unsigned int MAXSAMPLES) const 
   {
     if(layer >= this->samples.size()) return false;
-
+    
     if(MAXSAMPLES == 0 || MAXSAMPLES >= this->samples[layer].size()){
       samples = this->samples[layer];
       return true;
     }
-
+    
     for(unsigned int i=0;i<MAXSAMPLES;i++){
       const unsigned int index = rng.rand() % this->samples[layer].size();
       samples.push_back(this->samples[layer][index]);
@@ -2483,34 +2684,6 @@ namespace whiteice
 
   /////////////////////////////////////////////////////////////////////////////
   
-  // y = W*x
-  template <typename T>
-  inline void nnetwork<T>::gemv(unsigned int yd, unsigned int xd, 
-			 T* W, T* x, T* y)
-  {
-    // uses temporary space to handle correctly
-    // the case when x and y vectors overlap (or are same)
-    // T temp[yd]; [we have global temp to store results]
-      
-    for(unsigned int j=0;j<yd;j++){
-      T sum = T(0.0f);
-      for(unsigned int i=0;i<xd;i++)
-	sum += W[i + j*xd]*x[i];
-      
-      temp[j] = sum;
-    }
-    
-    memcpy((T*)y, (const T*)&(temp[0]), yd*sizeof(T));
-  }
-  
-  
-  // s += b;
-  template <typename T>
-  inline void nnetwork<T>::gvadd(unsigned int dim, T* s, T* b){
-    for(unsigned int i=0;i<dim;i++)
-      s[i] += b[i];
-  }
-
   template <typename T>
   inline void nnetwork<T>::gemv_gvadd(unsigned int yd, unsigned int xd, 
 				      const T* W, T* x, T* y,
@@ -2518,10 +2691,152 @@ namespace whiteice
   {
     // calculates y = b + W*x (y == x)
 
-    std::vector<T> temp;
-    temp.resize(maxwidth);
+#ifdef CUBLAS
+    // memory areas W, x and y and temp must be in NVIDIA GPU device!!! [FIX ME]
+
+    //math::vertex<T> temp;
+    temp.resize(maxwidth); // USES GLOBAL VARIABLE!
+
+    if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
+
+      auto err = cudaMemcpy((void*)&(temp[0]), b, yd*sizeof(T), cudaMemcpyDeviceToDevice);
+
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+      T alpha = T(1.0f);
+      T beta  = T(1.0f);
+
+      auto s = cublasSgemv(cublas_handle, CUBLAS_OP_N, yd, xd,
+			   (const float*)&alpha,
+			   (const float*)W, yd, (const float*)x, 1,
+			   (const float*)&beta, (float*)&(temp[0]), 1);
+
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cublasSgemv() failed.");
+	throw CUDAException("CUBLAS cublasSgemv() call failed.");
+      }
+
+      
+      err = cudaMemcpy((void*)y, &(temp[0]), yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+    }
+    else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
+
+      auto err = cudaMemcpy((void*)&(temp[0]), b, yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+      T alpha = T(1.0f);
+      T beta  = T(1.0f);
+
+      auto s = cublasDgemv(cublas_handle, CUBLAS_OP_N, yd, xd,
+			   (const double*)&alpha,
+			   (const double*)W, yd, (const double*)x, 1,
+			   (const double*)&beta, (double*)&(temp[0]), 1);
+
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cublasDgemv() failed.");
+	throw CUDAException("CUBLAS cublasDgemv() call failed.");
+      }
+
+      err = cudaMemcpy((void*)y, &(temp[0]), yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+    }
+    else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
+
+      auto err = cudaMemcpy((void*)&(temp[0]), b, yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+      T alpha = T(1.0f);
+      T beta  = T(1.0f);
+
+      auto s = cublasCgemv(cublas_handle, CUBLAS_OP_N, yd, xd,
+			   (const cuComplex*)&alpha,
+			   (const cuComplex*)W, yd, (const cuComplex*)x, 1,
+			   (const cuComplex*)&beta, (cuComplex*)&(temp[0]), 1);
+
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cublasCgemv() failed.");
+	throw CUDAException("CUBLAS cublasCgemv() call failed.");
+      }
+
+      err = cudaMemcpy((void*)y, &(temp[0]), yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+      
+    }
+    else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      
+      auto err = cudaMemcpy((void*)&(temp[0]), b, yd*sizeof(T), cudaMemcpyDeviceToDevice);
+
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+
+      T alpha = T(1.0);
+      T beta  = T(1.0);
+
+      auto s = cublasZgemv(cublas_handle, CUBLAS_OP_N, yd, xd,
+			   (const cuDoubleComplex*)&alpha,
+			   (const cuDoubleComplex*)W, yd, (const cuDoubleComplex*)x, 1,
+			   (const cuDoubleComplex*)&beta, (cuDoubleComplex*)&(temp[0]), 1);
+
+      if(s != CUBLAS_STATUS_SUCCESS){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cublasZgemv() failed.");
+	throw CUDAException("CUBLAS cublasZgemv() call failed.");
+      }
+
+      err = cudaMemcpy((void*)y, &(temp[0]), yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+    }
+    else{
+      for(unsigned int j=0;j<yd;j++){
+	T sum = b[j];
+	for(unsigned int i=0;i<xd;i++)
+	  sum += W[i*yd + j]*x[i]; // changed to COLUMN MAJOR matrix W
+	
+	temp[j] = sum;
+      }
+
+      auto err = cudaMemcpy((void*)y, &(temp[0]), yd*sizeof(T), cudaMemcpyDeviceToDevice);
+      
+      if(err != cudaSuccess){
+	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
+	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+      }
+    }
+#else
+    // std::vector<T> temp;
+    temp.resize(maxwidth); // USE GLOBAL VARIABLE (ok??)
     
-#if 1
     if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
       memcpy((T*)temp.data(), (T*)b, yd*sizeof(T));
       
@@ -2540,25 +2855,31 @@ namespace whiteice
       
       memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
     }
-    else
-#endif
-    {
-#if 0
-      // uses temporary space to handle correctly
-      // the case when x and y vectors overlap (or are same)
-      // T temp[yd]; [we have global temp to store results]
+    else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
+      memcpy((T*)temp.data(), (T*)b, yd*sizeof(T));
       
-      for(unsigned int j=0;j<yd;j++){
-	T sum = b[j];
-	for(unsigned int i=0;i<xd;i++)
-	  sum += W[i + j*xd]*x[i];
-	
-	temp[j] -= sum;
-	
-	std::cout << temp[j] << std::endl;
-      }
-#endif
+      whiteice::math::blas_complex<float> a, b;
+      a = 1.0f; b = 1.0f;
       
+      cblas_cgemv(CblasRowMajor, CblasNoTrans, yd, xd,
+		  (float*)(&a), (float*)W, xd, (float*)x, 1, 
+		  (float*)(&b), (float*)temp.data(), 1);
+      
+      memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
+    }
+    else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
+      memcpy((T*)temp.data(), (const T*)b, yd*sizeof(T));
+
+      whiteice::math::blas_complex<double> a, b;
+      a = 1.0; b = 1.0;
+      
+      cblas_zgemv(CblasRowMajor, CblasNoTrans, yd, xd,
+		  (double*)(&a), (double*)W, xd, (double*)x, 1, 
+		  (double*)(&b), (double*)temp.data(), 1);
+      
+      memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));      
+    }
+    else{
       for(unsigned int j=0;j<yd;j++){
 	T sum = b[j];
 	for(unsigned int i=0;i<xd;i++)
@@ -2569,6 +2890,7 @@ namespace whiteice
       
       memcpy((T*)y, (const T*)temp.data(), yd*sizeof(T));
     }
+#endif
 
   }
   

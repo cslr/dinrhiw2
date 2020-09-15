@@ -62,6 +62,24 @@ namespace whiteice
     noaccess(const noaccess& a) ;
     ~noaccess() { }
   };
+
+  // for raising NVIDIA CUDA/cuBLAS Exceptions
+  class CUDAException
+  {
+  public:
+    CUDAException();
+    CUDAException(const std::string& s);
+    CUDAException(const CUDAException& e);
+    
+    bool operator==(const CUDAException& e);
+    const std::string& message() const ;
+    
+    const char* what() const throw() { return msg.c_str(); }
+    
+  protected:
+    
+    std::string msg;
+  };
   
 }
   

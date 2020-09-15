@@ -21,6 +21,8 @@ namespace whiteice
     /* calculates gram-schimdt orthonormalization for given
      * (partial) basis { B(i,:), B(i+1,:), ... B(j-1,:) }
      * basis vectors are rows of given matrix
+     *
+     * FIXME: gramschmidt orthonormalization using complex numbers probably has bugs
      */
     template <typename T>
       bool gramschmidt(matrix<T>& B, const unsigned int i, const unsigned int j);
