@@ -687,8 +687,10 @@ ac_user_opts='
 enable_option_checking
 enable_optimize
 enable_openmp
+enable_openblas
 enable_mkl
 enable_cublas
+enable_nvblas
 with_atlaslpath
 enable_native
 enable_cppdebug
@@ -1317,8 +1319,10 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-optimize      Disable optimization
   --disable-openmp        Disable OpenMP
+  --disable-openblas      Disable OpenBLAS library
   --disable-mkl           Disable Intel MKL library
   --disable-cublas        Disable NVIDIA cuBLAS library
+  --disable-nvblas        Disable NVIDIA NVBLAS library
   --enable-native         Enable native optimization
   --enable-cppdebug       Enable C++ debugging mode (stdc++)
 
@@ -4137,17 +4141,32 @@ if [ "$CBLAS_HEADERS" = "no" ]; then
    as_fn_error $? "Cannot find cblas.h" "$LINENO" 5
 fi
 
+# Check whether --enable-openblas was given.
+if test "${enable_openblas+set}" = set; then :
+  enableval=$enable_openblas;
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenBLAS library (1)" >&5
 $as_echo_n "checking for OpenBLAS library (1)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
-   BLAS_LIBS="-lopenblas -L/usr/local/lib/"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
+     BLAS_LIBS="-lopenblas -L/usr/local/lib/"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include/" >&5
 $as_echo "yes, headers in /usr/local/include/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4161,11 +4180,21 @@ $as_echo_n "checking for OpenBLAS library (2)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/include/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /include/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/include/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /include/" >&5
 $as_echo "yes, headers in /include/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4179,11 +4208,21 @@ $as_echo_n "checking for OpenBLAS library (3)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/include/openblas/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/include/openblas/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/include/openblas/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/include/openblas/" >&5
 $as_echo "yes, headers in /usr/include/openblas/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4197,11 +4236,21 @@ $as_echo_n "checking for OpenBLAS library (4)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include/openblas/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /usr/local/include/openblas/" >&5
 $as_echo "yes, headers in /usr/local/include/openblas/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4215,11 +4264,21 @@ $as_echo_n "checking for OpenBLAS library (5)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/OpenBLAS/include/ -L/opt/OpenBLAS/bin/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
-   BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/OpenBLAS/include/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
+     BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/OpenBLAS/include/" >&5
 $as_echo "yes, headers in /opt/OpenBLAS/include/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4233,11 +4292,21 @@ $as_echo_n "checking for OpenBLAS library (6)... " >&6; }
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/include/ -L/opt/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
-   BLAS_LIBS="-L/opt/lib/ -lopenblas"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/include/" >&5
+  if test "x$enable_openblas" == "xno"; then :
+
+     OPENBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
+     BLAS_LIBS="-L/opt/lib/ -lopenblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, headers in /opt/include/" >&5
 $as_echo "yes, headers in /opt/include/" >&6; }
+
+fi
 else
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no OpenBLAS detected" >&5
 $as_echo "no OpenBLAS detected" >&6; }
@@ -4320,8 +4389,8 @@ CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
 cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
 CUBLASROOT="$CUBLASROOT/$cublasdir"
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NVIDIA cuBLAS library (Windows)" >&5
-$as_echo_n "checking for NVIDIA cuBLAS library (Windows)... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NVIDIA cuBLAS library SLOW (Windows)" >&5
+$as_echo_n "checking for NVIDIA cuBLAS library SLOW (Windows)... " >&6; }
 `g++ -o cublastest cublastest.cpp -DCUBLAS "-I$CUBLASROOT/include/" "-L$CUBLASROOT/lib/x64/" -lcublas -lcudart > /dev/null 2> /dev/null`
 
 if [ $? -eq 0 ]; then
@@ -4347,8 +4416,45 @@ $as_echo "no NVIDIA cuBLAS detected" >&6; }
 fi
 
 
+# Check whether --enable-nvblas was given.
+if test "${enable_nvblas+set}" = set; then :
+  enableval=$enable_nvblas;
+fi
+
+
+CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
+cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
+CUBLASROOT="$CUBLASROOT/$cublasdir"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NVIDIA NVBLAS library with CBLAS inteface (don't exist)" >&5
+$as_echo_n "checking for NVIDIA NVBLAS library with CBLAS inteface (don't exist)... " >&6; }
+`g++ -o openblastest openblastest.c -DNVBLAS "-I$CUBLASROOT/include/" "-L$CUBLASROOT/lib/x64/" -lnvblas > /dev/null 2> /dev/null`
+
+if [ $? -eq 0 ]; then
+  if test "x$enable_nvblas" == "xno"; then :
+
+     NVIDIANVBLAS="no"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, but DISABLED" >&5
+$as_echo "yes, but DISABLED" >&6; }
+
+else
+
+     NVIDIANVBLAS="yes"
+     BLAS_CFLAGS="\"-I$CUBLASROOT/include/\" -DNVBLAS"
+     BLAS_LIBS="\"-L$CUBLASROOT/lib/x64/\" -lnvblas"
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, installed in $CUBLASROOT" >&5
+$as_echo "yes, installed in $CUBLASROOT" >&6; }
+
+fi
+else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no NVIDIA NVBLAS with CBLAS detected" >&5
+$as_echo "no NVIDIA NVBLAS with CBLAS detected" >&6; }
+   NVIDIANVBLAS="no"
+fi
+
+
 if [ $INTELMKL == "no" -a $OPENBLAS == "no" ]; then
-   if [ $NVIDIACUBLAS == "no" ]; then
+   if [ $NVIDIACUBLAS == "no" -a $NVIDIANVBLAS == "no" ]; then
      as_fn_error $? "NO BLAS DETECTED" "$LINENO" 5
    fi
 fi

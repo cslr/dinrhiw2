@@ -227,15 +227,23 @@ if [[ "$CBLAS_HEADERS" = "no" ]]; then
    AC_MSG_ERROR([Cannot find cblas.h])
 fi
 
+AC_ARG_ENABLE([openblas],
+	AS_HELP_STRING([--disable-openblas],[Disable OpenBLAS library]))
  
 AC_MSG_CHECKING([for OpenBLAS library (1)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/ -L/usr/local/lib/ -lopenblas > /dev/null 2> /dev/null`
  
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
-   BLAS_LIBS="-lopenblas -L/usr/local/lib/"
-   AC_MSG_RESULT([yes, headers in /usr/local/include/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/"
+     BLAS_LIBS="-lopenblas -L/usr/local/lib/"
+     AC_MSG_RESULT([yes, headers in /usr/local/include/])
+  ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -247,10 +255,16 @@ AC_MSG_CHECKING([for OpenBLAS library (2)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/include/ -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/include/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /include/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/include/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     AC_MSG_RESULT([yes, headers in /include/])
+  ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -262,10 +276,16 @@ AC_MSG_CHECKING([for OpenBLAS library (3)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/include/openblas/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /usr/include/openblas/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/include/openblas/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     AC_MSG_RESULT([yes, headers in /usr/include/openblas/])
+   ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -277,10 +297,16 @@ AC_MSG_CHECKING([for OpenBLAS library (4)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/usr/local/include/openblas -L/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
-   BLAS_LIBS="-L/lib/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /usr/local/include/openblas/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/usr/local/include/openblas/"
+     BLAS_LIBS="-L/lib/ -lopenblas"
+     AC_MSG_RESULT([yes, headers in /usr/local/include/openblas/])
+   ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -292,10 +318,16 @@ AC_MSG_CHECKING([for OpenBLAS library (5)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/OpenBLAS/include/ -L/opt/OpenBLAS/bin/ -lopenblas > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
-   BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /opt/OpenBLAS/include/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/opt/OpenBLAS/include/"
+     BLAS_LIBS="-L/opt/OpenBLAS/bin/ -lopenblas"
+     AC_MSG_RESULT([yes, headers in /opt/OpenBLAS/include/])
+   ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -307,10 +339,16 @@ AC_MSG_CHECKING([for OpenBLAS library (6)])
 `gcc -o openblastest openblastest.c -DOPENBLAS -I/opt/include/ -L/opt/lib/ -lopenblas > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
-   OPENBLAS="yes"
-   BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
-   BLAS_LIBS="-L/opt/lib/ -lopenblas"
-   AC_MSG_RESULT([yes, headers in /opt/include/])
+  AS_IF([test "x$enable_openblas" == "xno"],[
+     OPENBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     OPENBLAS="yes"
+     BLAS_CFLAGS="-DOPENBLAS -I/opt/include/"
+     BLAS_LIBS="-L/opt/lib/ -lopenblas"
+     AC_MSG_RESULT([yes, headers in /opt/include/])
+   ])
 else
    AC_MSG_RESULT([no OpenBLAS detected])
    if [[ "x$OPENBLAS" != "xyes" ]]; then
@@ -373,7 +411,7 @@ CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
 cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
 CUBLASROOT="$CUBLASROOT/$cublasdir"
 
-AC_MSG_CHECKING([for NVIDIA cuBLAS library (Windows)])
+AC_MSG_CHECKING([for NVIDIA cuBLAS library [SLOW] (Windows)])
 `g++ -o cublastest cublastest.cpp -DCUBLAS "-I$CUBLASROOT/include/" "-L$CUBLASROOT/lib/x64/" -lcublas -lcudart > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
@@ -393,8 +431,35 @@ else
 fi
 
 
+AC_ARG_ENABLE([nvblas],
+	AS_HELP_STRING([--disable-nvblas],[Disable NVIDIA NVBLAS library]))
+
+CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
+cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
+CUBLASROOT="$CUBLASROOT/$cublasdir"
+
+AC_MSG_CHECKING([for NVIDIA NVBLAS library with CBLAS inteface (don't exist)])
+`g++ -o openblastest openblastest.c -DNVBLAS "-I$CUBLASROOT/include/" "-L$CUBLASROOT/lib/x64/" -lnvblas > /dev/null 2> /dev/null`
+
+if [[ $? -eq 0 ]]; then
+  AS_IF([test "x$enable_nvblas" == "xno"],[
+     NVIDIANVBLAS="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     NVIDIANVBLAS="yes"
+     BLAS_CFLAGS="\"-I$CUBLASROOT/include/\" -DNVBLAS"
+     BLAS_LIBS="\"-L$CUBLASROOT/lib/x64/\" -lnvblas"
+     AC_MSG_RESULT([yes, installed in $CUBLASROOT])
+  ])
+else
+   AC_MSG_RESULT([no NVIDIA NVBLAS with CBLAS detected])
+   NVIDIANVBLAS="no"
+fi
+
+
 if [[ $INTELMKL == "no" -a $OPENBLAS == "no" ]]; then
-   if [[ $NVIDIACUBLAS == "no" ]]; then
+   if [[ $NVIDIACUBLAS == "no" -a $NVIDIANVBLAS == "no" ]]; then
      AC_MSG_ERROR([NO BLAS DETECTED])
    fi
 fi
