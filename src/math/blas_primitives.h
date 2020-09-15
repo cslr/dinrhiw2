@@ -15,7 +15,7 @@
 #include <math.h>
 
 // disable packing, hopefully this don't break things
-// if NO_PACKED is not defined then using GCC's packed attribute
+// if NO_PACKED is not defined then using GCC's packed attribute is disabled
 #define NO_PACKED 1
 
 namespace whiteice

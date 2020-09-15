@@ -115,6 +115,8 @@ namespace whiteice
       whiteice::logging.error("SOM2D ctor: cudaMemcpy() failed.");
       throw CUDAException("CUBLAS memcopy failed.");
     }
+
+    gpu_sync();
     
 #else
     this->somtable = (whiteice::math::blas_real<float>*)
@@ -154,7 +156,8 @@ namespace whiteice
 	whiteice::logging.error("SOM2D ctor: cudaMemcpy() failed.");
 	throw CUDAException("CUBLAS memcopy failed.");
       } 
-      
+
+      gpu_sync();
     }
     
 #else
@@ -321,6 +324,8 @@ namespace whiteice
 	    whiteice::logging.error("SOM2D<>::learn(): cublasSaxpy() failed.");
 	    throw CUDAException("CUBLAS cublasSaxpy() call failed.");
 	  }
+
+	  gpu_sync();
 	  
 #else
 	  // w -= h*w <=> w = (1-h) * w
@@ -443,7 +448,8 @@ namespace whiteice
 	      whiteice::logging.error("SOM2D<>::learn(): cublasSaxpy() failed.");
 	      throw CUDAException("CUBLAS cublasSaxpy() call failed.");
 	    }
-	    
+
+	    gpu_sync();
 	  }
 	  
 #else
@@ -522,6 +528,8 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasSscal() failed.");
 	}
       }
+
+      gpu_sync();
       
 #else
       len = cblas_snrm2(som_dimension, (float*)&(somtable[i]), 1);
@@ -593,6 +601,10 @@ namespace whiteice
 #endif
       }
     }
+
+#ifdef CUBLAS
+    gpu_sync();
+#endif
 
     return true;
   }
@@ -786,6 +798,8 @@ namespace whiteice
 	winner[1] = i/som_dimension;
       }
     }
+
+    gpu_sync();
     
 #else
     result[0] = cblas_sdot(som_dimension, (const float*)v1.data, 1, (float*)somtable, 1);
@@ -909,6 +923,8 @@ namespace whiteice
       throw CUDAException("CUBLAS cudaMemcpy() failed.");
     }
 
+    gpu_sync();
+
 #else
     memcpy((float*)r.data, (float*)&(somtable[(i + j*som_width)*som_dimension]),
 	   som_dimension*sizeof(whiteice::math::blas_real<float>));
@@ -945,6 +961,8 @@ namespace whiteice
       whiteice::logging.error("SOM2D::operator(): cudaMemcpy() failed.");
       throw CUDAException("CUBLAS cudaMemcpy() failed.");
     }
+
+    gpu_sync();
     
 #else
     memcpy(((float*)&somtable[index]), (const float*)v.data,
@@ -971,6 +989,8 @@ namespace whiteice
       whiteice::logging.error("SOM2D::operator(): cudaMemcpy() failed.");
       throw CUDAException("CUBLAS cudaMemcpy() failed.");
     }
+
+    gpu_sync();
     
 #else
     memcpy((float*)v.data, (float*)&(somtable[index*som_dimension]),
@@ -1087,6 +1107,10 @@ namespace whiteice
 	for(unsigned int j=0;j<som_dimension;j++)
 	  somtable[i*som_dimension + j] = floats[j];
       }
+
+#ifdef CUBLAS
+      gpu_sync();
+#endif
       
       delete[] buf;
     }
@@ -1219,6 +1243,8 @@ namespace whiteice
       }
       
     }
+
+    gpu_sync();
 
 #else    
     result = cblas_sdot(som_dimension, (float*)vmemory, 1, (float*)somtable, 1);    

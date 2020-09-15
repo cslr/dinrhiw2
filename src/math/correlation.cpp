@@ -50,15 +50,32 @@ namespace whiteice
 	  i++;
 	}
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -80,16 +97,33 @@ namespace whiteice
 	  
 	  i++;
 	}
+
 	
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
+	
+	gpu_sync();
 
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -107,16 +141,34 @@ namespace whiteice
 	    throw CUDAException("CUBLAS cublasDspr() call failed.");
 	  }
 	}
+
 	
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+	
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)	
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -140,16 +192,33 @@ namespace whiteice
 	  
 	  i++;
 	}
-	
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+	
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -312,19 +381,14 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasSsyrk() call failed.");
 	}
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
-	  unsigned int c = K - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
-	}
+	gpu_sync();
 
+	// OPTIMIZE ME:
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<K;i++)
 	  for(unsigned int j=(i+1);j<K;j++)
 	    R(i,j) = R(j,i);
-
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 
@@ -348,15 +412,11 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasCherk() call failed.");
 	}
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
-	  unsigned int c = K - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
-	}
+	gpu_sync();
 
+	// OPTIMIZE ME
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<K;i++)
 	  for(unsigned int j=(i+1);j<K;j++)
 	    R(i,j) = R(j,i);
@@ -376,16 +436,12 @@ namespace whiteice
 	  whiteice::logging.error("autocorrelation(): cublasDsyrk() failed.");
 	  throw CUDAException("CUBLAS cublasDsyrk() call failed.");
 	}
+	
+	gpu_sync();
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
-	  unsigned int c = K - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
-	}
-
+	// OPTIMIZE ME
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)	
 	for(unsigned int i=0;i<K;i++)
 	  for(unsigned int j=(i+1);j<K;j++)
 	    R(i,j) = R(j,i);	
@@ -413,15 +469,11 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasCherk() call failed.");
 	}
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(K-1);i++){ // (N-i):th column
-	  unsigned int c = K - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*K + c]),&(R.data[c + ((2*K-c+1)*c)/2]), sizeof(T)*(i+1));
-	}
+	gpu_sync();
 
+	// OPTIMIZE ME: cudaScopy()..
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)	
 	for(unsigned int i=0;i<K;i++)
 	  for(unsigned int j=(i+1);j<K;j++)
 	    R(i,j) = R(j,i);
@@ -557,16 +609,34 @@ namespace whiteice
 	    R += Ri;
 	  }
 	}
+
 	
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("mean_covariance_estimate(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+	
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -611,16 +681,33 @@ namespace whiteice
 	    R += Ri;
 	  }
 	}
+	
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("mean_covariance_estimate(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -663,14 +750,32 @@ namespace whiteice
 	  }
 	}
 
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("mean_covariance_estimate(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
 
+	gpu_sync();
+
+#pragma omp parallel for schedule(auto)
 	// copies lower triangular elements to upper triangular part of the M matrix
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
@@ -717,17 +822,34 @@ namespace whiteice
 	    R += Ri;
 	  }
 	}
-	
-	
-	// NOT OPTIMIZED [should use cudaMemcpy???]
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c))
-	  // c lower mode elements (lower triangular matrix)
-	  memmove(&(R.data[c*N + c]),&(R.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
-	}
 
+	
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(R.data[diag_non_packed_index]), &(R.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("mean_covariance_estimate(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
+	}
+	
+	gpu_sync();
+	
 	// copies lower triangular elements to upper triangular part of the M matrix
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<N;i++)
 	  for(unsigned int j=(i+1);j<N;j++)
 	    R(i,j) = R(j,i);
@@ -1061,7 +1183,7 @@ namespace whiteice
     }
 
 
-    // calculates crosscorrelation matrix Cyx as well as mean values E[x], E[y]
+    // calculates crosscorrelation matrix Cyx = E[y*x^h] as well as mean values E[x], E[y]
     template <typename T>
     bool mean_crosscorrelation_estimate(vertex<T>& mx, vertex<T>& my, matrix<T>& Cyx,
 					const std::vector< vertex<T> >& xdata,
@@ -1197,8 +1319,6 @@ namespace whiteice
 	}
       }
       
-      // TODO: tests that PCA matrix works (for debugging)
-
       return true;
     }
     

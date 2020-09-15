@@ -131,6 +131,8 @@ namespace whiteice
 	  }
 	  
 	}
+
+	gpu_sync();
 	
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
@@ -204,6 +206,8 @@ namespace whiteice
 	  }
 	  
 	}
+
+	gpu_sync();
 		
       }
       else if(typeid(T) == typeid(blas_real<double>)){
@@ -274,6 +278,8 @@ namespace whiteice
 	  }
 	  
 	}
+
+	gpu_sync();
 	
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
@@ -347,6 +353,8 @@ namespace whiteice
 	  }
 	  
 	}
+
+	gpu_sync();
 	
       }
       else{

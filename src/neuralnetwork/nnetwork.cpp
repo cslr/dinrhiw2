@@ -446,6 +446,7 @@ namespace whiteice
 
 	auto e = cudaMemcpy(bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T),
 			    cudaMemcpyDeviceToDevice);
+	gpu_sync();
 
 	if(e != cudaSuccess){
 	  whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
@@ -470,6 +471,7 @@ namespace whiteice
 #ifdef CUBLAS
 	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
 			    cudaMemcpyDeviceToDevice);
+	  gpu_sync();
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
@@ -495,6 +497,7 @@ namespace whiteice
 
 	  auto e = cudaMemcpy((void*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T),
 			      cudaMemcpyDeviceToDevice);
+	  gpu_sync();
 	  
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
@@ -533,6 +536,7 @@ namespace whiteice
 #ifdef CUBLAS
 	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
 			    cudaMemcpyDeviceToDevice);
+	  gpu_sync();
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
@@ -1101,7 +1105,8 @@ namespace whiteice
 	  memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
 	}
       }
-      
+
+      gpu_sync();
 
       // calculates next lgrad
       
@@ -1122,8 +1127,9 @@ namespace whiteice
 			     (const float*)&alpha,
 			     (const float*)_data, rows,
 			     (const float*)lgrad, 1,
-			     (const float*)&beta,
+			     (const float*)&beta,			     
 			     (float*)temp, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("nnetwork::mse_gradient(): cublasSgemv() failed.");
@@ -1147,6 +1153,7 @@ namespace whiteice
 			     (const double*)lgrad, 1,
 			     (const double*)&beta,
 			     (double*)temp, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("nnetwork::mse_gradient(): cublasDgemv() failed.");
@@ -1169,6 +1176,7 @@ namespace whiteice
 			     (const cuComplex*)lgrad, 1,
 			     (const cuComplex*)&beta,
 			     (cuComplex*)temp, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("nnetwork::mse_gradient(): cublasCgemv() failed.");
@@ -1191,6 +1199,7 @@ namespace whiteice
 			     (const cuDoubleComplex*)lgrad, 1,
 			     (const cuDoubleComplex*)&beta,
 			     (cuDoubleComplex*)temp, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("nnetwork::mse_gradient(): cublasZgemv() failed.");
@@ -2726,6 +2735,8 @@ namespace whiteice
 	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
 	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
       }
+
+      gpu_sync();
       
     }
     else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
@@ -2756,6 +2767,8 @@ namespace whiteice
 	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
 	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
       }
+
+      gpu_sync();
       
     }
     else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
@@ -2786,6 +2799,8 @@ namespace whiteice
 	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
 	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
       }
+
+      gpu_sync();
       
     }
     else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
@@ -2816,6 +2831,8 @@ namespace whiteice
 	whiteice::logging.error("nnetwork<>::gemv_gvadd(): cudaMemcpy() failed.");
 	throw CUDAException("CUBLAS cudaMemcpy() call failed.");
       }
+
+      gpu_sync();
     }
     else{
       for(unsigned int j=0;j<yd;j++){

@@ -46,7 +46,8 @@ namespace whiteice
 				    const std::vector< whiteice::dynamic_bitset >& missing);
 
     
-    // calculates crosscorrelation matrix Cyx as well as mean values E[x], E[y]
+    // calculates crosscorrelation matrix Cyx=E[y*x^h] as well as mean values E[x], E[y]
+    // TODO: create parallelized and BLAS optimized code for this (requires extra memory)
     template <typename T>
     bool mean_crosscorrelation_estimate(vertex<T>& mx, vertex<T>& my, matrix<T>& Cyx,
 					const std::vector< vertex<T> >& xdata,

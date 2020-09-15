@@ -112,7 +112,10 @@ namespace whiteice
       matrix<T>& operator*=(const T&) ;
       matrix<T>& operator/=(const T&) ;
       
-      vertex<T> operator*(const vertex<T>&) const ;      
+      vertex<T> operator*(const vertex<T>&) const ;
+
+      // NOTE: If you are using cuBLAS acceleration you have to
+      // call gpu_sync() call after modifying matrix values through direct RAM access
       
       // doesn't behave as expected. returns index:th
       // value from matrix (left->right, top->bottom order)

@@ -31,6 +31,7 @@ namespace whiteice
 			    (const float*)&s, (const float*)a.data, 1,
 			    (float*)b.data, 1,
 			    (float*)A.data, A.numRows);
+	gpu_sync();
 
 	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("addouterprodut(): cublasSger() failed.");
@@ -47,6 +48,7 @@ namespace whiteice
 			    (const double*)&s, (const double*)a.data, 1,
 			    (double*)b.data, 1,
 			    (double*)A.data, A.numRows);
+	gpu_sync();
 	
 	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("addouterprodut(): cublasDger() failed.");

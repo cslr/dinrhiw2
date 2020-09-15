@@ -31,7 +31,11 @@
 
 // loading vertex.o object file initializes cuBLAS
 cublasHandle_t cublas_handle;
-cublasStatus_t cublas_status = cublasCreate(&cublas_handle);
+cublasStatus_t cublas_status  = cublasCreate(&cublas_handle);
+cublasStatus_t cublas_math = cublasSetMathMode(cublas_handle, CUBLAS_TENSOR_OP_MATH);
+
+
+volatile bool use_gpu_sync = true;
 
 #endif
 
@@ -155,6 +159,9 @@ namespace whiteice
 	if(typeid(T) == typeid(blas_real<float>)){
 	  cudaStat = cublasScopy(cublas_handle, v.dataSize,
 				 (const float*)v.data, 1, (float*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasScopy() failed.");
 	    cudaFree(cudaptr);
@@ -164,6 +171,9 @@ namespace whiteice
 	else if(typeid(T) == typeid(blas_real<double>)){
 	  cudaStat = cublasDcopy(cublas_handle, v.dataSize,
 				 (const double*)v.data, 1, (double*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasDcopy() failed.");
 	    cudaFree(cudaptr);
@@ -173,6 +183,9 @@ namespace whiteice
 	else if(typeid(T) == typeid(blas_complex<float>)){
 	  cudaStat = cublasCcopy(cublas_handle, v.dataSize,
 				 (const cuComplex*)v.data, 1, (cuComplex*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasCcopy() failed.");
 	    cudaFree(cudaptr);
@@ -184,6 +197,8 @@ namespace whiteice
 				 (const cuDoubleComplex*)v.data, 1,
 				 (cuDoubleComplex*)cudaptr, 1);
 	  
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasZcopy() failed.");
 	    cudaFree(cudaptr);
@@ -194,6 +209,8 @@ namespace whiteice
 	  // generic memcopy [assumes type T does not allocated memory dynamically]
 	  auto e = cudaMemcpy(cudaptr, v.data, v.dataSize*sizeof(T),
 			      cudaMemcpyDeviceToDevice);
+
+	  gpu_sync();
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("vertex ctor: cudaMemcpy() failed.");
@@ -294,6 +311,9 @@ namespace whiteice
 	if(typeid(T) == typeid(blas_real<float>)){
 	  cudaStat = cublasScopy(cublas_handle, v.size(),
 				 (const float*)v.data(), 1, (float*)cudaptr, 1);
+	  
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasScopy() failed.");
 	    cudaFree(cudaptr);
@@ -303,6 +323,9 @@ namespace whiteice
 	else if(typeid(T) == typeid(blas_real<double>)){
 	  cudaStat = cublasDcopy(cublas_handle, v.size(),
 				 (const double*)v.data(), 1, (double*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasDcopy() failed.");
 	    cudaFree(cudaptr);
@@ -312,6 +335,9 @@ namespace whiteice
 	else if(typeid(T) == typeid(blas_complex<float>)){
 	  cudaStat = cublasCcopy(cublas_handle, v.size(),
 				 (const cuComplex*)v.data(), 1, (cuComplex*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasCcopy() failed.");
 	    cudaFree(cudaptr);
@@ -322,6 +348,9 @@ namespace whiteice
 	  cudaStat = cublasZcopy(cublas_handle, v.size(),
 				 (const cuDoubleComplex*)v.data(), 1,
 				 (cuDoubleComplex*)cudaptr, 1);
+
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex ctor: cublasZcopy() failed.");
 	    cudaFree(cudaptr);
@@ -331,6 +360,8 @@ namespace whiteice
 	else{
 	  auto e = cudaMemcpy(cudaptr, v.data(), v.size()*sizeof(T),
 			      cudaMemcpyHostToDevice);
+
+	  gpu_sync();
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("vertex ctor: cudaMemcpy() failed.");
@@ -433,8 +464,9 @@ namespace whiteice
 	if(typeid(T) == typeid(blas_real<float>)){
 	  cudaStat = cublasScopy(cublas_handle, copylen,
 				 (const float*)this->data, 1, (float*)cudaptr, 1);
-	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){	    
 	    whiteice::logging.error("vertex::resize(): cublasScopy() failed.");
+	    gpu_sync();
 	    cudaFree(cudaptr);
 	    throw CUDAException("CUBLAS cublasScopy() failed.");
 	  }
@@ -444,6 +476,7 @@ namespace whiteice
 				 (const double*)this->data, 1, (double*)cudaptr, 1);
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::resize(): cublasDcopy() failed.");
+	    gpu_sync();
 	    cudaFree(cudaptr);
 	    throw CUDAException("CUBLAS cublasDcopy() failed.");
 	  }
@@ -453,6 +486,7 @@ namespace whiteice
 				 (const cuComplex*)this->data, 1, (cuComplex*)cudaptr, 1);
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::resize(): cublasCcopy() failed.");
+	    gpu_sync();
 	    cudaFree(cudaptr);
 	    throw CUDAException("CUBLAS cublasCcopy() failed.");
 	  }
@@ -461,8 +495,9 @@ namespace whiteice
 	  cudaStat = cublasZcopy(cublas_handle, copylen,
 				 (const cuDoubleComplex*)this->data, 1,
 				 (cuDoubleComplex*)cudaptr, 1);
-	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
+	  if(cudaStat != CUBLAS_STATUS_SUCCESS){	    
 	    whiteice::logging.error("vertex::resize(): cublasZcopy() failed.");
+	    gpu_sync();
 	    cudaFree(cudaptr);
 	    throw CUDAException("CUBLAS cublasZcopy() failed.");
 	  }
@@ -474,6 +509,7 @@ namespace whiteice
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("vertex::resize(): cudaMemcopy() failed.");
+	    gpu_sync();
 	    cudaFree(cudaptr);
 	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
 	  }
@@ -486,11 +522,16 @@ namespace whiteice
 	  auto err = cudaMemset(&(bytes[copylen*sizeof(T)]), 0,
 				(d - copylen)*sizeof(T));
 
+	  gpu_sync();
+
 	  if(err != cudaSuccess){
 	    whiteice::logging.error("vertex::resize(): cudaMemset() failed.");
 	    cudaFree(cudaptr);
 	    throw CUDAException("cudaMemset() failed.");
 	  }
+	}
+	else{
+	  gpu_sync();
 	}
 
 	// memory initialization successful
@@ -792,6 +833,8 @@ namespace whiteice
 				       dataSize,
 				       (const float*)&alpha,
 				       (float*)data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("matrix::normalize(): cublasSscal() failed.");
 	  throw CUDAException("CUBLAS cublasSscal() failed.");
@@ -807,6 +850,8 @@ namespace whiteice
 				       dataSize,
 				       (const double*)&alpha,
 				       (double*)data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("matrix::normalize(): cublasDscal() failed.");
 	  throw CUDAException("CUBLAS cublasDscal() failed.");
@@ -822,6 +867,8 @@ namespace whiteice
 					dataSize,
 					(const float*)&alpha,
 					(cuComplex*)data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("matrix::normalize(): cublasCsscal() failed.");
 	  throw CUDAException("CUBLAS cublasCsscal() failed.");
@@ -837,6 +884,8 @@ namespace whiteice
 					dataSize,
 					(const double*)&alpha,
 					(cuDoubleComplex*)data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("matrix::normalize(): cublasZdscal() failed.");
 	  throw CUDAException("CUBLAS cublasZdscal() failed.");
@@ -902,6 +951,8 @@ namespace whiteice
 	 typeid(T) == typeid(blas_complex<double>))
 	{
 	  auto err = cudaMemset(data, 0, dataSize*sizeof(T));
+
+	  gpu_sync();
 
 	  if(err != cudaSuccess){
 	    whiteice::logging.error("vertex::zero(): cudaMemset() failed.");
@@ -1260,6 +1311,8 @@ namespace whiteice
 				       dataSize,
 				       (const float*)&alpha,
 				       (float*)r.data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-(): cublasSscal() failed.");
 	  throw CUDAException("CUBLAS cublasSscal() failed.");
@@ -1274,6 +1327,8 @@ namespace whiteice
 				       dataSize,
 				       (const double*)&alpha,
 				       (double*)r.data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-(): cublasDscal() failed.");
 	  throw CUDAException("CUBLAS cublasDscal() failed.");
@@ -1288,6 +1343,8 @@ namespace whiteice
 					dataSize,
 					(const float*)&alpha,
 					(cuComplex*)r.data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-(): cublasCsscal() failed.");
 	  throw CUDAException("CUBLAS cublasCsscal() failed.");
@@ -1302,6 +1359,8 @@ namespace whiteice
 					dataSize,
 					(const double*)&alpha,
 					(cuDoubleComplex*)r.data, 1);
+	gpu_sync();
+	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-(): cublasZdscal() failed.");
 	  throw CUDAException("CUBLAS cublasZdscal() failed.");
@@ -1397,6 +1456,7 @@ namespace whiteice
 				       (const float*)&alpha,
 				       (const float*)v.data, 1,
 				       (float*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator+=(): cublaSaxpy() failed.");
@@ -1410,6 +1470,7 @@ namespace whiteice
 				       (const double*)&alpha,
 				       (const double*)v.data, 1,
 				       (double*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator+=(): cublaDaxpy() failed.");
@@ -1423,6 +1484,7 @@ namespace whiteice
 				       (cuComplex*)&alpha,
 				       (const cuComplex*)v.data, 1,
 				       (cuComplex*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator+=(): cublaCaxpy() failed.");
@@ -1436,6 +1498,7 @@ namespace whiteice
 				       (cuDoubleComplex*)&alpha,
 				       (const cuDoubleComplex*)v.data, 1,
 				       (cuDoubleComplex*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator+=(): cublaZaxpy() failed.");
@@ -1510,6 +1573,7 @@ namespace whiteice
 				       (const float*)&alpha,
 				       (const float*)v.data, 1,
 				       (float*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-=(): cublasSaxpy() failed.");
@@ -1523,6 +1587,7 @@ namespace whiteice
 				       (const double*)&alpha,
 				       (const double*)v.data, 1,
 				       (double*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-=(): cublasDaxpy() failed.");
@@ -1536,6 +1601,7 @@ namespace whiteice
 				       (cuComplex*)&alpha,
 				       (const cuComplex*)v.data, 1,
 				       (cuComplex*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-=(): cublasCaxpy() failed.");
@@ -1549,6 +1615,7 @@ namespace whiteice
 				       (cuDoubleComplex*)&alpha,
 				       (const cuDoubleComplex*)v.data, 1,
 				       (cuDoubleComplex*)data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator-=(): cublasZaxpy() failed.");
@@ -1636,6 +1703,9 @@ namespace whiteice
 	  r[0] = result;
 
 	  (*this) = r;
+
+	  gpu_sync();
+	  
 	  return (*this);
 	}
 	else if(typeid(T) == typeid(blas_real<double>)){
@@ -1654,6 +1724,9 @@ namespace whiteice
 	  r[0] = result;
 
 	  (*this) = r;
+
+	  gpu_sync();
+	  
 	  return (*this);
 	}
 	else if(typeid(T) == typeid(blas_complex<float>)){
@@ -1672,6 +1745,9 @@ namespace whiteice
 	  r[0] = result;
 
 	  (*this) = r;
+
+	  gpu_sync();
+	  
 	  return (*this);
 	}
 	else if(typeid(T) == typeid(blas_complex<double>)){
@@ -1691,6 +1767,9 @@ namespace whiteice
 	  r[0] = result;
 
 	  (*this) = r;
+
+	  gpu_sync();
+	  
 	  return (*this);
 	}
 	else{
@@ -1836,6 +1915,8 @@ namespace whiteice
 	if(typeid(T) == typeid(blas_real<float>)){
 	  cudaStat = cublasScopy(cublas_handle, v.dataSize,
 				 (const float*)v.data, 1, (float*)data, 1);
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::operator=(): cublasScopy() failed.");
 	    throw CUDAException("CUBLAS cublasScopy() failed.");
@@ -1846,6 +1927,8 @@ namespace whiteice
 	else if(typeid(T) == typeid(blas_real<double>)){
 	  cudaStat = cublasDcopy(cublas_handle, v.dataSize,
 				 (const double*)v.data, 1, (double*)data, 1);
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::operator=(): cublasDcopy() failed.");
 	    throw CUDAException("CUBLAS cublasDcopy() failed.");
@@ -1857,6 +1940,8 @@ namespace whiteice
 	  cudaStat = cublasCcopy(cublas_handle, v.dataSize,
 				 (const cuComplex*)v.data, 1,
 				 (cuComplex*)data, 1);
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::operator=(): cublasCcopy() failed.");
 	    throw CUDAException("CUBLAS cublasCcopy() failed.");
@@ -1868,6 +1953,8 @@ namespace whiteice
 	  cudaStat = cublasZcopy(cublas_handle, v.dataSize,
 				 (const cuDoubleComplex*)v.data, 1,
 				 (cuDoubleComplex*)data, 1);
+	  gpu_sync();
+	  
 	  if(cudaStat != CUBLAS_STATUS_SUCCESS){
 	    whiteice::logging.error("vertex::operator=(): cublasZcopy() failed.");
 	    throw CUDAException("CUBLAS cublasZcopy() failed.");
@@ -1879,6 +1966,7 @@ namespace whiteice
 	  // generic memcopy [assumes type T does not allocated memory dynamically]
 	  auto e = cudaMemcpy(data, v.data, v.dataSize*sizeof(T),
 			      cudaMemcpyDeviceToDevice);
+	  gpu_sync();
 
 	  if(e != cudaSuccess){
 	    whiteice::logging.error("vertex::operator=(): cudaMemcpy() failed.");
@@ -2146,7 +2234,7 @@ namespace whiteice
 #ifdef CUBLAS
       vertex<T> r(dataSize);
       r.zero();
-
+      
       if(typeid(T) == typeid(blas_real<float>)){
 	const T alpha = ss;
 	
@@ -2154,6 +2242,7 @@ namespace whiteice
 				       (const float*)&alpha,
 				       (const float*)data, 1,
 				       (float*)r.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasSaxpy() failed.");
@@ -2167,6 +2256,7 @@ namespace whiteice
 				       (const double*)&alpha,
 				       (const double*)data, 1,
 				       (double*)r.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasDaxpy() failed.");
@@ -2180,6 +2270,7 @@ namespace whiteice
 				       (const cuComplex*)&alpha,
 				       (const cuComplex*)data, 1,
 				       (cuComplex*)r.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasCaxpy() failed.");
@@ -2193,6 +2284,7 @@ namespace whiteice
 				       (const cuDoubleComplex*)&alpha,
 				       (const cuDoubleComplex*)data, 1,
 				       (cuDoubleComplex*)r.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasZaxpy() failed.");
@@ -2242,7 +2334,7 @@ namespace whiteice
     }        
     
     
-    // multiples vertex with scalar */
+    // divides vertex with scalar */
     template <typename T>
     vertex<T> vertex<T>::operator/(const T& s) const 
     {
@@ -2255,12 +2347,13 @@ namespace whiteice
       if(typeid(T) == typeid(blas_real<float>)){
 	const T alpha = invs;
 
-	cublasStatus_t s = cublasSaxpy(cublas_handle, (int)dataSize,
+	cublasStatus_t e = cublasSaxpy(cublas_handle, (int)dataSize,
 				       (const float*)&alpha,
 				       (const float*)data, 1,
 				       (float*)r.data, 1);
+	gpu_sync();
 
-	if(s != CUBLAS_STATUS_SUCCESS){
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/(): cublasSaxpy() failed.");
 	  throw CUDAException("CUBLAS cublasSaxpy() failed.");
 	}
@@ -2268,12 +2361,13 @@ namespace whiteice
       else if(typeid(T) == typeid(blas_real<double>)){
 	const T alpha = invs;
 	
-	cublasStatus_t s = cublasDaxpy(cublas_handle, (int)dataSize,
+	cublasStatus_t e = cublasDaxpy(cublas_handle, (int)dataSize,
 				       (const double*)&alpha,
 				       (const double*)data, 1,
 				       (double*)r.data, 1);
+	gpu_sync();
 
-	if(s != CUBLAS_STATUS_SUCCESS){
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/(): cublasDaxpy() failed.");
 	  throw CUDAException("CUBLAS cublasDaxpy() failed.");
 	}
@@ -2281,12 +2375,13 @@ namespace whiteice
       else if(typeid(T) == typeid(blas_complex<float>)){
 	const T alpha = invs;
 	
-	cublasStatus_t s = cublasCaxpy(cublas_handle, (int)dataSize,
+	cublasStatus_t e = cublasCaxpy(cublas_handle, (int)dataSize,
 				       (const cuComplex*)&alpha,
 				       (const cuComplex*)data, 1,
 				       (cuComplex*)r.data, 1);
+	gpu_sync();
 
-	if(s != CUBLAS_STATUS_SUCCESS){
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/(): cublasCaxpy() failed.");
 	  throw CUDAException("CUBLAS cublasCaxpy() failed.");
 	}
@@ -2294,12 +2389,13 @@ namespace whiteice
       else if(typeid(T) == typeid(blas_complex<double>)){
 	const T alpha = invs;
 	
-	cublasStatus_t s = cublasZaxpy(cublas_handle, (int)dataSize,
+	cublasStatus_t e = cublasZaxpy(cublas_handle, (int)dataSize,
 				       (const cuDoubleComplex*)&alpha,
 				       (const cuDoubleComplex*)data, 1,
 				       (cuDoubleComplex*)r.data, 1);
+	gpu_sync();
 
-	if(s != CUBLAS_STATUS_SUCCESS){
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/(): cublasZaxpy() failed.");
 	  throw CUDAException("CUBLAS cublasZaxpy() failed.");
 	}
@@ -2355,11 +2451,13 @@ namespace whiteice
       
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cublasStatus_t s = cublasSscal(cublas_handle,
+	cublasStatus_t e = cublasSscal(cublas_handle,
 				       dataSize,
 				       (const float*)&s,
 				       (float*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*=(): cublasSscal() failed.");
 	  throw CUDAException("CUBLAS cublasSscal() failed.");
 	}
@@ -2368,11 +2466,13 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cublasStatus_t s = cublasDscal(cublas_handle,
+	cublasStatus_t e = cublasDscal(cublas_handle,
 				       dataSize,
 				       (const double*)&s,
 				       (double*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*=(): cublasDscal() failed.");
 	  throw CUDAException("CUBLAS cublasDscal() failed.");
 	}
@@ -2381,11 +2481,13 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cublasStatus_t s = cublasCscal(cublas_handle,
+	cublasStatus_t e = cublasCscal(cublas_handle,
 				       dataSize,
 				       (const cuComplex*)&s,
 				       (cuComplex*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*=(): cublasCscal() failed.");
 	  throw CUDAException("CUBLAS cublasCscal() failed.");
 	}
@@ -2394,11 +2496,13 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	
-	cublasStatus_t s = cublasZscal(cublas_handle,
+	cublasStatus_t e = cublasZscal(cublas_handle,
 				       dataSize,
 				       (const cuDoubleComplex*)&s,
 				       (cuDoubleComplex*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*=(): cublasZscal() failed.");
 	  throw CUDAException("CUBLAS cublasZscal() failed.");
 	}
@@ -2452,11 +2556,13 @@ namespace whiteice
 
       if(typeid(T) == typeid(blas_real<float>)){
 	
-	cublasStatus_t s = cublasSscal(cublas_handle,
+	cublasStatus_t e = cublasSscal(cublas_handle,
 				       dataSize,
 				       (const float*)&invs,
 				       (float*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/=(): cublasSscal() failed.");
 	  throw CUDAException("CUBLAS cublasSscal() failed.");
 	}
@@ -2465,11 +2571,13 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_real<double>)){
 	
-	cublasStatus_t s = cublasDscal(cublas_handle,
+	cublasStatus_t e = cublasDscal(cublas_handle,
 				       dataSize,
 				       (const double*)&invs,
 				       (double*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/=(): cublasDscal() failed.");
 	  throw CUDAException("CUBLAS cublasDscal() failed.");
 	}
@@ -2478,11 +2586,13 @@ namespace whiteice
       }
       else if(typeid(T) == typeid(blas_complex<float>)){
 	
-	cublasStatus_t s = cublasCscal(cublas_handle,
+	cublasStatus_t e = cublasCscal(cublas_handle,
 				       dataSize,
 				       (const cuComplex*)&invs,
 				       (cuComplex*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+	
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/=(): cublasCscal() failed.");
 	  throw CUDAException("CUBLAS cublasCscal() failed.");
 	}
@@ -2490,12 +2600,14 @@ namespace whiteice
 	return (*this);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
-	
-	cublasStatus_t s = cublasZscal(cublas_handle,
+
+	cublasStatus_t e = cublasZscal(cublas_handle,
 				       dataSize,
 				       (const cuDoubleComplex*)&invs,
 				       (cuDoubleComplex*)data, 1);
-	if(s != CUBLAS_STATUS_SUCCESS){
+	gpu_sync();
+
+	if(e != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator/=(): cublasZscal() failed.");
 	  throw CUDAException("CUBLAS cublasZscal() failed.");
 	}
@@ -2506,7 +2618,7 @@ namespace whiteice
 
 #pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<dataSize;i++)
-	  data[i] *= s;
+	  data[i] *= invs;
 
 	return (*this);
       }
@@ -2555,7 +2667,8 @@ namespace whiteice
 				       (float*)&s,
 				       (const float*)v.data, 1,
 				       (float*)r.data, 1);
-
+	gpu_sync();
+	
 	if(ss != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasSaxpy() failed.");
 	  throw CUDAException("CUBLAS cublasSaxpy() failed.");
@@ -2569,6 +2682,7 @@ namespace whiteice
 					(double*)&s,
 					(const double*)v.data, 1,
 					(double*)r.data, 1);
+	gpu_sync();
 
 	if(ss != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasDaxpy() failed.");
@@ -2583,6 +2697,7 @@ namespace whiteice
 					(cuComplex*)&s,
 					(const cuComplex*)v.data, 1,
 					(cuComplex*)r.data, 1);
+	gpu_sync();
 
 	if(ss != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasCaxpy() failed.");
@@ -2597,6 +2712,7 @@ namespace whiteice
 					(cuDoubleComplex*)&s,
 					(const cuDoubleComplex*)v.data, 1,
 					(cuDoubleComplex*)r.data, 1);
+	gpu_sync();
 	
 	if(ss != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasZaxpy() failed.");
@@ -2686,6 +2802,8 @@ namespace whiteice
 	   (const float*)&beta,
 	   (float*)r.data, 1);
 
+	gpu_sync();
+
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasSgemv() failed.");
 	  throw CUDAException("CUBLAS cublasSgemv() call failed.");
@@ -2716,6 +2834,8 @@ namespace whiteice
 	   (const double*)&beta,
 	   (double*)r.data, 1);
 
+	gpu_sync();
+
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasDgemv() failed.");
 	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
@@ -2738,6 +2858,8 @@ namespace whiteice
 	   (const cuComplex*)&beta,
 	   (cuComplex*)r.data, 1);
 
+	gpu_sync();
+
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasCgemv() failed.");
 	  throw CUDAException("CUBLAS cublasCgemv() call failed.");
@@ -2759,6 +2881,8 @@ namespace whiteice
 	   (const cuDoubleComplex*)(this->data), 1,
 	   (const cuDoubleComplex*)&beta,
 	   (cuDoubleComplex*)r.data, 1);
+
+	gpu_sync();
 	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::operator*(): cublasZgemv() failed.");
@@ -2869,21 +2993,37 @@ namespace whiteice
 	   CUBLAS_FILL_MODE_LOWER,
 	   N, (const float*)&alpha,
 	   (const float*)this->data, 1,
-	   (float*)M.data);
+	   (float*)M.data);	
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::outerproduct(): cublasSspr() failed.");
 	  throw CUDAException("CUBLAS cublasSspr() call failed.");
 	}
 
-	// creates full symmetric outerproduct matrix from column-major packed matrix M (in place)
-	// [NOT FULLY OPTIMIZED!]
 	
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c)) c lower mode elements (lower triangular matrix)
-	  memmove(&(M.data[c*N + c]),&(M.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(M.data[diag_non_packed_index]), &(M.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("vertex::outerproduct(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
+
+	gpu_sync();
 
 	// copies lower triangular elements to upper triangular part of the M matrix
 	for(unsigned int i=0;i<N;i++)
@@ -2905,19 +3045,37 @@ namespace whiteice
 	   (const double*)this->data, 1, 
 	   (double*)M.data);
 
+	
+
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::outerproduct(): cublasDspr() failed.");
 	  throw CUDAException("CUBLAS cublasDspr() call failed.");
 	}
 
-	// creates full symmetric outerproduct matrix from column-major packed matrix M (in place)
-	// [NOT FULLY OPTIMIZED!]
 	
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c)) c lower mode elements (lower triangular matrix)
-	  memmove(&(M.data[c*N + c]),&(M.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(M.data[diag_non_packed_index]), &(M.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
+
+	gpu_sync();
 
 	// copies lower triangular elements to upper triangular part of the M matrix
 	for(unsigned int i=0;i<N;i++)
@@ -2944,14 +3102,30 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasChpr() call failed.");
 	}
 
-	// creates full symmetric outerproduct matrix from column-major packed matrix M (in place)
-	// [NOT FULLY OPTIMIZED!]
 	
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c)) c lower mode elements (lower triangular matrix)
-	  memmove(&(M.data[c*N + c]),&(M.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(M.data[diag_non_packed_index]), &(M.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
+	
+	gpu_sync();
 
 	// copies lower triangular elements to upper triangular part of the M matrix
 	for(unsigned int i=0;i<N;i++)
@@ -2979,14 +3153,29 @@ namespace whiteice
 	  throw CUDAException("CUBLAS cublasZhpr() call failed.");
 	}
 
-	// creates full symmetric outerproduct matrix from column-major packed matrix M (in place)
-	// [NOT FULLY OPTIMIZED!]
-	
-	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
-	  unsigned int c = N - i - 1;
-	  // copy M(unpacked(c,c)) <- M(packed(c,c)) c lower mode elements (lower triangular matrix)
-	  memmove(&(M.data[c*N + c]),&(M.data[c + ((2*N-c+1)*c)/2]), sizeof(T)*(i+1));
+	// NOT OPTIMIZED
+	{
+	  // last element of the matrix
+	  unsigned int non_packed_index = N*N;
+	  unsigned int packed_index = N*(N+1)/2;
+	  
+	  for(unsigned int i=0;i<(N-1);i++){ // (N-i):th column
+	    auto diag_non_packed_index = non_packed_index - (i+1);
+	    packed_index -= (i+1);
+	    
+	    auto e = cudaMemcpy(&(M.data[diag_non_packed_index]), &(M.data[packed_index]),
+				sizeof(T)*(i+1), cudaMemcpyDeviceToDevice);
+
+	    if(e != cudaSuccess){
+	      whiteice::logging.error("autocorrelation(): cudaMemcpy() failed.");
+	      throw CUDAException("CUBLAS cudaMemcpy() call failed.");
+	    }
+
+	    non_packed_index -= N;
+	  }
 	}
+
+	gpu_sync();
 
 	// copies lower triangular elements to upper triangular part of the M matrix
 	for(unsigned int i=0;i<N;i++)
@@ -3008,7 +3197,7 @@ namespace whiteice
 	
 	cblas_sspr(CblasRowMajor, CblasUpper, N, 
 		   *((float*)&s), (float*)data, 1, (float*)M.data);
-	
+
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
 	  memmove(&(M.data[r*N + r]), &(M.data[r*N - ((r - 1)*r)/2]), sizeof(T)*(i+1));
@@ -3025,6 +3214,8 @@ namespace whiteice
 	
 	cblas_chpr(CblasRowMajor, CblasUpper, N,
 		   *((float*)&s), (float*)data, 1, (float*)M.data);
+
+	
 	
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
@@ -3155,6 +3346,7 @@ namespace whiteice
 					(int)len,
 					(const float*)&(this->data[x0]), 1,
 					(float*)v.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::subvertex(): cublasScopy() failed.");
@@ -3168,6 +3360,7 @@ namespace whiteice
 					(int)len,
 					(const double*)&(this->data[x0]), 1,
 					(double*)v.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::subvertex(): cublasDcopy() failed.");
@@ -3181,6 +3374,7 @@ namespace whiteice
 					(int)len,
 					(const cuComplex*)&(this->data[x0]), 1,
 					(cuComplex*)v.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::subvertex(): cublasCcopy() failed.");
@@ -3194,6 +3388,7 @@ namespace whiteice
 					(int)len,
 					(const cuDoubleComplex*)&(this->data[x0]), 1,
 					(cuDoubleComplex*)v.data, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::subvertex(): cublasZcopy() failed.");
@@ -3205,6 +3400,7 @@ namespace whiteice
       else{
 	auto s = cudaMemcpy(v.data, data + x0, len*sizeof(T),
 			    cudaMemcpyDeviceToDevice);
+	gpu_sync();
 
 	if(s != cudaSuccess){
 	  whiteice::logging.error("vertex::subvertex(): cudaMemcpy() failed.");
@@ -3236,6 +3432,7 @@ namespace whiteice
 					(int)len,
 					(const float*)v.data, 1,
 					(float*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::write_subvertex(): cublasScopy() failed.");
@@ -3249,6 +3446,7 @@ namespace whiteice
 					(int)len,
 					(const double*)v.data, 1,
 					(double*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::write_subvertex(): cublasDcopy() failed.");
@@ -3262,6 +3460,7 @@ namespace whiteice
 					(int)len,
 					(const cuComplex*)v.data, 1,
 					(cuComplex*)&(this->data[x0]), 1);
+	gpu_sync();
 	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::write_subvertex(): cublasCcopy() failed.");
@@ -3275,6 +3474,7 @@ namespace whiteice
 					(int)len,
 					(const cuDoubleComplex*)v.data, 1,
 					(cuDoubleComplex*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::write_subvertex(): cublasZcopy() failed.");
@@ -3286,6 +3486,7 @@ namespace whiteice
       else{
 	auto s = cudaMemcpy(data + x0, v.data, len*sizeof(T),
 			    cudaMemcpyDeviceToDevice);
+	gpu_sync();
 	
 	if(s != cudaSuccess){
 	  whiteice::logging.error("vertex::write_subvertex(): cudaMemcpy() failed.");
@@ -3386,6 +3587,11 @@ namespace whiteice
     bool vertex<T>::compress() 
     {
       if(compressor != 0) return false; // already compressed
+
+#ifdef CUBLAS
+      whiteice::logging.error("FIXME Memory compression is not supported with GPU memory.");
+      return false;
+#else
       
       compressor = new MemoryCompressor();
       
@@ -3405,6 +3611,7 @@ namespace whiteice
 	compressor = 0;
 	return false;
       }
+#endif
     }
     
     
@@ -3412,6 +3619,11 @@ namespace whiteice
     bool vertex<T>::decompress() 
     {
       if(compressor == 0) return false; // not compressed
+
+#ifdef CUBLAS
+      whiteice::logging.error("FIXME Memory compression is not supported with GPU memory.");
+      return false;
+#else
       
       if(compressor->decompress()){ // decompression ok.
 	data = (T*)( compressor->getMemory() );
@@ -3426,7 +3638,10 @@ namespace whiteice
       else{
 	return false;
       }
+#endif
+      
     }
+
     
     
     template <typename T>
@@ -3468,6 +3683,7 @@ namespace whiteice
 					(int)len,
 					(const float*)data_, 1,
 					(float*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::importData(): cublasScopy() failed.");
@@ -3481,6 +3697,7 @@ namespace whiteice
 					(int)len,
 					(const double*)data_, 1,
 					(double*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::importData(): cublasDcopy() failed.");
@@ -3494,6 +3711,7 @@ namespace whiteice
 					(int)len,
 					(const cuComplex*)data_, 1,
 					(cuComplex*)&(this->data[x0]), 1);
+	gpu_sync();
 	
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::importData(): cublasCcopy() failed.");
@@ -3507,6 +3725,7 @@ namespace whiteice
 					(int)len,
 					(const cuDoubleComplex*)data_, 1,
 					(cuDoubleComplex*)&(this->data[x0]), 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::importData(): cublasZcopy() failed.");
@@ -3518,6 +3737,7 @@ namespace whiteice
       else{
 	auto s = cudaMemcpy(data + x0, data_, len*sizeof(T),
 			    cudaMemcpyHostToDevice);
+	gpu_sync();
 	
 	if(s != cudaSuccess){
 	  whiteice::logging.error("vertex::importData(): cudaMemcpy() failed.");
@@ -3558,6 +3778,7 @@ namespace whiteice
 					(int)len,
 					(const float*)&(this->data[x0]), 1,
 					(float*)data_, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::exportData(): cublasScopy() failed.");
@@ -3571,6 +3792,7 @@ namespace whiteice
 					(int)len,
 					(const double*)&(this->data[x0]), 1,
 					(double*)data_, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::exportData(): cublasDcopy() failed.");
@@ -3584,6 +3806,7 @@ namespace whiteice
 					(int)len,
 					(const cuComplex*)&(this->data[x0]), 1,
 					(cuComplex*)data_, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::exportData(): cublasCcopy() failed.");
@@ -3597,6 +3820,7 @@ namespace whiteice
 					(int)len,
 					(const cuDoubleComplex*)&(this->data[x0]), 1,
 					(cuDoubleComplex*)data_, 1);
+	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
 	  whiteice::logging.error("vertex::exportData(): cublasZcopy() failed.");
@@ -3609,6 +3833,7 @@ namespace whiteice
 
 	auto s = cudaMemcpy(data_, data + x0, len*sizeof(T),
 			    cudaMemcpyDeviceToHost);
+	gpu_sync();
 	
 	if(s != cudaSuccess){
 	  whiteice::logging.error("vertex::exportData(): cudaMemcpy() failed.");

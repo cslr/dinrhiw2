@@ -330,6 +330,8 @@ namespace whiteice
 	    whiteice::logging.error("rhouseholder_leftrot(): cublasSger() failed.");
 	    throw CUDAException("CUBLAS cublasSger() call failed.");
 	  }
+
+	  gpu_sync();
 	  
 	}
 	else if(typeid(T) == typeid(blas_real<double>)){
@@ -367,6 +369,8 @@ namespace whiteice
 	    whiteice::logging.error("rhouseholder_leftrot(): cublasDger() failed.");
 	    throw CUDAException("CUBLAS cublasDger() call failed.");
 	  }
+
+	  gpu_sync();
 	  
 	}
 	else{
@@ -507,6 +511,8 @@ namespace whiteice
 	    whiteice::logging.error("rhouseholder_rightrot(): cublasSger() failed.");
 	    throw CUDAException("CUBLAS cublasSger() call failed.");
 	  }
+
+	  gpu_sync();
 	  
 	}
 	else if(typeid(T) == typeid(blas_real<double>)){
@@ -544,6 +550,8 @@ namespace whiteice
 	    whiteice::logging.error("rhouseholder_rightrot(): cublasDger() failed.");
 	    throw CUDAException("CUBLAS cublasDger() call failed.");
 	  }
+
+	  gpu_sync();
 	  
 	}
 	else{
