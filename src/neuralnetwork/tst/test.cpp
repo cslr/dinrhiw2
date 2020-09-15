@@ -156,8 +156,8 @@ int main()
   srand(seed);
   
   try{
-    // nnetwork_test();
-
+    nnetwork_test();
+    
     // simple_tsne_test();
 
     // nngraddescent_complex_test();
@@ -4914,6 +4914,60 @@ void nnetwork_complex_test()
 
 void nnetwork_test()
 {
+#if 0
+  try{
+    std::cout << "NNETWORK TEST -3: JACOBIAN MATRIX TEST" << std::endl;
+
+    std::vector<unsigned int> layers;
+    layers.push_back(7);
+    layers.push_back(45);
+    layers.push_back(5);
+    layers.push_back(5);
+    layers.push_back(13);
+
+    whiteice::nnetwork< math::blas_complex<float> > nn(layers);
+    nn.setNonlinearity(nn.getLayers()-1,
+		       whiteice::nnetwork< math::blas_complex<float> >::pureLinear);
+    
+    // calculates jacobian matrix
+
+    for(unsigned int n=0;n<20;n++){
+      whiteice::RNG< math::blas_complex<float> > rng;
+      math::vertex< math::blas_complex<float> > input(7);
+      
+      rng.normal(input);
+      
+      math::matrix< math::blas_complex<float> > JNN1, JNN2;
+      
+      if(nn.jacobian(input, JNN1) == false){
+	std::cout << "ERROR: Calculating Jacobian matrix failed." << std::endl;
+	return;
+      }
+      
+      if(nn.jacobian_optimized(input, JNN2) == false){
+	std::cout << "ERROR: Calculating Jacobian matrix failed." << std::endl;
+	return;
+      }
+    
+      auto delta = whiteice::math::abs(JNN1 - JNN2);
+      
+      if(frobenius_norm(delta).abs() > 0.01){
+	std::cout << "ERROR: Jacobian matrices differ when changing computation method."
+		  << std::endl;
+	return;
+      }
+      else{
+	std::cout << "Jacobian matrices are same. Good." << std::endl;
+      }
+    }
+    
+  }
+  catch(std::exception& e){
+    std::cout << "ERROR: Unexpected exception: " << e.what() << std::endl;
+  }
+#endif
+  
+  
   try{
     std::cout << "NNETWORK TEST -2: GET/SET DEEP ICA PARAMETERS"
 	      << std::endl;

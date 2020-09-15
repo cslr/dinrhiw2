@@ -122,8 +122,6 @@ namespace whiteice
     // calculates jacobian/gradient of parameter weights w f(v|w)
     bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
-    bool jacobian_optimized(const math::vertex<T>& input, math::matrix<T>& grad) const;
-
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
 

@@ -539,7 +539,7 @@ namespace whiteice
 
 	  nn = 1.0/whiteice::math::sqrt(whiteice::math::abs(nn));
 	  
-	  cblas_zdscal(B.numBols, nn,
+	  cblas_zdscal(B.numCols, nn,
 		       (double*)(&B.data[n*B.numCols]), 1);
 	}
 	
