@@ -18,7 +18,7 @@
   error terms cannot be done using standard complex differentation and
   requires Wirtinger-calculus which defines function
   <math|\<b-f\><around*|(|\<b-z\>,<wide|\<b-z\>|\<bar\>>|)>> which is not
-  fully holomorphic. Good reference paper about Wirtinger calculus is
+  fully holomorphic. A good reference paper about Wirtinger calculus is
   <with|font-shape|italic|The Complex Gradient Operator and the CR-Calculus.
   Ken Kreutz-Delgado. 2009. (arXiv.org 0906.4835v1)>.
 
@@ -34,7 +34,8 @@
   <math|y=max<around*|(|0.01x,x|)>>) don't satisfy Cauchy-Riemann conditions.
 
   For simplicity we want to have non-linearity which satisfies Cauchy-Riemann
-  conditions so that we can have analytical derivate of the function.
+  conditions so that we can have analytical derivate of the function (NOT
+  REALLY NEEDED ReLU works ok).
 
   Function <math|f<around*|(|z|)>=e<rsup|z>> satisfies Cauchy-Riemann
   conditions which can be seen by calculating partial derivates. Because we
@@ -47,9 +48,21 @@
     <math|f<rprime|'><around*|(|z|)>=<around*|(|1+e<rsup|-k*z>|)><rsup|-1>>
   </padded-center>
 
+  We can extend ReLU to complex numbers by defining
+
+  <\padded-center>
+    <math|f<around*|(|a+b*i|)>=max<around*|(|0.1*a,a|)>+max<around*|(|0.1*b,b|)>i>
+  </padded-center>
+
+  <\padded-center>
+    <math|f<rprime|'><around*|(|z|)>=f<around*|(|z|)>/z>, since
+    <math|f<around*|(|z|)>=c*z> is essentially (part-wise) linear function.
+  </padded-center>
+
   After these definitions we can calculate gradient of the neural network
   <math|\<b-y\><around*|(|\<b-z\>|)>> function using simple standard complex
-  calculus. But we need to additionally calculate derivate of error function\ 
+  calculus. But we need to additionally calculate derivate of error function
+  which cannot be derived using normal calculus: \ 
 
   <\padded-center>
     <math|f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>=<frac|1|2>E<around*|{|\<b-z\><around*|(|\<b-w\>|)><rsup|H>\<b-z\><around*|(|\<b-w\>|)>|}>=<frac|1|2>E<around*|{|<around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|H><around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|}>>.
@@ -58,7 +71,7 @@
   We can calculate partial derivates
 
   <\padded-center>
-    <math|<frac|\<partial\>f|\<partial\>\<b-w\>>=<frac|1|2><around*|(|<frac|\<partial\><around*|\<\|\|\>|\<b-z\><around*|(|\<b-w\>|)>|\<\|\|\>><rsup|2>|\<partial\>*\<b-z\>>*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>+<frac|\<partial\><frac|1|2><around*|\<\|\|\>|\<b-z\><around*|(|\<b-w\>|)>|\<\|\|\>><rsup|2>|\<partial\><wide|*\<b-z\>|\<bar\>>*><frac|\<partial\>*<wide|z|\<bar\>><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|)>><math|>
+    <math|<frac|\<partial\>f|\<partial\>\<b-w\>>=<frac|1|2><around*|(|<frac|\<partial\><frac|1|2><around*|\<\|\|\>|\<b-z\><around*|(|\<b-w\>|)>|\<\|\|\>><rsup|2>|\<partial\>*\<b-z\>>*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>+<frac|\<partial\><frac|1|2><around*|\<\|\|\>|\<b-z\><around*|(|\<b-w\>|)>|\<\|\|\>><rsup|2>|\<partial\><wide|*\<b-z\>|\<bar\>>*><frac|\<partial\>*<wide|z|\<bar\>><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|)>><math|>
   </padded-center>
 
   \ that <math|f<around*|(||)>> is real valued so we can calculate conjugate
@@ -77,8 +90,8 @@
   </padded-center>
 
   Now we want to transform these to real valued coordinate system
-  <math|r=<around*|(|\<b-x\><rsub|k>,y<rsub|k>|)>\<sim\>\<bbb-R\><rsup|2>>
-  where real and imaginary values are separated.\ 
+  <math|r=<around*|(|x<rsub|k>,y<rsub|k>|)>\<sim\>\<bbb-R\><rsup|2>> where
+  real and imaginary values are separated.\ 
 
   This can be done using linear mapping <math|\<b-r\>=<frac|1|2>\<b-J\><rsup|H>\<b-c\>>,
   <math|\<b-c\>=<around*|[|<matrix|<tformat|<table|<row|<cell|\<b-z\>>>|<row|<cell|<wide|\<up-z\>|\<bar\>>>>>>>|]>>
@@ -101,20 +114,20 @@
     <math|<frac|\<partial\>*\<b-f\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>=\<b-z\><around*|(|\<b-w\>|)><rsup|T>*<wide|*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|\<bar\>>>
   </padded-center>
 
-  In practice optimization seem to generate large weight values
+  In practice optimization seem to sometimes generate large weight values
   <math|\<b-w\>> which cause floating point errors. This means we need to add
   regularizer to our optimized function.
 
   <\padded-center>
-    <math|f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>=<frac|1|2>E<around*|{|\<b-z\><around*|(|\<b-w\>|)><rsup|H>\<b-z\><around*|(|\<b-w\>|)>|}>+<frac|1|2><around*|\<\|\|\>|\<b-w\>|\<\|\|\>><rsup|2>=<frac|1|2>E<around*|{|<around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|H><around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|}>+<frac|1|2>\<b-alpha\>*<around*|\<\|\|\>|\<b-w\>|\<\|\|\>><rsup|2>>.
+    <math|f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>=<frac|1|2>E<around*|{|\<b-z\><around*|(|\<b-w\>|)><rsup|H>\<b-z\><around*|(|\<b-w\>|)>|}>+<frac|1|2>\<alpha\><around*|\<\|\|\>|\<b-w\>|\<\|\|\>><rsup|2>=<frac|1|2>E<around*|{|<around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|H><around*|(|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|}>+<frac|1|2>\<alpha\>*<around*|\<\|\|\>|\<b-w\>|\<\|\|\>><rsup|2>>.
   </padded-center>
 
   This means\ 
 
   <\padded-center>
-    <math|<frac|\<partial\>f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>|\<partial\>\<b-w\>>=<frac|1|2>\<b-z\><around*|(|\<b-w\>|)><rsup|H>*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>><math|+<frac|1|2>*\<b-alpha\>**<wide|\<b-w\>|\<bar\>>>
+    <math|<frac|\<partial\>f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>|\<partial\>\<b-w\>>=<frac|1|2>\<b-z\><around*|(|\<b-w\>|)><rsup|H>*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>><math|+<frac|1|2>*\<alpha\><wide|\<b-w\>|\<bar\>>>
 
-    <math|<frac|\<partial\>f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>|\<partial\><wide|\<b-w\>|\<bar\>>>==<wide|<frac|\<partial\>f|\<partial\>*\<b-w\>>|\<bar\>>>=<math|<frac|1|2>\<b-z\><around*|(|\<b-w\>|)><rsup|T>*<wide|<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|\<bar\>>+<frac|1|2>*\<b-alpha\>*\<b-w\>>
+    <math|<frac|\<partial\>f<around*|(|\<b-w\>,<wide|\<b-w\>|\<bar\>>|)>|\<partial\><wide|\<b-w\>|\<bar\>>>==<wide|<frac|\<partial\>f|\<partial\>*\<b-w\>>|\<bar\>>>=<math|<frac|1|2>\<b-z\><around*|(|\<b-w\>|)><rsup|T>*<wide|<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|\<bar\>>+<frac|1|2>*\<alpha\>*\<b-w\>>
   </padded-center>
 
   And real/imaginary parts are:
@@ -129,8 +142,8 @@
     <math|<frac|\<partial\>*\<b-f\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>=\<b-z\><around*|(|\<b-w\>|)><rsup|T>*<wide|*<frac|\<partial\>*\<b-z\><around*|(|\<b-w\>|)>|\<partial\>*\<b-w\>>|\<bar\>>+\<b-alpha\>*\<b-w\>>
   </padded-center>
 
-  Adding regularizer term with <math|\<alpha\>=0.01> solves the problem
-  (weight vectors are initially <math|N<around*|(|0,I|)>/sqrt<around*|(|dim<around*|(|w|)>|)>>
+  Adding regularizer term with <math|\<alpha\>=10<rsup|-6>> solves the
+  problem (weight vectors are initially <math|N<around*|(|0,I|)>/sqrt<around*|(|dim<around*|(|w|)>|)>>
   or something so <math|N<around*|(|0,I|)>> input data should initially have
   something like unit variance and zero mean when going through the linear
   network.

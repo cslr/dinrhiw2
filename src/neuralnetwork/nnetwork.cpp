@@ -1826,6 +1826,25 @@ namespace whiteice
 	  return T(1.00f);
       }
       else{
+#if 1
+	math::blas_complex<double> out;
+	out.real(input.real());
+	out.imag(input.imag());
+	
+	if(input.real() < 0.0f){
+	  out.real(0.01f*out.real());
+	}
+	
+	if(input.real() < 0.0f){
+	  out.imag(0.01f*out.imag());
+	}
+
+	// correct derivate is Df(z) = f(z)/z
+	if(input.real() != 0.0f || input.imag() != 0.0f)
+	  out /= input;
+
+	return out;
+#else
 	math::blas_complex<double> out;
 	out.real(1.0f);
 	out.imag(1.0f);
@@ -1839,6 +1858,7 @@ namespace whiteice
 	}
 	
 	return T(out);
+#endif
       }
       
 #if 0      
