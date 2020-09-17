@@ -1,22 +1,14 @@
 /*
  * neural network implementation (V2)
- * work arounds some bugs + has more efficient implementation
  * 
  * Use rectifier non-linearity in all other layers except output
  * layer which should be linear.
  * 
- * NOTE1 that nnetwork requires rewrite to use matrix<> and vertex<> classes
- * instead of own memory areas. This way specific cuBLAS code is no longer
- * needed and support for other types of layers can be added such as 
- * convolutional layers.
+ * UPDATE:
+ * dropout probability is now 10% instead of 20% this should improve performance
  *
- * NOTE2 if cuBLAS (CUBLAS) is defined weight matrixes W are stored 
- * in data memory area in a COLUMN MAJOR order instead of ROW MAJOR
- * order which is used with normal cblas routines. Neural network 
- * parameter/weight vector on the contrary is ALWAYS stored as
- * ROW major order as well as neural network's gradient. 
- * (ouputs are in same format, internal presentation changes if
- *  CUBLAS is used)
+ * Optimize code to use cblas
+ * 
  */
 
 #ifndef nnetwork_h
@@ -102,12 +94,24 @@ namespace whiteice
     // simple thread-safe version [parallelizable version of calculate: don't calculate gradient nor collect samples]
     bool calculate(const math::vertex<T>& input, math::vertex<T>& output) const;
 
+    // thread safe calculate call which also stores backpropagation data
+    // bpdata can be used calculate mse_gradient() with backpropagation
+    // in a const nnetwork<> class so that same nnetwork<> object can
+    // be used with multiple threads. If dropout vector has data also
+    // does dropout heuristics. This allows same nnetwork<> object to be
+    // used in thread safe manner.
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   const std::vector< std::vector<bool> >& dropout,
+		   std::vector< math::vertex<T> >& bpdata) const;
+
     unsigned int length() const; // number of layers
 
     // set nnetworks parameters to random values
-    // type = 0: random [-1,+1] values, type 1 = smart initialization, type 2 more stable initialization
-      bool randomize(const unsigned int type = 2,
-		     const bool smallvalues = false);
+    // type = 0: random [-1,+1] values
+    // type 1 = smart initialization (uniform distribution)
+    // type 2 more stable initialization (normal distribution)
+    bool randomize(const unsigned int type = 2,
+		   const bool smallvalues = false);
 
       // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);
@@ -117,7 +121,17 @@ namespace whiteice
 
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
     // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // used backpropagation data stored within nnetwork<> by non const calculate() call.
     bool mse_gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+    
+    // calculates gradient of parameter weights w f(v|w) when using squared error: 
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // used backpropagation bpdata provided by caller (use calculate() with bpdata) and 
+    // dropout heuristic if dropout vector is non empty object.
+    bool mse_gradient(const math::vertex<T>& error,
+		      const std::vector< math::vertex<T> >& bpdata,
+		      const std::vector< std::vector<bool> >& dropout,
+		      math::vertex<T>& grad) const;
 
     // calculates jacobian/gradient of parameter weights w f(v|w)
     bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
@@ -187,18 +201,28 @@ namespace whiteice
     // drop out support:
 
     // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
-    bool setDropOut(T retain_p = T(0.8)) ;
+    bool setDropOut(const T retain_p = T(0.90)) ;
+
+    // set dropout tables neurons to be non-dropout neurons
+    // with probability p [1-p are dropout neurons]
+    bool setDropOut(std::vector< std::vector<bool> >& dropout,
+		    const T retain_p = T(0.90)) const;
 
     // clears drop out but scales weights according to retain_probability
-    bool removeDropOut(T retain_p = T(0.8)) ;
+    bool removeDropOut(T retain_p = T(0.90)) ;
     
     void clearDropOut() ; // remove all drop-out without changing weights
     
     ////////////////////////////////////////////////////////////
   public:
-    
-    T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
-    T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
+
+    // with dropout heuristic
+    inline T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
+    inline T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
+
+    // without dropout heuristic
+    inline T nonlin(const T& input, unsigned int layer) const;
+    inline T Dnonlin(const T& input, unsigned int layer) const;
 
     
     T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // inverse of non-linearity used [not really used]
@@ -212,10 +236,9 @@ namespace whiteice
 			   T* temp) const;
     
     
-    // data structures which are part of
-    // interface
-    mutable math::vertex<T> inputValues;
-    mutable math::vertex<T> outputValues;
+    // data structures which are part of interface [avoid using these!]
+    math::vertex<T> inputValues;
+    math::vertex<T> outputValues;
     
     
     bool hasValidBPData;
@@ -228,7 +251,8 @@ namespace whiteice
     // stochastic retain probability during activation [feedforward]
     T retain_probability;
     
-    // drop-out configuration for each layer [if neuron is dropout neuron its non-linearity is zero]
+    // drop-out configuration for each layer
+    // [if neuron is dropout neuron its non-linearity is zero]
     std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
     
     whiteice::RNG<T> rng;
@@ -240,22 +264,15 @@ namespace whiteice
     
     // USE vertex<T> instead of vector<T> because vertex is allocated
     // by cuBLAS if needed
-    
-    math::vertex<T> data;
-    math::vertex<T> bpdata;
-    
-    // math::vertex<T> state;
-    // mutable math::vertex<T> temp;
-    // mutable math::vertex<T> lgrad;
-    
-#if 0
-    std::vector<T> data;
-    std::vector<T> bpdata;
-    
-    std::vector<T> state;
-    mutable std::vector<T> temp;
-    mutable std::vector<T> lgrad;
-#endif
+
+    // parameters of the network [no support for convolutional layers yet]
+    // vectorized form of parameters is (gradient format, row major matrixes):
+    // vec(nnetwork) = [vec(W1) vec(b1) .. vec(Wi) vec(bi) .. vec(Wn) vec(bn)]
+    std::vector< math::matrix<T> > W;
+    std::vector< math::vertex<T> > b;
+
+    // backpropagation data
+    std::vector< math::vertex<T> > bpdata; // array of input and local field values
     
     // used to collect samples about data passing through the network,
     // this will then be used later to do unsupervised regularization of training data

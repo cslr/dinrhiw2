@@ -105,7 +105,7 @@ dnl enables CPU specific optimization flags
 AC_ARG_ENABLE([optimize],
 	AS_HELP_STRING([--disable-optimize],[Disable optimization]))
 
-optimization_flags="-O3 -ffast-math -mtune=native"
+optimization_flags="-O3 -ffast-math -mtune=native -ftree-vectorize"
 
 AS_IF([test "x$enable_optimize" == "xno"],[
   optimization_flags="-g"
@@ -115,11 +115,13 @@ AS_IF([test "x$enable_optimize" == "xno"],[
 
 conf_flags=""
 
+dnl "-fPIC" is DISABLED FOR NOW
+
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math -mtune=native"
+    optimization_flags="-O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
-      optimization_flags="-fPIC -g -DAMD64"
+      optimization_flags="-g -DAMD64"
       CFLAGS=""
       CXXFLAGS=""
     ])
@@ -127,15 +129,15 @@ if [[ $cpufamily = "x86_64" ]]; then
     conf_flags="-fPIC -DAMD64"
 elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
 
-    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math -mtune=native"
+    optimization_flags="-O3 -g -DIA32 -ffast-math -mtune=native -ftree-vectorize"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
-      optimization_flags="-fPIC -g -DIA32"
+      optimization_flags="-g -DIA32"
       CFLAGS=""
       CXXFLAGS=""
     ])
 
-    conf_flags="-fPIC -DIA32"
+    conf_flags="-DIA32"
 else
     AC_MSG_ERROR($cpufamily [, unrecognized/unsupported machine architecture.])
 fi
