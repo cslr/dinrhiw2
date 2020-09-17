@@ -206,19 +206,19 @@ namespace whiteice
 #endif
     }
     
-#if 0    
     template <typename T>
     matrix<T>::matrix(matrix<T>&& t)
     {
-      this->data = t.data;
-      this->numRows = t.numRows;
-      this->numCols = t.numCols;
-      this->compressor = t.compressor;
+      this->data = NULL;
+      this->numRows = 0;
+      this->numCols = 0;
+      this->compressor = NULL;
       
-      t.data = nullptr;
-      t.compressor = nullptr;
+      std::swap(this->data, t.data);
+      std::swap(this->numRows, t.numRows);
+      std::swap(this->numCols, t.numCols);
+      std::swap(this->compressor, t.compressor);
     }
-#endif
     
     template <typename T>
     matrix<T>::matrix(const vertex<T>& diagonal)
@@ -1414,28 +1414,19 @@ namespace whiteice
 #endif
     }
     
-#if 0    
+
     template <typename T>
     matrix<T>& matrix<T>::operator=(matrix<T>&& t) 
     {
       if(this == &t) return *this; // self-assignment
-      
-      // printf("matrix&& operator=\n"); fflush(stdout);
-      
-      if(this->data) free(this->data);
-      if(this->compressor) delete (this->compressor);
-      
-      this->data = std::move(t.data);
-      this->numRows = std::move(t.numRows);
-      this->numCols = std::move(t.numCols);
-      this->compressor = std::move(t.compressor);
-      
-      t.data = nullptr;
-      t.compressor = nullptr;
+
+      std::swap(this->data, t.data);
+      std::swap(this->numRows, t.numRows);
+      std::swap(this->numCols, t.numCols);
+      std::swap(this->compressor, t.compressor);
       
       return *this;
     }
-#endif
     
     
     
@@ -4227,12 +4218,15 @@ namespace whiteice
     T matrix<T>::rownorm(unsigned int y, unsigned int x1, unsigned int x2) const
       
     {
+      if(x2 >= numCols) x2 = numCols - 1;
+      
       if(x2 < x1 || x1 >= numCols || y >= numRows){
 	whiteice::logging.error("matrix::rownorm(): bad index parameter to matrix.");
 	throw std::out_of_range("rownorm(): bad indeces to matrix");
       }
       
 #ifdef CUBLAS
+      x2++;
       
       if(typeid(T) == typeid(blas_real<float>)){
 	float result;
@@ -4310,8 +4304,7 @@ namespace whiteice
 	return whiteice::math::sqrt(whiteice::math::abs(len));
       }
       
-#else
-      if(x2 >= numCols) x2 = numCols - 1;
+#else      
       
       if(typeid(T) == typeid(blas_real<float>)){
 	return T( cblas_snrm2(x2 - x1 + 1, (const float*)&(data[y*numCols + x1]), 1) );
@@ -4351,12 +4344,18 @@ namespace whiteice
     template <typename T>
     T matrix<T>::colnorm(unsigned int x, unsigned int y1, unsigned int y2) const
     {
+      if(y2 > numRows) y2 = numRows - 1;
+      
       if(y2 < y1 || y1 >= numRows || x >= numCols){
+	printf("colnorm failed: %d %d %d %d %d\n", x, y1, y2, numRows, numCols);
+	fflush(stdout);
+	
 	whiteice::logging.error("matrix::colnorm(): bad index parameter to matrix.");
+
+	assert(0);
+	
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
       }
-
-      if(y2 > numRows) y2 = numRows - 1;
       
 #ifdef CUBLAS
       y2++;
@@ -4481,13 +4480,13 @@ namespace whiteice
 			      unsigned int y,
 			      unsigned int x1, unsigned int x2) const
     {
+      if(x2 >= numCols) x2 = numCols - 1;
+      
       if(x2 < x1 || x1 >= numCols || y >= numRows){
 	whiteice::logging.error("matrix::rowcopyto(): bad index parameter to matrix.");
 	throw std::out_of_range("rowcopyto(): bad indeces to matrix");
       }
-
-      if(x2 >= numCols) x2 = numCols - 1;
-
+      
 #ifdef CUBLAS
       x2++;
 
@@ -4591,13 +4590,14 @@ namespace whiteice
     void matrix<T>::colcopyto(vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
       const 
     {
+      if(y2 >= numRows) y2 = numRows - 1;
+      
       if(y2 < y1 || y1 >= numRows || x >= numCols){
 	whiteice::logging.error("matrix::colcopyto(): bad index parameter to matrix.");
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
       }
-
-      if(y2 >= numRows) y2 = numRows - 1;
-
+      
+      
 #ifdef CUBLAS
       y2++;
 
@@ -4700,12 +4700,19 @@ namespace whiteice
 				unsigned int x1, unsigned int x2)
       
     {
+      if(x2 >= numCols) x2 = numCols - 1;
+      
       if(x2 < x1 || x1 >= numCols || y >= numRows || v.size() != x2 - x1 + 1){
-	whiteice::logging.error("matrix::rowcopyto(): bad index parameter to matrix.");
+
+	printf("rowcopyfrom(): %d %d %d %d %d %d\n",
+	       y, x1, x2, numRows, numCols, v.size());
+	
+	whiteice::logging.error("matrix::rowcopyfrom(): bad index parameter to matrix.");
+
+	assert(0);
+	
 	throw std::out_of_range("rowcopyfrom(): bad indeces to matrix");
       }
-
-      if(x2 >= numCols) x2 = numCols - 1;
       
 #ifdef CUBLAS
       x2++; // we use [x1,x2[ range where x2 element is not part of the range
@@ -4797,13 +4804,12 @@ namespace whiteice
     void matrix<T>::colcopyfrom(const vertex<T>& v, unsigned int x, unsigned int y1, unsigned int y2)
       
     {
+      if(y2 >= numRows) y2 = numRows - 1;
       
       if(y2 < y1 || y1 >= numRows || x >= numCols || v.size() != y2 - y1 + 1){
-	whiteice::logging.error("matrix::colcopyto(): bad index parameter to matrix.");
+	whiteice::logging.error("matrix::colcopyfrom(): bad index parameter to matrix.");
 	throw std::out_of_range("colnorm(): bad indeces to matrix");
       }
-
-      if(y2 >= numRows) y2 = numRows - 1;
       
 #ifdef CUBLAS
       y2++;
@@ -5017,7 +5023,9 @@ namespace whiteice
 #ifdef CUBLAS
       // NOTE: we store data to vertex as we would have row major matrixes in cublas
 
-      out.resize(x0 + numCols*numRows);
+      if(out.size() < x0 + numCols*numRows)
+	out.resize(x0 + numCols*numRows);
+      
       
       for(unsigned int j=0;j<numRows;j++){
 	//memcpy(&(out[index]), data[j], numCols*sizeof(T), j_increment += numRows);
@@ -5094,7 +5102,9 @@ namespace whiteice
       return true;
       
 #else
-      out.resize(x0 + numCols*numRows);
+      if(out.size() < x0 + numCols*numRows)
+	out.resize(x0 + numCols*numRows);
+      
       memcpy(&(out.data[x0]), this->data, numCols*numRows*sizeof(T));
       
       return true;

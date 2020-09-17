@@ -272,18 +272,18 @@ namespace whiteice
     
     
     // makes direct copy of temporal value
-#if 0    
     template <typename T>
     vertex<T>::vertex(vertex<T>&& t)
     {
-      this->data = t.data;
-      this->dataSize = t.dataSize;
-      this->compressor = t.compressor;
+      this->data = NULL;
+      this->dataSize = 0;
+      this->compressor = NULL;
       
-      t.data = nullptr;
-      t.compressor = nullptr;
+      std::swap(this->data, t.data);
+      std::swap(this->dataSize, t.dataSize);
+      std::swap(this->compressor, t.compressor);
+      
     }
-#endif
     
     
     // vertex ctor - makes copy of v
@@ -543,7 +543,7 @@ namespace whiteice
 #else
       
       if(d == 0){
-	free(data);
+	if(data) free(data);
 	data = 0;
 	dataSize = 0;
 	return 0;
@@ -556,13 +556,16 @@ namespace whiteice
 	
 	if(data != 0){
 	  new_area = (T*)realloc(data, sizeof(T)*d);
+	  
+	  if(new_area == 0)
+	    return dataSize; // mem. alloc failure
 	}
 	else{
 	  new_area = (T*)malloc(sizeof(T)*d);
+
+	  if(new_area == 0)
+	    return dataSize; // mem. alloc failure
 	}
-	  
-	if(new_area == 0)
-	  return dataSize; // mem. alloc failure
 	
 	data = new_area;
     
@@ -1991,27 +1994,19 @@ namespace whiteice
       return *this;
     }
 
-#if 0    
+
     template <typename T>
     vertex<T>& vertex<T>::operator=(vertex<T>&& t) 
     {
       if(this == &t) return *this; // self-assignment
-      
-      // printf("vertex&& operator=\n"); fflush(stdout);
-      
-      if(this->data) free(data);
-      if(this->compressor) delete compressor;
-      
-      this->data = std::move(t.data);
-      this->dataSize = std::move(t.dataSize);
-      this->compressor = std::move(t.compressor);
-      
-      t.data = nullptr;
-      t.compressor = nullptr;
+
+      std::swap(this->data, t.data);
+      std::swap(this->dataSize, t.dataSize);
+      std::swap(this->compressor, t.compressor);
       
       return *this;
     }
-#endif
+
     
     /***************************************************/
 
@@ -3828,7 +3823,7 @@ namespace whiteice
 	gpu_sync();
 
 	if(s != CUBLAS_STATUS_SUCCESS){
-	  whiteice::logging.error("vertex::exportData(): cublasZcopy() failed.");
+ 	  whiteice::logging.error("vertex::exportData(): cublasZcopy() failed.");
 	  throw CUDAException("CUBLAS cublasZcopy() failed.");
 	}
 

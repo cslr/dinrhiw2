@@ -71,7 +71,7 @@ namespace whiteice
       matrix(const unsigned int size_y = 4,
 	     const unsigned int size_x = 4);
       matrix(const matrix<T>& M);
-      //matrix(matrix<T>&& t);
+      matrix(matrix<T>&& t);
       matrix(const vertex<T>& diagonal);
       virtual ~matrix();
       
@@ -89,7 +89,7 @@ namespace whiteice
       matrix<T>& operator/=(const matrix<T>&) ;
       
       matrix<T>& operator=(const matrix<T>&) ;
-      //matrix<T>& operator=(matrix<T>&& t) ;
+      matrix<T>& operator=(matrix<T>&& t) ;
       
       bool operator==(const matrix<T>&) const ;
       bool operator!=(const matrix<T>&) const ;
