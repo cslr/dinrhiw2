@@ -410,7 +410,7 @@ AC_ARG_ENABLE([cublas],
 	AS_HELP_STRING([--disable-cublas],[Disable NVIDIA cuBLAS library]))
 
 CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
-cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
+cublasdir=`ls -1 -Art "$CUBLASROOT" 2> /dev/null | tail -n 1`
 CUBLASROOT="$CUBLASROOT/$cublasdir"
 
 AC_MSG_CHECKING([for NVIDIA cuBLAS library [SLOW] (Windows)])
@@ -437,7 +437,7 @@ AC_ARG_ENABLE([nvblas],
 	AS_HELP_STRING([--disable-nvblas],[Disable NVIDIA NVBLAS library]))
 
 CUBLASROOT="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA"
-cublasdir=`ls -1 -Art "$CUBLASROOT" | tail -n 1`
+cublasdir=`ls -1 -Art "$CUBLASROOT" 2> /dev/null | tail -n 1`
 CUBLASROOT="$CUBLASROOT/$cublasdir"
 
 AC_MSG_CHECKING([for NVIDIA NVBLAS library with CBLAS inteface (don't exist)])
