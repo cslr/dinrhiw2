@@ -1323,6 +1323,118 @@ namespace whiteice
       
       return true;
     }
+
+
+
+    // calculates PCA dimension reduction using symmetric eigenvalue decomposition
+    // we keep p% of total variance
+    template <typename T>
+    bool pca_p(const std::vector< vertex<T> >& data, 
+	       const float percent_total_variance,
+	       math::matrix<T>& PCA,
+	       math::vertex<T>& mxx,
+	       T& original_var, T& reduced_var,
+	       bool regularizeIfNeeded,
+	       bool unitVariance)
+    {
+      if(percent_total_variance <= 0.0f || percent_total_variance > 1.0f)
+	return false;
+      
+      matrix<T> Cxx;
+
+      if(mean_covariance_estimate(mxx, Cxx, data) == false)
+	return false;
+
+      
+      matrix<T> X;
+
+      
+      if(regularizeIfNeeded){
+	// not optimized
+	
+	matrix<T> CC(Cxx);
+	T regularizer = T(0.0f);
+	
+	for(unsigned int j=0;j<CC.ysize();j++)
+	  for(unsigned int i=0;i<CC.xsize();i++)
+	    regularizer += abs(CC(j,i));
+	
+	regularizer /= (CC.ysize()*CC.xsize());
+	regularizer *= T(0.001);
+	if(regularizer <= T(0.0f)) regularizer = T(0.0001f);
+	
+	unsigned int counter = 0;
+	const unsigned int CLIMIT = 20;
+	
+	
+	while(symmetric_eig(CC, X, true) == false){
+	  CC = Cxx;
+	  
+	  for(unsigned int i=0;i<CC.ysize();i++)
+	    CC(i,i) += regularizer;
+	  
+	  regularizer *= T(2.0f);
+	  counter++;
+	  
+	  if(counter >= CLIMIT)
+	    return false;
+	}
+
+	Cxx = CC;
+      }
+      else{
+	if(symmetric_eig(Cxx, X, true) == false)
+	  return false;
+      }
+
+      // Cxx = X * D * X^t
+
+      // we want to keep only the top p% variance of eigenvectors
+
+      original_var = T(0.0f);
+      
+      for(unsigned int i=0;i<X.xsize();i++){	
+	original_var += Cxx(i,i);
+      }
+
+      T target_var = T(percent_total_variance)*original_var;
+
+      T current_var = T(0.0f);
+      unsigned int dimensions = 1;
+
+      for(unsigned int i=0;i<X.xsize();i++){
+	current_var += Cxx(i,i);
+	dimensions = (i+1);
+	if(current_var >= target_var)
+	  break;
+      }
+
+      reduced_var = current_var;
+
+
+      if(X.submatrix(PCA, 0, 0, dimensions, X.xsize()) == false)
+	return false;
+
+      PCA.transpose();
+
+
+      if(unitVariance){
+	
+	T epsilon = T(1e-9f);
+	
+	for(unsigned int j=0;j<dimensions;j++){
+	  
+	  T scaling =
+	    T(1.0f)/(epsilon + whiteice::math::sqrt(whiteice::math::abs(Cxx(j,j))));
+	  
+	  for(unsigned int i=0;i<PCA.xsize();i++){
+	    PCA(j,i) = scaling*PCA(j,i);
+	  }
+	}
+      }
+      
+      return true;
+    }
     
     
     
@@ -1502,6 +1614,60 @@ namespace whiteice
        blas_complex<double>& original_var, blas_complex<double>& reduced_var,
        bool regularizeIfNeeded,
        bool unitVariance);
+
+    template bool pca_p <float>
+    (const std::vector< vertex<float> >& data, 
+     const float percent_total_variance,
+     math::matrix<float>& PCA,
+     math::vertex<float>& m,
+     float& original_var, float& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    template bool pca_p <double>
+    (const std::vector< vertex<double> >& data, 
+     const float percent_total_variance,
+     math::matrix<double>& PCA,
+     math::vertex<double>& m,
+     double& original_var, double& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    template bool pca_p < blas_real<float> >
+    (const std::vector< vertex< blas_real<float> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_real<float> >& PCA,
+     math::vertex< blas_real<float> >& m,
+     blas_real<float>& original_var, blas_real<float>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    template bool pca_p < blas_real<double> >
+    (const std::vector< vertex< blas_real<double> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_real<double> >& PCA,
+     math::vertex< blas_real<double> >& m,
+     blas_real<double>& original_var, blas_real<double>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    template bool pca_p < blas_complex<float> >
+    (const std::vector< vertex< blas_complex<float> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_complex<float> >& PCA,
+     math::vertex< blas_complex<float> >& m,
+     blas_complex<float>& original_var, blas_complex<float>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    template bool pca_p < blas_complex<double> >
+    (const std::vector< vertex< blas_complex<double> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_complex<double> >& PCA,
+     math::vertex< blas_complex<double> >& m,
+     blas_complex<double>& original_var, blas_complex<double>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
     
   };
 };

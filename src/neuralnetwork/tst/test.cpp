@@ -156,7 +156,9 @@ int main()
   srand(seed);
   
   try{
-    nnetwork_test();
+    // nnetwork_test();
+
+    simple_vae_test();
     
     // simple_tsne_test();
 
@@ -4850,7 +4852,7 @@ void nnetwork_complex_test()
 	for(unsigned int j=0;j<err.size();j++)
 	  error += ninv*err[j]*math::conj(err[j]);
 
-#if 0
+#if 1
 	// this works with pureLinear non-linearity
 	const auto delta = err; // delta = (f(z) - y)
 	whiteice::math::matrix< whiteice::math::blas_complex<float> > DF;
@@ -4886,7 +4888,7 @@ void nnetwork_complex_test()
       if(nn->exportdata(weights) == false)
 	std::cout << "export failed." << std::endl;
 
-      const whiteice::math::blas_complex<float> alpha(0.01f);
+      const whiteice::math::blas_complex<float> alpha(1e-6f);
       
       weights -= lrate * (sumgrad + alpha*weights);
       
@@ -4900,6 +4902,10 @@ void nnetwork_complex_test()
     }
     
     std::cout << counter << " : " << abs(error) << std::endl;
+
+    math::vertex< math::blas_complex<float> > params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
     
     delete nn;
   }
@@ -5029,24 +5035,28 @@ void nnetwork_test()
     arch.push_back(4);
     arch.push_back(4);
     arch.push_back(5);
+
+    // 16+4 + 16+4 + 20+5 parameters = 65 parameters in nnetwork<>
     
     nnetwork<> nn(arch); // 4-4-4-5 network (3 layer network)
 
     math::vertex<> b;
     math::matrix<> W;
 
-    nn.getBias(b, 0);
-    nn.getWeights(W, 0);
+    for(unsigned int l=0;l<nn.getLayers();l++){
+      nn.getBias(b, l);
+      nn.getWeights(W, l);
 
-    std::cout << "First layer W*x + b." << std::endl;
-    std::cout << "W = " << W << std::endl;
-    std::cout << "b = " << b << std::endl;
-
+      std::cout << "Layer " << l << " W = " << W << std::endl;
+      std::cout << "Layer " << l << " b = " << b << std::endl;
+    }
+    
     math::vertex<> all;
     nn.exportdata(all);
 
     std::cout << "whole nn vector = " << all << std::endl;
 
+    nn.getWeights(W, 0);
     W(0,0) = 100.0f;
 
     if(nn.setWeights(W, 1) == false)
@@ -5084,6 +5094,7 @@ void nnetwork_test()
     std::cout << std::flush;
     
     nnetwork<>* nn;
+    math::vertex<> p1, p2;
     
     std::vector<unsigned int> arch;
     arch.push_back(18);
@@ -5097,8 +5108,12 @@ void nnetwork_test()
     
     nn = new nnetwork<>(arch);    
     nn->randomize();
+
+    nn->exportdata(p1);
+    std::cout << "nn weights after random init = " << p1 << std::endl;
     
     nnetwork<>* copy = new nnetwork<>(*nn);
+    
     
     if(nn->save("nntest.cfg") == false){
       std::cout << "nnetwork::save() failed." << std::endl;
@@ -5121,7 +5136,7 @@ void nnetwork_test()
       return;
     }
     
-    math::vertex<> p1, p2;
+
     
     if(nn->exportdata(p1) == false || copy->exportdata(p2) == false){
       std::cout << "nnetwork exportdata failed." << std::endl;
@@ -5168,6 +5183,7 @@ void nnetwork_test()
     arch.push_back(2);
     
     nn = new nnetwork<>(arch);
+    nn->setNonlinearity(nn->getLayers()-1, nnetwork<>::pureLinear);
 
     nn->randomize();
     
@@ -5269,6 +5285,10 @@ void nnetwork_test()
     }
     
     std::cout << counter << " : " << error << std::endl;
+
+    math::vertex<> params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
     
     delete nn;
   }
@@ -5284,10 +5304,15 @@ void nnetwork_test()
     
     std::vector<unsigned int> arch;
     arch.push_back(2);
-    arch.push_back(20);
+    arch.push_back(10);
+    arch.push_back(10);
+    arch.push_back(10);
     arch.push_back(2);
     
     nn = new nnetwork<>(arch);
+    nn->setNonlinearity(nn->getLayers()-1, nnetwork<>::pureLinear);
+
+    nn->randomize();
     
     const unsigned int size = 500;
     
@@ -5358,6 +5383,7 @@ void nnetwork_test()
       
       if(nn->exportdata(weights) == false)
 	std::cout << "export failed." << std::endl;
+
       
       weights -= lrate * sumgrad;
       
@@ -5373,6 +5399,10 @@ void nnetwork_test()
     }
     
     std::cout << counter << " : " << error << std::endl;
+
+    math::vertex<> params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
     
     delete nn;
   }

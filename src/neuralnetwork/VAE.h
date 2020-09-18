@@ -59,14 +59,32 @@ namespace whiteice
 		  const nnetwork<T>& encoder,
 		  math::vertex<T>& zmean,
 		  math::vertex<T>& zstdev) const;
+
+      // x -> z (hidden) [with dropout table]
+      bool encode(const math::vertex<T>& x,
+		  const nnetwork<T>& encoder,
+		  const std::vector< std::vector<bool> >& dropout,
+		  math::vertex<T>& zmean,
+		  math::vertex<T>& zstdev) const;
       
       bool encodeSample(const math::vertex<T>& x,
 			const nnetwork<T>& encoder,
+			math::vertex<T>& zsample) const;
+
+      bool encodeSample(const math::vertex<T>& x,
+			const nnetwork<T>& encoder,
+			const std::vector< std::vector<bool> >& dropout,
 			math::vertex<T>& zsample) const;
       
       // z (hidden) -> x
       bool decode(const math::vertex<T>& z,
 		  const nnetwork<T>& decoder,
+		  math::vertex<T>& xmean) const;
+
+      // z (hidden) -> x [with dropout table]
+      bool decode(const math::vertex<T>& z,
+		  const nnetwork<T>& decoder,
+		  const std::vector< std::vector<bool> >& dropout,
 		  math::vertex<T>& xmean) const;
       
       unsigned int getDataDimension() const;

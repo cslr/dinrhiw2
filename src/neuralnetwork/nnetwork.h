@@ -25,6 +25,9 @@
 
 #include <vector>
 
+// keep 80% of weights in neural network seem to generalize well (90% gives bad result)
+#define DROPOUT_PROBABILITY 0.80f
+
 
 namespace whiteice
 {
@@ -94,6 +97,12 @@ namespace whiteice
     // simple thread-safe version [parallelizable version of calculate: don't calculate gradient nor collect samples]
     bool calculate(const math::vertex<T>& input, math::vertex<T>& output) const;
 
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   const std::vector< std::vector<bool> >& dropout) const;
+
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   std::vector< math::vertex<T> >& bpdata) const;
+
     // thread safe calculate call which also stores backpropagation data
     // bpdata can be used calculate mse_gradient() with backpropagation
     // in a const nnetwork<> class so that same nnetwork<> object can
@@ -123,6 +132,13 @@ namespace whiteice
     // grad(0,5*error^2) = grad(output - right) = nn(x) - y
     // used backpropagation data stored within nnetwork<> by non const calculate() call.
     bool mse_gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+
+    // calculates gradient of parameter weights w f(v|w) when using squared error: 
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // uses backpropagation data provided by user
+    bool mse_gradient(const math::vertex<T>& error,
+		      const std::vector< math::vertex<T> >& bpdata,
+		      math::vertex<T>& grad) const;
     
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
     // grad(0,5*error^2) = grad(output - right) = nn(x) - y
@@ -136,8 +152,16 @@ namespace whiteice
     // calculates jacobian/gradient of parameter weights w f(v|w)
     bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
 
+    // calculates jacobian/gradient of parameter weights w f(v|w) [uses dropout table]
+    bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad,
+		  const std::vector< std::vector<bool> >& dropout) const;
+
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
+
+    // calculates gradient of input v, grad f(v) while keeping weights w constant
+    bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad,
+			const std::vector< std::vector<bool> >& dropout) const;
 
      ////////////////////////////////////////////////////////////
     
@@ -201,15 +225,15 @@ namespace whiteice
     // drop out support:
 
     // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
-    bool setDropOut(const T retain_p = T(0.90)) ;
+    bool setDropOut(const T retain_p = T(DROPOUT_PROBABILITY)) ;
 
     // set dropout tables neurons to be non-dropout neurons
     // with probability p [1-p are dropout neurons]
     bool setDropOut(std::vector< std::vector<bool> >& dropout,
-		    const T retain_p = T(0.90)) const;
+		    const T retain_p = T(DROPOUT_PROBABILITY)) const;
 
     // clears drop out but scales weights according to retain_probability
-    bool removeDropOut(T retain_p = T(0.90)) ;
+    bool removeDropOut(T retain_p = T(DROPOUT_PROBABILITY)) ;
     
     void clearDropOut() ; // remove all drop-out without changing weights
     

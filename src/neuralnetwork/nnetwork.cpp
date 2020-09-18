@@ -611,9 +611,8 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output) const
   {
-    if(input.size() != arch[0])
-      return false; // input vector has wrong dimension
-
+    if(input.size() != input_size()) return false; // input vector has wrong dimension
+    
     // TODO write cblas and cuBLAS optimized version which uses
     // direct accesses to matrix/vertex memory areas
 
@@ -683,6 +682,69 @@ namespace whiteice
 #endif
   }
 
+  
+  // thread safe calculate(). Uses dropout data provided by user.
+  // This allows same nnetwork<> object to be used in thread safe manner (const).
+  template <typename T>
+  bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output,
+			      const std::vector< std::vector<bool> >& dropout) const
+  {
+    // TODO write cblas and cuBLAS optimized version which uses
+    // direct accesses to matrix/vertex memory areas
+
+    if(input.size() != input_size()) return false;
+    if(dropout.size() != getLayers())
+      return this->calculate(input, output);
+
+    output = input;
+    math::vertex<T>& state = output;
+
+    for(unsigned int l=0;l<getLayers();l++){
+      state = W[l]*state + b[l];
+      
+      for(unsigned int i=0;i<state.size();i++){
+	if(dropout[l][i]) state[i] = T(0.0f);
+	else state[i] = nonlin(state[i], l);
+      }
+    }
+    
+    return true;
+  }
+
+  
+  // thread safe calculate(). Uses dropout data provided by user.
+  // This allows same nnetwork<> object to be used in thread safe manner (const).
+  template <typename T>
+  bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output,
+			      std::vector< math::vertex<T> >& bpdata) const
+  {
+    // TODO write cblas and cuBLAS optimized version which uses
+    // direct accesses to matrix/vertex memory areas
+
+    if(input.size() != input_size()) return false;
+    if(dropout.size() != getLayers())
+      return this->calculate(input, output);
+
+    output = input;
+    math::vertex<T>& state = output;
+
+    bpdata.resize(getLayers()+1);
+    bpdata[0] = state; // input value
+
+    for(unsigned int l=0;l<getLayers();l++){
+      state = W[l]*state + b[l];
+
+      // stores neuron's local field
+      bpdata[l+1] = state;
+      
+      for(unsigned int i=0;i<state.size();i++){
+	state[i] = nonlin(state[i], l, i);
+      }
+    }
+    
+    return true;
+  }
+
 
   // thread safe calculate call which also stores backpropagation data
   // bpdata can be used calculate mse_gradient() with backpropagation
@@ -695,6 +757,10 @@ namespace whiteice
 			      const std::vector< std::vector<bool> >& dropout,
 			      std::vector< math::vertex<T> >& bpdata) const
   {
+    if(input.size() != input_size()) return false;
+    if(dropout.size() != getLayers())
+      return this->calculate(input, output, bpdata);
+    
     // TODO write cblas and cuBLAS optimized version which uses
     // direct accesses to matrix/vertex memory areas
 
@@ -704,29 +770,15 @@ namespace whiteice
     bpdata.resize(getLayers()+1);
     bpdata[0] = state; // input value
 
-    if(dropout.size() == getLayers()){ // uses dropout values
-      for(unsigned int l=0;l<getLayers();l++){
-	state = W[l]*state + b[l];
-	
-	// stores neuron's local field
-	bpdata[l+1] = state;
-	
-	for(unsigned int i=0;i<state.size();i++){
-	  if(dropout[l][i]) state[i] = T(0.0f);
-	  else state[i] = nonlin(state[i], l);
-	}
-      }
-    }
-    else{ // no dropout
-      for(unsigned int l=0;l<getLayers();l++){
-	state = W[l]*state + b[l];
-	
-	// stores neuron's local field
-	bpdata[l+1] = state;
-	
-	for(unsigned int i=0;i<state.size();i++){
-	  state[i] = nonlin(state[i], l);
-	}
+    for(unsigned int l=0;l<getLayers();l++){
+      state = W[l]*state + b[l];
+      
+      // stores neuron's local field
+      bpdata[l+1] = state;
+      
+      for(unsigned int i=0;i<state.size();i++){
+	if(dropout[l][i]) state[i] = T(0.0f);
+	else state[i] = nonlin(state[i], l);
       }
     }
     
@@ -1465,11 +1517,116 @@ namespace whiteice
 #endif
   }
 
+  
+  // calculates gradient of parameter weights w f(v|w) when using squared error: 
+  // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+  // uses backpropagation data provided by user
+  template <typename T>
+  bool nnetwork<T>::mse_gradient(const math::vertex<T>& error,
+				 const std::vector< math::vertex<T> >& bpdata,
+				 math::vertex<T>& grad) const
+  {
+
+    if(error.size() != arch[arch.size()-1])
+      return false;
+
+    if(bpdata.size() != getLayers()+1) // no backpropagation data
+      return false;
+    
+    bool complex_data = false;
+    
+    if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+       typeid(T) == typeid(whiteice::math::blas_complex<double>))
+    {
+      // with complex data we need to take conjugate of gradient values
+      complex_data = true;
+    }
+
+    int layer = getLayers()-1;
+
+    // initial local gradient is error[i]*NONLIN'(v)
+    math::vertex<T> lgrad(error);
+    
+    for(unsigned int i=0;i<lgrad.size();i++){
+      if(complex_data) lgrad[i].conj();
+
+      lgrad[i] *= Dnonlin(bpdata[layer+1][i], layer, i);
+    }
+
+    grad.resize(size);
+    unsigned int gindex = grad.size();
+    
+
+    while(layer >= 0){
+      const unsigned int gsize = W[layer].size() + b[layer].size();
+      gindex -= gsize;
+
+      // delta W = (lgrad * input^T) [input for the layer is bpdata's localfield]
+      // delta b =  lgrad;
+
+      if(frozen[layer] == false){
+
+	if(layer > 0){
+	  for(unsigned int y=0;y<W[layer].ysize();y++){
+	    for(unsigned int x=0;x<W[layer].xsize();x++){
+	      grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1, x);
+	      gindex++;
+	    }
+	  }
+	}
+	else{ // input layer
+	  for(unsigned int y=0;y<W[layer].ysize();y++){
+	    for(unsigned int x=0;x<W[layer].xsize();x++){
+	      grad[gindex] = lgrad[y] * bpdata[layer][x];
+	      gindex++;
+	    }
+	  }
+	}
+	
+	for(unsigned int y=0;y<b[layer].size();y++){
+	  grad[gindex] = lgrad[y];
+	  gindex++;
+	}
+
+	gindex -= gsize;
+
+      }
+      else{ // sets gradient for frozen layer zero
+	memset(&(grad[gindex]), 0, sizeof(T)*gsize);
+      }
+      
+      if(layer > 0){ // no need to calculate next local gradient for the input layer
+	// for hidden layers: local gradient is:
+	// lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
+	
+	lgrad = lgrad * W[layer];
+	
+	for(unsigned int i=0;i<lgrad.size();i++){
+	  lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	}
+      }
+
+      layer--;
+    }
+
+    assert(gindex == 0);
+    
+    // for complex neural networks we need to calculate conjugate value of
+    // the whole gradient (for this to work we need to calculate conjugate value
+    // of error term (f(z)-y) as the input for the gradient operation
+    if(complex_data){
+      grad.conj();
+    }
+    
+    return true;
+    
+  }
+  
 
   // calculates gradient of [ 1/2*(network(last_input|w) - last_output)^2 ]
   // => error*GRAD[function(x,w)]
   // used backpropagation bpdata provided by caller (use calculate() with bpdata) and 
-  // dropout heuristic if dropout vector is non empty object.
+  // dropout heuristic.
   template <typename T>
   bool nnetwork<T>::mse_gradient(const math::vertex<T>& error,
 				 const std::vector< math::vertex<T> >& bpdata,
@@ -1482,8 +1639,9 @@ namespace whiteice
     if(bpdata.size() != getLayers()+1)
       return false; // no backpropagation data
 
-    const bool has_dropout = (dropout.size() == getLayers()) ? true : false;
-
+    if(dropout.size() != getLayers())
+      return this->mse_gradient(error, bpdata, grad);
+    
     bool complex_data = false;
     
     if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
@@ -1521,10 +1679,7 @@ namespace whiteice
 	if(layer > 0){
 	  for(unsigned int y=0;y<W[layer].ysize();y++){
 	    for(unsigned int x=0;x<W[layer].xsize();x++){
-	      if(has_dropout){
-		if(dropout[layer-1][x]) grad[gindex] = T(0.0f);
-		else grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1);
-	      }
+	      if(dropout[layer-1][x]) grad[gindex] = T(0.0f);
 	      else grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1);
 	      
 	      gindex++;
@@ -1559,10 +1714,7 @@ namespace whiteice
 	lgrad = lgrad * W[layer];
 	
 	for(unsigned int i=0;i<lgrad.size();i++){
-	  if(has_dropout){
-	    if(dropout[layer-1][i]) lgrad[i] = T(0.0f);
-	    else lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1);
-	  }
+	  if(dropout[layer-1][i]) lgrad[i] = T(0.0f);
 	  else lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1);
 	}
 	
@@ -1729,6 +1881,164 @@ namespace whiteice
       }
       
     }
+    
+    assert(index == 0);
+
+    return true;
+  }
+
+
+    /* 
+   * calculates jacobian/gradient of parameter weights w f(v|w)
+   *
+   * For math documentation read docs/neural_network_gradient.tm
+   *
+   */
+  template <typename T>
+  bool nnetwork<T>::jacobian(const math::vertex<T>& input,
+			     math::matrix<T>& grad,
+			     const std::vector< std::vector<bool> >& dropout) const
+  {
+    if(input.size() != this->input_size()) return false;
+
+    if(dropout.size() != getLayers())
+      return this->jacobian(input, grad);
+    
+    // local fields for each layer (and input not stored)
+    std::vector< whiteice::math::vertex<T> > v;
+
+    auto x = input;
+
+    // forward pass: calculates local fields
+    int l = 0;
+
+    for(l=0;l<(signed)getLayers();l++){
+      
+      x = W[l]*x + b[l];
+
+      v.push_back(x); // stores local field
+
+      for(unsigned int i=0;i<getNeurons(l);i++){
+	if(dropout[l][i]) x[i] = T(0.0f);
+	else x[i] = nonlin(x[i], l);
+      }
+    }
+
+    /////////////////////////////////////////////////
+    // backward pass: calculates gradients
+
+    l--;
+
+    grad.resize(output_size(), gradient_size());
+    grad.zero(); // REMOVE ME: for debugging..
+
+    whiteice::math::matrix<T> lgrad; // calculates local gradient
+    lgrad.resize(output_size(), output_size());
+    lgrad.zero();
+
+    for(unsigned int i=0;i<output_size();i++){
+      lgrad(i,i) = Dnonlin(v[l][i], l);
+    }
+
+    unsigned int index = gradient_size();
+
+    for(;l>0;l--){
+      
+      // calculates gradient [gradient of W is always in ROW MAJOR format!]
+      {
+	index -= W[l].ysize()*W[l].xsize() + b[l].size();
+
+	// weight matrix gradient
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<W[l].ysize();j++){
+	  const unsigned int jindex = index + j*W[l].xsize();
+	  
+	  for(unsigned int i=0, iindex=jindex;i<W[l].xsize();i++,iindex++){
+	    
+	    // TODO optimize with vector math
+	    //#pragma omp parallel for schedule(auto)
+	    for(unsigned int k=0;k<grad.ysize();k++){
+	      if(dropout[l-1][i]) grad(k, iindex) = T(0.0f);
+	      else grad(k, iindex) = lgrad(k,j)*nonlin(v[l-1][i], l-1);
+	    }
+	    
+	  }
+	}
+
+	index += W[l].ysize()*W[l].xsize();
+
+	// bias vector gradient
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<b[l].size();j++){
+	  const unsigned int bindex = index + j;
+	  
+	  // TODO optimize with vector math
+	  //#pragma omp parallel for schedule(auto)
+	  for(unsigned int k=0;k<grad.ysize();k++)
+	    grad(k, bindex) = lgrad(k, j);	  
+	}
+
+	index += b[l].size();
+
+	index -= W[l].ysize()*W[l].xsize() + b[l].size();
+      }
+
+
+      // updates gradient
+      auto temp = lgrad * W[l];
+      lgrad.resize(temp.ysize(), getNeurons(l-1));
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<lgrad.xsize();i++){
+	const auto Df = dropout[l-1][i] ? T(0.0f) : Dnonlin(v[l-1][i], l-1);
+	for(unsigned int j=0;j<lgrad.ysize();j++){
+	  lgrad(j,i) = temp(j,i)*Df;
+	}
+      }
+      
+    }
+
+
+    // l = 0 layer (input layer)
+    {
+      
+      // calculates gradient
+      {
+	index -= W[0].ysize()*W[0].xsize() + b[0].size();
+
+	// weight matrix gradient
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<W[0].ysize();j++){
+	  const unsigned int jindex = index + j*W[0].xsize();
+	  for(unsigned int i=0, iindex=jindex;i<W[0].xsize();i++,iindex++){
+	    
+	    // TODO optimize with vector math
+	    //#pragma omp parallel for schedule(auto)
+	    for(unsigned int k=0;k<grad.ysize();k++)
+	      grad(k, iindex) = lgrad(k,j)*input[i];
+	  }
+	}
+
+	index += W[0].ysize()*W[0].xsize();
+
+	// bias vector gradient
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<b[0].size();i++){
+	  const unsigned int bindex = index + i;
+	  
+	  // TODO optimize with vector math
+	  //#pragma omp parallel for schedule(auto)
+	  for(unsigned int k=0;k<grad.ysize();k++)
+	    grad(k, bindex) = lgrad(k, i);
+
+	}
+
+	index += b[0].size();
+
+	index -= W[0].ysize()*W[0].xsize() + b[0].size();
+      }
+      
+    }
 
     
     
@@ -1736,6 +2046,9 @@ namespace whiteice
 
     return true;
   }
+  
+  
+
   
   
   template <typename T> // non-linearity used in neural network
@@ -2310,6 +2623,8 @@ namespace whiteice
   bool nnetwork<T>::gradient_value(const math::vertex<T>& input,
 				   math::matrix<T>& grad) const
   {
+    if(input.size() != input_size()) return false;
+    
     const unsigned int L = getLayers();
     
     grad.resize(input_size(), input_size());
@@ -2333,6 +2648,52 @@ namespace whiteice
 #pragma omp parallel for schedule(auto)
       for(unsigned int i=0;i<x.size();i++){
 	x[i] = nonlin(x[i], l, i);
+      }
+      
+    }
+    
+    return true;
+  }
+
+
+  /*
+   * calculates gradient of input value GRAD[f(v|w)] while keeping weights w constant
+   * Uses caller provided dropout table. Returns false if it is invalid.
+   */
+  template <typename T>
+  bool nnetwork<T>::gradient_value(const math::vertex<T>& input,
+				   math::matrix<T>& grad,
+				   const std::vector< std::vector<bool> >& dropout) const
+  {
+    if(input.size() != input_size()) return false;
+    if(dropout.size() != getLayers())
+      return this->gradient_value(input, grad);
+    
+    const unsigned int L = getLayers();
+    
+    grad.resize(input_size(), input_size());
+    grad.identity();
+    
+    math::vertex<T> x = input;
+
+    for(unsigned int l=0;l<L;l++){
+      
+      grad = W[l]*grad;
+      
+      x = W[l]*x + b[l];
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int j=0;j<grad.ysize();j++){
+	for(unsigned int i=0;i<grad.xsize();i++){
+	  if(dropout[l][j]) grad(j,i) = T(0.0f);
+	  else grad(j,i) *= Dnonlin(x[j], l);
+	}
+      }
+
+#pragma omp parallel for schedule(auto)
+      for(unsigned int i=0;i<x.size();i++){
+	if(dropout[l][i]) x[i] = T(0.0f);
+	else x[i] = nonlin(x[i], l);
       }
       
     }

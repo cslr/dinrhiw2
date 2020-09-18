@@ -19,8 +19,7 @@ namespace whiteice {
   /**
    * Implements **thread-safe** hardware random number generator
    * using Intel RDRAND if it is available (& usehw = true). 
-   * Otherwise falls back to C rand() which is NOT guaranteed to 
-   * be thread-safe (known bug for older CPUs).
+   * Otherwise falls back to C++ random_device which should be thread-safe.
    *
    * NOTE: It seems that software C++ RNG is actually faster in generating
    *       normally distributed variables than this software RNG using hardware RNG
@@ -32,8 +31,12 @@ namespace whiteice {
   public:
     
     // uses regular rand() if rdrand is not supported or usehw = false
-    RNG(const bool usehw = true); 
-    virtual ~RNG(){ }
+    RNG(const bool usehw = false); 
+    virtual ~RNG(){
+      if(distrib) delete distrib;
+      if(gen) delete gen;
+      if(rdsource) delete rdsource;
+    }
 
     // random integers
     unsigned int rand() const; // 32bit
@@ -81,6 +84,10 @@ namespace whiteice {
     // rand() using instructions to use if RDRAND is not available
     virtual unsigned int _rand32() const;
     virtual unsigned long long _rand64() const;
+
+    mutable std::random_device* rdsource = nullptr;
+    mutable std::mt19937* gen = nullptr;
+    mutable std::uniform_int_distribution<unsigned int>* distrib = nullptr;
     
     void cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4]);
   };

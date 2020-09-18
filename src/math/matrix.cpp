@@ -3970,12 +3970,102 @@ namespace whiteice
     template <typename T>
     bool matrix<T>::resize(unsigned int y, unsigned int x) 
     {
-      whiteice::logging.warn("matrix::resize(): is slow when not done as elementary operation.");
+      // whiteice::logging.warn("matrix::resize(): is slow when not done as elementary operation.");
+
+#ifdef CUBLAS
+
+      if(y == 0 || x == 0){
+	if(data) cudaFree(data);
+	if(compressor) delete compressor;
+	data = NULL;
+	compressor = NULL;
+	numRows = y;
+	numCols = x;
+	
+	return true;
+      }
+      else if(y*x = numCols*numRows){
+	numRows = y;
+	numCols = x;
+	
+	err = cudaMemset(data, 0, numRows*numCols*sizeof(T));
+	
+	if(err != cudaSuccess){
+	  whiteice::logging.error("matrix::resize(): cudaMemset() failed.");
+	  throw CUDAException("CUBLAS cudaMemset() failed");
+	}
+
+	if(compressor) delete compressor;
+	compressor = NULL;
+
+	return true;
+      }
+      else{
+	cudaError_t err;
+	void* cudaptr = NULL;
+	err = cudaMallocManaged(&cudaptr, y*x*sizeof(T));
+
+	if(err != cudaSuccess || cudaptr == NULL){
+	  gpu_sync();
+	  whiteice::logging.error("matrix::resize(): cudaMallocManaged() failed.");
+	  throw CUDAException("CUBLAS memory allocation failure.");
+	}
+	
+	err = cudaMemset(cudaptr, 0, y*x*sizeof(T));
+	
+	if(err != cudaSuccess){
+	  whiteice::logging.error("matrix::resize(): cudaMemset() failed.");
+	  throw CUDAException("CUBLAS cudaMemset() failed");
+	}
+
+	if(data) cudaFree(data);
+
+	numRows = y;
+	numCols = x;
+	data = (T*)cudaptr;
+	if(compressor) delete compressor;
+	compressor = NULL;
+
+	return true;
+      }
       
-      if(!resize_x(x)) return false;
-      if(!resize_y(y)) return false;      
+#else
+      if(y == 0 || x == 0){
+	if(data) free(data);
+	if(compressor) delete compressor;
+	data = NULL;
+	compressor = NULL;
+	numRows = y;
+	numCols = x;
+	return true;
+      }
+      else if(y*x == numCols*numRows){
+	numRows = y;
+	numCols = x;
+	memset(data, 0, numRows*numCols*sizeof(T)); // resets values to zero [remove]
+	if(compressor) delete compressor;
+	compressor = NULL;
+	return true;
+      }
+      else{
+	T* new_area = NULL;
+
+	new_area = (T*)realloc(data, sizeof(T)*x*y);
+	if(new_area == NULL) return false;
+	data = new_area;
+
+	if(compressor) delete compressor;
+	compressor = NULL;
+	
+	numRows = y;
+	numCols = x;
+	
+	memset(data, 0, numRows*numCols*sizeof(T));
+	return true;
+      }
       
-      return true;
+#endif
+      
     }
     
     
@@ -3984,44 +4074,17 @@ namespace whiteice
     {
 #ifdef CUBLAS
       if(d == numCols) return true;
-      else if(d == 0) return false; // no zero dimensions
-      else if(d < numCols){
-
-	// we can directly keep firest d numCols in the new memory area
-
-	cudaError_t err;
-	void* cudaptr = NULL;
-	err = cudaMallocManaged(&cudaptr, numRows*d*sizeof(T));
-
-	if(err != cudaSuccess || cudaptr == NULL){
-	  gpu_sync();
-	  whiteice::logging.error("matrix::resize_x(): cudaMallocManaged() failed.");
-	  throw CUDAException("CUBLAS memory allocation failure.");
-	}
-
-	// now does raw copy of memory to new area
-	err = cudaMemcpy(cudaptr, data, numRows*d*sizeof(T),
-			 cudaMemcpyDeviceToDevice);
-
-	if(err != cudaSuccess){
-	  gpu_sync();
-	  cudaFree(cudaptr);
-	  whiteice::logging.error("matrix::resize_x(): cudaMemcpy() failed.");
-	  throw CUDAException("CUBLAS cudaMemcpy() failed");
-	}
-
-	cudaFree(this->data);
-	this->data = (T*)cudaptr;
+      else if(d == 0){
+	if(data) cudaFree(data);
+	if(compressor) delete compressor;
+	data = NULL;
+	compressor = NULL;
 	numCols = d;
-
-	gpu_sync();
-
+	
 	return true;
       }
-      else{ // d > numCols
-	// we just directly add extra cols at the end of memory area
-	// and set them zero to be safe
-	
+      else{
+
 	cudaError_t err;
 	void* cudaptr = NULL;
 	err = cudaMallocManaged(&cudaptr, numRows*d*sizeof(T));
@@ -4031,93 +4094,55 @@ namespace whiteice
 	  whiteice::logging.error("matrix::resize_x(): cudaMallocManaged() failed.");
 	  throw CUDAException("CUBLAS memory allocation failure.");
 	}
-
-	// now does raw copy of memory to new area (old data area)
-	err = cudaMemcpy(cudaptr, data, numRows*numCols*sizeof(T),
-			 cudaMemcpyDeviceToDevice);
-
-	if(err != cudaSuccess){
-	  gpu_sync();
-	  cudaFree(cudaptr);
-	  whiteice::logging.error("matrix::resize_x(): cudaMemcpy() failed.");
-	  throw CUDAException("CUBLAS cudaMemcpy() failed");
-	}
-
-	// zeroes new area
-	unsigned char* bytes = (unsigned char*)cudaptr;
 	
-	err = cudaMemset(&(bytes[numRows*numCols*sizeof(T)]), 0,
-			 numRows*(d - numCols)*sizeof(T));
+	err = cudaMemset(cudaptr, 0, numRows*d*sizeof(T));
 	
 	if(err != cudaSuccess){
-	  gpu_sync();
-	  cudaFree(cudaptr);
 	  whiteice::logging.error("matrix::resize_x(): cudaMemset() failed.");
 	  throw CUDAException("CUBLAS cudaMemset() failed");
 	}
 
-	cudaFree(this->data);
-	this->data = (T*)cudaptr;
-	numCols = d;
+	if(data) cudaFree(data);
 
-	gpu_sync();
+	numCols = d;
+	data = (T*)cudaptr;
+	if(compressor) delete compressor;
+	compressor = NULL;
 
 	return true;
+	
       }
-      
 #else
       if(d == numCols){
 	return true;
       }
       else if(d == 0){
-	free(data);
-	data = 0;
+	if(data) free(data);
+	if(compressor) delete compressor;
 	
-	numRows = 0;
-	numCols = 0; 
-	data = 0;	
+	data = NULL;
+	compressor = NULL;
 	
-	return true;
-      }
-      else if(d < numCols){
-	
-	// moves rows backwards/shortens rows
-	for(unsigned i=1;i<numRows;i++)
-	  memmove(&(data[i*d]), &(data[i*numCols]), d*sizeof(T));
-	
-	// (tries to) resize data
-	T* new_area = 0;
-	
-	new_area = (T*)realloc(data, sizeof(T)*d*numRows);
-	if(new_area) data = new_area;
-	else return false;
-	
-	numCols = d;
+	numCols = d; 
 	
 	return true;
       }
-      else if(d > numCols){
-	T* new_area = 0;
-	
+      else{
+	T* new_area = NULL;
+
 	new_area = (T*)realloc(data, sizeof(T)*d*numRows);
-	if(!new_area) return false;
-	
+	if(new_area == NULL) return false;
 	data = new_area;
 	
-	// moves rows to correct memory locations and zeroes the
-	// rest of the data
-	for(int i=numRows-1;i>0;i--){
-	  memmove(&(data[i*d]), &(data[i*numCols]), numCols*sizeof(T));
-	  memset(&(data[i*d + numCols]), 0, (d - numCols)*sizeof(T));
-	}
-	
-	memset(&(data[numCols]), 0, (d - numCols)*sizeof(T));
+	if(compressor) delete compressor;
+	compressor = NULL;
 	
 	numCols = d;
+	
+	memset(data, 0, numRows*numCols*sizeof(T));
 	return true;
+	
       }
-      
-      return true;
 #endif
     }
     
@@ -4128,87 +4153,76 @@ namespace whiteice
 #ifdef CUBLAS
 
       if(d == numRows) return true; // nothing to do
-      else if(d == 0) return false; // don't accept zero size matrixes
-      else{
-	// we allocate new memory area and copy columns one by one to target
+      else if(d == 0){
+	if(data) cudaFree(data);
+	if(compressor) delete compressor;
+	data = NULL;
+	compressor = NULL;
+	numRows = d;
 	
+	return true;
+      }
+      else{
+
 	cudaError_t err;
 	void* cudaptr = NULL;
-	err = cudaMallocManaged(&cudaptr, d*numCols*sizeof(T));
+	err = cudaMallocManaged(&cudaptr, numCols*d*sizeof(T));
 
 	if(err != cudaSuccess || cudaptr == NULL){
+	  gpu_sync();
 	  whiteice::logging.error("matrix::resize_y(): cudaMallocManaged() failed.");
 	  throw CUDAException("CUBLAS memory allocation failure.");
 	}
-
-	for(unsigned int c=0;c<numCols;c++){
-	  // now does raw copy of memory to new area
-	  T* area = (T*)cudaptr;
-
-	  const unsigned int LEN = (d < numRows) ? d : numRows;
-	  
-	  err = cudaMemcpy(&(area[c*d]), &(data[c*numRows]), LEN*sizeof(T),
-			   cudaMemcpyDeviceToDevice);
-	  
-	  if(err != cudaSuccess){
-	    gpu_sync();
-	    cudaFree(cudaptr);
-	    whiteice::logging.error("matrix::resize_y(): cudaMemcpy() failed.");
-	    throw CUDAException("CUBLAS cudaMemcpy() failed");
-	  }
-
-	  if(d > numRows){ // set rest of this column to zero
-
-	    unsigned int index = numRows;
-	    if(c > 1) index += (c-1)*d;
-
-	    err = cudaMemset(&(area[index]), 0, (d - numRows)*sizeof(T));
-	    
-	    if(err != cudaSuccess){
-	      gpu_sync();
-	      cudaFree(cudaptr);
-	      whiteice::logging.error("vertex::resize_y(): cudaMemset() failed.");
-	      throw CUDAException("cudaMemset() failed.");
-	    }
-	  }
+	
+	err = cudaMemset(cudaptr, 0, numCols*d*sizeof(T));
+	
+	if(err != cudaSuccess){
+	  whiteice::logging.error("matrix::resize_y(): cudaMemset() failed.");
+	  throw CUDAException("CUBLAS cudaMemset() failed");
 	}
 
-	if(this->data) cudaFree(this->data);
-	this->data = (T*)cudaptr;
-	numRows = d;
+	if(data) cudaFree(data);
 
-	gpu_sync();
+	numRows = d;
+	data = (T*)cudaptr;
+	if(compressor) delete compressor;
+	compressor = NULL;
 
 	return true;
+	
       }
-
-      
-#else 
-      T* new_area = 0;
+#else
       if(d == numRows){
 	return true;
       }
-      else if(d == 0){	
-	free(data);
+      else if(d == 0){
+	if(data) free(data);
+	if(compressor) delete compressor;
 	
-	numRows = 0;
-	numCols = 0; 
-	data = 0;
+	data = NULL;
+	compressor = NULL;
+	
+	numRows = d;
 	
 	return true;
       }
-      
-      new_area = (T*)realloc(data, sizeof(T)*numCols*d);
-      if(!new_area) return false;
-      
-      data = new_area;
-      
-      if(numRows < d)
-	memset(&(data[numCols*numRows]), 0, (d - numRows)*numCols*sizeof(T));
+      else{
+	T* new_area = 0;
 
-      numRows = d;
-      
-      return true;
+	new_area = (T*)realloc(data, sizeof(T)*d*numCols);
+	if(new_area == NULL) return false;
+	data = new_area;
+
+	if(compressor) delete compressor;
+	compressor = NULL;
+	
+	numRows = d;
+	
+	memset(data, 0, numRows*numCols*sizeof(T));
+	return true;
+	
+      }
+
 #endif
     }
     

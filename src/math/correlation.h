@@ -56,8 +56,19 @@ namespace whiteice
 
     // calculates PCA dimension reduction using symmetric eigenvalue decomposition
     template <typename T>
-      bool pca(const std::vector< vertex<T> >& data, 
-	       const unsigned int dimensions,
+    bool pca(const std::vector< vertex<T> >& data, 
+	     const unsigned int dimensions,
+	     math::matrix<T>& PCA,
+	     math::vertex<T>& m,
+	     T& original_var, T& reduced_var,
+	     bool regularizeIfNeeded = false,
+	     bool unitVariance = false);
+
+    // calculates PCA dimension reduction using symmetric eigenvalue decomposition
+    // keeps p% = ]0,100%] of total variance (highest variance eigenvectors first)
+    template <typename T>
+    bool pca_p(const std::vector< vertex<T> >& data, 
+	       const float percent_total_variance,
 	       math::matrix<T>& PCA,
 	       math::vertex<T>& m,
 	       T& original_var, T& reduced_var,
@@ -247,6 +258,61 @@ namespace whiteice
        blas_complex<double>& original_var, blas_complex<double>& reduced_var,
        bool regularizeIfNeeded,
        bool unitVariance);
+
+
+    extern template bool pca_p <float>
+    (const std::vector< vertex<float> >& data, 
+     const float percent_total_variance,
+     math::matrix<float>& PCA,
+     math::vertex<float>& m,
+     float& original_var, float& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p <double>
+    (const std::vector< vertex<double> >& data, 
+     const float percent_total_variance,
+     math::matrix<double>& PCA,
+     math::vertex<double>& m,
+     double& original_var, double& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p < blas_real<float> >
+    (const std::vector< vertex< blas_real<float> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_real<float> >& PCA,
+     math::vertex< blas_real<float> >& m,
+     blas_real<float>& original_var, blas_real<float>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p < blas_real<double> >
+    (const std::vector< vertex< blas_real<double> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_real<double> >& PCA,
+     math::vertex< blas_real<double> >& m,
+     blas_real<double>& original_var, blas_real<double>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p < blas_complex<float> >
+    (const std::vector< vertex< blas_complex<float> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_complex<float> >& PCA,
+     math::vertex< blas_complex<float> >& m,
+     blas_complex<float>& original_var, blas_complex<float>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p < blas_complex<double> >
+    (const std::vector< vertex< blas_complex<double> > >& data, 
+     const float percent_total_variance,
+     math::matrix< blas_complex<double> >& PCA,
+     math::vertex< blas_complex<double> >& m,
+     blas_complex<double>& original_var, blas_complex<double>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
     
     
   }

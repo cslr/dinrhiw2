@@ -8,6 +8,7 @@
 #include "TSNE.h"
 
 #include "linear_ETA.h"
+#include "correlation.h"
 #include "fastpca.h"
 
 namespace whiteice
@@ -96,18 +97,30 @@ namespace whiteice
     
     {
       math::matrix<T> PCA;
+      math::vertex<T> m;
 
-      if(whiteice::math::fastpca_p(samples, 0.95f, PCA) == false){
-	printf("ERROR: TSNE::calculate(): fastpca() failed with input data.\n");
+      T original_var, reduced_var;
+      const bool regularize = true;
+      const bool unit_variance_normalization = false;
+
+      if(whiteice::math::pca_p(samples, 0.95f, PCA, m,
+			       original_var, reduced_var,
+			       regularize, unit_variance_normalization) == false){
+	printf("ERROR: TSNE::calculate(): pca_p() failed with input data.\n");
 	return false;
       }
       else{
-	if(verbose)
-	  printf("TSNE: Preprocessing linear dimension reduction %d->%d.\n",
-		 PCA.xsize(), PCA.ysize());
+	if(verbose){
+	  float ovar, rvar;
+	  whiteice::math::convert(ovar, original_var);
+	  whiteice::math::convert(rvar, reduced_var);
+	  
+	  printf("TSNE: Preprocessing linear dimension reduction %d->%d (%f var -> %f var).\n",
+		 PCA.xsize(), PCA.ysize(), ovar, rvar);
+	}
 	
 	for(const auto& s : samples){
-	  xsamples.push_back(PCA*s);
+	  xsamples.push_back(PCA*(s - m));
 	}
       }
     }

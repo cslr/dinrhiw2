@@ -475,19 +475,26 @@ namespace whiteice
       {
 	T esum = T(0.0f);
 	
-	whiteice::nnetwork<T> nnet = net;
+	const whiteice::nnetwork<T>& nnet = net;
+	std::vector< std::vector<bool> > net_dropout;
+	
 	math::vertex<T> err;
+	math::vertex<T> out;
 
 	// calculates error from the testing dataset
 #pragma omp for nowait schedule(auto)	    	    
 	for(unsigned int i=0;i<dtest.size(0);i++){
 	  const unsigned int index = i; // rng.rand() % dtest.size(0);
-	  math::vertex<T> out;
+	  
 	  const auto& yvalue = dtest.access(1, index);
 
-	  if(dropout) nnet.setDropOut();
-	  
-	  nnet.calculate(dtest.access(0, index), out);
+	  if(dropout){
+	    nnet.setDropOut(net_dropout);
+	    nnet.calculate(dtest.access(0, index), out, net_dropout);
+	  }
+	  else{
+	    nnet.calculate(dtest.access(0, index), out);
+	  }
 	  
 	  err = out - yvalue;
 
@@ -801,25 +808,40 @@ namespace whiteice
 		sgrad.resize(nn->exportdatasize());
 		sgrad.zero();
 		
-		whiteice::nnetwork<T> nnet(*nn);
+		const whiteice::nnetwork<T>& nnet = *nn;
+		std::vector< math::vertex<T> > bpdata;
+		std::vector< std::vector<bool> > net_dropout;
+		
 		math::vertex<T> err;
+		math::vertex<T> output;
 		
 #pragma omp for nowait schedule(auto)
 		for(unsigned int i=0;i<MINIBATCHSIZE;i++){
 		  const unsigned int index = rng.rand() % dtrain.size(0);
 		  // const unsigned int index = i;
 		  
-		  if(dropout) nnet.setDropOut();
-		  
-		  nnet.input() = dtrain.access(0, index);
-		  nnet.calculate(true);
-		  
-		  err = nnet.output() - dtrain.access(1,index);
+		  if(dropout){
+		    nnet.setDropOut(net_dropout);
+		    nnet.calculate(dtrain.access(0, index), output,
+				   net_dropout, bpdata);		    
+		  }
+		  else{
+		    nnet.calculate(dtrain.access(1, index), output,
+				   bpdata);
+		  }
 
-		  if(mne) err.normalize(); // minimum norm error gradient instead
+		  err = output - dtrain.access(1, index);
 		  
-		  if(nnet.mse_gradient(err, grad) == false)
-		    std::cout << "gradient failed." << std::endl;
+		  if(mne) err.normalize(); // minimum norm error gradient instead
+
+		  if(dropout){
+		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false)
+		      std::cout << "gradient failed." << std::endl;
+		  }
+		  else{
+		    if(nnet.mse_gradient(err, bpdata, grad) == false)
+		      std::cout << "gradient failed." << std::endl;
+		  }
 		  
 		  sgrad += ninv*grad;
 		}
@@ -839,24 +861,39 @@ namespace whiteice
 		sgrad.resize(nn->exportdatasize());
 		sgrad.zero();
 		
-		whiteice::nnetwork<T> nnet(*nn);
+		const whiteice::nnetwork<T>& nnet = *nn;
+		std::vector< math::vertex<T> > bpdata;
+		std::vector< std::vector<bool> > net_dropout;
+
+		math::vertex<T> output;
 		math::vertex<T> err;
 		
 #pragma omp for nowait schedule(auto)
 		for(unsigned int i=0;i<dtrain.size(0);i++){
 		  const unsigned int index = i;
 		  
-		  if(dropout) nnet.setDropOut();
-		  
-		  nnet.input() = dtrain.access(0, index);
-		  nnet.calculate(true);
-		  
-		  err = nnet.output() - dtrain.access(1,index);
+		  if(dropout){
+		    nnet.setDropOut(net_dropout);
+		    nnet.calculate(dtrain.access(0, index), output,
+				   net_dropout, bpdata);		    
+		  }
+		  else{
+		    nnet.calculate(dtrain.access(1, index), output,
+				   bpdata);
+		  }
 
-		  if(mne) err.normalize(); // minimum norm error gradient instead
+		  err = output - dtrain.access(1, index);
 		  
-		  if(nnet.mse_gradient(err, grad) == false)
-		    std::cout << "gradient failed." << std::endl;
+		  if(mne) err.normalize(); // minimum norm error gradient instead
+
+		  if(dropout){
+		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false)
+		      std::cout << "gradient failed." << std::endl;
+		  }
+		  else{
+		    if(nnet.mse_gradient(err, bpdata, grad) == false)
+		      std::cout << "gradient failed." << std::endl;
+		  }
 		  
 		  sgrad += ninv*grad;
 		}
