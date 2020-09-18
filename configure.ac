@@ -69,7 +69,6 @@ fi
 
 AC_MSG_RESULT([$has_isfinite])
 
-
 dnl checks if gettimeofday() is either in time.h or sys/time.h
 AC_MSG_CHECKING([if gettimeofday() is available])
 
@@ -105,34 +104,34 @@ dnl enables CPU specific optimization flags
 AC_ARG_ENABLE([optimize],
 	AS_HELP_STRING([--disable-optimize],[Disable optimization]))
 
-optimization_flags="-O3 -ffast-math -mtune=native -ftree-vectorize"
+optimization_flags="-fPIC -O3 -ffast-math -mtune=native -ftree-vectorize"
 
 AS_IF([test "x$enable_optimize" == "xno"],[
-  optimization_flags="-g"
+  optimization_flags="-fPIC -g"
   CFLAGS=""
   CXXFLAGS=""
 ])
 
 conf_flags=""
 
-dnl "-fPIC" is DISABLED FOR NOW
+dnl -fPIC is needed on Linux to build shared libraries
 
 if [[ $cpufamily = "x86_64" ]]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize"
+    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
-      optimization_flags="-g -DAMD64"
+      optimization_flags="-fPIC -g -DAMD64"
       CFLAGS=""
       CXXFLAGS=""
     ])
 
-    conf_flags="-fPIC -DAMD64"
+    conf_flags="-DAMD64"
 elif [[ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]]; then
 
-    optimization_flags="-O3 -g -DIA32 -ffast-math -mtune=native -ftree-vectorize"
+    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math -mtune=native -ftree-vectorize"
 
     AS_IF([test "x$enable_optimize" == "xno"],[
-      optimization_flags="-g -DIA32"
+      optimization_flags="-fPIC -g -DIA32"
       CFLAGS=""
       CXXFLAGS=""
     ])

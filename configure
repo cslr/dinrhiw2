@@ -3947,7 +3947,6 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $has_isfinite" >&5
 $as_echo "$has_isfinite" >&6; }
 
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if gettimeofday() is available" >&5
 $as_echo_n "checking if gettimeofday() is available... " >&6; }
 
@@ -4006,11 +4005,11 @@ if test "${enable_optimize+set}" = set; then :
 fi
 
 
-optimization_flags="-O3 -ffast-math -mtune=native -ftree-vectorize"
+optimization_flags="-fPIC -O3 -ffast-math -mtune=native -ftree-vectorize"
 
 if test "x$enable_optimize" == "xno"; then :
 
-  optimization_flags="-g"
+  optimization_flags="-fPIC -g"
   CFLAGS=""
   CXXFLAGS=""
 
@@ -4020,24 +4019,24 @@ conf_flags=""
 
 
 if [ $cpufamily = "x86_64" ]; then
-    optimization_flags="-O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize"
+    optimization_flags="-fPIC -O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize"
 
     if test "x$enable_optimize" == "xno"; then :
 
-      optimization_flags="-g -DAMD64"
+      optimization_flags="-fPIC -g -DAMD64"
       CFLAGS=""
       CXXFLAGS=""
 
 fi
 
-    conf_flags="-fPIC -DAMD64"
+    conf_flags="-DAMD64"
 elif [ "$cpufamily" = "i386" -o "$cpufamily" = "i486" -o "$cpufamily=i586" -o "$cpufamily" = "i686" -o "$cpufamily" = "i786" -o "$cpufamily" = "i886" -o "$cpufamily" = "i986" ]; then
 
-    optimization_flags="-O3 -g -DIA32 -ffast-math -mtune=native -ftree-vectorize"
+    optimization_flags="-fPIC -O3 -g -DIA32 -ffast-math -mtune=native -ftree-vectorize"
 
     if test "x$enable_optimize" == "xno"; then :
 
-      optimization_flags="-g -DIA32"
+      optimization_flags="-fPIC -g -DIA32"
       CFLAGS=""
       CXXFLAGS=""
 

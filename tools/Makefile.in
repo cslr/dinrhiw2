@@ -12,7 +12,7 @@ RM = rm
 
 OPTIMIZE=@optimization_flags@
 
-CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -I../lib/ @conf_flags@ @EXTRA_INCLUDEPATHS@
+CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -Wno-class-memaccess -I../lib/ @conf_flags@ @EXTRA_INCLUDEPATHS@
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
 SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
