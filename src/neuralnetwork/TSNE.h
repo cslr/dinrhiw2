@@ -50,15 +50,15 @@ namespace whiteice
       TSNE(const TSNE<T>& tsne);
       
       // dimension reduces samples to DIM dimensional vectors using t-SNE algorithm
-      // PCA initialization gives better results with absolute value KL divergence
-      // but generalization results are worse when given for neural network
-      // for non-linear reconstruction.
+      // uses PCA to remove unnecessary input dimensions (keeps 95% of variance)
+      // uses PCA+ICA to postprocess clustering results
       bool calculate(const std::vector< math::vertex<T> >& samples,
 		     const unsigned int DIM,
 		     std::vector< math::vertex<T> >& results,
 		     const bool verbose = false,
 		     LoggingInterface* const messages = NULL,
-		     VisualizationInterface* const gui = NULL);
+		     VisualizationInterface* const gui = NULL,
+		     unsigned int* running_flag = NULL);
       
     private:
       

@@ -88,36 +88,8 @@ namespace whiteice
 	const unsigned int num = D.ysize();
 	const unsigned int dim = D.xsize();
 	
-#if 0
-	matrix<T> V;
-	
-	{
-	  matrix<T> Rxx;
-	  if(autocorrelation(Rxx, D) == false)
-	    return false;
-	  
-	  if(symmetric_eig(Rxx, V) == false)
-	    return false;
-	  
-	  // calculates V = D**(-0.5) * V.transpose()
-	  V.transpose();
-	  
-	  for(unsigned int j=0;j<dim;j++){
-	    T scaling = T(1.0) / whiteice::math::sqrt(Rxx(j,j));
-	    for(unsigned int i=0;i<dim;i++)
-	      V(j,i) *= scaling;
-	  }
-	}
-	
-	V.transpose();
-	matrix<T> X = D * V; // X = (V * D')'
-	V.transpose();
-#else
 	// data MUST be already white (PCA preprocessed)
 	const matrix<T>& X = D; // X = (V * D')'
-	
-#endif
-	
 	
 	const T TOLERANCE = T(0.0001);
 	const unsigned int MAXITERS = 1000;
@@ -197,9 +169,7 @@ namespace whiteice
 	    
 	    // checks for convergence / stopping critearias
 	    T dotprod = (w_old * w)[0];
-	    
-	    std::cout << "w = " << w << std::endl;
-	    if(verbose) std::cout << "Dot product: " << dotprod << std::endl;
+
 	    
 	    if((T(1.0) - dotprod) < TOLERANCE && iter > 10){
 	      convergence = true;

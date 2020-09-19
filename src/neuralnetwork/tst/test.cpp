@@ -157,10 +157,10 @@ int main()
   
   try{
     // nnetwork_test();
-
-    simple_vae_test();
     
-    // simple_tsne_test();
+    // simple_vae_test();
+    
+    simple_tsne_test();
 
     // nngraddescent_complex_test();
 
@@ -314,7 +314,7 @@ void simple_tsne_test()
 
     const unsigned int HIGHDIM = 20;
     const unsigned int CLUSTERS = 10; // number of clusters
-    const unsigned int N = 100; // number of samples per cluster (total of 1000 datapoints)
+    const unsigned int N = 10; // number of samples per cluster (total of 1000 datapoints)
 
     whiteice::RNG<> rng;
 
@@ -342,7 +342,7 @@ void simple_tsne_test()
     }
 
     // calculate dimension reduction
-    whiteice::TSNE<> tsne(true);
+    whiteice::TSNE<> tsne(false);
     std::vector< whiteice::math::vertex<> > ydata;
 
     if(tsne.calculate(data, 2, ydata, true) == false){

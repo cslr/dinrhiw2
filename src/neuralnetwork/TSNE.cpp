@@ -10,6 +10,7 @@
 #include "linear_ETA.h"
 #include "correlation.h"
 #include "fastpca.h"
+#include "ica.h"
 
 namespace whiteice
 {
@@ -35,13 +36,19 @@ namespace whiteice
 			  std::vector< math::vertex<T> >& results,
 			  const bool verbose,
 			  LoggingInterface* const messages,
-			  VisualizationInterface* const gui)
+			  VisualizationInterface* const gui,
+			  unsigned int* running_flag)
   {
     if(DIM <= 0) return false;
     if(samples.size() <= 0) return false;
     if(samples[0].size() <= DIM) return false;
+    
+    if(running_flag)
+      if(*running_flag == 0)
+	return false; // execution stopped
 
     this->verbose = verbose;
+    
 
     whiteice::RNG<T> rng;
 
@@ -168,9 +175,16 @@ namespace whiteice
       T klvalue = T(1000.0f);
       T prev_round_klvalue = T(1000.f);
 
+      // implements early stopping
+      std::list<T> history;
+      const unsigned int HISTORYSIZE = 200;
+      const T CONVERGENCE_LIMIT = T(0.02f); // st.dev. is 2.0% of the mean
+
       whiteice::linear_ETA<double> eta;
       eta.start(0.0, MAXITER);
       eta.update(0.0);
+
+      if(running_flag) if(*running_flag == 0) return false; // execution stopped
 
       if(gui && DIM >= 2){
 	gui->show();
@@ -196,6 +210,38 @@ namespace whiteice
 	    return false;
 	  }
 
+	  history.push_back(abs(klvalue));
+	  while(history.size() > HISTORYSIZE)
+	    history.pop_front();
+
+	  T convergence_statistic = T(0.0f);
+	  
+	  // calculates convergence statistic
+	  if(history.size() >= HISTORYSIZE){
+	    T m = T(0.0f);
+	    T v = T(0.0f);
+
+	    for(const auto& k : history)
+	      m += k;
+
+	    m /= history.size();
+
+	    for(const auto& k : history)
+	      v += (k - m)*(k - m);
+
+	    v /= (history.size() - 1);
+	    v = sqrt(real(v));
+
+	    convergence_statistic = real(v/m);
+
+	    if(real(convergence_statistic) < real(CONVERGENCE_LIMIT)){
+	      // stops computation (changes in KL value are so small)
+	      iter = MAXITER+100;
+	    }
+	  }
+
+
+	  
 	  if(iter == 0){
 	    best_klvalue = klvalue;
 	  }
@@ -203,16 +249,20 @@ namespace whiteice
 	  float klvaluef = 0.0f;
 	  whiteice::math::convert(klvaluef, best_klvalue);
 
+	  float convf = 0.0f;
+	  whiteice::math::convert(convf, convergence_statistic);
+
 	  if(iter > 0){
 	    snprintf(buffer, BUFLEN,
-		     "%d/%d: model kl divergence %f. ETA %f hour(s) (%f minute(s))\n",
+		     "%d/%d: model kl divergence %f. [%f] ETA %f hour(s) (%f minute(s))\n",
 		     iter, MAXITER,
-		     klvaluef, eta.estimate()/3600.0, eta.estimate()/60.0);
+		     klvaluef, convf,
+		     eta.estimate()/3600.0, eta.estimate()/60.0);
 	  }
 	  else{
-	    snprintf(buffer, BUFLEN, "%d/%d: model kl divergence %f.\n",
+	    snprintf(buffer, BUFLEN, "%d/%d: model kl divergence %f [%f].\n",
 		     iter, MAXITER, 
-		     klvaluef);	    
+		     klvaluef, convf);	    
 	  }
 
 	  if(verbose){
@@ -226,8 +276,9 @@ namespace whiteice
 	  
 	}
 
-	// check if solution improved
+	
 	{
+	  // check if solution improved
 	  if(klvalue <= best_klvalue){
 	    best_klvalue = klvalue;	    
 	    noimprove_counter = 0;
@@ -235,6 +286,11 @@ namespace whiteice
 	  else{
 	    noimprove_counter++;
 	  }
+
+	  // checks if caller provided flag became false (=> stop)
+	  if(running_flag)
+	    if(*running_flag == 0)
+	      iter = MAXITER+100; // execution stopped
 	  
 	  // adaptive learning rate
 	  if(klvalue < prev_round_klvalue){
@@ -285,6 +341,36 @@ namespace whiteice
 	iter++;
 	eta.update(iter);
       }
+    }
+
+    // postprocesses low dimensional coordinate results using ICA
+    // NOTE: results may not give as food as one may think because
+    // data is in 2d/3d plane/cubes in a form of clusters (non-linear map)
+    if(yvalues.size() > 0){
+
+      whiteice::math::matrix<T> PCA;
+      whiteice::math::vertex<T> m;
+      T v1, v2;
+
+      if(whiteice::math::pca(yvalues, yvalues[0].size(), PCA, m, v1, v2, true, true) == true){
+
+	for(auto& v : yvalues){
+	  v = PCA*(v - m);
+	}
+
+	whiteice::math::matrix<T> ICA;
+
+	if(whiteice::math::ica(yvalues, ICA, false) == true){
+	  for(auto& v : yvalues){
+	    v = ICA*v;
+	  }
+	  
+	}
+	
+      }
+      
+      
+      
     }
     
     results = yvalues;
