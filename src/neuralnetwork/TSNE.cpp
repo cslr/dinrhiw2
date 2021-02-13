@@ -344,7 +344,7 @@ namespace whiteice
     }
 
     // postprocesses low dimensional coordinate results using ICA
-    // NOTE: results may not give as food as one may think because
+    // NOTE: results may not give as good as one may think because
     // data is in 2d/3d plane/cubes in a form of clusters (non-linear map)
     if(yvalues.size() > 0){
 
