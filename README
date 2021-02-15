@@ -25,7 +25,7 @@ to compile and use the library initially on Linux.
 
 Library dependencies:
 
-* OpenBLAS (cblas.h interface),
+* OpenBLAS or Intel MKL (cblas.h interface),
 * GMP (arbitrary precision mathematics)
 * ZLib [not really needed]
 
