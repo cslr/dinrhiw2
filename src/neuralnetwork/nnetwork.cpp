@@ -2175,7 +2175,7 @@ namespace whiteice
 	  out.real(0.01f*out.real());
 	}
 	
-	if(input.real() < 0.0f){
+	if(input.imag() < 0.0f){
 	  out.imag(0.01f*out.imag());
 	}
 
@@ -2300,7 +2300,7 @@ namespace whiteice
 	  out.real(0.01f*out.real());
 	}
 	
-	if(input.real() < 0.0f){
+	if(input.imag() < 0.0f){
 	  out.imag(0.01f*out.imag());
 	}
 
@@ -2447,7 +2447,7 @@ namespace whiteice
 	  out.real(0.01f*out.real());
 	}
 	
-	if(input.real() < 0.0f){
+	if(input.imag() < 0.0f){
 	  out.imag(0.01f*out.imag());
 	}
 
@@ -2566,7 +2566,7 @@ namespace whiteice
 	  out.real(0.01f*out.real());
 	}
 	
-	if(input.real() < 0.0f){
+	if(input.imag() < 0.0f){
 	  out.imag(0.01f*out.imag());
 	}
 
