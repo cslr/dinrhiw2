@@ -822,12 +822,18 @@ namespace whiteice
 		  
 		  if(dropout){
 		    nnet.setDropOut(net_dropout);
-		    nnet.calculate(dtrain.access(0, index), output,
-				   net_dropout, bpdata);		    
+		    if(nnet.calculate(dtrain.access(0, index), output,
+				      net_dropout, bpdata) == false){
+		      std::cout << "calculate failed (1)." << std::endl;
+		      assert(0);
+		    }
 		  }
 		  else{
-		    nnet.calculate(dtrain.access(1, index), output,
-				   bpdata);
+		    if(nnet.calculate(dtrain.access(0, index), output,
+				      bpdata) == false){
+		      std::cout << "calculate failed (2)." << std::endl;
+		      assert(0);
+		    }
 		  }
 
 		  err = output - dtrain.access(1, index);
@@ -835,12 +841,16 @@ namespace whiteice
 		  if(mne) err.normalize(); // minimum norm error gradient instead
 
 		  if(dropout){
-		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false)
-		      std::cout << "gradient failed." << std::endl;
+		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false){
+		      std::cout << "gradient failed (1)." << std::endl;
+		      assert(0);
+		    }
 		  }
 		  else{
-		    if(nnet.mse_gradient(err, bpdata, grad) == false)
-		      std::cout << "gradient failed." << std::endl;
+		    if(nnet.mse_gradient(err, bpdata, grad) == false){
+		      std::cout << "gradient failed (2)." << std::endl;
+		      assert(0);
+		    }
 		  }
 		  
 		  sgrad += ninv*grad;
@@ -874,12 +884,18 @@ namespace whiteice
 		  
 		  if(dropout){
 		    nnet.setDropOut(net_dropout);
-		    nnet.calculate(dtrain.access(0, index), output,
-				   net_dropout, bpdata);		    
+		    if(nnet.calculate(dtrain.access(0, index), output,
+				      net_dropout, bpdata) == false){
+		      std::cout << "calculate failed. (3)" << std::endl;
+		      assert(0);
+		    }
 		  }
 		  else{
-		    nnet.calculate(dtrain.access(1, index), output,
-				   bpdata);
+		    if(nnet.calculate(dtrain.access(0, index), output,
+				      bpdata) == false){
+		      std::cout << "calculate failed. (4)" << std::endl;
+		      assert(0);
+		    }
 		  }
 
 		  err = output - dtrain.access(1, index);
@@ -887,12 +903,16 @@ namespace whiteice
 		  if(mne) err.normalize(); // minimum norm error gradient instead
 
 		  if(dropout){
-		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false)
-		      std::cout << "gradient failed." << std::endl;
+		    if(nnet.mse_gradient(err, bpdata, net_dropout, grad) == false){
+		      std::cout << "gradient failed (3)." << std::endl;
+		      assert(0);
+		    }
 		  }
 		  else{
-		    if(nnet.mse_gradient(err, bpdata, grad) == false)
-		      std::cout << "gradient failed." << std::endl;
+		    if(nnet.mse_gradient(err, bpdata, grad) == false){
+		      std::cout << "gradient failed (4)." << std::endl;
+		      assert(0);
+		    }
 		  }
 		  
 		  sgrad += ninv*grad;

@@ -712,7 +712,7 @@ namespace whiteice
   }
 
   
-  // thread safe calculate(). Uses dropout data provided by user.
+  // thread safe calculate(). Use internal dropout if available.
   // This allows same nnetwork<> object to be used in thread safe manner (const).
   template <typename T>
   bool nnetwork<T>::calculate(const math::vertex<T>& input, math::vertex<T>& output,
@@ -722,8 +722,10 @@ namespace whiteice
     // direct accesses to matrix/vertex memory areas
 
     if(input.size() != input_size()) return false;
+#if 0
     if(dropout.size() != getLayers())
       return this->calculate(input, output);
+#endif
 
     output = input;
     math::vertex<T>& state = output;
@@ -1527,11 +1529,15 @@ namespace whiteice
 				 math::vertex<T>& grad) const
   {
 
-    if(error.size() != arch[arch.size()-1])
+    if(error.size() != arch[arch.size()-1]){
+      printf("FAIL 1: %d != %d\n", error.size(), arch[arch.size()-1]);
       return false;
+    }
 
-    if(bpdata.size() != getLayers()+1) // no backpropagation data
+    if(bpdata.size() != getLayers()+1){ // no backpropagation data
+      printf("FAIL 2: %d != %d\n", (int)bpdata.size(), getLayers()+1);
       return false;
+    }
     
     bool complex_data = false;
     
