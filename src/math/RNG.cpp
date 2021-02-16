@@ -56,10 +56,11 @@ RNG<T>::RNG(const bool usehw)
     rdrand64 = &whiteice::RNG<T>::_rdrand64;
   }
   else{
-    //srand(time(0));
-    rdsource = new std::random_device;
-    gen = new std::mt19937((*rdsource)());
-    distrib = new std::uniform_int_distribution<unsigned int>(0, 0xFFFFFFFF);
+    srand(time(0));
+    
+    //rdsource = new std::random_device;
+    //gen = new std::mt19937((*rdsource)());
+    //distrib = new std::uniform_int_distribution<unsigned int>(0, 0xFFFFFFFF);
     
     rdrand32 = &whiteice::RNG<T>::_rand32; // uses C++ rand()
     rdrand64 = &whiteice::RNG<T>::_rand64; // uses C++ rand()
@@ -350,13 +351,14 @@ unsigned long long RNG<T>::_rdrand64() const
 template <typename T>
 unsigned int RNG<T>::_rand32() const
 {
-#if 0
+#if 1
   unsigned int r1 = ((unsigned int)::rand()) & 0x0000FFFF;
   unsigned int r2 = ((unsigned int)::rand()) & 0x0000FFFF;
   unsigned int r = (r1 << 16) ^ (r2);
-#endif
-
+#else
   unsigned int r = (*distrib)(*gen);
+  
+#endif
 
   return r;
 }
@@ -364,18 +366,18 @@ unsigned int RNG<T>::_rand32() const
 template <typename T>
 unsigned long long RNG<T>::_rand64() const
 {
-#if 0
+#if 1
   unsigned long long r1 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r2 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r3 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r4 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   return ((r1) ^ (r2 << 16) ^ (r3 << 32) ^ (r4 << 48));
-#endif
-
+#else
   unsigned long long r1 = ((unsigned long long)(*distrib)(*gen)) & 0x00000000FFFFFFFF;
   unsigned long long r2 = ((unsigned long long)(*distrib)(*gen)) & 0xFFFFFFFF00000000;
 
   return ((r1) ^ (r2 << 32));
+#endif
 }
 
 template <typename T>

@@ -114,9 +114,10 @@ namespace whiteice
     
     std::vector< nnetwork<T>* > nnnets;
     nnnets.resize(weights.size());
-    
+
     for(unsigned int i=0;i<nnnets.size();i++){
       nnnets[i] = new nnetwork<T>(nn);
+      
       if(nnnets[i]->importdata(weights[i]) == false){
 	for(unsigned int j=0;j<=i;j++){
 	  delete nnnets[i];
@@ -127,14 +128,14 @@ namespace whiteice
       }
     }
 
-
     // remove old data
-    for(unsigned int i=0;i<this->nnets.size();i++)
+    for(unsigned int i=0;i<this->nnets.size();i++){
       if(this->nnets[i]){
 	delete this->nnets[i];
 	this->nnets[i] = NULL;
       }
-    
+    }
+
     nnets.clear();
 
     this->nnets = nnnets; // copies new pointers over old data

@@ -34,19 +34,19 @@ MMAP_LIBS = ../lib/libdinrhiw.a @EXTRA_LIBS@ -lgmp -lz
 
 NNTOOLS_OBJECTS = nntool.o argparser.tab.o cpuid_threads.o
 NNTOOLS_TARGET  = nntool
-NNTOOLS_LIBS    = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a -lpthread -lgmp -lz
+NNTOOLS_LIBS    = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a @EXTRA_LIBS@ -lpthread -lgmp -lz
 
 DATATOOL_OBJECTS = datatool.o
 DATATOOL_TARGET  = dstool
-DATATOOL_LIBS    = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a -lpthread -lgmp -lz
+DATATOOL_LIBS    = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a @EXTRA_LIBS@ -lpthread -lgmp -lz
 
 GENDATA_OBJECTS  = gendata.o
 GENDATA_TARGET   = gendata
-GENDATA_LIBS     = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a -lpthread -lgmp -lz
+GENDATA_LIBS     = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a @EXTRA_LIBS@ -lpthread -lgmp -lz
 
 GENDATA2_OBJECTS  = gendata2.o
 GENDATA2_TARGET   = gendata2
-GENDATA2_LIBS     = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a -lpthread -lgmp -lz
+GENDATA2_LIBS     = @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a @EXTRA_LIBS@ -lpthread -lgmp -lz
 
 ##################################################
 

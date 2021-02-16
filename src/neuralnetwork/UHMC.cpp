@@ -204,8 +204,23 @@ namespace whiteice
 	      
 	      nnet2.calculate(x, y2);
 	      auto error2 = T(0.5)*((y - y2)*(y - y2)/sigma2)[0];
+
+	      // auto ratio = math::exp(error2 - error1);
+
+	      T ratio = T(0.0f);
+	      T delta = error2 - error1;
 	      
-	      auto ratio = math::exp(error2 - error1);
+	      if(delta > T(+30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(+30.0f);
+	      }
+	      else if(delta < T(-30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(-30.0f);
+	      }
+	      else{
+		ratio = math::exp(delta);
+	      }
+	      
+	      
 	      
 	      zratio[index0+index] = ratio;
 	    }
@@ -729,8 +744,22 @@ namespace whiteice
     			proposed_K += T(0.5f)*p[i]*p[i];
     		}
 
+		
 		T r = rng.uniform();
-		T p_accept = exp(current_U-proposed_U+current_K-proposed_K);
+		// T p_accept = exp(current_U-proposed_U+current_K-proposed_K);
+
+		T p_accept = T(0.0f);
+		T expvalue = current_U-proposed_U+current_K-proposed_K;
+		if(expvalue < T(-10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(-10.0f));
+		}
+		else if(expvalue > T(+10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(+10.0f));
+		}
+		else{
+		  p_accept = exp(expvalue);
+		}
+		
 
     		if(r < p_accept && !whiteice::math::isnan(p_accept))
     		{

@@ -1632,7 +1632,7 @@ int main(int argc, char** argv)
 	if(hmc.getNumberOfSamples() > 1){
 	  savedSamples = hmc.getNumberOfSamples()/2;
 	}
-	
+
 	assert(hmc.getNetwork(*bnn, savedSamples) == true);
       }
 

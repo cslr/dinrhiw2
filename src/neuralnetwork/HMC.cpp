@@ -599,12 +599,13 @@ namespace whiteice
 		if(latestN == 0) latestN = samples.size();
 
 		if(latestN == samples.size()){
+		  
 		  if(bnn.importSamples(nnet, samples) == false)
-			return false;
+		        return false;
 		}
 		else{
 		  std::vector< math::vertex<T> > temp;
-
+		  
 		  for(unsigned int i=samples.size()-latestN;i<samples.size();i++)
 		    temp.push_back(samples[i]);
 
@@ -873,7 +874,20 @@ namespace whiteice
     		}
 
 		T r = rng.uniform();
-		T p_accept = exp(current_U-proposed_U-logZratio+current_K-proposed_K);
+		// T p_accept = exp(current_U-proposed_U-logZratio+current_K-proposed_K);
+
+		T p_accept = T(0.0f);
+		T expvalue = current_U-proposed_U-logZratio+current_K-proposed_K;
+		if(expvalue < T(-10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(-10.0f));
+		}
+		else if(expvalue > T(+10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(+10.0f));
+		}
+		else{
+		  p_accept = exp(expvalue);
+		}
+		
 
     		if(r < p_accept && !whiteice::math::isnan(p_accept))
     		{
