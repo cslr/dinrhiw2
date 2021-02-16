@@ -1,9 +1,11 @@
 WHAT DINRHIW2 IS?
 -----------------
 
-Dinrhiw is a linear algebra library and machine learning  library.
-Dinrhiw implements PCA and neural network codes. Currently,
-the feedforward neural network code supports:
+Dinrhiw is a linear algebra library and machine learning library.
+Dinrhiw implements linear algebra, PCA+ICA, complex value Neural Network and 
+Variational Autoencoder codes. 
+
+Currently, the feedforward neural network code supports:
 
 * second order L-BFGS optimization and gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
@@ -18,14 +20,14 @@ BUILDING IT
 -----------
 
 You need GNU GCC (www.gcc.org). The code compiles both on Linux and
-Windows (requiring *nix environment). It is recommended to try
+Windows (requires *nix environment). It is recommended to try
 to compile and use the library initially on Linux.
 
-Library requirements:
+Library dependencies:
 
-* OpenBLAS (cblas.h interface),
+* OpenBLAS or Intel MKL (cblas.h interface),
 * GMP (arbitrary precision mathematics)
-* ZLib (memory compression) [not really needed]
+* ZLib [not really needed]
 
 
 To build and install library execute: 
@@ -41,7 +43,14 @@ commands at the top level.
 For the working examples how to use dinrhiw look at the *tools* directory
 below the root dictory.
 
-Building it (you need to install bison parser) creates programs:
+Building tools (you need to install bison parser):
+
+cd tools
+make all
+su
+make install
+
+It creates programs:
 
 dstool and nntool - dataset management and neural network weight learning.
 
@@ -95,15 +104,7 @@ which can be transformed to nnetwork and further trained using output examples.
 
 Finally add support of parallel DBN pretraining + nnetwork optimization to tools ("nntool").
 
-Release version 1.0
+TODO
 
-
-(possible ideas after 1.0)
-
-FOCUS: generalization capabilities of neural networks. Neural network
-optimization works rather well but currently dinrhiw does a poor job
-when the solutions should extrapolate or interpolate to outside.
-
-
-Recurrent neural networks (with memory) and reinforcement learning.
+Recurrent neural networks and reinforcement learning.
 
