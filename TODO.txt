@@ -1,5 +1,12 @@
 TODO
 
+
+
+* FIXME: residual neural networks are not supported by
+  nnetwork::jacobian() and nnetwork::gradient_value()
+
+
+
 * DBN.convertToNNetwork(): pretraining+convertToNNetwork() 
   sometimes (incorrectly) generates VERY large weights and further optimization only partly
   remedies this. Bug fix/increase robustness of code to avoid extremely large weights in DBN/NNetwork.

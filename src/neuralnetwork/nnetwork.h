@@ -4,10 +4,8 @@
  * Use rectifier non-linearity in all other layers except output
  * layer which should be linear.
  * 
- * Optimize code to use cblas
- *
- * residual neural networks:
- * implement: calculate(), mse_gradient(), jacobian(), gradient_value()
+ * TODO
+ * residual neural networks implement: jacobian(), gradient_value()
  * 
  */
 

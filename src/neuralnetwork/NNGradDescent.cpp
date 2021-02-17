@@ -636,8 +636,7 @@ namespace whiteice
 	start_lock.lock();
 	start_lock.unlock();
       }
-
-
+      
       
       while(running && iterations < MAXITERS){
 	// keep looking for solution forever

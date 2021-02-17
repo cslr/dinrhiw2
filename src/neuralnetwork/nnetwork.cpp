@@ -1,4 +1,4 @@
-// TODO:
+// TODO: 
 //   convert to use matrix<> and vertex<> classes instead of memory areas.
 // 
 
@@ -405,11 +405,18 @@ namespace whiteice
       bpdata[0] = state; // input value
     }
 
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = state;
+
     for(unsigned int l=0;l<getLayers();l++){
       if(collectSamples)
 	samples[l].push_back(state);
-      
-      state = W[l]*state + b[l];
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	state = W[l]*state + b[l] + skipValue;
+      else
+	state = W[l]*state + b[l];
 
       if(gradInfo) // saves local field information
 	bpdata[l+1] = state;
@@ -417,201 +424,17 @@ namespace whiteice
       for(unsigned int i=0;i<state.size();i++){
 	state[i] = nonlin(state[i], l, i);
       }
+
+      if(residual && (l % 2) == 0)
+	skipValue = state;
     }
+
 
     outputValues = state;
 
     hasValidBPData = gradInfo;
 
     return true;
-
-#if 0
-    math::vertex<T> state(maxwidth);
-    
-    if(!inputValues.exportData(&(state[0])))
-      return false;
-    
-    if(collectSamples)
-      samples.resize(arch.size()-1);
-
-    math::vertex<T> temp(maxwidth);
-    T* tmp = (T*)&(temp[0]);
-    
-    // unsigned int* a = &(arch[0]);
-    unsigned int aindex = 0;
-    
-    
-    if(gradInfo){ // saves bpdata
-
-      T* bpptr = NULL;
-      
-      {
-	unsigned int bpsize = 0;
-	
-	for(unsigned int i=0;i<arch.size();i++)
-	  bpsize += arch[i];
-	
-	bpdata.resize(bpsize);
-
-	// NOT NEEDED:
-	// memset((T*)&(bpdata[0]), 0, bpsize*sizeof(T)); // TODO remove after debug
-      }
-
-      bpptr = &(bpdata[0]);
-
-      // saves input to backprogation data
-      {
-#ifdef CUBLAS
-
-	auto e = cudaMemcpy(bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T),
-			    cudaMemcpyDeviceToDevice);
-	gpu_sync();
-
-	if(e != cudaSuccess){
-	  whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
-	  throw CUDAException("CUBLAS cudaMemcpy() failed.");
-	}
-	
-#else
-	memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex]*sizeof(T));
-#endif
-	
-	bpptr += arch[aindex];
-      }
-
-      T* dptr = &(data[0]);
-      
-      while(aindex+1 < arch.size()){
-	
-	if(collectSamples){
-	  math::vertex<T> x;
-	  x.resize(arch[aindex]);
-
-#ifdef CUBLAS
-	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
-			    cudaMemcpyDeviceToDevice);
-	  gpu_sync();
-
-	  if(e != cudaSuccess){
-	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
-	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
-	  }
-#else	  
-	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
-#endif
-	  samples[aindex].push_back(x);
-	}
-	
-	// gemv(a[1], a[0], dptr, state, state); // s = W*s
-	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-
-	// s = b + W*s
-	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1], tmp);
-
-	
-	// COPIES LOCAL FIELD v FROM state TO BACKPROGRAGATION DATA
-	{
-#ifdef CUBLAS
-
-	  auto e = cudaMemcpy((void*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T),
-			      cudaMemcpyDeviceToDevice);
-	  gpu_sync();
-	  
-	  if(e != cudaSuccess){
-	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
-	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
-	  }
-	  
-#else	  
-	  memcpy((T*)bpptr, (const T*)&(state[0]), arch[aindex+1]*sizeof(T));
-#endif
-	  
-	  bpptr += arch[aindex+1];
-	}
-
-	// s = g(v)
-
-	for(unsigned int i=0;i<arch[aindex+1];i++){
-	  state[i] = nonlin(state[i], aindex, i);
-	}
-
-	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
-	
-	aindex++; // next layer
-      }
-      
-    }
-    else{
-      T* dptr = &(data[0]);
-      
-      while(aindex+1 < arch.size()){
-	
-	if(collectSamples){
-	  math::vertex<T> x;
-	  x.resize(arch[aindex]);
-
-
-#ifdef CUBLAS
-	  auto e = cudaMemcpy((void*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T),
-			    cudaMemcpyDeviceToDevice);
-	  gpu_sync();
-
-	  if(e != cudaSuccess){
-	    whiteice::logging.error("nnetwork<>::calculate(): cudaMemcpy() failed.");
-	    throw CUDAException("CUBLAS cudaMemcpy() failed.");
-	  }
-#else
-	  memcpy((T*)&(x[0]), (const T*)&(state[0]), arch[aindex]*sizeof(T));
-#endif
-	  samples[aindex].push_back(x);
-	}
-	
-	// gemv(a[1], a[0], dptr, state, state); // s = W*s
-	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-	
-	// s = b + W*s
-	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1], tmp);
-	
-	// s = g(v)
-
-	for(unsigned int i=0;i<arch[aindex+1];i++){
-	  state[i] = nonlin(state[i], aindex, i);
-	}
-
-	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
-	aindex++; // next layer
-      }
-      
-    }
-    
-    
-    if(!outputValues.importData(&(state[0]))){
-      std::cout << "Failed to import data to vertex from memory." << std::endl;
-      return false;
-    }
-
-#if 0
-    // FIXME (remove) debugging checks bpdata structure
-    if(bpdata.size() > 0)
-    {
-      auto maxvalue = abs(bpdata[0]);
-      
-      for(const auto& v : bpdata){
-	if(abs(v) > maxvalue)
-	  maxvalue = abs(v);
-      }
-      
-      // std::cout << "MAX BPDATA: " << maxvalue << std::endl;
-    }
-#endif
-    
-    
-    hasValidBPData = gradInfo;
-    
-    return true;
-#endif
   }
   
   
@@ -627,68 +450,27 @@ namespace whiteice
 
     output = input;
     auto& state = output;
+
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = state;
     
     for(unsigned int l=0;l<getLayers();l++){
-      state = W[l]*state + b[l];
+      
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	state = W[l]*state + b[l] + skipValue;
+      else
+	state = W[l]*state + b[l];
 
       for(unsigned int i=0;i<state.size();i++){
 	state[i] = nonlin(state[i], l, i);
       }
+
+      if(residual && (l % 2) == 0)
+	skipValue = state;
     }
 
     return true;
-
-#if 0
-
-    math::vertex<T> state;
-    state.resize(maxwidth);
-    
-    math::vertex<T> temp;
-    temp.resize(maxwidth);
-
-    T* tmp = &(temp[0]);
-    
-    if(!input.exportData(&(state[0])))
-      return false;
-    
-    // unsigned int* a = &(arch[0]);
-    unsigned int aindex = 0;
-    
-    {
-      const T* dptr = &(data[0]);
-      
-      while(aindex+1 < arch.size()){
-	// gemv(a[1], a[0], dptr, state, state); // s = W*s
-	// gvadd(a[1], state, dptr + a[0]*a[1]); // s += b;
-	
-	// s = b + W*s
-	gemv_gvadd(arch[aindex+1], arch[aindex], dptr, &(state[0]), &(state[0]),
-		   arch[aindex+1], &(state[0]), dptr + arch[aindex]*arch[aindex+1],
-		   tmp);
-	
-	// s = g(v)
-	  
-	for(unsigned int i=0;i<arch[aindex+1];i++){
-	  // state[i] = nonlin(state[i], aindex + 1, i);
-	  state[i] = nonlin(state[i], aindex, i);
-	}
-	
-	dptr += (arch[aindex] + 1)*arch[aindex+1]; // matrix W and bias b
-	aindex++; // next layer
-      }
-    }
-    
-    output.resize(arch[arch.size()-1]); // resizes output to have correct size
-    
-    if(!output.importData(&(state[0]))){
-      std::cout << "Failed to import data to vertex from memory." << std::endl;
-      return false;
-    }
-    
-    // hasValidBPData = false;
-    
-    return true;
-#endif
   }
 
   
@@ -708,13 +490,24 @@ namespace whiteice
     output = input;
     math::vertex<T>& state = output;
 
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = state;
+    
     for(unsigned int l=0;l<getLayers();l++){
-      state = W[l]*state + b[l];
+      
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	state = W[l]*state + b[l] + skipValue;
+      else
+	state = W[l]*state + b[l];
       
       for(unsigned int i=0;i<state.size();i++){
 	if(dropout[l][i]) state[i] = T(0.0f);
 	else state[i] = nonlin(state[i], l);
       }
+      
+      if(residual && (l % 2) == 0)
+	skipValue = state;
     }
     
     return true;
@@ -731,19 +524,23 @@ namespace whiteice
     // direct accesses to matrix/vertex memory areas
 
     if(input.size() != input_size()) return false;
-#if 0
-    if(dropout.size() != getLayers())
-      return this->calculate(input, output);
-#endif
-
+    
     output = input;
     math::vertex<T>& state = output;
 
     bpdata.resize(getLayers()+1);
     bpdata[0] = state; // input value
 
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = state;
+
     for(unsigned int l=0;l<getLayers();l++){
-      state = W[l]*state + b[l];
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	state = W[l]*state + b[l] + skipValue;
+      else
+	state = W[l]*state + b[l];
 
       // stores neuron's local field
       bpdata[l+1] = state;
@@ -751,6 +548,9 @@ namespace whiteice
       for(unsigned int i=0;i<state.size();i++){
 	state[i] = nonlin(state[i], l, i);
       }
+
+      if(residual && (l % 2) == 0)
+	skipValue = state;
     }
     
     return true;
@@ -781,15 +581,27 @@ namespace whiteice
     bpdata.resize(getLayers()+1);
     bpdata[0] = state; // input value
 
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = state;
+
     for(unsigned int l=0;l<getLayers();l++){
-      state = W[l]*state + b[l];
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	state = W[l]*state + b[l] + skipValue;
+      else
+	state = W[l]*state + b[l];
       
       // stores neuron's local field
       bpdata[l+1] = state;
       
       for(unsigned int i=0;i<state.size();i++){
 	if(dropout[l][i]) state[i] = T(0.0f);
-	else state[i] = nonlin(state[i], l);
+	else state[i] = nonlin(state[i]+skipValue[i], l);
+      }
+      
+      if(residual && ((l % 2) == 0)){
+	skipValue = state;
       }
     }
     
@@ -1092,7 +904,6 @@ namespace whiteice
       complex_data = true;
     }
 
-#if 1
     int layer = getLayers()-1;
 
     // initial local gradient is error[i]*NONLIN'(v)
@@ -1106,58 +917,158 @@ namespace whiteice
 
     grad.resize(size);
     unsigned int gindex = grad.size();
-    
 
-    while(layer >= 0){
-      const unsigned int gsize = W[layer].size() + b[layer].size();
-      gindex -= gsize;
+    if(residual){
+      std::vector< math::vertex<T> > lgrad_prev;
+      lgrad_prev.resize(3);
+      lgrad_prev[0] = lgrad;
+      lgrad_prev[1] = lgrad;
+      lgrad_prev[2] = lgrad;
 
-      // delta W = (lgrad * input^T) [input for the layer is bpdata's localfield]
-      // delta b =  lgrad;
-
-      if(frozen[layer] == false){
-
-	if(layer > 0){
-	  for(unsigned int y=0;y<W[layer].ysize();y++){
-	    for(unsigned int x=0;x<W[layer].xsize();x++){
-	      grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1, x);
-	      gindex++;
+      while(layer >= 0){
+	const unsigned int gsize = W[layer].size() + b[layer].size();
+	gindex -= gsize;
+	
+	// delta W = (lgrad * input^T) [input for the layer is bpdata's localfield]
+	// delta b =  lgrad;
+	
+	if(frozen[layer] == false){
+	  
+	  if(layer > 0){
+	    for(unsigned int y=0;y<W[layer].ysize();y++){
+	      for(unsigned int x=0;x<W[layer].xsize();x++){
+		grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1, x);
+		gindex++;
+	      }
 	    }
 	  }
-	}
-	else{ // input layer
-	  for(unsigned int y=0;y<W[layer].ysize();y++){
-	    for(unsigned int x=0;x<W[layer].xsize();x++){
-	      grad[gindex] = lgrad[y] * bpdata[layer][x];
-	      gindex++;
+	  else{ // input layer
+	    for(unsigned int y=0;y<W[layer].ysize();y++){
+	      for(unsigned int x=0;x<W[layer].xsize();x++){
+		grad[gindex] = lgrad[y] * bpdata[layer][x];
+		gindex++;
+	      }
 	    }
+	  }
+	  
+	  for(unsigned int y=0;y<b[layer].size();y++){
+	    grad[gindex] = lgrad[y];
+	    gindex++;
+	  }
+	  
+	  gindex -= gsize;
+	  
+	}
+	else{ // sets gradient for frozen layer zero
+	  memset(&(grad[gindex]), 0, sizeof(T)*gsize);
+	}
+	
+	lgrad_prev[2] = lgrad_prev[1];
+	lgrad_prev[1] = lgrad_prev[0];
+	lgrad_prev[0] = lgrad;
+
+	if(layer > 0){ // no need to calculate next local gradient for the input layer
+	  if(residual == false || 
+	     layer % 2 != 0 || 
+	     W[layer].xsize() != lgrad_prev[1].size() || 
+	     layer+1 >= (int)W.size())
+	  {
+	    //printf("NON-RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	    
+	    // for hidden layers: local gradient is:
+	    // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
+	    
+	    lgrad = lgrad * W[layer];
+	    
+	    for(unsigned int i=0;i<lgrad.size();i++){
+	      lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	    }
+	  }
+	  else{
+	    //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	    
+	    // residual new local grad
+	    // lgrad[n] = diag(..g'..)*
+	    // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
+	    // 
+	    
+	    auto e = lgrad_prev[1]*W[layer+1];
+	    
+	    for(unsigned int i=0;i<e.size();i++){
+	      e[i] *= Dnonlin(bpdata[layer+1][i], layer, i);
+	    }
+	    
+	    auto wdw = e * W[layer];
+
+	    wdw += lgrad_prev[1];
+
+	    for(unsigned int i=0;i<wdw.size();i++){
+	      wdw[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	    }
+	    
+	    lgrad = wdw;
+	    
 	  }
 	}
 	
-	for(unsigned int y=0;y<b[layer].size();y++){
-	  grad[gindex] = lgrad[y];
-	  gindex++;
-	}
-
-	gindex -= gsize;
-
+	layer--;
       }
-      else{ // sets gradient for frozen layer zero
-	memset(&(grad[gindex]), 0, sizeof(T)*gsize);
+	    
+    }
+    else{
+
+      while(layer >= 0){
+	const unsigned int gsize = W[layer].size() + b[layer].size();
+	gindex -= gsize;
+	
+	// delta W = (lgrad * input^T) [input for the layer is bpdata's localfield]
+	// delta b =  lgrad;
+	
+	if(frozen[layer] == false){
+	  
+	  if(layer > 0){
+	    for(unsigned int y=0;y<W[layer].ysize();y++){
+	      for(unsigned int x=0;x<W[layer].xsize();x++){
+		grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1, x);
+		gindex++;
+	      }
+	    }
+	  }
+	  else{ // input layer
+	    for(unsigned int y=0;y<W[layer].ysize();y++){
+	      for(unsigned int x=0;x<W[layer].xsize();x++){
+		grad[gindex] = lgrad[y] * bpdata[layer][x];
+		gindex++;
+	      }
+	    }
+	  }
+	  
+	  for(unsigned int y=0;y<b[layer].size();y++){
+	    grad[gindex] = lgrad[y];
+	    gindex++;
+	  }
+	  
+	  gindex -= gsize;
+	  
+	}
+	else{ // sets gradient for frozen layer zero
+	  memset(&(grad[gindex]), 0, sizeof(T)*gsize);
+	}
+	
+	if(layer > 0){ // no need to calculate next local gradient for the input layer
+	  // for hidden layers: local gradient is:
+	  // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
+	  
+	  lgrad = lgrad * W[layer];
+	  
+	  for(unsigned int i=0;i<lgrad.size();i++){
+	    lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	}
+	
+	layer--;
       }
       
-      if(layer > 0){ // no need to calculate next local gradient for the input layer
-	// for hidden layers: local gradient is:
-	// lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
-	
-	lgrad = lgrad * W[layer];
-	
-	for(unsigned int i=0;i<lgrad.size();i++){
-	  lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
-	}
-      }
-
-      layer--;
     }
 
     assert(gindex == 0);
@@ -1171,361 +1082,6 @@ namespace whiteice
     
     return true;
     
-#else
-    math::vertex<T> localgrad(maxwidth);
-    math::vertex<T> tmp(maxwidth);
-
-    T* lgrad = (T*)&(localgrad[0]);
-    T* temp  = (T*)&(tmp[0]);
-  
-    // initial (last layer gradient)
-    // error[i] * NONLIN'(v) 
-    
-    int layer = arch.size() - 2;
-    const unsigned int *a = &(arch[arch.size()-1]);
-
-    if(!error.exportData(lgrad, error.size(), 0)){
-      assert(0); // TODO: remove after debugging
-      return false;
-    }
-
-    const T* _bpdata = &(bpdata[0]);
-    
-    // goes to end of bpdata input lists
-    for(unsigned int i=0;i<arch.size();i++)
-      _bpdata += arch[i];
-
-    const unsigned int rows = *a;
-    // const unsigned int cols = *(a - 1);
-    
-    _bpdata -= rows;
-    const T* bptr = _bpdata;
-
-    
-    // calculates local gradient
-
-    for(unsigned int i=0;i<arch[arch.size()-1];i++){
-      if(complex_data){
-	lgrad[i].conj();
-      }
-      
-      lgrad[i] *= Dnonlin(*bptr, layer , i);
-      bptr++;
-    }
-  
-    const T* _data = &(data[0]);
-    
-    // goes to end of data area
-    for(unsigned int i=1;i<arch.size();i++){
-      _data += ((arch[i-1])*(arch[i])) + arch[i];
-    }
-    
-    grad.resize(size);
-    unsigned int gindex = grad.size(); // was "unsigned gindex" ..
-
-    
-    
-    while(layer > 0){
-      // updates W and b in this layer
-      
-      // delta W = (lgrad * input^T)
-      // delta b =  lgrad;
-      
-      const unsigned int rows = *a;
-      const unsigned int cols = *(a - 1);
-
-      _bpdata -= cols;
-      _data -= rows*cols + rows;
-      gindex -= rows*cols + rows;
-      
-      const T* dptr = _data;
-
-      {
-	// matrix W gradients (gradients are in SAME row major order either you use
-	// cuBLAS or not) W matrix in _data is in column major order
-	// if CUBLAS is defined and row major otherwise
-	// [backprogation local field data and local gradient are vectors so they
-	//  require no changes]
-	for(unsigned int y=0;y<rows;y++){
-	  const T* bptr = _bpdata;
-	  for(unsigned int x=0;x<cols;x++,gindex++){
-	    grad[gindex] = lgrad[y] * nonlin(*bptr, layer-1, x);
-	    bptr++;
-	  }
-	}
-	
-	dptr += (rows*cols);
-	
-	// bias b gradients
-	for(unsigned int y=0;y<rows;y++,gindex++){
-	  grad[gindex] = lgrad[y];
-	}
-
-	gindex -= (rows*cols + rows);
-
-	// zeroes gradient for this layer
-	// (FIXME: optimize me and do not calculate the gradient at all!)
-	if(frozen[layer]){
-	  memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
-	}
-      }
-
-      gpu_sync();
-
-      // calculates next lgrad
-      
-      // for hidden layers: local gradient is:
-      // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
-
-      const T* bptr = _bpdata;
-
-#ifdef CUBLAS
-      // NOTE that CUBLAS implementation is currently slow because
-      // memory is NOT allocated by cudeMalloc()!
-      if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
-	T alpha = T(1.0f);
-	T beta  = T(0.0f);
-
-	auto s = cublasSgemv(cublas_handle, CUBLAS_OP_T,
-			     rows, cols,
-			     (const float*)&alpha,
-			     (const float*)_data, rows,
-			     (const float*)lgrad, 1,
-			     (const float*)&beta,			     
-			     (float*)temp, 1);
-	gpu_sync();
-
-	if(s != CUBLAS_STATUS_SUCCESS){
-	  whiteice::logging.error("nnetwork::mse_gradient(): cublasSgemv() failed.");
-	  throw CUDAException("CUBLAS cublasSgemv() call failed.");
-	}
-
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-	
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	T alpha = T(1.0);
-	T beta  = T(0.0);
-
-	auto s = cublasDgemv(cublas_handle, CUBLAS_OP_T,
-			     rows, cols,
-			     (const double*)&alpha,
-			     (const double*)_data, rows,
-			     (const double*)lgrad, 1,
-			     (const double*)&beta,
-			     (double*)temp, 1);
-	gpu_sync();
-
-	if(s != CUBLAS_STATUS_SUCCESS){
-	  whiteice::logging.error("nnetwork::mse_gradient(): cublasDgemv() failed.");
-	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
-	}
-
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
-	T alpha = T(1.0);
-	T beta  = T(0.0);
-
-	auto s = cublasCgemv(cublas_handle, CUBLAS_OP_T,
-			     rows, cols,
-			     (const cuComplex*)&alpha,
-			     (const cuComplex*)_data, rows,
-			     (const cuComplex*)lgrad, 1,
-			     (const cuComplex*)&beta,
-			     (cuComplex*)temp, 1);
-	gpu_sync();
-
-	if(s != CUBLAS_STATUS_SUCCESS){
-	  whiteice::logging.error("nnetwork::mse_gradient(): cublasCgemv() failed.");
-	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
-	}
-
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
-	T alpha = T(1.0);
-	T beta  = T(0.0);
-
-	auto s = cublasZgemv(cublas_handle, CUBLAS_OP_T,
-			     rows, cols,
-			     (const cuDoubleComplex*)&alpha,
-			     (const cuDoubleComplex*)_data, rows,
-			     (const cuDoubleComplex*)lgrad, 1,
-			     (const cuDoubleComplex*)&beta,
-			     (cuDoubleComplex*)temp, 1);
-	gpu_sync();
-
-	if(s != CUBLAS_STATUS_SUCCESS){
-	  whiteice::logging.error("nnetwork::mse_gradient(): cublasZgemv() failed.");
-	  throw CUDAException("CUBLAS cublasDgemv() call failed.");
-	}
-
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-      }
-      else{
-	// NOTE that W is now COLUMN MAJOR MATRIX so indexing using x and y must be changed.
-	
-	for(unsigned int x=0;x<cols;x++){
-	  T sum = T(0.0f);
-	  for(unsigned int y=0;y<rows;y++)
-	    sum += lgrad[y]*_data[x*rows + y];
-	  
-	  sum *= Dnonlin(*bptr, layer - 1, x);
-	  
-	  temp[x] = sum;
-	  bptr++;
-	}
-      }
-
-#else
-      if(typeid(T) == typeid(whiteice::math::blas_real<float>)){
-	
-	cblas_sgemv(CblasRowMajor, CblasTrans,
-		    rows, cols,
-		    1.0f, (float*)_data, cols, (float*)lgrad, 1,
-		    0.0f, (float*)temp, 1);
-	
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-	
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	
-	cblas_dgemv(CblasRowMajor, CblasTrans,
-		    rows, cols,
-		    1.0f, (double*)_data, cols, (double*)lgrad, 1,
-		    0.0f, (double*)temp, 1);
-	
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-	
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>)){
-	whiteice::math::blas_complex<float> a, b;
-	a = 1.0f; b = 0.0f;
-	
-	cblas_cgemv(CblasRowMajor, CblasTrans,
-		    rows, cols,
-		    (float*)(&a), (float*)_data, cols, (float*)lgrad, 1,
-		    (float*)(&b), (float*)temp, 1);
-	
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-      }
-      else if(typeid(T) == typeid(whiteice::math::blas_complex<double>)){
-	whiteice::math::blas_complex<double> a, b;
-	a = 1.0; b = 0.0;
-	
-	cblas_zgemv(CblasRowMajor, CblasTrans,
-		    rows, cols,
-		    (double*)(&a), (double*)_data, cols, (double*)lgrad, 1,
-		    (double*)(&b), (double*)temp, 1);
-	
-	for(unsigned int x=0;x<cols;x++){
-	  temp[x] *= Dnonlin(*bptr, layer - 1, x);
-	  bptr++;
-	}
-	
-      }
-      else{
-	for(unsigned int x=0;x<cols;x++){
-	  T sum = T(0.0f);
-	  for(unsigned int y=0;y<rows;y++)
-	    sum += lgrad[y]*_data[x + y*cols];
-	  
-	  sum *= Dnonlin(*bptr, layer - 1, x);
-	  
-	  temp[x] = sum;
-	  bptr++;
-	}
-      }
-#endif
-      
-      // swaps memory pointers
-      {
-	T* ptr = temp;
-	temp = lgrad;
-	lgrad = ptr;
-      }
-      
-      layer--;
-      a--;
-    }
-    
-    
-    {
-      // calculates the first layer's delta W and delta b 
-      // 
-      // delta W += (lgrad * input^T)
-      // delta b += lgrad;
-      
-      const unsigned int rows = *a;
-      const unsigned int cols = *(a - 1);
-      
-      _bpdata -= cols;
-      _data -= rows*cols + rows;
-      gindex -= rows*cols + rows;
-      
-      assert(_bpdata == &(bpdata[0]));
-      assert(_data == &(data[0]));
-      assert(gindex == 0);
-      
-      for(unsigned int y=0;y<rows;y++){
-	const T* bptr = _bpdata;
-	for(unsigned int x=0;x<cols;x++,gindex++){
-	  grad[gindex] = lgrad[y] * (*bptr); // bp data is here the input x !!
-	  bptr++;
-	}
-      }
-      
-      
-      _data += rows*cols;
-    
-      for(unsigned int y=0;y<rows;y++, gindex++){
-	grad[gindex] = lgrad[y];
-	// _data[y] += rate*lgrad[y];
-      }
-
-      gindex -= rows*cols + rows;
-      assert(gindex == 0); // DEBUGGING REMOVE LATER
-      
-      // zeroes gradient for this layer
-      // (FIXME: optimize me and do not calculate the gradient!)
-      if(frozen[layer]){
-	memset(&(grad[gindex]), 0, sizeof(T)*(rows*cols + rows));
-      }
-      
-    }
-
-    // for complex neural networks we need to calculate conjugate value of
-    // the whole gradient (for this to work we need to calculate conjugate value
-    // of error term (f(z)-y) as the input for the gradient operation
-    if(complex_data){
-      grad.conj();
-    }
-    
-    
-    return true;
-#endif
   }
 
   
@@ -1570,17 +1126,22 @@ namespace whiteice
 
     grad.resize(size);
     unsigned int gindex = grad.size();
-    
 
+    std::vector< math::vertex<T> > lgrad_prev;
+    lgrad_prev.resize(3);
+    lgrad_prev[0] = lgrad;
+    lgrad_prev[1] = lgrad;
+    lgrad_prev[2] = lgrad;
+    
     while(layer >= 0){
       const unsigned int gsize = W[layer].size() + b[layer].size();
       gindex -= gsize;
-
+      
       // delta W = (lgrad * input^T) [input for the layer is bpdata's localfield]
       // delta b =  lgrad;
-
+      
       if(frozen[layer] == false){
-
+	
 	if(layer > 0){
 	  for(unsigned int y=0;y<W[layer].ysize();y++){
 	    for(unsigned int x=0;x<W[layer].xsize();x++){
@@ -1602,28 +1163,66 @@ namespace whiteice
 	  grad[gindex] = lgrad[y];
 	  gindex++;
 	}
-
+	
 	gindex -= gsize;
-
+	
       }
       else{ // sets gradient for frozen layer zero
 	memset(&(grad[gindex]), 0, sizeof(T)*gsize);
       }
+
+      lgrad_prev[2] = lgrad_prev[1];
+      lgrad_prev[1] = lgrad_prev[0];
+      lgrad_prev[0] = lgrad;
       
       if(layer > 0){ // no need to calculate next local gradient for the input layer
-	// for hidden layers: local gradient is:
-	// lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
-	
-	lgrad = lgrad * W[layer];
-	
-	for(unsigned int i=0;i<lgrad.size();i++){
-	  lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	if(residual == false || 
+	   layer % 2 != 0 || 
+	   W[layer].xsize() != lgrad_prev[1].size() || 
+	   layer+1 >= (int)W.size())
+	{
+	  //printf("NON-RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	  
+	  // for hidden layers: local gradient is:
+	  // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
+	  
+	  lgrad = lgrad * W[layer];
+	  
+	  for(unsigned int i=0;i<lgrad.size();i++){
+	    lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	}
+	else{
+	  //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	  
+	  // residual new local grad
+	  // lgrad[n] = diag(..g'..)*
+	  // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
+	  // 
+	  
+	  auto e = lgrad_prev[1]*W[layer+1];
+	  
+	  for(unsigned int i=0;i<e.size();i++){
+	    e[i] *= Dnonlin(bpdata[layer+1][i], layer, i);
+	  }
+	  
+	  auto wdw = e * W[layer];
+	  
+	  wdw += lgrad_prev[1];
+	  
+	  for(unsigned int i=0;i<wdw.size();i++){
+	    wdw[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	  
+	  lgrad = wdw;
+	  
 	}
       }
-
+      
+      
       layer--;
     }
-
+    
     assert(gindex == 0);
     
     // for complex neural networks we need to calculate conjugate value of
@@ -1680,8 +1279,14 @@ namespace whiteice
 
     grad.resize(size);
     unsigned int gindex = grad.size();
-    
 
+    std::vector< math::vertex<T> > lgrad_prev;
+    lgrad_prev.resize(3);
+    lgrad_prev[0] = lgrad;
+    lgrad_prev[1] = lgrad;
+    lgrad_prev[2] = lgrad;
+
+    
     while(layer >= 0){
       const unsigned int gsize = W[layer].size() + b[layer].size();
       gindex -= gsize;
@@ -1721,18 +1326,53 @@ namespace whiteice
       else{ // sets gradient for frozen layer zero
 	memset(&(grad[gindex]), 0, sizeof(T)*gsize);
       }
+
+      lgrad_prev[2] = lgrad_prev[1];
+      lgrad_prev[1] = lgrad_prev[0];
+      lgrad_prev[0] = lgrad;
       
       if(layer > 0){ // no need to calculate next local gradient for the input layer
-	// for hidden layers: local gradient is:
-	// lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
-	
-	lgrad = lgrad * W[layer];
-	
-	for(unsigned int i=0;i<lgrad.size();i++){
-	  if(dropout[layer-1][i]) lgrad[i] = T(0.0f);
-	  else lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1);
+	if(residual == false || 
+	   layer % 2 != 0 || 
+	   W[layer].xsize() != lgrad_prev[1].size() || 
+	   layer+1 >= (int)W.size())
+	{
+	  //printf("NON-RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	  
+	  // for hidden layers: local gradient is:
+	  // lgrad[n] = diag(..g'(v[i])..)*(W^t * lgrad[n+1])
+	  
+	  lgrad = lgrad * W[layer];
+	  
+	  for(unsigned int i=0;i<lgrad.size();i++){
+	    lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
 	}
-	
+	else{
+	  //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+	  
+	  // residual new local grad
+	  // lgrad[n] = diag(..g'..)*
+	  // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
+	  // 
+	  
+	  auto e = lgrad_prev[1]*W[layer+1];
+	  
+	  for(unsigned int i=0;i<e.size();i++){
+	    e[i] *= Dnonlin(bpdata[layer+1][i], layer, i);
+	  }
+	  
+	  auto wdw = e * W[layer];
+	  
+	  wdw += lgrad_prev[1];
+	  
+	  for(unsigned int i=0;i<wdw.size();i++){
+	    wdw[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	  
+	  lgrad = wdw;
+	  
+	}
       }
 
       layer--;

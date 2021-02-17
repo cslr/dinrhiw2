@@ -165,6 +165,90 @@
     \;
   </center>
 
+  <with|font-series|bold|5-layer residual neural network formula (2 two layer
+  skips)>
+
+  <\padded-center>
+    <math|\<b-y\><around*|(|\<b-x\>|)>=\<b-d\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\><around|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\><around*|(|\<b-W\>*<rsup|<around*|(|1|)>>\<b-x\>|)>|)>|\<nobracket\>>+\<b-x\>|)>+\<b-f\>|)>>)
+
+    <strong|<\math>
+      \<b-h\>=\<b-h\><around*|(|\<b-W\>*<rsup|<around*|(|1|)>>x|)>
+
+      \<b-g\>=\<b-g\><around*|(|\<b-W\>*<rsup|<around*|(|2|)>>h|)>
+
+      \<b-f\>=\<b-f\><around*|(|W*<rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>
+
+      e=\<b-e\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>
+
+      \<b-y\>=\<b-d\><around*|(|\<b-W\><rsup|<around*|(|5|)>>*e+\<b-f\>|)>
+    </math>>
+  </padded-center>
+
+  Let's calculate the derivate <math|d*y/d*w<rsup|<around*|(|1|)>><rsub|j*i>>
+  term terms using the chain rule.
+
+  <\math>
+    <frac|\<partial\>*y|\<partial\>w<rsub|j*i><rsup|<around*|(|1|)>>>=*
+
+    diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>*\<b-e\>+\<b-f\>|)>|\<partial\>\<b-e\>>*diag<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>*\<b-f\>|)>|\<partial\>\<b-f\>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>+\<b-x\>|)>|\<partial\>\<b-g\><rsup|>>*
+
+    diag<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>|)>|\<partial\>\<b-h\>>*diag<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=
+
+    d<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<around*|(|<frac|\<partial\>\<b-W\><rsup|<around*|(|5|)>>*\<b-e\>|\<partial\>\<b-e\>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>*\<b-f\>|)>|\<partial\>\<b-f\>>+\<b-I\>|)>*d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>
+
+    <around*|(|<frac|\<partial\>\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|\<partial\>\<b-g\><rsup|>>*d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>|)>|\<partial\>\<b-h\>>*d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>+<frac|\<partial\>\<b-x\>|\<partial\>w<rsup|<around*|(|1|)>><rsub|j*i>>|)>=
+
+    **d<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<around*|(|<frac|\<partial\>\<b-W\><rsup|<around*|(|5|)>>*\<b-e\>|\<partial\>\<b-e\>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>*\<b-f\>|)>|\<partial\>\<b-f\>>+\<b-I\>|)>*d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>
+
+    <around*|(|<frac|\<partial\>\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|\<partial\>\<b-g\><rsup|>>*d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>|)>|\<partial\>\<b-h\>>*d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>+0|)>=
+
+    **diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|5|)>>=\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>>|)>*<around*|(|\<b-W\><rsup|<around*|(|5|)>>*diag<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|4|)>>>|)>*\<b-W\><rsup|<around*|(|4|)>>+\<b-I\>|)>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|3|)>>=\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>>|)>
+
+    <around*|(|\<b-W\><rsup|<around*|(|3|)>>*diag<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|2|)>>=\<b-W\><rsup|<around*|(|2|)>>\<b-h\>>|)>*\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|1|)>>=\<b-W\><rsup|<around*|(|1|)>>\<b-x\>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>|)>
+  </math>
+
+  \;
+
+  We also want to calculate <math|d*y/d*w<rsup|<around*|(|4|)>><rsub|j*i>
+  using the chain rule:>
+
+  <\math>
+    <frac|\<partial\>*y|\<partial\>w<rsub|j*i><rsup|<around*|(|4|)>>>=*diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|5|)>>*diag<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>*\<b-f\>|)>|\<partial\>*w<rsup|<around*|(|4|)>><rsub|j*i>>*
+  </math>
+
+  \;
+
+  For MSE=0.5*ERROR^2 backpropagation we set
+
+  <math|\<b-sigma\><rsup|5>=E*R*R*O*R<rsup|T>diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|5|)>>=\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>>|)>>
+
+  and update gradient using chain rule
+
+  <\math>
+    \<b-sigma\><rsup|4>=diag<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|5|)><rsup|T>>*\<b-sigma\><rsup|5>
+  </math>
+
+  Next we calculate <math|d*y/d*w<rsup|<around*|(|3|)>><rsub|j*i>> using the
+  chain rule:
+
+  <\math>
+    <frac|\<partial\>*y|\<partial\>w<rsub|j*i><rsup|<around*|(|3|)>>>=*d<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<around*|(|\<b-W\><rsup|<around*|(|5|)>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|4|)>>+\<b-I\>|)>**d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|)>|\<partial\>w<rsup|<around*|(|3|)>><rsub|j*i><rsup|>>*
+  </math>
+
+  For backpropagation we use formulas:
+
+  <math|\<b-sigma\><rsup|5>=E*R*R*O*R<rsup|T>diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|5|)>>=\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>>|)>>
+
+  and update gradient using the chain rule:
+
+  <\math>
+    \<b-sigma\><rsup|3>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)><around*|(|*\<b-W\><rsup|<around*|(|4|)><rsup|T>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|5|)><rsup|T>>\<b-sigma\><rsup|5>+\<b-sigma\><rsup|5>|)>*
+  </math>
+
+  This means we need to save previous step local gradients (-1 and -2) when
+  updating local gradient. We also need to save local fields for the previous
+  steps.
+
   \;
 
   <with|font-series|bold|Backpropagation algorithm>
