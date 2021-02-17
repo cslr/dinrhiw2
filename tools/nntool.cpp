@@ -235,7 +235,7 @@ int main(int argc, char** argv)
 	if(data.getNumberOfClusters() >= 2){
 	  const int RDIM1 = ((int)arch[0]) - ((int)data.dimension(0));
 
-	  if(RDIM1 > 0){
+	  if(RDIM1 >= 0){
 	    arch[arch.size()-1] = data.dimension(1) + RDIM1;
 	  }
 	  else{
@@ -359,11 +359,21 @@ int main(int argc, char** argv)
       bool running = true;
       int v = 0;
       if(verbose) v = 1;
-      
+
+      v = 1; // DEBUG VERBOSITY ON
+
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
+
       if(deep_pretrain_nnetwork(nn, data, binary, v, &running) == false){
 	printf("ERROR: deep pretraining of nnetwork failed.\n");
 	return -1;
       }
+
+      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
+      nn->setNonlinearity(nn->getLayers()-1,
+			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
       
     }
     /*
@@ -736,121 +746,8 @@ int main(int argc, char** argv)
       }
       
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    else if(lmethod == "pbfgs"){
-
-      if(SIMULATION_DEPTH > 1){
-	printf("ERROR: recurrent nnetwork not supported\n");
-	exit(-1);
-      }
-      
-      if(verbose){
-	if(overfit == false){
-	  if(secs > 0)
-	    std::cout << "Starting parallel neural network BFGS optimization with early stopping (T=" << secs << " seconds, " << threads << " threads).."
-		      << std::endl;
-	  else
-	    std::cout << "Starting parallel neural network BFGS optimization with early stopping (" << threads << " threads).."
-		      << std::endl;
-	}
-	else{
-	  if(secs > 0)
-	    std::cout << "Starting parallel neural network BFGS optimization (T=" << secs << " seconds, " << threads << " threads).."
-		      << std::endl;
-	  else
-	    std::cout << "Starting parallel neural network BFGS optimization (" << threads << " threads).."
-		      << std::endl;
-	}
-      }
-
-      if(secs <= 0 && samples <= 0){
-	fprintf(stderr, "BFGS search requires --time or --samples command line switch.\n");
-	return -1;
-      }
-      
-      pBFGS_nnetwork< whiteice::math::blas_real<double> > bfgs(*nn, data, overfit, negfeedback);
-      
-      {
-	time_t t0 = time(0);
-	unsigned int counter = 0;
-	math::blas_real<double> error = 1000.0f;
-	math::vertex< whiteice::math::blas_real<double> > w;
-	unsigned int iterations = 0;
-	whiteice::linear_ETA<double> eta;
-
-	if(samples > 0)
-	  eta.start(0.0f, (double)samples);
-
-	// initial starting position
-	// nn->exportdata(w);
-	
-	bfgs.minimize(threads);
-
-	while(error > math::blas_real<double>(0.001f) &&
-	      (counter < secs || secs <= 0) && // compute max SECS seconds
-	      (iterations < samples || samples <= 0) && 
-	      !stopsignal)
-	{
-	  sleep(5);
-
-	  bfgs.getSolution(w, error, iterations);
-	  
-	  error = bfgs.getError(w);
-	  
-	  eta.update(iterations);
-
-	  time_t t1 = time(0);
-	  counter = (unsigned int)(t1 - t0); // time-elapsed
-
-	  if(secs > 0){
-	    printf("\r                                                            \r");
-	    printf("%d iters: %f [%.1f minutes]",
-		   iterations, 
-		   error.c[0], (secs - counter)/60.0f);
-	  }
-	  else{
-	    printf("\r                                                            \r");
-	    printf("%d/%d iters: %f [%.1f minutes]",
-		   iterations, samples,  
-		   error.c[0], eta.estimate()/60.0f);
-
-	  }
-	  fflush(stdout);
-	}
-	      
-	
-	if(secs > 0){
-	  printf("\r                                                            \r");
-	  printf("%d iters: %f [%.1f minutes]\n",
-		 iterations,
-		 error.c[0], (secs - counter)/60.0f);
-	}
-	else{
-	  printf("\r                                                            \r");
-	  printf("%d/%d iters: %f [%.1f minutes]\n",
-		 iterations, samples,  
-		 error.c[0], eta.estimate()/60.0f);
-	}
-	fflush(stdout);
-
-	bfgs.stopComputation();
-	
-	// gets the final (optimum) solution
-	bfgs.getSolution(w, error, iterations);
-	
-	if(nn->importdata(w) == false){
-	  std::cout << "ERROR: internal error" << std::endl;
-	  return -1;
-	}
-	if(bnn->importNetwork(*nn) == false){
-	  std::cout << "ERROR: internal error" << std::endl;
-	  return -1;
-	}
-      }
-      
-      
-    }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
     else if(lmethod == "plbfgs"){
 
       if(SIMULATION_DEPTH > 1){

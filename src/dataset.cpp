@@ -953,11 +953,11 @@ namespace whiteice
 	invD = D;
 	
 	for(unsigned int j=0;j<D.ysize();j++){
-	  T d = invD(j,j);
+	  T d = abs(invD(j,j));
 
 	  auto epsilon = abs(T(1e-8f));
 
-	  if(abs(d) > epsilon){
+	  if(d > epsilon){
 	      invD(j,j) = whiteice::math::sqrt(T(1.0)/d);
 	      D(j,j)    = whiteice::math::sqrt(d);
 	  }
@@ -1895,13 +1895,13 @@ namespace whiteice
 	invD = D;
 	
 	for(unsigned int i=0;i<invD.ysize();i++){
-	  T d = invD(i,i);
+	  T d = abs(invD(i,i));
 
 	  const auto epsilon = abs(T(1e-8f));
 	  
-	  if(abs(d) > epsilon){
-	    invD(i,i) = whiteice::math::sqrt(T(1.0)/(epsilon + whiteice::math::abs(d)));
-	    D(i,i)    = whiteice::math::sqrt(whiteice::math::abs(d));
+	  if(d > epsilon){
+	    invD(i,i) = whiteice::math::sqrt(T(1.0)/(epsilon + d));
+	    D(i,i)    = whiteice::math::sqrt(d);
 	  }
 	  else{
 	    invD(i,i) = T(0.0f);
@@ -2456,7 +2456,7 @@ namespace whiteice
     
     for(unsigned int i=0;i<vec.size();i++){
       if(abs(clusters[index].variance[i]) > epsilon){
-	vec[i] /= clusters[index].variance[i];
+	vec[i] /= abs(clusters[index].variance[i]);
       }
     }
     
@@ -2473,7 +2473,7 @@ namespace whiteice
     
     for(unsigned int i=0;i<vec.size();i++){
       if(abs(clusters[index].variance[i]) > epsilon){
-	vec[i] *= clusters[index].variance[i];
+	vec[i] *= abs(clusters[index].variance[i]);
       }
     }
     

@@ -501,17 +501,27 @@ bool GBRBM<T>::initializeWeights() // initialize weights to small values
   for(unsigned int i=0;i<z.size();i++)
     z[i] = math::log(1.0);
   
-  for(unsigned int j=0;j<W.ysize();j++)
-    for(unsigned int i=0;i<W.xsize();i++)
-      W(j,i) = T(0.1f) * normalrnd();
+  for(unsigned int j=0;j<W.ysize();j++){
+    for(unsigned int i=0;i<W.xsize();i++){
+      // W(j,i) = T(0.1f) * normalrnd() / math::sqrt(T(W.ysize()*W.xsize()));
+      // W(j,i) = T(0.1f) * normalrnd();
+      W(j,i) = normalrnd();
+    }
+  }
 
   // added to initialization (was zero before)
   {
-    for(unsigned int i=0;i<a.size();i++)
-      a[i] = T(0.1f) * normalrnd();
+    for(unsigned int i=0;i<a.size();i++){
+      // a[i] = T(0.1f) * normalrnd() / math::sqrt(T(a.size()));
+      // a[i] = T(0.1f) * normalrnd();
+      a[i] = normalrnd();
+    }
     
-    for(unsigned int i=0;i<b.size();i++)
-      b[i] = T(0.1f) * normalrnd();
+    for(unsigned int i=0;i<b.size();i++){
+      // b[i] = T(0.1f) * normalrnd() / math::sqrt(T(b.size()));
+      // b[i] = T(0.1f) * normalrnd();
+      b[i] = normalrnd();
+    }
   }
   
   return true;
@@ -1284,30 +1294,33 @@ bool GBRBM<T>::convertParametersToQ(const math::matrix<T>& W, const math::vertex
 
 
 template <typename T>
-bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b,
-		math::vertex<T>& z) const
+bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q,
+				    math::matrix<T>& W,
+				    math::vertex<T>& a,
+				    math::vertex<T>& b,
+				    math::vertex<T>& z) const
 {
-	a.resize(this->getVisibleNodes());
-	z.resize(this->getVisibleNodes());
-	b.resize(this->getHiddenNodes());
-	W.resize(this->getVisibleNodes(), this->getHiddenNodes());
-
-	if(q.size() != (a.size()+b.size()+z.size()+W.ysize()*W.xsize()))
-		return false;
-
-	try{
-		q.subvertex(a, 0, a.size());
-		q.subvertex(b, a.size(), b.size());
-		q.subvertex(z, (a.size()+b.size()), z.size());
-		math::vertex<T> w(W.ysize()*W.xsize());
-		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
-		W.load_from_vertex(w);
-
-		return true;
-	}
-	catch(std::exception& e){
-		return false;
-	}
+  a.resize(this->getVisibleNodes());
+  z.resize(this->getVisibleNodes());
+  b.resize(this->getHiddenNodes());
+  W.resize(this->getVisibleNodes(), this->getHiddenNodes());
+  
+  if(q.size() != (a.size()+b.size()+z.size()+W.ysize()*W.xsize()))
+    return false;
+  
+  try{
+    q.subvertex(a, 0, a.size());
+    q.subvertex(b, a.size(), b.size());
+    q.subvertex(z, (a.size()+b.size()), z.size());
+    math::vertex<T> w(W.ysize()*W.xsize());
+    q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+    W.load_from_vertex(w);
+    
+    return true;
+  }
+  catch(std::exception& e){
+    return false;
+  }
 }
 
 
@@ -1317,21 +1330,21 @@ bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W
 template <typename T>
 bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 {
-	try{
-		q.subvertex(a, 0, a.size());
-		q.subvertex(b, a.size(), b.size());
-		q.subvertex(z, (a.size()+b.size()), z.size());
-		math::vertex<T> w(W.ysize()*W.xsize());
-		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
-		W.load_from_vertex(w);
-
-		safebox(a,b,z,W);
-
-		return true;
-	}
-	catch(std::exception& e){
-		return false;
-	}
+  try{
+    q.subvertex(a, 0, a.size());
+    q.subvertex(b, a.size(), b.size());
+    q.subvertex(z, (a.size()+b.size()), z.size());
+    math::vertex<T> w(W.ysize()*W.xsize());
+    q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+    W.load_from_vertex(w);
+    
+    safebox(a,b,z,W);
+    
+    return true;
+  }
+  catch(std::exception& e){
+    return false;
+  }
 }
 
 
@@ -1356,24 +1369,25 @@ void GBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& 
 {
   for(unsigned int i=0;i<a.size();i++){
     if(whiteice::math::isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
-    if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
-    if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
+    if(a[i] < T(-10e6)) a[i] = T(-10e6); //printf("aclip"); }
+    if(a[i] > T(+10e6)) a[i] = T(+10e6); //printf("aclip"); }
   }
 
   for(unsigned int i=0;i<b.size();i++){
     if(whiteice::math::isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
-    if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
-    if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
+    if(b[i] < T(-10e6)) b[i] = T(-10e6); //printf("bclip"); }
+    if(b[i] > T(+10e6)) b[i] = T(+10e6); //printf("bclip"); }
   }
 
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
       if(whiteice::math::isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
-      if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
-      if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
+      if(W(j,i) < T(-10e6)) W(j,i) = T(-10e6); //printf("Wclip"); }
+      if(W(j,i) > T(+10e6)) W(j,i) = T(+10e6); //printf("Wclip"); }
     }
   }
 
+  // NOT MODIFIED TO CLIP TO SMALLER RANGE
   for(unsigned int i=0;i<z.size();i++){
     if(whiteice::math::isnan(z[i])) z[i] = T(0.0); //printf("znan"); }
     if(z[i] < T(-100.0)) z[i] = T(-100.0); //printf("zclip"); }
@@ -2068,36 +2082,39 @@ bool GBRBM<T>::save(const std::string& filename) const
 template <typename T>
 T GBRBM<T>::normalrnd() const // N(0,1)
 {
-	return rng.normal();
+  return rng.normal();
 }
 
 
 template <typename T>
 math::vertex<T> GBRBM<T>::normalrnd(const math::vertex<T>& m, const math::vertex<T>& v) const
 {
-	math::vertex<T> x(m);
-
-	for(unsigned int i=0;i<x.size();i++)
-		x[i] += rng.normal()*math::sqrt(v[i]);
-
-	return x;
+  math::vertex<T> x(m);
+  
+  for(unsigned int i=0;i<x.size();i++)
+    x[i] += rng.normal()*math::sqrt(abs(v[i]));
+  
+  return x;
 }
 
   template <typename T>
   void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const
   {
     output.resize(input.size());
-    
+
     for(unsigned int i=0;i<input.size();i++){
-      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
+      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i], T(400.0f)));
+      // output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
     }
+    
   }
 
   template <typename T>
   void GBRBM<T>::sigmoid(math::vertex<T>& x) const
   {
     for(unsigned int i=0;i<x.size();i++){
-      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
+      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i], T(400.0f)));
+      // x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
     }
   }
 

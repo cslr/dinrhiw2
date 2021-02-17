@@ -33,9 +33,9 @@ namespace whiteice {
     // uses regular rand() if rdrand is not supported or usehw = false
     RNG(const bool usehw = false); 
     virtual ~RNG(){
-      //if(distrib) delete distrib;
-      //if(gen) delete gen;
-      //if(rdsource) delete rdsource;
+      if(distrib) delete distrib;
+      if(gen) delete gen;
+      if(rdsource) delete rdsource;
     }
 
     // random integers
@@ -85,9 +85,9 @@ namespace whiteice {
     virtual unsigned int _rand32() const;
     virtual unsigned long long _rand64() const;
 
-    //mutable std::random_device* rdsource = nullptr;
-    //mutable std::mt19937* gen = nullptr;
-    //mutable std::uniform_int_distribution<unsigned int>* distrib = nullptr;
+    mutable std::random_device* rdsource = nullptr;
+    mutable std::mt19937* gen = nullptr;
+    mutable std::uniform_int_distribution<unsigned int>* distrib = nullptr;
     
     void cpuid(unsigned int leaf, unsigned int subleaf, unsigned int regs[4]);
   };

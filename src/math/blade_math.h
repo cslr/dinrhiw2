@@ -539,6 +539,9 @@ namespace whiteice
     realnumber exp(const realnumber& x);
     
     template <typename T>
+    inline T exp(const T value, const T cutoff) PURE_FUNCTION;
+
+    template <typename T>
       inline whiteice::math::complex<T> 
       exp(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
@@ -581,7 +584,56 @@ namespace whiteice
     inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
       return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x.c[0], x.c[1]) ) );
     }
+
     
+    template <typename T>
+    inline T exp(const T value, const T cutoff)
+    {
+#if 0
+      if(cutoff <= T(0.0f)){
+	if(value < cutoff){
+	  const T MCUTOFF = cutoff;
+	  return whiteice::math::exp(MCUTOFF);
+	}
+	else if(value > -cutoff){
+	  const T PCUTOFF = -cutoff;
+	  return whiteice::math::exp(PCUTOFF);
+	}
+	else{
+	  return whiteice::math::exp(cutoff);
+	}
+      }
+      else{
+	if(value < -cutoff){
+	  const T MCUTOFF = -cutoff;
+	  return whiteice::math::exp(MCUTOFF);
+	}
+	else if(value > cutoff){
+	  const T PCUTOFF = cutoff;
+	  return whiteice::math::exp(PCUTOFF);
+	}
+	else{
+	  return whiteice::math::exp(cutoff);
+	}
+      }
+      
+#else
+      const T CUTOFF = abs(cutoff);
+      
+      if(value < -CUTOFF){
+	const T MCUTOFF = -CUTOFF;
+	return whiteice::math::exp(MCUTOFF);
+      }
+      else if(value > CUTOFF){
+	return whiteice::math::exp(CUTOFF);
+      }
+      else{
+	return whiteice::math::exp(value);
+      }
+#endif
+    }
+    
+
     
     //////////////////////////////////////////////////////////////////////
     // nat. logarithm of number

@@ -236,7 +236,7 @@ bool BBRBM<T>::getHiddenResponseField(const math::vertex<T>& v,
   h = W*v + b;
   
   for(unsigned int j=0;j<h.size();j++){
-    h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+    h[j] = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
   }
 
   // no discretization
@@ -255,7 +255,8 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     
     // 1. hidden units: calculates sigma(a_j)
     for(unsigned int j=0;j<h.size();j++){
-      T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+      T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+
       T r = rng.uniform();
 
       if(aj > r) h[j] = T(1.0); // discretization step
@@ -269,7 +270,8 @@ bool BBRBM<T>::reconstructData(unsigned int iters)
     
     // 1. visible units: calculates sigma(a_j)
     for(unsigned int j=0;j<(v.size()-0);j++){
-      T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+      T aj = T(1.0)/(T(1.0) + math::exp(-v[j], T(20.0f)));
+      
       T r = rng.uniform();
       
       if(aj > r) v[j] = T(1.0); // discretization step
@@ -310,7 +312,8 @@ bool BBRBM<T>::reconstructDataHidden(unsigned int iters)
     
     // 1. visible units: calculates sigma(a_j)
     for(unsigned int j=0;j<(v.size()-0);j++){
-      T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+      T aj = T(1.0)/(T(1.0) + math::exp(-v[j], T(20.0f)));
+
       T r = rng.uniform();
       
       if(aj > r) v[j] = T(1.0); // discretization step
@@ -324,7 +327,8 @@ bool BBRBM<T>::reconstructDataHidden(unsigned int iters)
     
     // 1. hidden units: calculates sigma(a_j)
     for(unsigned int j=0;j<(h.size()-0);j++){
-      T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+      T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+
       T r = rng.uniform();
       
       if(aj > r) h[j] = T(1.0); // discretization step
@@ -385,28 +389,29 @@ void BBRBM<T>::getParameters(math::matrix<T>& W,
 template <typename T>
 bool BBRBM<T>::initializeWeights() // initialize weights to small values
 {
-	// TODO BUG: test this untested code
-
-	// use recommendation by Hinton and initialize weights to small random values 0.01*Normal(0,1)
-	T scaling = T(0.01); // st.dev. scaling [0.01,0.1]
-
-	for(unsigned int j=0;j<W.ysize();j++){
-		for(unsigned int i=0;i<W.xsize();i++){
-			T r = scaling*rng.normal();
-			W(j,i) = r;
-		}
-	}
-
-	for(unsigned int j=0;j<a.size();j++){
-		T r = scaling*rng.normal();
-		a[j] = r;
-	}
-
-	for(unsigned int j=0;j<b.size();j++){
-		T r = scaling*rng.normal();
-		b[j] = r;
-	}
-
+  // TODO BUG: test this untested code
+  
+  // use recommendation by Hinton and initialize weights to small random values 0.01*Normal(0,1)
+  // const T scaling = T(0.01); // st.dev. scaling [0.01,0.1]
+  const T scaling = T(10.0); // st.dev. scaling [0.01,0.1]
+  
+  for(unsigned int j=0;j<W.ysize();j++){
+    for(unsigned int i=0;i<W.xsize();i++){
+      T r = scaling*rng.normal();
+      W(j,i) = r;
+    }
+  }
+  
+  for(unsigned int j=0;j<a.size();j++){
+    T r = scaling*rng.normal();
+    a[j] = r;
+  }
+  
+  for(unsigned int j=0;j<b.size();j++){
+    T r = scaling*rng.normal();
+    b[j] = r;
+  }
+  
 
 
 #if 0
@@ -527,7 +532,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	
 	// hidden units
 	for(unsigned int j=0;j<h.size();j++){
-	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
 
 	  // added discretization DEBUG
 #if 1
@@ -561,7 +566,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	
 	// 1. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<h.size();j++){
-	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+
 	  T r = rng.uniform();
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
@@ -574,7 +580,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<v.size();j++){
-	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j], T(20.0f)));
+
 	    T r = rng.uniform();
 	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
@@ -585,7 +592,8 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	  
 	  // 2. hidden units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(h.size()-0);j++){
-	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+	    
 	    T r = rng.uniform();
 	    
 	    if(aj > r) h[j] = T(1.0); // discretization step
@@ -614,7 +622,7 @@ T BBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	
 	// hidden units
 	for(unsigned int j=0;j<h.size();j++){
-	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	  h[j] = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
 
 	  // added discretization DEBUG
 #if 1
@@ -917,7 +925,8 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
       
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
-	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+
 	T r = rng.uniform();
 	
 	if(aj > r) h[j] = T(1.0); // discretization step
@@ -928,7 +937,8 @@ T BBRBM<T>::reconstructionError(const math::vertex<T>& s,
       
       // 1. visible units: calculates sigma(a_j)
       for(unsigned int j=0;j<(v.size()-0);j++){
-	T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	T aj = T(1.0)/(T(1.0) + math::exp(-v[j], T(20.0f)));
+
 	T r = rng.uniform();
 	
 	if(aj > r) v[j] = T(1.0); // discretization step
@@ -1033,21 +1043,21 @@ void BBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b,
 {
   for(unsigned int i=0;i<a.size();i++){
     if(whiteice::math::isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
-    if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
-    if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
+    if(a[i] < T(-10e6)) a[i] = T(-10e6); //printf("aclip"); }
+    if(a[i] > T(+10e6)) a[i] = T(+10e6); //printf("aclip"); }
   }
 
   for(unsigned int i=0;i<b.size();i++){
     if(whiteice::math::isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
-    if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
-    if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
+    if(b[i] < T(-10e6)) b[i] = T(-10e6); //printf("bclip"); }
+    if(b[i] > T(+10e6)) b[i] = T(+10e6); //printf("bclip"); }
   }
 
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
       if(whiteice::math::isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
-      if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
-      if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
+      if(W(j,i) < T(-10e6)) W(j,i) = T(-10e6); //printf("Wclip"); }
+      if(W(j,i) > T(+10e6)) W(j,i) = T(+10e6); //printf("Wclip"); }
     }
   }
 }
@@ -1107,7 +1117,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q)
       
       // hidden units
       for(unsigned int j=0;j<h.size();j++){
-	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
 
 	// added discretization DEBUG
 #if 1
@@ -1139,7 +1149,8 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q)
       
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
-	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
+
 	T r = rng.uniform();
 	
 	if(aj > r) h[j] = T(1.0); // discretization step
@@ -1152,7 +1163,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q)
 	
 	// 1. visible units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(v.size()-0);j++){
-	  T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
+	  T aj = T(1.0)/(T(1.0) + math::exp(-v[j], T(20.0f)));
 	  T r = rng.uniform();
 	  
 	  if(aj > r) v[j] = T(1.0); // discretization step
@@ -1163,7 +1174,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q)
 	
 	// 2. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
-	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
 	  T r = rng.uniform();
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
@@ -1188,7 +1199,7 @@ math::vertex<T> BBRBM<T>::Ugrad(const math::vertex<T>& q)
       
       // hidden units
       for(unsigned int j=0;j<h.size();j++){
-	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j]));
+	h[j] = T(1.0)/(T(1.0) + math::exp(-h[j], T(20.0f)));
 	
 	// added discretization DEBUG
 #if 1
@@ -1369,7 +1380,7 @@ bool BBRBM<T>::save(const std::string& filename) const
     output.resize(input.size());
 
     for(unsigned int i=0;i<input.size();i++){
-      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
+      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i], T(20.0f)));
     }
   }
 
@@ -1378,7 +1389,7 @@ bool BBRBM<T>::save(const std::string& filename) const
   void BBRBM<T>::sigmoid(math::vertex<T>& x) const
   {
     for(unsigned int i=0;i<x.size();i++){
-      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
+      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i], T(20.0f)));
     }
   }
 

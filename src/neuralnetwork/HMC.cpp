@@ -248,7 +248,20 @@ namespace whiteice
 	      nnet2.calculate(x, y2);
 	      auto error2 = T(0.5)*((y - y2)*(y - y2)/sigma2)[0];
 	      
-	      auto ratio = math::exp(error2 - error1);
+	      // auto ratio = math::exp(error2 - error1);
+	      
+	      T ratio = T(0.0f);
+	      T delta = error2 - error1;
+	      
+	      if(delta > T(+30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(+30.0f);
+	      }
+	      else if(delta < T(-30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(-30.0f);
+	      }
+	      else{
+		ratio = math::exp(delta);
+	      }
 	      
 	      zratio[index0+index] = ratio;
 	    }

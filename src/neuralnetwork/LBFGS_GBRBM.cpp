@@ -18,6 +18,8 @@ namespace whiteice
       net.setUData(data);
     }
     */
+
+    this->setGradientOnly(true); // DEBUG: only follow gradient!
   }
 
   
