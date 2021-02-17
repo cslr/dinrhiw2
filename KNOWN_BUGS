@@ -1,7 +1,10 @@
 Code is only tested and known to compile on Debian/Linux (amd64) and 
 Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
-* t-SNE is not implemented nor tested (TODO)
+* Compiler GCC >= 9.* is required because GCC 8.* compiler has bugs in class random_device implementation.
+
+* t-SNE don't scale to data points large than N=1000 well. (O(N^2) instead of O(N*log(N)
+  because no Barnes-Hut approximation.
 
 * VAE code (Variational Autoencoder) currently doesn't handle learning z-space model variance well.
   is it possible to alter computation to use zvariance = encoder_stdev(x)*encoder_stdev(x) and handle related math correctly?
@@ -11,8 +14,6 @@ Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
 * OUT OF MEMORY problems with BIG neural networks or BIG DATA
   leads to strange error messages that are not properly handled.
-
-* ICA code probably has some bugs (with bad/singular data)
 
 * static linking of nntool causes problems due to known gcc compiler bug
 

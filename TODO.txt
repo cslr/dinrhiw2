@@ -1,4 +1,4 @@
-TODO
+TODO [OUTDATED]
 
 * DBN.convertToNNetwork(): pretraining+convertToNNetwork() 
   sometimes (incorrectly) generates VERY large weights and further optimization only partly
