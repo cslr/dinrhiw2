@@ -1,4 +1,3 @@
-
 #ifndef activation_function_cpp
 #define activation_function_cpp
 

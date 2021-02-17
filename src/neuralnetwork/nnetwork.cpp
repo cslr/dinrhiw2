@@ -63,6 +63,8 @@ namespace whiteice
 
     retain_probability = T(1.0);
 
+    residual = false;
+
     // randomize();
   }
   
@@ -85,6 +87,7 @@ namespace whiteice
     frozen = nn.frozen;
     retain_probability = nn.retain_probability;
     dropout = nn.dropout;
+    residual = nn.residual;
   }
   
   
@@ -139,6 +142,8 @@ namespace whiteice
     hasValidBPData = false;
 
     retain_probability = T(1.0);
+
+    residual = false;
   }
   
   
@@ -161,6 +166,7 @@ namespace whiteice
     frozen = nn.frozen;
     retain_probability = nn.retain_probability;
     dropout = nn.dropout;
+    residual = nn.residual;
     
     W      = nn.W;
     b      = nn.b;
@@ -180,6 +186,9 @@ namespace whiteice
     // prints nnetwork information (mostly for debugging purposes)
 
     printf("NETWORK LAYOUT (%d): \n", getLayers());
+
+    if(residual)
+      printf("Residual neural network (skip every 2 layers)\n");
 
     for(unsigned int l=0;l<getLayers();l++){
       bool frozen = this->getFrozen(l);
@@ -2729,6 +2738,7 @@ namespace whiteice
 #define FNN_FROZEN_CFGSTR           "FNN_FROZEN"
 #define FNN_TIMESTAMP_CFGSTR        "FNN_TIMESTAMP"
 #define FNN_RETAIN_CFGSTR           "FNN_RETAIN"
+#define FNN_RESIDUAL_CFGSTR         "FNN_RESIDUAL"
 
   //////////////////////////////////////////////////////////////////////
 
@@ -2744,7 +2754,7 @@ namespace whiteice
 	if(conf.createCluster(FNN_VERSION_CFGSTR, 1) == false) return false;
 	// version number = float
 	data.resize(1);
-	data[0] = T(3.000); // version 3.0
+	data[0] = T(3.100); // version 3.1
 	if(conf.add(0, data) == false) return false;
       }
 
@@ -2824,6 +2834,15 @@ namespace whiteice
 	if(conf.add(5, data) == false) return false;
       }
 
+      // saves boolean flags (residual neural network for now)
+      {
+	data.resize(1);
+	data[0] = T((float)this->residual);
+
+	if(conf.createCluster(FNN_RESIDUAL_CFGSTR, data.size()) == false) return false;
+	if(conf.add(6, data) == false) return false;
+      }
+
       // timestamp
       {
 	char buffer[128];
@@ -2834,7 +2853,7 @@ namespace whiteice
 
 	if(conf.createCluster(FNN_TIMESTAMP_CFGSTR, timestamp.length()) == false)
 	  return false;
-	if(conf.add(6, timestamp) == false) return false;
+	if(conf.add(7, timestamp) == false) return false;
       }
 
       // don't save dropout or retain probability
@@ -2872,6 +2891,7 @@ namespace whiteice
       std::vector<nonLinearity> conf_nonlins;
       std::vector<bool> conf_frozen;
       T conf_retain = T(1.0);
+      bool conf_residual = false;
       
       if(conf.load(filename) == false) return false;
 
@@ -2884,13 +2904,13 @@ namespace whiteice
 
 	conf_data = conf.access(cluster, 0);
 	
-	if(conf_data[0] != T(3.000)) // only handles version 3.0 files
+	if(conf_data[0] != T(3.100)) // only handles version 3.1 files
 	  return false;
       }
 
-      // checks number of clusters (7 in version 3.0 files)
+      // checks number of clusters (8 in version 3.0 files)
       {
-	if(conf.getNumberOfClusters() != 7) return false;
+	if(conf.getNumberOfClusters() != 8) return false;
       }
 
       // gets architecture information
@@ -2987,6 +3007,23 @@ namespace whiteice
 	  return false; // correct interval for data
       }
 
+      // gets boolean parameters (residual flag)
+      {
+	const unsigned int cluster = conf.getCluster(FNN_RESIDUAL_CFGSTR);
+	if(cluster >= conf.getNumberOfClusters()) return false;
+	if(conf.size(cluster) != 1) return false; 
+	if(conf.dimension(cluster) != 1)
+	  return false; // only single parameter saved
+	
+	conf_data = conf.access(cluster, 0);
+
+	if(conf_data.size() != 1) return false;
+
+	if(conf_data[0] == T(0.0f)) conf_residual = false;
+	else if(conf_data[0] == T(1.0f)) conf_residual = true;
+	else return false;
+      }
+
       // don't check timestamp metainformation
 
       // parameters where successfully loaded from the disk.
@@ -3022,6 +3059,7 @@ namespace whiteice
 	this->frozen = conf_frozen;
 	this->nonlinearity = conf_nonlins;
 	this->retain_probability = conf_retain;
+	this->residual = conf_residual;
 	
 	if(this->importdata(conf_weights) == false) // this should never fail
 	  return false;
@@ -3560,6 +3598,22 @@ namespace whiteice
   {
     retain_probability = T(1.0);
     dropout.clear();
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  // residual neural network support
+  template <typename T>
+  void nnetwork<T>::setResidual(const bool residual)
+  {
+    this->residual = residual;
+  }
+
+  template <typename T>
+  bool nnetwork<T>::getResidual() const
+  {
+    return residual;
   }
 
   /////////////////////////////////////////////////////////////////////////////

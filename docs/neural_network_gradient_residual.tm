@@ -91,11 +91,13 @@
   deep layers' gradients):
 
   <\center>
-    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>|\<partial\>\<b-g\>>*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-x\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>*w<rsup|1><rsub|j*i>>>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>|\<partial\>\<b-g\><rsup|>>*<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*w<rsup|1><rsub|j*i>>>
 
-    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|x<rsub|i>>>|<row|<cell|0>>>>>>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)><around*|(|*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-g\>>**<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*w<rsup|1><rsub|j*i>>+*<around*|(|<frac|\<partial\>\<b-x\>|\<partial\>*w<rsup|1><rsub|j*i>>|)>|)>>
 
-    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsup|<around*|(|1|)>><rsub|j>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*<around*|(|\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|x<rsub|i>>>|<row|<cell|0>>>>>+0|)>*>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsup|<around*|(|1|)>><rsub|j>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>>
   </center>
 
   \;
@@ -129,6 +131,40 @@
 
   <center|<math|<frac|\<partial\>MSE<around*|(|\<b-w\>|)>|\<partial\>\<b-w\>>=<around*|(|y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-y<rsub|i>|)><rsup|T>*<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\>>>>
 
+  <with|font-series|bold|3-layer skip connections example>
+
+  Consider a three-layer neural network where the middle layer is skipped
+  (without biases to simplify formulas:
+
+  <center|<math|y<around*|(|\<b-x\>|)>=\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\><around*|(|\<b-W\>*<rsup|<around*|(|1|)>>\<b-x\>|)>|)>|)>+\<b-h\><around*|(|\<b-W\><rsup|<around*|(|1|)>>*\<b-x\>|)>>>
+
+  Derivation chain rule is used to calculate gradient
+  <math|d*y/d*w<rsub|j*i><rsup|<around*|(|1|)>>>
+
+  <\center>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>+\<b-h\>|)>|\<partial\>\<b-g\><rsup|>>*diag<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>|)>|\<partial\>\<b-h\>>*diag<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=><math|d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-h\>|)>>|)><around*|(|*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|)>|\<partial\>\<b-g\><rsup|>>*d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>|)>|\<partial\>\<b-h\>>+\<b-I\>*|)>d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>*>
+
+    =<math|d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-h\>|)>>|)><around*|(|*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|)>|\<partial\>\<b-g\><rsup|>>*d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>|)>|\<partial\>\<b-h\>>+\<b-I\>*|)>d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|x<rsub|i>>>|<row|<cell|0>>>>>>
+
+    ,
+
+    <\math>
+      <frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsub|*i><rsup|<around*|(|1|)>>>=d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>|\<partial\>\<b-g\><rsup|>>*
+
+      d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-h\>>*d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<rsup|<around*|(|1|)>>>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*b<rsub|*i><rsup|<around*|(|1|)>>>
+    </math>
+
+    <\math>
+      <frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsub|*i><rsup|<around*|(|1|)>>>=d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>|)><around*|(|<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>|)>|\<partial\>\<b-g\><rsup|>>*d<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-h\>>*+\<b-I\>|)>*
+
+      d<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<rsup|<around*|(|1|)>>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>
+    </math>
+
+    \;
+  </center>
+
   \;
 
   <with|font-series|bold|Backpropagation algorithm>
@@ -145,7 +181,7 @@
   <\padded-center>
     <math|\<b-sigma\><rsup|<around*|(|L|)>>=<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>|\<bar\>>*\<b-delta\><rsup|<around*|(|L|)>>=\<b-delta\><rsup|<around*|(|L|)>>*<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|\<bar\>>>
 
-    <math|\<b-sigma\><rsup|<around*|(|k-1|)>>=\<b-sigma\><rsup|<around*|(|k-1|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|<rsup|T>>>\<b-sigma\><rsup|<around*|(|k-1|)>>>
+    <math|\<b-sigma\><rsup|<around*|(|k-1|)>>=\<b-sigma\><rsup|<around*|(|k|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|<rsup|T>>>\<b-sigma\><rsup|<around*|(|k|)>>>
   </padded-center>
 
   The actual gradient value formulas are the same as in the previous section
@@ -171,6 +207,19 @@
   </padded-center>
 
   \;
+
+  <with|font-series|bold|Backpropagation algorithm for residual neural
+  networks>
+
+  Backpropagation derivates for skip two (2) layers derivates are:
+
+  <\padded-center>
+    <math|\<b-sigma\><rsup|<around*|(|L|)>>=<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>|\<bar\>>*\<b-delta\><rsup|<around*|(|L|)>>=\<b-delta\><rsup|<around*|(|L|)>>*<wide|<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)>|\<bar\>>>
+
+    <math|\<b-sigma\><rsup|<around*|(|k-1|)>>=\<b-sigma\><rsup|<around*|(|k|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|<rsup|T>>>\<b-sigma\><rsup|<around*|(|k|)>>>
+
+    <math|\<b-sigma\><rsup|<around*|(|k-2|)>>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-2|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-2|)>>>|)>*\<b-W\><rsup|<around*|(|k-1|)><rsup|<rsup|T>>>diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|<rsup|T>>>\<b-sigma\><rsup|<around*|(|k|)>>>
+  </padded-center>
 
   \;
 
