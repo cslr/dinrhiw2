@@ -18,12 +18,14 @@ rm -f wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-# ARCH=13-1000-100-1
+ARCH=13-100-100-1
+
 # ARCH=13-5000-5000-5000-1
+# ARCH=13-5000-500-100-50-1
 
-ARCH=13-5000-500-100-50-1
-
+##./nntool --deep=binary --samples 100 -v wine-test.ds $ARCH winenn.cfg grad
 ./nntool --deep=gaussian --samples 100 -v wine-test.ds $ARCH winenn.cfg grad
+
 # ./nntool --purelinear --time 100 -v wine-test.ds $ARCH winenn.cfg grad
 # ./nntool  --pseudolinear --time 100 -v wine-test.ds $ARCH winenn.cfg grad
 

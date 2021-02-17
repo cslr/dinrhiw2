@@ -1,7 +1,6 @@
 /*
  * 2D SOM with wrap'a'round lattice distance
- * optimized cblas implementation 
- * (real floating point)
+ * optimized cblas implementation (real floating point)
  */
 
 #ifndef SOM2D_h

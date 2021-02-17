@@ -1,6 +1,7 @@
 
 
 #include "ownexception.h"
+#include "vertex.h"
 
 using namespace std;
 
@@ -32,6 +33,31 @@ namespace whiteice
   }
   
   const string& exception::message() const { return msg; }
+
+
+  
+  //////////////////////////////////////////////////
+
+  
+  CUDAException::CUDAException(){ gpu_sync(); } // sync with device so RAM accesses are OK
+  
+  CUDAException::CUDAException(const std::string& s){
+    this->msg = s;
+  }
+
+  
+  CUDAException::CUDAException(const CUDAException& e){
+    this->msg = e.msg;
+  }
+  
+  bool CUDAException::operator==(const CUDAException& e){
+    if(this->msg == e.msg) return true;
+    else return false;
+  }
+  
+  const std::string& CUDAException::message() const {
+    return this->msg;
+  }
   
 }
   

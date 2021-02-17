@@ -18,7 +18,8 @@ SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp \
 	RBM.cpp CRBM.cpp DBN.cpp BBRBM.cpp construct_nnetwork.cpp LBFGS_GBRBM.cpp LBFGS_BBRBM.cpp \
 	GBRBM.cpp HMCGBRBM.cpp PTHMCGBRBM.cpp PTHMCabstract.cpp  HMCconvergencecheck.cpp UHMC.cpp \
 	stackedRBM_pretraining.cpp rLBFGS_nnetwork.cpp Mixture.cpp EnsembleMeans.cpp \
-	globaloptimum.cpp
+	globaloptimum.cpp \
+	../math/fastpca.cpp ../math/vertex.cpp ../math/matrix.cpp ../dataset.cpp
 
 OBJECTS= activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
 	stretched_function.o optimized_function.o \
@@ -39,7 +40,7 @@ EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math
 	../math/real.o 	../dataset.o ../conffile.o ../MemoryCompressor.o ../linear_ETA.o \
 	../dynamic_bitset.o ../math/ica.o ../math/BFGS.o ../math/LBFGS.o ../math/linear_algebra.o \
 	../math/correlation.o ../math/ica.o ../math/linear_equations.o ../math/norms.o ../math/RNG.o \
-	../math/outerproduct.o ../Log.o
+	../math/outerproduct.o ../math/fastpca.o ../Log.o ../VisualizationInterface.o
 
 
 TARGET1_OBJECTS= tst/test.o 
@@ -52,7 +53,7 @@ TARGET3= testsuite3
 TARGET4= testsuite4
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-memaccess @EXTRA_INCLUDEPATHS@
 
 CXXFLAGS=-Wall $(CFLAGS) @CXXFLAGS@ -g -I. -I.. -I../.. -I../math -I../crypto -I../hmm -I../reinforcement -I../rnn $(OPTIMIZE)
 

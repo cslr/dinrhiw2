@@ -42,10 +42,8 @@ protected:
 
 namespace whiteice
 {
-	extern template class HMC_convergence_check< float >;
-	extern template class HMC_convergence_check< double >;
-	extern template class HMC_convergence_check< math::blas_real<float> >;
-	extern template class HMC_convergence_check< math::blas_real<double> >;
+  extern template class HMC_convergence_check< math::blas_real<float> >;
+  extern template class HMC_convergence_check< math::blas_real<double> >;
 };
 
 #endif /* NEURALNETWORK_HMCCONVERGENCECHECK_H_ */

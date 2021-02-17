@@ -78,7 +78,7 @@ namespace whiteice
 			math::vertex<T> err;
 			T e = T(0.0f);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(false);
@@ -122,13 +122,13 @@ namespace whiteice
 			whiteice::nnetwork<T> nnet(this->nnet);
 			nnet.importdata(q);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 			for(unsigned int i=0;i<data.size(0);i++){
 				nnet.input() = data.access(0, i);
 				nnet.calculate(true);
-				err = data.access(1,i) - nnet.output();
+				err = nnet.output() - data.access(1,i);
 
-				if(nnet.gradient(err, grad) == false){
+				if(nnet.mse_gradient(err, grad) == false){
 					std::cout << "gradient failed." << std::endl;
 					assert(0); // FIXME
 				}
@@ -176,7 +176,7 @@ namespace whiteice
 	    
 	    zratio.resize(index0 + BLOCKSIZE); // increases zratio size
 	    
-#pragma omp parallel for shared(zratio) schedule(dynamic)
+#pragma omp parallel for shared(zratio) schedule(auto)
 	    for(unsigned int index=0;index<BLOCKSIZE;index++){
 	      // generates negative particle (x side)
 	      
@@ -204,8 +204,23 @@ namespace whiteice
 	      
 	      nnet2.calculate(x, y2);
 	      auto error2 = T(0.5)*((y - y2)*(y - y2)/sigma2)[0];
+
+	      // auto ratio = math::exp(error2 - error1);
+
+	      T ratio = T(0.0f);
+	      T delta = error2 - error1;
 	      
-	      auto ratio = math::exp(error2 - error1);
+	      if(delta > T(+30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(+30.0f);
+	      }
+	      else if(delta < T(-30.0f)){ // to work around SIGFPE floating point exceptions
+		ratio = math::exp(-30.0f);
+	      }
+	      else{
+		ratio = math::exp(delta);
+	      }
+	      
+	      
 	      
 	      zratio[index0+index] = ratio;
 	    }
@@ -618,7 +633,7 @@ namespace whiteice
 	    math::vertex<T> err;
 	    T e = T(0.0f);
 	    
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	    for(unsigned int i=0;i<data.size(0);i++){
 	      nnet.input() = data.access(0, i);
 	      nnet.calculate(false);
@@ -729,8 +744,22 @@ namespace whiteice
     			proposed_K += T(0.5f)*p[i]*p[i];
     		}
 
+		
 		T r = rng.uniform();
-		T p_accept = exp(current_U-proposed_U+current_K-proposed_K);
+		// T p_accept = exp(current_U-proposed_U+current_K-proposed_K);
+
+		T p_accept = T(0.0f);
+		T expvalue = current_U-proposed_U+current_K-proposed_K;
+		if(expvalue < T(-10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(-10.0f));
+		}
+		else if(expvalue > T(+10.0f)){ // to work around SIGFPE floating point exceptions
+		  p_accept = exp(T(+10.0f));
+		}
+		else{
+		  p_accept = exp(expvalue);
+		}
+		
 
     		if(r < p_accept && !whiteice::math::isnan(p_accept))
     		{
@@ -844,8 +873,6 @@ namespace whiteice
 
 namespace whiteice
 {  
-  template class UHMC< float >;
-  template class UHMC< double >;
   template class UHMC< math::blas_real<float> >;
   template class UHMC< math::blas_real<double> >;    
 };

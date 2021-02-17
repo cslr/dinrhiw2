@@ -364,8 +364,6 @@ namespace whiteice
   }
   
   
-  template class pLBFGS_nnetwork< float >;
-  template class pLBFGS_nnetwork< double >;
   template class pLBFGS_nnetwork< math::blas_real<float> >;
   template class pLBFGS_nnetwork< math::blas_real<double> >;
   

@@ -6,7 +6,7 @@
 #include "dinrhiw_blas.h"
 #include "vertex.h"
 #include "matrix.h"
-
+#include "Log.h"
 
 
 namespace whiteice
@@ -36,6 +36,16 @@ namespace whiteice
        const matrix< double >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
+    template bool rhouseholder_vector< blas_complex<float> >
+      (vertex< blas_complex<float> >& v,
+       const matrix< blas_complex<float> >& M,
+       unsigned int y, unsigned int x,
+       bool rowdir);
+    template bool rhouseholder_vector< blas_complex<double> >
+      (vertex< blas_complex<double> >& v,
+       const matrix< blas_complex<double> >& M,
+       unsigned int y, unsigned int x,
+       bool rowdir);
     
     
     template bool rhouseholder_leftrot< blas_real<float> > 
@@ -62,6 +72,18 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< double >& v);
+    template bool rhouseholder_leftrot< blas_complex<float> > 
+      (matrix< blas_complex<float> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<float> >& v);
+    template bool rhouseholder_leftrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<double> >& v);
     
     
     template bool rhouseholder_rightrot< blas_real<float> >
@@ -88,7 +110,18 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< double >& v);
-    
+    template bool rhouseholder_rightrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<float> >& v);
+    template bool rhouseholder_rightrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A,
+       const unsigned int i,
+       const unsigned int M,
+       const unsigned int k,
+       vertex< blas_complex<double> >& v);
     
     
     template void rgivens< blas_real<float> >
@@ -99,6 +132,11 @@ namespace whiteice
       (const float& a, const float& b, vertex< float >& p);
     template void rgivens< double >
       (const double& a, const double& b, vertex< double >& p);
+
+    template void rgivens< blas_complex<float> >
+      (const blas_complex<float>& a, const blas_complex<float>& b, vertex< blas_complex<float> >& p);
+    template void rgivens< blas_complex<double> >
+      (const blas_complex<double>& a, const blas_complex<double>& b, vertex< blas_complex<double> >& p);
     
     
     
@@ -113,7 +151,13 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);
     template void rgivens_rightrot< double >
       (matrix< double >& A, const vertex< double >& p,
-       const unsigned int i, const unsigned int j, const unsigned int k);    
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    template void rgivens_rightrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, const vertex< blas_complex<float> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    template void rgivens_rightrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
     
     
     template void rgivens_leftrot< blas_real<float> >
@@ -128,7 +172,12 @@ namespace whiteice
     template void rgivens_leftrot< double >
       (matrix< double >& A, const vertex< double >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
-    
+    template void rgivens_leftrot< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, const vertex< blas_complex<float> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);
+    template void rgivens_leftrot< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
+       const unsigned int i, const unsigned int j, const unsigned int k);    
     
     
     
@@ -239,8 +288,116 @@ namespace whiteice
 
 	if(w.resize(M) != M || A.ysize() - k != v.size())
 	  return false;
+
+#ifdef CUBLAS
 	
-	
+	const T zero = T(0.0f);
+	const T one = T(1.0f);
+
+	if(typeid(T) == typeid(blas_real<float>)){
+	  // w = beta * A' * v
+	  /*
+	  cblas_sgemv(CblasRowMajor, CblasTrans, v.size(), M,
+		      *((float*)&beta), (float*)&(A.data[k*A.numCols + i]), A.xsize(),
+		      (float*)v.data, 1, 0.0f, (float*)w.data, 1);
+	  */
+
+	  auto e = cublasSgemv(cublas_handle, CUBLAS_OP_T,
+			       v.size(), M,
+			       (const float*)&beta,
+			       (const float*)&(A[k + i*A.numRows]), A.ysize(),
+			       (const float*)v.data, 1,
+			       (const float*)&zero,
+			       (float*)w.data, 1);
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_leftrot(): cublasSgemv() failed.");
+	    throw CUDAException("CUBLAS cublasSgemv() call failed.");
+	  }
+	  
+	  // A += v * w';
+	  /*
+	  cblas_sger(CblasRowMajor, v.size(), M,
+		     1.0f, (float*)v.data, 1, (float*)w.data, 1,
+		     (float*)&(A.data[k*A.numCols + i]), A.xsize());
+	  */
+
+	  e = cublasSger(cublas_handle, v.size(), M,
+			 (const float*)&one,
+			 (const float*)v.data, 1, (const float*)w.data, 1,
+			 (float*)(&(A.data[k + i*A.numRows])), A.ysize());
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_leftrot(): cublasSger() failed.");
+	    throw CUDAException("CUBLAS cublasSger() call failed.");
+	  }
+
+	  gpu_sync();
+	  
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+#if 0
+	  // w = beta * A' * v
+	  cblas_dgemv(CblasRowMajor, CblasTrans, v.size(), M,
+		      *((double*)&beta), (double*)&(A.data[k*A.numCols + i]), A.xsize(),
+		      (double*)v.data, 1, 0.0, (double*)w.data, 1);
+	  
+	  // A += v* w';
+	  cblas_dger(CblasRowMajor, v.size(), M,
+		     1.0, (double*)v.data, 1, (double*)w.data, 1,
+		     (double*)&(A.data[k*A.numCols + i]), A.xsize());
+#endif
+
+	  auto e = cublasDgemv(cublas_handle, CUBLAS_OP_T,
+			       v.size(), M,
+			       (const double*)&beta,
+			       (const double*)&(A[k + i*A.numRows]), A.ysize(),
+			       (const double*)v.data, 1,
+			       (const double*)&zero,
+			       (double*)w.data, 1);
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_leftrot(): cublasDgemv() failed.");
+	    throw CUDAException("CUBLAS cublasDgemv() call failed.");
+	  }
+	  
+	  e = cublasDger(cublas_handle, v.size(), M,
+			 (const double*)&one,
+			 (const double*)v.data, 1, (const double*)w.data, 1,
+			 (double*)(&(A.data[k + i*A.numRows])), A.ysize());
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_leftrot(): cublasDger() failed.");
+	    throw CUDAException("CUBLAS cublasDger() call failed.");
+	  }
+
+	  gpu_sync();
+	  
+	}
+	else{
+	  // NOT PROPERLY TESTED!
+	  // (AND/OR DO THE MATH AGAIN AND CHECK THIS ACTUALLY WORKS)
+	  
+	  // w = beta * A' * v
+	  for(unsigned int l=0;l<w.size();l++){
+	    w[l] = T(0.0);
+	    
+	    for(unsigned int j=0;j<v.size();j++)
+	      w[l] += A(k + j, i + l) * v[j];
+	    
+	    w[l] *= beta;
+	  }
+	  
+	  
+	  // A += v * w'
+	  matrix<T> deltaA = v.outerproduct(w);
+	  
+	  for(unsigned int j=0;j<v.size();j++)
+	    for(unsigned int l=0;l<w.size();l++)
+	      A(k + j, i + l) += deltaA(j,l);
+	}
+		
+#else
 	if(typeid(T) == typeid(blas_real<float>)){
 	  // w = beta * A' * v
 	  cblas_sgemv(CblasRowMajor, CblasTrans, v.size(), M,
@@ -285,6 +442,7 @@ namespace whiteice
 	    for(unsigned int l=0;l<w.size();l++)
 	      A(k + j, i + l) += deltaA(j,l);
 	}
+#endif
 	
 	return true;
       }
@@ -311,12 +469,117 @@ namespace whiteice
 	vertex<T> w;
 	vertex<T> vv = v * v;
 	T beta = T(-2.0) / vv[0];
-	
-	
+
 	if(w.resize(M) != M || A.xsize() - k != v.size())
 	  return false;
 	
+#ifdef CUBLAS
+
+	const T one  = T(1.0f);
+	const T zero = T(0.0f);
+
+	if(typeid(T) == typeid(blas_real<float>)){
+#if 0
+	  // w = beta * A * v
+	  cblas_sgemv(CblasRowMajor, CblasNoTrans, M, v.size(),
+		      *((float*)&beta), (float*)&(A.data[i*A.numCols + k]), A.xsize(),
+		      (float*)v.data, 1, 0.0f, (float*)w.data, 1);
+	  
+	  // A += w * v';
+	  cblas_sger(CblasRowMajor, M, v.size(),
+		     1.0f, (float*)w.data, 1, (float*)v.data, 1,
+		     (float*)&(A.data[i*A.numCols + k]), A.xsize());
+#endif
+
+	  auto e = cublasSgemv(cublas_handle, CUBLAS_OP_N,
+			       M, v.size(),
+			       (const float*)&beta,
+			       (const float*)&(A[k + i*A.numRows]), A.ysize(),
+			       (const float*)v.data, 1,
+			       (const float*)&zero,
+			       (float*)w.data, 1);
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_rightrot(): cublasSgemv() failed.");
+	    throw CUDAException("CUBLAS cublasSgemv() call failed.");
+	  }
+	  
+	  e = cublasSger(cublas_handle, M, v.size(),
+			 (const float*)&one,
+			 (const float*)w.data, 1, (const float*)v.data, 1,
+			 (float*)(&(A.data[k + i*A.numRows])), A.ysize());
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_rightrot(): cublasSger() failed.");
+	    throw CUDAException("CUBLAS cublasSger() call failed.");
+	  }
+
+	  gpu_sync();
+	  
+	}
+	else if(typeid(T) == typeid(blas_real<double>)){
+#if 0
+	  // w = beta * A * v
+	  cblas_dgemv(CblasRowMajor, CblasNoTrans, M, v.size(),
+		      *((double*)&beta), (double*)&(A.data[i*A.numCols + k]), A.xsize(),
+		      (double*)v.data, 1, 0.0f, (double*)w.data, 1);
+	  
+	  // A += v* w';
+	  cblas_dger(CblasRowMajor, M, v.size(),
+		     1.0, (double*)w.data, 1, (double*)v.data, 1,
+		     (double*)&(A.data[i*A.numCols + k]), A.xsize());
+#endif
+
+	  auto e = cublasDgemv(cublas_handle, CUBLAS_OP_N,
+			       M, v.size(),
+			       (const double*)&beta,
+			       (const double*)&(A[k + i*A.numRows]), A.ysize(),
+			       (const double*)v.data, 1,
+			       (const double*)&zero,
+			       (double*)w.data, 1);
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_rightrot(): cublasDgemv() failed.");
+	    throw CUDAException("CUBLAS cublasDgemv() call failed.");
+	  }
+	  
+	  e = cublasDger(cublas_handle, M, v.size(),
+			 (const double*)&one,
+			 (const double*)w.data, 1, (const double*)v.data, 1,
+			 (double*)(&(A.data[k + i*A.numRows])), A.ysize());
+
+	  if(e != CUBLAS_STATUS_SUCCESS){
+	    whiteice::logging.error("rhouseholder_rightrot(): cublasDger() failed.");
+	    throw CUDAException("CUBLAS cublasDger() call failed.");
+	  }
+
+	  gpu_sync();
+	  
+	}
+	else{
+	  // NOT PROPERLY TESTED!
+	  
+	  // w = beta * A * v
+	  for(unsigned int l=0;l<w.size();l++){
+	    w[l] = T(0.0);
+	    
+	    for(unsigned int j=0;j<v.size();j++)
+	      w[l] += A(i + l, k + j) * v[j];
+	    
+	    w[l] *= beta;
+	  }
+	  
+	  
+	  // A += w * v'
+	  matrix<T> deltaA = w.outerproduct(v);
+	  
+	  for(unsigned int l=0;l<w.size();l++)
+	    for(unsigned int j=0;j<v.size();j++)
+	      A(i + l, k + j) += deltaA(l,j);
+	  
+	}
 	
+#else
 	if(typeid(T) == typeid(blas_real<float>)){
 	  // w = beta * A * v
 	  cblas_sgemv(CblasRowMajor, CblasNoTrans, M, v.size(),
@@ -361,6 +624,7 @@ namespace whiteice
 	      A(i + l, k + j) += deltaA(l,j);
 	  
 	}
+#endif
 	
 	return true;
       }

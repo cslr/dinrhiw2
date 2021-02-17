@@ -206,6 +206,42 @@ namespace whiteice
   }
 
 
+  // x -> z (hidden) [returns N(zm,zv) distribution parameters]
+  template <typename T>
+  bool VAE<T>::encode(const math::vertex<T>& x,
+		      const nnetwork<T>& encoder,
+		      const std::vector< std::vector<bool> >& dropout,
+		      math::vertex<T>& zmean,
+		      math::vertex<T>& zstdev) const
+  {
+    math::vertex<T> result;
+    if(encoder.calculate(x, result, dropout) == false)
+      return false;
+
+    zmean.resize(decoder.input_size());
+    zstdev.resize(decoder.input_size());
+
+    if(decoder.input_size()*2 != result.size())
+      return false;
+    
+    for(unsigned int i=0;i<zmean.size();i++){
+      zmean[i] = result[i];
+      zstdev[i] = result[i+zmean.size()];
+
+      T value = zstdev[i];
+
+      if(value >= T(20.0)) // restrict values so we don't go to infinity
+	value = T(20.0);
+      else if(value <= T(-20.0))
+	value = T(-20.0);
+      
+      zstdev[i] = ::exp(value.c[0]);
+    }
+
+    return true;
+  }
+
+
   // x -> z (hidden) [returns sample from ~ Normal(zm(x),zv(x))]
   template <typename T>
   bool VAE<T>::encodeSample(const math::vertex<T>& x,
@@ -238,6 +274,41 @@ namespace whiteice
 
     return true;
   }
+
+  
+  // x -> z (hidden) [returns sample from ~ Normal(zm(x),zv(x))]
+  template <typename T>
+  bool VAE<T>::encodeSample(const math::vertex<T>& x,
+			    const nnetwork<T>& encoder,
+			    const std::vector< std::vector<bool> >& dropout,
+			    math::vertex<T>& zsample) const
+  {
+    math::vertex<T> result;
+
+    if(encoder.calculate(x, result, dropout) == false)
+      return false;
+
+    zsample.resize(decoder.input_size());
+
+    if(decoder.input_size()*2 != result.size())
+      return false;
+    
+    for(unsigned int i=0;i<zsample.size();i++){
+      auto zmean = result[i];
+      T value = result[i+zsample.size()];
+      
+      if(value >= T(20.0)) // restrict values so we don't go to infinity
+	value = T(20.0);
+      else if(value <= T(-20.0))
+	value = T(-20.0);
+      
+      auto zstdev = ::exp(value.c[0]);
+      
+      zsample[i] = zmean + rng.normal()*zstdev;
+    }
+
+    return true;
+  }
   
   
   // z (hidden) -> xmean (variance = I)
@@ -247,6 +318,20 @@ namespace whiteice
 		      math::vertex<T>& xmean) const
   {
     if(decoder.calculate(z, xmean) == false)
+      return false;
+    
+    return true;
+  }
+
+
+  // z (hidden) -> xmean (variance = I)
+  template <typename T>
+  bool VAE<T>::decode(const math::vertex<T>& z,
+		      const nnetwork<T>& decoder,
+		      const std::vector< std::vector<bool> >& dropout,
+		      math::vertex<T>& xmean) const
+  {
+    if(decoder.calculate(z, xmean, dropout) == false)
       return false;
     
     return true;
@@ -366,10 +451,12 @@ namespace whiteice
       xmean.resize(decoder.output_size());
       epsilon.resize(encoder.output_size()/2);
       
-      nnetwork<T> encoder(this->encoder);
-      nnetwork<T> decoder(this->decoder);
+      //nnetwork<T> encoder(this->encoder);
+      //nnetwork<T> decoder(this->decoder);
 
-#pragma omp for nowait schedule(dynamic)
+      std::vector< std::vector<bool> > encoder_dropout, decoder_dropout;
+
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<N;i++){
 	unsigned int index = i/K;
 
@@ -377,19 +464,28 @@ namespace whiteice
 	  index = rng.rand() % xsamples.size();
 
 	if(dropout){
-	  encoder.setDropOut();
-	  decoder.setDropOut();
+	  encoder.setDropOut(encoder_dropout);
+	  decoder.setDropOut(decoder_dropout);
+
+	  encode(xsamples[index], encoder, encoder_dropout, zmean, zstdev);
 	}
-	
-	encode(xsamples[index], encoder, zmean, zstdev);
+	else{
+	  encode(xsamples[index], encoder, zmean, zstdev);
+	}
+
 	rng.normal(epsilon);
 
 	auto zi = zmean;
 	for(unsigned int l=0;l<zmean.size();l++){
 	  zi[l] += zstdev[l]*epsilon[l];
 	}
-	
-	decode(zi, decoder, xmean);
+
+	if(dropout){
+	  decode(zi, decoder, decoder_dropout, xmean);
+	}
+	else{
+	  decode(zi, decoder, xmean);
+	}
 	
 	auto delta = xsamples[index] - xmean;
 	e += delta.norm();
@@ -420,7 +516,12 @@ namespace whiteice
     // data variance s^2 term: c = Dz/Dx (was: c = Dx)
     // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
-    const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
+    
+    const float c = 0.05f*0.05f*(3.0f/139.0f)*((float)decoder.output_size())/((float)decoder.input_size());
+    // GIVE BIG IMPACT ON RECONSTRUCTION ERROR: High dimensional vector data dominates.
+    // const float c = 0.05f*0.05f;
+    
+    // const float c = ((float)decoder.output_size())/((float)decoder.input_size());
     
     // constant term C:
     logp += T(0.5)*decoder.input_size() - T(0.5)*decoder.output_size()*(::log((float)(2.0*M_PI*c)));
@@ -440,20 +541,25 @@ namespace whiteice
       xmean.resize(decoder.output_size());
       epsilon.resize(encoder.output_size()/2);
 
-      nnetwork<T> encoder(this->encoder);
-      nnetwork<T> decoder(this->decoder);
+      //nnetwork<T> encoder(this->encoder);
+      //nnetwork<T> decoder(this->decoder);
+
+      std::vector< std::vector<bool> > encoder_dropout, decoder_dropout;
       
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<N;i++){
 	const unsigned int index = i/K;
 	const unsigned int mod   = i % K;
 
 	if(dropout){
-	  encoder.setDropOut();
-	  decoder.setDropOut();
+	  encoder.setDropOut(encoder_dropout);
+	  decoder.setDropOut(decoder_dropout);
+
+	  encode(xsamples[index], encoder, encoder_dropout, zmean, zstdev);
 	}
-	
-	encode(xsamples[index], encoder, zmean, zstdev);
+	else{
+	  encode(xsamples[index], encoder, zmean, zstdev);
+	}
 	
 	if(mod == 0){ // calculates D_KL term
 	  T li = T(0.0);
@@ -474,8 +580,13 @@ namespace whiteice
 	for(unsigned int n=0;n<zmean.size();n++){
 	  zi[n] += zstdev[n]*epsilon[n];
 	}
-	
-	decode(zi, decoder, xmean);
+
+	if(dropout){
+	  decode(zi, decoder, decoder_dropout, xmean);
+	}
+	else{
+	  decode(zi, decoder, xmean);
+	}
 	
 	auto delta = xsamples[index] - xmean;
 	e += (delta*delta)[0];
@@ -861,7 +972,11 @@ namespace whiteice
     // data variance term c, this allows errors to be made in reconstruction (0.05: was c = Dx (x.size()), c = Dz/Dx
     // const float c = 0.05f*0.05f;
     // const float c = (0.05f*0.05f)*((float)decoder.input_size())/((float)decoder.output_size());
-    const float c = 0.05f*0.05f*((float)decoder.output_size())/((float)decoder.input_size());
+    const float c = 0.05f*0.05f*(3.0f/139.0f)*((float)decoder.output_size())/((float)decoder.input_size());
+    // GIVE BIG IMPACT ON RECONSTRUCTION ERROR: high dimensional data dominates
+    // const float c = 0.05f*0.05f;
+    
+    // const float c = ((float)decoder.output_size())/((float)decoder.input_size());
 
     const int BUFLEN = 1024;
     char buffer[BUFLEN];
@@ -878,8 +993,9 @@ namespace whiteice
       pgrad.resize(pgradient.size());
       pgrad.zero();
 
-      nnetwork<T> encoder(this->encoder);
-      nnetwork<T> decoder(this->decoder);
+      //nnetwork<T> encoder(this->encoder);
+      //nnetwork<T> decoder(this->decoder);
+      std::vector< std::vector<bool> > encoder_dropout, decoder_dropout;
 
       // encoder values
       math::vertex<T> zmean, zstdev;
@@ -904,7 +1020,7 @@ namespace whiteice
       math::vertex<T> gzx;
       math::matrix<T> Jstdev_epsilon;
       
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<MINIBATCHSIZE;i++)
       {
 	if(failure) continue; // do nothing after first failure
@@ -923,8 +1039,8 @@ namespace whiteice
   	}
 
 	if(dropout){
-	  encoder.setDropOut();
-	  decoder.setDropOut();
+	  encoder.setDropOut(encoder_dropout);
+	  decoder.setDropOut(decoder_dropout);
 	}
 	
 	
@@ -942,7 +1058,7 @@ namespace whiteice
 	// 1. first calculate gradient of "-D_KL" term
 	
 	
-	if(encoder.calculate(x, output) == false){
+	if(encoder.calculate(x, output, encoder_dropout) == false){
 	  failure = true;
 	  continue;
 	}
@@ -971,7 +1087,7 @@ namespace whiteice
 	
 	// gradient of encoder
 	
-	if(encoder.gradient(x, J) == false){
+	if(encoder.jacobian(x, J, encoder_dropout) == false){
 	  failure = true;
 	  continue;
 	}
@@ -1029,19 +1145,19 @@ namespace whiteice
 	  }
 
 	  xmean = x;
-	  if(decoder.calculate(zi, xmean) == false){
+	  if(decoder.calculate(zi, xmean, decoder_dropout) == false){
 	    failure = true;
 	    continue;
 	  }
 	  
-	  if(decoder.gradient(zi, grad_meanx) == false){
+	  if(decoder.jacobian(zi, grad_meanx, decoder_dropout) == false){
 	    failure = true;
 	    continue;
 	  }
 	  
 	  decoder_gradient += (x - xmean)*grad_meanx;
 	  
-	  if(decoder.gradient_value(zi, J_meanx_value) == false){
+	  if(decoder.gradient_value(zi, J_meanx_value, decoder_dropout) == false){
 	    failure = true;
 	    continue;
 	  }

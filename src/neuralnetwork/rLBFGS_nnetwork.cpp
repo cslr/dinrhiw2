@@ -105,7 +105,7 @@ namespace whiteice
 	
 	
 	// E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtest.size(0);i++){
 	  nnet.input() = dtest.access(0, i);
 	  nnet.calculate(false);
@@ -141,7 +141,7 @@ namespace whiteice
 	output.resize(RDIM);
 	
 	// E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtest.size(0);i++){
 	  input.zero();
 	  input.write_subvertex(dtest.access(0,i), 0);
@@ -198,7 +198,7 @@ namespace whiteice
 	  T esum = T(0.0f);
 	  
 	  // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	  for(unsigned int i=0;i<MINIBATCHSIZE;i++){
 	    const unsigned int index =
 	      whiteice::math::LBFGS<T>::rng.rand() % dtrain.size(0);
@@ -236,7 +236,7 @@ namespace whiteice
 	  output.resize(RDIM);
 	  
 	  // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	  for(unsigned int i=0;i<MINIBATCHSIZE;i++){
 	    const unsigned int index =
 	      whiteice::math::LBFGS<T>::rng.rand() % dtrain.size(0);
@@ -289,7 +289,7 @@ namespace whiteice
 	  T esum = T(0.0f);
 	  
 	  // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	  for(unsigned int i=0;i<dtrain.size(0);i++){
 	    nnet.input() = dtrain.access(0, i);
 	    nnet.calculate(false);
@@ -325,7 +325,7 @@ namespace whiteice
 	  output.resize(RDIM);
 	  
 	  // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	  for(unsigned int i=0;i<dtrain.size(0);i++){
 	    input.zero();
 	    assert(input.write_subvertex(dtrain.access(0,i), 0));
@@ -396,13 +396,13 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  nnet.input() = dtrain.access(0, i);
 	  nnet.calculate(true);
-	  err = dtrain.access(1,i) - nnet.output();
+	  err = nnet.output() - dtrain.access(1,i);
 	  
-	  if(nnet.gradient(err, grad) == false){
+	  if(nnet.mse_gradient(err, grad) == false){
 	    std::cout << "gradient failed." << std::endl;
 	    assert(0); // FIXME
 	  }
@@ -476,7 +476,7 @@ namespace whiteice
 	math::matrix<T> FGRADTMP;
 	FGRADTMP.resize(dtrain.dimension(1)+RDIM, RDIM);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  UGRAD.zero();
 	  grad.zero();
@@ -485,7 +485,7 @@ namespace whiteice
 	  
 	  for(unsigned int d=0;d<deepness;d++){
 	    
-	    assert(nnet.gradient(input, FGRAD) == true);
+	    assert(nnet.jacobian(input, FGRAD) == true);
 	    // df/dw (dtrain.dimension(1)+RDIM, nnet.gradient_size())
 
 	    {
@@ -611,7 +611,7 @@ namespace whiteice
 	math::vertex<T> grad, err;
 	std::vector< math::vertex<T> > grads; // grads direction
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  nnet.input() = dtrain.access(0, i);
 	  nnet.calculate(true);
@@ -685,7 +685,7 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  {
 	    nnet.input() = dtrain.access(0, i);
@@ -762,7 +762,7 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  if(cluster[i]){ // only selected cluster
 	    
@@ -840,7 +840,7 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  math::vertex<T> input;
 	  input.resize(net.input_size());
@@ -931,7 +931,7 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){	  
 	  {
 	    math::vertex<T> input;
@@ -1044,7 +1044,7 @@ namespace whiteice
 	sgrad = x;
 	sgrad.zero();
 	
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	for(unsigned int i=0;i<dtrain.size(0);i++){
 	  if(cluster[i])
 	  {
@@ -1127,8 +1127,6 @@ namespace whiteice
   }
   
   
-  template class rLBFGS_nnetwork< float >;
-  template class rLBFGS_nnetwork< double >;
   template class rLBFGS_nnetwork< math::blas_real<float> >;
   template class rLBFGS_nnetwork< math::blas_real<double> >;
 

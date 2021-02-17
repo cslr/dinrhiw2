@@ -42,7 +42,29 @@ namespace whiteice
 
       // sets and gets minibatch settings for estimating gradient
       void setUseMinibatch(bool minibatch = true);
-      bool getUseMinibatch();
+      bool getUseMinibatch() const;
+
+      // sets overfitting (uses all data for training and no separate testing dataset)
+      // (overfitting gives much WORSE results so it SHOULD NOT be used.)
+      void setOverfit(bool overfit = true);
+      bool getOverfit() const;
+
+      // if true uses Minimum Norm Error ||y-f(x)|| instead of the default
+      // MSE (Minimum Squared Error) ||y-f(x)||^2 as a error measure
+      void setMNE(bool usemne = true);
+      bool getUseMNE() const;
+
+      // whether to add alpha*0.5*||w||^2 term to error to keep
+      // weight values from exploding. It is RECOMMENDED to enable
+      // this for complex valued neural networks because complex
+      // non-linearities might easily explode to large values
+      //
+      // 0.01 seem to work rather well when complex weights are N(0,I)/dim(W(k,:))
+      // and data is close to N(0,I) too.
+      void setRegularizer(const T alpha = T(0.01f));
+
+      // returns regularizer value, zero means regularizing is disabled
+      T getRegularizer() const;
       
       /*
        * starts the optimization process using data as 
@@ -92,21 +114,25 @@ namespace whiteice
       bool getSolution(whiteice::nnetwork<T>& nn) const;
       
       /* used to stop the optimization process */
-      bool stopComputation();
-      
+	bool stopComputation();
+	
       private:
       
       T getError(const whiteice::nnetwork<T>& net,
 		 const whiteice::dataset<T>& dtest,
 		 const bool regularize = true,
 		 const bool dropout = false);
-      
+	
       
       whiteice::nnetwork<T>* nn; // network architecture and settings
       
       bool heuristics;
       bool dropout; // use dropout heuristics when training
       T regularizer;
+
+      // whether to use minimum norm error ||y-f(x)|| instead of
+      // the standard MSE (minimum squared error) 0.5*||y-f(x)||^2 (default)
+      bool mne; 
       
       vertex<T> bestx;
       T best_error;
@@ -136,6 +162,7 @@ namespace whiteice
 
       whiteice::RNG<T> rng; // we use random numbers
       bool use_minibatch; // use minibatch to estimate gradient
+      bool overfit; // use all data to fit to solution (disabled as default)
 	
       mutable std::mutex solution_lock, start_lock, errors_lock;
       mutable std::mutex convergence_lock, noimprove_lock;
@@ -158,10 +185,10 @@ namespace whiteice
 {
   namespace math
   {
-    extern template class NNGradDescent< float >;
-    extern template class NNGradDescent< double >;
     extern template class NNGradDescent< blas_real<float> >;
     extern template class NNGradDescent< blas_real<double> >;
+    extern template class NNGradDescent< blas_complex<float> >;
+    extern template class NNGradDescent< blas_complex<double> >;    
     
     
   };

@@ -1,14 +1,13 @@
 /*
  * neural network implementation (V2)
- * work arounds some bugs + has more efficient implementation
  * 
- * The neural network uses:
- * - tanh(x) non-linearity y=tanh(Ax+b), 
- *   expect at the output layer where direct 
- *   linear transformation is used (y=Ax+b).
- * - uses direct memory accesses and stores parameters
- *   as a single big vector
- * - could benefit optimization from BLAS routines
+ * Use rectifier non-linearity in all other layers except output
+ * layer which should be linear.
+ * 
+ * UPDATE:
+ * dropout probability is now 10% instead of 20% this should improve performance
+ *
+ * Optimize code to use cblas
  * 
  */
 
@@ -26,25 +25,30 @@
 
 #include <vector>
 
+// keep 80% of weights in neural network seem to generalize well (90% gives bad result)
+#define DROPOUT_PROBABILITY 0.80f
+
 
 namespace whiteice
 {
   
   template < typename T = math::blas_real<float> >
-    class nnetwork
-    {
-    public:
-
-    enum nonLinearity {
-      sigmoid = 0, // uses sigmoid non-linearity as the default (0) [output: [0,+1] input (-inf,inf)]
-      stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
-      halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
-      pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
-      tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
-      rectifier = 5 // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
-    };
-
-
+  class nnetwork
+  {
+  public:
+    
+    enum nonLinearity
+      {
+       sigmoid = 0, // uses sigmoid non-linearity as the default (0) [output: [0,+1] input (-inf,inf)]
+       stochasticSigmoid = 1, // clipped to 0/1 values.. (1)
+       halfLinear = 2, // for deep networks (2) [f(x)=tanh(x) + 0.5x)
+       pureLinear = 3, // for last-layer and comparing nnetworks (linear f(x)=x) (3)
+       tanh = 4, // tanh non-linearity (output: [-1,+1] (input: [-1,1])
+       rectifier = 5, // leaky ReLU f(x) = max(0.1x,x) - deep networks [biologically motivated]
+       softmax = 6 // for complex neural networks: this derivates ok and is similar to ReLU rectifier
+      };
+    
+    
     
     // creates useless 1x1 network. 
     // Use to load some useful network
@@ -55,9 +59,9 @@ namespace whiteice
     
     
     virtual ~nnetwork();
-
+    
     nnetwork<T>& operator=(const nnetwork<T>& nn);
-
+    
     // prints nnetwork information (mostly for debugging purposes)
     void printInfo() const; 
 
@@ -93,12 +97,30 @@ namespace whiteice
     // simple thread-safe version [parallelizable version of calculate: don't calculate gradient nor collect samples]
     bool calculate(const math::vertex<T>& input, math::vertex<T>& output) const;
 
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   const std::vector< std::vector<bool> >& dropout) const;
+
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   std::vector< math::vertex<T> >& bpdata) const;
+
+    // thread safe calculate call which also stores backpropagation data
+    // bpdata can be used calculate mse_gradient() with backpropagation
+    // in a const nnetwork<> class so that same nnetwork<> object can
+    // be used with multiple threads. If dropout vector has data also
+    // does dropout heuristics. This allows same nnetwork<> object to be
+    // used in thread safe manner.
+    bool calculate(const math::vertex<T>& input, math::vertex<T>& output,
+		   const std::vector< std::vector<bool> >& dropout,
+		   std::vector< math::vertex<T> >& bpdata) const;
+
     unsigned int length() const; // number of layers
 
     // set nnetworks parameters to random values
-    // type = 0: random [-1,+1] values, type 1 = smart initialization, type 2 more stable initialization
-      bool randomize(const unsigned int type = 2,
-		     const bool smallvalues = false);
+    // type = 0: random [-1,+1] values
+    // type 1 = smart initialization (uniform distribution)
+    // type 2 more stable initialization (normal distribution)
+    bool randomize(const unsigned int type = 2,
+		   const bool smallvalues = false);
 
       // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);
@@ -107,14 +129,39 @@ namespace whiteice
     bool presetWeightsFromDataRandom(const whiteice::dataset<T>& ds);
 
     // calculates gradient of parameter weights w f(v|w) when using squared error: 
-    // grad(0,5*error^2) = grad(right - output)
-    bool gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // used backpropagation data stored within nnetwork<> by non const calculate() call.
+    bool mse_gradient(const math::vertex<T>& error, math::vertex<T>& grad) const;
 
-    // calculates gradient of parameter weights w f(v|w)
-    bool gradient(const math::vertex<T>& input, math::matrix<T>& grad) const;
+    // calculates gradient of parameter weights w f(v|w) when using squared error: 
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // uses backpropagation data provided by user
+    bool mse_gradient(const math::vertex<T>& error,
+		      const std::vector< math::vertex<T> >& bpdata,
+		      math::vertex<T>& grad) const;
+    
+    // calculates gradient of parameter weights w f(v|w) when using squared error: 
+    // grad(0,5*error^2) = grad(output - right) = nn(x) - y
+    // used backpropagation bpdata provided by caller (use calculate() with bpdata) and 
+    // dropout heuristic if dropout vector is non empty object.
+    bool mse_gradient(const math::vertex<T>& error,
+		      const std::vector< math::vertex<T> >& bpdata,
+		      const std::vector< std::vector<bool> >& dropout,
+		      math::vertex<T>& grad) const;
+
+    // calculates jacobian/gradient of parameter weights w f(v|w)
+    bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad) const;
+
+    // calculates jacobian/gradient of parameter weights w f(v|w) [uses dropout table]
+    bool jacobian(const math::vertex<T>& input, math::matrix<T>& grad,
+		  const std::vector< std::vector<bool> >& dropout) const;
 
     // calculates gradient of input v, grad f(v) while keeping weights w constant
     bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad) const;
+
+    // calculates gradient of input v, grad f(v) while keeping weights w constant
+    bool gradient_value(const math::vertex<T>& input, math::matrix<T>& grad,
+			const std::vector< std::vector<bool> >& dropout) const;
 
      ////////////////////////////////////////////////////////////
     
@@ -178,78 +225,97 @@ namespace whiteice
     // drop out support:
 
     // set neurons to be non-dropout neurons with probability p [1-p are dropout neurons]
-    bool setDropOut(T retain_p = T(0.8)) ;
+    bool setDropOut(const T retain_p = T(DROPOUT_PROBABILITY)) ;
+
+    // set dropout tables neurons to be non-dropout neurons
+    // with probability p [1-p are dropout neurons]
+    bool setDropOut(std::vector< std::vector<bool> >& dropout,
+		    const T retain_p = T(DROPOUT_PROBABILITY)) const;
 
     // clears drop out but scales weights according to retain_probability
-    bool removeDropOut(T retain_p = T(0.8)) ;
+    bool removeDropOut(T retain_p = T(DROPOUT_PROBABILITY)) ;
     
     void clearDropOut() ; // remove all drop-out without changing weights
     
     ////////////////////////////////////////////////////////////
-    public:
-    
-    T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
-    T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
+  public:
+
+    // with dropout heuristic
+    inline T nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // non-linearity used in neural network
+    inline T Dnonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // derivate of non-linearity used in neural network
+
+    // without dropout heuristic
+    inline T nonlin(const T& input, unsigned int layer) const;
+    inline T Dnonlin(const T& input, unsigned int layer) const;
 
     
     T inv_nonlin(const T& input, unsigned int layer, unsigned int neuron) const ; // inverse of non-linearity used [not really used]
     
-    private:
-    
-    inline void gemv(unsigned int yd, unsigned int xd, T* W, T* x, T* y);
-    inline void gvadd(unsigned int dim, T* s, T* b);
+  private:
 
-    
+      
     inline void gemv_gvadd(unsigned int yd, unsigned int xd, 
 			   const T* W, T* x, T* y,
-			   unsigned int dim, T* s, const T* b) const;
+			   unsigned int dim, T* s, const T* b,
+			   T* temp) const;
     
     
-    // data structures which are part of
-    // interface
-    mutable math::vertex<T> inputValues;
-    mutable math::vertex<T> outputValues;
+    // data structures which are part of interface [avoid using these!]
+    math::vertex<T> inputValues;
+    math::vertex<T> outputValues;
     
-
+    
     bool hasValidBPData;
     
-    std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer (default: sigmoid)
-    std::vector<bool> frozen;  // frozen layers (that are not optimized or set to some values otherwise)
-
+    std::vector<nonLinearity> nonlinearity; // which non-linearity to use in each layer
+    
+    // frozen layers (that are not optimized or set to some values otherwise)
+    std::vector<bool> frozen;  
+    
     // stochastic retain probability during activation [feedforward]
     T retain_probability;
-
-    // drop-out configuration for each layer [if neuron is dropout neuron its non-linearity is zero]
+    
+    // drop-out configuration for each layer
+    // [if neuron is dropout neuron its non-linearity is zero]
     std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
-
+    
     whiteice::RNG<T> rng;
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;
     unsigned int maxwidth;    
     unsigned int size;
-
-    std::vector<T> data;
-    std::vector<T> bpdata;
     
-    std::vector<T> state;
-    mutable std::vector<T> temp;
-    mutable std::vector<T> lgrad;
+    // USE vertex<T> instead of vector<T> because vertex is allocated
+    // by cuBLAS if needed
+
+    // parameters of the network [no support for convolutional layers yet]
+    // vectorized form of parameters is (gradient format, row major matrixes):
+    // vec(nnetwork) = [vec(W1) vec(b1) .. vec(Wi) vec(bi) .. vec(Wn) vec(bn)]
+    std::vector< math::matrix<T> > W;
+    std::vector< math::vertex<T> > b;
+
+    // backpropagation data
+    std::vector< math::vertex<T> > bpdata; // array of input and local field values
     
     // used to collect samples about data passing through the network,
     // this will then be used later to do unsupervised regularization of training data
     std::vector< std::vector< math::vertex<T> > > samples;
-
+    
     // bool compressed;
     // MemoryCompressor* compressor;
   };
   
   
   
-  extern template class nnetwork< float >;
-  extern template class nnetwork< double >;  
+  //extern template class nnetwork< float >;
+  //extern template class nnetwork< double >;
+  
   extern template class nnetwork< math::blas_real<float> >;
   extern template class nnetwork< math::blas_real<double> >;
+
+  extern template class nnetwork< math::blas_complex<float> >;
+  extern template class nnetwork< math::blas_complex<double> >;
   
 };
 

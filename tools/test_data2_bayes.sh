@@ -18,12 +18,12 @@ rm -f wdbc-test.ds
 
 # uses nntool trying to learn from dataset
 
-./nntool -v --time 600 wdbc-test.ds ?-20-? wdbcnn.cfg bayes
+./nntool -v --time 600 wdbc-test.ds 30-20-1 wdbcnn.cfg bayes
 
 ##################################################
 # testing
 
-./nntool -v wdbc-test.ds ?-20-? wdbcnn.cfg use
+./nntool -v wdbc-test.ds 30-20-1 wdbcnn.cfg use
 
 ##################################################
 # predicting [stores results to dataset]

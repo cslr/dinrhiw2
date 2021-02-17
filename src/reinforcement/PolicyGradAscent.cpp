@@ -336,7 +336,7 @@ namespace whiteice
       T vsum = T(0.0f);
       
       // calculates mean q-value from the testing dataset
-#pragma omp for nowait schedule(dynamic)	    	    
+#pragma omp for nowait schedule(auto)	    	    
       for(unsigned int i=0;i<dtest.size(0);i++){
 	auto state = dtest.access(0, i);
 	
@@ -529,7 +529,7 @@ namespace whiteice
 	  std::vector<T> q_norms; // q gradient norms
 	  std::vector<T> p_norms; // policy gradient norms
 	  	    
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 	  for(unsigned int i=0;i<100;i++){
 	    
 	    // calculates gradients for Q(state, action(state)) and policy(state)
@@ -543,7 +543,7 @@ namespace whiteice
 	    
 	    whiteice::math::matrix<T> gradP;
 	    
-	    policy->gradient(state, gradP);
+	    policy->jacobian(state, gradP);
 
 	    const T p = frobenius_norm(gradP);
 
@@ -631,7 +631,7 @@ namespace whiteice
 	    char buffer[80];
 	    double temp = 0.0;
 	    
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
 	    for(unsigned int i=0;i<dtrain.size(0);i++){
 	      
 	      if(dropout) pnet.setDropOut();
@@ -663,7 +663,7 @@ namespace whiteice
 	      
 	      whiteice::math::matrix<T> gradP;
 	      
-	      pnet.gradient(state, gradP);
+	      pnet.jacobian(state, gradP);
 
 	      gradP *= p_grad_scaling;
 
@@ -993,8 +993,6 @@ namespace whiteice
   //////////////////////////////////////////////////////////////////////
   
 
-  template class PolicyGradAscent< float >;
-  template class PolicyGradAscent< double >;
   template class PolicyGradAscent< whiteice::math::blas_real<float> >;
   template class PolicyGradAscent< whiteice::math::blas_real<double> >;
 };

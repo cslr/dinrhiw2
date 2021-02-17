@@ -11,12 +11,15 @@
 #include "compressable.h"
 #include "MemoryCompressor.h"
 
+#include "blade_math.h"
+
 #include <stdexcept>
 #include <exception>
 #include <vector>
 
 #include <assert.h>
 
+// TODO check that this isn't used anymore and remove DINRHIW_DEBUG define
 #ifndef DINRHIW_DEBUG
 #define DINRHIW_DEBUG 1
 #endif
@@ -38,7 +41,7 @@ namespace whiteice
     template <typename T> bool autocorrelation(matrix<T>& R, const std::vector< vertex<T> >& data);
     template <typename T> bool autocorrelation(matrix<T>& R, const matrix<T>& W);
     template <typename T> bool mean_covariance_estimate
-      (vertex<T>& m, matrix<T>& R, const std::vector< vertex<T> >& data);
+      (vertex<T>& m, matrix<T>& Cxx, const std::vector< vertex<T> >& data);
       
     // rotations
     template <typename T> bool rhouseholder_leftrot
@@ -68,7 +71,7 @@ namespace whiteice
       matrix(const unsigned int size_y = 4,
 	     const unsigned int size_x = 4);
       matrix(const matrix<T>& M);
-      //matrix(matrix<T>&& t);
+      matrix(matrix<T>&& t);
       matrix(const vertex<T>& diagonal);
       virtual ~matrix();
       
@@ -86,7 +89,7 @@ namespace whiteice
       matrix<T>& operator/=(const matrix<T>&) ;
       
       matrix<T>& operator=(const matrix<T>&) ;
-      //matrix<T>& operator=(matrix<T>&& t) ;
+      matrix<T>& operator=(matrix<T>&& t) ;
       
       bool operator==(const matrix<T>&) const ;
       bool operator!=(const matrix<T>&) const ;
@@ -109,14 +112,21 @@ namespace whiteice
       matrix<T>& operator*=(const T&) ;
       matrix<T>& operator/=(const T&) ;
       
-      vertex<T> operator*(const vertex<T>&) const ;      
+      vertex<T> operator*(const vertex<T>&) const ;
+
+      // NOTE: If you are using cuBLAS acceleration you have to
+      // call gpu_sync() call after modifying matrix values through direct RAM access
       
       // doesn't behave as expected. returns index:th
       // value from matrix (left->right, top->bottom order)
       T& operator[](const unsigned int& index) 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= numRows*numCols){
+	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("matrix index out of range");
+	}
 #endif
 	return data[index]; // no range check
       }
@@ -124,7 +134,11 @@ namespace whiteice
       const T& operator[](const unsigned int& index) const 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(index >= numRows*numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(index >= numRows*numCols){
+	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  assert(0);
+	  throw std::out_of_range("matrix index out of range");
+	}
 #endif	
 	return data[index]; // no range checks
       }
@@ -133,19 +147,34 @@ namespace whiteice
       T& operator()(unsigned int y, unsigned int x) 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
+	if(y >= numRows || x >= numCols){
+	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex matrix out of range");
+	}
 #endif
-	
+#if CUBLAS
+	return data[y + x*numRows];
+#else
 	return data[y*numCols + x]; // no range checks
+#endif
       }
       
       
       const T& operator()(unsigned y, unsigned int x) const 
       {
 #ifdef _GLIBCXX_DEBUG
-	if(y >= numRows || x >= numCols){ assert(0); throw std::out_of_range("vertex index out of range"); }
-#endif	
+	if(y >= numRows || x >= numCols){
+	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  assert(0);
+	  throw std::out_of_range("vertex index out of range");
+	}
+#endif
+#ifdef CUBLAS
+	return data[y + x*numRows];
+#else
 	return data[y*numCols + x]; // no range checks
+#endif
       }
       
       matrix<T>& identity();
@@ -158,13 +187,19 @@ namespace whiteice
       
       // translation
       matrix<T>& translation(const T& dx, const T& dy, const T& dz) ;
+      
       matrix<T>& abs() ;
+      matrix<T>& real();
+      matrix<T>& imag();
       
       // transposes itself (changes matrix)
       matrix<T>& transpose() ;
 
       // calculates hermitian matrix (conjugate transpose matrix)
       matrix<T>& hermite() ;
+
+      // just calculates complex conjugate of matrix values
+      matrix<T>& conj();
 
       T det() const ; // determinate      
       T trace() const ;
@@ -175,13 +210,13 @@ namespace whiteice
       bool inv() ;
       
       // calculates pseudoinverse using svd (should not never fail)
-      matrix<T>& pseudoinverse(const T machine_epsilon = T(0.0)) ;
+      bool pseudoinverse(const T machine_epsilon = T(0.0)) ;
 
       // symmetric pseudoinverse (symmetric eig to calculate evd)
       bool symmetric_pseudoinverse(const T machine_epsilon = T(0.0)) ;
       
       
-      unsigned int size() const ;
+      unsigned int size() const ;  // rows*columns
       unsigned int ysize() const ; // rows      
       unsigned int xsize() const ; // columns
       
@@ -308,7 +343,7 @@ namespace whiteice
 	  
 	  for(unsigned int j=0;j<A.ysize();j++){
 	    for(unsigned int i=0;i<A.xsize();i++){
-	      if(convert(B(j,i), A(j,i)) == false)
+	      if(whiteice::math::convert(B(j,i), A(j,i)) == false)
 		return false;
 	      
 	      // B(j,i) = static_cast<T>(A(j,i));

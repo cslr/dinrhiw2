@@ -38,31 +38,38 @@ namespace whiteice
       (const matrix<float>& A, vertex<float>& d, matrix<float>& X, bool complex_ok);
     template bool eig2x2matrix<double>
       (const matrix<double>& A, vertex<double>& d, matrix<double>& X, bool complex_ok);
-    template bool eig2x2matrix< complex<float> >
-      (const matrix< complex<float> >& A, vertex< complex<float> >& d,
-       matrix< complex<float> >& X, bool complex_ok);
-    template bool eig2x2matrix< complex<double> >
-      (const matrix< complex<double> >& A, vertex< complex<double> >& d,
-       matrix< complex<double> >& X, bool complex_ok);
+    //template bool eig2x2matrix< complex<float> >
+    //  (const matrix< complex<float> >& A, vertex< complex<float> >& d,
+    //   matrix< complex<float> >& X, bool complex_ok);
+    //template bool eig2x2matrix< complex<double> >
+    //  (const matrix< complex<double> >& A, vertex< complex<double> >& d,
+    //   matrix< complex<double> >& X, bool complex_ok);
        
        
     template bool hessenberg_reduction< blas_real<float> >
-      (matrix< blas_real<float> >& A, matrix< blas_real<float> >& Q);
+    (matrix< blas_real<float> >& A, matrix< blas_real<float> >& Q);
     template bool hessenberg_reduction< blas_real<double> >
-      (matrix< blas_real<double> >& A, matrix< blas_real<double> >& Q);
+    (matrix< blas_real<double> >& A, matrix< blas_real<double> >& Q);
     template bool hessenberg_reduction<float>
-      (matrix<float>& A, matrix<float>& Q);
+    (matrix<float>& A, matrix<float>& Q);
     template bool hessenberg_reduction<double>
-      (matrix<double>& A, matrix<double>& Q);
+    (matrix<double>& A, matrix<double>& Q);
+    template bool hessenberg_reduction< blas_complex<float> >
+    (matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& Q);
+    template bool hessenberg_reduction< blas_complex<double> >
+    (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& Q);
     
     
     template bool qr< blas_real<float> > (matrix< blas_real<float> >&  A,
-					   matrix< blas_real<float> >&  Q);
+					  matrix< blas_real<float> >&  Q);
     template bool qr< blas_real<double> >(matrix< blas_real<double> >& A,
-					   matrix< blas_real<double> >& Q);
+					  matrix< blas_real<double> >& Q);
     template bool qr<float> (matrix<float>&  A, matrix<float>&  Q);
     template bool qr<double>(matrix<double>& A, matrix<double>& Q);
-
+    template bool qr< blas_complex<float> > (matrix< blas_complex<float> >&  A,
+					     matrix< blas_complex<float> >&  Q);
+    template bool qr< blas_complex<double> >(matrix< blas_complex<double> >& A,
+					     matrix< blas_complex<double> >& Q);
     
     
     template bool implicit_symmetric_qrstep_wilkinson< blas_real<float> >
@@ -77,6 +84,12 @@ namespace whiteice
     template bool implicit_symmetric_qrstep_wilkinson<double>
       (matrix<double>& A, matrix<double>& X,
        unsigned int e1, unsigned int N);
+    template bool implicit_symmetric_qrstep_wilkinson< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& X,
+       unsigned int e1, unsigned int N);
+    template bool implicit_symmetric_qrstep_wilkinson< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& X,
+       unsigned int e1, unsigned int N);
     
     
     template bool symmetric_eig< blas_real<float> >
@@ -88,8 +101,8 @@ namespace whiteice
     
     //template bool symmetric_eig< complex<float> >(matrix< complex<float> >& A, matrix< complex<float> >& D, bool sort);
     //template bool symmetric_eig< complex<double> >(matrix< complex<double> >& A, matrix< complex<double> >& D, bool sort);
-    //template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
-    //template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
+    template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
+    template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
     
     
     template bool svd< blas_real<float> >
@@ -143,7 +156,7 @@ namespace whiteice
       
       X.resize(2,2);
       
-      if(temp != T(0)){ // different eigenvalues (full rank - unless zero eigenvalues)
+      if(temp != T(0.0f)){ // different eigenvalues (full rank - unless zero eigenvalues)
 	
 	for(unsigned int i=0;i<2;i++){
 	  if(A(0,1) != T(0)){
@@ -177,13 +190,13 @@ namespace whiteice
       else{ // same eigenvalues
 	
 	// eigenvector 1
-	if(A(0,1) != T(0)){
-	  X(0,0) = 1;
+	if(A(0,1) != T(0.0f)){
+	  X(0,0) = T(1.0f);
 	  X(1,0) = (- A(0,0) + d[0])/A(0,1);
 	}
 	else if(A(1,0) != T(0)){
 	  X(0,0) = (- A(1,1) + d[0])/A(1,0);
-	  X(1,0) = 1;
+	  X(1,0) = T(1.0f);
 	}
 	else{
 	  // both diagonals are zero -> X = I
@@ -200,17 +213,17 @@ namespace whiteice
 	
 	
 	// eigenvector 2
-	if(A(0,1) != T(0)){
-	  X(0,1) = 1;
+	if(A(0,1) != T(0.0f)){
+	  X(0,1) = T(1.0f);
 	  X(1,1) = (- A(0,0) + d[1])/A(0,1);
 	}
 	else if(A(1,0) != T(0)){
 	  X(0,1) = (- A(1,1) + d[1])/A(1,0);
-	  X(1,1) = 1;
+	  X(1,1) = T(1.0f);
 	}
 	else{ // note: should be impossible
-	  X(0,1) = 0;
-	  X(1,1) = 1;
+	  X(0,1) = T(0.0f);
+	  X(1,1) = T(1.0f);
 	}
 	
 	
@@ -425,7 +438,9 @@ namespace whiteice
 	T s;
 	T d = (A(M-2,M-2) - A(M-1,M-1))/T(2.0);
 	
-	if(d > T(0.0)){
+	const auto zero = abs(T(0.0f));
+	
+	if(abs(d) > zero){
 	  s = A(M-1,M-1) - (A(M-1,M-2)*A(M-1,M-2)) / 
 	    (d + whiteice::math::sqrt(d*d + A(M-1,M-2)*A(M-1,M-2)));
 	}
@@ -457,7 +472,7 @@ namespace whiteice
 	  }
 	  
 	}
-	
+
 	
 	return true;
       }
@@ -468,13 +483,22 @@ namespace whiteice
     
     
     /***********************************************************************************/
+
+    // helper data structure for sorting eigenvalues in symmetric_eig()
+    template <typename T>
+    class eigvaluepair
+    {
+    public:
+      int index;
+      T value;
+    };
+    
     
     template <typename T>
     inline bool symmetric_eig(matrix<T>& A, matrix<T>& X, bool sort)
     {
       // KNOWN_BUG: only works with real valued data,
       // as a compilation-hack converts values to real values which don't work
-      
       
       try{
 	if(A.xsize() != A.ysize())
@@ -483,8 +507,8 @@ namespace whiteice
 	if(X.resize(A.xsize(),A.xsize()) == false)
 	  return false;
 	
-	T TOLERANCE = T(0.000001);
-	T EPSILON   = T(0.000001);
+	auto TOLERANCE = abs(T(0.000001));
+	auto EPSILON   = abs(T(0.000001));
 	unsigned int N = A.xsize();
 	
 	// special cases for small matrices
@@ -496,18 +520,26 @@ namespace whiteice
 	else if(N == 2){
 	  vertex<T> d;
 
-	  if(!eig2x2matrix(A, d, X, false))
-	    return false;
+	  if(typeid(T) == typeid(blas_complex<float>) || typeid(T) == typeid(blas_complex<double>)){
+	    const bool complex_solution_ok = true;
+	    if(!eig2x2matrix(A, d, X, complex_solution_ok))
+	      return false;
+	  }
+	  else{
+	    const bool complex_solution_ok = false;
+	    if(!eig2x2matrix(A, d, X, complex_solution_ok))
+	      return false;
+	  }
 	  
 	  A(0,0) = d[0];
-	  A(0,1) = T(0.0);
-	  A(1,0) = T(0.0);
+	  A(0,1) = T(0.0f);
+	  A(1,0) = T(0.0f);
 	  A(1,1) = d[1];
 	  
 	  // return true; (need to sort eigenvalues)..
 	}
 	else{
-	    
+
 	  // calculates first hessenberg reduction of A
 	  if(!hessenberg_reduction(A, X))
 	    return false;
@@ -589,15 +621,14 @@ namespace whiteice
 		break;
 	      }
 	    }
-	    
+
 	    
 	    // calculates qr step for the non-diagonal submatrix
 	    if(!implicit_symmetric_qrstep_wilkinson(A, X, e1, (e2 - e1)+1)){
 	      std::cout << "IMPLICIT SHIFT FAILED" << std::endl;
+	      return false;
 	    }
 
-
-	    
 	    if(f1 == e1 && f2 == e2){
 	      iter++;
 	      
@@ -639,13 +670,21 @@ namespace whiteice
 	}
 	
 	
-
 	// sorts eigenvectors according to their variances
 	if(sort){
-	  std::multimap<T, int> var;
 	  
-	  for(unsigned int j=0;j<A.xsize();j++)
-	    var.insert(std::pair<T, int>(A(j,j), j));
+	  std::multimap<double, class eigvaluepair<T> > var;
+	  
+	  for(unsigned int j=0;j<A.xsize();j++){
+	    class eigvaluepair<T> data;
+	    data.index = j;
+	    data.value = A(j,j);
+
+	    double absvalue = 0.0;
+	    whiteice::math::convert(absvalue, abs(A(j,j)));
+	    
+	    var.insert(std::pair<double, class eigvaluepair<T> >(absvalue, data));
+	  }
 	  
 	  int index = A.xsize() - 1;
 	  math::vertex<T> t;
@@ -655,10 +694,10 @@ namespace whiteice
 	  
 	  for(auto& v : var){ // from smallest to the largest eigenvalue
 	    
-	    if(v.second != index){ // we need to move v.second index to index
-	      A(index,index) = v.first;
+	    if(v.second.index != index){ // we need to move v.second index to index
+	      A(index,index) = v.second.value;
 	      
-	      XX.colcopyto(t, v.second);
+	      XX.colcopyto(t, v.second.index);
 	      X.colcopyfrom(t, index);
 	    }
 	    
@@ -666,11 +705,10 @@ namespace whiteice
 	  }
 	}
 	
-	
 	return true;
       }
       catch(std::exception& e){
-	std::cout << "SYMMETRIC EIGENVALUE SOLVER. FATAL ERROR: " << e.what() << std::endl;
+	std::cout << "SYMMETRIC EIGENVALUE SOLVER FAILED. EXCEPTION: " << e.what() << std::endl;
 	return false;
       }
     }
@@ -1008,44 +1046,57 @@ namespace whiteice
     
     template <> bool svd<int>(matrix<int>& A,
 			      matrix<int>& U,
-			      matrix<int>& V){ assert(0); }
+			      matrix<int>& V){ assert(0); return false; }
     
     template <> bool svd<char>(matrix<char>& A,
 			       matrix<char>& U,
-			       matrix<char>& V){ assert(0); }
+			       matrix<char>& V){ assert(0); return false; }
 
     template <> bool svd<unsigned int>(matrix<unsigned int>& A,
 				       matrix<unsigned int>& U,
-				       matrix<unsigned int>& V){ assert(0); }
+				       matrix<unsigned int>& V){ assert(0); return false; }
     
     template <> bool svd<unsigned char>(matrix<unsigned char>& A,
 					matrix<unsigned char>& U,
-					matrix<unsigned char>& V){ assert(0); }
+					matrix<unsigned char>& V){ assert(0); return false; }
     
     // FIXME: THIS SHOULD BE IMPLEMENTED!
     template <> bool svd< blas_complex<float> >(matrix< blas_complex<float> >& A,
 						matrix< blas_complex<float> >& U,
-						matrix< blas_complex<float> >& V){ assert(0); }
+						matrix< blas_complex<float> >& V){
+      assert(0);
+      return false;
+    }
     
     // FIXME: THIS SHOULD BE IMPLEMENTED!
     template <> bool svd< blas_complex<double> >(matrix< blas_complex<double> >& A,
 						 matrix< blas_complex<double> >& U,
-						 matrix< blas_complex<double> >& V){ assert(0); }
+						 matrix< blas_complex<double> >& V){
+      assert(0);
+      return false;
+    }
     
     template <> bool svd< whiteice::math::complex<float> >(matrix< whiteice::math::complex<float> >& A,
 							   matrix< whiteice::math::complex<float> >& U,
-							   matrix< whiteice::math::complex<float> >& V){ assert(0); }
+							   matrix< whiteice::math::complex<float> >& V){
+      assert(0);
+      return false;
+    }
     
     template <> bool svd< whiteice::math::complex<double> >(matrix< whiteice::math::complex<double> >& A,
 							    matrix< whiteice::math::complex<double> >& U,
-							    matrix< whiteice::math::complex<double> >& V){ assert(0); }
+							    matrix< whiteice::math::complex<double> >& V)
+    {
+      assert(0);
+      return false;
+    }
     
     template <> bool symmetric_eig<char>
-      (matrix<char>& A, matrix<char>& D, bool sort){ assert(0); }
+    (matrix<char>& A, matrix<char>& D, bool sort){ assert(0); return false; }
     template <> bool symmetric_eig<int>
-      (matrix<int>& A, matrix<int>& D, bool sort){ assert(0); }
-    template <> bool symmetric_eig<unsigned char>(matrix<unsigned char>& A, matrix<unsigned char>& D, bool sort){ assert(0); }
-    template <> bool symmetric_eig<unsigned int>(matrix<unsigned int>& A, matrix<unsigned int>& D, bool sort){ assert(0); }
+    (matrix<int>& A, matrix<int>& D, bool sort){ assert(0); return false; }
+    template <> bool symmetric_eig<unsigned char>(matrix<unsigned char>& A, matrix<unsigned char>& D, bool sort){ assert(0); return false; }
+    template <> bool symmetric_eig<unsigned int>(matrix<unsigned int>& A, matrix<unsigned int>& D, bool sort){ assert(0); return false; }
     
     
   };

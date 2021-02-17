@@ -6,6 +6,9 @@
  * 
  * TODO: 
  * 
+ * 2020 UPDATE: Simplex maybe buggy. Would need more testing (cuBLAS code).
+ * 
+ * 
  * - detect of circling
  *   (long periods of time with varaibles and solution doesn't improve,
  *   it is then likely to have multiple optimum solutions).

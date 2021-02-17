@@ -48,7 +48,7 @@
 #include "gvertex.h"
 
 #include "RNG.h"
-
+#include "Log.h"
 
 using namespace whiteice;
 using namespace whiteice::math;
@@ -198,8 +198,8 @@ void rng_test()
 	s = 0.0;
 
 	for(unsigned int i=0;i<v.size();i++){
-		m += v[i];
-		s += v[i]*v[i];
+	  m += v[i];
+	  s += v[i]*v[i];
 	}
 
 	m /= v.size();
@@ -270,6 +270,9 @@ int main()
   
   srand(time(0));
 
+  // whiteice::logging.setPrintOutput(true); // print logging messages to stdout
+  whiteice::logging.setOutputFile("testcase.log");
+
   try{
     /*  
 	std::cout << "STATISTICS CODE TESTS" << std::endl;
@@ -295,9 +298,10 @@ int main()
     std::cout << "RNG TEST" << std::endl;
     rng_test();
 
-    return 0; // temp disable rest of the tests
+    // return 0; // temp disable rest of the tests
 
     std::cout << "MATRIX TEST" << std::endl;
+    std::cout << std::flush;
     matrix_test();
     
     std::cout << "INTERACTION TEST" << std::endl;
@@ -1141,7 +1145,7 @@ void real_test()
   
   vd.resize(64);
   rd.resize(vd.size());
-  for(unsigned int i=0;i<64;i++){
+  for(unsigned int i=0;i<vd.size();i++){
     vd[i] = (double)(rand()/((double)RAND_MAX));
     rd[i] = vd[i];
   }
@@ -1176,8 +1180,10 @@ void real_test()
       rd[ indexes[3*i + 2] ] = ra * rb;
     }
     else if(op == 3){ // DIV
-      vd[ indexes[3*i + 2] ] = a / b;
-      rd[ indexes[3*i + 2] ] = ra / rb;
+      if(b != 0.0){
+	vd[ indexes[3*i + 2] ] = a / b;
+	rd[ indexes[3*i + 2] ] = ra / rb;
+      }
     }
     else if(op == 4){ // OP4:'+=' 
       vd[ indexes[3*i + 2] ] += a;
@@ -1192,8 +1198,10 @@ void real_test()
       rd[ indexes[3*i + 2] ] *= ra;
     }
     else if(op == 7){ // OP7:'/='
-      vd[ indexes[3*i + 2] ] /= a;
-      rd[ indexes[3*i + 2] ] /= ra;
+      if(a != 0){
+	vd[ indexes[3*i + 2] ] /= a;
+	rd[ indexes[3*i + 2] ] /= ra;
+      }
     }
     
   }
@@ -1290,9 +1298,9 @@ void inter_test()
 
 void matrix_test()
 {
-  matrix<double> A, B, *C, D(3,3);  
-  C = new matrix<double>; // 4x4 matrix
-  double e;
+  matrix<blas_real<double> > A, B, *C, D(3,3);  
+  C = new matrix< blas_real<double> >; // 4x4 matrix
+  blas_real<double> e;
   
   
   // MINIMAL MATRIX MULTIPLICATION + SUBTRACTION TESTS
@@ -1301,7 +1309,7 @@ void matrix_test()
     
     B(2,2) = M_PI/2;
     
-    B *= 2;
+    B *= blas_real<double>(2.0);
         
     A = (*C) * B;
     
@@ -1345,9 +1353,16 @@ void matrix_test()
     B(0,0) = -0.1787; B(0,1) =  0.1179; B(0,2) = -0.0760; B(0,3) =  0.0418;
     B(1,0) =  2.0000; B(1,1) = -2.0000; B(1,2) =  1.0000; B(1,3) =  1.0000;
     B(2,0) =  1.1901; B(2,1) = -1.0190; B(2,2) =  0.4639; B(2,3) =  0.4449;
-    B(3,0) = -0.9240; B(3,1) =  0.9924; B(3,2) = -0.4144; B(3,3) = -0.4221;    
+    B(3,0) = -0.9240; B(3,1) =  0.9924; B(3,2) = -0.4144; B(3,3) = -0.4221;
+
+#ifdef CUBLAS
+    // gpu_sync(); // must call sync operation after direct RAM access?
+#endif
     
-    A.inv();
+    if(A.inv() == false){
+      std::cout << "ERROR: computation of matrix inverse FAILED." << std::endl;
+      assert(0);
+    }
     
     e = 0.0;
     for(unsigned j=0;j<A.ysize();j++)
@@ -1357,8 +1372,10 @@ void matrix_test()
     e /= (double)(A.ysize() * A.xsize());
     e = whiteice::math::sqrt(e);
     
-    if(e > 0.01)
+    if(e > 0.01){
       std::cout << "ERROR: matrix inverse failed / is incorrect\n";
+      assert(0);
+    }
     
     B = D*A; // B should be identity
     
@@ -1373,8 +1390,10 @@ void matrix_test()
     e /= (double)(A.ysize() * A.xsize());
     e = whiteice::math::sqrt(e);
     
-    if(e > 0.01)
+    if(e > 0.01){
       std::cout << "ERROR: matrix inverse is incorrect\n";
+      assert(0);
+    }
     
     B = A*D; // B should be identity
     
@@ -1389,8 +1408,12 @@ void matrix_test()
     e /= (double)(A.ysize() * A.xsize());
     e = whiteice::math::sqrt(e);
     
-    if(e > 0.01)
+    if(e > 0.01){
       std::cout << "ERROR: matrix inverse is incorrect\n";
+      assert(0);
+    }
+
+    std::cout << "MATRIX INVERSE CHECKS OK." << std::endl;
     
   }
   catch(std::exception& e){
@@ -1409,13 +1432,18 @@ void matrix_test()
     for(unsigned int j=0;j<A.ysize();j++){
       for(unsigned int i=0;i<A.xsize();i++){
 	A(j,i) = rand() / (double)RAND_MAX;
+      }
+    }
+
+    for(unsigned int j=0;j<A.ysize();j++){
+      for(unsigned int i=0;i<A.xsize();i++){
 	B(i,j) = A(j,i);
       }
     }
 
     std::cout << "original A = " << A << std::endl;
     
-    A.transpose();    
+    A.transpose();
     
     if(A.xsize() != B.xsize() || 
        A.ysize() != B.ysize()){
@@ -1549,13 +1577,68 @@ quaternion_test()
 void vertex_test()
 {
   try{
+    std::cout << "vertex<double> test" << std::endl;
+    
     vertex<double> v(3), w(3), a(3);
     
     v[0] = 7;
     w[1] = 7;
+
+    std::cout << "initial v = " << v << std::endl;
+    std::cout << "initial w = " << w << std::endl;
     
     v /= w[1];
     w[1] /= 7;
+    
+    std::cout << "v and w should be [1 0 0] and [0 1 0], respectively." << std::endl;
+    std::cout << "v = " << v << std::endl;
+    std::cout << "w = " << w << std::endl;
+
+    a = v ^ w;
+
+    std::cout << v << " x " << w;
+    std::cout << " = " << a << std::endl;
+
+    a = v + w;
+
+    std::cout << v << " + " << v;
+    std::cout << " = " << a << std::endl;
+    w = a;
+
+    v.normalize();
+    w.normalize();
+
+    a.resize(1);
+    a = v * w;
+
+    std::cout << v << " * " << w;
+    std::cout << " = " << a << std::endl;
+
+    v.resize(4); w.resize(4);
+
+    v[0] = 1; v[1] = 2; v[2] = 1; v[3] = 1;
+    w[0] = 2; w[1] = 1; w[2] = 3; w[3] = 5;
+
+    a = v * w;
+    std::cout << v << " * " << w << " = " << a << std::endl;
+    a = w * v;
+    std::cout << w << " * " << v << " = " << a << std::endl;
+    
+  }
+  catch(whiteice::exception& e){
+    std::cout << "exception: " << e.what() << std::endl;
+  }
+
+  try{
+    std::cout << "vertex< blas_complex<double> > test" << std::endl;
+    
+    vertex< blas_complex<double> > v(3), w(3), a(3);
+    
+    v[0] = 7;
+    w[1] = 7;
+
+    v /= w[1];
+    w[1] /= 7.0;
     
     std::cout << "v and w should be [1 0 0] and [0 1 0], respectively." << std::endl;
     std::cout << "v = " << v << std::endl;
@@ -3770,42 +3853,52 @@ void correlation_test()
     // 10 vectors
     v.resize(5);
     v[0] = -1.0; v[1] = 5.1; v[2] = 8.1; v[3] = -4.2; v[4] = -11.8;
+    gpu_sync();
     vectors.push_back(v);
 
     v.resize(5);
     v[0] = 1.21; v[1] = -4.21; v[2] = -8.61; v[3] = 14.1; v[4] = 91.1;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = 16.1; v[1] = -92.1; v[2] = 76.1; v[3] = -41.4; v[4] = -47.1;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = 92.6; v[1] = -72.1; v[2] = -81.1; v[3] = 5.12; v[4] = 62.2;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = -16.1; v[1] = 12.1; v[2] = -41.1; v[3] = -71.1; v[4] = 31.1;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = -84.1; v[1] = 41.1; v[2] = 25.1; v[3] = 41.1; v[4] = -81.1;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = -14.1; v[1] = 5.1; v[2] = 8.42; v[3] = -6.31; v[4] = 11.9;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = 42.1; v[1] = -56.7; v[2] = 61.2; v[3] = -41.1; v[4] = -7.21;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = -43.1; v[1] = 12.1; v[2] = -42.1; v[3] = 86.1; v[4] = -41.1;
+    gpu_sync();
     vectors.push_back(v);
     
     v.resize(5);
     v[0] = 18.2; v[1] = -19.5; v[2] = 22.1; v[3] = -21.1; v[4] = 53.1;
+    gpu_sync();
     vectors.push_back(v);
     
     // correct correlation matrix for above data
@@ -3816,6 +3909,8 @@ void correlation_test()
     pR(2,0) =  -307.78; pR(2,1) =  -491.71; pR(2,2) =  2090.45; pR(2,3) =  -642.69; pR(2,4) = -1025.97;
     pR(3,0) =  -821.92; pR(3,1) =   794.34; pR(3,2) =  -642.69; pR(3,3) =  1828.85; pR(3,4) =  -637.98;
     pR(4,0) =  1370.97; pR(4,1) =  -461.06; pR(4,2) = -1025.97; pR(4,3) =  -637.98; pR(4,4) =  2677.25;
+
+    gpu_sync();
     
     if(autocorrelation<>(R, vectors) == false){
       std::cout << "ERROR: autocorrelation calculation failed (test1)"
@@ -3831,6 +3926,9 @@ void correlation_test()
       std::cout << "calculated R: " << R << std::endl;
       std::cout << "error: " << pR << std::endl;
       return;
+    }
+    else{
+      std::cout << "Autocorrelation calculation OK. (test1" << std::endl;
     }
     
     
@@ -3904,6 +4002,8 @@ void correlation_test()
     V(7,0) = 42.1;  V(7,1) = -56.7; V(7,2) = 61.2;  V(7,3) = -41.1; V(7,4) = -7.21;
     V(8,0) = -43.1; V(8,1) = 12.1;  V(8,2) = -42.1; V(8,3) = 86.1;  V(8,4) = -41.1;
     V(9,0) = 18.2;  V(9,1) = -19.5; V(9,2) = 22.1;  V(9,3) = -21.1; V(9,4) = 53.1;
+
+    gpu_sync();
     
     // correct correlation matrix for above data
     pR.resize(5,5);
@@ -3913,6 +4013,8 @@ void correlation_test()
     pR(2,0) =  -307.78; pR(2,1) =  -491.71; pR(2,2) =  2090.45; pR(2,3) =  -642.69; pR(2,4) = -1025.97;
     pR(3,0) =  -821.92; pR(3,1) =   794.34; pR(3,2) =  -642.69; pR(3,3) =  1828.85; pR(3,4) =  -637.98;
     pR(4,0) =  1370.97; pR(4,1) =  -461.06; pR(4,2) = -1025.97; pR(4,3) =  -637.98; pR(4,4) =  2677.25;
+
+    gpu_sync();
     
     if(autocorrelation<>(R, V) == false){
       std::cout << "ERROR: autocorrelation calculation failed (test3)"
@@ -3920,13 +4022,14 @@ void correlation_test()
       return;
     }
     
-    pR -= R;
+    auto delta = pR - R;
     
-    if(norm_inf(pR) > 0.01){
+    if(norm_inf(delta) > 0.01){
       std::cout << "ERROR: incorrect autocorrelation matrix (test3)"
 		<< std::endl;
       std::cout << "calculated R: " << R << std::endl;
-      std::cout << "error: " << pR << std::endl;
+      std::cout << "correct    R: " << pR << std::endl;
+      std::cout << "error: " << delta << std::endl;
       return;
     }
     
@@ -3941,7 +4044,6 @@ void correlation_test()
 	for(unsigned int k=0;k<V.xsize();k++)
 	  V(j,k) = (((float)rand())/((float)RAND_MAX) - 0.5f);
 
-      
       if(autocorrelation(R, V) == false){
 	std::cout << "ERROR: autocorrelation matrix calculation failed (test4)"
 		  << std::endl;
@@ -4054,6 +4156,7 @@ void correlation_test()
 void own_unexpected()
 {
   std::cout << "TESTCASE FATAL ERROR: unexpected exception: calling terminate()" << std::endl;
+  std::cout << std::flush;
   terminate();
 }
 
@@ -4061,6 +4164,7 @@ void own_unexpected()
 void own_terminate()
 {
   std::cout << "testcase terminate() activated." << std::endl;
+  std::cout << std::flush;
 }
 
 

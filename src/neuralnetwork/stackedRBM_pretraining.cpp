@@ -34,7 +34,7 @@ namespace whiteice
 
     if(running) if(*running == false) return false; // stops execution
 
-    if(verbose == 2)
+    if(verbose >= 1)
       data.diagnostics();
 
     std::vector<unsigned int> arch;
@@ -44,6 +44,7 @@ namespace whiteice
     if(arch.size() <= 2){
       // does nothing because there is only single layer
       // to optimize and traditional optimizers should work rather well
+      if(verbose) printf("deep_ptretrain_nnetwork(): A\n");
       return true; 
     }
 
@@ -53,17 +54,21 @@ namespace whiteice
     // checks nnetwork has proper non-linearities..
     {
       for(unsigned int l=0;l<(nn->getLayers()-1);l++)
-	if(nn->getNonlinearity(l) != whiteice::nnetwork<T>::sigmoid)
+	if(nn->getNonlinearity(l) != whiteice::nnetwork<T>::sigmoid){
+	  if(verbose) printf("deep_ptretrain_nnetwork(): B\n");
 	  return false;
+	}
       
       if(nn->getNonlinearity(nn->getLayers()-1) != 
-	 whiteice::nnetwork<T>::pureLinear)
+	 whiteice::nnetwork<T>::pureLinear){
+	if(verbose) printf("deep_ptretrain_nnetwork(): C\n");
 	return false;
+      }
     }
     
     whiteice::DBN<T> dbn(arch, binary);
 
-    if(verbose == 2)
+    if(verbose >= 1)
       dbn.diagnostics();
 
     std::vector< math::vertex<T> > samples;
@@ -72,8 +77,10 @@ namespace whiteice
     T minimumError = T(0.001); // error requirements..
     
     // trains deep belief network DBN
-    if(dbn.learnWeights(samples, minimumError, verbose, running) == false)
+    if(dbn.learnWeights(samples, minimumError, verbose, running) == false){
+      if(verbose) printf("deep_ptretrain_nnetwork(): D\n");
       return false;
+    }
 
     if(running) if(*running == false) return false; // stops running
 
@@ -86,6 +93,9 @@ namespace whiteice
     if(dbn.convertToNNetwork(data, nn) == false){
       if(nn != nullptr && nn != old_nn) delete nn;
       nn = old_nn;
+
+      if(verbose) printf("deep_ptretrain_nnetwork(): E\n");
+      
       return false;
     }
 
@@ -175,20 +185,7 @@ namespace whiteice
   
   //////////////////////////////////////////////////////////////////////
 
-  template bool deep_pretrain_nnetwork<float>
-    (whiteice::nnetwork<float>*& nn,
-     const whiteice::dataset<float>& data,
-     const bool binary,
-     const int verbose,
-     const bool* running);
-
-  template bool deep_pretrain_nnetwork<double>
-    (whiteice::nnetwork<double>*& nn,
-     const whiteice::dataset<double>& data,
-     const bool binary,
-     const int verbose,
-     const bool* running);
-
+  
   template bool deep_pretrain_nnetwork< math::blas_real<float> >
     (whiteice::nnetwork< math::blas_real<float> >*& nn,
      const whiteice::dataset< math::blas_real<float> >& data,
@@ -203,19 +200,6 @@ namespace whiteice
      const int verbose,
      const bool* running);
 
-  template bool deep_pretrain_nnetwork_full_sigmoid<float>
-  (whiteice::nnetwork<float>*& nn,
-   const whiteice::dataset<float>& data,
-   const bool binary,
-   const int verbose,
-   const bool* running);
-  
-  template bool deep_pretrain_nnetwork_full_sigmoid<double>
-  (whiteice::nnetwork<double>*& nn,
-   const whiteice::dataset<double>& data,
-   const bool binary,
-   const int verbose,
-   const bool* running);
   
   template bool deep_pretrain_nnetwork_full_sigmoid< math::blas_real<float> >
   (whiteice::nnetwork< math::blas_real<float> >*& nn,

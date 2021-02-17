@@ -14,6 +14,8 @@
 #include "function.h"
 #include "real.h"
 
+#include "global.h"
+
 // #include <cstdio>
 #include <stddef.h>
 #include <assert.h>
@@ -152,8 +154,12 @@ namespace whiteice
     bool convert(blas_real<float>& B, const double& A);
     bool convert(complex<float>& B, const float& A);
     bool convert(complex<double>& B, const double& A);
-		 
+    bool convert(float& B, complex<float>& A);
+    bool convert(double& B, complex<double>& A);
+    bool convert(double& B, complex<float>& A);
+    bool convert(float& B, complex<double>& A);    
 
+    
 #if 0
     // KNOWN BUG: needed by hack in matrix.cpp to handle symmetric_eig() call with complex data
 
@@ -223,10 +229,41 @@ namespace whiteice
     inline bool isnan(blas_complex<float> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
     inline bool isnan(blas_complex<double> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
     
-    inline std::string tohex(float v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v)); return std::string(buffer); }
-    inline std::string tohex(double v){ char buffer[80]; snprintf(buffer, 80, "0x%llx", *((unsigned long long*)&v)); return std::string(buffer); }
-    inline std::string tohex(blas_real<float> v){ char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0]))); return std::string(buffer); }
-    inline std::string tohex(blas_real<double> v){ char buffer[80]; snprintf(buffer, 80, "0x%llx", *((unsigned long long*)&(v.c[0]))); return std::string(buffer); }
+    inline std::string tohex(float v)
+    {
+      char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&v));
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(double v)
+    {
+      whiteice::dword lower = 0, upper = 0;
+      lower = ((whiteice::dword*)(&v))[0];
+      upper = ((whiteice::dword*)(&v))[1];
+      
+      char buffer[80];
+      snprintf(buffer, 80, "0x%x%x",
+	       (unsigned int)upper, (unsigned int)lower);
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(blas_real<float> v)
+    {
+      char buffer[80]; snprintf(buffer, 80, "0x%x", *((unsigned int*)&(v.c[0])));
+      return std::string(buffer);
+    }
+    
+    inline std::string tohex(blas_real<double> v)
+    {
+      whiteice::dword lower = 0, upper = 0;
+      lower = ((whiteice::dword*)(&v))[0];
+      upper = ((whiteice::dword*)(&v))[1];
+      
+      char buffer[80];
+      snprintf(buffer, 80, "0x%x%x",
+	       (unsigned int)upper, (unsigned int)lower);
+      return std::string(buffer);
+    }
     
     //////////////////////////////////////////////////////////////////////
     // square root
@@ -502,6 +539,9 @@ namespace whiteice
     realnumber exp(const realnumber& x);
     
     template <typename T>
+    inline T exp(const T value, const T cutoff) PURE_FUNCTION;
+
+    template <typename T>
       inline whiteice::math::complex<T> 
       exp(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
@@ -541,10 +581,59 @@ namespace whiteice
       }
     
     template <typename T>
-      inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
-        return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x[0], x[1]) ) );
+    inline whiteice::math::blas_complex<T> exp(whiteice::math::blas_complex<T> x){
+      return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x.c[0], x.c[1]) ) );
+    }
+
+    
+    template <typename T>
+    inline T exp(const T value, const T cutoff)
+    {
+#if 0
+      if(cutoff <= T(0.0f)){
+	if(value < cutoff){
+	  const T MCUTOFF = cutoff;
+	  return whiteice::math::exp(MCUTOFF);
+	}
+	else if(value > -cutoff){
+	  const T PCUTOFF = -cutoff;
+	  return whiteice::math::exp(PCUTOFF);
+	}
+	else{
+	  return whiteice::math::exp(cutoff);
+	}
+      }
+      else{
+	if(value < -cutoff){
+	  const T MCUTOFF = -cutoff;
+	  return whiteice::math::exp(MCUTOFF);
+	}
+	else if(value > cutoff){
+	  const T PCUTOFF = cutoff;
+	  return whiteice::math::exp(PCUTOFF);
+	}
+	else{
+	  return whiteice::math::exp(cutoff);
+	}
+      }
+      
+#else
+      const T CUTOFF = abs(cutoff);
+      
+      if(value < -CUTOFF){
+	const T MCUTOFF = -CUTOFF;
+	return whiteice::math::exp(MCUTOFF);
+      }
+      else if(value > CUTOFF){
+	return whiteice::math::exp(CUTOFF);
+      }
+      else{
+	return whiteice::math::exp(value);
+      }
+#endif
     }
     
+
     
     //////////////////////////////////////////////////////////////////////
     // nat. logarithm of number
@@ -603,7 +692,7 @@ namespace whiteice
     template <typename T>
       inline whiteice::math::blas_complex<T> log(whiteice::math::blas_complex<T> x)
       {
-	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x[0], x[1]) ) );
+	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x.c[0], x.c[1]) ) );
       }
     
 
@@ -1012,7 +1101,10 @@ namespace whiteice
     realnumber abs(const realnumber& x);
     
     template <typename T>
-      blas_real<T> abs(blas_real<T>& x) PURE_FUNCTION;
+      blas_real<T> abs(const blas_real<T>& x) PURE_FUNCTION;
+
+    template <typename T>
+      blas_real<T> abs(const blas_complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
       vertex<T> abs(const vertex<T>& x) PURE_FUNCTION;
@@ -1034,7 +1126,7 @@ namespace whiteice
     
     template <typename T>
       whiteice::math::complex<T> abs(const whiteice::math::complex<T>& x) PURE_FUNCTION;
-    
+
     integer abs(const integer& x) PURE_FUNCTION;
 
     
@@ -1055,12 +1147,21 @@ namespace whiteice
     
     
     template <typename T>
-      blas_real<T> abs(blas_real<T>& x)
+      blas_real<T> abs(const blas_real<T>& x)
       {
+	return x.abs();
+#if 0
 	blas_real<T> y(x);
 	y.c[0] = whiteice::math::abs(y.c[0]);
 	
 	return y;
+#endif
+      }
+
+    template <typename T>
+      blas_real<T> abs(const blas_complex<T>& x)
+      {
+	return x.abs();
       }
     
     template <typename T>
@@ -1169,13 +1270,12 @@ namespace whiteice
 	return y.conj();
       }
     
-    // interpret external conjugate of matrix
-    // as hermite M^h operator
+    // conjugates matrix value (no transpose)
     template <typename T, typename S>
       matrix<T> conj(const matrix<T>& X)
       {
 	matrix<T> Y(X);
-	return Y.hermite();
+	return Y.conj();
       }
 
     
@@ -1202,11 +1302,11 @@ namespace whiteice
     template <typename T>
       blas_complex<T> conj(const blas_complex<T>& a)
       {
-	blas_real<T> r;
-	r.c[0] =  a.c[0];
-	r.c[1] = -a.c[1];
+	blas_complex<T> z;
+	z.c[0] =  a.c[0];
+	z.c[1] = -a.c[1];
 	
-	return r;
+	return z;
       }
 
     
@@ -1231,7 +1331,7 @@ namespace whiteice
       blas_real<T> real(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      blas_complex<T> real(const blas_complex<T>& x) PURE_FUNCTION;
+      blas_real<T> real(const blas_complex<T>& x) PURE_FUNCTION;
     
     double imag(double x) PURE_FUNCTION;
     float imag(float x) PURE_FUNCTION;
@@ -1248,9 +1348,9 @@ namespace whiteice
     
     template <typename T>
       blas_real<T> imag(const blas_real<T>& x) PURE_FUNCTION;
-    
+
     template <typename T>
-      blas_complex<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
+      blas_real<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -1282,7 +1382,7 @@ namespace whiteice
       }    
     
     template <typename T>
-      blas_complex<T> real(const blas_complex<T>& x)
+      blas_real<T> real(const blas_complex<T>& x)
       {
 	return x.c[0];
       }
@@ -1318,7 +1418,7 @@ namespace whiteice
       }    
     
     template <typename T>
-      blas_complex<T> imag(const blas_complex<T>& x)
+      blas_real<T> imag(const blas_complex<T>& x)
       {
 	return x.c[1];
       }

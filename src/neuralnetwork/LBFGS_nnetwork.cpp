@@ -77,7 +77,7 @@ namespace whiteice
       
       
       // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtest.size(0);i++){
 	// std::cout << "data in  = " << dtest.access(0, i) << std::endl;
 	// std::cout << "data out = " << dtest.access(1, i) << std::endl;
@@ -117,7 +117,7 @@ namespace whiteice
       T esum = T(0.0f);
     
       // E = SUM 0.5*e(i)^2
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	nnet.input() = dtrain.access(0, i);
 	nnet.calculate(false);
@@ -183,13 +183,13 @@ namespace whiteice
       sgrad = x;
       sgrad.zero();
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	nnet.input() = dtrain.access(0, i);
 	nnet.calculate(true);
-	err = dtrain.access(1,i) - nnet.output();
+	err = nnet.output() - dtrain.access(1,i);
 
-	if(nnet.gradient(err, grad) == false){
+	if(nnet.mse_gradient(err, grad) == false){
 	  std::cout << "gradient failed." << std::endl;
 	  assert(0); // FIXME
 	}
@@ -250,7 +250,7 @@ namespace whiteice
       sgrad = x;
       sgrad.zero();
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<dtrain.size(0);i++){
 	// generates negative particle
 	auto x = dtrain.access(0, rng.rand() % dtrain.size(0));
@@ -263,9 +263,9 @@ namespace whiteice
 	rng.normal(n);
 	y += sigma2 * n; // adds properly correlated noise..
 	
-	err = y - nnet.output();
+	err = nnet.output() - y;
 
-	if(nnet.gradient(err, grad) == false){
+	if(nnet.mse_gradient(err, grad) == false){
 	  std::cout << "gradient failed." << std::endl;
 	  assert(0); // FIXME
 	}
@@ -314,8 +314,7 @@ namespace whiteice
   }
   
   
-  template class LBFGS_nnetwork< float >;
-  template class LBFGS_nnetwork< double >;
+  
   template class LBFGS_nnetwork< math::blas_real<float> >;
   template class LBFGS_nnetwork< math::blas_real<double> >;
 

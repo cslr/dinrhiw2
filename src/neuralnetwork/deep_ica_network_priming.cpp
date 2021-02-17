@@ -845,42 +845,27 @@ namespace whiteice
   }
 
 
-  template bool whiten1d_nnetwork(nnetwork<float>& nnet,
-				  const dataset<float>& data);
-  template bool whiten1d_nnetwork(nnetwork<double>& nnet,
-				  const dataset<double>& data);
+  
   template bool whiten1d_nnetwork(nnetwork< math::blas_real<float> >& nnet,
 				  const dataset< math::blas_real<float> >& data);
   template bool whiten1d_nnetwork(nnetwork< math::blas_real<double> >& nnet,
 				  const dataset< math::blas_real<double> >& data);
   
-  template bool whiten1d_neuronlayer(nnetwork<float>& net,
-				     const unsigned int l);
-  template bool whiten1d_neuronlayer(nnetwork<double>& net,
-				     const unsigned int l);
   template bool whiten1d_neuronlayer(nnetwork< math::blas_real<float> >& net,
 				     const unsigned int l);
   template bool whiten1d_neuronlayer(nnetwork< math::blas_real<double> >& net,
 				     const unsigned int l); 
   
   
-  template bool neuronlast_layer_mse<float>(nnetwork<float>& nnet, const dataset<float>& data, unsigned int layer);
-  template bool neuronlast_layer_mse<double>(nnetwork<double>& nnet, const dataset<double>& data, unsigned int layer);
   template bool neuronlast_layer_mse< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const dataset< math::blas_real<float> >& data, unsigned int layer);
   template bool neuronlast_layer_mse< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const dataset< math::blas_real<double> >& data, unsigned int layer);
   
-  template bool neuronlayerwise_ica<float>(nnetwork<float>& nnet, const float& alpha, unsigned int layer);
-  template bool neuronlayerwise_ica<double>(nnetwork<double>& nnet, const double& alpha, unsigned int layer);
   template bool neuronlayerwise_ica< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const math::blas_real<float>& alpha, unsigned int layer);
   template bool neuronlayerwise_ica< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const math::blas_real<double>& alpha, unsigned int layer);
 
-  template bool negative_feedback_between_neurons<float>(nnetwork<float>& nnet, const dataset<float>& data, const float& alpha, bool processLastLayer);
-  template bool negative_feedback_between_neurons<double>(nnetwork<double>& nnet, const dataset<double>& data, const double& alpha, bool processLastLayer);
   template bool negative_feedback_between_neurons< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, const dataset< math::blas_real<float> >& data, const math::blas_real<float>& alpha, bool processLastLayer);
   template bool negative_feedback_between_neurons< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, const dataset< math::blas_real<double> >& data, const math::blas_real<double>& alpha, bool processLastLayer);
 
-  template bool normalize_weights_to_unity<float>(nnetwork<float>& nnet, bool normalizeLastLayer);
-  template bool normalize_weights_to_unity<double>(nnetwork<double>& nnet, bool normalizeLastLayer);
   template bool normalize_weights_to_unity< math::blas_real<float> >(nnetwork< math::blas_real<float> >& nnet, bool normalizeLastLayer);
   template bool normalize_weights_to_unity< math::blas_real<double> >(nnetwork< math::blas_real<double> >& nnet, bool normalizeLastLayer);
   

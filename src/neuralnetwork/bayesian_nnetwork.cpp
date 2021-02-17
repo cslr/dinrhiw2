@@ -114,9 +114,10 @@ namespace whiteice
     
     std::vector< nnetwork<T>* > nnnets;
     nnnets.resize(weights.size());
-    
+
     for(unsigned int i=0;i<nnnets.size();i++){
       nnnets[i] = new nnetwork<T>(nn);
+      
       if(nnnets[i]->importdata(weights[i]) == false){
 	for(unsigned int j=0;j<=i;j++){
 	  delete nnnets[i];
@@ -127,14 +128,14 @@ namespace whiteice
       }
     }
 
-
     // remove old data
-    for(unsigned int i=0;i<this->nnets.size();i++)
+    for(unsigned int i=0;i<this->nnets.size();i++){
       if(this->nnets[i]){
 	delete this->nnets[i];
 	this->nnets[i] = NULL;
       }
-    
+    }
+
     nnets.clear();
 
     this->nnets = nnnets; // copies new pointers over old data
@@ -395,7 +396,7 @@ namespace whiteice
       
       T ninv  = T(1.0f/latestN);
 
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int i=(nnets.size() - latestN);i<nnets.size();i++){
 	math::vertex<T> in(nnets[0]->input_size());
 	math::vertex<T> out(DIM), out_nn(nnets[0]->output_size());
@@ -566,6 +567,8 @@ namespace whiteice
 	    nl[l] = whiteice::nnetwork<T>::tanh;
 	  else if(ints[l] == 5)
 	    nl[l] = whiteice::nnetwork<T>::rectifier;
+	  else if(ints[l] == 6)
+	    nl[l] = whiteice::nnetwork<T>::softmax;
 	  else
 	    return false; // bad data
 	}
@@ -760,6 +763,8 @@ namespace whiteice
 	      ints.push_back(4);
 	    else if(nl[l] == whiteice::nnetwork<T>::rectifier)
 	      ints.push_back(5);
+	    else if(nl[l] == whiteice::nnetwork<T>::softmax)
+	      ints.push_back(6);
 	    else
 	      return false;
 	  }
@@ -836,8 +841,6 @@ namespace whiteice
   }
 
   
-  template class bayesian_nnetwork< float >;
-  template class bayesian_nnetwork< double >;  
   template class bayesian_nnetwork< math::blas_real<float> >;
   template class bayesian_nnetwork< math::blas_real<double> >;
   

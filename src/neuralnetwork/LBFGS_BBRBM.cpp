@@ -18,6 +18,8 @@ namespace whiteice
       net.setUData(data);
     }
     */
+
+    this->setGradientOnly(true); // DEBUG: only follow gradient!
   }
 
   
@@ -50,7 +52,7 @@ namespace whiteice
       
       
       // E = SUM 0.5*e(i)^2
-      #pragma omp for nowait schedule(dynamic)
+      #pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<1000;i++){
 	// std::cout << "data in  = " << dtest.access(0, i) << std::endl;
 	// std::cout << "data out = " << dtest.access(1, i) << std::endl;

@@ -7,8 +7,11 @@
 #ifndef __VisualizationInterface_h
 #define __VisualizationInterface_h
 
-namespace whiteice {
+#include <vector>
+#include "dinrhiw_blas.h"
+#include "vertex.h"
 
+namespace whiteice {
 
   class VisualizationInterface {
   public:
@@ -37,6 +40,9 @@ namespace whiteice {
 
     // blocks until key have been pressed
     virtual bool waitKeypress() = 0;
+
+    // REAL FUNCTION: plots N first data points using virtual functions
+    virtual bool adaptiveScatterPlot(const std::vector< math::vertex< math::blas_real<float> > >& points, const unsigned int N=0);
     
   };
   

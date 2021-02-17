@@ -33,6 +33,7 @@
 #include "eig.h"
 #include "ica.h"
 #include "fastpca.h"
+#include "dataset.h"
 
 
 using namespace whiteice;
@@ -215,15 +216,24 @@ void test_pca_tests()
     Cxx2.zero();
 
     for(unsigned int i=0;i<data.size();i++){
-      m2 += data[i];
-      Cxx2 += data[i].outerproduct(data[i]);
+      auto& v = data[i];
+      
+      m2 += v;
+
+      // Cxx2 += data[i].outerproduct(data[i]);
+      for(unsigned int k=0;k<DIMENSIONS;k++)
+	for(unsigned int l=0;l<DIMENSIONS;l++)
+	  Cxx2(k,l) += v[k]*v[l];
     }
 
     m2 /= blas_real<float>(data.size());
     Cxx2 /= blas_real<float>(data.size());
 
-    Cxx2 -= m2.outerproduct(m2);
-
+    // Cxx2 -= m2.outerproduct(m2);
+    for(unsigned int k=0;k<DIMENSIONS;k++)
+      for(unsigned int l=0;l<DIMENSIONS;l++)
+	Cxx2(k,l) -= m2[k]*m2[l];
+    
     auto delta_m = m - m2;
     auto delta_Cxx2 = Cxx - Cxx2;
 
@@ -826,8 +836,8 @@ void test_basic_linear()
     
     if(eig2x2matrix(A, d, X, false) == false){
       
-      matrix< whiteice::math::complex<float> > C, Z;
-      vertex< whiteice::math::complex<float> > w;
+      matrix< whiteice::math::blas_complex<float> > C, Z;
+      vertex< whiteice::math::blas_complex<float> > w;
       
       if(convert(C, A) == false){
 	std::cout << "ERROR: problem related conversion to complex values failed (4)"
@@ -839,10 +849,10 @@ void test_basic_linear()
 		  << std::endl;
       }
       
-      if((std::real(whiteice::math::abs(w[0])) +
-	  std::imag(whiteice::math::abs(w[0]))) < 0.00001 ||
-	 (std::real(whiteice::math::abs(w[1])) +
-	  std::imag(whiteice::math::abs(w[1]))) < 0.00001){
+      if((whiteice::math::real(whiteice::math::abs(w[0])) +
+	  whiteice::math::imag(whiteice::math::abs(w[0]))) < 0.00001 ||
+	 (whiteice::math::real(whiteice::math::abs(w[1])) +
+	  whiteice::math::imag(whiteice::math::abs(w[1]))) < 0.00001){
 	
 	std::cout << "ERROR: solved eigenvalues are probably wrong (6)"
 		  << std::endl;
@@ -980,30 +990,30 @@ void test_basic_linear()
   // TEST CASE 4 - tests with articially generated complex matrix
   try
   {
-    matrix< whiteice::math::complex<float> > A, D, X, XX, XXX;
-    vertex< whiteice::math::complex<float> > d;
+    matrix< whiteice::math::blas_complex<float> > A, D, X, XX, XXX;
+    vertex< whiteice::math::blas_complex<float> > d;
     
     A.resize(2,2);
     X.resize(2,2);
     
     D.resize(2,2);
-    D(0,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					     ((float)rand()/((float)RAND_MAX) - 0.5) );
+    D(0,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						  ((float)rand()/((float)RAND_MAX) - 0.5) );
     
-    D(1,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					     ((float)rand()/((float)RAND_MAX) - 0.5) );
+    D(1,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						  ((float)rand()/((float)RAND_MAX) - 0.5) );
     XX.resize(2,2);
     XXX.resize(2,2);
     
-    XX(0,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-      
-    XX(0,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-    XX(1,0) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
-    XX(1,1) = whiteice::math::complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
-					      ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(0,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    
+    XX(0,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(1,0) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
+    XX(1,1) = whiteice::math::blas_complex<float>( ((float)rand()/((float)RAND_MAX) - 0.5),
+						   ((float)rand()/((float)RAND_MAX) - 0.5) );
     XX.transpose();
     XX.normalize(); // normalizes XX(0,:), X(1,:)
     XX.transpose();
@@ -1018,10 +1028,10 @@ void test_basic_linear()
     }
     else{
       // compares eigenvalues
-      if((std::real(whiteice::math::abs(D(0,0) - d[0])) + 
-	  std::real(whiteice::math::abs(D(1,1) - d[1]))) > 0.0001 &&
-	 (std::real(whiteice::math::abs(D(0,0) - d[1])) + 
-	  std::real(whiteice::math::abs(D(1,1) - d[0]))) > 0.0001){
+      if((whiteice::math::real(whiteice::math::abs(D(0,0) - d[0])) + 
+	  whiteice::math::real(whiteice::math::abs(D(1,1) - d[1]))) > 0.0001 &&
+	 (whiteice::math::real(whiteice::math::abs(D(0,0) - d[1])) + 
+	  whiteice::math::real(whiteice::math::abs(D(1,1) - d[0]))) > 0.0001){
 	
 	std::cout << "ERROR eig2x2matrix() returned bad eigenvalues:\n"
 		  << "correct: " << d << std::endl
@@ -1747,24 +1757,25 @@ void test_ica()
   try{
     std::cout << "NON-ITERATIVE ICA TEST" << std::endl;
     
-    const unsigned int NUM = 5000;
-    matrix< blas_real<float> > SXDATA, SYDATA, XDATA, YDATA;
-    SXDATA.resize(NUM, 3);
-    SYDATA.resize(NUM, 3);
-    XDATA.resize(NUM, 3);
-    YDATA.resize(NUM, 3);
-    float t;
+    const unsigned int NUM = 10000;
+
+    std::vector< vertex< blas_real<float> > > sxdata, xdata;
     
     // generates data (data from the japanese paper)
     
-    std::cout << "Generating test data ..." << std::endl;
-    
+    std::cout << "Generating source test data ..." << std::endl;
+
     for(unsigned int i=0;i<NUM;i++){
-      t = (i/10000.0f);
-      SXDATA(i,0) = 2.0f*((rand()/((float)RAND_MAX)) - 0.5f);
-      SXDATA(i,1) = whiteice::math::sin(2.0*M_PI*800.0*t + 
-					6.0*whiteice::math::cos(2.0*M_PI*60.0*t));
-      SXDATA(i,2) = whiteice::math::sin(2.0*M_PI*90.0*t);
+      vertex< blas_real<float> > v(3);
+      
+      const float t = (i/10000.0f);
+      
+      v[0] = 2.0f*((rand()/((float)RAND_MAX)) - 0.5f);
+      v[1] = whiteice::math::sin(2.0*M_PI*800.0*t + 
+				 6.0*whiteice::math::cos(2.0*M_PI*60.0*t));
+      v[2] = whiteice::math::sin(2.0*M_PI*90.0*t);
+
+      sxdata.push_back(v);
     }
     
     // removes mean and non unit variance from x data
@@ -1773,23 +1784,21 @@ void test_ica()
       float scaling = (1.0f/((float)NUM));
       
       for(unsigned int i=0;i<NUM;i++){
-	mean[0] += SXDATA(i,0) * scaling;
-	mean[1] += SXDATA(i,1) * scaling;
-	mean[2] += SXDATA(i,2) * scaling;
+	mean[0] += sxdata[i][0] * scaling;
+	mean[1] += sxdata[i][1] * scaling;
+	mean[2] += sxdata[i][2] * scaling;
       }
       
       for(unsigned int i=0;i<NUM;i++){
-	SXDATA(i,0) -= mean[0];
-	SXDATA(i,1) -= mean[1];
-	SXDATA(i,2) -= mean[2];
+	sxdata[i] -= mean;
       }
       
       vertex< blas_real<float> > var(3);
       
       for(unsigned int i=0;i<NUM;i++){
-	var[0] += SXDATA(i,0)*SXDATA(i,0);
-	var[1] += SXDATA(i,1)*SXDATA(i,1);
-	var[2] += SXDATA(i,2)*SXDATA(i,2);
+	var[0] += sxdata[i][0]*sxdata[i][0];
+	var[1] += sxdata[i][1]*sxdata[i][1];
+	var[2] += sxdata[i][2]*sxdata[i][2];
       }
       
       var[0] = blas_real<float>(1.0) / whiteice::math::sqrt(var[0]);
@@ -1797,12 +1806,13 @@ void test_ica()
       var[2] = blas_real<float>(1.0) / whiteice::math::sqrt(var[2]);
       
       for(unsigned int i=0;i<NUM;i++){
-	SXDATA(i,0) = SXDATA(i,0) * var[0];
-	SXDATA(i,1) = SXDATA(i,1) * var[1];
-	SXDATA(i,2) = SXDATA(i,2) * var[2];
+	sxdata[i][0] = sxdata[i][0] * var[0];
+	sxdata[i][1] = sxdata[i][1] * var[1];
+	sxdata[i][2] = sxdata[i][2] * var[2];
       }
     }
-    
+
+#if 0
     // calculates SYs
     for(unsigned int i=0;i<NUM;i++){
       SYDATA(i,0) = whiteice::math::abs(SXDATA(i,0));
@@ -1845,41 +1855,109 @@ void test_ica()
 	SYDATA(i,2) = SYDATA(i,2) * var[2];
       }
     }
+
+#endif
     
     // linear mixing matrices
     matrix< blas_real<float> > AX, AY;
-    matrix< blas_real<float> > AXt, AYt;
     AX.resize(3,3);
-    AY.resize(3,3);
+    //AY.resize(3,3);
     
     AX(0,0) = +0.0f; AX(0,1) = -1.0f; AX(0,2) = +1.0f;
     AX(1,0) = +1.0f; AX(1,1) = +1.0f; AX(1,2) = +0.0f;
     AX(2,0) = +1.0f; AX(2,1) = +0.0f; AX(2,2) = -1.0f;
     
-    AY(0,0) = +2.0f; AY(0,1) = -2.0f; AY(0,2) = +3.0f;
-    AY(1,0) = +2.0f; AY(1,1) = +1.0f; AY(1,2) = +0.0f;
-    AY(2,0) = +1.0f; AY(2,1) = +2.0f; AY(2,2) = +6.0f;
-    
-    AXt = AX;
-    AYt = AY;
-    AXt.transpose();
-    AYt.transpose();
-    
+    //AY(0,0) = +2.0f; AY(0,1) = -2.0f; AY(0,2) = +3.0f;
+    //AY(1,0) = +2.0f; AY(1,1) = +1.0f; AY(1,2) = +0.0f;
+    //AY(2,0) = +1.0f; AY(2,1) = +2.0f; AY(2,2) = +6.0f;
+
     // calculates observed data
-    XDATA = SXDATA * AXt;
-    YDATA = SYDATA * AYt;
+    for(unsigned int i=0;i<sxdata.size();i++){
+      xdata.push_back(AX*sxdata[i]);
+    }
+
+    auto mixed = xdata;
+
+    // first calculates pca solution for ICA
+    matrix< blas_real<float> > PCA;
+    vertex< blas_real<float> > m; // zero because we already removed mean
+    blas_real<float> origvar, reducervar;
+    
+    if(pca(xdata, 3, PCA, m, origvar, reducervar, false, true) == false){
+      std::cout << "ERROR: calculating PCA failed." << std::endl;
+      return;
+    }
+    else{
+
+      for(unsigned int i=0;i<xdata.size();i++){
+	xdata[i] = PCA*(xdata[i] - m);
+      }
+
+      std::cout<< "Data successfully PCA preprocessed." << std::endl;
+
+      vertex< blas_real<float> > mx;
+      matrix< blas_real<float> > Cxx;
+      
+      if(mean_covariance_estimate(mx, Cxx, xdata) == false){
+	std::cout << "Calculating mean covariance estimate FAILED." << std::endl;
+      }
+      else{
+	std::cout << "Whitened statistics" << std::endl;
+	std::cout << "mx  = " << mx << std::endl;
+	std::cout << "Cxx = " << Cxx << std::endl;
+      }
+      
+    }
     
     // calculates ICA solution for XDATA
     
-    matrix< blas_real<float> > W;
-    if(ica(XDATA,W, true) == false){
-      std::cout << "ERROR:  ICA failed" << std::endl;
+    matrix< blas_real<float> > ICA;
+    if(ica(xdata, ICA, true) == false){
+      std::cout << "ERROR: calculating ICA failed." << std::endl;
+      return;
     }
     else{
       std::cout << "ICA solved." << std::endl;
+
+      for(unsigned int i=0;i<xdata.size();i++){
+	xdata[i] = ICA*xdata[i];
+      }
     }
 
+
     
+
+    // saves data to text file as vectors which can be loaded in MATLAB for visualization
+    // 
+    {
+      // for ASCII export first put data to dataset
+
+      dataset< blas_real<float> > data;
+
+      data.createCluster("Original sources", 3);
+      data.createCluster("Mixed sources", 3);
+      data.createCluster("ICA solved sources", 3);
+
+      data.add(0, sxdata);
+      data.add(1, mixed);
+      data.add(2, xdata);
+
+      std::string file1 = "icatest.original.txt";
+      std::string file2 = "icatest.mixed.txt";
+      std::string file3 = "icatest.solved.txt";
+      
+      data.exportAscii(file1, 0);
+      data.exportAscii(file2, 1);
+      data.exportAscii(file3, 2);
+
+      std::cout << "ASCII exported ICA solution to files: " << std::endl
+		<< file1 << std::endl
+		<< file2 << std::endl
+		<< file3 << std::endl
+		<< "Load to MATLAB/Octave to see solution is correct." << std::endl;
+    }
+
+#if 0
     //////////////////////////////////////////////////
     // saves data to file
     {
@@ -1900,9 +1978,9 @@ void test_ica()
 	sprintf(buf,"SX_ROW%d", i);
 
 	floats.clear();
-	floats.push_back(SXDATA(i,0).value());
-	floats.push_back(SXDATA(i,1).value());
-	floats.push_back(SXDATA(i,2).value());
+	floats.push_back(SXDATA(i,0).real());
+	floats.push_back(SXDATA(i,1).real());
+	floats.push_back(SXDATA(i,2).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1921,7 +1999,7 @@ void test_ica()
 	
 	floats.clear();
 	for(unsigned int j=0;j<3;j++)
-	  floats.push_back(AX(i,j).value());
+	  floats.push_back(AX(i,j).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1939,9 +2017,9 @@ void test_ica()
 	sprintf(buf,"X_ROW%d", i);
 	
 	floats.clear();
-	floats.push_back(XDATA(i,0).value());
-	floats.push_back(XDATA(i,1).value());
-	floats.push_back(XDATA(i,2).value());
+	floats.push_back(XDATA(i,0).real());
+	floats.push_back(XDATA(i,1).real());
+	floats.push_back(XDATA(i,2).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1960,7 +2038,7 @@ void test_ica()
 	
 	floats.clear();
 	for(unsigned int j=0;j<3;j++)
-	  floats.push_back(W(i,j).value());
+	  floats.push_back(W(i,j).real());
 	
 	datafile.set(buf, floats);
       }
@@ -1977,6 +2055,7 @@ void test_ica()
 		  << std::endl;
       }
     }
+#endif
         
   }
   catch(std::exception& e){

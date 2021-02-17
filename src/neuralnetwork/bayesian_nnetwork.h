@@ -82,8 +82,6 @@ namespace whiteice
       
     };
 
-  extern template class bayesian_nnetwork< float >;
-  extern template class bayesian_nnetwork< double >;  
   extern template class bayesian_nnetwork< math::blas_real<float> >;
   extern template class bayesian_nnetwork< math::blas_real<double> >;
   

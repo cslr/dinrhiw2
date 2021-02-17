@@ -430,8 +430,12 @@ namespace whiteice
 	      }
 	    }
 	    
+
+	    const T epsilon = T(10e-12);
+	    T divider = ((*yk.begin())*(*yk.begin()))[0];
+	    if(divider < epsilon) divider = epsilon;
 	    
-	    T Hk = ((*yk.begin()) * (*sk.begin()))[0] / ((*yk.begin())*(*yk.begin()))[0];
+	    T Hk = ((*yk.begin()) * (*sk.begin()))[0] / divider;
 	    
 	    vertex<T> z = Hk*q;
 	    

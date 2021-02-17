@@ -42,7 +42,7 @@ namespace whiteice
     {
 
       // OpenMPfied code
-#pragma omp for nowait schedule(dynamic)
+#pragma omp for nowait schedule(auto)
       for(unsigned int n=0;n<N;n++){
 
 	if(failure) continue;
@@ -579,19 +579,6 @@ namespace whiteice
    const unsigned int M,
    const unsigned int K);
 
-  template bool global_optimizer_pretraining
-  (nnetwork< float >& net,
-   const dataset<float>& data, 
-   const unsigned int N,
-   const unsigned int M,
-   const unsigned int K);
-
-  template bool global_optimizer_pretraining
-  (nnetwork<double>& net,
-   const dataset<double>& data, 
-   const unsigned int N,
-   const unsigned int M,
-   const unsigned int K);
   
   
   
@@ -607,19 +594,6 @@ namespace whiteice
    whiteice::math::matrix< math::blas_real<double> >& A,
    whiteice::math::vertex< math::blas_real<double> >& b);
   
-  template bool global_linear_optimizer
-  (const whiteice::dataset<float>& data,
-   const unsigned int K,
-   whiteice::math::matrix<float>& A,
-   whiteice::math::vertex<float>& b);
-  
-  template bool global_linear_optimizer
-  (const whiteice::dataset<double>& data,
-   const unsigned int K,
-   whiteice::math::matrix<double>& A,
-   whiteice::math::vertex<double>& b);
-
-  
   
   template bool discretize_problem(const unsigned int K,
 				   const std::vector< math::vertex< math::blas_real<float> > >& input,
@@ -633,17 +607,6 @@ namespace whiteice
 				   whiteice::math::vertex< math::blas_real<double> >& mean,
 				   whiteice::math::vertex< math::blas_real<double> >& stdev);
   
-  template bool discretize_problem(const unsigned int K,
-				   const std::vector< math::vertex<float> >& input,
-				   std::vector< math::vertex<float> >& inputDiscrete,
-				   whiteice::math::vertex<float>& mean,
-				   whiteice::math::vertex<float>& stdev);
-  
-  template bool discretize_problem(const unsigned int K,
-				   const std::vector< math::vertex<double> >& input,
-				   std::vector< math::vertex<double> >& inputDiscrete,
-				   whiteice::math::vertex<double>& mean,
-				   whiteice::math::vertex<double>& stdev);
 
 
   
@@ -656,16 +619,7 @@ namespace whiteice
 			  const unsigned int K,
 			  const math::blas_real<double>& mean,
 			  const math::blas_real<double>& stdev);
-
-  template int discretize(const float& x,
-			  const unsigned int K,
-			  const float& mean,
-			  const float& stdev);
-
-  template int discretize(const double& x,
-			  const unsigned int K,
-			  const double& mean,
-			  const double& stdev);
+  
 
   
   template 
@@ -676,15 +630,6 @@ namespace whiteice
   template 
   bool data_statistics(const std::vector< math::vertex< math::blas_real<double> > >& input,
 		       whiteice::math::vertex< math::blas_real<double> >& mean,
-		       whiteice::math::vertex< math::blas_real<double> >& stdev);
-  
-  template 
-  bool data_statistics(const std::vector< math::vertex< float > >& input,
-		       whiteice::math::vertex< float >& mean,
-		       whiteice::math::vertex< float >& stdev);
-  
-  template 
-  bool data_statistics(const std::vector< math::vertex< double > >& input,
-		       whiteice::math::vertex< double >& mean,
-		       whiteice::math::vertex< double >& stdev);
+		       whiteice::math::vertex< math::blas_real<double> >& stdev);  
+
 };

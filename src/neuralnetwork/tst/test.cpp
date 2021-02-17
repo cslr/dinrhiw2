@@ -39,11 +39,14 @@
 #include "DBN.h"
 
 #include "VAE.h"
+#include "TSNE.h"
 
 #include "globaloptimum.h"
 
 #include "PSO.h"
 #include "RBMvarianceerrorfunction.h"
+
+#include "NNGradDescent.h"
 
 #include "RNG.h"
 
@@ -79,6 +82,7 @@ extern "C" {
 
 
 using namespace whiteice;
+using namespace whiteice;
 
 
 void activation_test();
@@ -91,12 +95,17 @@ void neuralnetwork_test();
 */
 
 void nnetwork_test();
+void nnetwork_complex_test();
+
 void lreg_nnetwork_test();
 void recurrent_nnetwork_test();
 void mixture_nnetwork_test();
 void ensemble_means_test();
 
 void nnetwork_gradient_test();
+void nnetwork_complex_gradient_test();
+
+void nngraddescent_complex_test();
   
 void rbm_test();
 void simple_rbm_test();
@@ -120,6 +129,8 @@ void simple_dataset_test();
 
 void simple_vae_test();
 
+void simple_tsne_test();
+
 void simple_global_optimum_test();
 
 
@@ -140,12 +151,26 @@ bool saveSamples(const std::string& filename, std::vector< math::vertex< math::b
 int main()
 {
   unsigned int seed = (unsigned int)time(0);
-  printf("seed = %x\n", seed);
+  // seed = 0x5f54fc68;
+  printf("seed = 0x%x\n", seed);
   srand(seed);
   
   try{
-    nnetwork_test();
+    // nnetwork_test();
     
+    // simple_vae_test();
+    
+    simple_tsne_test();
+
+    // nngraddescent_complex_test();
+
+    nnetwork_complex_test(); // works about correctly
+
+    //nnetwork_gradient_test(); // gradient calculation works
+    //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
+
+    return 0;
+
     // recurrent_nnetwork_test(); // FIXME doesn't seem to work anymore.
     
     return 0;
@@ -159,8 +184,6 @@ int main()
     // simple_rbm_test();
     
     return 0;
-    
-    nnetwork_gradient_test();
     
     bbrbm_test();
     
@@ -276,6 +299,197 @@ private:
 };
 
 /************************************************************/
+
+void simple_tsne_test()
+{
+  std::cout << "t-SNE dimension reducer test" << std::endl;
+
+  // testcase 1: test that computations happen correctly
+  {
+    std::cout << "TESTCASE 1" << std::endl;
+    std::cout << std::flush;
+
+    // we generate HIGHDIM dimensional gaussian balls N(mean,I) in random locations
+    // in hypercube [-10,10]^HIGHDIM. mean = random([-10,10]^HIGHDIM)
+
+    const unsigned int HIGHDIM = 20;
+    const unsigned int CLUSTERS = 10; // number of clusters
+    const unsigned int N = 10; // number of samples per cluster (total of 1000 datapoints)
+
+    whiteice::RNG<> rng;
+
+    // generate training data
+    std::vector< whiteice::math::vertex<> > data;
+    whiteice::math::vertex<> x;
+    whiteice::math::vertex<> mean;
+
+    mean.resize(HIGHDIM);
+    x.resize(HIGHDIM);
+
+    for(unsigned int c=0;c<CLUSTERS;c++){
+      rng.uniform(mean);
+      for(unsigned int i=0;i<HIGHDIM;i++){
+	whiteice::math::blas_real<float> v1 = 20.0f;
+	whiteice::math::blas_real<float> v2 = 10.0f;
+	mean[i] = v1*mean[i] - v2;
+      }
+
+      for(unsigned int n=0;n<N;n++){
+	rng.normal(x);
+	x += mean;
+	data.push_back(x);
+      }
+    }
+
+    // calculate dimension reduction
+    whiteice::TSNE<> tsne(false);
+    std::vector< whiteice::math::vertex<> > ydata;
+
+    if(tsne.calculate(data, 2, ydata, true) == false){
+      printf("ERROR: calculating t-SNE dimension reduction FAILED.\n");
+    }
+    else{
+      printf("GOOD: t-SNE computation proceeded without errors.\n");
+    }
+
+    fflush(stdout);
+  }
+}
+
+/*********************************************************************************/
+
+void nngraddescent_complex_test()
+{
+  std::cout << "COMPLEX value NNGradDescent<> optimizer tests." << std::endl;
+
+  nnetwork< math::blas_complex<double> >* nn;
+  dataset< math::blas_complex<double> > data;
+  std::vector<unsigned int> arch;
+
+  for(unsigned int i=0;i<4;i++) // 3 layer neural network
+    arch.push_back(rand()%10 + 10);
+
+  //arch[0] = 2;
+  //arch[arch.size()-1] = 2;
+
+  printf("Neural network architecture: ");
+  for(unsigned int i=0;i<arch.size();i++){
+    if(i == 0) printf("%d", arch[i]);
+    else printf("-%d", arch[i]);
+  }
+  printf("\n");
+
+  // pureLinear optimization works..
+  nn = new nnetwork< math::blas_complex<double> >
+    (arch, nnetwork< math::blas_complex<double> >::rectifier);
+
+  // set last layer to be linear layer
+  nn->setNonlinearity(nn->getLayers()-1, nnetwork< math::blas_complex<double> >::pureLinear);
+  
+  nn->randomize();
+  
+
+  {
+    std::vector< math::vertex< math::blas_complex<double> > > inputs;
+    std::vector< math::vertex< math::blas_complex<double> > > outputs;
+
+    RNG< math::blas_complex<double> > rng;
+
+    math::vertex< math::blas_complex<double> > in, out;
+    in.resize(arch[0]);
+    out.resize(arch[arch.size()-1]);
+
+    math::matrix< math::blas_complex<double> > A;
+    A.resize(arch[arch.size()-1], arch[0]);
+    rng.normal(A); // complex valued N(0,I) values
+    // A.abs(); // takes absolute value (real valued matrix)
+   
+    for(unsigned int n=0;n<1000;n++){
+      rng.normal(in);
+
+      // nonlinear test function (should break Cauchy-Riemann conditions)
+      for(unsigned int i=0;i<in.size();i++){
+	in[i] = whiteice::math::sin(imag(in[i]))*real(in[i]);
+      }
+      
+      out = A*in;
+
+      inputs.push_back(in);
+      outputs.push_back(out);
+    }
+
+    data.createCluster("input", arch[0]);
+    data.createCluster("output", arch[arch.size()-1]);
+    
+    data.add(data.getCluster("input"), inputs);
+    data.add(data.getCluster("output"), outputs);
+
+    data.preprocess(0);
+    data.preprocess(1);
+  }
+
+  printf("Starting neural network optimizer (non-linear problem).\n");
+  fflush(stdout);
+
+  // whiteice::logging.setPrintOutput(true); // for enabling internal logging
+
+  // MNE and dropout heuristics don't work well with complex valued data
+  // 1. MNE gradient maybe needed to be computed differently with complex values
+  // 2. Dropout may modify network so that it doesn't satisfy Cauchy-Riemann conditions
+  //    well anymore meaning that gradient calculation don't work..
+  math::NNGradDescent< math::blas_complex<double> > grad;
+  
+  const unsigned int MAXITERS = 10000;
+  const unsigned int THREADS = 2;
+  const bool dropout = false; 
+  
+  grad.setUseMinibatch(false);
+  grad.setOverfit(false);
+  grad.setMNE(false); // MNE doesn't seem to work well with complex number (is gradient correct)
+  grad.setRegularizer(0.01f); // set regularizer
+  // grad.setRegularizer( 0.01*((double)nn->output_size())/nn->gradient_size() );
+
+  linear_ETA<double> eta;
+  eta.start(0.0, MAXITERS);
+  
+  
+  if(grad.startOptimize(data, *nn, THREADS, MAXITERS, dropout, true) == false){
+    printf("ERROR: NNGradDescent::startOptimize() failed.\n");
+    delete nn;
+    return;
+  }
+
+  printf("NNGradDescent Optimizer started.\n");
+
+  while(grad.hasConverged() == false){
+    unsigned int N;
+    math::blas_complex<double> error;
+
+    eta.update(N);
+
+    if(grad.getSolutionStatistics(error, N) == false){
+      printf("ERROR: NNGradDescent::getSolutionStatistics() failed.\n");
+      delete nn;
+      return;
+    }
+    else{
+      double errorf = 0.0;
+      convert(errorf,error);
+      
+      printf("%d/%d NN model error: %f. [ETA %f hours] (%f minutes)\n",
+	     N, MAXITERS, errorf, eta.estimate()/3600.0, eta.estimate()/60.0);
+      fflush(stdout);
+    }
+
+    sleep(1);
+  }
+
+  printf("Optimization stopped.\n");
+  
+}
+
+
+/*********************************************************************************/
 
 void simple_global_optimum_test()
 {
@@ -935,7 +1149,7 @@ void simple_vae_test()
 
 void nnetwork_gradient_test()
 {
-  std::cout << "NNewtwork gradient() calculations test" << std::endl;
+  std::cout << "Real-valued nnewtwork gradient() calculations test" << std::endl;
 
   whiteice::RNG< whiteice::math::blas_real<double> > rng;
 
@@ -945,36 +1159,53 @@ void nnetwork_gradient_test()
 
     const unsigned int dimInput = rng.rand() % 10 + 3;
     const unsigned int dimOutput = rng.rand() % 10 + 3;
-    const unsigned int layers = rng.rand() % 5 + 2;
+    const unsigned int layers = rng.rand() % 2 + 1;
 
     arch.push_back(dimInput);
     for(unsigned int i=0;i<layers;i++)
-      arch.push_back(rng.rand() % 10 + 1);
+      arch.push_back(rng.rand() % 5 + 2);
     arch.push_back(dimOutput);
 
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
-    unsigned int nli = rng.rand() % 5;
+    unsigned int nli = rng.rand() % 7;
+    // nli = 3; // force purelinear f(x)
 
     if(nli == 0){
       nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+      printf("Sigmoidal non-linearity\n");
     }
     else if(nli == 1){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; // do not calculate gradients for stochastic sigmoid..
+      // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; 
+      printf("Sigmoidal non-linearity\n");
     }
     else if(nli == 2){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear; // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
+      printf("halfLinear non-linearity\n");
     }
     else if(nli == 3){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear; // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
+      printf("pureLinear non-linearity\n");
     }
     else if(nli == 4){
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh; // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+      printf("tanh non-linearity\n");
+    }
+    else if(nli == 5){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+      printf("rectifier non-linearity\n");
+    }
+    else if(nli == 6){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::softmax;
+      printf("softmax non-linearity\n");
     }
 
     whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
 
     whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
     whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
+    x.zero();
+    y.zero();
 
     rng.normal(x);
     rng.exp(y);
@@ -982,25 +1213,23 @@ void nnetwork_gradient_test()
     nn.input() = x;
     nn.calculate(true, false);
 
-    auto error = y - nn.output();
+    auto error = nn.output() - y;
 
     whiteice::math::vertex< whiteice::math::blas_real<double> > grad;
 
-    if(nn.gradient(error, grad) == false){
+    if(nn.mse_gradient(error, grad) == false){
       printf("ERROR: nn::gradient(1) FAILED.\n");
       continue;
     }
     
     whiteice::math::matrix< whiteice::math::blas_real<double> > grad2;
 
-    if(nn.gradient(x, grad2) == false){
+    if(nn.jacobian(x, grad2) == false){
       printf("ERROR: nn::gradient(2) FAILED.\n");
       continue;
     }
 
-    auto delta = -error;
-
-    whiteice::math::vertex< whiteice::math::blas_real<double> > g = delta*grad2;
+    whiteice::math::vertex< whiteice::math::blas_real<double> > g = error*grad2;
 
     if(grad.size() != g.size()){
       printf("ERROR: nn::gradient sizes mismatch!\n");
@@ -1009,20 +1238,173 @@ void nnetwork_gradient_test()
 
     whiteice::math::blas_real<double> err = 0.0;
 
-    for(unsigned int i=0;i<g.size();i++)
-      err += abs(grad[i] - g[i]);
+    auto grad_delta = grad - g;
 
+    err = grad_delta.norm();
     err /= ((double)g.size());
 
-    if(err > 0.01)
+    if(err > 0.01){
       printf("ERROR: gradient difference is too large (%f)!\n", err.c[0]);
+      std::cout << "grad_delta = " << grad_delta << std::endl;
+    }
+    else{
+      printf("Backpropagation and error*nnetwork::gradient() return same value. Good.\n");
+      fflush(stdout);
+    }
     
   }
   
 }
 
 
+
+
 /************************************************************/
+
+void nnetwork_complex_gradient_test()
+{
+  std::cout << "COMPLEX nnetwork gradient() calculations test" << std::endl;
+
+  whiteice::RNG< whiteice::math::blas_complex<double> > rng;
+
+  const unsigned int NUMTESTS = 20; // was 10
+
+  for(unsigned int e=0;e<NUMTESTS;e++) // number of tests
+  {
+    std::vector<unsigned int> arch;
+
+    const unsigned int dimInput = rng.rand() % 10 + 3;
+    const unsigned int dimOutput = rng.rand() % 10 + 3;
+    const unsigned int layers = rng.rand() % 3 + 1;
+
+    arch.push_back(dimInput);
+    for(unsigned int i=0;i<layers;i++)
+      arch.push_back(rng.rand() % 5 + 2);
+    arch.push_back(dimOutput);
+
+    whiteice::nnetwork< whiteice::math::blas_complex<double> >::nonLinearity nl;
+    unsigned int nli = rng.rand() % 7;
+    // nli = 3; // force purelinear f(x)
+    if(nli == 1) nli = 0; // don't use stochastic sigmoid..
+    nl = (whiteice::nnetwork< whiteice::math::blas_complex<double> >::nonLinearity)(nli);
+
+    whiteice::nnetwork< whiteice::math::blas_complex<double> > nn(arch, nl);
+
+    nn.randomize(); // could large data cause problems(??)
+
+    whiteice::math::vertex< whiteice::math::blas_complex<double> > x(dimInput);
+    whiteice::math::vertex< whiteice::math::blas_complex<double> > y(dimOutput);
+    x.zero();
+    y.zero();
+
+    rng.normal(x);
+
+    rng.exp(y);
+
+    nn.input() = x;
+
+    nn.calculate(true, true);
+
+    auto error = nn.output() - y;
+    
+    whiteice::math::vertex< whiteice::math::blas_complex<double> > mse_grad;
+
+    if(nn.mse_gradient(error, mse_grad) == false){ // returns delta*conj(Jnn)
+      printf("ERROR: nn::gradient(1) FAILED.\n");
+      continue;
+    }
+
+    // calculates correct positive gradient direction which is (f(z)-y)*conj(grad(fz))
+    whiteice::math::matrix< whiteice::math::blas_complex<double> > Jnn;
+
+    if(nn.jacobian(x, Jnn) == false){
+      printf("ERROR: nn::gradient(2) FAILED.\n");
+      continue;
+    }
+
+#if 0
+    {
+      printf("Neural network input/output size: %d->%d\n",
+	     nn.input_size(), nn.output_size());
+      printf("NN Jacobian size: y x x = %d x %d\n",
+	     Jnn.ysize(), Jnn.xsize());
+      
+      printf("NN Architecture: ");
+      for(unsigned int a=0;a<arch.size();a++)
+	printf(" %d", arch[a]);
+      printf("\n");
+
+      if(nli == 0){	
+	printf("Sigmoidal non-linearity\n");
+      }
+      else if(nli == 1){
+	// do not calculate gradients for stochastic sigmoid..
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::sigmoid; 
+	printf("Sigmoidal non-linearity\n");
+      }
+      else if(nli == 2){
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::halfLinear;
+	printf("halfLinear non-linearity\n");
+      }
+      else if(nli == 3){
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::pureLinear;
+	printf("pureLinear non-linearity\n");
+      }
+      else if(nli == 4){
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::tanh;
+	printf("tanh non-linearity\n");
+      }
+      else if(nli == 5){
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::rectifier;
+	printf("rectifier non-linearity\n");
+      }
+      else if(nli == 6){
+	nl = whiteice::nnetwork< whiteice::math::blas_complex<double> >::softmax;
+	printf("softmax non-linearity\n");
+      }
+      
+      fflush(stdout);
+    }
+#endif
+    
+    
+    auto delta = error; // we want want positive direction: (f(x)-y)
+    Jnn.conj();
+
+    
+    whiteice::math::vertex< whiteice::math::blas_complex<double> > g = delta*Jnn;
+    
+    if(mse_grad.size() != g.size()){
+      printf("ERROR: nn::gradient sizes mismatch!\n");
+      fflush(stdout);
+      continue;
+    }
+
+    whiteice::math::blas_real<double> err = 0.0;
+
+    auto grad_delta = mse_grad - g;
+
+    err = grad_delta.norm();
+    err /= ((double)g.size());
+
+    if(abs(err) > 0.01){
+      printf("ERROR: complex gradient difference is too large!\n");
+      printf("Norm(error) value: %f\n", err.c[0]);
+      std::cout << "grad_delta = " << grad_delta << std::endl;
+      fflush(stdout);
+    }
+    else{
+      printf("Complex backpropagation and error*nnetwork::gradient() return same value (Error: %f). Good.\n", err.c[0]);
+      fflush(stdout);
+    }
+    
+  }
+
+  std::cout << std::endl << std::endl;
+  
+}
+
+/*********************************************************************************/
 
 void ensemble_means_test()
 {
@@ -4139,9 +4521,459 @@ void activation_test()
 
 /************************************************************************/
 
+void nnetwork_complex_test()
+{
+  printf("COMPLEX VALUED NNETWORK<> TESTS\n");
+  fflush(stdout);
+  
+  try{
+    std::cout << "NNETWORK TEST -1: GET/SET PARAMETER TESTS"
+	      << std::endl;
+
+    std::vector<unsigned int> arch;
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(4);
+    arch.push_back(5);
+    
+    nnetwork< math::blas_complex<float> > nn(arch); // 4-4-4-5 network (3 layer network)
+
+    math::vertex< math::blas_complex<float> > b;
+    math::matrix< math::blas_complex<float> > W;
+
+    nn.getBias(b, 0);
+    nn.getWeights(W, 0);
+
+    std::cout << "First layer W*x + b." << std::endl;
+    std::cout << "W = " << W << std::endl;
+    std::cout << "b = " << b << std::endl;
+
+    math::vertex< math::blas_complex<float> > all;
+    nn.exportdata(all);
+
+    std::cout << "whole nn vector = " << all << std::endl;
+
+    W(0,0) = 100.0f;
+
+    if(nn.setWeights(W, 1) == false)
+      std::cout << "ERROR: cannot set NN weights." << std::endl;
+
+    b.resize(5);
+
+    if(nn.setBias(b, 2) == false)
+      std::cout << "ERROR: cannot set NN bias." << std::endl;
+    
+    math::vertex< math::blas_complex<float> > b2;
+
+    if(nn.getBias(b2, 2) == false)
+      std::cout << "ERROR: cannot get NN bias." << std::endl;
+
+    if(b.size() != b2.size())
+      std::cout << "ERROR: bias terms mismatch (size)." << std::endl;
+
+    math::vertex< math::blas_complex<float> > e = b - b2;
+
+    if(abs(e.norm()) > 0.01f)
+      std::cout << "ERROR: bias terms mismatch." << std::endl;
+    
+      
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }  
+
+  
+
+  
+  try{
+    std::cout << "NNETWORK TEST 0: SAVE() AND LOAD() TEST" << std::endl;
+    
+    nnetwork< math::blas_complex<float> >* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(18);
+    arch.push_back(10);
+    arch.push_back(1);
+
+    std::vector<unsigned int> arch2;
+    arch2.push_back(8);
+    arch2.push_back(10);
+    arch2.push_back(3);
+    
+    nn = new nnetwork< math::blas_complex<float> >(arch);    
+    nn->randomize();
+
+    nnetwork< math::blas_complex<float> >* copy = new nnetwork< math::blas_complex<float> >(*nn);
+    
+    if(nn->save("nntest.cfg") == false){
+      std::cout << "nnetwork::save() failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+
+    nn->randomize();
+    
+    delete nn;
+    
+    nn = new nnetwork< math::blas_complex<float> >(arch2);    
+    nn->randomize();
+
+    if(nn->load("nntest.cfg") == false){
+      std::cout << "nnetwork::load() failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+
+    math::vertex< math::blas_complex<float> > p1, p2;
+    
+    if(nn->exportdata(p1) == false || copy->exportdata(p2) == false){
+      std::cout << "nnetwork exportdata failed." << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+    
+    math::vertex< math::blas_complex<float> > e = p1 - p2;
+    
+    std::cout << "p1 = " << p1 << std::endl;
+    std::cout << "p2 = " << p2 << std::endl;
+    std::cout << "e  = " << e << std::endl;
+
+    if(abs(e.norm()) > 0.001f){
+      std::cout << "ERROR: save() & load() failed in nnetwork!" << std::endl;
+      delete nn;
+      delete copy;
+      return;
+    }
+    else{
+      std::cout << "nnetwork::save() and nnetwork::load() work correctly." << std::endl;
+    }
+
+    delete nn;
+    delete copy;
+    nn = 0;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }  
+
+
+  
+#if 0
+  try{
+    std::cout << "NNETWORK TEST 2: SIMPLE PROBLEM + DIRECT GRADIENT DESCENT" << std::endl;
+    
+    nnetwork< math::blas_complex<float> >* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(2);
+    arch.push_back(10);
+    arch.push_back(10);
+    arch.push_back(10);
+    arch.push_back(2);
+    
+    nn = new nnetwork< math::blas_complex<float> >(arch);
+    nn->randomize();
+    
+    const unsigned int size = 500;
+    
+    
+    std::vector< math::vertex< math::blas_complex<float> > > input(size);
+    std::vector< math::vertex< math::blas_complex<float> > > output(size);
+    
+    for(unsigned int i = 0;i<size;i++){
+      input[i].resize(2);
+      output[i].resize(2);
+      input[i].zero();
+      output[i].zero();
+      
+      input[i][0].real( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][0].imag( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][1].real( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][1].imag( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]      
+
+      
+      output[i][0] = input[i][0] - math::blas_complex<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_complex<float>(-0.12f)*input[i][0] + math::blas_complex<float>(0.1f)*input[i][1];
+      
+    }
+    
+    
+    dataset< math::blas_complex<float> > data;
+    std::string inString, outString;
+    inString = "input";
+    outString = "output";
+    data.createCluster(inString,  2);
+    data.createCluster(outString, 2);
+    
+    data.add(0, input);
+    data.add(1, output);
+    
+    //data.preprocess(0);
+    //data.preprocess(1);
+    
+    math::vertex< math::blas_complex<float> > grad, err, weights;
+    
+    unsigned int counter = 0;
+    math::blas_complex<float> error = math::blas_complex<float>(1000.0f);
+    math::blas_complex<float> lrate = math::blas_complex<float>(0.01f);
+
+    while(abs(error) > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_complex<float>(0.0f);
+      
+      // goes through data, calculates gradient
+      // exports weights, weights -= 0.01*gradient
+      // imports weights back
+
+      for(unsigned int i=0;i<data.size(0);i++){
+	nn->input() = data.access(0, i);
+
+	nn->calculate(true);
+	err = nn->output() - data.access(1,i);
+
+	for(unsigned int i=0;i<err.size();i++)
+	  error += err[i]*math::conj(err[i]);
+
+	if(nn->mse_gradient(err, grad) == false)
+	  std::cout << "gradient failed." << std::endl;
+
+	if(nn->exportdata(weights) == false)
+	  std::cout << "export failed." << std::endl;
+	
+	weights -= lrate * grad;
+	
+	if(nn->importdata(weights) == false)
+	  std::cout << "import failed." << std::endl;
+      }
+
+
+      error /= math::blas_real<float>((float)data.size(0));
+      
+      std::cout << counter << " : " << abs(error) << std::endl;
+      
+      counter++;
+    }
+    
+    std::cout << counter << " : " << error << std::endl;
+    
+    delete nn;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+#endif
+
+
+  try{
+    std::cout << "NNETWORK TEST 3: SIMPLE PROBLEM + SUM OF DIRECT GRADIENT DESCENT" << std::endl;
+    
+    nnetwork< math::blas_complex<float> >* nn;
+    
+    std::vector<unsigned int> arch;
+    arch.push_back(2);
+    arch.push_back(20);
+    arch.push_back(2);
+    
+    nn = new nnetwork< math::blas_complex<float> >();
+    // tests linear network
+    // non-linearies for complex valued neural networks:
+    // * pureLinear (works with complex numbers)
+    // * rectifier (don't work with complex numbers/gradient descent don't work
+    //              as complex analytical assumptions are not fulfilled by rectifier)
+    // * halfLinear (works with regularizer) [don't work with MSE gradient calls!]
+    // * tanh (works with regularizer)
+    // * sigmoid (crashes quickly with regularizer)
+    // * softmax (works with regularizer)
+    
+    nn->setArchitecture(arch, nnetwork< math::blas_complex<float> >::softmax);
+    nn->randomize();
+    
+    const unsigned int size = 500;
+    
+    
+    std::vector< math::vertex< math::blas_complex<float> > > input(size);
+    std::vector< math::vertex< math::blas_complex<float> > > output(size);
+    
+    for(unsigned int i = 0;i<size;i++){
+      input[i].resize(2);
+      output[i].resize(2);
+      input[i].zero();
+      output[i].zero();
+      
+      input[i][0].real( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][0].imag( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][1].real( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]
+      input[i][1].imag( (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f ); // [-1.0,+1.0]      
+      
+      output[i][0] = input[i][0] - math::blas_complex<float>(0.2f)*input[i][1];
+      output[i][1] = math::blas_complex<float>(-0.12f)*input[i][0] + math::blas_complex<float>(0.1f)*input[i][1];
+      
+    }
+    
+    
+    dataset< math::blas_complex<float> > data;
+    std::string inString, outString;
+    inString = "input";
+    outString = "output";
+    data.createCluster(inString,  2);
+    data.createCluster(outString, 2);
+    
+    data.add(0, input);
+    data.add(1, output);
+    
+    //data.preprocess(0);
+    //data.preprocess(1);
+    
+    math::vertex< math::blas_complex<float> > grad, err, weights;
+    math::vertex< math::blas_complex<float> > sumgrad;
+    
+    unsigned int counter = 0;
+    math::blas_complex<float> error = math::blas_real<float>(1000.0f);
+    math::blas_complex<float> lrate = math::blas_real<float>(0.01f);
+    
+    while(abs(error) > math::blas_real<float>(0.001f) && counter < 10000){
+      error = math::blas_complex<float>(0.0f);
+      sumgrad.zero();
+      
+      // goes through data, calculates gradient
+      // exports weights, weights -= 0.01*gradient
+      // imports weights back
+
+      math::blas_complex<float> ninv =
+	math::blas_complex<float>(1.0f/data.size(0));
+      
+      for(unsigned int i=0;i<data.size(0);i++){
+	nn->input() = data.access(0, i);
+	nn->calculate(true);
+	err = nn->output() - data.access(1,i);
+	
+	for(unsigned int j=0;j<err.size();j++)
+	  error += ninv*err[j]*math::conj(err[j]);
+
+#if 1
+	// this works with pureLinear non-linearity
+	const auto delta = err; // delta = (f(z) - y)
+	whiteice::math::matrix< whiteice::math::blas_complex<float> > DF;
+	nn->jacobian(data.access(0, i), DF);
+
+	auto cdelta = delta;
+	//old: only calculates Re(f(w))/dw
+	auto cDF = DF;
+	cdelta.conj();
+	cDF.conj();
+	//grad = cdelta*DF + delta*cDF;
+
+	// new: this should calculate f(w)/dw
+	grad = delta*cDF;
+
+	// grad = delta*DF; // [THIS DOESN'T WORK]
+#else
+	const auto delta = err;
+	
+	if(nn->mse_gradient(err, grad) == false) // returns: delta*conj(DF)
+	  std::cout << "gradient failed." << std::endl;
+	
+#endif
+	
+	if(i == 0)
+	  sumgrad = ninv*grad;
+	else
+	  sumgrad += ninv*grad;
+      }
+
+      sumgrad.normalize(); // normalizes gradient length
+
+      if(nn->exportdata(weights) == false)
+	std::cout << "export failed." << std::endl;
+
+      const whiteice::math::blas_complex<float> alpha(1e-6f);
+      
+      weights -= lrate * (sumgrad + alpha*weights);
+      
+      if(nn->importdata(weights) == false)
+	std::cout << "import failed." << std::endl;
+
+      
+      std::cout << counter << " : " << abs(error) << std::endl;
+      
+      counter++;
+    }
+    
+    std::cout << counter << " : " << abs(error) << std::endl;
+
+    math::vertex< math::blas_complex<float> > params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
+    
+    delete nn;
+  }
+  catch(std::exception& e){
+    std::cout << "Unexpected exception: " << e.what() << std::endl;
+  }
+  
+}
+
+
+/************************************************************************/
 
 void nnetwork_test()
 {
+#if 0
+  try{
+    std::cout << "NNETWORK TEST -3: JACOBIAN MATRIX TEST" << std::endl;
+
+    std::vector<unsigned int> layers;
+    layers.push_back(7);
+    layers.push_back(45);
+    layers.push_back(5);
+    layers.push_back(5);
+    layers.push_back(13);
+
+    whiteice::nnetwork< math::blas_complex<float> > nn(layers);
+    nn.setNonlinearity(nn.getLayers()-1,
+		       whiteice::nnetwork< math::blas_complex<float> >::pureLinear);
+    
+    // calculates jacobian matrix
+
+    for(unsigned int n=0;n<20;n++){
+      whiteice::RNG< math::blas_complex<float> > rng;
+      math::vertex< math::blas_complex<float> > input(7);
+      
+      rng.normal(input);
+      
+      math::matrix< math::blas_complex<float> > JNN1, JNN2;
+      
+      if(nn.jacobian(input, JNN1) == false){
+	std::cout << "ERROR: Calculating Jacobian matrix failed." << std::endl;
+	return;
+      }
+      
+      if(nn.jacobian_optimized(input, JNN2) == false){
+	std::cout << "ERROR: Calculating Jacobian matrix failed." << std::endl;
+	return;
+      }
+    
+      auto delta = whiteice::math::abs(JNN1 - JNN2);
+      
+      if(frobenius_norm(delta).abs() > 0.01){
+	std::cout << "ERROR: Jacobian matrices differ when changing computation method."
+		  << std::endl;
+	return;
+      }
+      else{
+	std::cout << "Jacobian matrices are same. Good." << std::endl;
+      }
+    }
+    
+  }
+  catch(std::exception& e){
+    std::cout << "ERROR: Unexpected exception: " << e.what() << std::endl;
+  }
+#endif
+  
+  
   try{
     std::cout << "NNETWORK TEST -2: GET/SET DEEP ICA PARAMETERS"
 	      << std::endl;
@@ -4203,24 +5035,28 @@ void nnetwork_test()
     arch.push_back(4);
     arch.push_back(4);
     arch.push_back(5);
+
+    // 16+4 + 16+4 + 20+5 parameters = 65 parameters in nnetwork<>
     
     nnetwork<> nn(arch); // 4-4-4-5 network (3 layer network)
 
     math::vertex<> b;
     math::matrix<> W;
 
-    nn.getBias(b, 0);
-    nn.getWeights(W, 0);
+    for(unsigned int l=0;l<nn.getLayers();l++){
+      nn.getBias(b, l);
+      nn.getWeights(W, l);
 
-    std::cout << "First layer W*x + b." << std::endl;
-    std::cout << "W = " << W << std::endl;
-    std::cout << "b = " << b << std::endl;
-
+      std::cout << "Layer " << l << " W = " << W << std::endl;
+      std::cout << "Layer " << l << " b = " << b << std::endl;
+    }
+    
     math::vertex<> all;
     nn.exportdata(all);
 
     std::cout << "whole nn vector = " << all << std::endl;
 
+    nn.getWeights(W, 0);
     W(0,0) = 100.0f;
 
     if(nn.setWeights(W, 1) == false)
@@ -4255,8 +5091,10 @@ void nnetwork_test()
   
   try{
     std::cout << "NNETWORK TEST 0: SAVE() AND LOAD() TEST" << std::endl;
+    std::cout << std::flush;
     
     nnetwork<>* nn;
+    math::vertex<> p1, p2;
     
     std::vector<unsigned int> arch;
     arch.push_back(18);
@@ -4270,8 +5108,12 @@ void nnetwork_test()
     
     nn = new nnetwork<>(arch);    
     nn->randomize();
+
+    nn->exportdata(p1);
+    std::cout << "nn weights after random init = " << p1 << std::endl;
     
     nnetwork<>* copy = new nnetwork<>(*nn);
+    
     
     if(nn->save("nntest.cfg") == false){
       std::cout << "nnetwork::save() failed." << std::endl;
@@ -4294,7 +5136,7 @@ void nnetwork_test()
       return;
     }
     
-    math::vertex<> p1, p2;
+
     
     if(nn->exportdata(p1) == false || copy->exportdata(p2) == false){
       std::cout << "nnetwork exportdata failed." << std::endl;
@@ -4341,6 +5183,9 @@ void nnetwork_test()
     arch.push_back(2);
     
     nn = new nnetwork<>(arch);
+    nn->setNonlinearity(nn->getLayers()-1, nnetwork<>::pureLinear);
+
+    nn->randomize();
     
     const unsigned int size = 500;
     
@@ -4351,13 +5196,15 @@ void nnetwork_test()
     for(unsigned int i = 0;i<size;i++){
       input[i].resize(2);
       output[i].resize(2);
+      input[i].zero();
+      output[i].zero();
       
       input[i][0] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       input[i][1] = (((float)rand())/((float)RAND_MAX))*2.0f - 0.5f; // [-1.0,+1.0]
       
       output[i][0] = input[i][0] - math::blas_real<float>(0.2f)*input[i][1];
-      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] + math::blas_real<float>(0.1f)*input[i][1];
-      
+      output[i][1] = math::blas_real<float>(-0.12f)*input[i][0] +
+	math::blas_real<float>(0.1f)*input[i][1];
     }
     
     
@@ -4370,32 +5217,57 @@ void nnetwork_test()
     
     data.add(0, input);
     data.add(1, output);
+
+    assert(data.size(0) == data.size(1));
     
-    data.preprocess(0);
-    data.preprocess(1);
+    //data.preprocess(0);
+    //data.preprocess(1);
+
+    printf("Starting gradient descent..\n");
+    fflush(stdout);
     
     math::vertex<> grad, err, weights;
     
     unsigned int counter = 0;
     math::blas_real<float> error = math::blas_real<float>(1000.0f);
     math::blas_real<float> lrate = math::blas_real<float>(0.01f);
+    
     while(error > math::blas_real<float>(0.001f) && counter < 10000){
+      
       error = math::blas_real<float>(0.0f);
       
       // goes through data, calculates gradient
       // exports weights, weights -= 0.01*gradient
       // imports weights back
-      
+
+      auto ninv = math::blas_real<float>(1.0f/(float)data.size(0));
+
       for(unsigned int i=0;i<data.size(0);i++){
-	nn->input() = data.access(0, i);
+	
+	const auto x = data.access(0, i);
+	const auto y = data.access(1, i);
+
+	nn->input() = x;
 	nn->calculate(true);
-	err = data.access(1,i) - nn->output();
+	err = nn->output() - y;
 	
 	for(unsigned int i=0;i<err.size();i++)
-	  error += err[i]*err[i];
-	
-	if(nn->gradient(err, grad) == false)
+	  error += ninv*err[i]*err[i];
+
+#if 0
+	// seperate gradient calculation	
+	const auto delta = err;
+	whiteice::math::matrix< whiteice::math::blas_real<float> > DF;
+	nn->jacobian(x, DF);
+	DF.conj();
+	grad = delta*DF;
+#else	
+	if(nn->mse_gradient(err, grad) == false)
 	  std::cout << "gradient failed." << std::endl;
+#endif
+	
+	//printf("||grad(neuralnetwork)|| = %f\n", grad.norm().c[0]);
+	//fflush(stdout);
 	
 	if(nn->exportdata(weights) == false)
 	  std::cout << "export failed." << std::endl;
@@ -4406,14 +5278,17 @@ void nnetwork_test()
 	  std::cout << "import failed." << std::endl;
       }
       
-      error /= math::blas_real<float>((float)data.size(0));
-      
       std::cout << counter << " : " << error << std::endl;
+      std::cout << std::flush;
       
       counter++;
     }
     
     std::cout << counter << " : " << error << std::endl;
+
+    math::vertex<> params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
     
     delete nn;
   }
@@ -4429,10 +5304,15 @@ void nnetwork_test()
     
     std::vector<unsigned int> arch;
     arch.push_back(2);
-    arch.push_back(20);
+    arch.push_back(10);
+    arch.push_back(10);
+    arch.push_back(10);
     arch.push_back(2);
     
     nn = new nnetwork<>(arch);
+    nn->setNonlinearity(nn->getLayers()-1, nnetwork<>::pureLinear);
+
+    nn->randomize();
     
     const unsigned int size = 500;
     
@@ -4486,12 +5366,12 @@ void nnetwork_test()
       for(unsigned int i=0;i<data.size(0);i++){
 	nn->input() = data.access(0, i);
 	nn->calculate(true);
-	err = data.access(1,i) - nn->output();
+	err = nn->output() - data.access(1,i);
 	
 	for(unsigned int j=0;j<err.size();j++)
 	  error += err[j]*err[j];
 	
-	if(nn->gradient(err, grad) == false)
+	if(nn->mse_gradient(err, grad) == false)
 	  std::cout << "gradient failed." << std::endl;
 
 	if(i == 0)
@@ -4503,6 +5383,7 @@ void nnetwork_test()
       
       if(nn->exportdata(weights) == false)
 	std::cout << "export failed." << std::endl;
+
       
       weights -= lrate * sumgrad;
       
@@ -4518,6 +5399,10 @@ void nnetwork_test()
     }
     
     std::cout << counter << " : " << error << std::endl;
+
+    math::vertex<> params;
+    nn->exportdata(params);
+    std::cout << "nn solution weights = " << params << std::endl;
     
     delete nn;
   }
@@ -4869,12 +5754,12 @@ void lreg_nnetwork_test()
       for(unsigned int i=0;i<data.size(0);i++){
 	nn->input() = data.access(0, i);
 	nn->calculate(true);
-	err = data.access(1,i) - nn->output();
+	err = nn->output() - data.access(1,i);
 	
 	for(unsigned int i=0;i<err.size();i++)
 	  error += err[i]*err[i];
 	
-	if(nn->gradient(err, grad) == false)
+	if(nn->mse_gradient(err, grad) == false)
 	  std::cout << "gradient failed." << std::endl;
 	
 	if(nn->exportdata(weights) == false)
@@ -4966,12 +5851,12 @@ void lreg_nnetwork_test()
       for(unsigned int i=0;i<data.size(0);i++){
 	nn->input() = data.access(0, i);
 	nn->calculate(true);
-	err = data.access(1,i) - nn->output();
+	err = nn->output() - data.access(1,i);
 	
 	for(unsigned int j=0;j<err.size();j++)
 	  error += err[j]*err[j];
 	
-	if(nn->gradient(err, grad) == false)
+	if(nn->mse_gradient(err, grad) == false)
 	  std::cout << "gradient failed." << std::endl;
 
 	if(i == 0)

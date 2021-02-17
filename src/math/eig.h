@@ -111,12 +111,12 @@ namespace whiteice
       (const matrix<float>& A, vertex<float>& d, matrix<float>& X, bool complex_ok);
     extern template bool eig2x2matrix<double>
       (const matrix<double>& A, vertex<double>& d, matrix<double>& X, bool complex_ok);
-    extern template bool eig2x2matrix< complex<float> >
-      (const matrix< complex<float> >& A, vertex< complex<float> >& d,
-       matrix< complex<float> >& X, bool complex_ok);
-    extern template bool eig2x2matrix< complex<double> >
-      (const matrix< complex<double> >& A, vertex< complex<double> >& d,
-       matrix< complex<double> >& X, bool complex_ok);
+    //extern template bool eig2x2matrix< complex<float> >
+    //  (const matrix< complex<float> >& A, vertex< complex<float> >& d,
+    //   matrix< complex<float> >& X, bool complex_ok);
+    //extern template bool eig2x2matrix< complex<double> >
+    //  (const matrix< complex<double> >& A, vertex< complex<double> >& d,
+    //   matrix< complex<double> >& X, bool complex_ok);
        
     
     
@@ -128,15 +128,23 @@ namespace whiteice
       (matrix<float>& A, matrix<float>& Q);
     extern template bool hessenberg_reduction<double>
       (matrix<double>& A, matrix<double>& Q);
+    extern template bool hessenberg_reduction< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& Q);
+    extern template bool hessenberg_reduction< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& Q);
     
     
     
     extern template bool qr< blas_real<float> > (matrix< blas_real<float> >&  A,
-						  matrix< blas_real<float> >&  Q);
+						 matrix< blas_real<float> >&  Q);
     extern template bool qr< blas_real<double> >(matrix< blas_real<double> >& A,
-						  matrix< blas_real<double> >& Q);
+						 matrix< blas_real<double> >& Q);
     extern template bool qr<float> (matrix<float>&  A, matrix<float>&  Q);
     extern template bool qr<double>(matrix<double>& A, matrix<double>& Q);
+    extern template bool qr< blas_complex<float> > (matrix< blas_complex<float> >&  A,
+						    matrix< blas_complex<float> >&  Q);
+    extern template bool qr< blas_complex<double> >(matrix< blas_complex<double> >& A,
+						    matrix< blas_complex<double> >& Q);
     
     
     extern template bool implicit_symmetric_qrstep_wilkinson< blas_real<float> >
@@ -151,6 +159,12 @@ namespace whiteice
     extern template bool implicit_symmetric_qrstep_wilkinson<double>
       (matrix<double>& A, matrix<double>& X,
        unsigned int e1, unsigned int N);
+    extern template bool implicit_symmetric_qrstep_wilkinson< blas_complex<float> >
+      (matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& X,
+       unsigned int e1, unsigned int N);
+    extern template bool implicit_symmetric_qrstep_wilkinson< blas_complex<double> >
+      (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& X,
+       unsigned int e1, unsigned int N);
     
     
     
@@ -163,8 +177,8 @@ namespace whiteice
 
     //extern template bool symmetric_eig< complex<float> >(matrix< complex<float> >& A, matrix< complex<float> >& D, bool sort);
     //extern template bool symmetric_eig< complex<double> >(matrix< complex<double> >& A, matrix< complex<double> >& D, bool sort);
-    //extern template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
-    //extern template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
+    extern template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
+    extern template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
     
     
     extern template bool svd< blas_real<float> >

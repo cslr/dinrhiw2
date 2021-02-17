@@ -1,6 +1,6 @@
 /*
- * modular arithmetical numbers
- * implementation excepts that K is prime
+ * modular arithmetic numbers
+ * implementation expects that K is prime
  */
 
 #ifndef modular_h

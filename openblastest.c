@@ -21,3 +21,17 @@ int main(void){
 
 #endif
 
+#ifdef NVBLAS
+
+// hopefully NVIDIA will later provide full C BLAS interface functions
+// that Intel, OpenBLAS and AMD(?) provide. Until then, compilation
+// of this function fails.
+
+#include "nvblas.h"
+
+int main(void){
+  cblas_scopy(10, NULL, 1, NULL, 1);
+}
+
+#endif
+

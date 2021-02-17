@@ -15,11 +15,15 @@ namespace whiteice
     
     // solves independent components from the data and saves
     // dependacy removal matrix to W. Uses deflate method.
+    // data D MUST be already white (PCA preprocessed)
+    // matrix W is transforms data to independent components
     template <typename T>
       bool ica(const matrix<T>& D, matrix<T>& W, bool verbose = false) ;
 
+    // data MUST be already white (PCA preprocessed)
     template <typename T>
-      bool ica(const std::vector< math::vertex<T> >& data, matrix<T>& W, bool verbose = false) ;
+      bool ica(const std::vector< math::vertex<T> >& data,
+	       matrix<T>& W, bool verbose = false);
 
 
     
@@ -36,6 +40,10 @@ namespace whiteice
       (const matrix<float>& D, matrix<float>& W, bool verbose) ;
     extern template bool ica< double >
       (const matrix<double>& D, matrix<double>& W, bool verbose) ;
+    extern template bool ica< blas_complex<float> >
+      (const matrix< blas_complex<float> >& D, matrix< blas_complex<float> >& W, bool verbose) ;
+    extern template bool ica< blas_complex<double> >
+      (const matrix< blas_complex<double> >& D, matrix< blas_complex<double> >& W, bool verbose) ;
 
     
     extern template bool ica< blas_real<float> >
@@ -45,7 +53,13 @@ namespace whiteice
     extern template bool ica< float >
       (const std::vector< math::vertex<float> >& data, matrix<float>& W, bool verbose) ;
     extern template bool ica< double >
-      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) ;    
+      (const std::vector< math::vertex<double> >& data, matrix<double>& W, bool verbose) ;
+
+    extern template bool ica< blas_complex<float> >
+    (const std::vector< math::vertex< blas_complex<float> > >& data, matrix< blas_complex<float> >& W, bool verbose) ;
+    extern template bool ica< blas_complex<double> >
+    (const std::vector< math::vertex< blas_complex<double> > >& data, matrix< blas_complex<double> >& W, bool verbose) ;
+
     
   };
 };

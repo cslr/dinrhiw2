@@ -89,16 +89,7 @@ namespace whiteice
   template <typename T>
   unsigned int optimized_nnetwork_function<T>::dimension() const  
   {
-    math::vertex<T> err, grad;
-	
-    nn.input() = ds.access(0, 0);
-    nn.calculate(true);
-    err = ds.access(1, 0) - nn.output();
-    
-    if(nn.gradient(err, grad) == false)
-      return 0;
-    else
-      return grad.size();
+    return nn.gradient_size();
   }
   
   
@@ -109,9 +100,9 @@ namespace whiteice
 	
     nn.input() = ds.access(0, 0);
     nn.calculate(true);
-    err = ds.access(1, 0) - nn.output();
+    err = nn.output() - ds.access(1, 0);
     
-    if(nn.gradient(err, grad) == false)
+    if(nn.mse_gradient(err, grad) == false)
       return false;
     else
       return true;
@@ -133,9 +124,9 @@ namespace whiteice
     for(unsigned int i=0;i<ds.size(0);i++){
       nn.input() = ds.access(0, i);
       nn.calculate(true);
-      err = ds.access(1,i) - nn.output();
+      err = nn.output() - ds.access(1,i);
 	    
-      if(nn.gradient(err, grad) == false)
+      if(nn.mse_gradient(err, grad) == false)
 	std::cout << "gradient failed." << std::endl;
       
       if(i == 0){
@@ -143,7 +134,7 @@ namespace whiteice
 	N = N + 1;
       }
       else{
-	sumgrad = sumgrad + grad;
+	sumgrad += grad;
 	N = N + 1;
       }
     }
@@ -196,8 +187,7 @@ namespace whiteice
   
   // explicit template instantations
   
-  template class optimized_nnetwork_function< float >;
-  template class optimized_nnetwork_function< double >;
+  
   template class optimized_nnetwork_function< math::blas_real<float> >;
   template class optimized_nnetwork_function< math::blas_real<double> >;
   

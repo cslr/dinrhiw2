@@ -41,7 +41,7 @@
 #define PACKAGE_NAME "whiteice::dinrhiw"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "whiteice::dinrhiw <nop@iki.fi>"
+#define PACKAGE_STRING "whiteice::dinrhiw <tomas.ukkonen@iki.fi>"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "whiteice--dinrhiw"
@@ -50,7 +50,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "<nop@iki.fi>"
+#define PACKAGE_VERSION "<tomas.ukkonen@iki.fi>"
 
 /* The size of `char', as computed by sizeof. */
 #define SIZEOF_CHAR 1

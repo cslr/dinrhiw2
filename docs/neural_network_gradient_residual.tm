@@ -1,9 +1,11 @@
-<TeXmacs|1.99.12>
+<TeXmacs|1.99.13>
 
 <style|<tuple|generic|old-spacing|old-dots>>
 
 <\body>
-  <center|<strong|General Gradient of Neural Network<center|>>>
+  <center|<\strong>
+    Neural Network Gradients<center|>
+  </strong>>
 
   <center|<em|tomas.ukkonen@iki.fi>, 2017>
 
@@ -42,7 +44,7 @@
   By analysing the chain rule we can derive generic backpropagation formula
   for the full gradient. Let <math|\<b-v\><rsup|<around*|(|k|)>>> be a
   <math|k>:th layer's local field, <math|\<b-v\><rsup|<around*|(|k|)>>=\<b-W\><rsup|<around*|(|k|)>>f<around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>+\<b-b\><rsup|<around*|(|k|)>>>,
-  <math|\<b-v\><rsup|<around*|(|0|)>>=\<b-x\>>. Then the local jacobian
+  <math|\<b-v\><rsup|<around*|(|0|)>>=\<b-x\>>. Then the local Jacobian
   matrices <math|\<b-delta\><rsup|<around*|(|k|)>>> are
 
   <\center>
@@ -66,6 +68,68 @@
   <center|<math|MSE<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=<frac|1|2><around*|\<\|\|\>|y<rsub|i>-y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
 
   <center|<math|<frac|\<partial\>MSE<around*|(|\<b-w\>|)>|\<partial\>\<b-w\>>=<around*|(|y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-y<rsub|i>|)><rsup|T>*<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\>>>>
+
+  <with|font-series|bold|ADDITION: Skip one layer heuristics>
+
+  To get deep neural networks (residual neural networks) working one needs
+  calculate gradient when single layers are skipped:
+
+  Consider a two-layer neural network where the first layer is skipped:
+
+  <center|<math|y<around*|(|\<b-x\>|)>=f<around*|(|\<b-W\><rsup|<around*|(|2|)>>*g<around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>>
+
+  The gradients of the final layer are (non-zero terms <math|g<rsub|i>> are
+  at the <math|j>:th row, <math|\<b-v\>=\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>>):
+
+  <\center>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|2|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\>\<b-v\>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|g<rsub|i>>>|<row|<cell|0>>>>>>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsub|j><rsup|<around*|(|2|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\>\<b-v\>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>>
+  </center>
+
+  The derivation chain-rule can be used to calculate the second (and more
+  deep layers' gradients):
+
+  <\center>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>|\<partial\>\<b-g\>>*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-x\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>*w<rsup|1><rsub|j*i>>>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|1|)>>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*<around*|(|\<b-W\><rsup|<around*|(|2|)>>|)>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|x<rsub|i>>>|<row|<cell|0>>>>>>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsup|<around*|(|1|)>><rsub|j>>=diag<around*|(|<frac|\<partial\>f<around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-g\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>|)>*\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|*<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>|)>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>>
+  </center>
+
+  \;
+
+  By analysing the chain rule we can derive generic backpropagation formula
+  for the full gradient. Let <math|\<b-v\><rsup|<around*|(|k|)>>> be a
+  <math|k>:th layer's local field, <math|\<b-v\><rsup|<around*|(|k|)>>=\<b-W\><rsup|<around*|(|k|)>>f<around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>+\<b-b\><rsup|<around*|(|k|)>>+f<around*|(|\<b-v\><rsup|<around*|(|k-2|)>>|)>>,
+  <math|\<b-v\><rsup|<around*|(|0|)>>=\<b-x\>>,
+  <math|\<b-v\><rsup|<around*|(|-1|)>>=\<b-0\>>. Then the local Jacobian
+  matrices <math|\<b-delta\><rsup|<around*|(|k|)>>> are
+
+  <\center>
+    <math|\<b-delta\><rsup|<around*|(|L|)>>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|L|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|L|)>>>|)>>
+
+    <math|\<b-delta\><rsup|<around*|(|k-1|)>>=\<b-delta\><rsup|<around*|(|k|)>>*\<b-W\><rsup|<around*|(|k|)>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|k-1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|k-1|)>>>|)>*\<b-W\><rsup|<around*|(|k|)><rsup|T>>\<b-delta\><rsup|<around*|(|k|)>>>
+  </center>
+
+  And network's parameter gradient matrices for each layer are (only
+  <math|j>:th element of each row is non-zero):\ 
+
+  <\center>
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*w<rsub|j*i><rsup|<around*|(|k|)>>>=\<b-delta\><rsup|<around*|(|k|)>>*<matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>>
+
+    <math|<frac|\<partial\>*y<around*|(|\<b-x\>|)>|\<partial\>*b<rsub|j><rsup|<around*|(|k|)>>>=\<b-delta\><rsup|<around*|(|k|)>><matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|1>>|<row|<cell|0>>>>>>
+  </center>
+
+  To test that gradient matrix is correctly computed it can be compared with
+  normal squared error calculations (normal backpropagation).
+
+  <center|<math|MSE<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=<frac|1|2><around*|\<\|\|\>|y<rsub|i>-y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<\|\|\>><rsup|2>>>
+
+  <center|<math|<frac|\<partial\>MSE<around*|(|\<b-w\>|)>|\<partial\>\<b-w\>>=<around*|(|y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-y<rsub|i>|)><rsup|T>*<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\>>>>
+
+  \;
 
   <with|font-series|bold|Backpropagation algorithm>
 
@@ -105,10 +169,6 @@
 
     <math|=<around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T>*<wide|\<b-delta\><rsup|<around*|(|L|)>><matrix|<tformat|<table|<row|<cell|0>>|<row|<cell|f<around*|(|v<rsub|i><rsup|<around*|(|k-1|)>>|)>>>|<row|<cell|0>>>>>=|\<bar\>><around*|(|\<b-f\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>-\<b-y\>|)><rsup|T><wide|<frac|\<partial\>y<around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>*\<b-w\><rsub|j*i><rsup|<around*|(|L|)>>>|\<bar\>>>.
   </padded-center>
-
-  \;
-
-  \;
 
   \;
 
@@ -160,6 +220,70 @@
   gradient becomes
 
   <center|<math|\<b-W\><rprime|'><rsub|Q>*\<nabla\><rsub|>\<b-Q\><around*|(|\<b-W\><rsub|Q>*\<b-z\>+\<b-b\><rsub|Q>|)>\<b-W\><rsup|<around*|(|\<b-mu\>|)>><rsub|Q>\<nabla\>\<b-mu\>>>
+
+  \;
+
+  <with|font-series|bold|ADDITION: Skip one layer heuristics> [TODO!]
+
+  To support deep multilayer neural networks we need to skip one layer
+  (residual neural networks).
+
+  Sometimes also needs gradient with respect to <math|\<b-x\> > and not
+  weights parameters <math|\<b-w\>>. This can be calculated using the chain
+  rule again. For simplicity, let's consider two-layer case initially.
+
+  <\center>
+    <math|\<b-g\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=\<b-f\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>
+  </center>
+
+  The gradient is:
+
+  <\center>
+    <math|<frac|\<partial\>\<b-g\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>\<b-x\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>><around*|(|<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-h\>>*<frac|\<partial\>*\<b-h\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*\<b-x\>>+\<b-I\>|)>*>
+
+    <math|<frac|\<partial\>\<b-g\><around*|(|\<b-x\>|)>|\<partial\>\<b-x\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|2|)>>>*<around*|(|\<b-I\>+\<b-W\><rsup|<around*|(|2|)>>*<frac|\<partial\>*\<b-h\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|1|)>>>\<b-W\><rsup|<around*|(|1|)>>|)>>
+  </center>
+
+  \;
+
+  The two layer model is: [HAS ERRORS!]
+
+  <\center>
+    <math|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>
+  </center>
+
+  The gradient is:
+
+  <\center>
+    <\math>
+      <frac|\<partial\>\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>|\<partial\>\<b-x\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|3|)>>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>|\<partial\>\<b-g\>>*<frac|\<partial\>*\<b-g\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>|\<partial\>*\<b-h\>>**
+
+      <frac|\<partial\>*\<b-h\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*\<b-x\>>*
+
+      =
+
+      <frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|3|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|3|)>>>*<around*|(|<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-b\><rsup|<around*|(|3|)>>|)>|\<partial\>\<b-g\>>*<frac|\<partial\>*\<b-g\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|2|)>>><around*|(|*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>+\<b-b\><rsup|<around*|(|2|)>>|)>|\<partial\>*\<b-h\>>*<frac|\<partial\>*\<b-h\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|1|)>>>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>|\<partial\>*\<b-x\>>+\<b-I\>|)>+\<b-I\>**|)>
+
+      *
+    </math>
+
+    <math|<frac|\<partial\>\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|)>|\<nobracket\>>|\<partial\>\<b-x\>>=<frac|\<partial\>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|3|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|3|)>>>*<around*|(|\<b-I\>+\<b-W\><rsup|<around*|(|3|)>>*<frac|\<partial\>*\<b-g\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|2|)>>><around*|(|\<b-I\>+\<b-W\><rsup|<around*|(|2|)>><frac|\<partial\>*\<b-h\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|\<partial\>\<b-v\><rsup|<around*|(|1|)>>>\<b-W\><rsup|<around*|(|1|)>>|)>|)>>
+  </center>
+
+  \;
+
+  \ 
+
+  This results into following formula (diag() entries are square matrices
+  which diagonal is nonzero):
+
+  <center|<\math>
+    \<nabla\><rsub|\<b-x\>>*\<b-g\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=
+
+    diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|L|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|L|)>>|)>|)><around*|(|\<b-I\>+\<b-W\><rsup|*<around*|(|L|)>>\<ldots\>**diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|2|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|2|)>>|)>|)><around*|(|\<b-I\>+\<b-W\><rsup|<around*|(|2|)>>*diag<around*|(|\<nabla\><rsub|\<b-v\><rsup|<around*|(|1|)>>>\<b-f\><around*|(|\<b-v\><rsup|<around*|(|1|)>>|)>|)><around*|(|\<b-W\><rsup|<around*|(|1|)>>|)>|)>|)>
+  </math>>
+
+  \;
 
   \;
 

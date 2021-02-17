@@ -1,6 +1,6 @@
-<TeXmacs|1.0.7.18>
+<TeXmacs|1.99.12>
 
-<style|generic>
+<style|<tuple|generic|old-spacing|old-dots>>
 
 <\body>
   <\doc-data|<doc-title|Non-linear principal component
@@ -55,7 +55,7 @@
   </with>
 
   NOTE: Interestingly, the top PCA vector weight vector values have
-  distinctive smooth shapes meaning that they define ``regular'' functions
+  distinctive smooth shapes meaning that they define \Pregular\Q functions
   that alter the data <math|\<b-x\>> into decorrelated (independent?)
   signals. On ther other hand, the lowest variance PCA vectors contain
   irregular weights (noise) meaning which seem to imply that these weight
@@ -96,7 +96,7 @@
   </with>
 
   \ where <math|\<b-a\>> and <math|\<b-b\>> are parameters of the model and
-  <math|\<b-W\>> should be chosen so that it ``preserves'' ordering of the
+  <math|\<b-W\>> should be chosen so that it \Ppreserves\Q ordering of the
   variables somehow. Here we want (initially) the simplest possible model so
   we choose <math|\<b-a\>=<around*|[|1,0,0,0,\<ldots\>|]>> meaning that
   <math|t<around*|(|x|)>=x> and inverse of <math|f<around*|(|x|)>> is simply
@@ -149,7 +149,7 @@
   because:
 
   <\with|par-mode|center>
-    <math|<with|math-font-series|bold|G<rsub|z*z>>=E<around*|{|\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*\<b-W\><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><rsup|H>\<b-W\><rsup|H>\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*|}>>
+    <math|<with|font-series|bold|math-font-series|bold|G<rsub|z*z>>=E<around*|{|\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*\<b-W\><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><around*|(|\<b-g\><around*|(|\<b-x\>|)>-E<around*|{|\<b-g\><around*|(|\<b-x\>|)>|}>|)><rsup|H>\<b-W\><rsup|H>\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>*|}>>
 
     <math|\<b-G\><rsub|\<b-z\>*\<b-z\>>=\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>\<b-W\>*\<b-G\><rsub|\<b-x\>*\<b-x\>>\<b-W\><rsup|\<b-H\>>\<b-G\><rsup|1/2><rsub|\<b-y\>*\<b-y\>>>
   </with>
@@ -172,7 +172,7 @@
   is zero preserving, odd function (as long as we don't add the
   <math|E<around*|{|g<around*|(|x|)>|}>> term). And it's Taylor's expansion
   gives only positive coefficients for <math|x<rsup|2k+1>> terms meaning that
-  it should ``push' positive and negative moments into different directions.
+  it should \Ppush' positive and negative moments into different directions.
 
   How to diagonalize <math|\<b-G\><rsub|\<b-x\>\<b-x\>>> then? The solution
   to this question is almost trivial. Solution\ 
@@ -208,7 +208,7 @@
   as non-linearities for neural networks. (Additionally,
   <math|sinh<around*|(|x|)>> has only positive coefficients in taylor
   expansion and \ only odd terms: <math|x<rsup|2k+1>> meaning that it is
-  ``super-odd'' function as each term of polynomial form is a odd function).\ 
+  \Psuper-odd\Q function as each term of polynomial form is a odd function).\ 
 
   <\with|par-mode|center>
     <math|\<b-y\>=f<around*|(|\<b-V\>*\<b-x\>+\<b-b\>|)>>
@@ -304,8 +304,8 @@
 
   where <math|\<b-Y\><rsup|H>\<b-Y\>=\<b-I\>> and <math|\<b-Y\>> is
   orthonormal rotation matrix. Now, <math|\<b-S\>> is diagonal matrix meaning
-  that all of its ``mass'' is on the diagonal and any further rotations will
-  only move ``variance'' away from the diagonal meaning that optimum
+  that all of its \Pmass\Q is on the diagonal and any further rotations will
+  only move \Pvariance\Q away from the diagonal meaning that optimum
   <math|\<b-Y\>=\<b-V\><rsup|H>\<b-Z\><rsup|H>\<b-U\>=\<b-I\>> and
   <math|\<b-Z\>=\<b-U\>*\<b-V\><rsup|H>> is the solution to the problem.
   Furthermore, <math|\<b-Z\>> is real because
@@ -338,23 +338,23 @@
   </with>
 
   For each iteration <math|n>, the algorithm then first calculates
-  <math|\<b-W\><rsub|g><around*|(|n|)>> matrix which is ``raw'' update for
+  <math|\<b-W\><rsub|g><around*|(|n|)>> matrix which is \Praw\Q update for
   the next approximation of the <strong|W> but instead calculates the closest
   <math|\<b-W\><rsub|>> that also computes PCA of the data meaning that
-  optimization now optimizes/rotates neural network weights in ``a PCA
-  subspace'' which additionally diagonalizes non-linear ICA matrix.
+  optimization now optimizes/rotates neural network weights in \Pa PCA
+  subspace\Q which additionally diagonalizes non-linear ICA matrix.
 
   <strong|PROBLEMS>
 
   However, in practice this <em|do not work> very well, gradient descent
   cannot converge anywhere and more complicated methods that use gradient DO
   NOT work when <math|\<b-W\>> is approximated after the update with
-  ``PCArization''. Now we have <math|\<b-W\><rsub|g><around*|(|n+1|)>=\<b-W\><rsub|g><around*|(|n|)>+d*\<b-W\><rsub|g>>
+  \PPCArization\Q. Now we have <math|\<b-W\><rsub|g><around*|(|n+1|)>=\<b-W\><rsub|g><around*|(|n|)>+d*\<b-W\><rsub|g>>
   and we want to directly calculate <em|gradient> that rotates matrix
   optimally.
 
-  However, this regularizes neural network to work with ``independent
-  components''. Instead of freely chosen <math|\<b-W\>> we now have rotation
+  However, this regularizes neural network to work with \Pindependent
+  components\Q. Instead of freely chosen <math|\<b-W\>> we now have rotation
   <math|\<b-Z\>> and bias terms <math|\<b-b\>> which directly controls next
   layers input <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>>. Additionally, if
   we force <math|E<around*|{|g<around*|(|\<b-y\>|)>|}>> to be zero, we have
@@ -553,11 +553,15 @@
 
   <\math>
     \<b-w\><rsub|n+1>=E<around*|{|\<b-x\>g<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>-E<around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}><with|font-series|bold|\<b-w\><rsub|n>>
-
-    \<b-w\><rsub|n+1>=E<around*|{|\<b-x\>g<around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}>-E<around*|{|g<rprime|'><around*|(|\<b-w\><rsup|T>\<b-x\>|)>|}><with|font-series|bold|\<b-w\><rsub|n>>
   </math>
 
   <math|g<rprime|'><around*|(|u|)>=exp<around*|(|-u<rsup|2>/2|)>-u<rsup|2>*exp<around*|(|-u<rsup|2>/2|)>*=<around*|(|1-u<rsup|2>|)>*exp<around*|(|-u<rsup|2>/2|)>>
+
+  Alternative non-linearity is:
+
+  <math|g<around*|(|u|)>=u<rsup|3>,g<rprime|'><around*|(|u|)>=3*u<rsup|2>>
+
+  \;
 
   \;
 
@@ -654,8 +658,5 @@
   \;
 </body>
 
-<\references>
-  <\collection>
-    <associate|auto-1|<tuple|1|?>>
-  </collection>
-</references>
+<initial|<\collection>
+</collection>>

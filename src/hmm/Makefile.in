@@ -23,10 +23,10 @@ SOURCES = HMM.cpp tst/test.cpp \
 	../math/ownexception.cpp ../math/norms.cpp
 
 OPTIMIZE=@optimization_flags@
-CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes @EXTRA_INCLUDEPATHS@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-memaccess @EXTRA_INCLUDEPATHS@
 
 TARGET= testsuite
-CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -I../math -I../neuralnetwork $(OPTIMIZE)
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork $(OPTIMIZE)
 
 LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 

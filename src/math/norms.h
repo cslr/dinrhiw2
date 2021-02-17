@@ -52,8 +52,8 @@ namespace whiteice
         
     extern template float norm_inf<float>(const matrix<float>& A);
     extern template double norm_inf<double>(const matrix<double>& A);
-    extern template complex<float> norm_inf<complex<float> >(const matrix<complex<float> >& A);
-    extern template complex<double> norm_inf<complex<double> >(const matrix<complex<double> >& A);
+    //extern template complex<float> norm_inf<complex<float> >(const matrix<complex<float> >& A);
+    //extern template complex<double> norm_inf<complex<double> >(const matrix<complex<double> >& A);
     
     //extern template int norm_inf<int>(const matrix<int>& A);
     //extern template char norm_inf<char>(const matrix<char>& A);
@@ -68,8 +68,8 @@ namespace whiteice
     
     extern template float norm_inf<float>(const vertex<float>& A);
     extern template double norm_inf<double>(const vertex<double>& A);
-    extern template complex<float> norm_inf<complex<float> >(const vertex<complex<float> >& A);
-    extern template complex<double> norm_inf<complex<double> >(const vertex<complex<double> >& A);
+    //extern template complex<float> norm_inf<complex<float> >(const vertex<complex<float> >& A);
+    //extern template complex<double> norm_inf<complex<double> >(const vertex<complex<double> >& A);
     
     //extern template int norm_inf<int>(const vertex<int>& A);
     //extern template char norm_inf<char>(const vertex<char>& A);

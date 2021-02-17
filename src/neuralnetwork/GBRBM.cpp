@@ -274,7 +274,7 @@ bool GBRBM<T>::reconstructDataBayesQ(std::vector< math::vertex<T> >& samples,
 {
   // calculates reconstruction v -> h -> v'
   
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
   for(unsigned int i=0;i<samples.size();i++){
     auto& v = samples[i];
     
@@ -501,17 +501,27 @@ bool GBRBM<T>::initializeWeights() // initialize weights to small values
   for(unsigned int i=0;i<z.size();i++)
     z[i] = math::log(1.0);
   
-  for(unsigned int j=0;j<W.ysize();j++)
-    for(unsigned int i=0;i<W.xsize();i++)
-      W(j,i) = T(0.1f) * normalrnd();
+  for(unsigned int j=0;j<W.ysize();j++){
+    for(unsigned int i=0;i<W.xsize();i++){
+      // W(j,i) = T(0.1f) * normalrnd() / math::sqrt(T(W.ysize()*W.xsize()));
+      // W(j,i) = T(0.1f) * normalrnd();
+      W(j,i) = normalrnd();
+    }
+  }
 
   // added to initialization (was zero before)
   {
-    for(unsigned int i=0;i<a.size();i++)
-      a[i] = T(0.1f) * normalrnd();
+    for(unsigned int i=0;i<a.size();i++){
+      // a[i] = T(0.1f) * normalrnd() / math::sqrt(T(a.size()));
+      // a[i] = T(0.1f) * normalrnd();
+      a[i] = normalrnd();
+    }
     
-    for(unsigned int i=0;i<b.size();i++)
-      b[i] = T(0.1f) * normalrnd();
+    for(unsigned int i=0;i<b.size();i++){
+      // b[i] = T(0.1f) * normalrnd() / math::sqrt(T(b.size()));
+      // b[i] = T(0.1f) * normalrnd();
+      b[i] = normalrnd();
+    }
   }
   
   return true;
@@ -785,7 +795,7 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 	while(!convergence && epoch < EPOCHS)
 	{
 	  
-// #pragma omp parallel for schedule(dynamic) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
+// #pragma omp parallel for schedule(auto) shared(a) shared(b) shared(z) shared(W) shared(lrate) shared(lratez)
 	          for(unsigned int i=0;i<1000;i++){
 		        math::vertex<T> aa, bb, zz;
 			math::matrix<T> WW;
@@ -955,9 +965,9 @@ T GBRBM<T>::learnWeights(const std::vector< math::vertex<T> >& samples,
 
 			  T lrate2 = lrate, lrate2z = lratez;
 
-#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
+#pragma omp parallel for schedule(auto) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
 			  for(unsigned int j=0;j<3;j++){
-			    //#pragma omp parallel for schedule(dynamic) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
+			    //#pragma omp parallel for schedule(auto) shared(a1) shared(a2) shared(b1) shared(b2) shared(z1) shared(z2) shared(W1) shared(W2) 
 			    //for(unsigned int i=0;i<3;i++){
 			      T lrate1 = lrate, lrate1z = lratez;
 
@@ -1284,30 +1294,33 @@ bool GBRBM<T>::convertParametersToQ(const math::matrix<T>& W, const math::vertex
 
 
 template <typename T>
-bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W, math::vertex<T>& a, math::vertex<T>& b,
-		math::vertex<T>& z) const
+bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q,
+				    math::matrix<T>& W,
+				    math::vertex<T>& a,
+				    math::vertex<T>& b,
+				    math::vertex<T>& z) const
 {
-	a.resize(this->getVisibleNodes());
-	z.resize(this->getVisibleNodes());
-	b.resize(this->getHiddenNodes());
-	W.resize(this->getVisibleNodes(), this->getHiddenNodes());
-
-	if(q.size() != (a.size()+b.size()+z.size()+W.ysize()*W.xsize()))
-		return false;
-
-	try{
-		q.subvertex(a, 0, a.size());
-		q.subvertex(b, a.size(), b.size());
-		q.subvertex(z, (a.size()+b.size()), z.size());
-		math::vertex<T> w(W.ysize()*W.xsize());
-		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
-		W.load_from_vertex(w);
-
-		return true;
-	}
-	catch(std::exception& e){
-		return false;
-	}
+  a.resize(this->getVisibleNodes());
+  z.resize(this->getVisibleNodes());
+  b.resize(this->getHiddenNodes());
+  W.resize(this->getVisibleNodes(), this->getHiddenNodes());
+  
+  if(q.size() != (a.size()+b.size()+z.size()+W.ysize()*W.xsize()))
+    return false;
+  
+  try{
+    q.subvertex(a, 0, a.size());
+    q.subvertex(b, a.size(), b.size());
+    q.subvertex(z, (a.size()+b.size()), z.size());
+    math::vertex<T> w(W.ysize()*W.xsize());
+    q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+    W.load_from_vertex(w);
+    
+    return true;
+  }
+  catch(std::exception& e){
+    return false;
+  }
 }
 
 
@@ -1317,21 +1330,21 @@ bool GBRBM<T>::convertQToParameters(const math::vertex<T>& q, math::matrix<T>& W
 template <typename T>
 bool GBRBM<T>::setParametersQ(const math::vertex<T>& q)
 {
-	try{
-		q.subvertex(a, 0, a.size());
-		q.subvertex(b, a.size(), b.size());
-		q.subvertex(z, (a.size()+b.size()), z.size());
-		math::vertex<T> w(W.ysize()*W.xsize());
-		q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
-		W.load_from_vertex(w);
-
-		safebox(a,b,z,W);
-
-		return true;
-	}
-	catch(std::exception& e){
-		return false;
-	}
+  try{
+    q.subvertex(a, 0, a.size());
+    q.subvertex(b, a.size(), b.size());
+    q.subvertex(z, (a.size()+b.size()), z.size());
+    math::vertex<T> w(W.ysize()*W.xsize());
+    q.subvertex(w, (a.size()+b.size()+z.size()), w.size());
+    W.load_from_vertex(w);
+    
+    safebox(a,b,z,W);
+    
+    return true;
+  }
+  catch(std::exception& e){
+    return false;
+  }
 }
 
 
@@ -1356,24 +1369,25 @@ void GBRBM<T>::safebox(math::vertex<T>& a, math::vertex<T>& b, math::vertex<T>& 
 {
   for(unsigned int i=0;i<a.size();i++){
     if(whiteice::math::isnan(a[i])) a[i] = T(0.0); //printf("anan"); }
-    if(a[i] < T(-10e10)) a[i] = T(-10e10); //printf("aclip"); }
-    if(a[i] > T(+10e10)) a[i] = T(+10e10); //printf("aclip"); }
+    if(a[i] < T(-10e6)) a[i] = T(-10e6); //printf("aclip"); }
+    if(a[i] > T(+10e6)) a[i] = T(+10e6); //printf("aclip"); }
   }
 
   for(unsigned int i=0;i<b.size();i++){
     if(whiteice::math::isnan(b[i])) b[i] = T(0.0); //printf("bnan"); }
-    if(b[i] < T(-10e10)) b[i] = T(-10e10); //printf("bclip"); }
-    if(b[i] > T(+10e10)) b[i] = T(+10e10); //printf("bclip"); }
+    if(b[i] < T(-10e6)) b[i] = T(-10e6); //printf("bclip"); }
+    if(b[i] > T(+10e6)) b[i] = T(+10e6); //printf("bclip"); }
   }
 
   for(unsigned int j=0;j<W.ysize();j++){
     for(unsigned int i=0;i<W.xsize();i++){
       if(whiteice::math::isnan(W(j,i))) W(j,i) = T(0.0); //printf("Wnan"); }
-      if(W(j,i) < T(-10e10)) W(j,i) = T(-10e10); //printf("Wclip"); }
-      if(W(j,i) > T(+10e10)) W(j,i) = T(+10e10); //printf("Wclip"); }
+      if(W(j,i) < T(-10e6)) W(j,i) = T(-10e6); //printf("Wclip"); }
+      if(W(j,i) > T(+10e6)) W(j,i) = T(+10e6); //printf("Wclip"); }
     }
   }
 
+  // NOT MODIFIED TO CLIP TO SMALLER RANGE
   for(unsigned int i=0;i<z.size();i++){
     if(whiteice::math::isnan(z[i])) z[i] = T(0.0); //printf("znan"); }
     if(z[i] < T(-100.0)) z[i] = T(-100.0); //printf("zclip"); }
@@ -1429,7 +1443,7 @@ T GBRBM<T>::U(const whiteice::math::vertex<T>& q) const  // calculates U(q) = -l
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
-#pragma omp parallel for schedule(dynamic) shared(u)
+#pragma omp parallel for schedule(auto) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
@@ -1555,7 +1569,7 @@ T GBRBM<T>::Udiff(const math::vertex<T>& q1, const math::vertex<T>& q2) const
 		// calculates -log(P*(data|q)*p(q)) where P* is unscaled (without Z) and p(q) is regularizer prior [not used]
 		T u = T(0.0);
 
-#pragma omp parallel for schedule(dynamic) shared(u)
+#pragma omp parallel for schedule(auto) shared(u)
 		for(unsigned int i=0;i<NUMUSAMPLES;i++){
 			const unsigned int index = rng.rand() % Usamples.size();
 			auto& s = Usamples[index];
@@ -1653,7 +1667,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 		}
 
 		// for(auto& v : Usamples){
-#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
+#pragma omp parallel for schedule(auto) shared(ga) shared(gb) shared(gz) shared(gW)
 		for(unsigned int ui=0;ui<NUMUSAMPLES;ui++)
 		{
 			auto& v = Usamples[rng.rand()%Usamples.size()];
@@ -1720,7 +1734,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 			// ais_sampling(vs, NEGSAMPLES, Umean, Uvariance, qa, qb, qz, qW);
 
 			// uses CD-1 to get samples [fast]
-#pragma omp parallel for schedule(dynamic) shared(vs)
+#pragma omp parallel for schedule(auto) shared(vs)
 			for(unsigned int s=0;s<NEGSAMPLES;s++){
 				const unsigned int index = rng.rand() % Usamples.size();
 				const math::vertex<T>& v = Usamples[index]; // x = visible state
@@ -1735,7 +1749,7 @@ whiteice::math::vertex<T> GBRBM<T>::Ugrad(const whiteice::math::vertex<T>& q)  /
 
 			const T scaling = T((double)1.0)/T((double)NEGSAMPLES);
 
-#pragma omp parallel for schedule(dynamic) shared(ga) shared(gb) shared(gz) shared(gW)
+#pragma omp parallel for schedule(auto) shared(ga) shared(gb) shared(gz) shared(gW)
 			for(unsigned int i=0;i<vs.size();i++){
 			        const auto& v = vs[i];
 				// calculates negative phase N*Emodel[gradF] = N/SAMPLES * SUM( gradF(v_i) )
@@ -2068,36 +2082,39 @@ bool GBRBM<T>::save(const std::string& filename) const
 template <typename T>
 T GBRBM<T>::normalrnd() const // N(0,1)
 {
-	return rng.normal();
+  return rng.normal();
 }
 
 
 template <typename T>
 math::vertex<T> GBRBM<T>::normalrnd(const math::vertex<T>& m, const math::vertex<T>& v) const
 {
-	math::vertex<T> x(m);
-
-	for(unsigned int i=0;i<x.size();i++)
-		x[i] += rng.normal()*math::sqrt(v[i]);
-
-	return x;
+  math::vertex<T> x(m);
+  
+  for(unsigned int i=0;i<x.size();i++)
+    x[i] += rng.normal()*math::sqrt(abs(v[i]));
+  
+  return x;
 }
 
   template <typename T>
   void GBRBM<T>::sigmoid(const math::vertex<T>& input, math::vertex<T>& output) const
   {
     output.resize(input.size());
-    
+
     for(unsigned int i=0;i<input.size();i++){
-      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
+      output[i] = T(1.0)/(T(1.0) + math::exp(-input[i], T(400.0f)));
+      // output[i] = T(1.0)/(T(1.0) + math::exp(-input[i]));
     }
+    
   }
 
   template <typename T>
   void GBRBM<T>::sigmoid(math::vertex<T>& x) const
   {
     for(unsigned int i=0;i<x.size();i++){
-      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
+      x[i] = T(1.0)/(T(1.0) + math::exp(-x[i], T(400.0f)));
+      // x[i] = T(1.0)/(T(1.0) + math::exp(-x[i]));
     }
   }
 
@@ -2125,7 +2142,7 @@ T GBRBM<T>::log_zratio(const math::vertex<T>& m, const math::vertex<T>& s, // da
 	    const unsigned int index0 = r.size();
 	    r.resize(r.size() + STEPSIZE);
 
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 	    for(unsigned int index=0;index<STEPSIZE;index++){
 	    	auto& v = vs[index];
 	        // free-energy
@@ -2338,7 +2355,7 @@ void GBRBM<T>::ais_sampling(std::vector< math::vertex<T> >& vs, const unsigned i
 		vs.resize(SAMPLES);
 
 		// TODO parallelize this to use thread-safe random number generators..
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
 		for(unsigned int i=0;i<SAMPLES;i++){
 			math::vertex<T> vv;
 

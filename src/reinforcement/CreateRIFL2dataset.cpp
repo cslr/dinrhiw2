@@ -154,7 +154,7 @@ namespace whiteice
     // (internal debugging for checking that Q-values are within sane limits)
     std::vector<T> maxvalues;
 
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(auto)
     for(unsigned int i=0;i<NUMDATA;i++){
 
       if(running == false) // we don't do anything anymore..

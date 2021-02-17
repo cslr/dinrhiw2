@@ -268,9 +268,7 @@ T HMC_convergence_check<T>::normalprob(const math::vertex<T>& x, const math::ver
 
 namespace whiteice
 {
-	template class HMC_convergence_check< float >;
-	template class HMC_convergence_check< double >;
-	template class HMC_convergence_check< math::blas_real<float> >;
-	template class HMC_convergence_check< math::blas_real<double> >;
+  template class HMC_convergence_check< math::blas_real<float> >;
+  template class HMC_convergence_check< math::blas_real<double> >;
 };
 

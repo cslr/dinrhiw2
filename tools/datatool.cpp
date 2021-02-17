@@ -730,7 +730,7 @@ void print_usage()
   printf("                            note: ica implementation is unstable and may not work\n");
   printf(" -data:N                    jointly resamples all cluster sizes down to N datapoints\n");
   printf("\n");
-  printf("This program is distributed under GPL license <tomas.ukkonen@iki.fi> (commercial license available).\n");
+  printf("This program is distributed under GPL license <tomas.ukkonen@iki.fi> (other licenses available).\n");
 } 
 
 
@@ -870,11 +870,11 @@ bool exportdata(const std::string& filename,
     data->invpreprocess(cluster, v);
     
     if(v.size() > 0){
-      fprintf(fp, "%f", v[0].value());
+      fprintf(fp, "%f", v[0].real());
     }
     
     for(unsigned int j=1;j<v.size();j++){
-      fprintf(fp, " %f", v[j].value());
+      fprintf(fp, " %f", v[j].real());
     }
     
     fprintf(fp, "\n");

@@ -56,9 +56,14 @@ RNG<T>::RNG(const bool usehw)
     rdrand64 = &whiteice::RNG<T>::_rdrand64;
   }
   else{
-    srand(time(0));
-    rdrand32 = &whiteice::RNG<T>::_rand32; // uses C rand()
-    rdrand64 = &whiteice::RNG<T>::_rand64; // uses C rand()
+    //srand(time(0));
+    
+    rdsource = new std::random_device;
+    gen = new std::mt19937((*rdsource)());
+    distrib = new std::uniform_int_distribution<unsigned int>(0, 0xFFFFFFFF);
+    
+    rdrand32 = &whiteice::RNG<T>::_rand32; // uses C++ rand()
+    rdrand64 = &whiteice::RNG<T>::_rand64; // uses C++ rand()
   }
   
   // calculates ziggurat tables for normal and exponential distribution
@@ -77,6 +82,7 @@ T RNG<T>::uniform() const // [0,1]
 {
   // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
   // return T(rdrand64()/MAX);
+
   return T(unid());
 }
 
@@ -93,37 +99,100 @@ void RNG<T>::uniform(math::vertex<T>& u) const{
 
 
 template <typename T>
-T RNG<T>::normal() const{
-  return T(rnor());
+void RNG<T>::uniform(math::matrix<T>& U) const{
+  // const double MAX = (double)((unsigned long long)(-1LL)); // 2**64 - 1
+  
+  for(unsigned int i=0;i<U.size();i++){
+    // u[i] = T(rdrand64()/MAX);
+    U[i] = T(unid());
+  }
+}
+
+
+template <typename T>
+T RNG<T>::normal() const
+{
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+    T value;
+    whiteice::math::convert(value, Nz);
+    return value;
+  }
+  else return T(rnor()); // real valued normally distributed variable
 }
   
 
 template <typename T>
 void RNG<T>::normal(math::vertex<T>& n) const
 {
-  for(unsigned int i=0;i<n.size();i++)
-    n[i] = T(rnor());
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    for(unsigned int i=0;i<n.size();i++){
+      whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+      whiteice::math::convert(n[i], Nz);
+    }
+  }
+  else{ // real valued normally distributed variable
+    for(unsigned int i=0;i<n.size();i++)
+      n[i] = T(rnor());
+  }
+}
+
+
+template <typename T>
+void RNG<T>::normal(math::matrix<T>& N) const
+{
+  if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+     typeid(T) == typeid(whiteice::math::blas_complex<double>))
+  {
+    // complex Normal distribution CN(0,1) = N(0,0.5) + N(0,0.5)*i
+    const float scaling = sqrt(0.5f);
+    for(unsigned int i=0;i<N.size();i++){
+      whiteice::math::blas_complex<float> Nz(scaling*rnor(), scaling*rnor());
+      whiteice::math::convert(N[i], Nz);
+    }
+  }
+  else{ // real valued normally distributed variable
+    for(unsigned int i=0;i<N.size();i++)
+      N[i] = T(rnor());
+  }
 }
 
 
 template <typename T>
 T RNG<T>::exp() const
 {
-  const float e = rexp();
+  float e = rexp();
+  if(e < 0.0f) e = -e;
   
-  return T(e >= 0.0f ? e : (-e));
+  return T(e);
 }
 
 
 template <typename T>
-void RNG<T>::exp(math::vertex<T>& ev) const
+void RNG<T>::exp(math::vertex<T>& e) const
 {
-  for(unsigned int i=0;i<ev.size();i++){
-    const float e = rexp();
-    ev[i] = T(e >= 0.0f ? e : (-e));
+  for(unsigned int i=0;i<e.size();i++){
+    const float ef = rexp();
+    e[i] = T(ef >= 0.0f ? ef : (-ef));
   }
 }
 
+template <typename T>
+void RNG<T>::exp(math::matrix<T>& E) const
+{
+  for(unsigned int i=0;i<E.size();i++){
+    const float e = rexp();
+    E[i] = T(e >= 0.0f ? e : (-e));
+  }
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////7
@@ -282,9 +351,14 @@ unsigned long long RNG<T>::_rdrand64() const
 template <typename T>
 unsigned int RNG<T>::_rand32() const
 {
+#if 0
   unsigned int r1 = ((unsigned int)::rand()) & 0x0000FFFF;
   unsigned int r2 = ((unsigned int)::rand()) & 0x0000FFFF;
   unsigned int r = (r1 << 16) ^ (r2);
+#else
+  unsigned int r = (*distrib)(*gen);
+  
+#endif
 
   return r;
 }
@@ -292,12 +366,18 @@ unsigned int RNG<T>::_rand32() const
 template <typename T>
 unsigned long long RNG<T>::_rand64() const
 {
+#if 0
   unsigned long long r1 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r2 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r3 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
   unsigned long long r4 = ((unsigned long long)::rand()) & 0x000000000000FFFF;
-
   return ((r1) ^ (r2 << 16) ^ (r3 << 32) ^ (r4 << 48));
+#else
+  unsigned long long r1 = ((unsigned long long)(*distrib)(*gen)) & 0x00000000FFFFFFFF;
+  unsigned long long r2 = ((unsigned long long)(*distrib)(*gen)) & 0x00000000FFFFFFFF;
+
+  return ((r1) ^ (r2 << 32));
+#endif
 }
 
 template <typename T>

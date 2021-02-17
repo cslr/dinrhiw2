@@ -474,8 +474,6 @@ namespace whiteice
       
 
 
-  template class Mixture< float >;
-  template class Mixture< double >;
   template class Mixture< whiteice::math::blas_real<float> >;
   template class Mixture< whiteice::math::blas_real<double> >;
   
