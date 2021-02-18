@@ -3,6 +3,8 @@
 <style|<tuple|generic|old-spacing|old-dots>>
 
 <\body>
+  \;
+
   <center|<\strong>
     Neural Network Gradients<center|>
   </strong>>
@@ -235,7 +237,7 @@
     <frac|\<partial\>*y|\<partial\>w<rsub|j*i><rsup|<around*|(|3|)>>>=*d<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<around*|(|\<b-W\><rsup|<around*|(|5|)>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|4|)>>+\<b-I\>|)>**d<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>|)>|\<partial\>w<rsup|<around*|(|3|)>><rsub|j*i><rsup|>>*
   </math>
 
-  For backpropagation we use formulas:
+  For the backpropagation we use formulas:
 
   <math|\<b-sigma\><rsup|5>=E*R*R*O*R<rsup|T>diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\>\<b-v\><rsup|<around*|(|5|)>>=\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>>|)>>
 
@@ -244,6 +246,22 @@
   <\math>
     \<b-sigma\><rsup|3>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)><around*|(|*\<b-W\><rsup|<around*|(|4|)><rsup|T>>*d<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*\<b-W\><rsup|<around*|(|5|)><rsup|T>>\<b-sigma\><rsup|5>+\<b-sigma\><rsup|5>|)>*
   </math>
+
+  <\padded-center>
+    <\math>
+      \<b-sigma\><rsup|3>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)><around*|(|*\<b-W\><rsup|<around*|(|4|)><rsup|T>>*\<b-sigma\><rsup|4>+\<b-sigma\><rsup|5>|)>*
+    </math>
+  </padded-center>
+
+  when there is skip layer and\ 
+
+  <\padded-center>
+    <\math>
+      \<b-sigma\><rsup|3>=diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-g\>|)>>|)>*\<b-W\><rsup|<around*|(|4|)><rsup|T>>*\<b-sigma\><rsup|4>
+    </math>
+  </padded-center>
+
+  \ when there is not.
 
   This means we need to save previous step local gradients (-1 and -2) when
   updating local gradient. We also need to save local fields for the previous

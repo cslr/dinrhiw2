@@ -987,6 +987,15 @@ namespace whiteice
 	  else{
 	    //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
 	    
+	    lgrad = lgrad * W[layer];
+
+	    lgrad += lgrad_prev[1];
+	    
+	    for(unsigned int i=0;i<lgrad.size();i++){
+	      lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	    }
+	    
+#if 0
 	    // residual new local grad
 	    // lgrad[n] = diag(..g'..)*
 	    // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
@@ -1007,7 +1016,7 @@ namespace whiteice
 	    }
 	    
 	    lgrad = wdw;
-	    
+#endif	    
 	  }
 	}
 	
@@ -1194,7 +1203,16 @@ namespace whiteice
 	}
 	else{
 	  //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+
+	  lgrad = lgrad * W[layer];
+
+	  lgrad += lgrad_prev[1];
 	  
+	  for(unsigned int i=0;i<lgrad.size();i++){
+	    lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	  
+#if 0
 	  // residual new local grad
 	  // lgrad[n] = diag(..g'..)*
 	  // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
@@ -1215,7 +1233,7 @@ namespace whiteice
 	  }
 	  
 	  lgrad = wdw;
-	  
+#endif	  
 	}
       }
       
@@ -1350,7 +1368,16 @@ namespace whiteice
 	}
 	else{
 	  //printf("RESIDUAL NNETWORK LAYER: %d\n", layer); fflush(stdout);
+
+	  lgrad = lgrad * W[layer];
+
+	  lgrad += lgrad_prev[1];
 	  
+	  for(unsigned int i=0;i<lgrad.size();i++){
+	    lgrad[i] *= Dnonlin(bpdata[layer][i], layer-1, i);
+	  }
+	  
+#if 0
 	  // residual new local grad
 	  // lgrad[n] = diag(..g'..)*
 	  // lgrad[n+1] + W[layer]^t*diag(..h'..)*W[layer+1]^t*lgrad[n+1]
@@ -1371,7 +1398,7 @@ namespace whiteice
 	  }
 	  
 	  lgrad = wdw;
-	  
+#endif	  
 	}
       }
 
@@ -1408,18 +1435,27 @@ namespace whiteice
 
     auto x = input;
 
-    // forward pass: calculates local fields
+    // forward pass: calculates local fields v
     int l = 0;
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = x;
 
     for(l=0;l<(signed)getLayers();l++){
-      
-      x = W[l]*x + b[l];
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	x = W[l]*x + b[l] + skipValue;
+      else
+	x = W[l]*x + b[l];
 
       v.push_back(x); // stores local field
 
       for(unsigned int i=0;i<getNeurons(l);i++){
 	x[i] = nonlin(x[i], l, i);
       }
+
+      if(residual && (l % 2) == 0)
+	skipValue = x;
     }
 
     /////////////////////////////////////////////////
@@ -1439,6 +1475,12 @@ namespace whiteice
     }
 
     unsigned int index = gradient_size();
+
+    std::vector< math::matrix<T> > lgrad_prev;
+    lgrad_prev.resize(3);
+    lgrad_prev[0] = lgrad;
+    lgrad_prev[1] = lgrad;
+    lgrad_prev[2] = lgrad;
 
     for(;l>0;l--){
       
@@ -1480,18 +1522,45 @@ namespace whiteice
 	index -= W[l].ysize()*W[l].xsize() + b[l].size();
       }
 
-
-      // updates gradient
-      auto temp = lgrad * W[l];
-      lgrad.resize(temp.ysize(), getNeurons(l-1));
-
+      lgrad_prev[2] = lgrad_prev[1];
+      lgrad_prev[1] = lgrad_prev[0];
+      lgrad_prev[0] = lgrad;
+      
+      // updates local gradient
+      if(residual == false ||
+	 l % 2 != 0 || 
+	 W[l].xsize() != lgrad_prev[1].xsize() ||
+	 l+1 >= (int)W.size())
+      {
+	
+	auto temp = lgrad * W[l];
+	lgrad.resize(temp.ysize(), getNeurons(l-1));
+	
 #pragma omp parallel for schedule(auto)
-      for(unsigned int i=0;i<lgrad.xsize();i++){
-	const auto Df = Dnonlin(v[l-1][i], l-1, i);
-	for(unsigned int j=0;j<lgrad.ysize();j++){
-	  lgrad(j,i) = temp(j,i)*Df;
+	for(unsigned int i=0;i<lgrad.xsize();i++){
+	  const auto Df = Dnonlin(v[l-1][i], l-1, i);
+	  for(unsigned int j=0;j<lgrad.ysize();j++){
+	    lgrad(j,i) = temp(j,i)*Df;
+	  }
+	}
+	
+      }
+      else{
+
+	auto temp = lgrad * W[l];
+	lgrad.resize(temp.ysize(), getNeurons(l-1));
+	
+	temp += lgrad_prev[1];
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<lgrad.xsize();i++){
+	  const auto Df = Dnonlin(v[l-1][i], l-1, i);
+	  for(unsigned int j=0;j<lgrad.ysize();j++){
+	    lgrad(j,i) = temp(j,i)*Df;
+	  }
 	}
       }
+      
       
     }
 
@@ -1566,10 +1635,16 @@ namespace whiteice
 
     // forward pass: calculates local fields
     int l = 0;
+    math::vertex<T> skipValue;
+
+    if(residual) skipValue = x;
 
     for(l=0;l<(signed)getLayers();l++){
-      
-      x = W[l]*x + b[l];
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	x = W[l]*x + b[l] + skipValue;
+      else
+	x = W[l]*x + b[l];
 
       v.push_back(x); // stores local field
 
@@ -1577,6 +1652,9 @@ namespace whiteice
 	if(dropout[l][i]) x[i] = T(0.0f);
 	else x[i] = nonlin(x[i], l);
       }
+
+      if(residual && (l % 2) == 0)
+	skipValue = x;
     }
 
     /////////////////////////////////////////////////
@@ -1596,6 +1674,12 @@ namespace whiteice
     }
 
     unsigned int index = gradient_size();
+
+    std::vector< math::matrix<T> > lgrad_prev;
+    lgrad_prev.resize(3);
+    lgrad_prev[0] = lgrad;
+    lgrad_prev[1] = lgrad;
+    lgrad_prev[2] = lgrad;
 
     for(;l>0;l--){
       
@@ -1638,17 +1722,57 @@ namespace whiteice
 	index -= W[l].ysize()*W[l].xsize() + b[l].size();
       }
 
+      lgrad_prev[2] = lgrad_prev[1];
+      lgrad_prev[1] = lgrad_prev[0];
+      lgrad_prev[0] = lgrad;
 
-      // updates gradient
-      auto temp = lgrad * W[l];
-      lgrad.resize(temp.ysize(), getNeurons(l-1));
-
+      // updates local gradient
+      if(residual == false ||
+	 l % 2 != 0 || 
+	 W[l].xsize() != lgrad_prev[1].ysize() ||
+	 l+1 >= (int)W.size())
+      {
+	auto temp = lgrad * W[l];
+	lgrad.resize(temp.ysize(), getNeurons(l-1));
+	
 #pragma omp parallel for schedule(auto)
-      for(unsigned int i=0;i<lgrad.xsize();i++){
-	const auto Df = dropout[l-1][i] ? T(0.0f) : Dnonlin(v[l-1][i], l-1);
-	for(unsigned int j=0;j<lgrad.ysize();j++){
-	  lgrad(j,i) = temp(j,i)*Df;
+	for(unsigned int i=0;i<lgrad.xsize();i++){
+	  const auto Df = dropout[l-1][i] ? T(0.0f) : Dnonlin(v[l-1][i], l-1);
+	  for(unsigned int j=0;j<lgrad.ysize();j++){
+	    lgrad(j,i) = temp(j,i)*Df;
+	  }
 	}
+      }
+      else{
+	printf("2: CALCULATE RESIDUAL JACOBIAN CODE: %d\n", l);
+	fflush(stdout);
+	
+	auto Wt =  W[l+1];
+	Wt.transpose();
+	auto E = Wt*lgrad_prev[1];
+
+	for(unsigned int i=0;i<E.xsize();i++){
+	  const auto Df = Dnonlin(v[l][i], l, i);
+	  for(unsigned int j=0;j<E.ysize();j++){
+	    E(j,i) = E(j,i)*Df;
+	  }
+	}
+
+	Wt = W[l];
+	Wt.transpose();
+	auto WDW = Wt*E;
+	WDW += lgrad_prev[1];
+
+	lgrad.resize(WDW.ysize(), WDW.xsize());
+	
+	for(unsigned int i=0;i<lgrad.xsize();i++){
+	  const auto Df = Dnonlin(v[l-1][i], l-1, i);
+	  for(unsigned int j=0;j<lgrad.ysize();j++){
+	    lgrad(j,i) = E(j,i)*Df;
+	  }
+	}
+	
+	
       }
       
     }

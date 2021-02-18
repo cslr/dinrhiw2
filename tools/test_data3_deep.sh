@@ -22,7 +22,7 @@ rm -f commviol-test.ds
 ## ./nntool --deep=gaussian --samples 100 -v commviol-test.ds 141-1000-4 commviol-nn.cfg pgrad
 
 # 9 layers deep
-ARCH="141-300-300-300-300-300-300-300-300-4"
+ARCH="141-141-141-141-141-141-141-141-141-4"
 
 # overfitting solution
 ./nntool --time 600 -v commviol-test.ds $ARCH commviol-nn.cfg pgrad
