@@ -21,7 +21,13 @@ $DSTOOL -list wine-test.ds
 
 # uses nntool trying to learn from dataset
 
-ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
+# 20 layer neural network (works)
+## ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
+
+# 40 layer neural network
+ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
+
+
 ##ARCH="13-20-20-20-20-20-20-20-20-1"
 ## ARCH="13-20-1"
 
@@ -30,9 +36,9 @@ ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
 
 ################## $NNTOOL -v --samples 2000 wine-test.ds $ARCH winenn.cfg pgrad
 
-$NNTOOL -v --time 60 wine-test.ds $ARCH winenn.cfg pgrad
+$NNTOOL -v --time 600 wine-test.ds $ARCH winenn.cfg pgrad
 
-# $NNTOOL -v --time 10 wine-test.ds $ARCH winenn.cfg random
+## $NNTOOL -v --time 60 wine-test.ds $ARCH winenn.cfg pgrad
 
 # testing
 
