@@ -1744,34 +1744,18 @@ namespace whiteice
 	}
       }
       else{
-	printf("2: CALCULATE RESIDUAL JACOBIAN CODE: %d\n", l);
-	fflush(stdout);
+	auto temp = lgrad * W[l];
+	lgrad.resize(temp.ysize(), getNeurons(l-1));
 	
-	auto Wt =  W[l+1];
-	Wt.transpose();
-	auto E = Wt*lgrad_prev[1];
-
-	for(unsigned int i=0;i<E.xsize();i++){
-	  const auto Df = Dnonlin(v[l][i], l, i);
-	  for(unsigned int j=0;j<E.ysize();j++){
-	    E(j,i) = E(j,i)*Df;
-	  }
-	}
-
-	Wt = W[l];
-	Wt.transpose();
-	auto WDW = Wt*E;
-	WDW += lgrad_prev[1];
-
-	lgrad.resize(WDW.ysize(), WDW.xsize());
+	temp += lgrad_prev[1];
 	
+#pragma omp parallel for schedule(auto)
 	for(unsigned int i=0;i<lgrad.xsize();i++){
-	  const auto Df = Dnonlin(v[l-1][i], l-1, i);
+	  const auto Df = dropout[l-1][i] ? T(0.0f) : Dnonlin(v[l-1][i], l-1);
 	  for(unsigned int j=0;j<lgrad.ysize();j++){
-	    lgrad(j,i) = E(j,i)*Df;
+	    lgrad(j,i) = temp(j,i)*Df;
 	  }
 	}
-	
 	
       }
       
@@ -1841,6 +1825,8 @@ namespace whiteice
 	return T(0.0f);
     }
 
+    const float RELUcoef = 0.01f; // original was 0.01f
+
     if(nonlinearity[layer] == softmax){
       const T k = T(1.50f);
 
@@ -1935,7 +1921,7 @@ namespace whiteice
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
 	if(input.real() < 0.0f)
-	  return T(0.01f*input.real());
+	  return T(RELUcoef*input.real());
 	else
 	  return T(input.real());
       }
@@ -1945,11 +1931,11 @@ namespace whiteice
 	out.imag(input.imag());
 	
 	if(input.real() < 0.0f){
-	  out.real(0.01f*out.real());
+	  out.real(RELUcoef*out.real());
 	}
 	
 	if(input.imag() < 0.0f){
-	  out.imag(0.01f*out.imag());
+	  out.imag(RELUcoef*out.imag());
 	}
 
 	return T(out);
@@ -1973,6 +1959,8 @@ namespace whiteice
       if(dropout[layer][neuron])
 	return T(0.0f); // this neuron is disabled 
     }
+
+    const float RELUcoef = 0.01f; // original was 0.01f
 
     if(nonlinearity[layer] == softmax){
       const T k = T(1.50f);
@@ -2060,7 +2048,7 @@ namespace whiteice
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
 	if(input.real() < 0.0f)
-	  return T(0.01f);
+	  return T(RELUcoef);
 	else
 	  return T(1.00f);
       }
@@ -2070,11 +2058,11 @@ namespace whiteice
 	out.imag(input.imag());
 	
 	if(input.real() < 0.0f){
-	  out.real(0.01f*out.real());
+	  out.real(RELUcoef*out.real());
 	}
 	
 	if(input.imag() < 0.0f){
-	  out.imag(0.01f*out.imag());
+	  out.imag(RELUcoef*out.imag());
 	}
 
 	// correct derivate is Df(z) = f(z)/z
@@ -2112,6 +2100,8 @@ namespace whiteice
   inline T nnetwork<T>::nonlin(const T& input, unsigned int layer) const 
   {
     // no dropout checking
+    
+    const float RELUcoef = 0.01f; // original was 0.01f
     
     if(nonlinearity[layer] == softmax){
       const T k = T(1.50f);
@@ -2207,7 +2197,7 @@ namespace whiteice
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
 	if(input.real() < 0.0f)
-	  return T(0.01f*input.real());
+	  return T(RELUcoef*input.real());
 	else
 	  return T(input.real());
       }
@@ -2217,11 +2207,11 @@ namespace whiteice
 	out.imag(input.imag());
 	
 	if(input.real() < 0.0f){
-	  out.real(0.01f*out.real());
+	  out.real(RELUcoef*out.real());
 	}
 	
 	if(input.imag() < 0.0f){
-	  out.imag(0.01f*out.imag());
+	  out.imag(RELUcoef*out.imag());
 	}
 
 	return T(out);
@@ -2239,6 +2229,8 @@ namespace whiteice
   inline T nnetwork<T>::Dnonlin(const T& input, unsigned int layer) const 
   {
     // no dropout checking
+
+    const float RELUcoef = 0.01f; // original was 0.01f
 
     if(nonlinearity[layer] == softmax){
       const T k = T(1.50f);
@@ -2326,7 +2318,7 @@ namespace whiteice
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
 	if(input.real() < 0.0f)
-	  return T(0.01f);
+	  return T(RELUcoef);
 	else
 	  return T(1.00f);
       }
@@ -2336,11 +2328,11 @@ namespace whiteice
 	out.imag(input.imag());
 	
 	if(input.real() < 0.0f){
-	  out.real(0.01f*out.real());
+	  out.real(RELUcoef*out.real());
 	}
 	
 	if(input.imag() < 0.0f){
-	  out.imag(0.01f*out.imag());
+	  out.imag(RELUcoef*out.imag());
 	}
 
 	// correct derivate is Df(z) = f(z)/z
@@ -2348,21 +2340,6 @@ namespace whiteice
 	  out /= input;
 
 	return out;
-#if 0
-	math::blas_complex<double> out;
-	out.real(1.0f);
-	out.imag(1.0f);
-	
-	if(input.real() < 0.0f){
-	  out.real(0.01f);
-	}
-	
-	if(input.imag() < 0.0f){
-	  out.imag(0.01f);
-	}
-	
-	return T(out);
-#endif
       }
       
     }
@@ -2408,28 +2385,110 @@ namespace whiteice
     
     grad.resize(input_size(), input_size());
     grad.identity();
+
+    auto hgrad = grad;
     
     math::vertex<T> x = input;
+    math::vertex<T> skipValue;
+    
+    if(residual) skipValue = x;
 
+    
     for(unsigned int l=0;l<L;l++){
-      
-      grad = W[l]*grad;
-      
-      x = W[l]*x + b[l];
 
+      //printf("L = %d. W*HG = %d %d x %d %d\n", l,
+      //     W[l].ysize(), W[l].xsize(), hgrad.ysize(), hgrad.xsize());
+      
+      hgrad = W[l]*hgrad;
+
+      //printf("MATMUL DONE\n");
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	x = W[l]*x + b[l] + skipValue;
+      else
+	x = W[l]*x + b[l];
+
+      if(residual && l % 2 == 0 && l != 0 && hgrad.ysize() == hgrad.xsize()){
+	// hgrad += I
+
+	for(unsigned int i=0;i<hgrad.xsize();i++)
+	  hgrad(i,i) += T(1.0f);
+	
 #pragma omp parallel for schedule(auto)
-      for(unsigned int j=0;j<grad.ysize();j++){
-	for(unsigned int i=0;i<grad.xsize();i++){
-	  grad(j,i) *= Dnonlin(x[j], l, j);
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    hgrad(j,i) *= Dnonlin(x[j], l, j);
+	  }
 	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  x[i] = nonlin(x[i], l, i);
+	}
+
+	//printf("1:L = %d. G = HG*G = %d %d x %d %d\n", l,
+	//       hgrad.ysize(), hgrad.xsize(),
+	//       grad.ysize(), grad.xsize());
+
+	grad = hgrad*grad;
+
+	unsigned int s = hgrad.ysize();
+	hgrad.resize(s,s);
+	hgrad.identity();
+
+	//printf("HG MUL DONE\n");
       }
+      else if(residual && l % 2 == 0 && l != 0){ // no same layer size (no skip)
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    hgrad(j,i) *= Dnonlin(x[j], l, j);
+	  }
+	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  x[i] = nonlin(x[i], l, i);
+	}
+
+	//printf("2:L = %d. G = HG*G = %d %d x %d %d\n", l,
+	//       hgrad.ysize(), hgrad.xsize(),
+	//       grad.ysize(), grad.xsize());
+	
+	grad = hgrad*grad;
+
+	unsigned int s = hgrad.ysize();
+	hgrad.resize(s,s);
+	hgrad.identity();
+	
+	//printf("HG MUL DONE\n");
+      }
+      else{
 
 #pragma omp parallel for schedule(auto)
-      for(unsigned int i=0;i<x.size();i++){
-	x[i] = nonlin(x[i], l, i);
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    hgrad(j,i) *= Dnonlin(x[j], l, j);
+	  }
+	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  x[i] = nonlin(x[i], l, i);
+	}
+	
       }
+      
+      if(residual && (l % 2) == 0)
+	skipValue = x;
       
     }
+
+    //printf("FINAL MATMUL..\n"),
+    grad = hgrad*grad;
+    //printf("FINAL MATMUL.. DONE\n");
+    // hgrad.identity();
     
     return true;
   }
@@ -2452,30 +2511,89 @@ namespace whiteice
     
     grad.resize(input_size(), input_size());
     grad.identity();
+
+    auto hgrad = grad;
     
     math::vertex<T> x = input;
+    math::vertex<T> skipValue = x;
 
     for(unsigned int l=0;l<L;l++){
       
-      grad = W[l]*grad;
-      
-      x = W[l]*x + b[l];
+      hgrad = W[l]*hgrad;
+
+      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+	x = W[l]*x + b[l] + skipValue;
+      else
+	x = W[l]*x + b[l];
+
+      if(residual && l % 2 == 0 && l != 0 && hgrad.xsize() == hgrad.ysize()){
+	// hgrad += I
+
+	for(unsigned int i=0;i<hgrad.xsize();i++)
+	  hgrad(i,i) += T(1.0f);
 
 #pragma omp parallel for schedule(auto)
-      for(unsigned int j=0;j<grad.ysize();j++){
-	for(unsigned int i=0;i<grad.xsize();i++){
-	  if(dropout[l][j]) grad(j,i) = T(0.0f);
-	  else grad(j,i) *= Dnonlin(x[j], l);
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    if(dropout[l][j]) hgrad(j,i) = T(0.0f);
+	    else hgrad(j,i) *= Dnonlin(x[j], l);
+	  }
 	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  if(dropout[l][i]) x[i] = T(0.0f);
+	  else x[i] = nonlin(x[i], l);
+	}
+	
+	grad = hgrad*grad;
+	hgrad.identity();
       }
+      else if(residual && l % 2 == 0 && l != 0){ // no same layer size (no skip)
 
 #pragma omp parallel for schedule(auto)
-      for(unsigned int i=0;i<x.size();i++){
-	if(dropout[l][i]) x[i] = T(0.0f);
-	else x[i] = nonlin(x[i], l);
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    if(dropout[l][j]) hgrad(j,i) = T(0.0f);
+	    else hgrad(j,i) *= Dnonlin(x[j], l);
+	  }
+	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  if(dropout[l][i]) x[i] = T(0.0f);
+	  else x[i] = nonlin(x[i], l);
+	}
+
+	grad = hgrad*grad;
+	hgrad.identity();
+	
       }
+      else{
+
+#pragma omp parallel for schedule(auto)
+	for(unsigned int j=0;j<hgrad.ysize();j++){
+	  for(unsigned int i=0;i<hgrad.xsize();i++){
+	    if(dropout[l][j]) hgrad(j,i) = T(0.0f);
+	    else hgrad(j,i) *= Dnonlin(x[j], l);
+	  }
+	}
+	
+#pragma omp parallel for schedule(auto)
+	for(unsigned int i=0;i<x.size();i++){
+	  if(dropout[l][i]) x[i] = T(0.0f);
+	  else x[i] = nonlin(x[i], l);
+	}
+	
+      }
+      
+      if(residual && (l % 2) == 0)
+	skipValue = x;
       
     }
+
+    grad = hgrad*grad;
+    // hgrad.identity();
     
     return true;
   }

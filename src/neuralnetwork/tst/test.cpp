@@ -104,6 +104,7 @@ void ensemble_means_test();
 
 void nnetwork_gradient_test();
 void nnetwork_residual_gradient_test();
+void nnetwork_gradient_value_test();
 void nnetwork_complex_gradient_test();
 
 void nngraddescent_complex_test();
@@ -167,9 +168,11 @@ int main()
 
     // nnetwork_complex_test(); // works about correctly
 
-    nnetwork_gradient_test(); // gradient calculation works
+    // nnetwork_gradient_test(); // gradient calculation works
 
-    nnetwork_residual_gradient_test(); // gradient calculation test for residual neural network
+    nnetwork_gradient_value_test();
+
+    // nnetwork_residual_gradient_test(); // gradient calculation test for residual neural network
     
     //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
 
@@ -1263,6 +1266,111 @@ void nnetwork_gradient_test()
   
 }
 
+/**********************************************************************/
+
+void nnetwork_gradient_value_test()
+{
+  std::cout << "nnetwork::gradient_value() optimization test." << std::endl;
+
+  whiteice::RNG< whiteice::math::blas_real<double> > rng;
+
+  for(unsigned int e=0;e<10;e++)
+  {
+    std::vector<unsigned int> arch;
+
+    const unsigned int dimInput = rng.rand() % 10 + 3;
+    const unsigned int dimOutput = 1;
+    const unsigned int layers = rng.rand() % 3 + 4;
+    const unsigned int width = rng.rand() % 10 + 10;
+
+    arch.push_back(dimInput);
+    for(unsigned int i=0;i<layers;i++)
+      arch.push_back(width);
+    arch.push_back(dimOutput);
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    unsigned int nli = 5; // rng.rand() % 7;
+
+    if(nli == 0){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+    }
+    else if(nli == 1){
+      // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; 
+    }
+    else if(nli == 2){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
+    }
+    else if(nli == 3){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
+    }
+    else if(nli == 4){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+    }
+    else if(nli == 5){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+    }
+    else if(nli == 6){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::softmax;
+    }
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
+    
+    nn.randomize();
+    nn.setResidual(true);
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
+    whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
+    whiteice::math::matrix< whiteice::math::blas_real<double> > GRAD_x;
+    whiteice::math::vertex< whiteice::math::blas_real<double> > grad_x;
+    whiteice::math::blas_real<double> alpha = 0.0001f;
+
+    x.zero();
+    rng.normal(x);
+
+    nn.calculate(x, y);
+
+    auto start_value = y;
+    
+    for(unsigned int i=0;i<10000;i++){
+      //printf("ABOUT TO CALCULATE GRAD VALUE..\n"); fflush(stdout);
+      nn.gradient_value(x, GRAD_x);
+      //printf("ABOUT TO CALCULATE GRAD VALUE.. DONE\n"); fflush(stdout);
+      //printf("GRAD_x: %d %d = %f\n", GRAD_x.ysize(), GRAD_x.xsize(), GRAD_x(0,0).c[0]);
+      
+      grad_x.resize(GRAD_x.xsize());
+      for(unsigned int i=0;i<grad_x.size();i++)
+	grad_x[i] = GRAD_x(0, i);
+      
+      x += alpha*grad_x;
+
+      nn.calculate(x, y);
+
+      // std::cout << i << "/100: " << y << std::endl;
+    }
+
+    auto end_value = y;
+
+    if(end_value < start_value){
+      std::cout << "ERROR: start value larger than end value. "
+		<< start_value << " > " << end_value << std::endl;
+      std::cout << "arch " << arch.size() << " : ";
+      for(unsigned int i=0;i<arch.size();i++)
+	std::cout << arch[i]  << " ";
+      std::cout << std::endl;
+      return;
+    }
+    else{
+      std::cout << "GOOD: start value smaller than end value. "
+		<< start_value << " < " << end_value << std::endl;
+      std::cout << "arch " << arch.size() << " : ";
+      for(unsigned int i=0;i<arch.size();i++)
+	std::cout << arch[i]  << " ";
+      std::cout << std::endl;
+    }
+  }
+  
+}
 
 /**********************************************************************/
 
