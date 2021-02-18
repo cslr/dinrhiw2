@@ -397,7 +397,7 @@
 
   \;
 
-  The two layer model is: [HAS ERRORS!]
+  The three layer model is: [HAS ERRORS!]
 
   <\center>
     <math|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>
@@ -435,6 +435,41 @@
   </math>>
 
   \;
+
+  \;
+
+  <with|font-series|bold|5-layer residual neural network formula (2 two layer
+  skips)>
+
+  <\padded-center>
+    <math|\<b-y\><around*|(|\<b-x\>|)>=\<b-d\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\><around|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\><around*|(|\<b-W\>*<rsup|<around*|(|1|)>>\<b-x\>|)>|)>|\<nobracket\>>+\<b-x\>|)>+\<b-f\>|)>>)
+
+    <strong|<\math>
+      \<b-h\>=\<b-h\><around*|(|\<b-W\>*<rsup|<around*|(|1|)>>x|)>
+
+      \<b-g\>=\<b-g\><around*|(|\<b-W\>*<rsup|<around*|(|2|)>>h|)>
+
+      \<b-f\>=\<b-f\><around*|(|W*<rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>
+
+      e=\<b-e\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>
+
+      \<b-y\>=\<b-d\><around*|(|\<b-W\><rsup|<around*|(|5|)>>*e+\<b-f\>|)>
+    </math>>
+  </padded-center>
+
+  <\math>
+    <frac|\<partial\>*y|\<partial\>\<b-x\>>=*
+
+    diag<around*|(|<frac|\<partial\>\<b-d\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>\<b-e\>+\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|5|)>>*\<b-e\>+\<b-f\>|)>|\<partial\>\<b-e\>>*diag<around*|(|<frac|\<partial\>\<b-e\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>\<b-f\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|4|)>>*\<b-f\>|)>|\<partial\>\<b-f\>>*diag<around*|(|<frac|\<partial\>\<b-f\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\>+\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|3|)>>*\<b-g\>+\<b-x\>|)>|\<partial\>\<b-g\><rsup|>>*
+
+    diag<around*|(|<frac|\<partial\>\<b-g\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>\<b-h\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\>|)>|\<partial\>\<b-h\>>*diag<around*|(|<frac|\<partial\>\<b-h\><around*|(|\<b-v\>|)>|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>>|)>*<frac|\<partial\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>|)>|\<partial\>*\<b-x\>>=
+
+    diag<around*|(|\<nabla\>\<b-d\><around*|(|\<b-v\>|)>|)>*
+
+    *<around*|(|\<b-W\><rsup|<around*|(|5|)>>*diag<around*|(|\<nabla\>\<b-e\><around*|(|\<b-v\>|)>|)>*\<b-W\><rsup|<around*|(|4|)>>+\<b-I\>|)>*diag<around*|(|\<nabla\>\<b-f\><around*|(|\<b-v\>|)>|)>
+
+    <around*|(|\<b-W\><rsup|<around*|(|3|)>>*diag<around*|(|\<nabla\>\<b-g\><around*|(|\<b-v\>|)>|)>*\<b-W\><rsup|<around*|(|2|)>>diag<around*|(|\<nabla\>\<b-h\><around*|(|\<b-v\>|)>|)>*\<b-W\><rsup|<around*|(|1|)>>+\<b-I\>|)>
+  </math>
 
   \;
 
