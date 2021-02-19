@@ -5,6 +5,7 @@ Dinrhiw is a linear algebra library and machine learning library.
 Dinrhiw implements linear algebra, PCA+ICA, complex value neural network, 
 variational autoencoder and deep learning 
 (residual neural network+leaky ReLU non-linearity) codes. 
+Dinrhiw has been developed by Tomas Ukkonen.
 
 Currently, the feedforward neural network code supports:
 
