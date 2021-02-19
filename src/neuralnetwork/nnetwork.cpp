@@ -425,7 +425,7 @@ namespace whiteice
 	state[i] = nonlin(state[i], l, i);
       }
 
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = state;
     }
 
@@ -466,7 +466,7 @@ namespace whiteice
 	state[i] = nonlin(state[i], l, i);
       }
 
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = state;
     }
 
@@ -506,7 +506,7 @@ namespace whiteice
 	else state[i] = nonlin(state[i], l);
       }
       
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = state;
     }
     
@@ -549,7 +549,7 @@ namespace whiteice
 	state[i] = nonlin(state[i], l, i);
       }
 
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = state;
     }
     
@@ -600,7 +600,7 @@ namespace whiteice
 	else state[i] = nonlin(state[i]+skipValue[i], l);
       }
       
-      if(residual && ((l % 2) == 0)){
+      if(residual && ((l % 2) == 0) && l != 0){
 	skipValue = state;
       }
     }
@@ -1454,7 +1454,7 @@ namespace whiteice
 	x[i] = nonlin(x[i], l, i);
       }
 
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = x;
     }
 
@@ -1653,7 +1653,7 @@ namespace whiteice
 	else x[i] = nonlin(x[i], l);
       }
 
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = x;
     }
 
@@ -2408,6 +2408,7 @@ namespace whiteice
       else
 	x = W[l]*x + b[l];
 
+      
       if(residual && l % 2 == 0 && l != 0 && hgrad.ysize() == hgrad.xsize()){
 	// hgrad += I
 
@@ -2479,8 +2480,9 @@ namespace whiteice
 	}
 	
       }
+
       
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = x;
       
     }
@@ -2587,7 +2589,7 @@ namespace whiteice
 	
       }
       
-      if(residual && (l % 2) == 0)
+      if(residual && (l % 2) == 0 && l != 0)
 	skipValue = x;
       
     }

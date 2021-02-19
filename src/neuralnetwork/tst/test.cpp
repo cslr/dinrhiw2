@@ -1323,7 +1323,7 @@ void nnetwork_gradient_value_test()
     whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
     whiteice::math::matrix< whiteice::math::blas_real<double> > GRAD_x;
     whiteice::math::vertex< whiteice::math::blas_real<double> > grad_x;
-    whiteice::math::blas_real<double> alpha = 0.0001f;
+    whiteice::math::blas_real<double> alpha = 0.1f; // 0.0001f
 
     x.zero();
     rng.normal(x);
@@ -1332,7 +1332,7 @@ void nnetwork_gradient_value_test()
 
     auto start_value = y;
     
-    for(unsigned int i=0;i<10000;i++){
+    for(unsigned int i=0;i<1000;i++){
       //printf("ABOUT TO CALCULATE GRAD VALUE..\n"); fflush(stdout);
       nn.gradient_value(x, GRAD_x);
       //printf("ABOUT TO CALCULATE GRAD VALUE.. DONE\n"); fflush(stdout);
@@ -1355,18 +1355,23 @@ void nnetwork_gradient_value_test()
       std::cout << "ERROR: start value larger than end value. "
 		<< start_value << " > " << end_value << std::endl;
       std::cout << "arch " << arch.size() << " : ";
+#if 0
       for(unsigned int i=0;i<arch.size();i++)
 	std::cout << arch[i]  << " ";
       std::cout << std::endl;
+#endif
+      
       return;
     }
     else{
       std::cout << "GOOD: start value smaller than end value. "
 		<< start_value << " < " << end_value << std::endl;
+#if 0
       std::cout << "arch " << arch.size() << " : ";
       for(unsigned int i=0;i<arch.size();i++)
 	std::cout << arch[i]  << " ";
       std::cout << std::endl;
+#endif
     }
   }
   
