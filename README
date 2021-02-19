@@ -23,6 +23,9 @@ You need GNU GCC (www.gcc.org). The code compiles both on Linux and
 Windows (requires *nix environment). It is recommended to try
 to compile and use the library initially on Linux.
 
+GCC 8.* has bug in random_device, you need to use GCC >= 9.0 version
+compiler or newer to work around this compiler bug.
+
 Library dependencies:
 
 * OpenBLAS or Intel MKL (cblas.h interface),
