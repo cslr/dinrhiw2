@@ -2,16 +2,18 @@ WHAT DINRHIW2 IS?
 -----------------
 
 Dinrhiw is a linear algebra library and machine learning library.
-Dinrhiw implements linear algebra, PCA+ICA, complex value Neural Network and 
-Variational Autoencoder codes. 
+Dinrhiw implements linear algebra, PCA+ICA, complex value neural network, 
+variational autoencoder and deep learning 
+(residual neural network+leaky ReLU non-linearity) codes. 
 
 Currently, the feedforward neural network code supports:
 
 * second order L-BFGS optimization and gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
 * parallel computing (via OpenMP)
-* experimental branch (RBM_test): GB-RBM and BB-RBM 2nd order
+* experimental: (RBM) GB-RBM and BB-RBM 2nd order
   LBFGS optimizer and HMC sampler => greedy deep belief net optimizer
+* experimental: reinforcement learning code
   
 Read wiki pages for further documentation: https://github.com/cslr/dinrhiw2/wiki
   
@@ -30,7 +32,7 @@ Library dependencies:
 
 * OpenBLAS or Intel MKL (cblas.h interface),
 * GMP (arbitrary precision mathematics)
-* ZLib [not really needed]
+* ZLib [not really used]
 
 
 To build and install library execute: 
