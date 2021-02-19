@@ -1,4 +1,11 @@
-TODO [OUTDATED]
+TODO
+
+
+
+* FIXME: residual neural networks are not supported by
+  nnetwork::jacobian() and nnetwork::gradient_value()
+
+
 
 * DBN.convertToNNetwork(): pretraining+convertToNNetwork() 
   sometimes (incorrectly) generates VERY large weights and further optimization only partly

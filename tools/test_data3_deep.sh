@@ -4,13 +4,13 @@ rm -f commviol-test.ds
 
 # creates training dataset for nntool
 
-##./dstool -create commviol-test.ds
-##./dstool -create:141:input commviol-test.ds
-##./dstool -create:4:output commviol-test.ds
-##./dstool -import:0 commviol-test.ds commviol.in
-##./dstool -import:1 commviol-test.ds commviol.out
-##./dstool -padd:0:meanvar commviol-test.ds
-##./dstool -padd:1:meanvar commviol-test.ds
+./dstool -create commviol-test.ds
+./dstool -create:141:input commviol-test.ds
+./dstool -create:4:output commviol-test.ds
+./dstool -import:0 commviol-test.ds commviol.in
+./dstool -import:1 commviol-test.ds commviol.out
+./dstool -padd:0:meanvar commviol-test.ds
+./dstool -padd:1:meanvar commviol-test.ds
 
 ##./dstool -list commviol-test.ds
 
@@ -21,16 +21,18 @@ rm -f commviol-test.ds
 # ./nntool --deep --samples 100 -v commviol-test.ds 141-100000-4 commviol-nn.cfg lbfgs
 ## ./nntool --deep=gaussian --samples 100 -v commviol-test.ds 141-1000-4 commviol-nn.cfg pgrad
 
-# 5 layers deep
-ARCH="141-300-300-300-300-4"
+# 9 layers deep
+ARCH="141-141-141-141-141-141-141-141-141-4"
 
 # overfitting solution
-##./nntool --overfit --samples 10000 -v commviol-test.ds $ARCH commviol-nn.cfg grad
+./nntool --time 600 -v commviol-test.ds $ARCH commviol-nn.cfg pgrad
 
 # training error is 0.042815/0.00981616/0.00981616 (non-deep) [141-500-4]
 # training error is 0.041531/0.00981616/3.86269    (non-deep) [141-1000-4]
 # training error is 0.055584/0.00981616/2.30756    (non-deep) [141-10000-4]
 # ./nntool --samples 100 -v commviol-test.ds 141-1000-4 commviol-nn.cfg lbfgs
+
+
 
 
 # ./nntool --samples 100 --negfb -v commviol-test.ds 141-141-141-141-141-141-141-4 commviol-nn.cfg lbfgs

@@ -103,6 +103,8 @@ void mixture_nnetwork_test();
 void ensemble_means_test();
 
 void nnetwork_gradient_test();
+void nnetwork_residual_gradient_test();
+void nnetwork_gradient_value_test();
 void nnetwork_complex_gradient_test();
 
 void nngraddescent_complex_test();
@@ -160,13 +162,18 @@ int main()
     
     // simple_vae_test();
     
-    simple_tsne_test();
+    // simple_tsne_test();
 
     // nngraddescent_complex_test();
 
-    nnetwork_complex_test(); // works about correctly
+    // nnetwork_complex_test(); // works about correctly
 
-    //nnetwork_gradient_test(); // gradient calculation works
+    nnetwork_gradient_test(); // gradient calculation works
+
+    nnetwork_gradient_value_test(); // gradient_value() calculation works
+
+    nnetwork_residual_gradient_test(); // gradient calculation test for residual neural network
+    
     //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
 
     return 0;
@@ -1149,7 +1156,7 @@ void simple_vae_test()
 
 void nnetwork_gradient_test()
 {
-  std::cout << "Real-valued nnewtwork gradient() calculations test" << std::endl;
+  std::cout << "Real-valued nnetwork gradient() calculations test" << std::endl;
 
   whiteice::RNG< whiteice::math::blas_real<double> > rng;
 
@@ -1202,6 +1209,8 @@ void nnetwork_gradient_test()
 
     whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
 
+    nn.randomize();
+
     whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
     whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
     x.zero();
@@ -1243,12 +1252,241 @@ void nnetwork_gradient_test()
     err = grad_delta.norm();
     err /= ((double)g.size());
 
-    if(err > 0.01){
+    if(err > 0.001){
       printf("ERROR: gradient difference is too large (%f)!\n", err.c[0]);
       std::cout << "grad_delta = " << grad_delta << std::endl;
     }
     else{
-      printf("Backpropagation and error*nnetwork::gradient() return same value. Good.\n");
+      printf("Backpropagation and error*nnetwork::gradient() return same value (error %f). Good.\n",
+	     err.c[0]);
+      fflush(stdout);
+    }
+    
+  }
+  
+}
+
+/**********************************************************************/
+
+void nnetwork_gradient_value_test()
+{
+  std::cout << "nnetwork::gradient_value() optimization test." << std::endl;
+
+  whiteice::RNG< whiteice::math::blas_real<double> > rng;
+
+  for(unsigned int e=0;e<10;e++)
+  {
+    std::vector<unsigned int> arch;
+
+    const unsigned int dimInput = rng.rand() % 10 + 3;
+    const unsigned int dimOutput = 1;
+    const unsigned int layers = rng.rand() % 3 + 4;
+    const unsigned int width = rng.rand() % 10 + 10;
+
+    arch.push_back(dimInput);
+    for(unsigned int i=0;i<layers;i++)
+      arch.push_back(width);
+    arch.push_back(dimOutput);
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    unsigned int nli = 5; // rng.rand() % 7;
+
+    if(nli == 0){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+    }
+    else if(nli == 1){
+      // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; 
+    }
+    else if(nli == 2){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
+    }
+    else if(nli == 3){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
+    }
+    else if(nli == 4){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+    }
+    else if(nli == 5){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+    }
+    else if(nli == 6){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::softmax;
+    }
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
+    
+    nn.randomize();
+    nn.setResidual(true);
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
+    whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
+    whiteice::math::matrix< whiteice::math::blas_real<double> > GRAD_x;
+    whiteice::math::vertex< whiteice::math::blas_real<double> > grad_x;
+    whiteice::math::blas_real<double> alpha = 0.1f; // 0.0001f
+
+    x.zero();
+    rng.normal(x);
+
+    nn.calculate(x, y);
+
+    auto start_value = y;
+    
+    for(unsigned int i=0;i<1000;i++){
+      //printf("ABOUT TO CALCULATE GRAD VALUE..\n"); fflush(stdout);
+      nn.gradient_value(x, GRAD_x);
+      //printf("ABOUT TO CALCULATE GRAD VALUE.. DONE\n"); fflush(stdout);
+      //printf("GRAD_x: %d %d = %f\n", GRAD_x.ysize(), GRAD_x.xsize(), GRAD_x(0,0).c[0]);
+      
+      grad_x.resize(GRAD_x.xsize());
+      for(unsigned int i=0;i<grad_x.size();i++)
+	grad_x[i] = GRAD_x(0, i);
+      
+      x += alpha*grad_x;
+
+      nn.calculate(x, y);
+
+      // std::cout << i << "/100: " << y << std::endl;
+    }
+
+    auto end_value = y;
+
+    if(end_value < start_value){
+      std::cout << "ERROR: start value larger than end value. "
+		<< start_value << " > " << end_value << std::endl;
+      std::cout << "arch " << arch.size() << " : ";
+#if 0
+      for(unsigned int i=0;i<arch.size();i++)
+	std::cout << arch[i]  << " ";
+      std::cout << std::endl;
+#endif
+      
+      return;
+    }
+    else{
+      std::cout << "GOOD: start value smaller than end value. "
+		<< start_value << " < " << end_value << std::endl;
+#if 0
+      std::cout << "arch " << arch.size() << " : ";
+      for(unsigned int i=0;i<arch.size();i++)
+	std::cout << arch[i]  << " ";
+      std::cout << std::endl;
+#endif
+    }
+  }
+  
+}
+
+/**********************************************************************/
+
+
+void nnetwork_residual_gradient_test()
+{
+  std::cout << "Real-valued RESIDUAL nnetwork gradient() calculations test" << std::endl;
+
+  whiteice::RNG< whiteice::math::blas_real<double> > rng;
+
+  for(unsigned int e=0;e<10;e++) // number of tests
+  {
+    std::vector<unsigned int> arch;
+
+    const unsigned int dimInput = rng.rand() % 10 + 3;
+    const unsigned int dimOutput = rng.rand() % 10 + 3;
+    const unsigned int layers = rng.rand() % 10 + 4;
+    const unsigned int width = rng.rand() % 10 + 10;
+
+    arch.push_back(dimInput);
+    for(unsigned int i=0;i<layers;i++)
+      arch.push_back(width);
+    arch.push_back(dimOutput);
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    unsigned int nli = rng.rand() % 7;
+    // nli = 3; // force purelinear f(x)
+
+    if(nli == 0){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid;
+      printf("Sigmoidal non-linearity\n");
+    }
+    else if(nli == 1){
+      // do not calculate gradients for stochastic sigmoid..
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid; 
+      printf("Sigmoidal non-linearity\n");
+    }
+    else if(nli == 2){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::halfLinear;
+      printf("halfLinear non-linearity\n");
+    }
+    else if(nli == 3){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
+      printf("pureLinear non-linearity\n");
+    }
+    else if(nli == 4){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh;
+      printf("tanh non-linearity\n");
+    }
+    else if(nli == 5){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+      printf("rectifier non-linearity\n");
+    }
+    else if(nli == 6){
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::softmax;
+      printf("softmax non-linearity\n");
+    }
+
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn(arch, nl);
+
+    nn.randomize();
+    nn.setResidual(true);
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > x(dimInput);
+    whiteice::math::vertex< whiteice::math::blas_real<double> > y(dimOutput);
+    x.zero();
+    y.zero();
+
+    rng.normal(x);
+    rng.exp(y);
+
+    nn.input() = x;
+    nn.calculate(true, false);
+
+    auto error = nn.output() - y;
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > grad;
+
+    if(nn.mse_gradient(error, grad) == false){
+      printf("ERROR: nn::gradient(1) FAILED.\n");
+      continue;
+    }
+    
+    whiteice::math::matrix< whiteice::math::blas_real<double> > grad2;
+
+    if(nn.jacobian(x, grad2) == false){
+      printf("ERROR: nn::gradient(2) FAILED.\n");
+      continue;
+    }
+
+    whiteice::math::vertex< whiteice::math::blas_real<double> > g = error*grad2;
+
+    if(grad.size() != g.size()){
+      printf("ERROR: nn::gradient sizes mismatch!\n");
+      continue;
+    }
+
+    whiteice::math::blas_real<double> err = 0.0;
+
+    auto grad_delta = grad - g;
+
+    err = grad_delta.norm();
+    err /= ((double)g.size());
+
+    if(err > 0.001){
+      printf("ERROR: gradient difference is too large (%f)!\n", err.c[0]);
+      //std::cout << "grad_delta = " << grad_delta << std::endl;
+      return;
+    }
+    else{
+      printf("RESIDUAL Backpropagation and error*nnetwork::jacobian() return same value (error %f). Good.\n", err.c[0]);
       fflush(stdout);
     }
     

@@ -304,6 +304,8 @@ int main(int argc, char** argv)
     nnetwork< whiteice::math::blas_real<double> >* nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
+    nn->setResidual(true);
+
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
       whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
@@ -359,8 +361,6 @@ int main(int argc, char** argv)
       bool running = true;
       int v = 0;
       if(verbose) v = 1;
-
-      v = 1; // DEBUG VERBOSITY ON
 
       nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::sigmoid);
       nn->setNonlinearity(nn->getLayers()-1,

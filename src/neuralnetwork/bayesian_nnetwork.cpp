@@ -468,7 +468,8 @@ namespace whiteice
 #define FNN_ARCH_CFGSTR             "FNN_ARCH"
 #define FNN_WEIGHTS_CFGSTR          "FNN_WEIGHTS%d"  
 #define FNN_NONLINEARITY_CFGSTR     "FNN_NONLINEARITY"
-#define FNN_FROZEN_CFGSTR           "FNN_FROZEN"  
+#define FNN_FROZEN_CFGSTR           "FNN_FROZEN"
+#define FNN_RESIDUAL_CFGSTR         "FNN_RESIDUAL"
   
   // stores and loads bayesian nnetwork to a text file
   // (saves all samples into files)
@@ -484,6 +485,7 @@ namespace whiteice
       std::vector<int> ints;
       std::vector<float> floats;
       std::vector<std::string> strings;
+      bool residual = false;
       
       if(configuration.load(filename) == false)
 	return false;
@@ -509,7 +511,7 @@ namespace whiteice
 	ints.clear();
       } 
       
-      if(versionid != 3500) // v3.5 datafile
+      if(versionid != 3600) // v3.6 datafile
 	return false;
       
       std::vector<unsigned int> arch;
@@ -601,6 +603,17 @@ namespace whiteice
 	}
       }
 
+
+      // gets residual information for nnetwork
+      {
+	data = configuration.accessName(FNN_RESIDUAL_CFGSTR, 0);
+
+	if(data.size() != 1) return false;
+	if(data[0] == T(0.0f)) residual = false;
+	else if(data[0] == T(1.0f)) residual = true;
+	else return false;
+      }
+
       
       
       // reads number of samples information
@@ -638,6 +651,8 @@ namespace whiteice
 	
 	if(nets[index]->setFrozen(frozen) == false)
 	  return false;
+
+	nets[index]->setResidual(residual);
 	
 	math::vertex<T> w;
 	
@@ -689,7 +704,7 @@ namespace whiteice
       // writes version information
       {
 	// version number = integer/1000
-	ints.push_back(3500); // 3.500
+	ints.push_back(3600); // 3.600
 
 	configuration.createCluster(FNN_VERSION_CFGSTR, ints.size());
 	data.resize(ints.size());
@@ -825,7 +840,21 @@ namespace whiteice
 	configuration.add(configuration.getCluster(FNN_WEIGHTS_CFGSTR), w);
 
       }      
-      
+
+      // residual neural network information
+      {
+	configuration.createCluster(FNN_RESIDUAL_CFGSTR, 1);
+	
+	data.resize(1);
+	if(nnets[0]->getResidual()){
+	  data[0] = T(1.0f);
+	}
+	else{
+	  data[0] = T(0.0f);
+	}
+
+	configuration.add(configuration.getCluster(FNN_RESIDUAL_CFGSTR), data);
+      }
       
       return configuration.save(filename);
     }

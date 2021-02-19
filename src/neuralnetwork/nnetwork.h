@@ -4,10 +4,8 @@
  * Use rectifier non-linearity in all other layers except output
  * layer which should be linear.
  * 
- * UPDATE:
- * dropout probability is now 10% instead of 20% this should improve performance
- *
- * Optimize code to use cblas
+ * TODO
+ * residual neural networks implement: jacobian(), gradient_value()
  * 
  */
 
@@ -236,6 +234,11 @@ namespace whiteice
     bool removeDropOut(T retain_p = T(DROPOUT_PROBABILITY)) ;
     
     void clearDropOut() ; // remove all drop-out without changing weights
+
+    // residual neural network support:
+    void setResidual(const bool residual = true);
+
+    bool getResidual() const;
     
     ////////////////////////////////////////////////////////////
   public:
@@ -280,6 +283,8 @@ namespace whiteice
     std::vector< std::vector<bool> > dropout;  // used by gradient calculation (backward step)
     
     whiteice::RNG<T> rng;
+
+    bool residual; // true if residual neural networks (skip every 2 layers) if used
     
     // architecture (eg. 3-2-6) info
     std::vector<unsigned int> arch;
