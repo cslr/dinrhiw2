@@ -304,7 +304,7 @@ int main(int argc, char** argv)
     nnetwork< whiteice::math::blas_real<double> >* nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
 
-    nn->setResidual(true); // TODO set/implement residual neural network operation
+    nn->setResidual(true);
 
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =

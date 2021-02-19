@@ -168,11 +168,11 @@ int main()
 
     // nnetwork_complex_test(); // works about correctly
 
-    // nnetwork_gradient_test(); // gradient calculation works
+    nnetwork_gradient_test(); // gradient calculation works
 
-    nnetwork_gradient_value_test();
+    nnetwork_gradient_value_test(); // gradient_value() calculation works
 
-    // nnetwork_residual_gradient_test(); // gradient calculation test for residual neural network
+    nnetwork_residual_gradient_test(); // gradient calculation test for residual neural network
     
     //nnetwork_complex_gradient_test(); // gradient calculation works now for complex data
 
