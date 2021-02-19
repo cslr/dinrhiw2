@@ -374,7 +374,7 @@
 
   \;
 
-  <with|font-series|bold|ADDITION: Skip one layer heuristics> [TODO!]
+  <with|font-series|bold|ADDITION: Skip one layer heuristics>
 
   To support deep multilayer neural networks we need to skip one layer
   (residual neural networks).
@@ -397,7 +397,7 @@
 
   \;
 
-  The three layer model is: [HAS ERRORS!]
+  The three layer model is:
 
   <\center>
     <math|\<b-y\><around*|(|\<b-x\><around*|\||\<b-w\>|\<nobracket\>>|)>=\<b-f\><around*|(|\<b-W\><rsup|<around*|(|3|)>>\<b-g\><around*|(|\<b-W\><rsup|<around*|(|2|)>>*\<b-h\><around*|(|\<b-W\><rsup|<around*|(|1|)>>\<b-x\>+\<b-b\><rsup|<around*|(|1|)>>|)>+\<b-b\><rsup|<around*|(|2|)>>+\<b-x\>|)>+\<b-b\><rsup|<around*|(|3|)>>+\<b-h\>|)>>
@@ -470,6 +470,10 @@
 
     <around*|(|\<b-W\><rsup|<around*|(|3|)>>*diag<around*|(|\<nabla\>\<b-g\><around*|(|\<b-v\>|)>|)>*\<b-W\><rsup|<around*|(|2|)>>diag<around*|(|\<nabla\>\<b-h\><around*|(|\<b-v\>|)>|)>*\<b-W\><rsup|<around*|(|1|)>>+\<b-I\>|)>
   </math>
+
+  \;
+
+  This formula can be generalized for multilayer neural network.
 
   \;
 
