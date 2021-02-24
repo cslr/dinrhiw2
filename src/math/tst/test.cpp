@@ -1062,7 +1062,7 @@ void bezier_test()
 void hermite_test()
 {
   std::vector< vertex<float> > data;
-  hermite<vertex<float>, float> fcurve;
+  class hermite< whiteice::math::vertex<float>, float> fcurve;
   
   vertex<float> v(4);
   v[0] = 1; v[1] = 2; v[2] = 3; v[3] = 4;
@@ -1079,7 +1079,7 @@ void hermite_test()
 
   fcurve(data);
   
-  hermite<vertex<float>,float>::iterator i;
+  whiteice::math::hermite< whiteice::math::vertex<float>, float>::iterator i;
   i = fcurve.begin();
 
   // TODO: better test
