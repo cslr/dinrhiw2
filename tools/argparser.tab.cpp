@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.5.  */
+/* A Bison parser, made by GNU Bison 3.7.4.  */
 
 /* Skeleton implementation for Bison GLR parsers in C
 
-   Copyright (C) 2002-2015, 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2015, 2018-2020 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@
    private implementation details that can be changed or removed.  */
 
 /* Identify Bison output, and Bison version.  */
-#define YYBISON 30705
+#define YYBISON 30704
 
 /* Bison version string.  */
-#define YYBISON_VERSION "3.7.5"
+#define YYBISON_VERSION "3.7.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "glr.c"
@@ -318,18 +318,6 @@ typedef int_least16_t yytype_int16;
 typedef short yytype_int16;
 #endif
 
-/* Work around bug in HP-UX 11.23, which defines these macros
-   incorrectly for preprocessor constants.  This workaround can likely
-   be removed in 2023, as HPE has promised support for HP-UX 11.23
-   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
-   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
-#ifdef __hpux
-# undef UINT_LEAST8_MAX
-# undef UINT_LEAST16_MAX
-# define UINT_LEAST8_MAX 255
-# define UINT_LEAST16_MAX 65535
-#endif
-
 #if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
 typedef __UINT_LEAST8_TYPE__ yytype_uint8;
 #elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
@@ -457,16 +445,14 @@ typedef int yytype_uint16;
       && ((201103 <= __cplusplus && !(__GNUC__ == 4 && __GNUC_MINOR__ == 7)) \
           || (defined _MSC_VER && 1900 <= _MSC_VER)))
 #  define _Noreturn [[noreturn]]
-# elif ((!defined __cplusplus || defined __clang__) \
-        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0) \
-            || (!defined __STRICT_ANSI__ \
-                && (__4 < __GNUC__ + (7 <= __GNUC_MINOR__) \
-                    || (defined __apple_build_version__ \
-                        ? 6000000 <= __apple_build_version__ \
-                        : 3 < __clang_major__ + (5 <= __clang_minor__))))))
+# elif (!defined __cplusplus                     \
+        && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0)  \
+            || 4 < __GNUC__ + (7 <= __GNUC_MINOR__) \
+            || (defined __apple_build_version__ \
+                ? 6000000 <= __apple_build_version__ \
+                : 3 < __clang_major__ + (5 <= __clang_minor__))))
    /* _Noreturn works as-is.  */
-# elif (2 < __GNUC__ + (8 <= __GNUC_MINOR__) || defined __clang__ \
-        || 0x5110 <= __SUNPRO_C)
+# elif 2 < __GNUC__ + (8 <= __GNUC_MINOR__) || 0x5110 <= __SUNPRO_C
 #  define _Noreturn __attribute__ ((__noreturn__))
 # elif 1200 <= (defined _MSC_VER ? _MSC_VER : 0)
 #  define _Noreturn __declspec (noreturn)
@@ -477,9 +463,9 @@ typedef int yytype_uint16;
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YY_USE(E) ((void) (E))
+# define YYUSE(E) ((void) (E))
 #else
-# define YY_USE(E) /* empty */
+# define YYUSE(E) /* empty */
 #endif
 
 #if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
@@ -632,7 +618,7 @@ static const yytype_int8 yypgoto[] =
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,    17,    18,    37,    19,    27,    30,    32,    38,    52,
+      -1,    17,    18,    37,    19,    27,    30,    32,    38,    52,
       53,    57,    58
 };
 
@@ -983,11 +969,11 @@ yy_symbol_value_print (FILE *yyo,
                        yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
-  YY_USE (yyoutput);
+  YYUSE (yyoutput);
   if (!yyvaluep)
     return;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YY_USE (yykind);
+  YYUSE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1113,8 +1099,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 {
   yybool yynormal YY_ATTRIBUTE_UNUSED = yystackp->yysplitPoint == YY_NULLPTR;
   int yylow;
-  YY_USE (yyvalp);
-  YY_USE (yyrhslen);
+  YYUSE (yyvalp);
+  YYUSE (yyrhslen);
 # undef yyerrok
 # define yyerrok (yystackp->yyerrState = 0)
 # undef YYACCEPT
@@ -1144,239 +1130,239 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 5: /* anystring: STRING  */
 #line 142 "argparser.ypp"
                       { ((*yyvalp).str) = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1148 "argparser.tab.cpp"
+#line 1134 "argparser.tab.cpp"
     break;
 
   case 6: /* anystring: ARCHSTRING  */
 #line 143 "argparser.ypp"
                       { ((*yyvalp).str) = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1154 "argparser.tab.cpp"
+#line 1140 "argparser.tab.cpp"
     break;
 
   case 7: /* anystring: FILENAME  */
 #line 144 "argparser.ypp"
                       { ((*yyvalp).str) = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1160 "argparser.tab.cpp"
+#line 1146 "argparser.tab.cpp"
     break;
 
   case 8: /* anystring: NUMBER  */
 #line 145 "argparser.ypp"
                       { char tmp[80]; sprintf(tmp, "%d", (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val)); ((*yyvalp).str) = strdup(tmp); }
-#line 1166 "argparser.tab.cpp"
+#line 1152 "argparser.tab.cpp"
     break;
 
   case 9: /* option: OPT_NOINIT  */
 #line 148 "argparser.ypp"
                                { __info.noinit   = true; }
-#line 1172 "argparser.tab.cpp"
+#line 1158 "argparser.tab.cpp"
     break;
 
   case 10: /* option: OPT_OVERFIT  */
 #line 149 "argparser.ypp"
                                { __info.overfit  = true; }
-#line 1178 "argparser.tab.cpp"
+#line 1164 "argparser.tab.cpp"
     break;
 
   case 11: /* option: OPT_ADAPTIVE  */
 #line 150 "argparser.ypp"
                                { __info.adaptive = true; }
-#line 1184 "argparser.tab.cpp"
+#line 1170 "argparser.tab.cpp"
     break;
 
   case 12: /* option: OPT_NEGFEEDBACK  */
 #line 151 "argparser.ypp"
                                { __info.negfeedback  = true; }
-#line 1190 "argparser.tab.cpp"
+#line 1176 "argparser.tab.cpp"
     break;
 
   case 13: /* option: OPT_DEEP_BINARY  */
 #line 152 "argparser.ypp"
                                { __info.deep     = 1; }
-#line 1196 "argparser.tab.cpp"
+#line 1182 "argparser.tab.cpp"
     break;
 
   case 14: /* option: OPT_DEEP_GAUSSIAN  */
 #line 153 "argparser.ypp"
                                { __info.deep     = 2; }
-#line 1202 "argparser.tab.cpp"
+#line 1188 "argparser.tab.cpp"
     break;
 
   case 15: /* option: OPT_CROSSVALIDATION  */
 #line 154 "argparser.ypp"
                                { __info.crossvalidation = true; }
-#line 1208 "argparser.tab.cpp"
+#line 1194 "argparser.tab.cpp"
     break;
 
   case 16: /* option: OPT_HELP  */
 #line 155 "argparser.ypp"
                                { __info.help     = true; }
-#line 1214 "argparser.tab.cpp"
+#line 1200 "argparser.tab.cpp"
     break;
 
   case 17: /* option: OPT_LOAD  */
 #line 156 "argparser.ypp"
                                { __info.load     = true; }
-#line 1220 "argparser.tab.cpp"
+#line 1206 "argparser.tab.cpp"
     break;
 
   case 18: /* option: OPT_VERBOSE  */
 #line 157 "argparser.ypp"
                                { __info.verbose  = true; }
-#line 1226 "argparser.tab.cpp"
+#line 1212 "argparser.tab.cpp"
     break;
 
   case 19: /* option: OPT_VERSION  */
 #line 158 "argparser.ypp"
                                { __info.version  = true; }
-#line 1232 "argparser.tab.cpp"
+#line 1218 "argparser.tab.cpp"
     break;
 
   case 20: /* option: OPT_THREADS NUMBER  */
 #line 159 "argparser.ypp"
                                { __info.threads  = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1238 "argparser.tab.cpp"
+#line 1224 "argparser.tab.cpp"
     break;
 
   case 21: /* option: OPT_DATASIZE NUMBER  */
 #line 160 "argparser.ypp"
                                { __info.dataSize = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1244 "argparser.tab.cpp"
+#line 1230 "argparser.tab.cpp"
     break;
 
   case 22: /* option: OPT_TIME NUMBER  */
 #line 161 "argparser.ypp"
                                { __info.hasTIME  = true; __info.secs = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1250 "argparser.tab.cpp"
+#line 1236 "argparser.tab.cpp"
     break;
 
   case 23: /* option: OPT_SAMPLES NUMBER  */
 #line 162 "argparser.ypp"
                                { __info.hasSAMPLES = true; __info.samples = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1256 "argparser.tab.cpp"
+#line 1242 "argparser.tab.cpp"
     break;
 
   case 24: /* option: OPT_RECURRENT NUMBER  */
 #line 163 "argparser.ypp"
                                { __info.isRecurrent = true; __info.SIMULATION_DEPTH = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.val); }
-#line 1262 "argparser.tab.cpp"
+#line 1248 "argparser.tab.cpp"
     break;
 
   case 28: /* data: FILENAME  */
 #line 173 "argparser.ypp"
                { __info.datafile = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1268 "argparser.tab.cpp"
+#line 1254 "argparser.tab.cpp"
     break;
 
   case 30: /* arch: ARCHSTRING  */
 #line 177 "argparser.ypp"
                  { __info.arch = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1274 "argparser.tab.cpp"
+#line 1260 "argparser.tab.cpp"
     break;
 
   case 31: /* nnfile: anystring  */
 #line 181 "argparser.ypp"
                   { __info.nnfile = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1280 "argparser.tab.cpp"
+#line 1266 "argparser.tab.cpp"
     break;
 
   case 34: /* mbasic: LM_USE  */
 #line 188 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1286 "argparser.tab.cpp"
+#line 1272 "argparser.tab.cpp"
     break;
 
   case 35: /* mbasic: LM_INFO  */
 #line 189 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1292 "argparser.tab.cpp"
+#line 1278 "argparser.tab.cpp"
     break;
 
   case 36: /* mbasic: LM_MINIMIZE  */
 #line 190 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1298 "argparser.tab.cpp"
+#line 1284 "argparser.tab.cpp"
     break;
 
   case 37: /* mbasic: LM_GRAD  */
 #line 191 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1304 "argparser.tab.cpp"
+#line 1290 "argparser.tab.cpp"
     break;
 
   case 38: /* mbasic: LM_PLBFGS  */
 #line 192 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1310 "argparser.tab.cpp"
+#line 1296 "argparser.tab.cpp"
     break;
 
   case 39: /* mbasic: LM_LBFGS  */
 #line 193 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1316 "argparser.tab.cpp"
+#line 1302 "argparser.tab.cpp"
     break;
 
   case 40: /* mbasic: LM_PARALLELGRAD  */
 #line 194 "argparser.ypp"
                         { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1322 "argparser.tab.cpp"
+#line 1308 "argparser.tab.cpp"
     break;
 
   case 41: /* mbasic: LM_RANDOM  */
 #line 195 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1328 "argparser.tab.cpp"
+#line 1314 "argparser.tab.cpp"
     break;
 
   case 42: /* mbasic: LM_BAYES  */
 #line 196 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1334 "argparser.tab.cpp"
+#line 1320 "argparser.tab.cpp"
     break;
 
   case 43: /* mbasic: LM_EDIT  */
 #line 197 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1340 "argparser.tab.cpp"
+#line 1326 "argparser.tab.cpp"
     break;
 
   case 44: /* mbasic: LM_MIX  */
 #line 198 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1346 "argparser.tab.cpp"
+#line 1332 "argparser.tab.cpp"
     break;
 
   case 45: /* mbasic: LM_GBRBM  */
 #line 199 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1352 "argparser.tab.cpp"
+#line 1338 "argparser.tab.cpp"
     break;
 
   case 46: /* mbasic: LM_BBRBM  */
 #line 200 "argparser.ypp"
                     { __info.method = (YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str); }
-#line 1358 "argparser.tab.cpp"
+#line 1344 "argparser.tab.cpp"
     break;
 
   case 49: /* mmod: MMOD_OVERTRAIN  */
 #line 207 "argparser.ypp"
                      { __info.mods.push_back((YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1364 "argparser.tab.cpp"
+#line 1350 "argparser.tab.cpp"
     break;
 
   case 50: /* mmod: MMOD_PCA  */
 #line 208 "argparser.ypp"
                      { __info.mods.push_back((YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1370 "argparser.tab.cpp"
+#line 1356 "argparser.tab.cpp"
     break;
 
   case 51: /* mmod: MMOD_ICA  */
 #line 209 "argparser.ypp"
                      { __info.mods.push_back((YY_CAST (yyGLRStackItem const *, yyvsp)[YYFILL (0)].yystate.yysemantics.yysval.str)); }
-#line 1376 "argparser.tab.cpp"
+#line 1362 "argparser.tab.cpp"
     break;
 
 
-#line 1380 "argparser.tab.cpp"
+#line 1366 "argparser.tab.cpp"
 
       default: break;
     }
@@ -1395,8 +1381,8 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 static void
 yyuserMerge (int yyn, YYSTYPE* yy0, YYSTYPE* yy1)
 {
-  YY_USE (yy0);
-  YY_USE (yy1);
+  YYUSE (yy0);
+  YYUSE (yy1);
 
   switch (yyn)
     {
@@ -1415,13 +1401,13 @@ static void
 yydestruct (const char *yymsg,
             yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
-  YY_USE (yyvaluep);
+  YYUSE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YY_USE (yykind);
+  YYUSE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -2252,8 +2238,8 @@ static YYRESULTTAG
 yyreportAmbiguity (yySemanticOption* yyx0,
                    yySemanticOption* yyx1)
 {
-  YY_USE (yyx0);
-  YY_USE (yyx1);
+  YYUSE (yyx0);
+  YYUSE (yyx1);
 
 #if YYDEBUG
   YY_FPRINTF ((stderr, "Ambiguity detected.\n"));

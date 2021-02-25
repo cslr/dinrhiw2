@@ -74,7 +74,7 @@ namespace whiteice
       std::lock_guard<std::mutex> lock(physics_mutex);
       
       running = true;
-      physics_thread = new thread(std::bind(&CartPole2<T>::physicsLoop, this));
+      physics_thread = new std::thread(std::bind(&CartPole2<T>::physicsLoop, this));
     }
     
   }

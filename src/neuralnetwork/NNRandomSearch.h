@@ -78,7 +78,7 @@ namespace whiteice
         whiteice::dataset<T> const* data;
 	
 	unsigned int NTHREADS;
-	std::vector<thread*> optimizer_thread;
+	std::vector<std::thread*> optimizer_thread;
         std::mutex solution_lock, start_lock;
         
         volatile bool running;

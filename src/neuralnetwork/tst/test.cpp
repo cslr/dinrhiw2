@@ -4726,7 +4726,7 @@ void neuron_test()
   
   v = n(input);
   
-  cout << "neuron(" << n.local_field() << ") = " << v << endl; // should be zero
+  std::cout << "neuron(" << n.local_field() << ") = " << v << std::endl; // should be zero
 }
 #endif
 
@@ -4734,7 +4734,7 @@ void neuron_test()
 template <typename T>
 void calculateF(activation_function<T>& F, T value)
 {
-  cout << "F(" << value << ") = " << F(value) << endl;
+  std::cout << "F(" << value << ") = " << F(value) << std::endl;
 }
 
 
