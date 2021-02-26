@@ -413,7 +413,10 @@ namespace whiteice
       if(collectSamples)
 	samples[l].push_back(state);
 
-      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+      const bool residualActive =
+	(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size());
+
+      if(residualActive)
 	state = W[l]*state + b[l] + skipValue;
       else
 	state = W[l]*state + b[l];
@@ -587,7 +590,10 @@ namespace whiteice
 
     for(unsigned int l=0;l<getLayers();l++){
 
-      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+      const bool residualActive =
+	(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size());
+
+      if(residualActive)
 	state = W[l]*state + b[l] + skipValue;
       else
 	state = W[l]*state + b[l];
@@ -597,7 +603,7 @@ namespace whiteice
       
       for(unsigned int i=0;i<state.size();i++){
 	if(dropout[l][i]) state[i] = T(0.0f);
-	else state[i] = nonlin(state[i]+skipValue[i], l);
+	else state[i] = nonlin(state[i], l);
       }
       
       if(residual && ((l % 2) == 0) && l != 0){
@@ -1317,6 +1323,22 @@ namespace whiteice
 	if(layer > 0){
 	  for(unsigned int y=0;y<W[layer].ysize();y++){
 	    for(unsigned int x=0;x<W[layer].xsize();x++){
+#if 0
+	      printf("MSE GRADIENT DROPOUT LOOP\n"); fflush(stdout);
+	      std::cout << "lgrad[y] = " << lgrad[y]
+			<< std::endl << std::flush;
+	      std::cout << "bpdata[layer][x] = " << bpdata[layer][x]
+			<< std::endl << std::flush;
+	      std::cout << "layer-1" << layer-1
+			<< std::endl
+			<< std::flush;
+	      std::cout << "nonlin(bpdata[layer][x],layer-1) = "
+			<< nonlin(bpdata[layer][x],layer-1)
+			<< std::endl << std::flush;
+	      std::cout << "dropout = " << dropout[layer-1][x]
+			<< std::endl << std::flush;
+#endif
+	      
 	      if(dropout[layer-1][x]) grad[gindex] = T(0.0f);
 	      else grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1);
 	      
@@ -2065,9 +2087,13 @@ namespace whiteice
 	  out.imag(RELUcoef*out.imag());
 	}
 
+	const T epsilon = T(1e-6);
+
 	// correct derivate is Df(z) = f(z)/z
-	if(input.real() != 0.0f || input.imag() != 0.0f)
-	  out /= input;
+	if(abs(input.real()) > 1e-9)
+	  out /= (input);
+	else
+	  out /= (input + epsilon);
 
 	return out;
 #if 0
@@ -2335,9 +2361,13 @@ namespace whiteice
 	  out.imag(RELUcoef*out.imag());
 	}
 
+	const T epsilon = T(1e-6);
+
 	// correct derivate is Df(z) = f(z)/z
-	if(input.real() != 0.0f || input.imag() != 0.0f)
-	  out /= input;
+	if(abs(input.real()) > 1e-9)
+	  out /= (input);
+	else
+	  out /= (input + epsilon);
 
 	return out;
       }
