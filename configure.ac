@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([whiteice::dinrhiw], [<tomas.ukkonen@iki.fi>], [libdinrhiw])
+AC_INIT([whiteice::dinrhiw],[<tomas.ukkonen@iki.fi>],[libdinrhiw])
 
 dnl finds the basic compiling tools
 AC_PROG_CC
@@ -484,7 +484,7 @@ dnl adds --with-atlaslibpath
 dnl ATLAS support is NOT working / is broken!!!
 ATLASLIBS_PATH="/usr/local/lib/"
 
-AC_ARG_WITH([atlaslpath], AC_HELP_STRING([--with-atlaslpath=PATH],[sets search path for ATLAS libraries]),
+AC_ARG_WITH([atlaslpath], AS_HELP_STRING([--with-atlaslpath=PATH],[sets search path for ATLAS libraries]),
 			  [if [[ -n $withval ]]; then ATLASLIBS_PATH=$withval; fi], [])
 
 
@@ -505,6 +505,9 @@ AS_IF([test "x$enable_cppdebug" = "xyes"],[
   optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
   conf_flags="$conf_flags -D_GLIBCXX_DEBUG"
 ])
+
+dnl enable newer C++ standards
+optimization_flags="-std=c++17 $optimization_flags"
 
 dnl 
 dnl AC_ARG_ENABLE([profiling],
@@ -527,7 +530,7 @@ AC_SUBST([conf_flags], [$conf_flags])
 AC_SUBST([conf_libs], [$conf_libs])
 AC_SUBST([SHAREDLIBSUFFIX], [$SHAREDLIBSUFFIX])
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile src/math/Makefile])
 AC_CONFIG_FILES([src/crypto/Makefile src/neuralnetwork/Makefile])
 AC_CONFIG_FILES([src/datamining/Makefile src/hmm/Makefile])

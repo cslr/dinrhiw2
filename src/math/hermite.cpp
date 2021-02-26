@@ -238,7 +238,7 @@ namespace whiteice
     void hermite<T,S>::kb_spline(bool clear_path)
       
     {
-      using namespace std;
+      // using namespace std;
       
       assert(0); // not implemented (yet)
     }

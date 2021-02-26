@@ -95,7 +95,7 @@ namespace whiteice
 
     try{
       thread_is_running++;
-      rifl_thread = new thread(std::bind(&RIFL_abstract<T>::loop, this));
+      rifl_thread = new std::thread(std::bind(&RIFL_abstract<T>::loop, this));
     }
     catch(std::exception& e){
       thread_is_running--;

@@ -18,7 +18,7 @@ class FileSource : public whiteice::data_source<whiteice::dynamic_bitset>
 {
  public:
   
-  FileSource(const string& filename);
+  FileSource(const std::string& filename);
   ~FileSource();
   
   whiteice::dynamic_bitset& operator[](unsigned int index)

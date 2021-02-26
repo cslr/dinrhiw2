@@ -13,6 +13,8 @@
 
 #include "blade_math.h"
 
+#include "Log.h"
+
 #include <stdexcept>
 #include <exception>
 #include <vector>
@@ -123,7 +125,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG
 	if(index >= numRows*numCols){
-	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  whiteice::logging.error("matrix::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("matrix index out of range");
 	}
@@ -135,7 +137,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG
 	if(index >= numRows*numCols){
-	  whiteice::loggign.error("matrix::operator[]: index out of range");
+	  whiteice::logging.error("matrix::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("matrix index out of range");
 	}
@@ -148,7 +150,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG
 	if(y >= numRows || x >= numCols){
-	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  whiteice::logging.error("matrix::operator(): index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex matrix out of range");
 	}
@@ -165,7 +167,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG
 	if(y >= numRows || x >= numCols){
-	  whiteice::loggign.error("matrix::operator(): index out of range");
+	  whiteice::logging.error("matrix::operator(): index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex index out of range");
 	}

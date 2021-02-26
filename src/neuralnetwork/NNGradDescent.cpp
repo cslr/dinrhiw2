@@ -12,6 +12,9 @@
 #include <sstream>
 #include <memory>
 
+// instead of INFINITY
+#define LARGE_INF_VALUE 1e6f
+
 
 namespace whiteice
 {
@@ -21,8 +24,8 @@ namespace whiteice
     template <typename T>
     NNGradDescent<T>::NNGradDescent(bool heuristics, bool deep_pretraining)
     {
-      best_error = T(INFINITY);
-      best_pure_error = T(INFINITY);
+      best_error = T(LARGE_INF_VALUE);
+      best_pure_error = T(LARGE_INF_VALUE);
       iterations = 0;
       data = NULL;
       NTHREADS = 0;
@@ -207,8 +210,8 @@ namespace whiteice
       this->data = &data;
       this->NTHREADS = NTHREADS;
       this->MAXITERS = MAXITERS;
-      best_error = T(INFINITY);
-      best_pure_error = T(INFINITY);
+      best_error = T(LARGE_INF_VALUE);
+      best_pure_error = T(LARGE_INF_VALUE);
       iterations = 0;
       running = true;
       thread_is_running = 0;
@@ -253,8 +256,8 @@ namespace whiteice
       
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	optimizer_thread[i] =
-	  new thread(std::bind(&NNGradDescent<T>::optimizer_loop,
-			       this));
+	  new std::thread(std::bind(&NNGradDescent<T>::optimizer_loop,
+				    this));
       }
 
       {
@@ -768,7 +771,7 @@ namespace whiteice
 	  
 	  // resets no improvement counter to check for convergence
 	  // and sets best error for this loop iteration
-	  T local_thread_best_error = T(INFINITY);
+	  T local_thread_best_error = T(LARGE_INF_VALUE);
 	  
 	  {
 	    std::lock_guard<std::mutex> lock(noimprove_lock);
@@ -1027,7 +1030,7 @@ namespace whiteice
 		break;
 	    }
 	    while(real(delta_error) < T(0.0) && real(lrate) >= 10e-25 && running);
-
+	    
 	    
 	    
 	    // replaces error with TESTing set error

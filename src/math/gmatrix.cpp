@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <cassert>
 
-using namespace std;
+// using namespace std;
 
 
 namespace whiteice

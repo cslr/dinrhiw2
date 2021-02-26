@@ -51,6 +51,7 @@ extern "C" {
   static void __attribute__ ((constructor))
   trapfpe(){
     feenableexcept(FE_INVALID|FE_DIVBYZERO|FE_OVERFLOW);
+    //feenableexcept(FE_INVALID);
   }
 #endif
   
@@ -86,7 +87,9 @@ int main(int argc, char** argv)
     bool adaptive = false;
     bool negfeedback = false;
     unsigned int deep = 0;
-    bool crossvalidation = false;
+    bool residual = true;
+    bool dropout = false;
+    bool crossvalidation = false;    
 
     // minimum norm error ||y-f(x)|| gradient instead of MSE ||y-f(x)||^2
     bool MNE = true; 
@@ -134,6 +137,7 @@ int main(int argc, char** argv)
 		      adaptive,
 		      negfeedback,
 		      deep,
+		      dropout,
 		      crossvalidation,
 		      help,
 		      verbose);
@@ -303,8 +307,13 @@ int main(int argc, char** argv)
 
     nnetwork< whiteice::math::blas_real<double> >* nn = new nnetwork< whiteice::math::blas_real<double> >(arch);
     bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
+   
+    nn->setResidual(residual);
 
-    nn->setResidual(true);
+    if(dropout && residual) printf("Using residual neural network with dropout heuristics.\n");
+    else if(dropout) printf("Using normal neural network with dropout heuristics.\n");
+    else if(residual) printf("Using residual neural network.\n");
+    else printf("Using normal neural network.\n");
 
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
@@ -966,8 +975,7 @@ int main(int argc, char** argv)
       
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
       grad.setUseMinibatch(true);
-      const bool dropout = false;
-
+      
       if(samples > 0)
 	grad.startOptimize(data, *nn, threads, samples, dropout);
       else
@@ -1114,7 +1122,7 @@ int main(int argc, char** argv)
 	  int noimprovement_counter = 0; // used to diagnosize stuck to local minimum (no overfitting allowed)
 	  const int MAX_NOIMPROVE_ITERS = 1000;
 
-	  const bool dropout = true; // drop out code do works (0.8) reasonably well
+	  // drop out code do works (0.8) reasonably well
 	  const double retain_probability = 0.8;
 
 	  nn->exportdata(best_weights);
@@ -2127,7 +2135,8 @@ void print_usage(bool all)
   printf("--overfit         do not use early stopping (grad,lbfgs)\n");
   printf("--deep=*          pretrains neural network as a RBM\n");
   printf("                  (* = binary or gaussian input layer)\n");
-  printf("--crossvalidation random crossvalidation (K=10)\n");
+  printf("--dropout         enable dropout heuristics (grad,pgrad)\n");
+  printf("--crossvalidation random crossvalidation (K=10) (grad)\n");
   printf("--recurrent N     simple recurrent network (lbfgs, use)\n");
   printf("--adaptive        adaptive step in bayesian HMC (bayes)\n");
   printf("--negfb           use negative feedback between neurons\n");

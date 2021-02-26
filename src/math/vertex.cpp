@@ -1559,7 +1559,7 @@ namespace whiteice
     vertex<T>& vertex<T>::operator-=(const vertex<T>& v)
       
     {
-      if(dataSize != dataSize){
+      if(dataSize != v.dataSize){
 	printf("ERROR: illegal operation: vector operator-= failed: dim %d != dim %d (%s:%d)\n",
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 

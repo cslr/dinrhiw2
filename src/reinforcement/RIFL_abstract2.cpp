@@ -140,7 +140,7 @@ namespace whiteice
       whiteice::logging.info("RIFL_abstract2: starting main thread");
       
       thread_is_running++;
-      rifl_thread = new thread(std::bind(&RIFL_abstract2<T>::loop, this));
+      rifl_thread = new std::thread(std::bind(&RIFL_abstract2<T>::loop, this));
     }
     catch(std::exception& e){
       thread_is_running--;

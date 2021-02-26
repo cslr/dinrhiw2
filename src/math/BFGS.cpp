@@ -69,7 +69,7 @@ namespace whiteice
       thread_is_running = 0;
       
       try{
-	optimizer_thread = new thread(std::bind(&BFGS<T>::optimizer_loop, this));
+	optimizer_thread = new std::thread(std::bind(&BFGS<T>::optimizer_loop, this));
 	optimizer_thread->detach();
       }
       catch(std::exception& e){
@@ -79,8 +79,6 @@ namespace whiteice
       }
       
       thread_mutex.unlock();
-      
-      return true;
       
       return true;
     }

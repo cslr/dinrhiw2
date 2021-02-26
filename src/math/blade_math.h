@@ -1655,7 +1655,7 @@ namespace whiteice
     template <unsigned int K, typename T>
       bool fft(vertex< whiteice::math::complex<T> >& v) 
       {
-	using namespace std;
+	//using namespace std;
 	
 	const unsigned int N = (unsigned int)(pow(2.0,(double)K)); // 2^K size
 	if(v.size() != N) return false;
@@ -1707,7 +1707,7 @@ namespace whiteice
     template <unsigned int K, typename T>
       bool ifft(vertex< whiteice::math::complex<T> >& v) 
       {
-	using namespace std;
+	//using namespace std;
 	
 	const unsigned int N = (unsigned int)(pow(2.0,(double)K)); // 2^K size
 	if(v.size() != N) return false;
