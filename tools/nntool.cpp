@@ -317,7 +317,7 @@ int main(int argc, char** argv)
       else if(residual) printf("Using residual neural network.\n");
       else printf("Using normal neural network.\n");
     }
-
+    
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
       whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
@@ -977,7 +977,9 @@ int main(int argc, char** argv)
       
       
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
+      
       grad.setUseMinibatch(true);
+      
       grad.setOverfit(overfit);
       
       if(samples > 0)

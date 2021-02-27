@@ -6,7 +6,8 @@
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
  *           "--time" <number> | "--load" | "--samples <NUMBER>" | "--recurrent <NUMBER>"
- *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary | --deep=gaussian | --noresidual | --dropout | --crossvalidation
+ *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary |
+ *            --deep=gaussian | --noresidual | --dropout | --crossvalidation
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
