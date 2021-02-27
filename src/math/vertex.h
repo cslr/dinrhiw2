@@ -11,6 +11,8 @@
 #include "ownexception.h"
 #include "number.h"
 
+#include "Log.h"
+
 #include "compressable.h"
 #include "MemoryCompressor.h"
 
@@ -189,7 +191,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){
-	  whiteice::loggign.error("vertex::operator[]: index out of range");
+	  whiteice::logging.error("vertex::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex index out of range"); }
 #endif
@@ -200,7 +202,7 @@ namespace whiteice
       {	
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){
-	  whiteice::loggign.error("vertex::operator[]: index out of range");
+	  whiteice::logging.error("vertex::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex index out of range"); }
 #endif	

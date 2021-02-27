@@ -1,10 +1,10 @@
 # Datamining Makefile
 ###################################################
 
-CC = gcc-9
-CXX= g++-9
+CC = gcc
+CXX= g++
 
-OPTIMIZE=-fPIC -O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize -fopenmp -mtune=native
+OPTIMIZE=-std=c++17 -fPIC -O3 -g -DAMD64 -ffast-math -mtune=native -ftree-vectorize -fopenmp -mtune=native
 CFLAGS += $(OPTIMIZE) -Wall -g -I. -I.. -I../../ -I../neuralnetwork -I../math -I/usr/include/ -I/usr/local/include -m64 -I/opt/intel/compilers_and_libraries/linux/mkl/include -DINTELMKL 
 CXXFLAGS += $(CFLAGS) -I@atlas_headerpath@
 

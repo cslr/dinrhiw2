@@ -8,12 +8,15 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <mutex>
+
 #include <iostream>
 #include <string>
 #include <stdio.h>
 
 #include <chrono>
-#include <mutex>
+
+
 
 namespace whiteice {
 

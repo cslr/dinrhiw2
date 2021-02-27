@@ -23,6 +23,8 @@ void parse_commandline(int argc, char** argv,
 		       bool& adaptive,
 		       bool& negfeedback,
 		       unsigned int& deep,
+		       bool& residual,
+		       bool& dropout,
 		       bool& crossvalidation,
 		       bool& help, 
 		       bool& verbose);

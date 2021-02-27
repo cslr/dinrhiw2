@@ -6,7 +6,7 @@
  * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
  * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
  *           "--time" <number> | "--load" | "--samples <NUMBER>" | "--recurrent <NUMBER>"
- *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary | --deep=gaussian | --crossvalidation
+ *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary | --deep=gaussian | --noresidual | --dropout | --crossvalidation
  * ENDOPT  = "--"
  * DATA    = <filename>
  * ARCH    = AC(-AC)*-AC
@@ -40,6 +40,8 @@
     bool adaptive;
     bool negfeedback;
     unsigned int deep;
+    bool residual;
+    bool dropout;
     bool crossvalidation;
     bool noinit;
     bool hasTIME;
@@ -90,6 +92,8 @@
 %token <str> OPT_NEGFEEDBACK
 %token <str> OPT_DEEP_BINARY
 %token <str> OPT_DEEP_GAUSSIAN
+%token <str> OPT_DROPOUT
+%token <str> OPT_NORESIDUAL
 %token <str> OPT_CROSSVALIDATION
 %token <str> OPT_LOAD
 %token <str> OPT_HELP
@@ -150,7 +154,9 @@ option:	OPT_NOINIT             { __info.noinit   = true; }
       | OPT_ADAPTIVE           { __info.adaptive = true; }
       | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
       | OPT_DEEP_BINARY        { __info.deep     = 1; }
-      | OPT_DEEP_GAUSSIAN      { __info.deep     = 2; }      
+      | OPT_DEEP_GAUSSIAN      { __info.deep     = 2; }
+      | OPT_DROPOUT            { __info.dropout  = true; }
+      | OPT_NORESIDUAL         { __info.residual  = false; }
       | OPT_CROSSVALIDATION    { __info.crossvalidation = true; }
       | OPT_HELP               { __info.help     = true; }
       | OPT_LOAD               { __info.load     = true; }
@@ -257,6 +263,8 @@ void parse_commandline(int argc, char** argv,
 		       bool& adaptive,
 		       bool& negfeedback,
 		       unsigned int& deep,
+		       bool& residual,
+		       bool& dropout,
 		       bool& crossvalidation,
 		       bool& help,
 		       bool& verbose)
@@ -271,6 +279,8 @@ void parse_commandline(int argc, char** argv,
   help    = false;
   threads = 0;
   SIMULATION_DEPTH = 1;
+  residual = true;
+  dropout = false;
   crossvalidation = false;
   deep = 0;
   
@@ -310,6 +320,10 @@ void parse_commandline(int argc, char** argv,
     p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
     cmdparamslist.push_back(p);
     p.name = "--deep=gaussian"; p.code = OPT_DEEP_GAUSSIAN;
+    cmdparamslist.push_back(p);
+    p.name = "--noresidual"; p.code = OPT_NORESIDUAL;
+    cmdparamslist.push_back(p);
+    p.name = "--dropout"; p.code = OPT_DROPOUT;
     cmdparamslist.push_back(p);
     p.name = "--crossvalidation"; p.code = OPT_CROSSVALIDATION;
     cmdparamslist.push_back(p);
@@ -381,6 +395,8 @@ void parse_commandline(int argc, char** argv,
   __info.threads    = 0;
   __info.dataSize   = 0;
   __info.SIMULATION_DEPTH = 1;
+  __info.residual   = true;
+  __info.dropout    = false;
   __info.crossvalidation = false;
   __info.isRecurrent = false;
   __info.method     = "use";
@@ -403,7 +419,7 @@ void parse_commandline(int argc, char** argv,
     }
     
     
-        // error checks for parameters
+    // error checks for parameters
     {
       if(__info.datafile.size() <= 0){
 	print_usage(false);
@@ -498,6 +514,8 @@ void parse_commandline(int argc, char** argv,
     adaptive    = __info.adaptive;
     negfeedback = __info.negfeedback;
     deep        = __info.deep;
+    residual    = __info.residual;
+    dropout     = __info.dropout;
     crossvalidation = __info.crossvalidation;
     
     lmethod = __info.method;

@@ -219,7 +219,7 @@ namespace whiteice
 
       std::unique_lock<std::mutex> lock2(optimize_mutex);
       
-      optimization_thread = new thread(std::bind(&RNN_RBM<T>::optimize_loop, this));
+      optimization_thread = new std::thread(std::bind(&RNN_RBM<T>::optimize_loop, this));
 
       // do not exit startOptimize() until thread has started
       while(optimization_threads == 0){

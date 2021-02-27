@@ -413,7 +413,10 @@ namespace whiteice
       if(collectSamples)
 	samples[l].push_back(state);
 
-      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+      const bool residualActive =
+	(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size());
+
+      if(residualActive)
 	state = W[l]*state + b[l] + skipValue;
       else
 	state = W[l]*state + b[l];
@@ -587,7 +590,10 @@ namespace whiteice
 
     for(unsigned int l=0;l<getLayers();l++){
 
-      if(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size())
+      const bool residualActive =
+	(residual && (l % 2) == 0 && l != 0 && W[l].ysize() == skipValue.size());
+
+      if(residualActive)
 	state = W[l]*state + b[l] + skipValue;
       else
 	state = W[l]*state + b[l];
@@ -597,7 +603,7 @@ namespace whiteice
       
       for(unsigned int i=0;i<state.size();i++){
 	if(dropout[l][i]) state[i] = T(0.0f);
-	else state[i] = nonlin(state[i]+skipValue[i], l);
+	else state[i] = nonlin(state[i], l);
       }
       
       if(residual && ((l % 2) == 0) && l != 0){
@@ -1317,6 +1323,7 @@ namespace whiteice
 	if(layer > 0){
 	  for(unsigned int y=0;y<W[layer].ysize();y++){
 	    for(unsigned int x=0;x<W[layer].xsize();x++){
+	      
 	      if(dropout[layer-1][x]) grad[gindex] = T(0.0f);
 	      else grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1);
 	      
@@ -2065,9 +2072,13 @@ namespace whiteice
 	  out.imag(RELUcoef*out.imag());
 	}
 
+	const T epsilon = T(1e-6);
+
 	// correct derivate is Df(z) = f(z)/z
-	if(input.real() != 0.0f || input.imag() != 0.0f)
-	  out /= input;
+	if(abs(input.real()) > 1e-9)
+	  out /= (input);
+	else
+	  out /= (input + epsilon);
 
 	return out;
 #if 0
@@ -2335,9 +2346,13 @@ namespace whiteice
 	  out.imag(RELUcoef*out.imag());
 	}
 
+	const T epsilon = T(1e-6);
+
 	// correct derivate is Df(z) = f(z)/z
-	if(input.real() != 0.0f || input.imag() != 0.0f)
-	  out /= input;
+	if(abs(input.real()) > 1e-9)
+	  out /= (input);
+	else
+	  out /= (input + epsilon);
 
 	return out;
       }
@@ -3465,7 +3480,8 @@ namespace whiteice
     // scales weights according to retain_probability
     // (except the first layer where we always keep all inputs)
 
-    for(unsigned int l=1;l<getLayers();l++){
+    //for(unsigned int l=1;l<getLayers();l++){ // FIX BUG HERE
+    for(unsigned int l=0;l<(getLayers()-1);l++){
       W[l] *= probability;
     }
 

@@ -203,8 +203,8 @@ namespace whiteice
     
     for(unsigned int i=0;i<optimizer_thread.size();i++){
       optimizer_thread[i] =
-	new thread(std::bind(&PolicyGradAscent<T>::optimizer_loop,
-			     this));
+	new std::thread(std::bind(&PolicyGradAscent<T>::optimizer_loop,
+				  this));
     }
 
     // waits for threads to start
