@@ -10,6 +10,8 @@
 # (Adam gradient descent). This means Adam gradient descent works a bit better
 # and finds optimum faster. When running longer (1000 epochs) it gives 1e-7 error which
 # is almost perfect memorization of training data.
+# HOWEVER, WITH VALIDATION SET (NO OVERFITTING) TENSORFLOW GIVES ERROR 0.180 error which is 3x
+# larger than with Dinrhiw2 (how are errors in dinrhiw2 exactly calculated?? [NNGradDescent.cpp])
 #
 # Tomas Ukkonen <tomas.ukkonen@iki.fi>
 # 
@@ -67,7 +69,16 @@ diabetes_models = tf.keras.Model(inputs=input, outputs = x, name="ResNet")
 diabetes_models.compile(loss = tf.losses.MeanSquaredError(),
                         optimizer = tf.optimizers.Adam())
 
-diabetes_models.fit(diabetes_features, diabetes_labels, epochs=100)
+valsize = (2*diabetes_features.shape[0])//10 # keep 20% training dataset
+
+x_val = diabetes_features[-valsize:]
+y_val = diabetes_labels[-valsize:]
+
+x_train = diabetes_features[:-valsize]
+y_train = diabetes_labels[:-valsize]
+
+diabetes_models.fit(x_train, y_train, epochs=100, validation_data=(x_val,y_val))
+
 
 
 
