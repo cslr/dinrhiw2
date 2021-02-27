@@ -137,6 +137,7 @@ int main(int argc, char** argv)
 		      adaptive,
 		      negfeedback,
 		      deep,
+		      residual,
 		      dropout,
 		      crossvalidation,
 		      help,
@@ -310,10 +311,12 @@ int main(int argc, char** argv)
    
     nn->setResidual(residual);
 
-    if(dropout && residual) printf("Using residual neural network with dropout heuristics.\n");
-    else if(dropout) printf("Using normal neural network with dropout heuristics.\n");
-    else if(residual) printf("Using residual neural network.\n");
-    else printf("Using normal neural network.\n");
+    if(verbose){
+      if(dropout && residual) printf("Using residual neural network with dropout heuristics.\n");
+      else if(dropout) printf("Using normal neural network with dropout heuristics.\n");
+      else if(residual) printf("Using residual neural network.\n");
+      else printf("Using normal neural network.\n");
+    }
 
     // was sigmoid!!
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
@@ -975,6 +978,7 @@ int main(int argc, char** argv)
       
       math::NNGradDescent< whiteice::math::blas_real<double> > grad(negfeedback);
       grad.setUseMinibatch(true);
+      grad.setOverfit(overfit);
       
       if(samples > 0)
 	grad.startOptimize(data, *nn, threads, samples, dropout);
@@ -2132,10 +2136,11 @@ void print_usage(bool all)
   printf("--version         displays version and exits\n");
   printf("--info            prints network architecture information\n");
   printf("--no-init         don't use heuristics when initializing net\n");
-  printf("--overfit         do not use early stopping (grad,lbfgs)\n");
+  printf("--overfit         do not use early stopping/use whole data (grad,pgrad,lbfgs)\n");
   printf("--deep=*          pretrains neural network as a RBM\n");
   printf("                  (* = binary or gaussian input layer)\n");
   printf("--dropout         enable dropout heuristics (grad,pgrad)\n");
+  printf("--noresidual      disable residual neural network (grad,pgrad)\n");
   printf("--crossvalidation random crossvalidation (K=10) (grad)\n");
   printf("--recurrent N     simple recurrent network (lbfgs, use)\n");
   printf("--adaptive        adaptive step in bayesian HMC (bayes)\n");

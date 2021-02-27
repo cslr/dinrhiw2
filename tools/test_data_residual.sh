@@ -23,11 +23,13 @@ $DSTOOL -list wine-test.ds
 
 # 20 layer neural network (works)
 ## ARCH="13-200-200-200-200-200-200-200-200-200-200-200-200-200-200-200-200-200-200-200-1"
+
 ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
+
 ## ARCH="13-100-1"
 
-# 40 layer neural network
-## ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
+# 40 layer neural network (don't work very well)
+# ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
 
 
 ##ARCH="13-20-20-20-20-20-20-20-20-1"
@@ -38,7 +40,7 @@ ARCH="13-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-20-1"
 
 ################## $NNTOOL -v --samples 2000 wine-test.ds $ARCH winenn.cfg pgrad
 
-$NNTOOL -v --time 1200 --threads 4 wine-test.ds $ARCH winenn.cfg pgrad
+$NNTOOL -v --time 600 --threads 4 wine-test.ds $ARCH winenn.cfg pgrad
 
 ## $NNTOOL -v --time 600 wine-test.ds $ARCH winenn.cfg pgrad
 

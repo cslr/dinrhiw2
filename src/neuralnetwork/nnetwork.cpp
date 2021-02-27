@@ -1323,21 +1323,6 @@ namespace whiteice
 	if(layer > 0){
 	  for(unsigned int y=0;y<W[layer].ysize();y++){
 	    for(unsigned int x=0;x<W[layer].xsize();x++){
-#if 0
-	      printf("MSE GRADIENT DROPOUT LOOP\n"); fflush(stdout);
-	      std::cout << "lgrad[y] = " << lgrad[y]
-			<< std::endl << std::flush;
-	      std::cout << "bpdata[layer][x] = " << bpdata[layer][x]
-			<< std::endl << std::flush;
-	      std::cout << "layer-1" << layer-1
-			<< std::endl
-			<< std::flush;
-	      std::cout << "nonlin(bpdata[layer][x],layer-1) = "
-			<< nonlin(bpdata[layer][x],layer-1)
-			<< std::endl << std::flush;
-	      std::cout << "dropout = " << dropout[layer-1][x]
-			<< std::endl << std::flush;
-#endif
 	      
 	      if(dropout[layer-1][x]) grad[gindex] = T(0.0f);
 	      else grad[gindex] = lgrad[y] * nonlin(bpdata[layer][x], layer-1);
@@ -3495,7 +3480,8 @@ namespace whiteice
     // scales weights according to retain_probability
     // (except the first layer where we always keep all inputs)
 
-    for(unsigned int l=1;l<getLayers();l++){
+    //for(unsigned int l=1;l<getLayers();l++){ // FIX BUG HERE
+    for(unsigned int l=0;l<(getLayers()-1);l++){
       W[l] *= probability;
     }
 
