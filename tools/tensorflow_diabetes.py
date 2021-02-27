@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python3
 #
 # trains tensorflow model for PIMA Diabetes data
 # mean squared error in whole data is 0.0616 in dinrhiw2 without overfitting
