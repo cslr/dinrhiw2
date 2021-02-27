@@ -3,6 +3,7 @@
 # trains tensorflow model for PIMA Diabetes data
 # mean squared error in whole data is 0.0616 in dinrhiw2 without overfitting
 # and 0.001865 with overfitting and residual neural network (test_diabetes.sh)
+# Validation set error is 0.0696.
 #
 # comparing training error when using TensorFlow
 #
@@ -11,7 +12,7 @@
 # and finds optimum faster. When running longer (1000 epochs) it gives 1e-7 error which
 # is almost perfect memorization of training data.
 # HOWEVER, WITH VALIDATION SET (NO OVERFITTING) TENSORFLOW GIVES ERROR 0.180 error which is 3x
-# larger than with Dinrhiw2 (how are errors in dinrhiw2 exactly calculated?? [NNGradDescent.cpp])
+# larger than with Dinrhiw2. (NNGradDescent, "pgrad")
 #
 # Tomas Ukkonen <tomas.ukkonen@iki.fi>
 # 
@@ -71,13 +72,15 @@ diabetes_models.compile(loss = tf.losses.MeanSquaredError(),
 
 valsize = (2*diabetes_features.shape[0])//10 # keep 20% training dataset
 
+EPOCHS=1000
+
 x_val = diabetes_features[-valsize:]
 y_val = diabetes_labels[-valsize:]
 
 x_train = diabetes_features[:-valsize]
 y_train = diabetes_labels[:-valsize]
 
-diabetes_models.fit(x_train, y_train, epochs=100, validation_data=(x_val,y_val))
+diabetes_models.fit(x_train, y_train, epochs=EPOCHS, validation_data=(x_val,y_val))
 
 
 

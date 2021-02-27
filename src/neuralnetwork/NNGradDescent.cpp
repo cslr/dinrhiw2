@@ -386,7 +386,8 @@ namespace whiteice
 	nn = *(this->nn);
 	nn.importdata(bestx);
 	
-	error = best_pure_error;
+	error = best_pure_error; // FULL DATASET ERROR
+	//error = best_error; // VALIDATION DATASET ERROR
 	iterations = this->iterations;
 	
 	solution_lock.unlock();
@@ -396,7 +397,7 @@ namespace whiteice
     }
 
 
-        template <typename T>
+    template <typename T>
     bool NNGradDescent<T>::getSolutionStatistics(T& error,
 						 unsigned int& iterations) const
     {
@@ -406,7 +407,8 @@ namespace whiteice
       {
 	solution_lock.lock();
 	
-	error = best_pure_error;
+	error = best_pure_error; // FULL DATASET ERROR
+	// error = best_error; // VALIDATION DATASET ERROR
 	iterations = this->iterations;
 	
 	solution_lock.unlock();
@@ -820,7 +822,7 @@ namespace whiteice
 #pragma omp for nowait schedule(auto)
 		for(unsigned int i=0;i<MINIBATCHSIZE;i++){
 		  const unsigned int index = rng.rand() % dtrain.size(0);
-		  // const unsigned int index = i;
+		  // const unsigned intnet index = i;
 		  
 		  if(dropout){
 		    nnet.setDropOut(net_dropout);
