@@ -13,6 +13,7 @@
 
 #include "function.h"
 #include "real.h"
+#include "modular.h"
 
 #include "global.h"
 
@@ -84,11 +85,20 @@ namespace whiteice
     // calculates 1d fast fourier transform
     // and its inverse
 
+
     template <unsigned int K, typename T>
       bool fft(vertex< whiteice::math::complex<T> >& v) ;
 
     template <unsigned int K, typename T>
       bool ifft(vertex< whiteice::math::complex<T> >& v) ;
+    
+    template <unsigned int K, typename T>
+    bool fft(vertex< whiteice::math::blas_complex<T> >& v) ;
+    
+    template <unsigned int K, typename T>
+    bool ifft(vertex< whiteice::math::blas_complex<T> >& v) ;
+    
+    
     
     // TODO:
     // calculates 1d fast hartley transform and its inverse
@@ -150,6 +160,15 @@ namespace whiteice
     bool convert(complex<float>& B, const blas_real<double>& A);
     bool convert(blas_real<double>& B, const blas_real<float>& A);
     bool convert(blas_real<float>& B, const blas_real<double>& A);
+
+    bool convert(blas_real<float>& B, const complex< blas_real<float> >& A);
+    bool convert(blas_real<double>& B, const complex< blas_real<double> >& A);
+
+    bool convert(blas_complex<float>& B, const complex< blas_real<float> >& A);
+    bool convert(blas_complex<double>& B, const complex< blas_real<double> >& A);
+
+    bool convert(complex<blas_real<float> >& B, const blas_complex<float>& A);
+    bool convert(complex<blas_real<double> >& B, const blas_complex<double>& A);
 
     bool convert(blas_real<float>& B, const double& A);
     bool convert(complex<float>& B, const float& A);
@@ -421,6 +440,12 @@ namespace whiteice
     
     blas_real<double> pow(blas_real<double> x,
 			   blas_real<double> y) PURE_FUNCTION;
+
+    blas_complex<float> pow(blas_complex<float> x,
+			    blas_complex<float> y) PURE_FUNCTION;
+    
+    blas_complex<double> pow(blas_complex<double> x,
+			     blas_complex<double> y) PURE_FUNCTION;
     
     
     
@@ -467,7 +492,19 @@ namespace whiteice
 				  blas_real<double> y){
       return blas_real<double>( std::pow(x.c[0], y.c[0]) );
     }
+
+    inline blas_complex<float> pow(blas_complex<float> x,
+				   blas_complex<float> y){
+      auto z = std::pow(x.c[0], y.c[0]);
+      return blas_complex<float>(std::real(z), std::imag(z));
+    }
+      
     
+    inline blas_complex<double> pow(blas_complex<double> x,
+				    blas_complex<double> y){
+      auto z = std::pow(x.c[0], y.c[0]);
+      return blas_complex<double>(std::real(z), std::imag(z));
+    }
     
     
     //////////////////////////////////////////////////////////////////////
@@ -1230,6 +1267,9 @@ namespace whiteice
     unsigned int conj(unsigned int x) PURE_FUNCTION;
     
     realnumber conj(const realnumber& x);
+
+    template <typename T>
+    modular<T> conj(const modular<T>& u) PURE_FUNCTION;
     
     
     template <typename T>
@@ -1261,6 +1301,9 @@ namespace whiteice
     inline unsigned int conj(unsigned int x){ return x; }
     
     inline realnumber conj(const realnumber& x){ return x; }
+
+    template <typename T>
+    inline modular<T> conj(const modular<T>& u){ return u; }
     
     
     template <typename T>
@@ -1645,12 +1688,12 @@ namespace whiteice
     
     unsigned int bitreverse(unsigned int index,
 			    unsigned int bits); // for (i)fft
-    
+
+
     /* template class for 2^K length FFT
      * there's lots of room for (non-assymptotic) improvements (this is basic FFT),
      * (for example MMX/SIMD/3dNow can be used on x86)
      * for example of good implementation FFTW (www.fftw.org)
-     * (GPLed though (so don't look at the exact code, only released public papers))
      */
     template <unsigned int K, typename T>
       bool fft(vertex< whiteice::math::complex<T> >& v) 
@@ -1678,9 +1721,9 @@ namespace whiteice
 	  m *= 2; // m = 2^s
 	  
 	  whiteice::math::complex<T> u, t;
-	  whiteice::math::complex<T> w   = 1;
+	  whiteice::math::complex<T> w   = T(1);
 	  whiteice::math::complex<T> w_m(T(0), 
-					 T(2.0*M_PI/T(m)));
+					 T(T(2.0*M_PI)/T(m)));
 	  
 	  w_m = whiteice::math::exp(w_m);
 	  
@@ -1730,9 +1773,119 @@ namespace whiteice
 	  m *= 2; // m = 2^s
 	  
 	  whiteice::math::complex<T> u, t;
-	  whiteice::math::complex<T> w   = 1;
+	  whiteice::math::complex<T> w   = T(1);
 	  whiteice::math::complex<T> w_m(T(0), 
-					 T(-2.0*M_PI/T(m)));
+					 T(T(-2.0*M_PI)/T(m)));
+	  
+	  w_m = whiteice::math::exp(w_m);
+	  
+	  for(unsigned int j=0;j<m/2;j++){
+	    for(unsigned int k=j;k<N;k+=m){
+	      t = w * v[ k + m/2 ];
+	      u = v[ k ];
+	      v[k] = u + t;
+	      v[k + m/2] = u - t;
+	    }
+	    
+	    w *= w_m;
+	  }
+	}
+	
+	
+	for(unsigned int i=0;i<N;i++)
+	  v[i] /= N;
+	
+	return true;      
+      }
+
+    
+
+    /* template class for 2^K length FFT
+     * there's lots of room for (non-assymptotic) improvements (this is basic FFT),
+     * (for example MMX/SIMD/3dNow can be used on x86)
+     * for example of good implementation FFTW (www.fftw.org)
+     */
+    template <unsigned int K, typename T>
+    bool fft(vertex< whiteice::math::blas_complex<T> >& v) 
+      {
+	//using namespace std;
+	
+	const unsigned int N = (unsigned int)(pow(2.0,(double)K)); // 2^K size
+	if(v.size() != N) return false;
+	
+	// reorders v
+	{
+	  const vertex< whiteice::math::blas_complex<T> > vv(v);
+	  
+	  for(unsigned int i=0;i<N;i++)
+	    v[bitreverse(i,K)] = vv[i]; // bitreverse is slow, should be precalculated
+	}
+	
+	// calculates fft iteratively
+	// (ref Introduction to Algoritms / Thomas Cormen)
+	
+	unsigned int m = 1;      
+	
+	for(unsigned int s=1;s<=K;s++){
+	  
+	  m *= 2; // m = 2^s
+	  
+	  whiteice::math::blas_complex<T> u, t;
+	  whiteice::math::blas_complex<T> w   = T(1);
+	  whiteice::math::blas_complex<T> w_m(T(0), 
+					      T(T(2.0*M_PI)/T(m)));
+	  
+	  w_m = whiteice::math::exp(w_m);
+	  
+	  for(unsigned int j=0;j<m/2;j++){
+	    for(unsigned int k=j;k<N;k+=m){
+	      t = w * v[ k + m/2 ];
+	      u = v[ k ];
+	      v[k] = u + t;
+	      v[k + m/2] = u - t;
+	    }
+	    
+	    w *= w_m;
+	  }
+	}
+	
+	return true;
+      }
+    
+    
+    /*
+     * inverse fft
+     * K is gives the length of fft, length = 2^K
+     */
+    template <unsigned int K, typename T>
+      bool ifft(vertex< whiteice::math::blas_complex<T> >& v) 
+      {
+	//using namespace std;
+	
+	const unsigned int N = (unsigned int)(pow(2.0,(double)K)); // 2^K size
+	if(v.size() != N) return false;
+	
+	// reorders v
+	{
+	  const vertex< whiteice::math::blas_complex<T> > vv(v);
+	  
+	  for(unsigned int i=0;i<N;i++)
+	    v[bitreverse(i,K)] = vv[i];
+	}
+	
+	// calculates ifft iteratively
+	// (ref Introduction to Algoritms / Thomas Cormen)
+	
+	unsigned int m = 1;      
+	
+	for(unsigned int s=1;s<=K;s++){
+	  
+	  m *= 2; // m = 2^s
+	  
+	  whiteice::math::blas_complex<T> u, t;
+	  whiteice::math::blas_complex<T> w   = T(1);
+	  whiteice::math::blas_complex<T> w_m(T(0), 
+					      T(T(-2.0*M_PI)/T(m)));
 	  
 	  w_m = whiteice::math::exp(w_m);
 	  

@@ -21,7 +21,7 @@ namespace whiteice
     modular<T>::modular()
     {
       this->value = 0;
-      this->modulo = 1;
+      this->modulo = DEFAULT_MODULAR_BASIS;
     }
     
     
@@ -52,10 +52,10 @@ namespace whiteice
     
     
     template <typename T>
-    modular<T>::modular(const T& modulo)
+    modular<T>::modular(const T& value)
     {
-      this->value = T(0);
-      this->modulo = modulo;
+      this->value = value;
+      this->modulo = DEFAULT_MODULAR_BASIS;
     }
     
     
@@ -316,6 +316,26 @@ namespace whiteice
       
     {
       return modular<T>(a.value * s);
+    }
+
+
+    template <typename T>
+    modular<T>& modular<T>::operator++(int value)
+    {
+      this->value++;
+      this->value %= this->modulo;
+
+      return (*this);
+    }
+    
+    
+    template <typename T>
+    modular<T>& modular<T>::operator--(int value)
+    {
+      this->value--;
+      this->value %= this->modulo;
+
+      return (*this);
     }
     
     

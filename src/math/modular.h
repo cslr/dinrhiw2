@@ -10,6 +10,8 @@
 #include "integer.h"
 #include <iostream>
 
+#define DEFAULT_MODULAR_BASIS 8
+#define DEFAULT_MODULAR_EXP   3 // (2^3 = 8 = 7+1)
 
 namespace whiteice
 {
@@ -24,7 +26,7 @@ namespace whiteice
       modular();
       modular(const modular<T>& a);	
       modular(const T& value, const T& modulo);
-      modular(const T& modulo);
+      modular(const T& value);
       virtual ~modular();
       
       // operators
@@ -57,9 +59,12 @@ namespace whiteice
       modular<T>  operator/ (const T& s) const ;
       modular<T>& operator*=(const T& s) ;
       modular<T>& operator/=(const T& s) ;
-      
+
       template <typename A>
       friend modular<A> operator*(const A& s, const modular<A>&) ;
+
+      modular<T>& operator++(int value) ;
+      modular<T>& operator--(int value) ;
       
       modular<T>& abs() ;      
       

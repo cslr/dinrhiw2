@@ -463,7 +463,7 @@ namespace whiteice
 	{ return (this->c[0] == t.c[0] && this->c[1] == t.c[1]); }
 	     
 	inline bool operator!=(const blas_complex<T>& t) const 
-	{ return (this->c[0] != t.c[0] && this->c[1] != t.c[1]); }
+	{ return (this->c[0] != t.c[0] || this->c[1] != t.c[1]); }
 	     
 	inline bool operator>=(const blas_complex<T>& t) const 
 	{

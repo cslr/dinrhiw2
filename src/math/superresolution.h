@@ -6,6 +6,8 @@
 #define superresolution_h
 
 #include "number.h"
+#include "modular.h"
+#include "blade_math.h"
 #include <vector>
 
 
@@ -22,56 +24,67 @@ namespace whiteice
       {
       public:
 	
-	superresolution();
+	// superresolution();
+	superresolution(const unsigned int resolution = DEFAULT_MODULAR_BASIS);
 	superresolution(const U& resolution);
 	superresolution(const superresolution<T,U>& s);
 	superresolution(const std::vector<T>& values);
 	virtual ~superresolution();
 	
 	// operators
-	superresolution<T,U> operator+(const superresolution<T,U>&) const ;
-	superresolution<T,U> operator-(const superresolution<T,U>&) const ;
-	superresolution<T,U> operator*(const superresolution<T,U>&) const ;
-	superresolution<T,U> operator/(const superresolution<T,U>&) const ;
+	virtual superresolution<T,U> operator+(const superresolution<T,U>&) const ;
+	virtual superresolution<T,U> operator-(const superresolution<T,U>&) const ;
+	virtual superresolution<T,U> operator*(const superresolution<T,U>&) const ;
+	virtual superresolution<T,U> operator/(const superresolution<T,U>&) const ;
 	
 	// complex conjugate (?)
-	superresolution<T,U> operator!() const ;
-	superresolution<T,U> operator-() const ;
+	virtual superresolution<T,U> operator!() const;
 	
-	superresolution<T,U>& operator+=(const superresolution<T,U>&) ;
-	superresolution<T,U>& operator-=(const superresolution<T,U>&) ;
-	superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
-	superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
+	virtual superresolution<T,U>& conj();
 	
-	superresolution<T,U>& operator=(const superresolution<T,U>&) ;      
+	virtual superresolution<T,U> operator-() const;
 	
-	bool operator==(const superresolution<T,U>&) const ;
-	bool operator!=(const superresolution<T,U>&) const ;
-	bool operator>=(const superresolution<T,U>&) const ;
-	bool operator<=(const superresolution<T,U>&) const ;
-	bool operator< (const superresolution<T,U>&) const ;
-	bool operator> (const superresolution<T,U>&) const ;
+      
+	virtual superresolution<T,U>& operator+=(const superresolution<T,U>&) ;
+	virtual superresolution<T,U>& operator-=(const superresolution<T,U>&) ;
+	virtual superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
+	virtual superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
+	
+	virtual superresolution<T,U>& operator=(const superresolution<T,U>&) ;      
+	
+	virtual bool operator==(const superresolution<T,U>&) const ;
+	virtual bool operator!=(const superresolution<T,U>&) const ;
+	virtual bool operator>=(const superresolution<T,U>&) const ;
+	virtual bool operator<=(const superresolution<T,U>&) const ;
+	virtual bool operator< (const superresolution<T,U>&) const ;
+	virtual bool operator> (const superresolution<T,U>&) const ;
 	
 	// scalar operation
-	superresolution<T,U>& operator= (const T& s) ;
-	superresolution<T,U>  operator* (const T& s) const ;
-	superresolution<T,U>  operator/ (const T& s) const ;
-	superresolution<T,U>& operator*=(const T& s) ;
-	superresolution<T,U>& operator/=(const T& s) ;
+	virtual superresolution<T,U>& operator= (const T& s) ;
+	virtual superresolution<T,U>  operator* (const T& s) const ;
+	virtual superresolution<T,U>  operator/ (const T& s) const ;
+	virtual superresolution<T,U>& operator*=(const T& s) ;
+	virtual  superresolution<T,U>& operator/=(const T& s) ;
 	
-	superresolution<T,U>& abs() ;      
+	virtual superresolution<T,U>& abs();
+	virtual superresolution<T,U>& zero();
+        virtual bool iszero() const;
 	
-	T& operator[](const U& index)
-	  ;
+	virtual T& operator[](const U& index);
 	
-	const T& operator[](const U& index) const
-	  ;	
+	virtual const T& operator[](const U& index) const;
 	
 	// superresolution operations
-	void basis_scaling(const T& s) ; // uniform
-	bool basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
-	T measure(const U& s) ; // measures with s-(dimensional) measure-function
-	
+	virtual superresolution<T,U>& basis_scaling(const T& s) ; // uniform
+	virtual superresolution<T,U>& basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
+	virtual T measure(const U& s) const; // measures with s-(dimensional) measure-function
+
+	virtual bool comparable(){
+	  if(basis.size() == 1) return true;
+	  else return false;
+	}
+
+	virtual unsigned int size(){ return this->basis.size(); }
 	
       private:
 	
@@ -87,7 +100,24 @@ namespace whiteice
 }
 
 
-#include "superresolution.cpp"
+// #include "superresolution.cpp"
+
+namespace whiteice{
+
+  namespace math
+  {
+    extern template class superresolution< whiteice::math::blas_real<float>,
+					   whiteice::math::modular<unsigned int> >;
+    extern template class superresolution< whiteice::math::blas_real<double>,
+					   whiteice::math::modular<unsigned int> >;
+    
+    extern template class superresolution< whiteice::math::blas_complex<float>,
+					   whiteice::math::modular<unsigned int> >;
+    extern template class superresolution< whiteice::math::blas_complex<double>,
+					   whiteice::math::modular<unsigned int> >;
+  }
+  
+};
 
 
 #endif

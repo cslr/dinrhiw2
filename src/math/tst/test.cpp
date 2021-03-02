@@ -274,6 +274,12 @@ int main()
   whiteice::logging.setOutputFile("testcase.log");
 
   try{
+
+    std::cout << "FFT TEST" << std::endl;
+    fft_test();
+    
+    return 0;
+    
     /*  
 	std::cout << "STATISTICS CODE TESTS" << std::endl;
 	statistics_test();
@@ -315,9 +321,6 @@ int main()
     
     std::cout << "PDFTREE TEST" << std::endl;
     pdftree_test();
-    
-    std::cout << "FFT TEST" << std::endl;
-    fft_test();
     
     std::cout << "SIMPLEX TEST" << std::endl;
     simplex_test();
@@ -930,44 +933,159 @@ void simplex_test()
 
 void fft_test()
 {
-  std::vector< vertex<whiteice::math::complex<float> > > samples;  
-  samples.resize(3);
-  samples[0].resize(16); // input data
-  samples[1].resize(16); // fft data
-  samples[2].resize(16); // result of iff(fft(samples[0]))
-  
-  // initialization, s[i] = i
-  for(unsigned int j=0;j<samples.size();j++){
-    for(unsigned int i=0;i<samples[j].size();i++){
-      samples[j][i] = (float)(i);
-    }
-  }
-  
-  if(!fft<4>(samples[1])) std::cout << "ERROR: FFT of samples[1] failed" << std::endl;
-  if(!fft<4>(samples[2])) std::cout << "ERROR: FFT of samples[2] failed" << std::endl;  
-  if(!ifft<4>(samples[2])) std::cout << "ERROR: IFFT of samples[2] failed" << std::endl;
-  
-#if 0
-  std::cout << "original sample: " << std::endl;
-  std::cout << samples[0] << std::endl;
-
-  std::cout << "fft of sample: " << std::endl;
-  std::cout << samples[1] << std::endl;
-
-  std::cout << "inverse fft of sample's fft: " << std::endl;
-  std::cout << samples[2] << std::endl;
-#endif
-  
-  // calculates distance between vertexes
-  // should be close to zero
-  samples[0] -= samples[2]; 
+  {
+    std::cout << "FFT TEST 1 (whiteice::math::complex<float>)" << std::endl;
     
-  if(std::real(whiteice::math::abs(samples[0].norm())) > 0.1){
-    std::cout << "ifft(fft(X)) operation error: " << samples[0].norm() << std::endl;
-    std::cout << "WARNING: IFFT(FFT(X)) error is suspiciosly large" << std::endl;
+    std::vector< vertex<whiteice::math::complex<float> > > samples;  
+    samples.resize(3);
+    samples[0].resize(16); // input data
+    samples[1].resize(16); // fft data
+    samples[2].resize(16); // result of iff(fft(samples[0]))
+    
+    whiteice::RNG<> prng;
+    
+  // initialization, s[i] = i
+    for(unsigned int i=0;i<samples[0].size();i++){
+      whiteice::math::convert(samples[0][i], prng.uniform());
+    }
+    
+    for(unsigned int j=1;j<samples.size();j++){
+      for(unsigned int i=0;i<samples[j].size();i++){
+	samples[j][i] = samples[0][i];
+      }
+    }
+    
+    if(!fft<4>(samples[1])) std::cout << "ERROR: FFT of samples[1] failed" << std::endl;
+    if(!fft<4>(samples[2])) std::cout << "ERROR: FFT of samples[2] failed" << std::endl;  
+    if(!ifft<4>(samples[2])) std::cout << "ERROR: IFFT of samples[2] failed" << std::endl;
+    
+    
+    //std::cout << "original sample: " << std::endl;
+    //std::cout << samples[0] << std::endl;
+    
+    //std::cout << "fft of sample: " << std::endl;
+    //std::cout << samples[1] << std::endl;
+    
+    //std::cout << "inverse fft of sample's fft: " << std::endl;
+    //std::cout << samples[2] << std::endl;
+    
+    
+    // calculates distance between vertexes
+    // should be close to zero
+    samples[0] -= samples[2]; 
+    
+    if(std::real(whiteice::math::abs(samples[0].norm())) > 0.01){
+      std::cout << "ifft(fft(X)) operation error: " << samples[0].norm() << std::endl;
+      std::cout << "WARNING: IFFT(FFT(X)) error is suspiciosly large" << std::endl;
+    }
+    else
+      std::cout << "GOOD: FFT and IFFT seems to work correctly. [IFFT(FFT(x)) == x]" << std::endl;
   }
-  else
-    std::cout << "GOOD: FFT and IFFT seems to work correctly. [IFFT(FFT(x)) == x]" << std::endl;
+
+  
+  {
+    std::cout << "FFT TEST 2 (blas_complex<float>)" << std::endl;
+    
+    std::vector< vertex<whiteice::math::blas_complex<float> > > samples;  
+    samples.resize(3);
+    samples[0].resize(16); // input data
+    samples[1].resize(16); // fft data
+    samples[2].resize(16); // result of iff(fft(samples[0]))
+    
+    whiteice::RNG<> prng;
+    
+  // initialization, s[i] = i
+    for(unsigned int i=0;i<samples[0].size();i++){
+      whiteice::math::convert(samples[0][i], prng.uniform());
+    }
+    
+    for(unsigned int j=1;j<samples.size();j++){
+      for(unsigned int i=0;i<samples[j].size();i++){
+	samples[j][i] = samples[0][i];
+      }
+    }
+    
+    if(!fft<4>(samples[1])) std::cout << "ERROR: FFT of samples[1] failed" << std::endl;
+    if(!fft<4>(samples[2])) std::cout << "ERROR: FFT of samples[2] failed" << std::endl;  
+    if(!ifft<4>(samples[2])) std::cout << "ERROR: IFFT of samples[2] failed" << std::endl;
+    
+    
+    //std::cout << "original sample: " << std::endl;
+    //std::cout << samples[0] << std::endl;
+    
+    //std::cout << "fft of sample: " << std::endl;
+    //std::cout << samples[1] << std::endl;
+    
+    //std::cout << "inverse fft of sample's fft: " << std::endl;
+    //std::cout << samples[2] << std::endl;
+    
+    
+    // calculates distance between vertexes
+    // should be close to zero
+    samples[0] -= samples[2]; 
+    
+    if(whiteice::math::real(whiteice::math::abs(samples[0].norm())) > 0.01){
+      std::cout << "ifft(fft(X)) operation error: " << samples[0].norm() << std::endl;
+      std::cout << "WARNING: IFFT(FFT(X)) error is suspiciosly large" << std::endl;
+    }
+    else
+      std::cout << "GOOD: FFT and IFFT seems to work correctly. [IFFT(FFT(x)) == x]" << std::endl;
+  }
+
+
+  {
+    std::cout << "CIRCULAR CONVOLUTION TEST" << std::endl;
+
+    std::vector< vertex<whiteice::math::blas_complex<float> > > samples;  
+    samples.resize(4);
+    samples[0].resize(16); // input1 data
+    samples[1].resize(16); // input2 data
+    samples[2].resize(16); // result of ifft(fft(samples[0]).*fft(samples[1]))
+    samples[3].resize(16);
+    
+    // initialization, s[i] = i
+    for(unsigned int j=1;j<samples.size();j++){
+      for(unsigned int i=0;i<samples[j].size();i++){
+	samples[j][i] = 0.0f;
+      }
+    }
+
+    samples[0][0] = +1.320;
+    samples[0][1] = -0.3841;
+    samples[0][2] = +0.1934;
+    
+    samples[1][0] = +0.7320;
+    samples[1][1] = +1.4384;
+    samples[1][2] = -1.9342;
+
+    // results
+    samples[3][0] = 0.9662;
+    samples[3][1] = 1.6175;
+    samples[3][2] = -2.9641;
+    samples[3][3] = 1.0211;
+    samples[3][4] = -0.3741;
+
+    if(fft<4>(samples[0]) == false) std::cout << "FFT FAILED ERROR" << std::endl;
+    if(fft<4>(samples[1]) == false) std::cout << "FFT FAILED ERROR" << std::endl;
+
+    for(unsigned int i=0;i<samples[0].size();i++){
+      samples[0][i] *= samples[1][i];
+    }
+
+    if(ifft<4>(samples[0]) == false) std::cout << "InvFFT FAILED ERROR" << std::endl;
+
+    // std::cout << "circular convolution = " << samples[0] << std::endl;
+
+    samples[0] -= samples[3];
+    
+    if(whiteice::math::real(whiteice::math::abs(samples[0].norm())) > 0.01){
+      std::cout << "ifft(fft(X)) operation error: " << samples[0].norm() << std::endl;
+      std::cout << "WARNING: CircularConvolution error is suspiciosly large" << std::endl;
+    }
+    else
+      std::cout << "GOOD: FFT/IFFT CircularConvolution seems to work correctly.]" << std::endl;
+    
+  }
 }
 
 

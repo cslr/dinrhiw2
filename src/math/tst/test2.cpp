@@ -35,9 +35,14 @@
 #include "fastpca.h"
 #include "dataset.h"
 
+#include "superresolution.h"
+#include "modular.h"
+#include "RNG.h"
 
 using namespace whiteice;
 using namespace whiteice::math;
+
+void test_superresolution();
 
 void test_matrix_rotations();
 
@@ -51,7 +56,12 @@ void test_ica();
 
 int main(int argc, char **argv, char **envp)
 {
-  srand(time(0));
+  unsigned int seed = time(0);
+  srand(seed);
+  printf("PRNG seed = 0x%x\n", seed);
+
+  test_superresolution();
+  std::cout << std::endl;
   
   test_matrix_rotations();
   std::cout << std::endl;
@@ -69,6 +79,100 @@ int main(int argc, char **argv, char **envp)
   std::cout << std::endl;
   
   return 0;
+}
+
+
+void test_superresolution()
+{
+  std::cout << "SUPERRESOLUTION NUMBERS TEST" << std::endl;
+
+  for(unsigned int n=0;n<10;n++)
+  {
+    
+    // creates random numbers and test + and - operations function correctly
+    const unsigned int BASIS_SIZE = 7;
+
+    class whiteice::math::superresolution< whiteice::math::blas_real<float>,
+					   whiteice::math::modular<unsigned int> >
+      A, B;
+
+    whiteice::math::vertex<> av(BASIS_SIZE), bv(BASIS_SIZE);
+    whiteice::RNG< whiteice::math::blas_real<float> > prng;
+
+    for(unsigned int i=0;i<BASIS_SIZE;i++){
+      av[i] = prng.uniform();
+      bv[i] = prng.uniform();
+      
+      A[i] = av[i];
+      B[i] = bv[i];
+    }
+
+    auto pv = av + bv;
+    auto mv = av - bv;
+
+    auto C = A + B;
+    auto D = A - B;
+    
+    for(unsigned int i=0;i<BASIS_SIZE;i++){
+      auto err = whiteice::math::abs(C[i] - pv[i]);
+      
+      if(err > whiteice::math::blas_real<float>(1e-9f)){
+	printf("ERROR: superresolution + operation FAILED.\n");
+	exit(0);
+      }
+
+      err = whiteice::math::abs(D[i] - mv[i]);
+      
+      if(err > whiteice::math::blas_real<float>(1e-9f)){
+	printf("ERROR: superresolution - operation FAILED.\n");
+	exit(0);
+      }
+    }
+
+  }
+  
+  printf("Superresolution number +/- operations OK\n");
+
+  
+  
+  {
+    // creates random numbers and test * and / operations function correctly
+
+    // 1. create random number and calculate it's inverse
+
+    class whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+					   whiteice::math::modular<unsigned int> >
+      A, B;
+
+    whiteice::RNG< whiteice::math::blas_real<float> > prng;
+
+    for(unsigned int i=0;i<A.size();i++){
+      A[i] = prng.uniform();
+    }
+
+    B[0] = 1.0f;
+
+    auto D = B / A;
+
+    auto E = D*A;
+
+    E -= B; // removes [1 0 0 0 ] from the result (zero function)
+
+    whiteice::math::blas_complex<float> err = 0.0f;
+    
+    for(unsigned int i=0;i<E.size();i++){
+      err += whiteice::math::abs(E[i]);
+    }
+
+    if(real(whiteice::math::abs(err)) < 0.01f){
+      std::cout << "SuperResolution Inverse calculation SUCCESSFUL" << std::endl;
+    }
+    else{
+      std::cout << "SuperResolution Inverse calculation DON'T WORK (HIGH ERROR" << std::endl;
+    }
+    
+  }
+  
 }
 
 
