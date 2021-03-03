@@ -118,14 +118,14 @@ void test_superresolution()
       
       if(err > whiteice::math::blas_real<float>(1e-9f)){
 	printf("ERROR: superresolution + operation FAILED.\n");
-	exit(0);
+	exit(-1);
       }
 
       err = whiteice::math::abs(D[i] - mv[i]);
       
       if(err > whiteice::math::blas_real<float>(1e-9f)){
 	printf("ERROR: superresolution - operation FAILED.\n");
-	exit(0);
+	exit(-1);
       }
     }
 
@@ -134,7 +134,7 @@ void test_superresolution()
   printf("Superresolution number +/- operations OK\n");
 
   
-  
+  for(unsigned int n=0;n<10;n++)
   {
     // creates random numbers and test * and / operations function correctly
 
@@ -164,14 +164,64 @@ void test_superresolution()
       err += whiteice::math::abs(E[i]);
     }
 
-    if(real(whiteice::math::abs(err)) < 0.01f){
-      std::cout << "SuperResolution Inverse calculation SUCCESSFUL" << std::endl;
-    }
-    else{
-      std::cout << "SuperResolution Inverse calculation DON'T WORK (HIGH ERROR" << std::endl;
+    if(real(whiteice::math::abs(err)) >= 0.01f){
+      std::cout << "SuperResolution Inverse calculation DON'T WORK (HIGH ERROR)" << std::endl;
+      exit(-1);
     }
     
   }
+
+  std::cout << "SuperResolution Inverse calculation SUCCESSFUL" << std::endl;
+
+
+  for(unsigned int n=0;n<10;n++)
+  {
+
+    class whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+					   whiteice::math::modular<unsigned int> >
+      A, B, C, D;
+
+    whiteice::RNG< whiteice::math::blas_real<float> > prng;
+
+    for(unsigned int i=0;i<A.size();i++){
+      A[i] = prng.uniform();
+      B[i] = prng.uniform();
+    }
+
+    C = A;
+    D = B;
+
+    // 1. circular convolution
+    auto R1 = A*B;
+    
+    auto R2 = R1;
+    R2.zero();
+
+    // 2. circular convolution
+    for(unsigned int j=0;j<B.size();j++){
+      for(unsigned int i=0;i<A.size();i++){
+	const unsigned int index = (i+j) % A.size();
+	R2[index] += A[i]*B[j];
+      }
+    }
+
+    R2 -= R1;
+
+    whiteice::math::blas_complex<float> err = 0.0f;
+    
+    for(unsigned int i=0;i<R2.size();i++){
+      err += whiteice::math::abs(R2[i]);
+    }
+
+    if(real(whiteice::math::abs(err)) >= 0.01f){
+      std::cout << "SuperResolution CircularConvolution calculation DON'T WORK (HIGH ERROR)"
+		<< std::endl;
+      exit(-1);
+    }
+    
+  }
+
+  std::cout << "SuperResolution Circular Convolution calculation OK" << std::endl;
   
 }
 
