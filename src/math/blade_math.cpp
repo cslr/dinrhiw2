@@ -705,6 +705,12 @@ namespace whiteice
       return whiteice::math::convert(B, A[0]);
     }
 
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
     
 
     bool convert(float& B, const complex<float> A){ B = (float)std::real(A); return true; }

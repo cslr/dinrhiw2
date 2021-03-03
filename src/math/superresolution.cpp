@@ -363,11 +363,6 @@ namespace whiteice
       
     {
       {
-	U u;
-	if(u.comparable() == false){
-	  throw illegal_operation("impossible: would need infinite basis");
-	}
-	
 	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 
@@ -392,7 +387,7 @@ namespace whiteice
 	whiteice::math::convert(b2[i], s.basis[i]);
       }
 
-      const unsigned int K = DEFAULT_MODULAR_BASIS;
+      const unsigned int K = DEFAULT_MODULAR_EXP;
 
       // calculates FFT of convolutions
       if(whiteice::math::fft<K, float >(b1) == false ||
@@ -467,6 +462,8 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same baisis size numbers are uncomparable");
 
+      std::cout << "sr:>=" << std::endl;
+
       U u = U(this->size()-1);
 
       do{
@@ -492,6 +489,8 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
 
+      std::cout << "sr:<=" << std::endl;
+
       U u = U(this->size()-1);
 
       do{
@@ -516,6 +515,8 @@ namespace whiteice
     {
       if(s.size() != this->size())
 	throw uncomparable("Non same basis basis size numbers are uncomparable");
+
+      std::cout << "sr:<" << std::endl;
       
       U u = U(this->size()-1);
 
@@ -541,6 +542,8 @@ namespace whiteice
     {
       if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
+
+      std::cout << "sr:>" << std::endl;
 
       U u = U(this->size()-1);
       
@@ -870,10 +873,11 @@ namespace whiteice
 	ios << "(";
 
 	for(unsigned int i=0;i<m.size();i++){
-	  ios << " " << m[0];
+	  if(i == 0) ios << m[i];
+	  else ios << " " << m[i];
 	}
 
-	ios << " )";
+	ios << ")";
       }
       
       return ios;

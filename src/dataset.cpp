@@ -1773,8 +1773,13 @@ namespace whiteice
 		  (clusters[index].mean[k])*math::conj(clusters[index].mean[k]);
 
 		auto epsilon = abs(T(0.0000001));
-			    
-		if(abs(clusters[index].variance[k]) < epsilon)
+
+		math::blas_real<double> e, vk;
+		whiteice::math::convert(e, epsilon);
+		whiteice::math::convert(vk, abs(clusters[index].variance[k]));
+
+		//if(abs(clusters[index].variance[k]) < epsilon)
+		if(vk < e)
 		  clusters[index].variance[k] = T(epsilon);
 		
 		clusters[index].variance[k]  =
@@ -1788,14 +1793,13 @@ namespace whiteice
 	    
 	  }
 	  
-	  
 	}
 	
 	{
-
 #pragma omp parallel for schedule(auto)
-	  for(unsigned int i=0;i<clusters[index].data.size();i++)
+	  for(unsigned int i=0;i<clusters[index].data.size();i++){
 	    mean_variance_removal(index, clusters[index].data[i]);
+	  }
 	}
 	
 	clusters[index].preprocessings.push_back(dnMeanVarianceNormalization);
@@ -2452,12 +2456,12 @@ namespace whiteice
     
     vec -= clusters[index].mean;
 
-    const auto epsilon = abs(T(1e-8f));
+    //const auto epsilon = abs(T(1e-8f));
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(abs(clusters[index].variance[i]) > epsilon){
-	vec[i] /= abs(clusters[index].variance[i]);
-      }
+      //if(abs(clusters[index].variance[i]) > epsilon){
+      vec[i] /= abs(clusters[index].variance[i]);
+      //}
     }
     
   }
@@ -2469,12 +2473,12 @@ namespace whiteice
   {
     // [x' * sqrt(var)] + mean
 
-    const auto epsilon = abs(T(1e-8f));
+    //const auto epsilon = abs(T(1e-8f));
     
     for(unsigned int i=0;i<vec.size();i++){
-      if(abs(clusters[index].variance[i]) > epsilon){
+      //if(abs(clusters[index].variance[i]) > epsilon){
 	vec[i] *= abs(clusters[index].variance[i]);
-      }
+	//}
     }
     
     vec += clusters[index].mean;

@@ -42,85 +42,85 @@ namespace whiteice
         ~superresolution();
 	
 	// operators
-	virtual superresolution<T,U> operator+(const superresolution<T,U>&) const ;
-	virtual superresolution<T,U> operator-(const superresolution<T,U>&) const ;
-	virtual superresolution<T,U> operator*(const superresolution<T,U>&) const ;
-	virtual superresolution<T,U> operator/(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator+(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator-(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator*(const superresolution<T,U>&) const ;
+	superresolution<T,U> operator/(const superresolution<T,U>&) const ;
 	
 	// complex conjugate (?)
-	virtual superresolution<T,U> operator!() const;
+	superresolution<T,U> operator!() const;
 	
-	virtual superresolution<T,U>& conj();
+	superresolution<T,U>& conj();
 	
-	virtual superresolution<T,U> operator-() const;
+	superresolution<T,U> operator-() const;
 	
       
-	virtual superresolution<T,U>& operator+=(const superresolution<T,U>&) ;
-	virtual superresolution<T,U>& operator-=(const superresolution<T,U>&) ;
-	virtual superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
-	virtual superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator+=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator-=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
 	
-	virtual superresolution<T,U>& operator=(const superresolution<T,U>&) ;
+	superresolution<T,U>& operator=(const superresolution<T,U>&) ;
 
-	virtual bool operator==(const superresolution<T,U>&) const ;
-	virtual bool operator!=(const superresolution<T,U>&) const ;
+	bool operator==(const superresolution<T,U>&) const ;
+	bool operator!=(const superresolution<T,U>&) const ;
 
         // WARN! comparision operators assume infinite basis and not cyclic exponent basis
         // this means comparision operators don't work properly b > c => a*b > a*c, a > 0
         // don't hold etc. Comparision work with static numbers but not with operations
         // changing multiple basis numbers
-        virtual bool operator>=(const superresolution<T,U>&) const ;
-	virtual bool operator<=(const superresolution<T,U>&) const ;
-	virtual bool operator< (const superresolution<T,U>&) const ;
-	virtual bool operator> (const superresolution<T,U>&) const ;
+        bool operator>=(const superresolution<T,U>&) const ;
+	bool operator<=(const superresolution<T,U>&) const ;
+	bool operator< (const superresolution<T,U>&) const ;
+	bool operator> (const superresolution<T,U>&) const ;
 	
 	// scalar operation
-	virtual superresolution<T,U>& operator= (const T& s) ;
-	virtual superresolution<T,U>  operator+ (const T& s) const ;
-	virtual superresolution<T,U>  operator- (const T& s) const ;
-	virtual superresolution<T,U>  operator* (const T& s) const ;
-	virtual superresolution<T,U>  operator/ (const T& s) const ;
-	virtual superresolution<T,U>& operator*=(const T& s) ;
-	virtual superresolution<T,U>& operator/=(const T& s) ;
+	superresolution<T,U>& operator= (const T& s) ;
+	superresolution<T,U>  operator+ (const T& s) const ;
+	superresolution<T,U>  operator- (const T& s) const ;
+	superresolution<T,U>  operator* (const T& s) const ;
+	superresolution<T,U>  operator/ (const T& s) const ;
+	superresolution<T,U>& operator*=(const T& s) ;
+	superresolution<T,U>& operator/=(const T& s) ;
 
-	virtual superresolution<T,U>& operator=(const T value) ;
+	superresolution<T,U>& operator=(const T value) ;
       
 #if 0
-	virtual superresolution<T,U>  operator* (const T value) const ;
-	virtual superresolution<T,U>  operator/ (const T value) const ;
-	virtual superresolution<T,U>& operator*=(const T value) ;
-	virtual superresolution<T,U>& operator/=(const T value) ;
+	superresolution<T,U>  operator* (const T value) const ;
+	superresolution<T,U>  operator/ (const T value) const ;
+	superresolution<T,U>& operator*=(const T value) ;
+	superresolution<T,U>& operator/=(const T value) ;
 #endif
 	
 
 	
-	virtual superresolution<T,U>& abs();
-	virtual superresolution<T,U>& zero();
-        virtual bool iszero() const;
+	superresolution<T,U>& abs();
+	superresolution<T,U>& zero();
+        bool iszero() const;
 	
-	virtual T& operator[](const U& index);
+	T& operator[](const U& index);
 	
-	virtual const T& operator[](const U& index) const;
+	const T& operator[](const U& index) const;
 
-	inline virtual T& first(){ return basis[0]; }
+	inline T& first(){ return basis[0]; }
 
-	inline virtual const T& first() const{ return basis[0]; }
+	inline const T& first() const{ return basis[0]; }
 	
-	inline virtual T& first(const T value){
+	inline T& first(const T value){
 	  basis[0] = value;
 	  return basis[0];
 	}
 	
 	// superresolution operations
-	virtual superresolution<T,U>& basis_scaling(const T& s) ; // uniform
-	virtual superresolution<T,U>& basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
-	virtual T measure(const U& s) const; // measures with s-(dimensional) measure-function
+	superresolution<T,U>& basis_scaling(const T& s) ; // uniform
+        superresolution<T,U>& basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
+	T measure(const U& s) const; // measures with s-(dimensional) measure-function
 
-	inline virtual bool comparable(){
+	inline bool comparable(){
 	  return true; // NOT REALLY COMPARABLE IF OVERFLOW HAPPENS (CIRCULAR CONVOLUTION)
 	}
 
-      virtual unsigned int size() const;
+      unsigned int size() const;
       
       public:
 	
