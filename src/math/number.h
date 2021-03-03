@@ -48,6 +48,8 @@ namespace whiteice
 
       // scalar operation
       virtual D& operator= (const S& s)  = 0;
+      //virtual D  operator+ (const S& s) const  = 0;
+      //virtual D  operator- (const S& s) const  = 0;
       virtual D  operator* (const S& s) const  = 0;
       virtual D  operator/ (const S& s) const  = 0;
       virtual D& operator*=(const S& s)  = 0;

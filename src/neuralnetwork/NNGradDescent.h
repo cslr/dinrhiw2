@@ -187,8 +187,14 @@ namespace whiteice
   {
     extern template class NNGradDescent< blas_real<float> >;
     extern template class NNGradDescent< blas_real<double> >;
+    
     extern template class NNGradDescent< blas_complex<float> >;
-    extern template class NNGradDescent< blas_complex<double> >;    
+    extern template class NNGradDescent< blas_complex<double> >;
+
+    extern template class NNGradDescent< superresolution<blas_complex<float>,
+							 modular<unsigned int> > >;
+    extern template class NNGradDescent< superresolution<blas_complex<double>,
+							 modular<unsigned int> > >;
     
     
   };

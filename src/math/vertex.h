@@ -339,6 +339,12 @@ namespace whiteice{
     extern template class vertex< blas_real<double> >;
     extern template class vertex< blas_complex<float> >;
     extern template class vertex< blas_complex<double> >;
+
+    extern template class vertex< superresolution< blas_complex<float>,
+						   modular<unsigned int> > >;
+    extern template class vertex< superresolution< blas_complex<double>,
+						   modular<unsigned int> > >;
+    
     
     extern template vertex<float> operator*<float>(const float& s, const vertex<float>& v);
     extern template vertex<double> operator*<double>(const double& s, const vertex<double>& v);
@@ -365,6 +371,14 @@ namespace whiteice{
     
     extern template vertex<blas_complex<double> > operator*<blas_complex<double> >
       (const blas_complex<double>& s, const vertex<blas_complex<double> >& v);
+
+
+    extern template vertex<superresolution<blas_complex<float>, modular<unsigned int> > > operator*<superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const superresolution<blas_complex<float>, modular<unsigned int> >& s,
+     const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >& v);
+    
+    extern template vertex<superresolution<blas_complex<double>, modular<unsigned int> > > operator*<superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const superresolution<blas_complex<double>, modular<unsigned int> >& s, const vertex<superresolution<blas_complex<double>, modular<unsigned int> > >& v);
        
     
     
@@ -382,6 +396,9 @@ namespace whiteice{
     extern template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const vertex<blas_real<double> >&);
     extern template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const vertex<blas_complex<float> >&);
     extern template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const vertex<blas_complex<double> >&);
+
+    extern template std::ostream& operator<< <superresolution<blas_complex<float>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >&);
+    extern template std::ostream& operator<< <superresolution<blas_complex<double>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<double>, modular<unsigned int> > >&);
     
     
   };

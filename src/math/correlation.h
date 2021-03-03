@@ -98,25 +98,41 @@ namespace whiteice
 								const std::vector< vertex<blas_complex<float> > >& data);
     extern template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
 								 const std::vector< vertex<blas_complex<double> > >& data);
-    /*
-      extern template bool autocorrelation<complex<float> >(matrix<complex<float> >& R,
-      const std::vector< vertex<complex<float> > >& data);
-      extern template bool autocorrelation<complex<double> >(matrix<complex<double> >& R,
-      const std::vector< vertex<complex<double> > >& data);    
-    */
-    //extern template bool autocorrelation<int>(matrix<int>& R, const std::vector< vertex<int> >& data);
+
+    extern template bool autocorrelation
+    <superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix<superresolution<blas_complex<float>, modular<unsigned int> > >& R,
+     const std::vector< vertex<superresolution<blas_complex<float>, modular<unsigned int> > > >& data);
+    
+    extern template bool autocorrelation
+    <superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix<superresolution<blas_complex<double>, modular<unsigned int> > >& R,
+     const std::vector< vertex<superresolution<blas_complex<double>, modular<unsigned int> > > >& data);
+
+    
     
     extern template bool autocorrelation<float>(matrix<float>& R, const matrix<float>& W);
     extern template bool autocorrelation<double>(matrix<double>& R, const matrix<double>& W);
     
     extern template bool autocorrelation<blas_real<float> >(matrix<blas_real<float> >& R,
-							     const matrix<blas_real<float> >& W);
+							    const matrix<blas_real<float> >& W);
     extern template bool autocorrelation<blas_real<double> >(matrix<blas_real<double> >& R,
-							      const matrix<blas_real<double> >& W);
+							     const matrix<blas_real<double> >& W);
     extern template bool autocorrelation<blas_complex<float> >(matrix<blas_complex<float> >& R,
-								const matrix<blas_complex<float> >& W);
+							       const matrix<blas_complex<float> >& W);
     extern template bool autocorrelation<blas_complex<double> >(matrix<blas_complex<double> >& R,
-								 const matrix<blas_complex<double> >& W);
+								const matrix<blas_complex<double> >& W);
+
+    extern template bool autocorrelation
+    <superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix<superresolution<blas_complex<float>, modular<unsigned int> > >& R,
+     const matrix<superresolution<blas_complex<float>, modular<unsigned int> > >& W);
+    extern template bool autocorrelation
+    <superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix<superresolution<blas_complex<double>, modular<unsigned int> > >& R,
+     const matrix<superresolution<blas_complex<double>, modular<unsigned int> > >& W);
+    
+    
     
     extern template bool mean_covariance_estimate< float >
       (vertex< float >& m, matrix< float >& R,
@@ -141,6 +157,21 @@ namespace whiteice
     extern template bool mean_covariance_estimate< blas_complex<double> > 
       (vertex< blas_complex<double> >& m, matrix< blas_complex<double> >& R,
        const std::vector< vertex< blas_complex<double> > >& data);
+
+    
+    extern template bool mean_covariance_estimate
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& m,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& R,
+     const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data);
+    
+    extern template bool mean_covariance_estimate
+    < superresolution<blas_complex<double>, modular<unsigned int> > > 
+    (vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& m,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& R,
+     const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data);
+    
+    
     
     
     extern template bool mean_covariance_estimate< float >
@@ -173,6 +204,23 @@ namespace whiteice
        const std::vector< vertex< blas_complex<double> > >& data,
        const std::vector< whiteice::dynamic_bitset >& missing);
 
+    
+    extern template bool mean_covariance_estimate
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& m,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& R,
+     const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data,
+     const std::vector< whiteice::dynamic_bitset >& missing);
+    
+    extern template bool mean_covariance_estimate
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& m,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> >  >& R,
+     const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data,
+     const std::vector< whiteice::dynamic_bitset >& missing);
+    
+
+    
     extern template bool mean_crosscorrelation_estimate< float >
     (vertex< float >& mx, vertex< float >& my, matrix< float >& Cyx,
      const std::vector< vertex<float> >& xdata,
@@ -203,6 +251,25 @@ namespace whiteice
      const std::vector< vertex< blas_complex<double> > >& xdata,
      const std::vector< vertex< blas_complex<double> > >& ydata);
 
+
+    extern template bool mean_crosscorrelation_estimate
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& mx,
+     vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& my,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& Cyx,
+     const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& xdata,
+     const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& ydata);
+    
+    extern template bool mean_crosscorrelation_estimate
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& mx,
+     vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& my,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& Cyx,
+     const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& xdata,
+     const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& ydata);
+    
+    
+    
 
     extern template bool pca<float>
       (const std::vector< vertex<float> >& data, 
@@ -260,6 +327,31 @@ namespace whiteice
        bool unitVariance);
 
 
+    extern template bool pca
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data, 
+     const unsigned int dimensions,
+     math::matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& PCA,
+     math::vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& m,
+     superresolution<blas_complex<float>, modular<unsigned int> >& original_var,
+     superresolution<blas_complex<float>, modular<unsigned int> >& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+    
+    extern template bool pca
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data, 
+     const unsigned int dimensions,
+     math::matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& PCA,
+     math::vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& m,
+     superresolution<blas_complex<double>, modular<unsigned int> >& original_var,
+     superresolution<blas_complex<double>, modular<unsigned int> >& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    
+
+    
     extern template bool pca_p <float>
     (const std::vector< vertex<float> >& data, 
      const float percent_total_variance,
@@ -311,6 +403,29 @@ namespace whiteice
      math::matrix< blas_complex<double> >& PCA,
      math::vertex< blas_complex<double> >& m,
      blas_complex<double>& original_var, blas_complex<double>& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+
+    extern template bool pca_p
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const std::vector< vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data, 
+     const float percent_total_variance,
+     math::matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& PCA,
+     math::vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& m,
+     superresolution<blas_complex<float>, modular<unsigned int> >& original_var,
+     superresolution<blas_complex<float>, modular<unsigned int> >& reduced_var,
+     bool regularizeIfNeeded,
+     bool unitVariance);
+
+    extern template bool pca_p
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const std::vector< vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data, 
+     const float percent_total_variance,
+     math::matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& PCA,
+     math::vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& m,
+     superresolution<blas_complex<double>, modular<unsigned int> >& original_var,
+     superresolution<blas_complex<double>, modular<unsigned int> >& reduced_var,
      bool regularizeIfNeeded,
      bool unitVariance);
     

@@ -156,7 +156,7 @@ namespace whiteice
     template <typename T>
     void NNGradDescent<T>::setRegularizer(const T alpha)
     {
-      if(real(alpha) >= 0.0f)
+      if(real(alpha) >= real(T(0.0f)))
 	this->regularizer = alpha;
     }
 
@@ -224,7 +224,7 @@ namespace whiteice
 
       this->nn = new nnetwork<T>(nn); // copies network (settings)
       nn.exportdata(bestx);
-      best_error = getError(nn, data, (real(regularizer)>0.0f), dropout);
+      best_error = getError(nn, data, (real(regularizer)>real(T(0.0f))), dropout);
       if(dropout){
 	auto nn_without_dropout = nn;
 	nn_without_dropout.removeDropOut();
@@ -287,8 +287,8 @@ namespace whiteice
     template <typename T>
     bool NNGradDescent<T>::hasConverged(T percentage)
     {
-      if(real(percentage) <= 0.0f) return true;
-      if(real(percentage) >= 1.0f) return false;
+      if(real(percentage) <= real(T(0.0f))) return true;
+      if(real(percentage) >= real(T(1.0f))) return false;
 
       {
 	std::lock_guard<std::mutex> lock(convergence_lock);
@@ -729,10 +729,10 @@ namespace whiteice
 	  math::vertex<T> weights, w0;
 	  
 	  T prev_error, error;	  
-	  T delta_error = 0.0f;
+	  T delta_error = T(0.0f);
 
 	  
-	  error = getError(*nn, dtest, (real(regularizer)>0.0f), dropout);
+	  error = getError(*nn, dtest, (real(regularizer)>real(T(0.0f))), dropout);
 
 	  {
 	    solution_lock.lock();
@@ -782,11 +782,11 @@ namespace whiteice
 	    local_thread_best_error = error;
 	  }
 
-
+			   
 	  T lrate = T(0.01f);
 	  T ratio = T(1.0f);
-	  
-	  error = getError(*nn, dtrain, (real(regularizer)>0.0f), dropout);
+			   
+	  error = getError(*nn, dtrain, (real(regularizer)>real(T(0.0f))), dropout);
 	  
 	  do
 	  {
@@ -960,7 +960,7 @@ namespace whiteice
 	    sumgrad.normalize();
 	    
 	    // adds regularizer to gradient (1/2*||w||^2)
-	    if(abs(regularizer) > 0.0f){
+	    if(abs(regularizer) > real(T(0.0f))){
 	      sumgrad += regularizer*w0;
 	    }
 	    
@@ -968,7 +968,7 @@ namespace whiteice
 	    // restarts gradient descent from lrate = 0.50
 	    // lrate *= 4;
 	    
-	    lrate = 0.50f;
+	    lrate = T(0.50f);
 	    // lrate = 0.01f;
 
 	    
@@ -992,15 +992,15 @@ namespace whiteice
 #endif
 	      }
 
-	      error = getError(*nn, dtrain, (real(regularizer)>0.0f), dropout);
+	      error = getError(*nn, dtrain, (real(regularizer)>real(T(0.0f))), dropout);
 
 	      delta_error = (prev_error - error);
 	      ratio = real(delta_error) / real(error);
 
-	      if(real(delta_error) < 0.0f){ // if error grows we reduce learning rate
+	      if(real(delta_error) < real(T(0.0f))){ // if error grows we reduce learning rate
 		lrate *= T(0.50);
 	      }
-	      else if(real(delta_error) > 0.0){ // error becomes smaller we increase learning rate
+	      else if(real(delta_error) > real(T(0.0))){ // error becomes smaller we increase learning rate
 		lrate *= T(1.0/0.50);
 	      }
 
@@ -1028,15 +1028,15 @@ namespace whiteice
 
 	      // leaky error reduction, we sometimes allow jump to worse
 	      // position in gradient direction
-	      if((rng.rand() % 5) == 0 && real(error) < 1.00f) // was 0.50f
+	      if((rng.rand() % 5) == 0 && real(error) < real(T(1.00f))) // was 0.50f
 		break;
 	    }
-	    while(real(delta_error) < T(0.0) && real(lrate) >= 10e-25 && running);
+	    while(real(delta_error) < T(0.0) && real(lrate) >= real(T(10e-25)) && running);
 	    
 	    
 	    
 	    // replaces error with TESTing set error
-	    error = getError(*nn, dtest, (real(regularizer)>0.0f), dropout);
+	    error = getError(*nn, dtest, (real(regularizer)>real(T(0.0f))), dropout);
 
 	    {
 	      if(real(error) > real(local_thread_best_error)){
@@ -1136,7 +1136,7 @@ namespace whiteice
 
 	    
 	  }
-	  while(real(error) > 0.00001f &&
+	  while(real(error) > real(T(0.00001f)) &&
 		noimprovements[std::this_thread::get_id()] < MAX_NOIMPROVEMENT_ITERS &&
 		iterations < MAXITERS &&
 		running);
@@ -1224,8 +1224,14 @@ namespace whiteice
     
     template class NNGradDescent< blas_real<float> >;
     template class NNGradDescent< blas_real<double> >;
+    
     template class NNGradDescent< blas_complex<float> >;
     template class NNGradDescent< blas_complex<double> >;
+
+    template class NNGradDescent< superresolution<blas_complex<float>,
+						  modular<unsigned int> > >;
+    template class NNGradDescent< superresolution<blas_complex<double>,
+						  modular<unsigned int> > >;
     
   };
 };

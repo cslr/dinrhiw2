@@ -5,6 +5,16 @@
 #ifndef superresolution_h
 #define superresolution_h
 
+namespace whiteice
+{
+  namespace math
+  {
+    template <typename T, typename S>
+    class superresolution;
+    
+  };
+};
+
 #include "number.h"
 #include "modular.h"
 #include "blade_math.h"
@@ -19,14 +29,14 @@ namespace whiteice
      * made out of field T with exponent field U
      */
     template <typename T, typename U>
-      class superresolution : 
-        public number<superresolution<T,U>, T, T, U>
-      {
+    class superresolution : 
+      public number<superresolution<T,U>, T, T, U>
+    {
       public:
 	
-	// superresolution();
-	superresolution(const unsigned int resolution = DEFAULT_MODULAR_BASIS);
-	superresolution(const U& resolution);
+	superresolution();
+	superresolution(const T value, const unsigned int resolution = DEFAULT_MODULAR_BASIS);
+	// superresolution(const U& resolution);
 	superresolution(const superresolution<T,U>& s);
 	superresolution(const std::vector<T>& values);
 	virtual ~superresolution();
@@ -50,21 +60,39 @@ namespace whiteice
 	virtual superresolution<T,U>& operator*=(const superresolution<T,U>&) ;
 	virtual superresolution<T,U>& operator/=(const superresolution<T,U>&) ;
 	
-	virtual superresolution<T,U>& operator=(const superresolution<T,U>&) ;      
-	
+	virtual superresolution<T,U>& operator=(const superresolution<T,U>&) ;
+
 	virtual bool operator==(const superresolution<T,U>&) const ;
 	virtual bool operator!=(const superresolution<T,U>&) const ;
-	virtual bool operator>=(const superresolution<T,U>&) const ;
+
+        // WARN! comparision operators assume infinite basis and not cyclic exponent basis
+        // this means comparision operators don't work properly b > c => a*b > a*c, a > 0
+        // don't hold etc. Comparision work with static numbers but not with operations
+        // changing multiple basis numbers
+        virtual bool operator>=(const superresolution<T,U>&) const ;
 	virtual bool operator<=(const superresolution<T,U>&) const ;
 	virtual bool operator< (const superresolution<T,U>&) const ;
 	virtual bool operator> (const superresolution<T,U>&) const ;
 	
 	// scalar operation
 	virtual superresolution<T,U>& operator= (const T& s) ;
+	virtual superresolution<T,U>  operator+ (const T& s) const ;
+	virtual superresolution<T,U>  operator- (const T& s) const ;
 	virtual superresolution<T,U>  operator* (const T& s) const ;
 	virtual superresolution<T,U>  operator/ (const T& s) const ;
 	virtual superresolution<T,U>& operator*=(const T& s) ;
-	virtual  superresolution<T,U>& operator/=(const T& s) ;
+	virtual superresolution<T,U>& operator/=(const T& s) ;
+
+	virtual superresolution<T,U>& operator=(const T value) ;
+      
+#if 0
+	virtual superresolution<T,U>  operator* (const T value) const ;
+	virtual superresolution<T,U>  operator/ (const T value) const ;
+	virtual superresolution<T,U>& operator*=(const T value) ;
+	virtual superresolution<T,U>& operator/=(const T value) ;
+#endif
+	
+
 	
 	virtual superresolution<T,U>& abs();
 	virtual superresolution<T,U>& zero();
@@ -73,19 +101,28 @@ namespace whiteice
 	virtual T& operator[](const U& index);
 	
 	virtual const T& operator[](const U& index) const;
+
+	inline virtual T& first(){ return basis[0]; }
+
+	inline virtual const T& first() const{ return basis[0]; }
+	
+	inline virtual T& first(const T value){
+	  basis[0] = value;
+	  return basis[0];
+	}
 	
 	// superresolution operations
 	virtual superresolution<T,U>& basis_scaling(const T& s) ; // uniform
 	virtual superresolution<T,U>& basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
 	virtual T measure(const U& s) const; // measures with s-(dimensional) measure-function
 
-	virtual bool comparable(){
+	inline virtual bool comparable(){
 	  if(basis.size() == 1) return true;
 	  else return false;
 	}
 
-	virtual unsigned int size(){ return this->basis.size(); }
-	
+      virtual unsigned int size() const;
+      
       private:
 	
 	// superresolution basis
@@ -106,6 +143,11 @@ namespace whiteice{
 
   namespace math
   {
+    template <typename T>
+    std::ostream& operator<<(std::ostream& ios, const superresolution<T, modular<unsigned int> > & m);
+			     
+    
+    // DO NOT USE BLAS_REAL BUT BLAS_COMPLEX
     extern template class superresolution< whiteice::math::blas_real<float>,
 					   whiteice::math::modular<unsigned int> >;
     extern template class superresolution< whiteice::math::blas_real<double>,
@@ -115,6 +157,18 @@ namespace whiteice{
 					   whiteice::math::modular<unsigned int> >;
     extern template class superresolution< whiteice::math::blas_complex<double>,
 					   whiteice::math::modular<unsigned int> >;
+
+    
+    extern template std::ostream& operator<< <whiteice::math::blas_complex<float> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+     whiteice::math::modular<unsigned int> >&);
+
+    extern template std::ostream& operator<< <whiteice::math::blas_complex<double> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_complex<double>,
+     whiteice::math::modular<unsigned int> >&);
+
   }
   
 };

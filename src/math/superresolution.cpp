@@ -12,27 +12,29 @@ namespace whiteice
   namespace math
   {
 
-#if 0
     template <typename T, typename U>
     superresolution<T,U>::superresolution()
     {
       // initializes one dimensional scaling basis with zero value
-      this->basis.resize(1);
-      this->basis[U(0)[0]] = T(0);
-    }
-#endif
-
-    
-    
-    template <typename T, typename U>
-    superresolution<T,U>::superresolution(const unsigned int resolution)
-    {
-      this->basis.resize(resolution);
+      this->basis.resize(DEFAULT_MODULAR_BASIS);
 
       for(unsigned int i=0;i<basis.size();i++)
 	basis[i] = T(0);
     }
+    
+    
+    template <typename T, typename U>
+    superresolution<T,U>::superresolution(const T value, const unsigned int resolution)
+    {
+      this->basis.resize(resolution);
 
+      for(unsigned int i=1;i<basis.size();i++)
+	basis[i] = T(0);
+
+      basis[0] = value;
+    }
+
+#if 0
     template <typename T, typename U>
     superresolution<T,U>::superresolution(const U& resolution)
     {
@@ -41,6 +43,7 @@ namespace whiteice
       for(unsigned int i=0;i<basis.size();i++)
 	basis[i] = T(0);
     }
+#endif
     
     
     template <typename T, typename U>
@@ -142,7 +145,7 @@ namespace whiteice
       if(whiteice::math::ifft<K, float >(b1) == false)
 	throw illegal_operation("Inverse FFT failed");
 
-      superresolution<T,U> result(U(this->basis.size()));
+      superresolution<T,U> result(T(0));
       
       for(unsigned int i=0;i<b1.size();i++){
 	whiteice::math::convert(result.basis[i], b1[i]);
@@ -200,7 +203,7 @@ namespace whiteice
       if(whiteice::math::ifft<K, float >(b1) == false)
 	throw illegal_operation("Inverse FFT failed");
 
-      superresolution<T,U> result(U(this->basis.size()));
+      superresolution<T,U> result(T(0));
       
       for(unsigned int i=0;i<b1.size();i++){
 	whiteice::math::convert(result.basis[i], b1[i]);
@@ -218,8 +221,8 @@ namespace whiteice
     {
       // conjugates both numbers and basises            
       
-      superresolution<T,U> s(U(this->basis.size())); // s = 0 vector initially
-      superresolution<T,U> t(U(this->basis.size()));
+      superresolution<T,U> s(T(0)); // s = 0 vector initially
+      superresolution<T,U> t(T(0));
 
       t.basis[U(0)[0]] = whiteice::math::conj(this->basis[U(0)[0]]);
       
@@ -245,7 +248,7 @@ namespace whiteice
     {
       // conjugates both numbers and basises            
       
-      superresolution<T,U> t(U(this->basis.size()));
+      superresolution<T,U> t(T(0));
 
       t.basis[U(0)[0]] = whiteice::math::conj(this->basis[U(0)[0]]);
       
@@ -436,8 +439,7 @@ namespace whiteice
       
       return *this;
     }
-    
-    
+
     template <typename T, typename U>
     bool superresolution<T,U>::operator==(const superresolution<T,U>& s) const 
       
@@ -463,20 +465,7 @@ namespace whiteice
     bool superresolution<T,U>::operator!=(const superresolution<T,U>& s) const 
       
     {
-      
-      if(this->basis.size() != s.basis.size()){		
-	return true;
-      }
-
-      if(this->basis[U(0)[0]] != s.basis[U(0)[0]])
-	return true;
-      
-      for(U u=U(1);u!=U(0);u++){
-	if(this->basis[u[0]] != s.basis[u[0]])
-	  return true;
-      }
-      
-      return false; 
+      return (!((*this) == s));
     }
     
     
@@ -484,8 +473,22 @@ namespace whiteice
     bool superresolution<T,U>::operator>=(const superresolution<T,U>& s) const
       
     {
-      if(s.basis.size() != 1 || this->basis.size() != 1)
-	throw uncomparable("Non unit basis numbers are uncomparable");
+      if(s.basis.size() != this->basis.size())
+	throw uncomparable("Non same baisis size numbers are uncomparable");
+
+      U u = U(basis.size()-1);
+
+      do{
+	if(basis[u[0]] > s.basis[u[0]]){
+	  return true;
+	}
+	else if(basis[u[0]] < s.basis[u[0]]){
+	  return false;
+	}
+	
+	u--;
+      }
+      while(u != U(0));
 
       return (this->basis[0] >= s.basis[0]);
     }
@@ -495,9 +498,23 @@ namespace whiteice
     template <typename T, typename U>
     bool superresolution<T,U>::operator<=(const superresolution<T,U>& s) const 
     {
-      if(s.basis.size() != 1 || this->basis.size() != 1)
-	throw uncomparable("Non unit basis numbers are uncomparable");
+      if(s.basis.size() != this->basis.size())
+	throw uncomparable("Non same basis size numbers are uncomparable");
 
+      U u = U(basis.size()-1);
+
+      do{
+	if(basis[u[0]] < s.basis[u[0]]){
+	  return true;
+	}
+	else if(basis[u[0]] > s.basis[u[0]]){
+	  return false;
+	}
+	
+	u--;
+      }
+      while(u != U(0));
+      
       return (this->basis[0] <= s.basis[0]);
     }
     
@@ -506,8 +523,22 @@ namespace whiteice
     bool superresolution<T,U>::operator< (const superresolution<T,U>& s) const 
       
     {
-      if(s.basis.size() != 1 || this->basis.size() != 1)
-	throw uncomparable("Non unit basis numbers are uncomparable");
+      if(s.basis.size() != this->basis.size())
+	throw uncomparable("Non same basis basis size numbers are uncomparable");
+      
+      U u = U(basis.size()-1);
+
+      do{
+	if(basis[u[0]] < s.basis[u[0]]){
+	  return true;
+	}
+	else if(basis[u[0]] > s.basis[u[0]]){
+	  return false;
+	}
+	
+	u--;
+      }
+      while(u != U(0));
 
       return (this->basis[0] < s.basis[0]);
     }
@@ -517,8 +548,23 @@ namespace whiteice
     bool superresolution<T,U>::operator> (const superresolution<T,U>& s) const 
       
     {
-      if(s.basis.size() != 1 || this->basis.size() != 1)
-	throw uncomparable("Non unit basis numbers are uncomparable");
+      if(s.basis.size() != this->basis.size())
+	throw uncomparable("Non same basis size numbers are uncomparable");
+
+      U u = U(basis.size()-1);
+      
+      do{
+	if(basis[u[0]] > s.basis[u[0]]){
+	  return true;
+	}
+	else if(basis[u[0]] < s.basis[u[0]]){
+	  return false;
+	}
+	
+	u--;
+      }
+      while(u != U(0));
+
 
       return (this->basis[0] > s.basis[0]);
     }
@@ -535,6 +581,30 @@ namespace whiteice
       this->basis[0] = s;
 
       return (*this);
+    }
+
+    template <typename T, typename U>
+    superresolution<T,U>  superresolution<T,U>::operator+ (const T& s) const
+    {
+      superresolution<T,U> t(*this);
+      
+      U i = U(0);
+      
+      t.basis[i[0]] += s;
+      
+      return t;
+    }
+
+    template <typename T, typename U>
+    superresolution<T,U>  superresolution<T,U>::operator- (const T& s) const
+    {
+      superresolution<T,U> t(*this);
+      
+      U i = U(0);
+      
+      t.basis[i[0]] -= s;
+      
+      return t;
     }
     
     
@@ -596,6 +666,81 @@ namespace whiteice
       
       return t;
     }
+
+
+    // scalar operation
+    template <typename T, typename U>
+    superresolution<T,U>& superresolution<T,U>::operator= (const T s) 
+      
+    {
+      this->zero();
+
+      this->basis[0] = s;
+
+      return (*this);
+    }
+    
+
+#if 0
+    template <typename T, typename U>
+    superresolution<T,U>  superresolution<T,U>::operator* (const T s) const 
+      
+    {
+      superresolution<T,U> t(*this);
+
+      U i = U(0);
+      
+      t.basis[i[0]] *= s;
+
+      for(U i=U(1);i != U(0);i++)
+	t.basis[i[0]] *= s;
+      
+      return t;
+    }
+    
+    
+    template <typename T, typename U>
+    superresolution<T,U>  superresolution<T,U>::operator/ (const T s) const 
+    {
+      superresolution<T,U> t(*this);
+
+      t.basis[U(0)[0]] /= s;
+      
+      for(U i=U(1);i!=U(0);i++)
+	t.basis[i[0]] /= s;
+      
+      return t;
+    }
+    
+    
+    template <typename T, typename U>
+    superresolution<T,U>& superresolution<T,U>::operator*=(const T s) 
+    {
+      superresolution<T,U>& t = (*this);
+
+      t.basis[U(0)[0]] *= s;
+      
+      for(U i=U(1);i!=U(0);i++)
+	t.basis[i[0]] *= s;
+      
+      return t;
+    }
+    
+    
+    template <typename T, typename U>
+    superresolution<T,U>& superresolution<T,U>::operator/=(const T s)
+      
+    {
+      superresolution<T,U>& t = (*this);
+
+      t.basis[U(0)[0]] /= s;
+      
+      for(U i=U(1);i!=U(0);i++)
+	t.basis[i[0]] /= s;
+      
+      return t;
+    }
+#endif
     
     
     template <typename T, typename U>
@@ -709,6 +854,12 @@ namespace whiteice
 	return basis[s[0]];
       }
     }
+
+    
+    template <typename T, typename U>
+    unsigned int superresolution<T,U>::size() const {
+      return this->basis.size();
+    }
     
   }
 }
@@ -717,6 +868,28 @@ namespace whiteice
 {
   namespace math
   {
+    template <typename T>
+    std::ostream& operator<<(std::ostream& ios,
+			     const superresolution<T, modular<unsigned int> > & m)
+    {
+      if(m.size() == 1){
+	ios << m[0];
+      }
+      else if(m.size() > 1){
+	ios << "(";
+
+	for(unsigned int i=0;i<m.size();i++){
+	  ios << " " << m[0];
+	}
+
+	ios << " )";
+      }
+      
+      return ios;
+    }
+
+    
+    // DO NOT USE BLAS_REAL BUT BLAS_COMPLEX
     template class superresolution< whiteice::math::blas_real<float>,
 				    whiteice::math::modular<unsigned int> >;
     template class superresolution< whiteice::math::blas_real<double>,
@@ -726,6 +899,16 @@ namespace whiteice
 				    whiteice::math::modular<unsigned int> >;
     template class superresolution< whiteice::math::blas_complex<double>,
 				    whiteice::math::modular<unsigned int> >;
+
+    template std::ostream& operator<< <whiteice::math::blas_complex<float> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+     whiteice::math::modular<unsigned int> >&);
+
+    template std::ostream& operator<< <whiteice::math::blas_complex<double> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_complex<double>,
+     whiteice::math::modular<unsigned int> >&);
     
   };
 };

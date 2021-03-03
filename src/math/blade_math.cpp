@@ -395,105 +395,350 @@ namespace whiteice
     //////////////////////////////////////////////////////////////////////
     
     // conversion function between doubles and floats
-    bool convert(float&  B, const float&  A) { B = A; return true; }
-    bool convert(float&  B, const double& A) { B = (float)A; return true; }
-    bool convert(double& B, const float&  A) { B = (double)A; return true; }
-    bool convert(double& B, const double& A) { B = A; return true; }
+    bool convert(float&  B, const float  A) { B = A; return true; }
+    bool convert(float&  B, const double A) { B = (float)A; return true; }
+    bool convert(double& B, const float  A) { B = (double)A; return true; }
+    bool convert(double& B, const double A) { B = A; return true; }
     
-    bool convert(double& B, const char& A) { B = (double)A; return true; }
+    bool convert(double& B, const char A) { B = (double)A; return true; }
     bool convert(double& B, const unsigned char A) { B = (double)A; return true; }
-    bool convert(double& B, const int& A) { B = (double)A; return true; }
-    bool convert(double& B, const unsigned int& A) { B = (double)A; return true; }
+    bool convert(double& B, const int A) { B = (double)A; return true; }
+    bool convert(double& B, const unsigned int A) { B = (double)A; return true; }
     
-    bool convert(unsigned int& B, const float& A)   { B = (unsigned int)A; return true; }
-    bool convert(unsigned int& B, const double& A)  { B = (unsigned int)A; return true; }
-    bool convert(int& B, const float& A)            { B = (int)A; return true; }
-    bool convert(int& B, const double& A)           { B = (int)A; return true; }
+    bool convert(unsigned int& B, const float A)   { B = (unsigned int)A; return true; }
+    bool convert(unsigned int& B, const double A)  { B = (unsigned int)A; return true; }
+    bool convert(int& B, const float A)            { B = (int)A; return true; }
+    bool convert(int& B, const double A)           { B = (int)A; return true; }
 
-    bool convert(unsigned int& B, const blas_real<float>& A)      { B = (unsigned int)A.c[0]; return true; }
-    bool convert(unsigned int& B, const blas_complex<float>& A)   { B = (unsigned int)A.real(); return true; }
-    bool convert(unsigned int& B, const blas_real<double>& A)     { B = (unsigned int)A.c[0]; return true; }
-    bool convert(unsigned int& B, const blas_complex<double>& A)  { B = (unsigned int)A.real(); return true; }
+    bool convert(unsigned int& B, const blas_real<float> A)      { B = (unsigned int)A.c[0]; return true; }
+    bool convert(unsigned int& B, const blas_complex<float> A)   { B = (unsigned int)A.real(); return true; }
+    bool convert(unsigned int& B, const blas_real<double> A)     { B = (unsigned int)A.c[0]; return true; }
+    bool convert(unsigned int& B, const blas_complex<double> A)  { B = (unsigned int)A.real(); return true; }
 
-    bool convert(int& B, const blas_real<float>& A)               { B = (int)A.c[0]; return true; }
-    bool convert(int& B, const blas_complex<float>& A)            { B = (int)A.real(); return true; }
-    bool convert(int& B, const blas_real<double>& A)              { B = (int)A.c[0]; return true; }
-    bool convert(int& B, const blas_complex<double>& A)           { B = (int)A.real(); return true; }
+    bool convert(int& B, const blas_real<float> A)               { B = (int)A.c[0]; return true; }
+    bool convert(int& B, const blas_complex<float> A)            { B = (int)A.real(); return true; }
+    bool convert(int& B, const blas_real<double> A)              { B = (int)A.c[0]; return true; }
+    bool convert(int& B, const blas_complex<double> A)           { B = (int)A.real(); return true; }
 
-    bool convert(float& B,  const blas_real<float>& A) { B = (float)A.c[0]; return true; }
-    bool convert(float& B,  const blas_real<double>& A) { B = (float)A.c[0]; return true; }
-    bool convert(double& B, const blas_real<float>& A) { B = (double)A.c[0]; return true; }
-    bool convert(double& B, const blas_real<double>& A) { B = (double)A.c[0]; return true; }
+    bool convert(float& B,  const blas_real<float> A) { B = (float)A.c[0]; return true; }
+    bool convert(float& B,  const blas_real<double> A) { B = (float)A.c[0]; return true; }
+    bool convert(double& B, const blas_real<float> A) { B = (double)A.c[0]; return true; }
+    bool convert(double& B, const blas_real<double> A) { B = (double)A.c[0]; return true; }
     
-    bool convert(float& B,  const blas_complex<float>& A) { B = (float)A.real(); return false; }
-    bool convert(float& B,  const blas_complex<double>& A) { B = (float)A.real(); return false; }
-    bool convert(double& B, const blas_complex<float>& A) { B = (double)A.real(); return false; }
-    bool convert(double& B, const blas_complex<double>& A) { B = (double)A.real(); return false; }
+    bool convert(float& B,  const blas_complex<float> A) { B = (float)A.real(); return false; }
+    bool convert(float& B,  const blas_complex<double> A) { B = (float)A.real(); return false; }
+    bool convert(double& B, const blas_complex<float> A) { B = (double)A.real(); return false; }
+    bool convert(double& B, const blas_complex<double> A) { B = (double)A.real(); return false; }
 
 
-    bool convert(blas_real<float>& B, const blas_complex<float>& A)  { B = (float)A.real(); return true; }
-    bool convert(blas_real<float>& B, const blas_complex<double>& A) { B = (float)A.real(); return true; }
-    bool convert(blas_real<float>& B, const complex<float>& A)       { B = (float)A.real(); return true; }
-    bool convert(blas_real<float>& B, const complex<double>& A)      { B = (float)A.real(); return true; }
-    bool convert(blas_complex<float>& B, const blas_real<float>& A)  { B = (float)A.c[0]; return true; }
-    bool convert(blas_complex<double>& B, const blas_real<float>& A) { B = (double)A.c[0]; return true; }
-    bool convert(complex<float>& B, const blas_real<float>& A)       { B = (float)A.c[0]; return true; }
-    bool convert(complex<float>& B, const blas_real<double>& A)      { B = (float)A.c[0]; return true; }
+    bool convert(blas_real<float>& B, const blas_complex<float> A)  { B = (float)A.real(); return true; }
+    bool convert(blas_real<float>& B, const blas_complex<double> A) { B = (float)A.real(); return true; }
+    bool convert(blas_real<float>& B, const complex<float> A)       { B = (float)A.real(); return true; }
+    bool convert(blas_real<float>& B, const complex<double> A)      { B = (float)A.real(); return true; }
+    bool convert(blas_complex<float>& B, const blas_real<float> A)  { B = (float)A.c[0]; return true; }
+    bool convert(blas_complex<double>& B, const blas_real<float> A) { B = (double)A.c[0]; return true; }
+    bool convert(complex<float>& B, const blas_real<float> A)       { B = (float)A.c[0]; return true; }
+    bool convert(complex<float>& B, const blas_real<double> A)      { B = (float)A.c[0]; return true; }
+    bool convert(complex<double>& B, const blas_real<float> A)       { B = (double)A.c[0]; return true; }
+    bool convert(complex<double>& B, const blas_real<double> A)      { B = (double)A.c[0]; return true; }
+
+    bool convert(complex<float>& B, const blas_complex<float> A){
+      B = complex<float>(A.c[0], A.c[1]);
+      return true;
+    }
+								 
+    bool convert(complex<float>& B, const blas_complex<double> A){
+      B = complex<float>(A.c[0], A.c[1]);
+      return true;
+    }
+
+    bool convert(complex<double>& B, const blas_complex<float> A){
+      B = complex<double>(A.c[0], A.c[1]);
+      return true;
+    }
+								 
+    bool convert(complex<double>& B, const blas_complex<double> A){
+      B = complex<double>(A.c[0], A.c[1]);
+      return true;
+    }
     
-    bool convert(blas_real<float>& B, const complex< blas_real<float> >& A)
+    bool convert(blas_real<float>& B, const complex< blas_real<float> > A)
     {
       B = A.real();
       return true;
     }
     
-    bool convert(blas_real<double>& B, const complex< blas_real<double> >& A)
+    bool convert(blas_real<double>& B, const complex< blas_real<double> > A)
     {
       B = A.real();
       return true;
     }
 
-    bool convert(blas_complex<float>& B, const complex< blas_real<float> >& A)
+    bool convert(blas_complex<float>& B, const complex< blas_real<float> > A)
     {
       B.c[0] = A.real().c[0];
       B.c[1] = A.imag().c[0];
       return true;
     }
     
-    bool convert(blas_complex<double>& B, const complex< blas_real<double> >& A)
+    bool convert(blas_complex<double>& B, const complex< blas_real<double> > A)
     {
       B.c[0] = A.real().c[0];
       B.c[0] = A.imag().c[0];
       return true;
     }
     
-    bool convert(complex<blas_real<float> >& B, const blas_complex<float>& A)
+    bool convert(complex<blas_real<float> >& B, const blas_complex<float> A)
     {
       B = whiteice::math::complex< blas_real<float> >(A.c[0], A.c[1]);
       return true;
     }
     
-    bool convert(complex<blas_real<double> >& B, const blas_complex<double>& A)
+    bool convert(complex<blas_real<double> >& B, const blas_complex<double> A)
     {
       B = whiteice::math::complex< blas_real<float> >(A.c[0], A.c[1]);
       return true;
     }
 
-    bool convert(float& B, complex<float>& A){ B = (float)std::real(A); return true; }
-    bool convert(double& B, complex<double>& A){ B = (double)std::real(A); return true; }
-    bool convert(double& B, complex<float>& A){ B = (double)std::real(A); return true; }
-    bool convert(float& B, complex<double>& A){ B = (float)std::real(A); return true; }
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      B = A;
+      return true;
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      B = A;
+      return true;
+    }
+
+
+    bool convert(float& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(float& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(double& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(double& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
     
-    bool convert(blas_real<double>& B, const blas_real<float>& A)    { B = (double)A.c[0]; return true; }
-    bool convert(blas_real<float>& B, const blas_real<double>& A)    { B = (float)A.c[0]; return true; }
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const float A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
 
-    bool convert(blas_real<float>& B, const double& A){ B = (float)A; return true; }
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const double A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
 
-    bool convert(complex<float>& B, const float& A){ B = (float)A; return true; }
-    bool convert(complex<double>& B, const double& A){ B = (double)A; return true; }
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const float A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const double A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    
+    bool convert(complex<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }    
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(complex<float>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+    
+    
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_real<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_real<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+
+    
+    
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_complex<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    
+
+    bool convert(float& B, const complex<float> A){ B = (float)std::real(A); return true; }
+    bool convert(double& B, const complex<double> A){ B = (double)std::real(A); return true; }
+    bool convert(double& B, const complex<float> A){ B = (double)std::real(A); return true; }
+    bool convert(float& B, const complex<double> A){ B = (float)std::real(A); return true; }
+    
+    bool convert(blas_real<double>& B, const blas_real<float> A)    { B = (double)A.c[0]; return true; }
+    bool convert(blas_real<float>& B, const blas_real<double> A)    { B = (float)A.c[0]; return true; }
+
+    bool convert(blas_real<float>& B, const double A){ B = (float)A; return true; }
+
+    bool convert(complex<float>& B, const float A){ B = (float)A; return true; }
+    bool convert(complex<double>& B, const double A){ B = (double)A; return true; }
 
     
     
     //////////////////////////////////////////////////////////////////////
+
+    bool isinf(superresolution<blas_complex<float> , modular<unsigned int> > v){
+      return false;
+    }
+    
+    bool isinf(superresolution<blas_complex<double>, modular<unsigned int> > v){
+      return false;
+    }
+
+    bool isnan(superresolution<blas_complex<float> , modular<unsigned int> > v){
+      return false;
+    }
+    
+    bool isnan(superresolution<blas_complex<double>, modular<unsigned int> > v){
+      return false;
+    }
     
     // for FFT . bits must be smaller than 8*sizeof(int)
     // (32bits nowadays - assuming 8 bit bytes)

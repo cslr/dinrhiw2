@@ -64,19 +64,20 @@ namespace whiteice
 	  c[0] = t;
 	  blas_safebox(c[0]);
 	}
-	
-	//inline blas_real(const blas_real<T>& t){ c[0] = t.c[0]; }
-	//inline blas_real(const blas_complex<T>& t){ c[0] = t.c[0]; }
+
+#if 0
+	inline blas_real(const blas_real<T>& t){ c[0] = t.c[0]; }
+	inline blas_real(const blas_complex<T>& t){ c[0] = t.c[0]; }
+#endif
 
 	// work arounds stupid compiler..
 	inline blas_real(const blas_complex<float>& t); // takes real part
 	inline blas_real(const blas_complex<double>& t); // takes real part
-	
+
 	inline blas_real(const blas_real<float>& t){
 	  c[0] = t.c[0];
 	  blas_safebox(c[0]);
 	}
-	
 	inline blas_real(const blas_real<double>& t){
 	  c[0] = t.c[0];
 	  blas_safebox(c[0]);
@@ -85,8 +86,7 @@ namespace whiteice
 	inline ~blas_real(){ }
 	
 	inline blas_real<T> operator++(int n){
-	  if(n) c[0] += T(n);
-	  else c[0]++;
+	  c[0]++;
 	  
 	  return (*this);
 	}
@@ -248,7 +248,14 @@ namespace whiteice
 	{
 	  blas_safebox(c[0]);
 	  return T(0.0f); // has no imaginary value to set
-	} 
+	}
+
+	inline blas_real<T>& first() { return (*this); }
+	inline const blas_real<T>& first() const { return (*this); }
+	inline blas_real<T>& first(const blas_real<T> value){
+	  (*this) = value;
+	  return (*this);
+	}
 	
 	
 	template <typename A>
@@ -367,7 +374,7 @@ namespace whiteice
 	  c[0] = r.c[0]; c[1] = T(0.0f);
 	  blas_safebox(c[0]); blas_safebox(c[1]);
 	}
-	
+
 	inline blas_complex(const blas_real<double>& r){
 	  c[0] = r.c[0]; c[1] = T(0.0f);
 	  blas_safebox(c[0]); blas_safebox(c[1]);
@@ -377,7 +384,7 @@ namespace whiteice
 	  c[0] = r.c[0]; c[1] = r.c[1];
 	  blas_safebox(c[0]); blas_safebox(c[1]);
 	}
-	
+
 	inline blas_complex(const blas_complex<double>& r){
 	  c[0] = r.c[0]; c[1] = r.c[1];
 	  blas_safebox(c[0]); blas_safebox(c[1]);
@@ -599,6 +606,13 @@ namespace whiteice
 	  this->c[1] = value;
 	  blas_safebox(c[0]); blas_safebox(c[1]);
 	  return this->c[1];
+	}
+	
+	inline blas_complex<T>& first(){ return (*this); }
+	inline const blas_complex<T>& first() const { return (*this); }
+	inline blas_complex<T>& first(const blas_complex<T> value){
+	  (*this) = value;
+	  return (*this);
 	}
 	
 	template <typename A>

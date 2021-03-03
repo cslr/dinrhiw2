@@ -45,6 +45,16 @@ namespace whiteice
     extern template bool ica< blas_complex<double> >
       (const matrix< blas_complex<double> >& D, matrix< blas_complex<double> >& W, bool verbose) ;
 
+    extern template bool ica< superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& D,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& W,
+     bool verbose) ;
+    
+    extern template bool ica< superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& D,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& W,
+     bool verbose) ;
+
     
     extern template bool ica< blas_real<float> >
       (const std::vector< math::vertex< blas_real<float> > >& data, matrix< blas_real<float> >& W, bool verbose) ;
@@ -59,6 +69,17 @@ namespace whiteice
     (const std::vector< math::vertex< blas_complex<float> > >& data, matrix< blas_complex<float> >& W, bool verbose) ;
     extern template bool ica< blas_complex<double> >
     (const std::vector< math::vertex< blas_complex<double> > >& data, matrix< blas_complex<double> >& W, bool verbose) ;
+
+    
+    extern template bool ica< superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const std::vector< math::vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& W,
+     bool verbose) ;
+    
+    extern template bool ica< superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const std::vector< math::vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& W,
+     bool verbose) ;
 
     
   };

@@ -662,7 +662,7 @@ namespace whiteice
 	// this initialization is as described in the paper of Xavier Glorot
 	// "Understanding the difficulty of training deep neural networks"
 	
-	T var = math::sqrt(6.0f / (arch[l] + arch[l+1]));
+	T var = math::sqrt(T(6.0f) / (arch[l] + arch[l+1]));
 
 	if(smallvalues)
 	  var *= T(0.10f);
@@ -670,7 +670,7 @@ namespace whiteice
 	for(unsigned int i=0;i<W[l].size();i++){
 	  // RNG is real valued, a and b are complex
 	  // this means value is complex valued var*([-1,+1]+[-1,+1]i)
-	  const auto value = ((ar*rng.uniform() - br) + (ai*rng.uniform() - bi))*var;
+	  const auto value = ((rng.uniform()*ar - br) + (rng.uniform()*ai - bi))*var;
 
 	  whiteice::math::convert(W[l][i], value);
 	}
@@ -688,7 +688,7 @@ namespace whiteice
 	// this initialization is as described in the paper of Xavier Glorot
 	// "Understanding the difficulty of training deep neural networks"
 	
-	T var = math::sqrt(1.0f / arch[l]);
+	T var = math::sqrt(T(1.0f) / arch[l]);
 
 	if(smallvalues)
 	  var *= T(0.10f);
@@ -835,7 +835,7 @@ namespace whiteice
       
       if(l != getLayers()-1){ // not the last layer
 
-	const T var = math::sqrt(1.0f / W[l].xsize());
+	const T var = math::sqrt(T(1.0f) / W[l].xsize());
 	
 	for(unsigned int j=0;j<W[l].ysize();j++){
 	  for(unsigned int i=0;i<W[l].xsize();i++){
@@ -1871,14 +1871,14 @@ namespace whiteice
 
       whiteice::math::blas_complex<double> value;
 
-      if(abs(math::real(out)) > rand_real){ value.real(1.0f); }
+      if(abs(math::real(out)) > rand_real.first()){ value.real(1.0f); }
       else{ value.real(0.0f); }
       
-      if(abs(math::imag(out)) > rand_imag){ value.imag(1.0f); }
+      if(abs(math::imag(out)) > rand_imag.first()){ value.imag(1.0f); }
       else{ value.imag(0.0f); }
 
       T output_value;
-      whiteice::math::convert(output_value, value);
+      whiteice::math::convert(output_value, T(value));
       
       return output_value;
     }
@@ -1927,25 +1927,31 @@ namespace whiteice
 
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	if(input.real() < 0.0f)
-	  return T(RELUcoef*input.real());
+	if(input.first().real() < 0.0f)
+	  return T(RELUcoef*input.first().real());
 	else
-	  return T(input.real());
+	  return T(input.first().real());
       }
-      else{
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+	      typeid(T) == typeid(whiteice::math::blas_complex<double>))
+      {
 	math::blas_complex<double> out;
-	out.real(input.real());
-	out.imag(input.imag());
+	out.real(input.first().real());
+	out.imag(input.first().imag());
 	
-	if(input.real() < 0.0f){
+	if(input.first().real() < 0.0f){
 	  out.real(RELUcoef*out.real());
 	}
 	
-	if(input.imag() < 0.0f){
+	if(input.first().imag() < 0.0f){
 	  out.imag(RELUcoef*out.imag());
 	}
 
 	return T(out);
+      }
+      else{ // superresolution
+	// IMPLEMENT ME!
+	assert(0);
       }
     }
     else{
@@ -2033,7 +2039,8 @@ namespace whiteice
 	const T a = T(1.7159f); // suggested by Haykin's neural network book (1999)
 	const T b = T(2.0f/3.0f);
 	
-	if(abs(input) > abs(T(+10.0f))) return T(0.0f) + T(0.5f)*a*b;
+	if(abs(input.first()).first() > abs(T(+10.0f)).first())
+	  return T(0.0f) + T(0.5f)*a*b;
 	
 	// for real valued data
 	//if(input > T(10.0)) return T(0.0) + T(0.5)*a*b;
@@ -2054,48 +2061,40 @@ namespace whiteice
 
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	if(input.real() < 0.0f)
+	if(input.first().real() < 0.0f)
 	  return T(RELUcoef);
 	else
 	  return T(1.00f);
       }
-      else{
-	math::blas_complex<double> out;
-	out.real(input.real());
-	out.imag(input.imag());
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+	      typeid(T) == typeid(whiteice::math::blas_complex<double>)){
 	
-	if(input.real() < 0.0f){
+	math::blas_complex<double> out;
+	out.real(input.first().real());
+	out.imag(input.first().imag());
+	
+	if(input.first().real() < 0.0f){
 	  out.real(RELUcoef*out.real());
 	}
 	
-	if(input.imag() < 0.0f){
+	if(input.first().imag() < 0.0f){
 	  out.imag(RELUcoef*out.imag());
 	}
 
-	const T epsilon = T(1e-6);
+	// const T epsilon = T(1e-6);
+	const math::blas_complex<double> epsilon = math::blas_complex<double>(1e-6);
 
 	// correct derivate is Df(z) = f(z)/z
-	if(abs(input.real()) > 1e-9)
-	  out /= (input);
+	if(abs(input.first().real()) > 1e-9)
+	  out /= (input.first());
 	else
-	  out /= (input + epsilon);
-
-	return out;
-#if 0
-	math::blas_complex<double> out;
-	out.real(1.0f);
-	out.imag(1.0f);
-	
-	if(input.real() < 0.0f){
-	  out.real(0.01f);
-	}
-	
-	if(input.imag() < 0.0f){
-	  out.imag(0.01f);
-	}
+	  out /= (input.first() + epsilon);
 	
 	return T(out);
-#endif
+      }
+      else{ // superresolution
+	// IMPLEMENT ME!
+	assert(0);
       }
       
     }
@@ -2151,14 +2150,14 @@ namespace whiteice
 
       whiteice::math::blas_complex<double> value;
 
-      if(abs(math::real(out)) > rand_real){ value.real(1.0f); }
+      if(abs(math::real(out)) > rand_real.first()){ value.real(1.0f); }
       else{ value.real(0.0f); }
       
-      if(abs(math::imag(out)) > rand_imag){ value.imag(1.0f); }
+      if(abs(math::imag(out)) > rand_imag.first()){ value.imag(1.0f); }
       else{ value.imag(0.0f); }
 
       T output_value;
-      whiteice::math::convert(output_value, value);
+      whiteice::math::convert(output_value, T(value));
       
       return output_value;
     }
@@ -2207,25 +2206,29 @@ namespace whiteice
 
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	if(input.real() < 0.0f)
-	  return T(RELUcoef*input.real());
+	if(input.first().real() < 0.0f)
+	  return T(RELUcoef*input.first().real());
 	else
-	  return T(input.real());
+	  return T(input.first().real());
       }
-      else{
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+	      typeid(T) == typeid(whiteice::math::blas_complex<double>)){
 	math::blas_complex<double> out;
-	out.real(input.real());
-	out.imag(input.imag());
+	out.real(input.first().real());
+	out.imag(input.first().imag());
 	
-	if(input.real() < 0.0f){
-	  out.real(RELUcoef*out.real());
+	if(input.first().real() < 0.0f){
+	  out.first().real(RELUcoef*out.real());
 	}
 	
-	if(input.imag() < 0.0f){
-	  out.imag(RELUcoef*out.imag());
+	if(input.first().imag() < 0.0f){
+	  out.first().imag(RELUcoef*out.imag());
 	}
 
 	return T(out);
+      }
+      else{
+	// TODO superresolution code!
       }
     }
     else{
@@ -2286,7 +2289,8 @@ namespace whiteice
       
       T in = input;
 
-      if(abs(in) > abs(T(+10.0f))) in = abs(T(+10.0))*in/abs(in);
+      if(abs(in) > abs(T(+10.0f)))
+	in = abs(T(+10.0))*in/abs(in);
 
       // for real valued data:
       //if(in > T(+10.0f)) in = T(+10.0);
@@ -2307,13 +2311,14 @@ namespace whiteice
 	const T a = T(1.7159f); // suggested by Haykin's neural network book (1999)
 	const T b = T(2.0f/3.0f);
 	
-	if(abs(input) > abs(T(+10.0f))) return T(0.0f) + T(0.5f)*a*b;
+	if(abs(input.first()).first() > abs(T(+10.0f)).first())
+	  return T(0.0f) + T(0.5f)*a*b;
 	
 	// for real valued data
 	//if(input > T(10.0)) return T(0.0) + T(0.5)*a*b;
 	//else if(input < T(-10.0)) return T(0.0) + T(0.5)*a*b;
 	
-	const T e2x = whiteice::math::exp(T(2.0f)*b*input);
+	const T e2x = whiteice::math::exp(T(2.0f)*b*input.first());
 	const T tanhbx = (e2x - T(1.0f)) / (e2x + T(1.0f));
 	
 	T output = a*b*(T(1.0f) - tanhbx*tanhbx);
@@ -2328,33 +2333,40 @@ namespace whiteice
 
       if(typeid(T) == typeid(whiteice::math::blas_real<float>) ||
 	 typeid(T) == typeid(whiteice::math::blas_real<double>)){
-	if(input.real() < 0.0f)
+	if(input.first().real() < 0.0f)
 	  return T(RELUcoef);
 	else
 	  return T(1.00f);
       }
-      else{
+      else if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
+	      typeid(T) == typeid(whiteice::math::blas_complex<double>)){
 	math::blas_complex<double> out;
-	out.real(input.real());
-	out.imag(input.imag());
+	out.real(input.first().real());
+	out.imag(input.first().imag());
 	
-	if(input.real() < 0.0f){
+	if(input.first().real() < 0.0f){
 	  out.real(RELUcoef*out.real());
 	}
 	
-	if(input.imag() < 0.0f){
+	if(input.first().imag() < 0.0f){
 	  out.imag(RELUcoef*out.imag());
 	}
 
-	const T epsilon = T(1e-6);
+	//const T epsilon = T(1e-6);
+	const math::blas_complex<double> epsilon = math::blas_complex<double>(1e-6);
 
 	// correct derivate is Df(z) = f(z)/z
-	if(abs(input.real()) > 1e-9)
-	  out /= (input);
+	if(abs(input.first().real()) > 1e-9)
+	  out /= (input.first());
 	else
-	  out /= (input + epsilon);
+	  out /= (input.first() + epsilon);
 
-	return out;
+	return T(out);
+      }
+      else{ // superresolution
+	// IMPLEMENT ME!
+	assert(0);
+	return input;
       }
       
     }
@@ -2379,7 +2391,7 @@ namespace whiteice
 #endif
     // THIS DO NOT WORK CURRENTLY
     
-    T output = 0.0f;
+    T output = T(0.0f);
 
     assert(0); // there is NO inverse function
     
@@ -2827,7 +2839,7 @@ namespace whiteice
 
 	for(unsigned int i=0;i<conf_arch.size();i++){
 	  int value = 0;
-	  whiteice::math::convert(value, conf_data[i]);
+	  whiteice::math::convert(value, conf_data[i].first());
 
 	  if(value <= 0) return false; // bad data
 
@@ -3393,7 +3405,7 @@ namespace whiteice
   template <typename T>
   bool nnetwork<T>::setDropOut(const T probability) 
   {
-    if(real(probability) <= 0.0f || real(probability) > 1.0f)
+    if(real(probability.first()) <= 0.0f || real(probability.first()) > 1.0f)
       return false; // we cannot set all neurons to be dropout neurons
 
     retain_probability = probability;
@@ -3405,7 +3417,7 @@ namespace whiteice
 	unsigned int numdropped = 0;
 
 	for(unsigned int i=0;i<dropout[l].size();i++){
-	  if(real(rng.uniform()) > real(retain_probability)){
+	  if(real(rng.uniform().first()) > real(retain_probability.first())){
 	    dropout[l][i] = true;
 	    numdropped++;
 	  }
@@ -3436,7 +3448,7 @@ namespace whiteice
   bool nnetwork<T>::setDropOut(std::vector< std::vector<bool> >& dropout,
 			       const T probability) const
   {
-    if(real(probability) <= 0.0f || real(probability) > 1.0f)
+    if(real(probability.first()) <= 0.0f || real(probability.first()) > 1.0f)
       return false; // we cannot set all neurons to be dropout neurons
 
     dropout.resize(getLayers());
@@ -3447,7 +3459,7 @@ namespace whiteice
 	unsigned int numdropped = 0;
 
 	for(unsigned int i=0;i<dropout[l].size();i++){
-	  if(real(rng.uniform()) > real(probability)){
+	  if(real(rng.uniform().first()) > real(probability.first())){
 	    dropout[l][i] = true;
 	    numdropped++;
 	  }
@@ -3813,5 +3825,10 @@ namespace whiteice
 
   template class nnetwork< math::blas_complex<float> >;
   template class nnetwork< math::blas_complex<double> >;
+
+  template class nnetwork< math::superresolution< math::blas_complex<float>,
+						  math::modular<unsigned int> > >;
+  template class nnetwork< math::superresolution< math::blas_complex<double>,
+						  math::modular<unsigned int> > >;
   
 };

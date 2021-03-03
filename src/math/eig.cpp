@@ -44,6 +44,22 @@ namespace whiteice
     //template bool eig2x2matrix< complex<double> >
     //  (const matrix< complex<double> >& A, vertex< complex<double> >& d,
     //   matrix< complex<double> >& X, bool complex_ok);
+    
+    template bool eig2x2matrix
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& d,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& X,
+     bool complex_ok);
+    
+    template bool eig2x2matrix
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& d,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& X,
+     bool complex_ok);
+    
+    
        
        
     template bool hessenberg_reduction< blas_real<float> >
@@ -59,6 +75,16 @@ namespace whiteice
     template bool hessenberg_reduction< blas_complex<double> >
     (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& Q);
     
+    template bool hessenberg_reduction
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& Q);
+    template bool hessenberg_reduction
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& Q);
+    
+    
     
     template bool qr< blas_real<float> > (matrix< blas_real<float> >&  A,
 					  matrix< blas_real<float> >&  Q);
@@ -70,6 +96,14 @@ namespace whiteice
 					     matrix< blas_complex<float> >&  Q);
     template bool qr< blas_complex<double> >(matrix< blas_complex<double> >& A,
 					     matrix< blas_complex<double> >& Q);
+    template bool qr
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >&  A,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >&  Q);
+    template bool qr
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& Q);
     
     
     template bool implicit_symmetric_qrstep_wilkinson< blas_real<float> >
@@ -90,6 +124,17 @@ namespace whiteice
     template bool implicit_symmetric_qrstep_wilkinson< blas_complex<double> >
       (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& X,
        unsigned int e1, unsigned int N);
+
+    template bool implicit_symmetric_qrstep_wilkinson
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& X,
+     unsigned int e1, unsigned int N);
+    template bool implicit_symmetric_qrstep_wilkinson
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& X,
+     unsigned int e1, unsigned int N);
     
     
     template bool symmetric_eig< blas_real<float> >
@@ -102,7 +147,18 @@ namespace whiteice
     //template bool symmetric_eig< complex<float> >(matrix< complex<float> >& A, matrix< complex<float> >& D, bool sort);
     //template bool symmetric_eig< complex<double> >(matrix< complex<double> >& A, matrix< complex<double> >& D, bool sort);
     template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
-    template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);    
+    template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);
+
+
+    template bool symmetric_eig< superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& D,
+     bool sort);
+    
+    template bool symmetric_eig< superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& D,
+     bool sort);
     
     
     template bool svd< blas_real<float> >
@@ -144,7 +200,7 @@ namespace whiteice
       
       temp = d[1]*d[1] + A(1,0)*A(0,1);
       
-      if(whiteice::math::real(temp) < 0 && !complex_ok) // are eigenvalues complex?
+      if(whiteice::math::real(temp) < whiteice::math::real(T(0)) && !complex_ok) // are eigenvalues complex?
 	return false;
       
       temp = whiteice::math::sqrt( temp );
@@ -159,28 +215,30 @@ namespace whiteice
       if(temp != T(0.0f)){ // different eigenvalues (full rank - unless zero eigenvalues)
 	
 	for(unsigned int i=0;i<2;i++){
-	  if(A(0,1) != T(0)){
-	    X(0,i) = 1;
+	  if(A(0,1) != T(0.0)){
+	    X(0,i) = T(1.0);
 	    X(1,i) = (- A(0,0) + d[i])/A(0,1);
 	  }
-	  else if(A(1,0) != T(0)){
+	  else if(A(1,0) != T(0.0)){
 	    X(1,i) = (- A(1,1) + d[i])/A(1,0);
-	    X(0,i) = 1;
+	    X(0,i) = T(1.0);
 	  }
 	  else{
-	    if(whiteice::math::real(whiteice::math::abs(A(0,0) - d[i])) > 0){
-	      X(0,i) = 0;
-	      X(1,i) = 1;
+	    if(whiteice::math::real(whiteice::math::abs(A(0,0) - d[i])) >
+	       whiteice::math::real(T(0.0)))
+	    {
+	      X(0,i) = T(0.0);
+	      X(1,i) = T(1.0);
 	    }
 	    else{
-	      X(0,i) = 1;
-	      X(1,i) = 0;
+	      X(0,i) = T(1.0);
+	      X(1,i) = T(0.0);
 	    }
 	  }
 	  
 	  // normalizes length of eigenvector
 	  temp = whiteice::math::conj(X(0,i))*X(0,i) + whiteice::math::conj(X(1,i))*X(1,i);
-	  temp = T(1) / whiteice::math::sqrt(temp);
+	  temp = T(1.0) / whiteice::math::sqrt(temp);
 	  
 	  X(0,i) *= temp;
 	  X(1,i) *= temp;
@@ -229,7 +287,7 @@ namespace whiteice
 	
 	// normalizes length of eigenvector
 	temp = whiteice::math::conj(X(0,1))*X(0,1) + whiteice::math::conj(X(1,1))*X(1,1);
-	temp = T(1) / whiteice::math::sqrt(temp);
+	temp = T(1.0) / whiteice::math::sqrt(temp);
 	
 	X(0,1) *= temp;
 	X(1,1) *= temp;
@@ -386,7 +444,7 @@ namespace whiteice
 	
 	if(N <= 1){
 	  Q.resize(1,1);
-	  Q(1,1) = 1;
+	  Q(1,1) = T(1.0);
 	  return true;
 	}
 	
@@ -552,7 +610,7 @@ namespace whiteice
 	  unsigned int iter = 0;
 	  unsigned int f1 = 0, f2 = N-2;
 	  unsigned int e1 = 0, e2 = N-2;
-	  T error = 0;
+	  T error = T(0);
 	  
 	  for(unsigned int k=0;k<(N-1);k++){
 	    double error_double;

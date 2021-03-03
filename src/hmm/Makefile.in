@@ -10,7 +10,8 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
-	../linear_ETA.o ../Log.o ../math/norms.o
+	../linear_ETA.o ../Log.o ../math/norms.o \
+	../math/superresolution.o ../math/modular.o
 
 TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
@@ -20,7 +21,8 @@ SOURCES = HMM.cpp tst/test.cpp \
 	../math/vertex.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
 	../linear_ETA.cpp \
-	../math/ownexception.cpp ../math/norms.cpp
+	../math/ownexception.cpp ../math/norms.cpp \
+	../math/superresolution.cpp ../math/modular.cpp
 
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-memaccess @EXTRA_INCLUDEPATHS@

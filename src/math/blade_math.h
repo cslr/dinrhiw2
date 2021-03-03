@@ -14,6 +14,7 @@
 #include "function.h"
 #include "real.h"
 #include "modular.h"
+#include "superresolution.h"
 
 #include "global.h"
 
@@ -114,69 +115,173 @@ namespace whiteice
     //////////////////////////////////////////
     // convert() functions for float and doubles
     
-    bool convert(float&  B, const float&  A) ;
-    bool convert(float&  B, const double& A) ;
-    bool convert(double& B, const float&  A) ;
-    bool convert(double& B, const double& A) ;
+    bool convert(float&  B, const float  A) ;
+    bool convert(float&  B, const double A) ;
+    bool convert(double& B, const float  A) ;
+    bool convert(double& B, const double A) ;
     
-    bool convert(unsigned int& B, const float& A) ;
-    bool convert(unsigned int& B, const double& A) ;
-    bool convert(int& B, const float& A) ;
-    bool convert(int& B, const double& A) ;
+    bool convert(unsigned int& B, const float A) ;
+    bool convert(unsigned int& B, const double A) ;
+    bool convert(int& B, const float A) ;
+    bool convert(int& B, const double A) ;
 
-    bool convert(unsigned int& B, const blas_real<float>& A) ;
-    bool convert(unsigned int& B, const blas_complex<float>& A) ;
-    bool convert(unsigned int& B, const blas_real<double>& A) ;
-    bool convert(unsigned int& B, const blas_complex<double>& A) ;
+    bool convert(unsigned int& B, const blas_real<float> A) ;
+    bool convert(unsigned int& B, const blas_complex<float> A) ;
+    bool convert(unsigned int& B, const blas_real<double> A) ;
+    bool convert(unsigned int& B, const blas_complex<double> A) ;
 
-    bool convert(int& B, const blas_real<float>& A) ;
-    bool convert(int& B, const blas_complex<float>& A) ;
-    bool convert(int& B, const blas_real<double>& A) ;
-    bool convert(int& B, const blas_complex<double>& A) ;
+    bool convert(int& B, const blas_real<float> A) ;
+    bool convert(int& B, const blas_complex<float> A) ;
+    bool convert(int& B, const blas_real<double> A) ;
+    bool convert(int& B, const blas_complex<double> A) ;
 
-    bool convert(float& B, const blas_real<float>& A) ;
-    bool convert(float& B, const blas_complex<float>& A) ;
-    bool convert(float& B, const blas_real<double>& A) ;
-    bool convert(float& B, const blas_complex<double>& A) ;
+    bool convert(float& B, const blas_real<float> A) ;
+    bool convert(float& B, const blas_complex<float> A) ;
+    bool convert(float& B, const blas_real<double> A);
+    bool convert(float& B, const blas_complex<double> A) ;
     
-    bool convert(double& B, const blas_real<float>& A) ;
-    bool convert(double& B, const blas_complex<float>& A) ;
-    bool convert(double& B, const blas_real<double>& A) ;
-    bool convert(double& B, const blas_complex<double>& A) ;
+    bool convert(double& B, const blas_real<float> A) ;
+    bool convert(double& B, const blas_complex<float> A) ;
+    bool convert(double& B, const blas_real<double> A) ;
+    bool convert(double& B, const blas_complex<double> A) ;
     
-    bool convert(double& B, const char& A) ;
+    bool convert(double& B, const char A) ;
     bool convert(double& B, const unsigned char A) ;
-    bool convert(double& B, const int& A) ;
-    bool convert(double& B, const unsigned int& A) ;
+    bool convert(double& B, const int A) ;
+    bool convert(double& B, const unsigned int A) ;
 
     
-    bool convert(blas_real<float>& B, const blas_complex<float>& A);
-    bool convert(blas_real<float>& B, const blas_complex<double>& A);
-    bool convert(blas_real<float>& B, const complex<float>& A);
-    bool convert(blas_real<float>& B, const complex<double>& A);
-    bool convert(blas_complex<float>& B, const blas_real<float>& A);
-    bool convert(blas_complex<double>& B, const blas_real<float>& A);
-    bool convert(complex<float>& B, const blas_real<float>& A);
-    bool convert(complex<float>& B, const blas_real<double>& A);
-    bool convert(blas_real<double>& B, const blas_real<float>& A);
-    bool convert(blas_real<float>& B, const blas_real<double>& A);
+    bool convert(blas_real<float>& B, const blas_complex<float> A);
+    bool convert(blas_real<float>& B, const blas_complex<double> A);
+    bool convert(blas_real<float>& B, const complex<float> A);
+    bool convert(blas_real<float>& B, const complex<double> A);
+    bool convert(blas_complex<float>& B, const blas_real<float> A);
+    bool convert(blas_complex<double>& B, const blas_real<float> A);
+    bool convert(complex<float>& B, const blas_real<float> A);
+    bool convert(complex<float>& B, const blas_real<double> A);
+    bool convert(complex<double>& B, const blas_real<float> A);
+    bool convert(complex<double>& B, const blas_real<double> A);    
+    bool convert(complex<float>& B, const blas_complex<float> A);
+    bool convert(complex<float>& B, const blas_complex<double> A);
+    bool convert(complex<double>& B, const blas_complex<float> A);
+    bool convert(complex<double>& B, const blas_complex<double> A);    
+    bool convert(blas_real<double>& B, const blas_real<float> A);
+    bool convert(blas_real<float>& B, const blas_real<double> A);
 
-    bool convert(blas_real<float>& B, const complex< blas_real<float> >& A);
-    bool convert(blas_real<double>& B, const complex< blas_real<double> >& A);
+    bool convert(blas_real<float>& B, const complex< blas_real<float> > A);
+    bool convert(blas_real<double>& B, const complex< blas_real<double> > A);
 
-    bool convert(blas_complex<float>& B, const complex< blas_real<float> >& A);
-    bool convert(blas_complex<double>& B, const complex< blas_real<double> >& A);
+    bool convert(blas_complex<float>& B, const complex< blas_real<float> > A);
+    bool convert(blas_complex<double>& B, const complex< blas_real<double> > A);
 
-    bool convert(complex<blas_real<float> >& B, const blas_complex<float>& A);
-    bool convert(complex<blas_real<double> >& B, const blas_complex<double>& A);
+    bool convert(complex<blas_real<float> >& B, const blas_complex<float> A);
+    bool convert(complex<blas_real<double> >& B, const blas_complex<double> A);
 
-    bool convert(blas_real<float>& B, const double& A);
-    bool convert(complex<float>& B, const float& A);
-    bool convert(complex<double>& B, const double& A);
-    bool convert(float& B, complex<float>& A);
-    bool convert(double& B, complex<double>& A);
-    bool convert(double& B, complex<float>& A);
-    bool convert(float& B, complex<double>& A);    
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    
+    
+    bool convert(float& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+
+    bool convert(float& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    bool convert(double& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+
+    bool convert(double& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const float A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const double A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const float A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const double A);
+    
+    bool convert(complex<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+
+    bool convert(complex<float>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+    
+    bool convert(complex<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const complex<float> A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const complex<double> A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const complex<float> A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const complex<double> A);
+		 
+    
+    
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_real<float> A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_real<double> A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_complex<float> A);
+
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_complex<double> A);
+    
+    bool convert(superresolution< blas_complex<double>, modular<unsigned int> >& B,
+		 const blas_complex<float> A);
+
+    bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
+		 const blas_complex<double> A);
+
+    
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+		 
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+		 
+    bool convert(blas_complex<float>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+		 
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_complex<double>, modular<unsigned int> > A);
+
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
+		 
+
+    
+    bool convert(blas_real<float>& B, const double A);
+    bool convert(complex<float>& B, const float A);
+    bool convert(complex<double>& B, const double A);
+    bool convert(float& B, const complex<float> A);
+    bool convert(double& B, const complex<double> A);
+    bool convert(double& B, const complex<float> A);
+    bool convert(float& B, const complex<double> A);    
 
     
 #if 0
@@ -239,6 +344,12 @@ namespace whiteice
     inline bool isinf(blas_complex<float> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE) || (std::fpclassify(v.c[1]) == FP_INFINITE); }
     inline bool isinf(blas_complex<double> v){ return (std::fpclassify(v.c[0]) == FP_INFINITE) || (std::fpclassify(v.c[1]) == FP_INFINITE); }
 
+    ////////////////////////////////////////////////////////////
+    // DUMMY functions which never detect INFs for superresolution numbers [just returns false]
+    
+    bool isinf(superresolution<blas_complex<float> , modular<unsigned int> > v);
+    bool isinf(superresolution<blas_complex<double>, modular<unsigned int> > v);
+
     // fpclassify() is buggy.. for some reason it does not detect NaNs correctly (sometimes) .. or it is a compiler bug
     inline bool isnan(float v){ return (std::fpclassify(v) == FP_NAN) || (*((unsigned int*)&v) == 0xFFC00000); }
     // inline bool isnan(double v){ return (std::fpclassify(v) == FP_NAN) || (*((unsigned long long*)&v) == 0xFFF8000000000000); }
@@ -247,6 +358,13 @@ namespace whiteice
     inline bool isnan(blas_real<double> v){ return whiteice::math::isnan(v.c[0]); }
     inline bool isnan(blas_complex<float> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
     inline bool isnan(blas_complex<double> v){ return whiteice::math::isnan(v.c[0]) || whiteice::math::isnan(v.c[1]); }
+
+    ////////////////////////////////////////////////////////////
+    // DUMMY functions which never detect NaNs for superresolution numbers [just returns false]
+    
+    bool isnan(superresolution<blas_complex<float> , modular<unsigned int> > v);
+    bool isnan(superresolution<blas_complex<double>, modular<unsigned int> > v);
+    
     
     inline std::string tohex(float v)
     {
@@ -298,25 +416,28 @@ namespace whiteice
     
     
     template <typename T>
-      T sqrt(const quaternion<T>& x) PURE_FUNCTION;
+    T sqrt(const quaternion<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      T sqrt(const vertex<T>& v) PURE_FUNCTION;
+    T sqrt(const vertex<T>& v) PURE_FUNCTION;
     
     template <typename T>
-      T sqrt(const matrix<T>& X) PURE_FUNCTION;
-      
-    template <typename T>
-      T sqrt(const gvertex<T>& v) PURE_FUNCTION;
+    T sqrt(const matrix<T>& X) PURE_FUNCTION;
     
     template <typename T>
-      T sqrt(const gmatrix<T>& X) PURE_FUNCTION;
+    T sqrt(const gvertex<T>& v) PURE_FUNCTION;
     
     template <typename T>
-      std::complex<T> sqrt(const std::complex<T>& x) PURE_FUNCTION;
+    T sqrt(const gmatrix<T>& X) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::complex<T> sqrt(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    std::complex<T> sqrt(const std::complex<T>& x) PURE_FUNCTION;
+    
+    template <typename T>
+    whiteice::math::complex<T> sqrt(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+
+    template <typename T, typename S>
+    whiteice::math::superresolution<T,S> sqrt(const whiteice::math::superresolution<T,S> x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -416,6 +537,17 @@ namespace whiteice
       {
 	return whiteice::math::complex<T>(std::sqrt(x));
       }
+
+    template <typename T, typename S>
+    whiteice::math::superresolution<T,S> sqrt(const whiteice::math::superresolution<T,S> x)
+    {
+      whiteice::math::superresolution<T, S> y;
+      
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::sqrt(x[i]);
+
+      return y;
+    }
     
     
     // sqrt() for atlas primitives is in "blas_primitives.h"
@@ -577,22 +709,26 @@ namespace whiteice
     
     template <typename T>
     inline T exp(const T value, const T cutoff) PURE_FUNCTION;
+    
+    template <typename T>
+    inline whiteice::math::complex<T> 
+    exp(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    
+    template <typename T>
+    inline std::complex<T> 
+    exp(const std::complex<T>& x) PURE_FUNCTION;
+    
+    template <typename T>
+    inline whiteice::math::blas_real<T> 
+    exp(whiteice::math::blas_real<T> x) PURE_FUNCTION;
+    
+    template <typename T>
+    inline whiteice::math::blas_complex<T> 
+    exp(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
 
-    template <typename T>
-      inline whiteice::math::complex<T> 
-      exp(const whiteice::math::complex<T>& x) PURE_FUNCTION;
-    
-    template <typename T>
-      inline std::complex<T> 
-      exp(const std::complex<T>& x) PURE_FUNCTION;
-    
-    template <typename T>
-      inline whiteice::math::blas_real<T> 
-      exp(whiteice::math::blas_real<T> x) PURE_FUNCTION;
-    
-    template <typename T>
-      inline whiteice::math::blas_complex<T> 
-      exp(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
+    template <typename T, typename S>
+    inline whiteice::math::superresolution<T,S>
+    exp(whiteice::math::superresolution<T,S> x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -622,39 +758,23 @@ namespace whiteice
       return whiteice::math::blas_complex<T>( whiteice::math::exp( std::complex<T>(x.c[0], x.c[1]) ) );
     }
 
+
+    template <typename T, typename S>
+    inline whiteice::math::superresolution<T, S>
+    exp(whiteice::math::superresolution<T, S> x)
+    {
+      whiteice::math::superresolution<T, S> y;
+      
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::exp(x[i]);
+
+      return y;
+    }
+
     
     template <typename T>
     inline T exp(const T value, const T cutoff)
     {
-#if 0
-      if(cutoff <= T(0.0f)){
-	if(value < cutoff){
-	  const T MCUTOFF = cutoff;
-	  return whiteice::math::exp(MCUTOFF);
-	}
-	else if(value > -cutoff){
-	  const T PCUTOFF = -cutoff;
-	  return whiteice::math::exp(PCUTOFF);
-	}
-	else{
-	  return whiteice::math::exp(cutoff);
-	}
-      }
-      else{
-	if(value < -cutoff){
-	  const T MCUTOFF = -cutoff;
-	  return whiteice::math::exp(MCUTOFF);
-	}
-	else if(value > cutoff){
-	  const T PCUTOFF = cutoff;
-	  return whiteice::math::exp(PCUTOFF);
-	}
-	else{
-	  return whiteice::math::exp(cutoff);
-	}
-      }
-      
-#else
       const T CUTOFF = abs(cutoff);
       
       if(value < -CUTOFF){
@@ -667,7 +787,6 @@ namespace whiteice
       else{
 	return whiteice::math::exp(value);
       }
-#endif
     }
     
 
@@ -683,20 +802,24 @@ namespace whiteice
     realnumber log(const realnumber& x);
     
     template <typename T>
-      std::complex<T> 
-      log(const std::complex<T>& x) PURE_FUNCTION;
+    std::complex<T> 
+    log(const std::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::complex<T> 
-      log(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    whiteice::math::complex<T> 
+    log(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::blas_real<T> 
-      log(whiteice::math::blas_real<T> x) PURE_FUNCTION;
+    whiteice::math::blas_real<T> 
+    log(whiteice::math::blas_real<T> x) PURE_FUNCTION;
     
     template <typename T>
-      whiteice::math::blas_complex<T> 
-      log(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
+    whiteice::math::blas_complex<T> 
+    log(whiteice::math::blas_complex<T> x) PURE_FUNCTION;
+
+    template <typename T, typename S>
+    inline whiteice::math::superresolution<T,S>
+    log(whiteice::math::superresolution<T,S> x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -731,6 +854,18 @@ namespace whiteice
       {
 	return whiteice::math::blas_complex<T>( whiteice::math::log( std::complex<T>(x.c[0], x.c[1]) ) );
       }
+
+    template <typename T, typename S>
+    inline whiteice::math::superresolution<T,S>
+    log(whiteice::math::superresolution<T,S> x)
+    {
+      whiteice::math::superresolution<T, S> y;
+      
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::log(x[i]);
+
+      return y;
+    }
     
 
     //////////////////////////////////////////////////////////////////////
@@ -807,6 +942,9 @@ namespace whiteice
     blas_real<double> sin(const blas_real<double>& x) PURE_FUNCTION;
     blas_complex<float> sin(const blas_complex<float>& x) PURE_FUNCTION;
     blas_complex<double> sin(const blas_complex<double>& x) PURE_FUNCTION;
+
+    template <typename T, typename S>
+    superresolution<T,S> sin(const superresolution<T,S>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -839,6 +977,17 @@ namespace whiteice
     inline blas_complex<double> sin(const blas_complex<double>& x){
       return blas_complex<double>(std::sin<double>(std::complex<double>(x.c[0],x.c[1])));
     }
+
+    template <typename T, typename S>
+    superresolution<T,S> sin(const superresolution<T,S>& x){
+      superresolution<T,S> y;
+
+      for(unsigned int i=0;i<x.size();i++){
+	y[i] = whiteice::math::sin(x[i]);
+      }
+
+      return y;
+    }
     
     
     
@@ -858,6 +1007,9 @@ namespace whiteice
     blas_real<double> cos(const blas_real<double>& x) PURE_FUNCTION;
     blas_complex<float> cos(const blas_complex<float>& x) PURE_FUNCTION;
     blas_complex<double> cos(const blas_complex<double>& x) PURE_FUNCTION;
+    
+    template <typename T, typename S>
+    superresolution<T,S> cos(const superresolution<T,S>& x) PURE_FUNCTION;
     
     //////////////////////////////////////////////////////////////////////
     
@@ -888,6 +1040,19 @@ namespace whiteice
     inline blas_complex<double> cos(const blas_complex<double>& x){
       return blas_complex<double>(std::cos<double>(std::complex<double>(x.c[0],x.c[1])));
     }
+
+    
+    template <typename T, typename S>
+    superresolution<T,S> cos(const superresolution<T,S>& x){
+      superresolution<T,S> y;
+
+      for(unsigned int i=0;i<x.size();i++){
+	y[i] = whiteice::math::cos(x[i]);
+      }
+
+      return y;
+    }
+    
     
     //////////////////////////////////////////////////////////////////////
     // tanh
@@ -1166,6 +1331,9 @@ namespace whiteice
 
     integer abs(const integer& x) PURE_FUNCTION;
 
+    template <typename T, typename S>
+    whiteice::math::superresolution<T,S> abs(whiteice::math::superresolution<T,S> x) PURE_FUNCTION;
+
     
     //////////////////////////////////////////////////////////////////////
     
@@ -1252,6 +1420,18 @@ namespace whiteice
       integer y(x);
       return y.abs();
     }
+
+
+    template <typename T, typename S>
+    whiteice::math::superresolution<T,S> abs(whiteice::math::superresolution<T,S> x)
+    {
+      whiteice::math::superresolution<T, S> y;
+      
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::abs(x[i]);
+
+      return y;
+    }
     
     
     // abs() for atlas primitives are in
@@ -1291,6 +1471,9 @@ namespace whiteice
     
     template <typename T>
       blas_complex<T> conj(const blas_complex<T>& a) PURE_FUNCTION;
+    
+    template <typename T, typename S>
+    superresolution<T,S> conj(const superresolution<T,S>& x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -1352,6 +1535,18 @@ namespace whiteice
 	return z;
       }
 
+
+    template <typename T, typename S>
+    superresolution<T,S> conj(const superresolution<T,S>& x){
+      superresolution<T,S> y;
+
+      for(unsigned int i=0;i<x.size();i++){
+	y[i] = whiteice::math::conj(x[i]);
+      }
+
+      return y;
+    }
+
     
     //////////////////////////////////////////////////////////////////////
     // returns real/imag part of number
@@ -1365,16 +1560,20 @@ namespace whiteice
     
     
     template <typename T>
-      T real(const std::complex<T>& x) PURE_FUNCTION;
+    T real(const std::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      T real(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    T real(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      blas_real<T> real(const blas_real<T>& x) PURE_FUNCTION;
+    blas_real<T> real(const blas_real<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      blas_real<T> real(const blas_complex<T>& x) PURE_FUNCTION;
+    blas_real<T> real(const blas_complex<T>& x) PURE_FUNCTION;
+
+    template <typename T, typename S>
+    superresolution<T,S> real(const superresolution<T,S> x) PURE_FUNCTION;
+    
     
     double imag(double x) PURE_FUNCTION;
     float imag(float x) PURE_FUNCTION;
@@ -1384,16 +1583,19 @@ namespace whiteice
     realnumber imag(const realnumber& x);
     
     template <typename T>
-      T imag(const std::complex<T>& x) PURE_FUNCTION;
+    T imag(const std::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      T imag(const whiteice::math::complex<T>& x) PURE_FUNCTION;
+    T imag(const whiteice::math::complex<T>& x) PURE_FUNCTION;
     
     template <typename T>
-      blas_real<T> imag(const blas_real<T>& x) PURE_FUNCTION;
+    blas_real<T> imag(const blas_real<T>& x) PURE_FUNCTION;
+    
+    template <typename T>
+    blas_real<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
 
-    template <typename T>
-      blas_real<T> imag(const blas_complex<T>& x) PURE_FUNCTION;
+    template <typename T, typename S>
+    superresolution<T,S> imag(const superresolution<T,S> x) PURE_FUNCTION;
     
     
     //////////////////////////////////////////////////////////////////////
@@ -1429,6 +1631,16 @@ namespace whiteice
       {
 	return x.c[0];
       }
+
+    template <typename T, typename S>
+    superresolution<T,S> real(const superresolution<T,S> x){
+      superresolution<T,S> y;
+
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::real(x[i]);
+
+      return y;
+    }
     
     
     inline double imag(double x){ return 0.0; }
@@ -1465,6 +1677,16 @@ namespace whiteice
       {
 	return x.c[1];
       }
+
+    template <typename T, typename S>
+    superresolution<T,S> imag(const superresolution<T,S> x){
+      superresolution<T,S> y;
+      
+      for(unsigned int i=0;i<x.size();i++)
+	y[i] = whiteice::math::imag(x[i]);
+
+      return y;
+    }
     
     
     //////////////////////////////////////////////////////////////////////

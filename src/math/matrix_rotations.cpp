@@ -46,6 +46,21 @@ namespace whiteice
        const matrix< blas_complex<double> >& M,
        unsigned int y, unsigned int x,
        bool rowdir);
+
+    template bool rhouseholder_vector
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& v,
+     const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& M,
+     unsigned int y, unsigned int x,
+     bool rowdir);
+    
+    template bool rhouseholder_vector
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& v,
+     const matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& M,
+     unsigned int y, unsigned int x,
+     bool rowdir);
+
     
     
     template bool rhouseholder_leftrot< blas_real<float> > 
@@ -84,6 +99,23 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< blas_complex<double> >& v);
+
+    template bool rhouseholder_leftrot
+    < superresolution<blas_complex<float>, modular<unsigned int> > > 
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& v);
+    
+    template bool rhouseholder_leftrot
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& v);
+    
     
     
     template bool rhouseholder_rightrot< blas_real<float> >
@@ -122,6 +154,21 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< blas_complex<double> >& v);
+
+    template bool rhouseholder_rightrot
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& v);
+    template bool rhouseholder_rightrot
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& v);
     
     
     template void rgivens< blas_real<float> >
@@ -137,7 +184,17 @@ namespace whiteice
       (const blas_complex<float>& a, const blas_complex<float>& b, vertex< blas_complex<float> >& p);
     template void rgivens< blas_complex<double> >
       (const blas_complex<double>& a, const blas_complex<double>& b, vertex< blas_complex<double> >& p);
+    template void rgivens
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (const superresolution<blas_complex<float>, modular<unsigned int> >& a,
+     const superresolution<blas_complex<float>, modular<unsigned int> >& b,
+     vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& p);
     
+    template void rgivens
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (const superresolution<blas_complex<double>, modular<unsigned int> >& a,
+     const superresolution<blas_complex<double>, modular<unsigned int> >& b,
+     vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& p);
     
     
     template void rgivens_rightrot< blas_real<float> >
@@ -158,6 +215,19 @@ namespace whiteice
     template void rgivens_rightrot< blas_complex<double> >
       (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
+
+    template void rgivens_rightrot
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
+    template void rgivens_rightrot
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
     
     
     template void rgivens_leftrot< blas_real<float> >
@@ -177,7 +247,19 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);
     template void rgivens_leftrot< blas_complex<double> >
       (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
-       const unsigned int i, const unsigned int j, const unsigned int k);    
+       const unsigned int i, const unsigned int j, const unsigned int k);
+
+    template void rgivens_leftrot
+    < superresolution<blas_complex<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
+    template void rgivens_leftrot
+    < superresolution<blas_complex<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_complex<double>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
     
     
     
@@ -222,12 +304,12 @@ namespace whiteice
 	  // handle small values causing floating point exception
 	  if(typeid(T) == typeid(blas_real<float>) ||
 	     typeid(T) == typeid(float)){
-	    if(whiteice::math::abs(beta) < 1e-30f)
+	    if(whiteice::math::abs(beta) < T(1e-30f))
 	      return false;
 	  }
 	  else if(typeid(T) == typeid(blas_real<double>) ||
 		  typeid(T) == typeid(double)){
-	    if(whiteice::math::abs(beta) < 1e-300)
+	    if(whiteice::math::abs(beta) < T(1e-300))
 	      return false;
 	  }
 #else
@@ -643,8 +725,9 @@ namespace whiteice
     {
       // p.resize(2); // [c s] MUST HAVE SIZE 2
       
-      if(b == 0){
-	p[0] = 1; p[1] = 0;
+      if(b == T(0.0)){
+	p[0] = T(1.0);
+	p[1] = T(0.0);
       }
       else{
 	T th;

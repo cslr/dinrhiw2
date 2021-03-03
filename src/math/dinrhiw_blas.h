@@ -19,7 +19,7 @@ extern "C" {
 }
 
 #include "blas_primitives.h"
-
+#include "superresolution.h"
 
 
 #endif
