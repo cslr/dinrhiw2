@@ -29,17 +29,17 @@ namespace whiteice
      * made out of field T with exponent field U
      */
     template <typename T, typename U>
-    class superresolution : 
-      public number<superresolution<T,U>, T, T, U>
+    //class superresolution : public number<superresolution<T,U>, T, T, U>
+    struct superresolution
     {
       public:
 	
-	superresolution();
-	superresolution(const T value, const unsigned int resolution = DEFAULT_MODULAR_BASIS);
-	// superresolution(const U& resolution);
+        superresolution();
+        superresolution(const T value);
+        // superresolution(const U& resolution);
 	superresolution(const superresolution<T,U>& s);
 	superresolution(const std::vector<T>& values);
-	virtual ~superresolution();
+        ~superresolution();
 	
 	// operators
 	virtual superresolution<T,U> operator+(const superresolution<T,U>&) const ;
@@ -117,19 +117,21 @@ namespace whiteice
 	virtual T measure(const U& s) const; // measures with s-(dimensional) measure-function
 
 	inline virtual bool comparable(){
-	  if(basis.size() == 1) return true;
-	  else return false;
+	  return true; // NOT REALLY COMPARABLE IF OVERFLOW HAPPENS (CIRCULAR CONVOLUTION)
 	}
 
       virtual unsigned int size() const;
       
-      private:
+      public:
 	
 	// superresolution basis
 	// (todo: switch to 'sparse' representation with (U,T) pairs)
 	// and ordered by U (use own avltree implementation)
 	
-	std::vector<T> basis;
+        T basis[DEFAULT_MODULAR_BASIS] __attribute__ ((packed));;
+      
+        // std::vector<T> basis;
+      
       };
     
     

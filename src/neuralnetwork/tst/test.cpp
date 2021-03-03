@@ -1,5 +1,5 @@
 /*
- * simple tests
+ * simple unit testcases
  *
  * Tomas Ukkonen
  */

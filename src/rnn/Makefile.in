@@ -11,6 +11,7 @@ EXTRA_OBJECTS =	../dataset.o ../MemoryCompressor.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
 	../math/outerproduct.o ../math/norms.o \
+	../math/superresolution.o ../math/modular.o \
 	../linear_ETA.o ../conffile.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/BBRBM.o \
 	../math/LBFGS.o ../neuralnetwork/LBFGS_BBRBM.o \
@@ -24,6 +25,7 @@ SOURCES = tst/test.cpp RNN_RBM.cpp \
 	../dataset.cpp \
 	../math/vertex.cpp ../math/matrix.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
+	../math/superresolution.cpp ../math/modular.cpp \
 	../linear_ETA.cpp \
 	../math/ownexception.cpp
 

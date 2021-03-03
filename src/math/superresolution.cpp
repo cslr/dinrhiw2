@@ -16,40 +16,26 @@ namespace whiteice
     superresolution<T,U>::superresolution()
     {
       // initializes one dimensional scaling basis with zero value
-      this->basis.resize(DEFAULT_MODULAR_BASIS);
-
-      for(unsigned int i=0;i<basis.size();i++)
+      
+      for(unsigned int i=0;i<this->size();i++)
 	basis[i] = T(0);
     }
     
     
     template <typename T, typename U>
-    superresolution<T,U>::superresolution(const T value, const unsigned int resolution)
+    superresolution<T,U>::superresolution(const T value)
     {
-      this->basis.resize(resolution);
-
-      for(unsigned int i=1;i<basis.size();i++)
+      for(unsigned int i=1;i<this->size();i++)
 	basis[i] = T(0);
 
       basis[0] = value;
     }
 
-#if 0
-    template <typename T, typename U>
-    superresolution<T,U>::superresolution(const U& resolution)
-    {
-      this->basis.resize(resolution[0]);
-
-      for(unsigned int i=0;i<basis.size();i++)
-	basis[i] = T(0);
-    }
-#endif
-    
-    
     template <typename T, typename U>
     superresolution<T,U>::superresolution(const superresolution<T,U>& s)
     {
-      this->basis = s.basis;
+      for(unsigned int i=0;i<size();i++)
+	this->basis[i] = s.basis[i];
     }
     
     
@@ -57,13 +43,19 @@ namespace whiteice
     superresolution<T,U>::superresolution(const std::vector<T>& values)
     {
       // initializes values.size() - dimensional basis
-      this->basis = values;
+      if(values.size() != this->size())
+	throw illegal_operation("Incorrect basis size in input vector");
+
+      for(unsigned int i=0;i<size();i++)
+	basis[i] = values[i];
+      
     }   
     
     
     template <typename T, typename U>
     superresolution<T,U>::~superresolution()
     {
+      
     }
     
     
@@ -105,7 +97,7 @@ namespace whiteice
       
     {
       {
-	if(this->basis.size() != s.basis.size())
+	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 
 	// don't check basis dimension is PRIME
@@ -118,8 +110,8 @@ namespace whiteice
       // z = InvFFT(FFT(x)*FFT(y))
       
       whiteice::math::vertex< whiteice::math::blas_complex<float> > b1, b2;
-      b1.resize(this->basis.size());
-      b2.resize(this->basis.size());
+      b1.resize(this->size());
+      b2.resize(this->size());
 
       for(unsigned int i=0;i<b1.size();i++){
 	//b1[i] = this->basis[i];
@@ -161,7 +153,7 @@ namespace whiteice
       
     {
       {
-	if(this->basis.size() != s.basis.size())
+	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 
 	// don't check basis dimension is PRIME
@@ -174,8 +166,8 @@ namespace whiteice
       // z = InvFFT(FFT(x)/FFT(y))
       
       whiteice::math::vertex< whiteice::math::blas_complex<float> > b1, b2;
-      b1.resize(this->basis.size());
-      b2.resize(this->basis.size());
+      b1.resize(this->size());
+      b2.resize(this->size());
 
       for(unsigned int i=0;i<b1.size();i++){
 	//b1[i] = this->basis[i];
@@ -317,7 +309,7 @@ namespace whiteice
       
     {
       {
-	if(this->basis.size() != s.basis.size())
+	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 	
 	// don't check basis dimension is PRIME
@@ -330,8 +322,8 @@ namespace whiteice
       // z = InvFFT(FFT(x)*FFT(y))
       
       whiteice::math::vertex< whiteice::math::blas_complex<float> > b1, b2;
-      b1.resize(this->basis.size());
-      b2.resize(this->basis.size());
+      b1.resize(this->size());
+      b2.resize(this->size());
 
       for(unsigned int i=0;i<b1.size();i++){
 	//b1[i] = this->basis[i];
@@ -376,7 +368,7 @@ namespace whiteice
 	  throw illegal_operation("impossible: would need infinite basis");
 	}
 	
-	if(this->basis.size() != s.basis.size())
+	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 
 	// don't check basis dimension is PRIME
@@ -389,8 +381,8 @@ namespace whiteice
       // z = InvFFT(FFT(x)/FFT(y))
       
       whiteice::math::vertex< whiteice::math::blas_complex<float> > b1, b2;
-      b1.resize(this->basis.size());
-      b2.resize(this->basis.size());
+      b1.resize(this->size());
+      b2.resize(this->size());
 
       for(unsigned int i=0;i<b1.size();i++){
 	//b1[i] = this->basis[i];
@@ -429,8 +421,6 @@ namespace whiteice
     superresolution<T,U>& superresolution<T,U>::operator=(const superresolution<T,U>& s)
       
     {
-      this->basis.resize(s.basis.size());
-
       this->basis[U(0)[0]] = s.basis[U(0)[0]];
       
       for(U u=U(1);u!=U(0);u++){
@@ -440,12 +430,13 @@ namespace whiteice
       return *this;
     }
 
+    
     template <typename T, typename U>
     bool superresolution<T,U>::operator==(const superresolution<T,U>& s) const 
       
     
     {
-      if(this->basis.size() != s.basis.size()){
+      if(this->size() != s.size()){
 	return false;
       }
 
@@ -473,10 +464,10 @@ namespace whiteice
     bool superresolution<T,U>::operator>=(const superresolution<T,U>& s) const
       
     {
-      if(s.basis.size() != this->basis.size())
+      if(s.size() != this->size())
 	throw uncomparable("Non same baisis size numbers are uncomparable");
 
-      U u = U(basis.size()-1);
+      U u = U(this->size()-1);
 
       do{
 	if(basis[u[0]] > s.basis[u[0]]){
@@ -498,10 +489,10 @@ namespace whiteice
     template <typename T, typename U>
     bool superresolution<T,U>::operator<=(const superresolution<T,U>& s) const 
     {
-      if(s.basis.size() != this->basis.size())
+      if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
 
-      U u = U(basis.size()-1);
+      U u = U(this->size()-1);
 
       do{
 	if(basis[u[0]] < s.basis[u[0]]){
@@ -523,10 +514,10 @@ namespace whiteice
     bool superresolution<T,U>::operator< (const superresolution<T,U>& s) const 
       
     {
-      if(s.basis.size() != this->basis.size())
+      if(s.size() != this->size())
 	throw uncomparable("Non same basis basis size numbers are uncomparable");
       
-      U u = U(basis.size()-1);
+      U u = U(this->size()-1);
 
       do{
 	if(basis[u[0]] < s.basis[u[0]]){
@@ -548,10 +539,10 @@ namespace whiteice
     bool superresolution<T,U>::operator> (const superresolution<T,U>& s) const 
       
     {
-      if(s.basis.size() != this->basis.size())
+      if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
 
-      U u = U(basis.size()-1);
+      U u = U(this->size()-1);
       
       do{
 	if(basis[u[0]] > s.basis[u[0]]){
@@ -774,7 +765,7 @@ namespace whiteice
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::zero()
     {
-      for(unsigned int i=0;i<basis.size();i++)
+      for(unsigned int i=0;i<this->size();i++)
 	basis[i] = T(0);
       
       return (*this);
@@ -825,7 +816,7 @@ namespace whiteice
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::basis_scaling(const std::vector<T>& s)   // non-uniform scaling
     {
-      if(basis.size() != s.size())
+      if(this->size() != s.size())
 	throw uncomparable("Number basises don't match");
 
       for(U i=U(1);i != U(0);i++){
@@ -841,11 +832,11 @@ namespace whiteice
     template <typename T, typename U>
     T superresolution<T,U>::measure(const U& s) const
     {
-      if(s[0] == this->basis.size()-1){
+      if(s[0] == this->size()-1){
 	return T(basis[s[0]]);
       }
       else{
-	for(U i=U(this->basis.size()-1);i != U(s);i--)
+	for(U i=U(this->size()-1);i != U(s);i--)
 	  if(basis[i[0]] != T(0)){
 	    if(basis[i[0]] < T(0)) return T(-INFINITY);
 	    else return T(INFINITY);
@@ -858,7 +849,7 @@ namespace whiteice
     
     template <typename T, typename U>
     unsigned int superresolution<T,U>::size() const {
-      return this->basis.size();
+      return DEFAULT_MODULAR_BASIS;
     }
     
   }

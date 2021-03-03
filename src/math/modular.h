@@ -19,7 +19,8 @@ namespace whiteice
   {
     
     template <typename T=unsigned int>
-      class modular : public number< modular<T>, T, T, unsigned int>
+    // class modular : public number< modular<T>, T, T, unsigned int>
+    struct modular
     {
       public:
       
