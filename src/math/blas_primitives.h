@@ -250,6 +250,11 @@ namespace whiteice
 	  return T(0.0f); // has no imaginary value to set
 	}
 
+
+	inline blas_real<T>& operator[](unsigned int index){ return (*this); }
+	inline const blas_real<T>& operator[](unsigned int index) const{ return (*this); }
+	inline unsigned int size() const { return 1; }
+
 	inline blas_real<T>& first() { return (*this); }
 	inline const blas_real<T>& first() const { return (*this); }
 	inline blas_real<T>& first(const blas_real<T> value){
@@ -607,6 +612,10 @@ namespace whiteice
 	  blas_safebox(c[0]); blas_safebox(c[1]);
 	  return this->c[1];
 	}
+
+	inline blas_complex<T>& operator[](unsigned int index){ return (*this); }
+	inline const blas_complex<T>& operator[](unsigned int index) const{ return (*this); }
+	inline unsigned int size() const { return 1; }
 	
 	inline blas_complex<T>& first(){ return (*this); }
 	inline const blas_complex<T>& first() const { return (*this); }

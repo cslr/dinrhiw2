@@ -100,10 +100,7 @@ namespace whiteice
 	if(this->size() != s.size())
 	  throw illegal_operation("Not same basis");
 
-	// don't check basis dimension is PRIME
-	
-	if(s.iszero())
-	  throw illegal_operation("division by zero");
+	// don't check basis dimension is PRIME	
       }
 
       // z = convolution(x, y)
@@ -157,9 +154,11 @@ namespace whiteice
 	  throw illegal_operation("Not same basis");
 
 	// don't check basis dimension is PRIME
-	
+
+#if 0
 	if(s.iszero())
 	  throw illegal_operation("division by zero");
+#endif
       }
 
       // z = convolution(x, (1/y))
@@ -314,8 +313,6 @@ namespace whiteice
 	
 	// don't check basis dimension is PRIME
 	
-	if(s.iszero())
-	  throw illegal_operation("division by zero");
       }
 
       // z = convolution(x, y)
@@ -367,9 +364,11 @@ namespace whiteice
 	  throw illegal_operation("Not same basis");
 
 	// don't check basis dimension is PRIME
-	
+
+#if 0
 	if(s.iszero())
 	  throw illegal_operation("division by zero");
+#endif
       }
 
       // z = convolution(x, (1/y))

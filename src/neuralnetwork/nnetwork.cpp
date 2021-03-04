@@ -635,17 +635,21 @@ namespace whiteice
 	if(frozen[l]) continue; // skip frozen layers
 	
 	for(unsigned int i=0;i<W[l].size();i++){
-	  // RNG is real valued, a and b are complex
-	  // this means value is complex valued [-1,+1]+[-1,+1]i
-	  const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
-
-	  whiteice::math::convert(W[l][i], value);
+	  for(unsigned int j=0;j<W[l][i].size();j++){
+	    // RNG is real valued, a and b are complex
+	    // this means value is complex valued [-1,+1]+[-1,+1]i
+	    const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
+	    
+	    whiteice::math::convert(W[l][i][j], value);
+	  }
 	}
 
 	for(unsigned int i=0;i<b[l].size();i++){
-	  const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
-	  
-	  whiteice::math::convert(b[l][i], value);
+	  for(unsigned int j=0;j<W[l][i].size();j++){
+	    const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
+	    
+	    whiteice::math::convert(b[l][i][j], value);
+	  }
 	}
 	
       }      
@@ -668,11 +672,13 @@ namespace whiteice
 	  var *= T(0.10f);
 	
 	for(unsigned int i=0;i<W[l].size();i++){
-	  // RNG is real valued, a and b are complex
-	  // this means value is complex valued var*([-1,+1]+[-1,+1]i)
-	  const auto value = ((rng.uniform()*ar - br) + (rng.uniform()*ai - bi))*var;
+	  for(unsigned int j=0;j<W[l][i].size();j++){
+	    // RNG is real valued, a and b are complex
+	    // this means value is complex valued var*([-1,+1]+[-1,+1]i)
+	    const auto value = ((rng.uniform()*ar - br) + (rng.uniform()*ai - bi))*var;
 
-	  whiteice::math::convert(W[l][i], value);
+	    whiteice::math::convert(W[l][i][j], value);
+	  }
 	}
 
 	b[l].zero(); // bias terms are set to be zero
@@ -688,16 +694,33 @@ namespace whiteice
 	// this initialization is as described in the paper of Xavier Glorot
 	// "Understanding the difficulty of training deep neural networks"
 	
-	T var = math::sqrt(T(1.0f) / arch[l]);
-
-	if(smallvalues)
+	T var  = math::sqrt(T(1.0f) / arch[l]);
+	T ivar = math::sqrt(T(-1.0f) / arch[l]);
+	
+	if(smallvalues){
 	  var *= T(0.10f);
+	  ivar *= T(0.10f);
+	}
 	
 	for(unsigned int i=0;i<W[l].size();i++){
-	  // RNG is is complex normal value if needed
-	  const auto value = rng.normal()*var;	  
-
-	  whiteice::math::convert(W[l][i], value);
+	  for(unsigned int j=0;j<W[l][i].size();j++){
+	    if(typeid(T) == typeid(math::blas_real<float>) ||
+	       typeid(T) == typeid(math::blas_real<double>)){
+	      
+	      // RNG is is complex normal value if needed
+	      const auto value = rng.normal()*var;
+	    
+	      whiteice::math::convert(W[l][i][j], value);
+	    }
+	    else{ // complex valued numbers:
+	      // RNG is is complex normal value if needed
+	      const T scaling = math::sqrt(T(0.5f)); // CN(0,1) = N(0,0.5^2) + N(0,0.5^2)*i
+	      
+	      const auto value = (rng.normal()*var + rng.normal()*ivar)*scaling;
+	    
+	      whiteice::math::convert(W[l][i][j], value);
+	    }
+	  }
 	}
 
 	b[l].zero(); // bias terms are set to be zero
@@ -1949,9 +1972,19 @@ namespace whiteice
 
 	return T(out);
       }
-      else{ // superresolution
-	// IMPLEMENT ME!
-	assert(0);
+      else{ // superresolution class
+	T output(input);
+
+	for(unsigned int i=0;i<input.size();i++){
+	  if(output[i].real() < 0.0f){
+	    output[i].real(RELUcoef*output[i].real());
+	  }
+	  if(output[i].imag() < 0.0f){
+	    output[i].imag(RELUcoef*output[i].imag());
+	  }
+	}
+
+	return output;
       }
     }
     else{
@@ -2227,8 +2260,19 @@ namespace whiteice
 
 	return T(out);
       }
-      else{
-	// TODO superresolution code!
+      else{ // superresolution class
+	T output(input);
+
+	for(unsigned int i=0;i<input.size();i++){
+	  if(output[i].real() < 0.0f){
+	    output[i].real(RELUcoef*output[i].real());
+	  }
+	  if(output[i].imag() < 0.0f){
+	    output[i].imag(RELUcoef*output[i].imag());
+	  }
+	}
+
+	return output;
       }
     }
     else{
