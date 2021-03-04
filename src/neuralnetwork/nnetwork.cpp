@@ -927,7 +927,13 @@ namespace whiteice
     bool complex_data = false;
     
     if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-       typeid(T) == typeid(whiteice::math::blas_complex<double>))
+       typeid(T) == typeid(whiteice::math::blas_complex<double>) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<float>,
+			   whiteice::math::modular<unsigned int> >) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<double>,
+			   whiteice::math::modular<unsigned int> >))
     {
       // with complex data we need to take conjugate of gradient values
       complex_data = true;
@@ -1145,7 +1151,13 @@ namespace whiteice
     bool complex_data = false;
     
     if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-       typeid(T) == typeid(whiteice::math::blas_complex<double>))
+       typeid(T) == typeid(whiteice::math::blas_complex<double>) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<float>,
+			   whiteice::math::modular<unsigned int> >) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<double>,
+			   whiteice::math::modular<unsigned int> >))
     {
       // with complex data we need to take conjugate of gradient values
       complex_data = true;
@@ -1306,7 +1318,13 @@ namespace whiteice
     bool complex_data = false;
     
     if(typeid(T) == typeid(whiteice::math::blas_complex<float>) ||
-       typeid(T) == typeid(whiteice::math::blas_complex<double>))
+       typeid(T) == typeid(whiteice::math::blas_complex<double>) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<float>,
+			   whiteice::math::modular<unsigned int> >) ||
+       typeid(T) == typeid(whiteice::math::superresolution<
+			   whiteice::math::blas_complex<double>,
+			   whiteice::math::modular<unsigned int> >))
     {
       // with complex data we need to take conjugate of gradient values
       complex_data = true;
@@ -2126,8 +2144,50 @@ namespace whiteice
 	return T(out);
       }
       else{ // superresolution
-	// IMPLEMENT ME!
-	assert(0);
+
+	auto output = input;
+
+#if 0
+	for(unsigned int i=0;i<output.size();i++){
+	  if(output[i].real() < 0.0f)
+	    output[i].real(RELUcoef);
+	  else
+	    output[i].real(1.0f);
+
+	  if(output[i].imag() < 0.0f)
+	    output[i].imag(RELUcoef);
+	  else
+	    output[i].imag(1.0f);
+	}
+#endif
+
+#if 1
+	for(unsigned int i=0;i<output.size();i++){
+	  if(output[i].real() < 0.0f)
+	    output[i].real(RELUcoef*output[i].real());
+
+	  if(output[i].imag() < 0.0f)
+	    output[i].imag(RELUcoef*output[i].real());
+	}
+	
+	const T epsilon = T(1e-6);
+	const T SMALL = T(1e-9);
+
+	const T absinput = abs(input);
+	T sumabs = T(0.0f);
+
+	for(unsigned int i=0;i<absinput.size();i++)
+	  sumabs[0] += absinput[i];
+
+	if(abs(sumabs[0]) > abs(SMALL[0])){
+	  output /= input;
+	}
+	else{
+	  output /= (input + epsilon);
+	}
+#endif
+	
+	return output;
       }
       
     }
