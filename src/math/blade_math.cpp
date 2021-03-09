@@ -501,6 +501,218 @@ namespace whiteice
     }
 
 
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      B = A;
+      return true;
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      B = A;
+      return true;
+    }
+
+
+    bool convert(float& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(float& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(double& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(double& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+    
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const float A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const double A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const float A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const double A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    
+    bool convert(complex<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }    
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(complex<float>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+    
+    
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_real<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_real<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_complex<float> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_complex<double> A)
+    {
+      B.zero();
+      return whiteice::math::convert(B[0], A);
+    }
+
+
+    
+    
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_complex<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+		 
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A)
+    {
+      return whiteice::math::convert(B, A[0]);
+    }
+
+    
     bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
 		 const superresolution< blas_complex<float>, modular<unsigned int> > A)
     {
@@ -745,6 +957,24 @@ namespace whiteice
     bool isnan(superresolution<blas_complex<double>, modular<unsigned int> > v){
       return false;
     }
+    
+    bool isinf(superresolution<blas_real<float> , modular<unsigned int> > v){
+      return false;
+    }
+    
+    bool isinf(superresolution<blas_real<double>, modular<unsigned int> > v){
+      return false;
+    }
+
+    bool isnan(superresolution<blas_real<float> , modular<unsigned int> > v){
+      return false;
+    }
+    
+    bool isnan(superresolution<blas_real<double>, modular<unsigned int> > v){
+      return false;
+    }
+
+
     
     // for FFT . bits must be smaller than 8*sizeof(int)
     // (32bits nowadays - assuming 8 bit bytes)

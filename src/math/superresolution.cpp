@@ -415,11 +415,8 @@ namespace whiteice
     superresolution<T,U>& superresolution<T,U>::operator=(const superresolution<T,U>& s)
       
     {
-      this->basis[U(0)[0]] = s.basis[U(0)[0]];
-      
-      for(U u=U(1);u!=U(0);u++){
-	this->basis[u[0]] = s.basis[u[0]];
-      }
+      for(unsigned int i=0;i<size();i++)
+	this->basis[i] = s.basis[i];
       
       return *this;
     }
@@ -434,14 +431,10 @@ namespace whiteice
 	return false;
       }
 
-      if(this->basis[U(0)[0]] != s.basis[U(0)[0]])
-	return false;
-      
-      for(U u=U(1);u!=U(0);u++){
-	if(this->basis[u[0]] != s.basis[u[0]])
+      for(unsigned int i=0;i<size();i++)
+	if(this->basis[i] != s.basis[i])
 	  return false;
-      }
-      
+
       return true;
     }
     
@@ -461,23 +454,19 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same baisis size numbers are uncomparable");
 
-      std::cout << "sr:>=" << std::endl;
-
-      U u = U(this->size()-1);
+      int i = this->size() - 1;
 
       do{
-	if(basis[u[0]] > s.basis[u[0]]){
+	if(basis[i] > s.basis[i])
 	  return true;
-	}
-	else if(basis[u[0]] < s.basis[u[0]]){
+	else if(basis[i] < s.basis[i])
 	  return false;
-	}
 	
-	u--;
+	i--;
       }
-      while(u != U(0));
+      while(i >= 0);
 
-      return (this->basis[0] >= s.basis[0]);
+      return true;
     }
     
     
@@ -488,23 +477,19 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
 
-      std::cout << "sr:<=" << std::endl;
-
-      U u = U(this->size()-1);
-
-      do{
-	if(basis[u[0]] < s.basis[u[0]]){
-	  return true;
-	}
-	else if(basis[u[0]] > s.basis[u[0]]){
-	  return false;
-	}
-	
-	u--;
-      }
-      while(u != U(0));
+      int i = this->size() - 1;
       
-      return (this->basis[0] <= s.basis[0]);
+      do{
+	if(basis[i] < s.basis[i])
+	  return true;
+	else if(basis[i] > s.basis[i])
+	  return false;
+	
+	i--;
+      }
+      while(i >= 0);
+      
+      return true;
     }
     
     
@@ -515,23 +500,19 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same basis basis size numbers are uncomparable");
 
-      std::cout << "sr:<" << std::endl;
+      int i = this->size() - 1;
       
-      U u = U(this->size()-1);
-
       do{
-	if(basis[u[0]] < s.basis[u[0]]){
+	if(basis[i] < s.basis[i])
 	  return true;
-	}
-	else if(basis[u[0]] > s.basis[u[0]]){
+	else if(basis[i] > s.basis[i])
 	  return false;
-	}
 	
-	u--;
+	i--;
       }
-      while(u != U(0));
+      while(i >= 0);
 
-      return (this->basis[0] < s.basis[0]);
+      return false;
     }
     
     
@@ -542,24 +523,20 @@ namespace whiteice
       if(s.size() != this->size())
 	throw uncomparable("Non same basis size numbers are uncomparable");
 
-      std::cout << "sr:>" << std::endl;
+      int i = this->size() - 1;
 
-      U u = U(this->size()-1);
-      
       do{
-	if(basis[u[0]] > s.basis[u[0]]){
+	if(basis[i] > s.basis[i])
 	  return true;
-	}
-	else if(basis[u[0]] < s.basis[u[0]]){
+	else if(basis[i] < s.basis[i])
 	  return false;
-	}
 	
-	u--;
+	i--;
       }
-      while(u != U(0));
+      while(i >= 0);
 
 
-      return (this->basis[0] > s.basis[0]);
+      return false;
     }
     
     
@@ -581,9 +558,7 @@ namespace whiteice
     {
       superresolution<T,U> t(*this);
       
-      U i = U(0);
-      
-      t.basis[i[0]] += s;
+      t.basis[0] += s;
       
       return t;
     }
@@ -593,9 +568,7 @@ namespace whiteice
     {
       superresolution<T,U> t(*this);
       
-      U i = U(0);
-      
-      t.basis[i[0]] -= s;
+      t.basis[0] -= s;
       
       return t;
     }
@@ -607,12 +580,8 @@ namespace whiteice
     {
       superresolution<T,U> t(*this);
 
-      U i = U(0);
-      
-      t.basis[i[0]] *= s;
-
-      for(U i=U(1);i != U(0);i++)
-	t.basis[i[0]] *= s;
+      for(unsigned int i=0;i<t.size();i++)
+	t.basis[i] *= s;
       
       return t;
     }
@@ -623,10 +592,8 @@ namespace whiteice
     {
       superresolution<T,U> t(*this);
 
-      t.basis[U(0)[0]] /= s;
-      
-      for(U i=U(1);i!=U(0);i++)
-	t.basis[i[0]] /= s;
+      for(unsigned int i=0;i<t.size();i++)
+	t.basis[i] /= s;
       
       return t;
     }
@@ -637,10 +604,8 @@ namespace whiteice
     {
       superresolution<T,U>& t = (*this);
 
-      t.basis[U(0)[0]] *= s;
-      
-      for(U i=U(1);i!=U(0);i++)
-	t.basis[i[0]] *= s;
+      for(unsigned int i=0;i<t.size();i++)
+	t.basis[i] *= s;
       
       return t;
     }
@@ -652,10 +617,8 @@ namespace whiteice
     {
       superresolution<T,U>& t = (*this);
 
-      t.basis[U(0)[0]] /= s;
-      
-      for(U i=U(1);i!=U(0);i++)
-	t.basis[i[0]] /= s;
+      for(unsigned int i=0;i<t.size();i++)
+	t.basis[i] /= s;
       
       return t;
     }
@@ -777,29 +740,12 @@ namespace whiteice
     template <typename T, typename U>
     bool superresolution<T,U>::iszero() const
     {
-      if(whiteice::math::abs(this->basis[U(0)[0]]) != T(0)) return false;
-      
-      for(U i=U(1);i != U(0);i++)
-	if(whiteice::math::abs(this->basis[i[0]]) != T(0)) return false;
-      
+      for(unsigned int i=0;i<size();i++)
+	if(basis[i] != T(0)) return false;
+
       return true;
     }
     
-    
-    template <typename T, typename U>
-    T& superresolution<T,U>::operator[](const U& index)
-      
-    {
-      return basis[index[0]];
-    }
-    
-    
-    template <typename T, typename U>
-    const T& superresolution<T,U>::operator[](const U& index) const
-      
-    {
-      return basis[index[0]];
-    }
     
     
     // scales basis - not numbers
@@ -847,12 +793,7 @@ namespace whiteice
 	return basis[s[0]];
       }
     }
-
     
-    template <typename T, typename U>
-    unsigned int superresolution<T,U>::size() const {
-      return DEFAULT_MODULAR_BASIS;
-    }
     
   }
 }
@@ -893,6 +834,17 @@ namespace whiteice
 				    whiteice::math::modular<unsigned int> >;
     template class superresolution< whiteice::math::blas_complex<double>,
 				    whiteice::math::modular<unsigned int> >;
+
+
+    template std::ostream& operator<< <whiteice::math::blas_real<float> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_real<float>,
+     whiteice::math::modular<unsigned int> >&);
+
+    template std::ostream& operator<< <whiteice::math::blas_real<double> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_real<double>,
+     whiteice::math::modular<unsigned int> >&);
 
     template std::ostream& operator<< <whiteice::math::blas_complex<float> >
     (std::ostream& ios,

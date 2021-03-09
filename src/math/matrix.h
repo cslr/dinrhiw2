@@ -381,15 +381,15 @@ namespace whiteice
     extern template class matrix<complex<float> >;
     extern template class matrix<complex<double> >;
     
-    //extern template class matrix<int>;
-    //extern template class matrix<char>;
-    //extern template class matrix<unsigned int>;
-    //extern template class matrix<unsigned char>;
-        
     extern template class matrix< blas_real<float> >;
     extern template class matrix< blas_real<double> >;
     extern template class matrix< blas_complex<float> >;
     extern template class matrix< blas_complex<double> >;
+
+    extern template class matrix< superresolution< blas_real<float>,
+						   modular<unsigned int> > >;
+    extern template class matrix< superresolution< blas_real<double>,
+						   modular<unsigned int> > >;
 
     extern template class matrix< superresolution< blas_complex<float>,
 						   modular<unsigned int> > >;
@@ -423,6 +423,13 @@ namespace whiteice
     (const blas_complex<float>&, const matrix<blas_complex<float> >&) ;
     extern template matrix<blas_complex<double> > operator*<blas_complex<double> >
     (const blas_complex<double>&, const matrix<blas_complex<double> >&) ;
+
+    extern template matrix<superresolution<blas_real<float>, modular<unsigned int> > > operator*<superresolution<blas_real<float>, modular<unsigned int> > >
+    (const superresolution<blas_real<float>, modular<unsigned int> >&,
+     const matrix<superresolution<blas_real<float>, modular<unsigned int> > >&) ;
+    extern template matrix<superresolution<blas_real<double>, modular<unsigned int> > > operator*<superresolution<blas_real<double>, modular<unsigned int> > >
+    (const superresolution<blas_real<double>, modular<unsigned int> >&,
+     const matrix<superresolution<blas_real<double>, modular<unsigned int> > >&) ;
     
     extern template matrix<superresolution<blas_complex<float>, modular<unsigned int> > > operator*<superresolution<blas_complex<float>, modular<unsigned int> > >
     (const superresolution<blas_complex<float>, modular<unsigned int> >&,
@@ -446,6 +453,10 @@ namespace whiteice
     extern template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const matrix<blas_complex<float> >& M);
     extern template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const matrix<blas_complex<double> >& M);
 
+    extern template std::ostream& operator<< <superresolution< blas_real<float>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_real<float>, modular<unsigned int> > >& M);
+    extern template std::ostream& operator<< <superresolution<blas_real<double>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution<blas_real<double>, modular<unsigned int> > >& M);
+
+    
     extern template std::ostream& operator<< <superresolution< blas_complex<float>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_complex<float>, modular<unsigned int> > >& M);
     extern template std::ostream& operator<< <superresolution<blas_complex<double>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution<blas_complex<double>, modular<unsigned int> > >& M);
       

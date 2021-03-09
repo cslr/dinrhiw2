@@ -191,6 +191,7 @@ namespace whiteice
       {
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){
+	  printf("%d >= %d\n", index, dataSize);
 	  whiteice::logging.error("vertex::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex index out of range"); }
@@ -202,6 +203,7 @@ namespace whiteice
       {	
 #ifdef _GLIBCXX_DEBUG	
 	if(index >= dataSize){
+	  printf("%d >= %d\n", index, dataSize);
 	  whiteice::logging.error("vertex::operator[]: index out of range");
 	  assert(0);
 	  throw std::out_of_range("vertex index out of range"); }
@@ -340,6 +342,11 @@ namespace whiteice{
     extern template class vertex< blas_complex<float> >;
     extern template class vertex< blas_complex<double> >;
 
+    extern template class vertex< superresolution< blas_real<float>,
+						   modular<unsigned int> > >;
+    extern template class vertex< superresolution< blas_real<double>,
+						   modular<unsigned int> > >;
+
     extern template class vertex< superresolution< blas_complex<float>,
 						   modular<unsigned int> > >;
     extern template class vertex< superresolution< blas_complex<double>,
@@ -372,7 +379,15 @@ namespace whiteice{
     extern template vertex<blas_complex<double> > operator*<blas_complex<double> >
       (const blas_complex<double>& s, const vertex<blas_complex<double> >& v);
 
+    
+    extern template vertex<superresolution<blas_real<float>, modular<unsigned int> > > operator*<superresolution<blas_real<float>, modular<unsigned int> > >
+    (const superresolution<blas_real<float>, modular<unsigned int> >& s,
+     const vertex<superresolution<blas_real<float>, modular<unsigned int> > >& v);
+    
+    extern template vertex<superresolution<blas_real<double>, modular<unsigned int> > > operator*<superresolution<blas_real<double>, modular<unsigned int> > >
+    (const superresolution<blas_real<double>, modular<unsigned int> >& s, const vertex<superresolution<blas_real<double>, modular<unsigned int> > >& v);
 
+    
     extern template vertex<superresolution<blas_complex<float>, modular<unsigned int> > > operator*<superresolution<blas_complex<float>, modular<unsigned int> > >
     (const superresolution<blas_complex<float>, modular<unsigned int> >& s,
      const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >& v);
@@ -397,6 +412,10 @@ namespace whiteice{
     extern template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const vertex<blas_complex<float> >&);
     extern template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const vertex<blas_complex<double> >&);
 
+    extern template std::ostream& operator<< <superresolution<blas_real<float>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_real<float>, modular<unsigned int> > >&);
+    extern template std::ostream& operator<< <superresolution<blas_real<double>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_real<double>, modular<unsigned int> > >&);
+
+    
     extern template std::ostream& operator<< <superresolution<blas_complex<float>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >&);
     extern template std::ostream& operator<< <superresolution<blas_complex<double>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<double>, modular<unsigned int> > >&);
     

@@ -97,11 +97,38 @@ namespace whiteice
 	superresolution<T,U>& abs();
 	superresolution<T,U>& zero();
         bool iszero() const;
-	
-	T& operator[](const U& index);
-	
-	const T& operator[](const U& index) const;
 
+      
+        inline T& operator[](const unsigned int index)
+        { 
+#ifdef _GLIBCXX_DEBUG	
+	  if(index >= DEFAULT_MODULAR_BASIS){
+	    whiteice::logging.error("vertex::operator[]: index out of range");
+	    assert(0);
+	    throw std::out_of_range("vertex index out of range");
+	  }
+#endif
+	  return basis[index];
+	}
+    
+    
+        inline const T& operator[](const unsigned int index) const
+        {
+#ifdef _GLIBCXX_DEBUG	
+	  if(index >= DEFAULT_MODULAR_BASIS){
+	    whiteice::logging.error("vertex::operator[]: index out of range");
+	    assert(0);
+	    throw std::out_of_range("vertex index out of range");
+	  }
+#endif
+	  
+	  return basis[index];
+	}
+
+        inline unsigned int size() const {
+	  return DEFAULT_MODULAR_BASIS;
+	}
+        
 	inline T& first(){ return basis[0]; }
 
 	inline const T& first() const{ return basis[0]; }
@@ -116,19 +143,17 @@ namespace whiteice
         superresolution<T,U>& basis_scaling(const std::vector<T>& s) ; // non-uniform scaling
 	T measure(const U& s) const; // measures with s-(dimensional) measure-function
 
-	inline bool comparable(){
+        inline bool comparable(){
 	  return true; // NOT REALLY COMPARABLE IF OVERFLOW HAPPENS (CIRCULAR CONVOLUTION)
 	}
 
-      unsigned int size() const;
-      
       public:
-	
-	// superresolution basis
+      
+        // superresolution basis
 	// (todo: switch to 'sparse' representation with (U,T) pairs)
 	// and ordered by U (use own avltree implementation)
 	
-        T basis[DEFAULT_MODULAR_BASIS] __attribute__ ((packed));;
+        T basis[DEFAULT_MODULAR_BASIS];
       
         // std::vector<T> basis;
       
@@ -149,7 +174,6 @@ namespace whiteice{
     std::ostream& operator<<(std::ostream& ios, const superresolution<T, modular<unsigned int> > & m);
 			     
     
-    // DO NOT USE BLAS_REAL BUT BLAS_COMPLEX
     extern template class superresolution< whiteice::math::blas_real<float>,
 					   whiteice::math::modular<unsigned int> >;
     extern template class superresolution< whiteice::math::blas_real<double>,
@@ -160,6 +184,15 @@ namespace whiteice{
     extern template class superresolution< whiteice::math::blas_complex<double>,
 					   whiteice::math::modular<unsigned int> >;
 
+    extern template std::ostream& operator<< <whiteice::math::blas_real<float> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_real<float>,
+     whiteice::math::modular<unsigned int> >&);
+
+    extern template std::ostream& operator<< <whiteice::math::blas_real<double> >
+    (std::ostream& ios,
+     const whiteice::math::superresolution< whiteice::math::blas_real<double>,
+     whiteice::math::modular<unsigned int> >&);
     
     extern template std::ostream& operator<< <whiteice::math::blas_complex<float> >
     (std::ostream& ios,

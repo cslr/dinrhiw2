@@ -92,6 +92,10 @@ namespace whiteice
     template blas_complex<float> frobenius_norm<blas_complex<float> >(const matrix<blas_complex<float> >& A);
     template blas_complex<double> frobenius_norm<blas_complex<double> >(const matrix<blas_complex<double> >& A);
 
+    template superresolution<blas_real<float>, modular<unsigned int> > frobenius_norm< superresolution<blas_real<float>, modular<unsigned int> > >(const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A);
+
+    template superresolution<blas_real<double>, modular<unsigned int> > frobenius_norm< superresolution<blas_real<double>, modular<unsigned int> > >(const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A);
+
     template superresolution<blas_complex<float>, modular<unsigned int> > frobenius_norm< superresolution<blas_complex<float>, modular<unsigned int> > >(const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A);
 
     template superresolution<blas_complex<double>, modular<unsigned int> > frobenius_norm< superresolution<blas_complex<double>, modular<unsigned int> > >(const matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A);
@@ -107,6 +111,11 @@ namespace whiteice
     template blas_complex<float> norm_inf<blas_complex<float> >(const matrix<blas_complex<float> >& A);
     template blas_complex<double> norm_inf<blas_complex<double> >(const matrix<blas_complex<double> >& A);
 
+    template superresolution<blas_real<float>, modular<unsigned int> > norm_inf< superresolution<blas_real<float>, modular<unsigned int> > >(const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A);
+
+    template superresolution<blas_real<double>, modular<unsigned int> > norm_inf< superresolution<blas_real<double>, modular<unsigned int> > >(const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A);
+
+    
     template superresolution<blas_complex<float>, modular<unsigned int> > norm_inf< superresolution<blas_complex<float>, modular<unsigned int> > >(const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A);
 
     template superresolution<blas_complex<double>, modular<unsigned int> > norm_inf< superresolution<blas_complex<double>, modular<unsigned int> > >(const matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& A);
@@ -121,6 +130,10 @@ namespace whiteice
     template blas_real<double> norm_inf<blas_real<double> >(const vertex<blas_real<double> >& A);
     template blas_complex<float> norm_inf<blas_complex<float> >(const vertex<blas_complex<float> >& A);
     template blas_complex<double> norm_inf<blas_complex<double> >(const vertex<blas_complex<double> >& A);
+
+    template superresolution<blas_real<float>, modular<unsigned int> > norm_inf< superresolution<blas_real<float>, modular<unsigned int> > >(const vertex< superresolution<blas_real<float>, modular<unsigned int> > >& A);
+
+    template superresolution<blas_real<double>, modular<unsigned int> > norm_inf< superresolution<blas_real<double>, modular<unsigned int> > >(const vertex< superresolution<blas_real<double>, modular<unsigned int> > >& A);
 
     template superresolution<blas_complex<float>, modular<unsigned int> > norm_inf< superresolution<blas_complex<float>, modular<unsigned int> > >(const vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& A);
 

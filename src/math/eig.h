@@ -119,6 +119,20 @@ namespace whiteice
     //   matrix< complex<double> >& X, bool complex_ok);
     
     extern template bool eig2x2matrix
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     vertex< superresolution<blas_real<float>, modular<unsigned int> > >& d,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& X,
+     bool complex_ok);
+    
+    extern template bool eig2x2matrix
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     vertex< superresolution<blas_real<double>, modular<unsigned int> > >& d,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& X,
+     bool complex_ok);
+    
+    extern template bool eig2x2matrix
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
      vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& d,
@@ -146,6 +160,16 @@ namespace whiteice
       (matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& Q);
     extern template bool hessenberg_reduction< blas_complex<double> >
       (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& Q);
+
+    extern template bool hessenberg_reduction
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& Q);
+    
+    extern template bool hessenberg_reduction
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& Q);
     
     extern template bool hessenberg_reduction
     < superresolution<blas_complex<float>, modular<unsigned int> > >
@@ -169,6 +193,15 @@ namespace whiteice
 						    matrix< blas_complex<float> >&  Q);
     extern template bool qr< blas_complex<double> >(matrix< blas_complex<double> >& A,
 						    matrix< blas_complex<double> >& Q);
+
+    extern template bool qr
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >&  A,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >&  Q);
+    extern template bool qr
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& Q);
 
     extern template bool qr
     < superresolution<blas_complex<float>, modular<unsigned int> > >
@@ -198,6 +231,18 @@ namespace whiteice
     extern template bool implicit_symmetric_qrstep_wilkinson< blas_complex<double> >
       (matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& X,
        unsigned int e1, unsigned int N);
+
+    extern template bool implicit_symmetric_qrstep_wilkinson
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& X,
+     unsigned int e1, unsigned int N);
+    extern template bool implicit_symmetric_qrstep_wilkinson
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& X,
+     unsigned int e1, unsigned int N);
+    
     extern template bool implicit_symmetric_qrstep_wilkinson
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
@@ -222,6 +267,16 @@ namespace whiteice
     //extern template bool symmetric_eig< complex<double> >(matrix< complex<double> >& A, matrix< complex<double> >& D, bool sort);
     extern template bool symmetric_eig< blas_complex<float> >(matrix< blas_complex<float> >& A, matrix< blas_complex<float> >& D, bool sort);
     extern template bool symmetric_eig< blas_complex<double> >(matrix< blas_complex<double> >& A, matrix< blas_complex<double> >& D, bool sort);
+
+    extern template bool symmetric_eig< superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& D,
+     bool sort);
+    
+    extern template bool symmetric_eig< superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& D,
+     bool sort);
 
     extern template bool symmetric_eig< superresolution<blas_complex<float>, modular<unsigned int> > >
     (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,

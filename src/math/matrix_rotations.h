@@ -154,6 +154,20 @@ namespace whiteice
        bool rowdir);
 
     extern template bool rhouseholder_vector
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_real<float>, modular<unsigned int> > >& v,
+     const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& M,
+     unsigned int y, unsigned int x,
+     bool rowdir);
+    
+    extern template bool rhouseholder_vector
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (vertex< superresolution<blas_real<double>, modular<unsigned int> > >& v,
+     const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& M,
+     unsigned int y, unsigned int x,
+     bool rowdir);
+    
+    extern template bool rhouseholder_vector
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& v,
      const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& M,
@@ -205,6 +219,22 @@ namespace whiteice
        const unsigned int M,
        const unsigned int k,
        vertex< blas_complex<double> >& v);
+
+    extern template bool rhouseholder_leftrot
+    < superresolution<blas_real<float>, modular<unsigned int> > > 
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_real<float>, modular<unsigned int> > >& v);
+    
+    extern template bool rhouseholder_leftrot
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_real<double>, modular<unsigned int> > >& v);
 
     extern template bool rhouseholder_leftrot
     < superresolution<blas_complex<float>, modular<unsigned int> > > 
@@ -262,6 +292,21 @@ namespace whiteice
        vertex< blas_complex<double> >& v);
 
     extern template bool rhouseholder_rightrot
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_real<float>, modular<unsigned int> > >& v);
+    extern template bool rhouseholder_rightrot
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     const unsigned int i,
+     const unsigned int M,
+     const unsigned int k,
+     vertex< superresolution<blas_real<double>, modular<unsigned int> > >& v);
+
+    extern template bool rhouseholder_rightrot
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
      const unsigned int i,
@@ -291,6 +336,18 @@ namespace whiteice
       (const blas_complex<float>& a, const blas_complex<float>& b, vertex< blas_complex<float> >& p);
     extern template void rgivens< blas_complex<double> >
       (const blas_complex<double>& a, const blas_complex<double>& b, vertex< blas_complex<double> >& p);
+
+    extern template void rgivens
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (const superresolution<blas_real<float>, modular<unsigned int> >& a,
+     const superresolution<blas_real<float>, modular<unsigned int> >& b,
+     vertex< superresolution<blas_real<float>, modular<unsigned int> > >& p);
+    
+    extern template void rgivens
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (const superresolution<blas_real<double>, modular<unsigned int> >& a,
+     const superresolution<blas_real<double>, modular<unsigned int> >& b,
+     vertex< superresolution<blas_real<double>, modular<unsigned int> > >& p);
 
     extern template void rgivens
     < superresolution<blas_complex<float>, modular<unsigned int> > >
@@ -325,6 +382,18 @@ namespace whiteice
        const unsigned int i, const unsigned int j, const unsigned int k);
 
     extern template void rgivens_rightrot
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_real<float>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
+    extern template void rgivens_rightrot
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_real<double>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+
+    extern template void rgivens_rightrot
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,
      const vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& p,
@@ -356,6 +425,18 @@ namespace whiteice
       (matrix< blas_complex<double> >& A, const vertex< blas_complex<double> >& p,
        const unsigned int i, const unsigned int j, const unsigned int k);
 
+    extern template void rgivens_leftrot
+    < superresolution<blas_real<float>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<float>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_real<float>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
+    extern template void rgivens_leftrot
+    < superresolution<blas_real<double>, modular<unsigned int> > >
+    (matrix< superresolution<blas_real<double>, modular<unsigned int> > >& A,
+     const vertex< superresolution<blas_real<double>, modular<unsigned int> > >& p,
+     const unsigned int i, const unsigned int j, const unsigned int k);
+    
     extern template void rgivens_leftrot
     < superresolution<blas_complex<float>, modular<unsigned int> > >
     (matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& A,

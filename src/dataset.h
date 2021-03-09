@@ -296,6 +296,13 @@ namespace whiteice
   extern template class dataset< whiteice::math::blas_complex<double> >;
   
   extern template class dataset< whiteice::math::superresolution<
+				   whiteice::math::blas_real<float>,
+				   whiteice::math::modular<unsigned int> > >;
+  extern template class dataset< whiteice::math::superresolution<
+				   whiteice::math::blas_real<double>,
+				   whiteice::math::modular<unsigned int> > >;
+  
+  extern template class dataset< whiteice::math::superresolution<
 				   whiteice::math::blas_complex<float>,
 				   whiteice::math::modular<unsigned int> > >;
   extern template class dataset< whiteice::math::superresolution<

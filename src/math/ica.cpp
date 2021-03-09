@@ -29,6 +29,16 @@ namespace whiteice
     template bool ica< blas_complex<double> >
     (const matrix< blas_complex<double> >& D, matrix< blas_complex<double> >& W, bool verbose) ;
 
+    template bool ica< superresolution<blas_real<float>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& D,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& W,
+     bool verbose) ;
+    
+    template bool ica< superresolution<blas_real<double>, modular<unsigned int> > >
+    (const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& D,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& W,
+     bool verbose) ;
+
     template bool ica< superresolution<blas_complex<float>, modular<unsigned int> > >
     (const matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& D,
      matrix< superresolution<blas_complex<float>, modular<unsigned int> > >& W,
@@ -54,6 +64,16 @@ namespace whiteice
     template bool ica< blas_complex<double> >
     (const std::vector< math::vertex< blas_complex<double> > >& data, matrix< blas_complex<double> >& W, bool verbose) ;
 
+
+    template bool ica< superresolution<blas_real<float>, modular<unsigned int> > >
+    (const std::vector< math::vertex< superresolution<blas_real<float>, modular<unsigned int> > > >& data,
+     matrix< superresolution<blas_real<float>, modular<unsigned int> > >& W,
+     bool verbose) ;
+    
+    template bool ica< superresolution<blas_real<double>, modular<unsigned int> > >
+    (const std::vector< math::vertex< superresolution<blas_real<double>, modular<unsigned int> > > >& data,
+     matrix< superresolution<blas_real<double>, modular<unsigned int> > >& W,
+     bool verbose) ;
     
     template bool ica< superresolution<blas_complex<float>, modular<unsigned int> > >
     (const std::vector< math::vertex< superresolution<blas_complex<float>, modular<unsigned int> > > >& data,
@@ -64,6 +84,7 @@ namespace whiteice
     (const std::vector< math::vertex< superresolution<blas_complex<double>, modular<unsigned int> > > >& data,
      matrix< superresolution<blas_complex<double>, modular<unsigned int> > >& W,
      bool verbose) ;
+    
     
     
     template <typename T>
@@ -82,6 +103,15 @@ namespace whiteice
     template void __ica_project< blas_complex<double> >
     (vertex< blas_complex<double> >& w, const unsigned int n, const matrix< blas_complex<double> >& W);
 
+    template void __ica_project< superresolution<blas_real<float>, modular<unsigned int> > >
+    (vertex< superresolution<blas_real<float>, modular<unsigned int> > >& w,
+     const unsigned int n,
+     const matrix< superresolution<blas_real<float>, modular<unsigned int> > >& W);
+    
+    template void __ica_project< superresolution<blas_real<double>, modular<unsigned int> > >
+    (vertex< superresolution<blas_real<double>, modular<unsigned int> > >& w,
+     const unsigned int n,
+     const matrix< superresolution<blas_real<double>, modular<unsigned int> > >& W);
     
     template void __ica_project< superresolution<blas_complex<float>, modular<unsigned int> > >
     (vertex< superresolution<blas_complex<float>, modular<unsigned int> > >& w,

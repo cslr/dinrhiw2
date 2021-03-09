@@ -177,7 +177,109 @@ namespace whiteice
     bool convert(complex<blas_real<float> >& B, const blas_complex<float> A);
     bool convert(complex<blas_real<double> >& B, const blas_complex<double> A);
 
+    
+    
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
 
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    
+    
+    bool convert(float& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+    bool convert(float& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    bool convert(double& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+    bool convert(double& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const float A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const double A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const float A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const double A);
+    
+    bool convert(complex<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+    bool convert(complex<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+    bool convert(complex<float>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+    
+    bool convert(complex<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const complex<float> A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const complex<double> A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const complex<float> A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const complex<double> A);
+		 
+    
+    
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_real<float> A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_real<double> A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_complex<float> A);
+
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_complex<double> A);
+    
+    bool convert(superresolution< blas_real<double>, modular<unsigned int> >& B,
+		 const blas_complex<float> A);
+
+    bool convert(superresolution< blas_real<float>, modular<unsigned int> >& B,
+		 const blas_complex<double> A);
+
+    
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+		 
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+		 
+    bool convert(blas_complex<float>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+		 
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    bool convert(blas_real<float>& B,
+		 const superresolution< blas_real<double>, modular<unsigned int> > A);
+
+    bool convert(blas_complex<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+    bool convert(blas_real<double>& B,
+		 const superresolution< blas_real<float>, modular<unsigned int> > A);
+
+
+
+    
     bool convert(superresolution< blas_complex<float>, modular<unsigned int> >& B,
 		 const superresolution< blas_complex<float>, modular<unsigned int> > A);
 
@@ -351,8 +453,10 @@ namespace whiteice
     ////////////////////////////////////////////////////////////
     // DUMMY functions which never detect INFs for superresolution numbers [just returns false]
     
+    bool isinf(superresolution<blas_real<float> , modular<unsigned int> > v);
+    bool isinf(superresolution<blas_real<double>, modular<unsigned int> > v);
     bool isinf(superresolution<blas_complex<float> , modular<unsigned int> > v);
-    bool isinf(superresolution<blas_complex<double>, modular<unsigned int> > v);
+    bool isinf(superresolution<blas_complex<double>, modular<unsigned int> > v);    
 
     // fpclassify() is buggy.. for some reason it does not detect NaNs correctly (sometimes) .. or it is a compiler bug
     inline bool isnan(float v){ return (std::fpclassify(v) == FP_NAN) || (*((unsigned int*)&v) == 0xFFC00000); }
@@ -365,7 +469,9 @@ namespace whiteice
 
     ////////////////////////////////////////////////////////////
     // DUMMY functions which never detect NaNs for superresolution numbers [just returns false]
-    
+
+    bool isnan(superresolution<blas_real<float> , modular<unsigned int> > v);
+    bool isnan(superresolution<blas_real<double>, modular<unsigned int> > v);
     bool isnan(superresolution<blas_complex<float> , modular<unsigned int> > v);
     bool isnan(superresolution<blas_complex<double>, modular<unsigned int> > v);
     

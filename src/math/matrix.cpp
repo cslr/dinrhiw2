@@ -5653,6 +5653,11 @@ namespace whiteice
     template class matrix< blas_complex<float> >;
     template class matrix< blas_complex<double> >;
 
+    template class matrix< superresolution< blas_real<float>,
+					    modular<unsigned int> > >;
+    template class matrix< superresolution< blas_real<double>,
+					    modular<unsigned int> > >;
+
     template class matrix< superresolution< blas_complex<float>,
 					    modular<unsigned int> > >;
     template class matrix< superresolution< blas_complex<double>,
@@ -5686,6 +5691,13 @@ namespace whiteice
     template matrix<blas_complex<double> > operator*<blas_complex<double> >
       (const blas_complex<double>&, const matrix<blas_complex<double> >&) ;
 
+
+    template matrix<superresolution<blas_real<float>, modular<unsigned int> > > operator*<superresolution<blas_real<float>, modular<unsigned int> > >
+    (const superresolution<blas_real<float>, modular<unsigned int> >&,
+     const matrix<superresolution<blas_real<float>, modular<unsigned int> > >&) ;
+    template matrix<superresolution<blas_real<double>, modular<unsigned int> > > operator*<superresolution<blas_real<double>, modular<unsigned int> > >
+    (const superresolution<blas_real<double>, modular<unsigned int> >&,
+     const matrix<superresolution<blas_real<double>, modular<unsigned int> > >&) ;
     
     template matrix<superresolution<blas_complex<float>, modular<unsigned int> > > operator*<superresolution<blas_complex<float>, modular<unsigned int> > >
     (const superresolution<blas_complex<float>, modular<unsigned int> >&,
@@ -5707,6 +5719,9 @@ namespace whiteice
     template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const matrix<blas_real<double> >& M);
     template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const matrix<blas_complex<float> >& M);
     template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const matrix<blas_complex<double> >& M);
+
+    template std::ostream& operator<< <superresolution< blas_real<float>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_real<float>, modular<unsigned int> > >& M);
+    template std::ostream& operator<< <superresolution<blas_real<double>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_real<double>,modular<unsigned int> > >& M);
 
     template std::ostream& operator<< <superresolution< blas_complex<float>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_complex<float>, modular<unsigned int> > >& M);
     template std::ostream& operator<< <superresolution<blas_complex<double>, modular<unsigned int> > >(std::ostream& ios, const matrix<superresolution< blas_complex<double>,modular<unsigned int> > >& M);

@@ -694,25 +694,37 @@ namespace whiteice
 	// this initialization is as described in the paper of Xavier Glorot
 	// "Understanding the difficulty of training deep neural networks"
 	
-	T var  = math::sqrt(T(1.0f) / arch[l]);
-	T ivar = math::sqrt(T(-1.0f) / arch[l]);
-	
-	if(smallvalues){
-	  var *= T(0.10f);
-	  ivar *= T(0.10f);
-	}
-	
 	for(unsigned int i=0;i<W[l].size();i++){
 	  for(unsigned int j=0;j<W[l][i].size();j++){
 	    if(typeid(T) == typeid(math::blas_real<float>) ||
-	       typeid(T) == typeid(math::blas_real<double>)){
+	       typeid(T) == typeid(math::blas_real<double>) ||
+	       typeid(T) == typeid(math::superresolution< math::blas_real<float>,
+				   math::modular<unsigned int> >) ||
+	       typeid(T) == typeid(math::superresolution< math::blas_real<double>,
+				   math::modular<unsigned int> >))
+	    {
 	      
+	      T var  = math::sqrt(T(1.0f) / arch[l]);
+	
+	      if(smallvalues){
+		var *= T(0.10f);
+	      }
+	
 	      // RNG is is complex normal value if needed
 	      const auto value = rng.normal()*var;
 	    
 	      whiteice::math::convert(W[l][i][j], value);
 	    }
 	    else{ // complex valued numbers:
+	      
+	      T var  = math::sqrt(T(1.0f) / arch[l]);
+	      T ivar = math::sqrt(T(-1.0f) / arch[l]);
+	
+	      if(smallvalues){
+		var *= T(0.10f);
+		ivar *= T(0.10f);
+	      }
+	      
 	      // RNG is is complex normal value if needed
 	      const T scaling = math::sqrt(T(0.5f)); // CN(0,1) = N(0,0.5^2) + N(0,0.5^2)*i
 	      
@@ -3171,30 +3183,32 @@ namespace whiteice
 	bad_data = true;
       }
 
-      if(data[i].real() > 10000.0f){
-	if(verbose)
-	  std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
-	data[i].real(+10000.0f);
-	bad_data = true;
+      for(unsigned int k=0;k<data[i].size();k++){
+	if(data[i][k].real() > 10000.0f){
+	  if(verbose)
+	    std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
+	  data[i][k].real(+10000.0f);
+	  bad_data = true;
+	}
+	else if(data[i][k].real() < -10000.0f){
+	  if(verbose)
+	    std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
+	  data[i][k].real(-10000.0f);
+	  bad_data = true;
       }
-      else if(data[i].real() < -10000.0f){
-	if(verbose)
-	  std::cout << "nnetwork::importdata() warning. bad real data: " << data[i] << std::endl;
-	data[i].real(-10000.0f);
-	bad_data = true;
-      }
-
-      if(data[i].imag() > 10000.0f){
-	if(verbose)
-	  std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
-	data[i].imag(+10000.0f);
-	bad_data = true;
-      }
-      else if(data[i].imag() < -10000.0f){
-	if(verbose)
-	  std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
-	data[i].imag(-10000.0f);
-	bad_data = true;
+	
+	if(data[i][k].imag() > 10000.0f){
+	  if(verbose)
+	    std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
+	  data[i][k].imag(+10000.0f);
+	  bad_data = true;
+	}
+	else if(data[i][k].imag() < -10000.0f){
+	  if(verbose)
+	    std::cout << "nnetwork::importdata() warning. bad imag data: " << data[i] << std::endl;
+	  data[i][k].imag(-10000.0f);
+	  bad_data = true;
+	}
       }
     }
 
@@ -3929,6 +3943,11 @@ namespace whiteice
 
   template class nnetwork< math::blas_complex<float> >;
   template class nnetwork< math::blas_complex<double> >;
+
+  template class nnetwork< math::superresolution< math::blas_real<float>,
+						  math::modular<unsigned int> > >;
+  template class nnetwork< math::superresolution< math::blas_real<double>,
+						  math::modular<unsigned int> > >;
 
   template class nnetwork< math::superresolution< math::blas_complex<float>,
 						  math::modular<unsigned int> > >;

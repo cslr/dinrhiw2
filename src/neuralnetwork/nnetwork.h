@@ -322,6 +322,11 @@ namespace whiteice
   extern template class nnetwork< math::blas_complex<float> >;
   extern template class nnetwork< math::blas_complex<double> >;
 
+  extern template class nnetwork< math::superresolution< math::blas_real<float>,
+							 math::modular<unsigned int> > >;
+  extern template class nnetwork< math::superresolution< math::blas_real<double>,
+							 math::modular<unsigned int> > >;
+
   extern template class nnetwork< math::superresolution< math::blas_complex<float>,
 							 math::modular<unsigned int> > >;
   extern template class nnetwork< math::superresolution< math::blas_complex<double>,

@@ -47,31 +47,39 @@ int main()
   std::cout << "Creating training dataset.." << std::endl;
   
   dataset<
-    math::superresolution< math::blas_complex<double>,
+    math::superresolution< math::blas_real<double>,
 			   math::modular<unsigned int> > > data;
+
+  dataset< math::blas_real<double> > data2;
 
   data.createCluster("input", 4);
   data.createCluster("output", 4);
-  
+  data2.createCluster("input", 4);
+  data2.createCluster("output", 4);  
+    
   std::vector< math::vertex<
-    math::superresolution< math::blas_complex<double>,
+    math::superresolution< math::blas_real<double>,
 			   math::modular<unsigned int> > > > inputs;
 
   std::vector< math::vertex<
-    math::superresolution< math::blas_complex<double>,
+    math::superresolution< math::blas_real<double>,
 			   math::modular<unsigned int> > > > outputs;
+
+  std::vector< math::vertex<math::blas_real<double> > > inputs2;
+  std::vector< math::vertex<math::blas_real<double> > > outputs2;
 
   RNG< math::blas_real<double> > prng;
 
   nnetwork< math::blas_real<double> > net;
-  nnetwork< math::superresolution< math::blas_complex<double>,
+  nnetwork< math::superresolution< math::blas_real<double>,
 				   math::modular<unsigned int> > > snet;
 
   math::vertex< math::blas_real<double> > weights;
-  math::vertex< math::superresolution< math::blas_complex<double>,
+  math::vertex< math::superresolution< math::blas_real<double>,
 				       math::modular<unsigned int> > > sweights;
 
-  std::vector<unsigned int> arch;
+  // 4-10-10-4 network
+  std::vector<unsigned int> arch;  
   arch.push_back(4);
   arch.push_back(10);
   arch.push_back(10);
@@ -79,10 +87,10 @@ int main()
 
 
   // pureLinear non-linearity (layers are all linear) [pureLinear]
-  net.setArchitecture(arch, nnetwork< math::blas_real<double> >::rectifier);
+  net.setArchitecture(arch, nnetwork< math::blas_real<double> >::pureLinear);
   snet.setArchitecture(arch, nnetwork< math::superresolution<
-		       math::blas_complex<double>,
-		       math::modular<unsigned int> > >::rectifier);
+		       math::blas_real<double>,
+		       math::modular<unsigned int> > >::pureLinear);
 
   net.randomize();
   snet.randomize();
@@ -96,7 +104,9 @@ int main()
   net.exportdata(weights);
   snet.exportdata(sweights);
   
-  //math::convert(sweights, weights);
+  // math::convert(sweights, weights);
+
+  // sweights = abs(sweights); // drop complex parts of initial weights
   
   snet.importdata(sweights);
   snet.exportdata(sweights);
@@ -107,7 +117,7 @@ int main()
   
   for(unsigned int i=0;i<100;i++){
     math::vertex<
-      math::superresolution< math::blas_complex<double>,
+      math::superresolution< math::blas_real<double>,
 			     math::modular<unsigned int> > > sx, sy;
 
     math::vertex< math::blas_real<double> > x, y;
@@ -143,6 +153,9 @@ int main()
 
     // net.calculate(x, y); // USE nnetwork as a target function (easier)
 
+    inputs2.push_back(x);
+    outputs2.push_back(y);
+
     whiteice::math::convert(sx, x);
     whiteice::math::convert(sy, y);
 
@@ -167,26 +180,37 @@ int main()
   data.add(1, outputs);
   
   data.preprocess(0);
-  //data.preprocess(1);
+  data.preprocess(1);
+
+  data2.add(0, inputs2);
+  data2.add(1, outputs2);
+
+  data2.preprocess(0);
+  data2.preprocess(1);
+
+  if(data2.save("simpleproblem.ds") == false){
+    printf("ERROR: saving data to file failed!\n");
+    exit(-1);
+  }
 
   // next DO NNGradDescent<> && nnetwork<> to actually learn the data.
 
   // gradient descent code
   {
     
-    math::vertex< math::superresolution<math::blas_complex<double>,
+    math::vertex< math::superresolution<math::blas_real<double>,
 					math::modular<unsigned int> > > grad, err, weights, wk;
-    math::vertex< math::superresolution<math::blas_complex<double>,
+    math::vertex< math::superresolution<math::blas_real<double>,
 					math::modular<unsigned int> > > sumgrad;
     
     unsigned int counter = 0;
-    math::superresolution<math::blas_complex<double>,
-			  math::modular<unsigned int> > error(1000.0f), last_error(1000.0f);
-    math::superresolution<math::blas_complex<double>,
-			  math::modular<unsigned int> > lrate(0.0010f);
+    math::superresolution<math::blas_real<double>,
+			  math::modular<unsigned int> > error(1000.0f), min_error(1000.0f);
+    math::superresolution<math::blas_real<double>,
+			  math::modular<unsigned int> > lrate(0.10f);
     
     while(abs(error)[0].real() > math::blas_real<double>(0.001f) && counter < 100000){
-      error = math::superresolution<math::blas_complex<double>,
+      error = math::superresolution<math::blas_real<double>,
 				    math::modular<unsigned int> >(0.0f);
       sumgrad.zero();
       
@@ -194,57 +218,83 @@ int main()
       // exports weights, weights -= 0.01*gradient
       // imports weights back
 
-      math::superresolution<math::blas_complex<double>,
+      math::superresolution<math::blas_real<double>,
 			    math::modular<unsigned int> > ninv =
-	math::superresolution<math::blas_complex<double>,
-			      math::modular<unsigned int> >(1.0f/data.size(0));
+	math::superresolution<math::blas_real<double>,
+			      math::modular<unsigned int> >
+	(1.0f/(data.size(0)*data.access(1,0).size()));
+
+      //if(counter % 400 == 0)
+      //	snet.randomize();
+
+      snet.exportdata(weights);
 
       for(unsigned int i=0;i<data.size(0);i++){
-	snet.input() = data.access(0, i);
-	snet.calculate(true);
-	err = snet.output() - data.access(1,i);
-	
-	for(unsigned int j=0;j<err.size();j++){
-	  error += ninv*err[j]*math::conj(err[j]) / data.access(0,0).size();
-	}
-	  
-#if 1
-	// this works with pureLinear non-linearity
-	auto delta = err; // delta = (f(z) - y)
-	math::matrix< math::superresolution<math::blas_complex<double>,
-					    math::modular<unsigned int> > > DF;
-	snet.jacobian(data.access(0, i), DF);
-	
-	auto cDF = DF;
-	cDF.conj();
 
-	// grad = delta*cDF;
+	// selects K:th dimension in number and adjust weights according to it.
+	//const unsigned int K = prng.rand() % weights[0].size();
 	
-#if 1
-	grad.resize(cDF.xsize());
-	grad.zero();
-	
-	for(unsigned int j=0;j<cDF.xsize();j++){
-	  for(unsigned int k=0;k<delta[i].size();k++){
-	    for(unsigned int i=0;i<delta.size();i++){
-	      grad[j][k] += delta[i][k]*cDF(i,j)[k];
+	{
+#if 0
+	  wk = weights;
+	  
+	  for(unsigned int n=0;n<wk.size();n++){
+	    for(unsigned int l=0;l<weights[0].size();l++){
+	      if(l != K) wk[n][l] = 0.0f;
 	    }
 	  }
-	}
+	  
+	  snet.importdata(wk);
 #endif
 	
-	// grad = delta*DF; // [THIS DOESN'T WORK]
+	  snet.input() = data.access(0, i);
+	  snet.calculate(true);
+	  err = snet.output() - data.access(1,i);
+	  
+	  for(unsigned int j=0;j<err.size();j++){
+	    const auto& ej = err[j];
+	    error += ninv*ej*math::conj(ej);
+	  }
+	  
+#if 1
+	  // this works with pureLinear non-linearity
+	  auto delta = err; // delta = (f(z) - y)
+	  math::matrix< math::superresolution<math::blas_real<double>,
+					      math::modular<unsigned int> > > DF;
+	  snet.jacobian(data.access(0, i), DF);
+	  
+	  auto cDF = DF;
+	  cDF.conj();
+	  
+	  // grad = delta*cDF;
+	  
+#if 1
+	  grad.resize(cDF.xsize());
+	  grad.zero();
+	  
+	  for(unsigned int j=0;j<cDF.xsize();j++){
+	    for(unsigned int k=0;k<delta[0].size();k++){
+	      for(unsigned int i=0;i<delta.size();i++){
+		grad[j][0] += delta[i][k]*cDF(i,j)[k];
+	      }
+	    }
+	  }
+	  
+#endif
+	  
+	  // grad = delta*DF; // [THIS DOESN'T WORK]
 #else
-	auto delta = err;
-	
-	for(unsigned int n=0;n<delta.size();n++)
-	  for(unsigned int l=0;l<delta[0].size();l++)
-	    if(l != k) delta[n][l] = 0.0f;
-	
-	if(snet.mse_gradient(delta, grad) == false) // returns: delta*conj(DF)
-	  std::cout << "gradient failed." << std::endl;
-	
+	  auto delta = err;
+	  
+	  for(unsigned int n=0;n<delta.size();n++)
+	    for(unsigned int l=0;l<delta[0].size();l++)
+	      if(l != k) delta[n][l] = 0.0f;
+	  
+	  if(snet.mse_gradient(delta, grad) == false) // returns: delta*conj(DF)
+	    std::cout << "gradient failed." << std::endl;
+	  
 #endif
+	}
 	
 	if(i == 0)
 	  sumgrad = ninv*grad;
@@ -252,18 +302,18 @@ int main()
 	  sumgrad += ninv*grad;
       }
 
-      sumgrad.normalize(); // normalizes gradient length
+	// sumgrad.normalize(); // normalizes gradient length
 
       snet.importdata(weights);
 
       if(snet.exportdata(weights) == false)
 	std::cout << "export failed." << std::endl;
 
-      const math::superresolution<math::blas_complex<double>,
+      const math::superresolution<math::blas_real<double>,
 				  math::modular<unsigned int> > alpha(1e-3f);
 
       
-      weights -= lrate * sumgrad + (alpha*weights);
+      weights -= lrate * sumgrad /*+ (alpha*weights)*/;
       
       if(snet.importdata(weights) == false)
 	std::cout << "import failed." << std::endl;
@@ -272,15 +322,17 @@ int main()
 
       for(unsigned int i=1;i<abserror.size();i++)
 	abserror[0] += abserror[i];
+
+      if(abserror[0].real() < min_error[0].real()) min_error = abserror;
       
-      std::cout << counter << " : " << abserror[0] << std::endl;
+      std::cout << counter << " : " << abserror[0].real() << std::endl;
       
       counter++;
     }
     
     std::cout << counter << " : " << abs(error) << std::endl;
 
-    math::vertex< math::superresolution<math::blas_complex<double>,
+    math::vertex< math::superresolution<math::blas_real<double>,
 					math::modular<unsigned int> > > params;
     snet.exportdata(params);
     std::cout << "nn solution weights = " << params << std::endl;

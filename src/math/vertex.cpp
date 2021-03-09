@@ -3975,6 +3975,9 @@ namespace whiteice
     template class vertex< blas_complex<float> >;
     template class vertex< blas_complex<double> >;
 
+    template class vertex< superresolution< blas_real<float>, modular<unsigned int> > >;
+    template class vertex< superresolution< blas_real<double>, modular<unsigned int> > >;
+
     template class vertex< superresolution< blas_complex<float>, modular<unsigned int> > >;
     template class vertex< superresolution< blas_complex<double>, modular<unsigned int> > >;
     
@@ -4005,6 +4008,14 @@ namespace whiteice
     template vertex<blas_complex<double> > operator*<blas_complex<double> >
       (const blas_complex<double>& s, const vertex<blas_complex<double> >& v);
 
+    template vertex<superresolution<blas_real<float>, modular<unsigned int> > > operator*<superresolution<blas_real<float>, modular<unsigned int> > >
+    (const superresolution<blas_real<float>, modular<unsigned int> >& s,
+     const vertex<superresolution<blas_real<float>, modular<unsigned int> > >& v);
+    
+    template vertex<superresolution<blas_real<double>, modular<unsigned int> > > operator*<superresolution<blas_real<double>, modular<unsigned int> > >
+    (const superresolution<blas_real<double>, modular<unsigned int> >& s,
+     const vertex<superresolution<blas_real<double>, modular<unsigned int> > >& v);
+
     template vertex<superresolution<blas_complex<float>, modular<unsigned int> > > operator*<superresolution<blas_complex<float>, modular<unsigned int> > >
     (const superresolution<blas_complex<float>, modular<unsigned int> >& s,
      const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >& v);
@@ -4029,6 +4040,10 @@ namespace whiteice
     template std::ostream& operator<< <blas_real<double> >(std::ostream& ios, const vertex<blas_real<double> >&);
     template std::ostream& operator<< <blas_complex<float> >(std::ostream& ios, const vertex<blas_complex<float> >&);
     template std::ostream& operator<< <blas_complex<double> >(std::ostream& ios, const vertex<blas_complex<double> >&);
+
+    template std::ostream& operator<< <superresolution<blas_real<float>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_real<float>, modular<unsigned int> > >&);
+    template std::ostream& operator<< <superresolution<blas_real<double>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_real<double>, modular<unsigned int> > >&);
+
 
     template std::ostream& operator<< <superresolution<blas_complex<float>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<float>, modular<unsigned int> > >&);
     template std::ostream& operator<< <superresolution<blas_complex<double>, modular<unsigned int> > >(std::ostream& ios, const vertex<superresolution<blas_complex<double>, modular<unsigned int> > >&);
