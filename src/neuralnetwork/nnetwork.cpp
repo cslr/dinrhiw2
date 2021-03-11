@@ -2179,7 +2179,7 @@ namespace whiteice
 	    output[i].real(RELUcoef*output[i].real());
 
 	  if(output[i].imag() < 0.0f)
-	    output[i].imag(RELUcoef*output[i].real());
+	    output[i].imag(RELUcoef*output[i].imag());
 	}
 	
 	const T epsilon = T(1e-6);

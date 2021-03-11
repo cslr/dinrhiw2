@@ -87,6 +87,7 @@ int main()
 
 
   // pureLinear non-linearity (layers are all linear) [pureLinear]
+  // rectifier don't work!!!
   net.setArchitecture(arch, nnetwork< math::blas_real<double> >::pureLinear);
   snet.setArchitecture(arch, nnetwork< math::superresolution<
 		       math::blas_real<double>,
@@ -267,7 +268,7 @@ int main()
 	  cDF.conj();
 	  
 	  // grad = delta*cDF;
-	  
+
 #if 1
 	  grad.resize(cDF.xsize());
 	  grad.zero();
@@ -302,7 +303,7 @@ int main()
 	  sumgrad += ninv*grad;
       }
 
-	// sumgrad.normalize(); // normalizes gradient length
+      // sumgrad.normalize(); // normalizes gradient length
 
       snet.importdata(weights);
 
