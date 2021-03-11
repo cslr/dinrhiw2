@@ -11,7 +11,7 @@ CP = cp
 RM = rm
 
 USERNAME=$(shell whoami)
-HOSTNAME=$(shell hostname)
+HOSTNAME=$(shell hostname -f)
 
 OPTIMIZE=@optimization_flags@
 
