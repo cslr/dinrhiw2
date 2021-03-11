@@ -86,12 +86,12 @@ int main()
   arch.push_back(4);
 
 
-  // pureLinear non-linearity (layers are all linear) [pureLinear]
+  // pureLinear non-linearity (layers are all linear) [pureLinear or rectifier]
   // rectifier don't work!!!
-  net.setArchitecture(arch, nnetwork< math::blas_real<double> >::pureLinear);
+  net.setArchitecture(arch, nnetwork< math::blas_real<double> >::rectifier);
   snet.setArchitecture(arch, nnetwork< math::superresolution<
 		       math::blas_real<double>,
-		       math::modular<unsigned int> > >::pureLinear);
+		       math::modular<unsigned int> > >::rectifier);
 
   net.randomize();
   snet.randomize();
@@ -105,7 +105,7 @@ int main()
   net.exportdata(weights);
   snet.exportdata(sweights);
   
-  // math::convert(sweights, weights);
+  math::convert(sweights, weights);
 
   // sweights = abs(sweights); // drop complex parts of initial weights
   
@@ -206,9 +206,9 @@ int main()
     
     unsigned int counter = 0;
     math::superresolution<math::blas_real<double>,
-			  math::modular<unsigned int> > error(1000.0f), min_error(1000.0f);
+			  math::modular<unsigned int> > error(1000.0f), min_error(1000.0f), latest_error(1000.0f);
     math::superresolution<math::blas_real<double>,
-			  math::modular<unsigned int> > lrate(0.10f);
+			  math::modular<unsigned int> > lrate(0.05f);
     
     while(abs(error)[0].real() > math::blas_real<double>(0.001f) && counter < 100000){
       error = math::superresolution<math::blas_real<double>,
@@ -324,7 +324,21 @@ int main()
       for(unsigned int i=1;i<abserror.size();i++)
 	abserror[0] += abserror[i];
 
-      if(abserror[0].real() < min_error[0].real()) min_error = abserror;
+      if(abserror[0].real() < min_error[0].real()){
+	min_error = abserror;
+      }
+
+#if 0
+      if(latest_error[0].real() > abserror[0].real()){
+	// error decreased so increase learning rate a bit
+	lrate *= 1.05f;
+      }
+      else{ // error increased so decrease learning rate
+	lrate *= 0.50f;
+      }
+#endif
+
+      latest_error = abserror;
       
       std::cout << counter << " : " << abserror[0].real() << std::endl;
       

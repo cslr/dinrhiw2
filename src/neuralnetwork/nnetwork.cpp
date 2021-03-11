@@ -2157,9 +2157,39 @@ namespace whiteice
       }
       else{ // superresolution
 
-	auto output = input;
+	auto fx = input, fxh = input;
+	auto h  = input;
+
+	T ministep = T(1e-6);
+
+	for(unsigned int i=0;i<h.size();i++){
+	  h[i].real(1.0f);
+	  h[i].imag(1.0f);
+	}
+
+	fxh += ministep*h;
+	const auto delta = ministep*h; // division
+
+	for(unsigned int i=0;i<fx.size();i++){
+	  if(fx[i].real() < 0.0f)
+	    fx[i].real(RELUcoef*fx[i].real());
+
+	  if(fx[i].imag() < 0.0f)
+	    fx[i].imag(RELUcoef*fx[i].imag());
+
+	  if(fxh[i].real() < 0.0f)
+	    fxh[i].real(RELUcoef*fxh[i].real());
+
+	  if(fxh[i].imag() < 0.0f)
+	    fxh[i].imag(RELUcoef*fxh[i].imag());
+	}
+
+	auto output = (fxh - fx)/delta;
+	
 
 #if 0
+	auto output = input;
+	
 	for(unsigned int i=0;i<output.size();i++){
 	  if(output[i].real() < 0.0f)
 	    output[i].real(RELUcoef);
@@ -2173,7 +2203,9 @@ namespace whiteice
 	}
 #endif
 
-#if 1
+#if 0
+	auto output = input;
+	
 	for(unsigned int i=0;i<output.size();i++){
 	  if(output[i].real() < 0.0f)
 	    output[i].real(RELUcoef*output[i].real());
