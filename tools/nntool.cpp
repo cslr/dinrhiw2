@@ -92,7 +92,10 @@ int main(int argc, char** argv)
     bool crossvalidation = false;    
 
     // minimum norm error ||y-f(x)|| gradient instead of MSE ||y-f(x)||^2
-    bool MNE = true; 
+    bool MNE = true;
+
+    // TESTING PURPOSES: if linearnet is true [default false] construct linear neural network
+    const bool linearnet = false;
 
     bool subnet = false;
 
@@ -322,9 +325,11 @@ int main(int argc, char** argv)
     whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
       whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
 
+    if(linearnet) // only make sense when testing optimization
+      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear;
+
     {
-      nl = whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
+      nn->setNonlinearity(nl);
       nn->setNonlinearity(nn->getLayers()-1,
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     }
@@ -383,7 +388,10 @@ int main(int argc, char** argv)
 	return -1;
       }
 
-      nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
+      if(linearnet) // only make sense when testing optimization
+	nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
+      else
+	nn->setNonlinearity(whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
       nn->setNonlinearity(nn->getLayers()-1,
 			  whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
       

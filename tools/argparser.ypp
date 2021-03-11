@@ -293,8 +293,8 @@ void parse_commandline(int argc, char** argv,
       exit(0);
     }
     else if(!strcmp(argv[1], "--version")){
-      printf("nntool (\"narya\") version %s. Build on %s %s.\n", 
-	     NNTOOL_VERSION, __DATE__, __TIME__);
+      printf("nntool (\"narya\") version %s. Build on %s %s by %s@%s.\n", 
+	     NNTOOL_VERSION, __DATE__, __TIME__, __USERNAME__, __HOSTNAME__);
       exit(0);
     }
   }

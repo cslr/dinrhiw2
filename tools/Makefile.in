@@ -10,9 +10,12 @@ BISON = bison
 CP = cp
 RM = rm
 
+USERNAME=$(shell whoami)
+HOSTNAME=$(shell hostname)
+
 OPTIMIZE=@optimization_flags@
 
-CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -Wno-class-memaccess -I../lib/ @conf_flags@ @EXTRA_INCLUDEPATHS@
+CFLAGS = @CFLAGS@ $(OPTIMIZE) -Wno-deprecated -g -Wall -Wno-class-memaccess -I../lib/ @conf_flags@ @EXTRA_INCLUDEPATHS@ -D__HOSTNAME__=\"$(HOSTNAME)\" -D__USERNAME__=\"$(USERNAME)\"
 CXXFLAGS = @CXXFLAGS@ @CPPFLAGS@ $(CFLAGS)
 
 SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cpp mapping.cpp \
