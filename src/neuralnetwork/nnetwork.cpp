@@ -63,9 +63,10 @@ namespace whiteice
 
     retain_probability = T(1.0);
 
-    residual = false;
+    // residual = false;
+    residual = true; // ENABLES residual neural networks as the default.
 
-    // randomize();
+    randomize();
   }
   
   
@@ -143,7 +144,10 @@ namespace whiteice
 
     retain_probability = T(1.0);
 
-    residual = false;
+    // residual = false;
+    residual = true; // ENABLES residual neural networks as the default.
+
+    randomize();
   }
   
   
