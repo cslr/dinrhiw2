@@ -213,6 +213,12 @@ namespace whiteice
       
       bool invpreprocess(unsigned int index,
 			 std::vector< math::vertex<T> >& group) const ;
+      
+      // inverse preprocess mean m and covariance matrix COV
+      bool invpreprocess(unsigned int index,
+			 math::vertex<T>& m,
+			 math::matrix<T>& COV) const ;
+
       // index = 0
       bool invpreprocess(math::vertex<T>& vec) const ;
       bool invpreprocess(std::vector< math::vertex<T> >& group) const ;
@@ -241,14 +247,20 @@ namespace whiteice
 				 math::vertex<T>& vec) const;
       void inv_mean_variance_removal(unsigned int index,
 				     math::vertex<T>& vec) const;
+      void inv_mean_variance_removal_cov(unsigned int index,
+					 math::matrix<T>& C) const;
+      
       void soft_max(unsigned int index, math::vertex<T>& vec) const;
       void inv_soft_max(unsigned int index, math::vertex<T>& vec) const;
+      void inv_soft_max_cov(unsigned int index, math::matrix<T>& C) const; // FIXME not implemented
       
       void whiten(unsigned int index, math::vertex<T>& vec) const;
       void inv_whiten(unsigned int index, math::vertex<T>& vec) const;
+      void inv_whiten_cov(unsigned int index, math::matrix<T>& C) const;
 
       void ica(unsigned int index, math::vertex<T>& vec) const;
-      void inv_ica(unsigned int index, math::vertex<T>& vec) const;      
+      void inv_ica(unsigned int index, math::vertex<T>& vec) const;
+      void inv_ica_cov(unsigned int index, math::matrix<T>& C) const;      
       
       
       ////////////////////////////////////////////////////////////

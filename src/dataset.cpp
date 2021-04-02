@@ -2114,6 +2114,47 @@ namespace whiteice
 
     return true;  
   }
+
+
+  // inverse preprocess given data vector m and covariance matrix C
+  template <typename T>
+  bool dataset<T>::invpreprocess(unsigned int index, 
+				 math::vertex<T>& m,
+				 math::matrix<T>& C) const 
+  {
+    if(index >= clusters.size())
+      return false;
+
+    if(m.size() != clusters[index].data_dimension || 
+       C.ysize() != clusters[index].data_dimension ||
+       C.xsize() != clusters[index].data_dimension)
+      return false;
+    
+    typename std::vector<enum data_normalization>::const_reverse_iterator i;
+    
+    for(i=clusters[index].preprocessings.rbegin();
+	i!=clusters[index].preprocessings.rend();i++){
+      if(*i == dnLinearICA){
+	inv_ica(index, m);
+	inv_ica_cov(index, C);
+      }
+      else if(*i == dnCorrelationRemoval){
+	inv_whiten(index, m);
+	inv_whiten_cov(index, C);
+      }
+      else if(*i == dnMeanVarianceNormalization){
+	inv_mean_variance_removal(index, m);
+	inv_mean_variance_removal_cov(index, C);
+      }
+      else if(*i == dnSoftMax){
+	inv_soft_max(index, m);
+	inv_soft_max_cov(index,C);
+      }
+      else return false;
+    }
+
+    return true;  
+  }
   
   
   template <typename T>
@@ -2483,6 +2524,27 @@ namespace whiteice
     
     vec += clusters[index].mean;
   }
+
+  
+  template <typename T>
+  void dataset<T>::inv_mean_variance_removal_cov(unsigned int index,
+						 math::matrix<T>& C) const
+  {
+    // x(i) = [x(i)' * sqrt(var(i))] + mean(i)
+    // Var[x(i)] = Var(x'(i)*sqrt(var(i)))
+    // Var[x(i)] = Var(eye(diag(sqrt(var)))*x') = eye(diag(var))*Var(x')
+
+    //const auto epsilon = abs(T(1e-8f));
+
+    auto ItrVar = C;
+    
+    for(unsigned int j=0;j<ItrVar.ysize();j++)
+      for(unsigned int i=0;i<ItrVar.xsize();i++)
+	if(i == j) ItrVar(j,i) = sqrt(abs(clusters[index].variance[i]));
+	else ItrVar(j,i) = T(0.0f);
+
+    C = ItrVar*C*ItrVar;
+  }
   
   
   template <typename T>
@@ -2499,6 +2561,13 @@ namespace whiteice
     
   }
   
+  template <typename T>
+  void dataset<T>::inv_soft_max_cov(unsigned int index,
+				    math::matrix<T>& C) const
+  {
+    // FIXME: implement me!
+    assert(0);
+  }
   
   template <typename T>
   void dataset<T>::inv_soft_max(unsigned int index,
@@ -2527,6 +2596,17 @@ namespace whiteice
     vec = clusters[index].invWxx * vec;
   }
 
+  
+  template <typename T>
+  void dataset<T>::inv_whiten_cov(unsigned int index,
+			      math::matrix<T>& C) const
+  {
+    auto At = clusters[index].invWxx;
+    At.transpose();
+    
+    C = clusters[index].invWxx * C * At;
+  }
+
 
 
   template <typename T>
@@ -2543,6 +2623,16 @@ namespace whiteice
   {
     
     vec = clusters[index].invICA * vec;
+  }  
+  
+  template <typename T>
+  void dataset<T>::inv_ica_cov(unsigned int index,
+			       math::matrix<T>& C) const
+  {
+    auto At = clusters[index].invICA;
+    At.transpose();
+    
+    C = clusters[index].invICA * C * At;
   }  
   
   

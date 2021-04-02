@@ -507,7 +507,8 @@ AS_IF([test "x$enable_cppdebug" = "xyes"],[
 ])
 
 dnl enable newer C++ standards
-optimization_flags="-std=c++17 $optimization_flags"
+dnl OLD: optimization_flags="-std=c++17 $optimization_flags"
+optimization_flags="$optimization_flags"
 
 dnl 
 dnl AC_ARG_ENABLE([profiling],

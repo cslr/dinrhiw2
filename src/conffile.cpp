@@ -15,11 +15,13 @@
 #include <locale>
 #include <codecvt>
 
+/*
 #if defined(WINNT) || defined(WIN32) || defined(_WIN32)
 #ifndef UNICODE
 #define UNICODE
 #endif
 #endif
+*/
 
 #include "conffile.h"
 

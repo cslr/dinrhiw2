@@ -22,7 +22,7 @@ SOURCES = aescipher.cpp FileSource.cpp CryptoFileSource.cpp dataplot.cpp MMAP.cp
 	nntool.cpp argparser.tab.cpp cpuid_threads.cpp datatool.cpp gendata.cpp gendata2.cpp
 
 
-AESCIPHER_LIBS = @EXTRA_LIBPATHS@ ../lib/libdinrhiw.a -lgmp -lz
+AESCIPHER_LIBS = @EXTRA_LIBPATHS@ @EXTRA_LIBPATHS@ @EXTRA_LIBS@ ../lib/libdinrhiw.a @EXTRA_LIBS@ -lpthread -lgmp -lz
 WDV_LIBS = @EXTRA_LIBPATHS@ ../lib/lindinrhiw.a -lgmp -lz
 
 AESCIPHER_OBJECTS = aescipher.o FileSource.o CryptoFileSource.o
