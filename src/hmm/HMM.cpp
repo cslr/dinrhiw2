@@ -8,11 +8,14 @@
 #include "HMM.h"
 
 #include <vector>
+#include <string>
 #include <list>
 #include <set>
 
+#include <assert.h>
 #include "dataset.h"
 #include "linear_ETA.h"
+#include "Log.h"
 
 
 using namespace whiteice::math;
@@ -180,7 +183,8 @@ namespace whiteice {
 
     // pi
     for(auto& p : ph){
-      p = rng.uniform();
+      // p = rng.uniform();
+      p.random();
       sum += p;
     }
 
@@ -193,7 +197,9 @@ namespace whiteice {
       sum = 0.0;
 
       for(unsigned int j=0;j<numHidden;j++){
-	A[i][j] = rng.uniform();
+	// A[i][j] = rng.uniform();
+	A[i][j].random();
+	
 	sum += A[i][j];
       }
 
@@ -208,7 +214,9 @@ namespace whiteice {
 	sum = 0.0;
 	
 	for(unsigned int k=0;k<numVisible;k++){
-	  B[i][j][k] = rng.uniform();
+	  // B[i][j][k] = rng.uniform();
+	  B[i][j][k].random();
+	  
 	  sum += B[i][j][k];
 	}
 
@@ -220,6 +228,176 @@ namespace whiteice {
     }
 
     normalize_parameters();
+  }
+
+  
+  /**
+   * Saves ph, A, B values to disk (arbitrary precision)
+   */
+  bool HMM::saveArbitrary(const std::string& filename) const
+  {
+    FILE* handle = fopen(filename.c_str(), "wb");
+    if(handle == NULL) return false;
+
+    try{
+      if(fwrite(&precision, sizeof(unsigned int), 1, handle) != 1)
+	throw 1;
+
+      if(fwrite(&numVisible, sizeof(unsigned int), 1, handle) != 1)
+	throw 2;
+
+      if(fwrite(&numHidden, sizeof(unsigned int), 1, handle) != 1)
+	throw 3;
+
+      if(fwrite("\n", 1, 1, handle) != 1){
+	throw 4;
+      }
+      
+      for(const auto& p : ph){
+	if(p.printFile(handle) == false)
+	  throw 5;
+	if(fwrite("\n", 1, 1, handle) != 1)
+	  throw 5;
+      }
+
+      for(unsigned int i=0;i<numHidden;i++){
+	for(unsigned int j=0;j<numHidden;j++){
+	  if(A[i][j].printFile(handle) == false)
+	    throw 6;
+	  if(fwrite("\n", 1, 1, handle) != 1)
+	    throw 6;
+	}
+      }
+
+      for(unsigned int i=0;i<numHidden;i++){
+	for(unsigned int j=0;j<numHidden;j++){
+	  for(unsigned int k=0;k<numVisible;k++){
+	    if(B[i][j][k].printFile(handle) == false)
+	      throw 7;
+	    if(fwrite("\n", 1, 1, handle) != 1)
+	      throw 7;
+	  }
+	}
+      }
+    }
+    catch(int error){
+      char buffer[64];
+      snprintf(buffer, 64, "HMM::saveArbitrary() ERROR: %d\n", error);
+      logging.error(buffer);
+      fclose(handle);
+      return false;
+    }
+
+    fclose(handle);
+    return true;
+  }
+  
+  /**
+   * Loads ph, A, B values from disk (arbitrary precision)
+   */
+  bool HMM::loadArbitrary(const std::string& filename)
+  {
+    FILE* handle = fopen(filename.c_str(), "rb");
+    if(handle == NULL) return false;
+
+    try{
+      unsigned int file_precision;
+      unsigned int file_numVisible;
+      unsigned int file_numHidden;
+
+      std::vector< whiteice::math::realnumber > file_ph;
+      std::vector< std::vector< whiteice::math::realnumber > > file_A;
+      std::vector< std::vector< std::vector< whiteice::math::realnumber > > > file_B;
+
+      char buffer[10];
+      
+      if(fread(&file_precision, sizeof(unsigned int), 1, handle) != 1)
+	throw 1;
+
+      if(fread(&file_numVisible, sizeof(unsigned int), 1, handle) != 1)
+	throw 2;
+
+      if(fread(&file_numHidden, sizeof(unsigned int), 1, handle) != 1)
+	throw 3;
+
+      if(fread(buffer, 1, 1, handle) != 1){
+	throw 4;
+      }
+      else if(buffer[0] != '\n')
+	throw 4;
+
+      file_ph.resize(file_numHidden);
+      for(auto& p : file_ph)
+	p.setPrecision(file_precision);
+      
+      file_A.resize(file_numHidden);
+      for(auto& a : file_A){
+	a.resize(file_numHidden);
+	for(auto& aa : a)
+	  aa.setPrecision(file_precision);
+      }
+
+      file_B.resize(file_numHidden);
+      for(auto& b1 : file_B){
+	b1.resize(file_numHidden);
+	for(auto& b2 : b1){
+	  b2.resize(file_numVisible);
+	  for(auto& b3 : b2){
+	    b3.setPrecision(file_precision);
+	  }
+        }
+      }
+      
+      for(auto& p : file_ph){
+	if(p.readFile(handle) == false)
+	  throw 5;
+	if(fread(buffer, 1, 1, handle) != 1)
+	  throw 5;
+	else if(buffer[0] != '\n')
+	  throw 5;
+      }
+
+      for(unsigned int i=0;i<file_numHidden;i++){
+	for(unsigned int j=0;j<file_numHidden;j++){
+	  if(file_A[i][j].readFile(handle) == false)
+	    throw 6;
+	  if(fread(buffer, 1, 1, handle) != 1)
+	    throw 6;
+	  else if(buffer[0] != '\n')
+	    throw 6;
+	}
+      }
+
+      for(unsigned int i=0;i<file_numHidden;i++){
+	for(unsigned int j=0;j<file_numHidden;j++){
+	  for(unsigned int k=0;k<file_numVisible;k++){
+	    if(file_B[i][j][k].readFile(handle) == false)
+	      throw 7;
+	    if(fread(buffer, 1, 1, handle) != 1)
+	      throw 7;
+	    else if(buffer[0] != '\n')
+	      throw 7;
+	  }
+	}
+      }
+
+      this->precision = file_precision;
+      this->numHidden = file_numHidden;
+      this->numVisible = file_numVisible;
+      this->ph = file_ph;
+      this->A  = file_A;
+      this->B  = file_B;
+    }
+    catch(int error){
+      char buffer[64];
+      snprintf(buffer, 64, "HMM::loadArbitrary() ERROR: %d\n", error);
+      logging.error(buffer);
+      fclose(handle);
+      return false;
+    }
+
+    fclose(handle);
+    return true;    
   }
   
   
@@ -539,7 +717,9 @@ namespace whiteice {
    */
   unsigned int HMM::sample(const std::vector<realnumber>& p) const
   {
-    double u = rng.uniform();
+    // double u = rng.uniform();
+    realnumber u(0.0, precision);
+    u.random();
     realnumber cp(0.0, precision);
     
     for(unsigned int h=0;h<p.size();h++){

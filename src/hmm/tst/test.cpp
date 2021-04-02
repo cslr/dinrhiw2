@@ -192,6 +192,7 @@ void hmm_test()
     
   }
 
+  
 
   {
     printf("HMM - SAVE() & LOAD() TEST\n");
@@ -268,6 +269,94 @@ void hmm_test()
     }
     
     printf("HMM LOAD() & SAVE() TESTS PASSED\n");
+  }
+
+
+
+  {
+    printf("HMM - SAVE() & LOAD() ARBITRARY PRECISION TEST\n");
+
+    unsigned int v = rand() % 64 + 10;
+    unsigned int h = rand() % 64 + 10;
+
+    whiteice::HMM hmm1(v, h);
+    whiteice::HMM hmm2(v + 1, h + 2);
+
+    hmm1.randomize();
+
+    assert(hmm1.saveArbitrary("hmm2.dat") == true);
+    assert(hmm2.loadArbitrary("hmm2.dat") == true);
+
+    // compares parameters
+    {
+      auto pi1 = hmm1.getPI();
+      auto pi2 = hmm2.getPI();
+      
+      whiteice::math::realnumber error(0.0, 128);
+
+      for(unsigned int i=0;i<pi1.size();i++)
+	error += abs(pi1[i] - pi2[i]);
+
+      error /= ((double)pi1.size());
+
+      if(error.getDouble() > 0.001){
+	printf("ERROR: pi parameter mismatch after save()&load()\n");
+	return;
+      }
+
+      auto A1 = hmm1.getA();
+      auto A2 = hmm2.getA();
+
+      error = 0.0;
+
+      for(unsigned int i=0;i<A1.size();i++){
+	for(unsigned int j=0;j<A1[i].size();j++){
+	  error += abs(A1[i][j] - A2[i][j]);
+	}
+      }
+
+      error /= ((double)(A1.size()*A1[0].size()));
+      
+      if(error.getDouble() > 0.001){
+	printf("ERROR: A parameter mismatch after save()&load(): %f\n",
+	       error.getDouble());
+	return;
+      }
+
+      
+      auto B1 = hmm1.getB();
+      auto B2 = hmm2.getB();
+
+      error = 0.0;
+
+      for(unsigned int i=0;i<B1.size();i++){
+	for(unsigned int j=0;j<B1[i].size();j++){
+	  for(unsigned int k=0;k<B1[i][j].size();k++){
+	    error += abs(B1[i][j][k] - B2[i][j][k]);
+	  }
+	}
+      }
+
+      error /= ((double)(B1.size()*B1[0].size()*B1[0][0].size()));
+      
+      if(error.getDouble() > 0.001){
+	printf("ERROR: B parameter mismatch after save()&load(): %f\n",
+	       error.getDouble());
+	return;
+      }
+      
+    }
+    
+    printf("HMM LOAD() & SAVE() ARBITRARY TESTS PASSED\n");
+  }
+
+  {
+    printf("REALNUMBER RANDOM NUMBER CHECK\n");
+    
+    whiteice::math::realnumber r;
+    for(unsigned int i=0;i<10;i++)
+      std::cout << r.random() << std::endl;
+    
   }
   
 }

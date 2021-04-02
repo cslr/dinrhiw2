@@ -4,6 +4,7 @@
  */
 
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <gmp.h>
 #include "number.h"
@@ -124,10 +125,15 @@ namespace whiteice
       realnumber& floor() ;
       realnumber& trunc() ;
       realnumber& round() ;
-      
+
       // returns sign of real number
       // returns 1 if r > 0, 0 if r == 0 and -1 if r < 0
       int sign() const ;
+
+      // overwrites number using [0,1[ given precision number
+      // this is SLOW because of mutex lock around __rndstate
+      realnumber& random();
+      
       
       double& operator[](const unsigned long& index)
 	;
@@ -153,6 +159,10 @@ namespace whiteice
       // ndigits is tells how many digits to show
       // (zero tells to show everthing)
       std::string getString(size_t ndigits = 0) const ;
+
+      // read and write number to FILE using string/text format
+      bool printFile(FILE* output) const;
+      bool readFile(FILE* input);
 
       
       

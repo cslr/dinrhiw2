@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <mutex>
+
+
 namespace whiteice
 {
   namespace math
@@ -504,7 +507,29 @@ namespace whiteice
     int realnumber::sign() const {
       return mpf_sgn(data);
     }
-    
+
+    static gmp_randstate_t __rndstate;
+    class __init {
+    public:
+      __init(){
+	gmp_randinit_default(__rndstate);
+	gmp_randseed_ui(__rndstate, time(NULL));
+      }
+    };
+    static __init default_init;
+    static std::mutex rnd_mutex;
+
+    // overwrites number using [0,1[ given precision number
+    // this is SLOW because of mutex lock around __rndstate
+    realnumber& realnumber::random() {
+      {
+	std::lock_guard<std::mutex> lock(rnd_mutex);
+	// auto prec = getPrecision();
+	mpf_urandomb(data, __rndstate, 0 /*prec*/);
+      }
+      
+      return (*this);
+    }
     
     double& realnumber::operator[](const unsigned long& index)
       {
@@ -636,6 +661,21 @@ namespace whiteice
       
       free(str);
       return s;
+    }
+
+
+    bool realnumber::printFile(FILE* output) const
+    {
+      if(output == NULL) return false;
+
+      return (mpf_out_str(output, 10, 0, data) > 0);
+    }
+    
+    bool realnumber::readFile(FILE* input)
+    {
+      if(input == NULL) return false;
+
+      return (mpf_inp_str(data, input, 10) > 0);
     }
     
     

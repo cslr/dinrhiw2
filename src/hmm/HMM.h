@@ -12,6 +12,7 @@
 #include "RNG.h"
 
 #include <vector>
+#include <string>
 #include <stdexcept>
 #include <exception>
 
@@ -45,6 +46,16 @@ namespace whiteice {
      * Sets ph, A, and B to random (initial) values before optimization
      */
     void randomize();
+
+    /**
+     * Saves ph, A, B values to disk (arbitrary precision)
+     */
+    bool saveArbitrary(const std::string& filename) const;
+
+    /**
+     * Loads ph, A, B values from disk (arbitrary precision)
+     */
+    bool loadArbitrary(const std::string& filename);
     
     /**
      * trains HMM parameters from discrete observational states
@@ -125,7 +136,7 @@ namespace whiteice {
     // (i,j) => visible state k [we use current and previous hidden state when generating symbol]
     std::vector< std::vector< std::vector< whiteice::math::realnumber > > > B;
     
-    whiteice::RNG<double> rng; // random number generator used by HMM for simulations
+    // whiteice::RNG<double> rng; // random number generator used by HMM for simulations
 
   public:
 
