@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <chrono>
 #include <mutex>
 
 
@@ -513,7 +514,10 @@ namespace whiteice
     public:
       __init(){
 	gmp_randinit_default(__rndstate);
-	gmp_randseed_ui(__rndstate, time(NULL));
+
+	std::chrono::time_point<std::chrono::system_clock> ts = std::chrono::system_clock::now();
+	auto msvalue = std::chrono::duration_cast<std::chrono::microseconds>(ts.time_since_epoch()).count();
+	gmp_randseed_ui(__rndstate, (unsigned long int)msvalue);
       }
     };
     static __init default_init;
