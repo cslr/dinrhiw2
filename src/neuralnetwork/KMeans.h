@@ -16,6 +16,8 @@
 #ifndef KMeans_h
 #define KMeans_h
 
+#include <thread>
+#include <mutex>
 #include <exception>
 #include <stdexcept>
 
@@ -25,7 +27,7 @@ namespace whiteice
 {
   
   // T must support basic + - * / operations
-  template <typename T>
+  template <typename T=whiteice::math::blas_real<float> >
   class KMeans
   {
   public:
@@ -35,26 +37,52 @@ namespace whiteice
     ~KMeans();
 
     KMeans<T>& operator=(const KMeans<T>& model);
+
+    void randomize(std::vector<std::vector<T> >& kmeans,
+		   const std::vector< whiteice::math::vertex<T> >& data) const;
+
+    void randomize(std::vector< whiteice::math::vertex<T> >& kmeans,
+		   const std::vector< whiteice::math::vertex<T> >& data) const;
     
     bool learn(unsigned int k,
 	       std::vector< std::vector<T> >& data) ;
     
     bool learn(unsigned int k,
 	       std::vector< whiteice::math::vertex<T> >& data) ;
+
+    /**
+     * starts internal thread for computing the results
+     */
+    bool startTrain(unsigned int K,
+		    std::vector< whiteice::math::vertex<T> >& data);
+
+    bool startTrain(unsigned int K,
+		    std::vector< std::vector<T> >& data);
+
+    // returns true if optimizer thread is running
+    bool isRunning();
+
+    // returns current solution error
+    double getSolutionError();
+
+    // stops training K-means clustering
+    bool stopTrain();
     
     // calculates approximative error
     // (samples N=1000 samples or uses everything)
     T error(const std::vector< std::vector<T> >& data) const;    
     T error(const std::vector< whiteice::math::vertex<T> >& data) const;
     
+    T error(const std::vector< whiteice::math::vertex<T> >& kmeans,
+	    const std::vector< whiteice::math::vertex<T> >& data) const;
     
-    std::vector<T>& operator[](unsigned int index);
-    const std::vector<T>& operator[](unsigned int index) const;
+    // returns index:th cluster mean value
+    math::vertex<T>& operator[](unsigned int index);
+    const math::vertex<T>& operator[](unsigned int index) const;
 
-    unsigned int getClusterIndex(const whiteice::math::vertex<T>& x) const
-      ;
-    unsigned int getClusterIndex(const std::vector<T>& x) const
-      ;
+    // clusterizes given data vector, returns cluster index
+    unsigned int getClusterIndex(const whiteice::math::vertex<T>& x) const;
+    unsigned int getClusterIndex(const std::vector<T>& x) const;
     
     // number of clusters
     unsigned int size() const ;
@@ -77,16 +105,37 @@ namespace whiteice
   private:
     T calc_distance(const std::vector<T>& u, const std::vector<T>& v) const;
     T calc_distance(const std::vector<T>& u, const whiteice::math::vertex<T>& v) const;
+    T calc_distance(const whiteice::math::vertex<T>& u, const whiteice::math::vertex<T>& v) const;
     
     T second_half_error(const std::vector< std::vector<T> >& data) const;
     T second_half_error(const std::vector< whiteice::math::vertex<T> >& data) const;
+
+    bool means_changed(const std::vector< math::vertex<T> >& means1,
+		       const std::vector< math::vertex<T> >& means2) const;
+
+    //////////////////////////////////////////////////////////////////////
+    // Internal threading variables
+
+    void optimizer_loop();
+
+    std::thread* optimizer_thread = nullptr;
+    mutable std::mutex thread_mutex, solution_mutex;
+    bool thread_running = false, computing_stopped = true;
+    bool verbose = false;
+
+    std::vector<math::vertex<T> > best_kmeans;
+    double best_error = INFINITY;
+
+    std::vector< math::vertex<T> > data;
+
+    //////////////////////////////////////////////////////////////////////
     
     
     bool goodmode; // keep going till results improve,
                    // uses early stopping to prevent overfitting
     unsigned int samplesetsize;
     
-    std::vector<std::vector<T> > kmeans;
+    std::vector< math::vertex<T> > kmeans;
     T learning_rate;
 
     whiteice::RNG<T> rng;

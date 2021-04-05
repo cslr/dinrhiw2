@@ -9,13 +9,14 @@
 #define HMM_HMM_H_
 
 #include "real.h"
-#include "RNG.h"
+// #include "RNG.h"
 
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <exception>
-
+#include <thread>
+#include <mutex>
 
 namespace whiteice {
 
@@ -47,6 +48,10 @@ namespace whiteice {
      */
     void randomize();
 
+    void randomize(std::vector< whiteice::math::realnumber >& ph,
+		   std::vector< std::vector< whiteice::math::realnumber > >& A,
+		   std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& B) const;
+
     /**
      * Saves ph, A, B values to disk (arbitrary precision)
      */
@@ -67,6 +72,31 @@ namespace whiteice {
     double train(const std::vector<unsigned int>& observations,
 		 const unsigned int MAXITERS = 1000,
 		 const bool verbose = true);
+
+    /**
+     * Starts background thread for computation:
+     *
+     * trains HMM parameters from discrete observational states
+     * (unsigned integers are state numbers) using
+     * Expectation Maximization (EM) algorithm
+     *
+     */
+    bool startTrain(const std::vector<unsigned int>& observations,
+		 const unsigned int MAXITERS = 1000,
+		 const bool verbose = true);
+
+    // returns true if optimizer thread is running
+    bool isRunning();
+
+    /**
+     * returns current log(probability) of training data
+     */
+    double getSolutionGoodness();
+
+    /**
+     * Stops background thread for computation.
+     */
+    bool stopTrain();
     
     
     /**
@@ -120,6 +150,35 @@ namespace whiteice {
   private:
     // normalizes parameters by ordering hidden states according to probabilities
     void normalize_parameters();
+    
+    void normalize_parameters(std::vector< whiteice::math::realnumber >& ph,
+			      std::vector< std::vector< whiteice::math::realnumber > >& A,
+			      std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& B) const;
+
+    //////////////////////////////////////////////////////////////////////////////
+    
+    // function which runs optimizer loop that optimizes HMM state
+    void optimizer_loop();
+
+    std::thread* optimizer_thread = nullptr;
+    std::mutex thread_mutex, solution_mutex;
+    bool thread_running = false;
+    bool solution_converged = false;
+
+    unsigned int iterations = 0;
+    unsigned int MAXITERS = 1000;
+    
+    std::vector<unsigned int> observations;
+    bool verbose = false;
+
+    double best_logp;
+    std::vector< whiteice::math::realnumber > best_ph;
+    std::vector< std::vector< whiteice::math::realnumber > > best_A;
+    std::vector< std::vector< std::vector< whiteice::math::realnumber > > > best_B;
+
+    
+
+    //////////////////////////////////////////////////////////////////////////////
     
     // number of visible and hidden states
     unsigned int numVisible, numHidden;

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "HMM.h"
 
@@ -35,6 +36,9 @@ void hmm_test()
 
     // transition probabilities are taken from Crazy Soft Drink Machine
     // (Statistical Natural Language Processing book, page 321)
+
+    //std::cout << "A size: " << hmm.getA().size() << std::endl;
+    //std::cout << "A[0] size: " << hmm.getA()[0].size() << std::endl;
     
     // state transition probabilties
     hmm.getA()[0][0] = 0.7;
@@ -69,7 +73,15 @@ void hmm_test()
 
     
     whiteice::HMM hmm2(3, 2);
-    double r = hmm2.train(data);
+
+    hmm2.startTrain(data);
+
+    while(hmm2.isRunning()){
+      sleep(1);
+    }
+
+    hmm2.stopTrain();
+    double r = hmm2.getSolutionGoodness();
 
     printf("MODEL FIT (logp): %f\n", r);
     fflush(stdout);

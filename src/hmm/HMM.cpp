@@ -11,6 +11,9 @@
 #include <string>
 #include <list>
 #include <set>
+#include <thread>
+#include <mutex>
+#include <functional>
 
 #include <assert.h>
 #include "dataset.h"
@@ -117,7 +120,19 @@ namespace whiteice {
   
   HMM::~HMM()
   {
-    // nothing to do
+    // stops thread if it is running
+    {
+      std::lock_guard<std::mutex> lock(thread_mutex);
+
+      thread_running = false;
+
+      if(optimizer_thread){
+	optimizer_thread->join();
+	delete optimizer_thread;
+      }
+
+      optimizer_thread = nullptr;
+    }
   }
 
 
@@ -179,6 +194,14 @@ namespace whiteice {
    */
   void HMM::randomize()
   {
+    this->randomize(ph, A, B);
+  }
+
+  
+  void HMM::randomize(std::vector< whiteice::math::realnumber >& ph,
+		      std::vector< std::vector< whiteice::math::realnumber > >& A,
+		      std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& B) const
+  {
     realnumber sum(0.0, precision);
 
     // pi
@@ -227,7 +250,7 @@ namespace whiteice {
       }
     }
 
-    normalize_parameters();
+    normalize_parameters(ph, A, B);
   }
 
   
@@ -668,7 +691,7 @@ namespace whiteice {
 	
 	auto r = s/m;
 	
-	if(r.getDouble() <= 0.00001){
+	if(r.getDouble() <= 0.0000001){
 	  converged = true;
 	}
 
@@ -681,10 +704,400 @@ namespace whiteice {
     if(plast > 0.0)
       plast = log(plast);
 
-    return plast.getDouble();
+    best_logp = plast.getDouble();
+
+    return best_logp;
   }
   
+  
+  /**
+   * Starts background thread for computation:
+   *
+   * trains HMM parameters from discrete observational states
+   * (unsigned integers are state numbers) using
+   * Expectation Maximization (EM) algorithm
+   *
+   */
+  bool HMM::startTrain(const std::vector<unsigned int>& observations,
+		       const unsigned int MAXITERS,
+		       const bool verbose)
+  {
+    std::lock_guard<std::mutex> lock(thread_mutex);
 
+    if(thread_running){
+      return false; // thread is already running
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      
+      this->best_ph = ph;
+      this->best_A  = A;
+      this->best_B  = B;
+
+      randomize(best_ph, best_A, best_B);
+      
+      this->best_logp = -INFINITY;
+      iterations = 0;
+    }
+
+    thread_running = true;
+    solution_converged = false;
+    this->observations = observations;
+    this->verbose = verbose;
+    this->MAXITERS = MAXITERS;
+
+    try{
+      if(optimizer_thread){ delete optimizer_thread; optimizer_thread = nullptr; }
+      optimizer_thread = new std::thread(std::bind(&HMM::optimizer_loop, this));
+    }
+    catch(std::exception& e){
+      thread_running = false;
+      optimizer_thread = nullptr;
+      return false;
+    }
+    
+    return true;
+  }
+  
+  
+  // returns true if optimizer thread is running
+  bool HMM::isRunning()
+  {
+    std::lock_guard<std::mutex> lock(thread_mutex);
+    
+    if(thread_running && optimizer_thread != nullptr)
+      return true;
+    else
+      return false;
+  }
+
+  /**
+   * returns current log(probability) of training data
+   */
+  double HMM::getSolutionGoodness()
+  {
+    return best_logp;
+  }
+
+  /**
+   * Stops background thread for computation.
+   */
+  bool HMM::stopTrain()
+  {
+    std::lock_guard<std::mutex> lock(thread_mutex);
+
+    if(thread_running == false)
+      return false;
+
+    thread_running = false;
+
+    if(optimizer_thread){
+      optimizer_thread->join();
+      delete optimizer_thread;
+    }
+
+    optimizer_thread = nullptr;
+
+    return true;
+  }
+
+
+  void HMM::optimizer_loop()
+  {
+    try
+    {
+      std::list<realnumber> pdata;
+      realnumber plast(0.0, precision);
+      
+      linear_ETA<float> eta;
+      iterations = 0;
+      eta.start((float)iterations, (float)MAXITERS);
+
+      solution_mutex.lock();
+      std::vector< whiteice::math::realnumber > ph = best_ph;
+      std::vector< std::vector< whiteice::math::realnumber > > A = best_A;
+      std::vector< std::vector< std::vector< whiteice::math::realnumber > > > B = best_B;
+      solution_mutex.unlock();
+
+      
+      
+      while(thread_running &&
+	    (MAXITERS == 0 || iterations < MAXITERS) &&
+	    solution_converged == false)
+	{
+	  
+	  // keeps calculating EM-algorithm for parameter estimation
+	  
+	  // first calculates alpha and beta
+	  const unsigned int T = observations.size();
+	  std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
+	  
+	  for(auto& a : alpha){
+	    a.resize(numHidden);
+	    for(auto& ai : a)
+	      ai.setPrecision(precision);
+	    a = ph;
+	  }
+	  
+	  // forward procedure (alpha)
+	  for(unsigned int t=1;t<=T;t++){
+	    auto& a  = alpha[t-1];
+	    auto& an = alpha[t];
+	    auto& o  = observations[t-1];
+	    
+	    for(unsigned int j=0;j<an.size();j++){
+	      an[j] = 0.0;
+	      for(unsigned int i=0;i<a.size();i++){
+		
+		if(o >= B[i][j].size()){
+		  char buffer[128];
+		  sprintf(buffer,
+			  "HMM::train() - alpha calculations: observed state out range (%d)", o);
+		  throw std::invalid_argument(buffer);
+		}
+		
+		an[j] += a[i]*A[i][j]*B[i][j][o];
+	      }
+	    }
+	  }
+	  
+	  for(auto& b : beta){
+	    b.resize(numHidden);
+	    for(auto& bi : b){
+	      bi.setPrecision(precision);
+	      bi = 1.0;
+	    }
+	  }
+	  
+	  // backward procedure (beta)
+	  for(unsigned int t=T;t>=1;t--){
+	    auto& b  = beta[t];
+	    auto& bp = beta[t-1];
+	    auto& o  = observations[t-1];
+	    
+	    for(unsigned int i=0;i<numHidden;i++){
+	      bp[i] = 0.0;
+	      for(unsigned int j=0;j<numHidden;j++){
+		
+		if(o >= B[i][j].size()){
+		  char buffer[128];
+		  sprintf(buffer,
+			  "HMM::train() - beta calculations: observed state out range (%d)", o);
+		  throw std::invalid_argument(buffer);
+		}
+
+		bp[i] += A[i][j] * B[i][j][o] * b[j];
+	      }
+	    }
+	  }
+	  
+	  // now we have both alpha and beta and we calculate p
+	  std::vector< std::vector < std::vector<realnumber> > > p(T);
+	  
+	  for(auto& pij : p){
+	    pij.resize(numHidden);
+	    for(auto& pj : pij){
+	      pj.resize(numHidden);
+	      for(auto& v: pj){
+		v.setPrecision(precision);
+		v = 0.0;
+	      }
+	    }
+	  }
+	  
+#pragma omp parallel for schedule(auto)
+	  for(unsigned int t=1;t<=T;t++){
+	    realnumber ab(0.0, precision);
+	    
+	    // divisor
+	    for(unsigned int m=0;m<numHidden;m++)
+	      ab += alpha[t-1][m]*beta[t-1][m];
+	    
+	    realnumber zero(0.0, precision);
+	    
+	    if(ab == zero){
+	      throw std::invalid_argument("HMM::train() - out of floating point precision\n");
+	    }
+	    
+	    auto& pt = p[t-1];
+	    auto& o  = observations[t-1];
+	    
+	    for(unsigned int i=0;i<numHidden;i++){
+	      for(unsigned int j=0;j<numHidden;j++){
+		
+		if(o >= B[i][j].size()){
+		  char buffer[128];
+		  sprintf(buffer,
+			  "HMM::train() - p(i,j) calculations: observed state out range (%d)", o);
+		  throw std::invalid_argument(buffer);
+		}
+		
+		pt[i][j] = alpha[t-1][i] * A[i][j] * B[i][j][o] * beta[t][j];
+		pt[i][j] /= ab;
+	      }
+	    }
+	  }
+	  
+	  
+	  // now we have p[t][i][j] and we calculate y[t][i]
+	  std::vector< std::vector<realnumber> > y(T);
+	  
+	  for(auto& yt : y){
+	    yt.resize(numHidden);
+	    for(auto& yti : yt){
+	      yti.setPrecision(precision);
+	      yti = 0.0;
+	    }
+	  }
+	  
+#pragma omp parallel for schedule(auto)
+	  for(unsigned int t=1;t<=T;t++){
+	    for(unsigned int i=0;i<numHidden;i++){
+	      auto& yti = y[t-1][i];
+	      yti = 0.0;
+	      
+	      for(unsigned int j=0;j<numHidden;j++){
+		yti += p[t-1][i][j];
+	      }
+	    }
+	  }
+	  
+	  //////////////////////////////////////////////////////////////////////
+	  // now we can calculate new parameter values based on EM
+      
+	  // pi
+#pragma omp parallel for schedule(auto)
+	  for(unsigned int i=0;i<numHidden;i++){
+	    const unsigned int t = 1;
+	    ph[i] = y[t-1][i];
+	  }
+	  
+	  // state transitions A[i][j]
+#pragma omp parallel for schedule(auto)
+	  for(unsigned int i=0;i<numHidden;i++){
+	    for(unsigned int j=0;j<numHidden;j++){
+	      
+	      realnumber sp(0.0, precision);
+	      realnumber sy(0.0, precision);
+	      
+	      for(unsigned int t=1;t<=T;t++){
+		sp += p[t-1][i][j];
+		sy += y[t-1][i];
+	      }
+	      
+	      A[i][j] = sp/sy;
+	    }
+	  }
+	  
+	  // visible state probabilities B[i][j][k]
+#pragma omp parallel for schedule(auto)
+	  for(unsigned int i=0;i<numHidden;i++){
+	    for(unsigned int j=0;j<numHidden;j++){
+	      for(unsigned int k=0;k<numVisible;k++){
+		realnumber spk(0.0, precision);
+		realnumber sp(0.0, precision);
+		
+		for(unsigned int t=1;t<=T;t++){
+		  if(observations[t-1] == k) spk += p[t-1][i][j];
+		  sp += p[t-1][i][j];
+		}
+		
+		B[i][j][k] = spk/sp;
+	      }
+	    }
+	  }
+	  
+	  // now we have new parameters: A, B, ph
+	  // still calculates probability of observations [using previous parameter values]
+	  // as E[p(o)] = p(observations)**(1/length(observations)) is used to measure convergence
+	  
+	  realnumber po(0.0, precision);
+	  for(unsigned int i=0;i<numHidden;i++){
+	    const unsigned int t = T+1;
+	    po += alpha[t-1][i];
+	  }
+	  po = pow(po, 1.0/((double)observations.size()));
+	  
+	  plast = po;
+	  pdata.push_back(po);
+	  
+	  iterations++;
+	  eta.update((float)iterations);
+
+	  {
+	    auto logp = log(po).getDouble();
+
+	    if(logp > best_logp){
+	      best_ph = ph;
+	      best_A = A;
+	      best_B = B;
+	      best_logp = logp;
+	    }
+	  }
+
+	  if(verbose)
+	  {
+	    printf("ITER %d. Log(probability) = %f [ETA %f minutes]\n",
+		   iterations, log(po).getDouble(), eta.estimate()/60.0f);
+	    fflush(stdout);
+	  }
+	  
+	  
+	  // estimates convergence
+	  {
+	    if(pdata.size() < 10)
+	      continue; // needs at least 10 data points
+	    
+	    while(pdata.size() > 30)
+	      pdata.pop_front();
+	    
+	    // calculates mean and st.dev. and decides for convergence if st.dev/mean <= 0.05
+	    // (works for positive values)
+	    
+	    realnumber m(0.0, precision);
+	    realnumber s(0.0, precision);
+	    
+	    for(auto& p : pdata){
+	      m += p;
+	      s += (p*p);
+	    }
+	    
+	    m /= (double)pdata.size();
+	    s /= (double)pdata.size();
+	    
+	    s -= m*m;
+	    
+	    s = abs(s);
+	    s = sqrt(s);
+	    
+	    auto r = s/m;
+	    
+	    if(r.getDouble() <= 0.0000001){
+	      solution_converged = true;
+	    }
+	  }
+	}
+    }
+    catch(std::exception& e){
+      thread_running = false;
+      return;
+    }
+
+    
+    {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      
+      this->ph = best_ph;
+      this->A  = best_A;
+      this->B  = best_B;
+    
+      normalize_parameters();
+    }
+    
+    thread_running = false;
+  }
+  
   
   /**
    * samples given length observation stream from HMM
@@ -1144,6 +1557,13 @@ namespace whiteice {
 
   // normalizes parameters by ordering hidden states according to probabilities
   void HMM::normalize_parameters()
+  {
+    this->normalize_parameters(ph, A, B);
+  }
+  
+  void HMM::normalize_parameters(std::vector< whiteice::math::realnumber >& ph,
+				 std::vector< std::vector< whiteice::math::realnumber > >& A,
+				 std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& B) const
   {
     auto newA = A;
     auto newP = ph;

@@ -15,6 +15,7 @@
 
 #include "Mixture.h"
 #include "EnsembleMeans.h"
+#include "KMeans.h"
 
 #include "dataset.h"
 #include "dinrhiw_blas.h"
@@ -53,6 +54,7 @@
 #include "hermite.h"
 
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <ctime>
 #include <new>
@@ -81,7 +83,6 @@ extern "C" {
 }
 
 
-using namespace whiteice;
 using namespace whiteice;
 
 
@@ -135,6 +136,7 @@ void simple_tsne_test();
 
 void simple_global_optimum_test();
 
+void kmeans_test();
 
 void compressed_neuralnetwork_test();
 
@@ -167,6 +169,10 @@ int main()
     // nngraddescent_complex_test();
 
     // nnetwork_complex_test(); // works about correctly
+
+    kmeans_test();
+
+    exit(0);
 
     nnetwork_gradient_test(); // gradient calculation works
 
@@ -304,6 +310,89 @@ private:
   char* reason;
   
 };
+
+/************************************************************/
+
+void kmeans_test()
+{
+  std::cout << "K-Means clustering test" << std::endl;
+
+  // three cluster test
+  {
+    std::vector< math::vertex<> > data;
+    whiteice::RNG<> rng;
+
+    const unsigned int DIM = 2; // + rand() % 10;
+    math::vertex<> mean[3], x;
+    x.resize(DIM);
+
+    
+    for(unsigned int k=0;k<3;k++){
+      mean[k].resize(DIM);
+      rng.normal(mean[k]);
+      mean[k] *= 10.0f;
+      
+      for(unsigned int i=0;i<100;i++){
+	rng.normal(x);
+	x += mean[k];
+	data.push_back(x);
+      }
+      
+    }
+
+    whiteice::KMeans<> kmeans;
+
+    assert(kmeans.startTrain(3, data));
+
+    while(kmeans.isRunning()){
+      std::cout << "K-Means clustering error: " << kmeans.getSolutionError() << std::endl;
+      sleep(1);
+    }
+
+    kmeans.stopTrain();
+    std::cout << "K-Means clustering error: " << kmeans.getSolutionError() << std::endl;
+
+    std::cout << "Found means: " << std::endl;
+    std::cout << "K = " << kmeans.size() << std::endl;
+    for(unsigned int i=0;i<kmeans.size();i++){
+      std::cout << kmeans[i] << std::endl;
+    }
+
+    std::cout << "Data means: " << std::endl;
+    for(unsigned int i=0;i<kmeans.size();i++){
+      std::cout << mean[i] << std::endl;
+    }
+
+    // save data for plotting clustering results
+    std::ofstream outfile[3];
+    outfile[0].open("cluster1.txt");
+    outfile[1].open("cluster2.txt");
+    outfile[2].open("cluster3.txt");
+
+    for(unsigned int i=0;i<data.size();i++){
+      const unsigned int index = kmeans.getClusterIndex(data[i]);
+
+      if(index < 3){
+	for(unsigned int n=0;n<data[i].size();n++)
+	  outfile[index] << data[i][n] << " ";
+	outfile[index] << std::endl;
+      }
+      
+    }
+
+    outfile[0].close();
+    outfile[1].close();
+    outfile[2].close();
+  }
+
+  // save()&load() TEST
+  {
+    std::cout << "K-Means save()&load() test." << std::endl;
+
+    assert(0);
+  }
+  
+}
 
 /************************************************************/
 
