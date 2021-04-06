@@ -411,8 +411,13 @@ void kmeans_test()
 	x += mean[k];
 	data.push_back(x);
       }
+
+      // std::cout << "mean(" << k << ") = " << mean[k] << std::endl;
     }
 
+    kmeans.learn(3, data);
+    
+    /*
     assert(kmeans.startTrain(3, data));
 
     while(kmeans.isRunning()){
@@ -420,6 +425,7 @@ void kmeans_test()
     }
 
     kmeans.stopTrain();
+    */
 
     assert(kmeans.save("kmeans.dat") == true);
     assert(kmeans2.load("kmeans.dat") == true);

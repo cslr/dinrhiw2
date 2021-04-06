@@ -44,19 +44,19 @@ namespace whiteice
     void randomize(std::vector< whiteice::math::vertex<T> >& kmeans,
 		   const std::vector< whiteice::math::vertex<T> >& data) const;
     
-    bool learn(unsigned int k,
+    bool learn(const unsigned int k,
 	       std::vector< std::vector<T> >& data) ;
     
-    bool learn(unsigned int k,
+    bool learn(const unsigned int k,
 	       std::vector< whiteice::math::vertex<T> >& data) ;
 
     /**
      * starts internal thread for computing the results
      */
-    bool startTrain(unsigned int K,
+    bool startTrain(const unsigned int K,
 		    std::vector< whiteice::math::vertex<T> >& data);
 
-    bool startTrain(unsigned int K,
+    bool startTrain(const unsigned int K,
 		    std::vector< std::vector<T> >& data);
 
     // returns true if optimizer thread is running

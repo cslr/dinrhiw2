@@ -376,272 +376,32 @@ namespace whiteice
   
   
   template <typename T>
-  bool KMeans<T>::learn(unsigned int k,
+  bool KMeans<T>::learn(const unsigned int k,
 			std::vector<std::vector<T> >& data) 
   {
-    try{
-      if(data.size() < 1) return false;
-      kmeans.resize(k);
-      
-      // initialization of k-means by picking one
-      // one data vector randomly
-      
-      for(unsigned int i=0;i<kmeans.size();i++){
-	kmeans[i].resize(data[0].size());
-	
-	const unsigned int index = rng.rand() % data.size();
-	
-	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  kmeans[i][j] = data[index][j];
-	}
-      } // random initialization done
+    if(this->startTrain(k, data) == false) return false;
 
-      
-      unsigned int maxstep = 100*data.size();
-      
-      if(samplesetsize)
-	maxstep = samplesetsize;
-      
-      
-      T min_error, e;
-      unsigned int winner;
-      
-      typename std::vector< math::vertex<T> >::iterator j;
-      unsigned int means_index;
-      
-      
-      if(goodmode){
-	// divides data into two equal sized sets and
-	// calculates 100 iterations of kmeans
-	// algorithm and then checks if results in
-	// not-used set has improved (1000 sample aprox error)
-	
-	unsigned int learning_failures = 0;
-	
-	// calculates aprox error from the latter part of data
-	T tr_error = second_half_error(data);
-	
-	while(learning_failures < 3){	  
-	  
-	  for(unsigned int i=0;i<100;i++){
-	    // uses only the first part of data 
-	    unsigned int index = rng.rand() % (data.size()/2);
-	    
-	    // finds closest k-mean vector
-	    min_error = calc_distance(kmeans[0], data[index]);
-	    winner = 0;
-	    
-	    j = kmeans.begin(); j++;
-	    means_index = 1;
-	    
-	    while(j != kmeans.end()){
-	      e = calc_distance(*j, data[index]);
-	      
-	      if(e < min_error){
-		min_error = e;
-		winner = means_index;
-	      }
-	      
-	      means_index++;
-	      j++;
-	    }
-	    
-	    const unsigned int len = kmeans[winner].size();      
-	    
-	    // moves winner vector towards data point      
-	    for(unsigned int j=0;j<len;j++){
-	      kmeans[winner][j] += learning_rate *
-		(data[index][j] - kmeans[winner][j]);
-	    }
-	  }
-	  
-	  T tmp = second_half_error(data);
-	  if(tmp > tr_error)
-	    learning_failures++;
-	  else{
-	    tr_error = tmp;
-	    learning_failures = 0;
-	  }
-	  
-	}
-	
-      }
-      else{
+    while(this->isRunning())
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    
+    this->stopTrain();
 
-	for(unsigned int i=0;i<maxstep;i++){
-	  unsigned int index = rng.rand() % data.size();
-	  
-	  // finds closest k-mean vector
-	  
-	  min_error = calc_distance(kmeans[0], data[index]);
-	  winner = 0;
-	  
-	  j = kmeans.begin(); j++;
-	  means_index = 1;
-	  
-	  while(j != kmeans.end()){
-	    e = calc_distance(*j, data[index]);
-	    
-	    if(e < min_error){
-	      min_error = e;
-	      winner = means_index;
-	    }
-	    
-	    means_index++;
-	    j++;
-	  }
-	
-	  const unsigned int len = kmeans[winner].size();      
-	  
-	  // moves winner vector towards data point      
-	  for(unsigned int j=0;j<len;j++){
-	    kmeans[winner][j] += learning_rate *
-	      (data[index][j] - kmeans[winner][j]);
-	  }
-	  
-	}	
-	
-      }
-      
-      return true;
-    }
-    catch(std::exception& e){
-      return false;
-    }
+    return true;
   }
   
   
   
   template <typename T>
-  bool KMeans<T>::learn(unsigned int k, std::vector< whiteice::math::vertex<T> >& data) 
+  bool KMeans<T>::learn(const unsigned int k, std::vector< whiteice::math::vertex<T> >& data) 
   {
-    try{
-      if(data.size() < 1) return false;
-      kmeans.resize(k);
+    if(this->startTrain(k, data) == false) return false;
 
-      // initialization of k-means by picking one
-      // one data vector randomly
-      
-      for(unsigned int i=0;i<kmeans.size();i++){
-	kmeans[i].resize(data[0].size());
+    while(this->isRunning())
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-	const unsigned int index = rng.rand() % data.size();
+    this->stopTrain();
 
-	for(unsigned int j=0;j<kmeans[i].size();j++){
-	  kmeans[i][j] = data[index][j];
-	}
-      } // random initialization done
-
-      
-      unsigned int maxstep = 100*data.size();
-      
-      if(samplesetsize)
-	maxstep = samplesetsize;
-      
-      
-      T min_error, e;
-      unsigned int winner;
-      
-      typename std::vector< math::vertex<T> >::iterator j;
-      unsigned int means_index;
-      
-      
-      if(goodmode){
-	// divides data into two equal sized sets and
-	// calculates 100 iterations of kmeans
-	// algorithm and then checks if results in
-	// not-used set has improved (1000 sample aprox error)
-	
-	unsigned int learning_failures = 0;
-	T tr_error = second_half_error(data); // calculates aprox error from the latter part of data
-	
-	while(learning_failures < 3){	  
-	  
-	  for(unsigned int i=0;i<100;i++){
-	    // uses the first part of data 
-	    unsigned int index = rng.rand() % (data.size()/2);
-	    
-	    // finds closest k-mean vector
-	    min_error = calc_distance(kmeans[0], data[index]);
-	    winner = 0;
-	    
-	    j = kmeans.begin(); j++;
-	    means_index = 1;
-	    
-	    while(j != kmeans.end()){
-	      e = calc_distance(*j, data[index]);
-	      
-	      if(e < min_error){
-		min_error = e;
-		winner = means_index;
-	      }
-	      
-	      means_index++;
-	      j++;
-	    }
-	    
-	    const unsigned int len = kmeans[winner].size();      
-	    
-	    // moves winner vector towards data point      
-	    for(unsigned int j=0;j<len;j++){
-	      kmeans[winner][j] += learning_rate *
-		(data[index][j] - kmeans[winner][j]);
-	    }
-	  }
-	  
-	  T tmp = second_half_error(data);
-	  if(tmp > tr_error)
-	    learning_failures++;
-	  else{
-	    tr_error = tmp;
-	    learning_failures = 0;
-	  }
-	  
-	}
-	
-      }
-      else{
-
-	for(unsigned int i=0;i<maxstep;i++){
-	  unsigned int index = rng.rand() % data.size();
-	  
-	  // finds closest k-mean vector
-	  
-	  min_error = calc_distance(kmeans[0], data[index]);
-	  winner = 0;
-	  
-	  j = kmeans.begin(); j++;
-	  means_index = 1;
-	  
-	  while(j != kmeans.end()){
-	    e = calc_distance(*j, data[index]);
-	    
-	    if(e < min_error){
-	      min_error = e;
-	      winner = means_index;
-	    }
-	    
-	    means_index++;
-	    j++;
-	  }
-	
-	  const unsigned int len = kmeans[winner].size();      
-	  
-	  // moves winner vector towards data point      
-	  for(unsigned int j=0;j<len;j++){
-	    kmeans[winner][j] += learning_rate *
-	      (data[index][j] - kmeans[winner][j]);
-	  }
-	  
-	}	
-	
-      }
-      
-      return true;
-    }
-    catch(std::exception& e){
-      return false;
-    }
+    return true;
   }
 
 
@@ -649,7 +409,7 @@ namespace whiteice
    * starts internal thread for computing the results
    */
   template <typename T>
-  bool KMeans<T>::startTrain(unsigned int K,
+  bool KMeans<T>::startTrain(const unsigned int K,
 			     std::vector< whiteice::math::vertex<T> >& data)
   {
     if(K < 1 || data.size() == 0) return false;
@@ -693,7 +453,7 @@ namespace whiteice
   }
 
   template <typename T>
-  bool KMeans<T>::startTrain(unsigned int K,
+  bool KMeans<T>::startTrain(const unsigned int K,
 			     std::vector< std::vector<T> >& data)
   {
     if(K <= 0) return false;
