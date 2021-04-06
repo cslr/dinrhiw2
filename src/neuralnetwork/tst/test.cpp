@@ -389,7 +389,56 @@ void kmeans_test()
   {
     std::cout << "K-Means save()&load() test." << std::endl;
 
-    assert(0);
+    whiteice::KMeans<> kmeans;
+    whiteice::KMeans<> kmeans2;
+
+    // three cluster test
+    std::vector< math::vertex<> > data;
+    whiteice::RNG<> rng;
+
+    const unsigned int DIM = 2; // + rand() % 10;
+    math::vertex<> mean[3], x;
+    x.resize(DIM);
+
+    
+    for(unsigned int k=0;k<3;k++){
+      mean[k].resize(DIM);
+      rng.normal(mean[k]);
+      mean[k] *= 10.0f;
+      
+      for(unsigned int i=0;i<100;i++){
+	rng.normal(x);
+	x += mean[k];
+	data.push_back(x);
+      }
+    }
+
+    assert(kmeans.startTrain(3, data));
+
+    while(kmeans.isRunning()){
+      sleep(1);
+    }
+
+    kmeans.stopTrain();
+
+    assert(kmeans.save("kmeans.dat") == true);
+    assert(kmeans2.load("kmeans.dat") == true);
+
+    if(kmeans.size() != kmeans2.size()){
+      std::cout << "ERROR: size of clusters mismatch after load()" << std::endl;
+      return;
+    }
+
+    for(unsigned int i=0;i<kmeans.size();i++){
+      auto delta = kmeans[i] - kmeans2[i];
+
+      if(delta.norm() > 0.0){
+	std::cout << "ERROR: cluster mean mismatch after load()" << std::endl;
+	return;
+      }
+    }
+
+    std::cout << "K-Means save()&load() test PASSED." << std::endl;
   }
   
 }
