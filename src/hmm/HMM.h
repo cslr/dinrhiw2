@@ -201,6 +201,13 @@ namespace whiteice {
 
     // samples variable i according to probability p(i)
     unsigned int sample(const std::vector<math::realnumber>& p) const;
+
+    // returns initial hidden state from which start reading observations using next_state()
+    unsigned int sampleInitialHiddenState() const{
+      return this->sample(this->getPI());
+    }
+
+
     
   };
   

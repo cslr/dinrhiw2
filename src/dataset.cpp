@@ -1650,7 +1650,18 @@ namespace whiteice
 
     return clusters[cluster].data[data];
   }
-  
+
+  template <typename T>
+  math::vertex<T>& dataset<T>::access(unsigned int cluster, unsigned int data)
+  {
+    if(cluster >= clusters.size())
+      throw std::out_of_range("dataset::access(): cluster index out of range");
+    
+    if(data >= clusters[cluster].data.size())
+      throw std::out_of_range("dataset::access(): data index out of range");
+    
+    return clusters[cluster].data[data];
+  }
   
   template <typename T>
   const math::vertex<T>& dataset<T>::accessName(const std::string& clusterName, unsigned int dataElem) 

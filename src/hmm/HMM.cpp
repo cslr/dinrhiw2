@@ -1072,6 +1072,10 @@ namespace whiteice {
 	    s = sqrt(s);
 	    
 	    auto r = s/m;
+
+	    if(verbose){
+	      std::cout << "Convergence ratio: " << r << std::endl;
+	    }
 	    
 	    if(r.getDouble() <= 0.0000001){
 	      solution_converged = true;
