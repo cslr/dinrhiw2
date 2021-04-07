@@ -1074,10 +1074,10 @@ namespace whiteice {
 	    auto r = s/m;
 
 	    if(verbose){
-	      std::cout << "Convergence ratio: " << r << std::endl;
+	      std::cout << "HMM convergence ratio: " << r.getDouble() << std::endl;
 	    }
 	    
-	    if(r.getDouble() <= 0.0000001){
+	    if(r.getDouble() <= 0.01){
 	      solution_converged = true;
 	    }
 	  }
