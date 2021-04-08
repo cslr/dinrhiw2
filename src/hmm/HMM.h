@@ -130,14 +130,35 @@ namespace whiteice {
     double logprobability(const std::vector<unsigned int>& observations) const;
 
     
-    std::vector< whiteice::math::realnumber >& getPI(){ return ph; }
-    const std::vector< whiteice::math::realnumber >& getPI() const { return ph; }
+    std::vector< whiteice::math::realnumber >& getPI(){
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return ph;
+    }
+    
+    const std::vector< whiteice::math::realnumber >& getPI() const {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return ph;
+    }
 
-    std::vector< std::vector< whiteice::math::realnumber > >& getA(){ return A; }
-    const std::vector< std::vector< whiteice::math::realnumber > >& getA() const { return A; }
-
-    std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() { return B; }
-    const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const { return B; }
+    std::vector< std::vector< whiteice::math::realnumber > >& getA(){
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return A;
+    }
+    
+    const std::vector< std::vector< whiteice::math::realnumber > >& getA() const {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return A;
+    }
+    
+    std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return B;
+    }
+    
+    const std::vector< std::vector< std::vector< whiteice::math::realnumber > > >& getB() const {
+      std::lock_guard<std::mutex> lock(solution_mutex);
+      return B;
+    }
 
     unsigned int getNumVisibleStates() const  { return numVisible; }
     unsigned int getNumHiddenStates() const  { return numHidden; }
@@ -161,7 +182,7 @@ namespace whiteice {
     void optimizer_loop();
 
     std::thread* optimizer_thread = nullptr;
-    std::mutex thread_mutex, solution_mutex;
+    mutable std::mutex thread_mutex, solution_mutex;
     bool thread_running = false;
     bool solution_converged = false;
 
