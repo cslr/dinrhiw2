@@ -807,6 +807,8 @@ namespace whiteice {
   {
     try
     {
+      // uses Baum-Welch algorithm
+      
       std::list<realnumber> pdata;
       realnumber plast(0.0, precision);
       
@@ -828,6 +830,11 @@ namespace whiteice {
 	{
 	  
 	  // keeps calculating EM-algorithm for parameter estimation
+
+	  if(verbose){
+	    printf("HMM loop start\n");
+	    fflush(stdout);
+	  }
 	  
 	  // first calculates alpha and beta
 	  const unsigned int T = observations.size();
@@ -838,6 +845,11 @@ namespace whiteice {
 	    for(auto& ai : a)
 	      ai.setPrecision(precision);
 	    a = ph;
+	  }
+
+	  if(verbose){
+	    printf("ai init done\n");
+	    fflush(stdout);
 	  }
 	  
 	  // forward procedure (alpha)
@@ -862,12 +874,22 @@ namespace whiteice {
 	    }
 	  }
 	  
+	  if(verbose){
+	    printf("alpha forward procedure done\n");
+	    fflush(stdout);
+	  }
+	  
 	  for(auto& b : beta){
 	    b.resize(numHidden);
 	    for(auto& bi : b){
 	      bi.setPrecision(precision);
 	      bi = 1.0;
 	    }
+	  }
+
+	  if(verbose){
+	    printf("b init done\n");
+	    fflush(stdout);
 	  }
 	  
 	  // backward procedure (beta)
@@ -891,6 +913,11 @@ namespace whiteice {
 	      }
 	    }
 	  }
+
+	  if(verbose){
+	    printf("beta backward procedure done\n");
+	    fflush(stdout);
+	  }
 	  
 	  // now we have both alpha and beta and we calculate p
 	  std::vector< std::vector < std::vector<realnumber> > > p(T);
@@ -904,6 +931,11 @@ namespace whiteice {
 		v = 0.0;
 	      }
 	    }
+	  }
+
+	  if(verbose){
+	    printf("p calc done\n");
+	    fflush(stdout);
 	  }
 	  
 #pragma omp parallel for schedule(auto)
@@ -938,6 +970,11 @@ namespace whiteice {
 	      }
 	    }
 	  }
+
+	  if(verbose){
+	    printf("pt calc done\n");
+	    fflush(stdout);
+	  }
 	  
 	  
 	  // now we have p[t][i][j] and we calculate y[t][i]
@@ -949,6 +986,11 @@ namespace whiteice {
 	      yti.setPrecision(precision);
 	      yti = 0.0;
 	    }
+	  }
+
+	  if(verbose){
+	    printf("yti init done\n");
+	    fflush(stdout);
 	  }
 	  
 #pragma omp parallel for schedule(auto)
@@ -963,6 +1005,11 @@ namespace whiteice {
 	    }
 	  }
 	  
+	  if(verbose){
+	    printf("yti calc done\n");
+	    fflush(stdout);
+	  }
+	  
 	  //////////////////////////////////////////////////////////////////////
 	  // now we can calculate new parameter values based on EM
       
@@ -971,6 +1018,11 @@ namespace whiteice {
 	  for(unsigned int i=0;i<numHidden;i++){
 	    const unsigned int t = 1;
 	    ph[i] = y[t-1][i];
+	  }
+
+	  if(verbose){
+	    printf("ph calc done\n");
+	    fflush(stdout);
 	  }
 	  
 	  // state transitions A[i][j]
@@ -988,6 +1040,11 @@ namespace whiteice {
 	      
 	      A[i][j] = sp/sy;
 	    }
+	  }
+	  
+	  if(verbose){
+	    printf("A calc done\n");
+	    fflush(stdout);
 	  }
 	  
 	  // visible state probabilities B[i][j][k]
@@ -1008,6 +1065,11 @@ namespace whiteice {
 	    }
 	  }
 	  
+	  if(verbose){
+	    printf("B calc done\n");
+	    fflush(stdout);
+	  }
+	  
 	  // now we have new parameters: A, B, ph
 	  // still calculates probability of observations [using previous parameter values]
 	  // as E[p(o)] = p(observations)**(1/length(observations)) is used to measure convergence
@@ -1018,6 +1080,11 @@ namespace whiteice {
 	    po += alpha[t-1][i];
 	  }
 	  po = pow(po, 1.0/((double)observations.size()));
+
+	  if(verbose){
+	    printf("po calc done\n");
+	    fflush(stdout);
+	  }
 	  
 	  plast = po;
 	  pdata.push_back(po);
@@ -1026,7 +1093,7 @@ namespace whiteice {
 	  eta.update((float)iterations);
 
 	  {
-	    auto logp = log(po).getDouble();
+	    auto logp = log(abs(po)).getDouble();
 
 	    if(logp > best_logp){
 	      best_ph = ph;
@@ -1067,9 +1134,17 @@ namespace whiteice {
 	    s /= (double)pdata.size();
 	    
 	    s -= m*m;
+
+            if(verbose){
+	      printf("m ,s calc done\n");
+	      fflush(stdout);
+	    }
 	    
 	    s = abs(s);
 	    s = sqrt(s);
+
+	    if(m == 0.0)
+	      m = 1e-9;
 	    
 	    auto r = s/m;
 
@@ -1079,6 +1154,11 @@ namespace whiteice {
 	    
 	    if(r.getDouble() <= 0.01){
 	      solution_converged = true;
+	    }
+	    
+	    if(verbose){
+	      printf("solution_converged=%d calc done\n", (int)solution_converged);
+	      fflush(stdout);
 	    }
 	  }
 	}

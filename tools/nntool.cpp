@@ -3,7 +3,7 @@
  * a feedforward neural network
  * optimizer command line tool.
  * 
- * (C) Copyright Tomas Ukkonen 2004, 2005, 2014-2020
+ * (C) Copyright Tomas Ukkonen 2004, 2005, 2014-2021
  *
  *************************************************************
  * 
@@ -35,8 +35,8 @@
 #include "argparser.tab.h"
 #include "cpuid_threads.h"
 
+#ifndef _WIN32
 #undef __STRICT_ANSI__
-#include <fenv.h>
 
 // enables floating point exceptions, these are good for debugging 
 // to notice BAD floating point values that come from software bugs..
@@ -56,6 +56,7 @@ extern "C" {
 #endif
   
 }
+#endif
 
 
 void print_usage(bool all);
@@ -112,10 +113,12 @@ int main(int argc, char** argv)
     unsigned int dataSize = 0;
 
     
-#ifdef _GLIBCXX_DEBUG    
+#ifdef _GLIBCXX_DEBUG
+#ifndef _WIN32
     // enables FPU exceptions
     feenableexcept(FE_INVALID |
 		   FE_DIVBYZERO);
+#endif
 #endif
 
     // special value to enable writing to console

@@ -9,9 +9,13 @@
 
 #ifdef _GLIBCXX_DEBUG
 
+#ifndef _WIN32
+
 #undef __STRICT_ANSI__
 #include <float.h>
 #include <fenv.h>
+
+#endif
 
 #endif
 
@@ -333,11 +337,13 @@ namespace whiteice
     template <typename T>
     void LBFGS<T>::optimizer_loop()
     {
-#ifdef _GLIBCXX_DEBUG      
+#ifdef _GLIBCXX_DEBUG  
+#ifndef _WIN32    
       {
 	// enables FPU exceptions
 	feenableexcept(FE_INVALID | FE_DIVBYZERO);
       }
+#endif
 #endif
       
       vertex<T> d, g; // gradient
