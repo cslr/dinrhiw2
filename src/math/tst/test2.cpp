@@ -90,12 +90,13 @@ void test_superresolution()
   {
     
     // creates random numbers and test + and - operations function correctly
-    const unsigned int BASIS_SIZE = 7;
 
     class whiteice::math::superresolution< whiteice::math::blas_real<float>,
 					   whiteice::math::modular<unsigned int> >
       A, B;
 
+    const unsigned int BASIS_SIZE = A.size(); // was: 7
+    
     whiteice::math::vertex<> av(BASIS_SIZE), bv(BASIS_SIZE);
     whiteice::RNG< whiteice::math::blas_real<float> > prng;
 
@@ -491,7 +492,7 @@ void test_pca_tests()
     // generates random data and calculates PCA via EVD and 
     // through FastPCA and compares the results
     
-    const unsigned int DIMENSIONS =  100; // initial testing case
+    const unsigned int DIMENSIONS =  50; // initial testing case
     
     std::vector< math::vertex<> > data;
     

@@ -71,7 +71,8 @@ namespace whiteice {
      */
     double train(const std::vector<unsigned int>& observations,
 		 const unsigned int MAXITERS = 1000,
-		 const bool verbose = true);
+		 const bool verbose = true,
+		 const double CONV_LIMIT = 0.01);
 
     /**
      * Starts background thread for computation:
@@ -82,9 +83,10 @@ namespace whiteice {
      *
      */
     bool startTrain(const std::vector<unsigned int>& observations,
-		 const unsigned int MAXITERS = 1000,
-		 const bool verbose = true);
-
+		    const unsigned int MAXITERS = 1000,
+		    const bool verbose = true,
+		    const double CONV_LIMIT = 0.01);
+    
     // returns true if optimizer thread is running
     bool isRunning();
 
@@ -185,6 +187,7 @@ namespace whiteice {
     mutable std::mutex thread_mutex, solution_mutex;
     bool thread_running = false;
     bool solution_converged = false;
+    double convergence_limit = 0.01;
 
     unsigned int iterations = 0;
     unsigned int MAXITERS = 1000;

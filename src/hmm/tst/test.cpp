@@ -74,7 +74,7 @@ void hmm_test()
     
     whiteice::HMM hmm2(3, 2);
 
-    hmm2.startTrain(data);
+    hmm2.startTrain(data, 1000, true, 0.0001);
 
     while(hmm2.isRunning()){
       sleep(1);
@@ -204,6 +204,33 @@ void hmm_test()
     
   }
 
+  {
+    printf("HMM - RANDOM LARGE HMM TEST\n");
+    
+    const unsigned int V = rand() % 64 + 50;
+    const unsigned int H = rand() % 16 + 10;
+
+    std::cout << "HMM visible values: " << V << std::endl;
+    std::cout << "HMM hidden values: " << H << std::endl;
+    
+    whiteice::HMM hmm(V, H);
+    whiteice::HMM hmm2(V, H);
+
+    std::vector<unsigned int> data;
+
+    assert(hmm.sample(1000, data) == true);
+
+    hmm2.startTrain(data, 1000, true, 0.0001);
+
+    while(hmm2.isRunning()){
+      sleep(1);
+    }
+
+    hmm2.stopTrain();
+    double r = hmm2.getSolutionGoodness();
+    
+    std::cout  << "HMM solution plog = " << r << std::endl;
+  }
   
 
   {

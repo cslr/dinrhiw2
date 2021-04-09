@@ -432,13 +432,16 @@ namespace whiteice {
    * returns log(probability) of training data
    */
   double HMM::train(const std::vector<unsigned int>& observations,
-		    const unsigned int MAXITERS, const bool verbose)
+		    const unsigned int MAXITERS, const bool verbose,
+		    const double CONV_LIMIT)
   {
     // uses Baum-Welch algorithm
 
     if(MAXITERS == 0) return 0.0;
+    if(CONV_LIMIT <= 0.0) return 0.0;
     
     bool converged = false;
+    this->convergence_limit = CONV_LIMIT;
     std::list<realnumber> pdata;
     unsigned int iteration = 0;
     
@@ -691,7 +694,7 @@ namespace whiteice {
 	
 	auto r = s/m;
 	
-	if(r.getDouble() <= 0.0000001){
+	if(r.getDouble() <= convergence_limit){
 	  converged = true;
 	}
 
@@ -720,9 +723,13 @@ namespace whiteice {
    */
   bool HMM::startTrain(const std::vector<unsigned int>& observations,
 		       const unsigned int MAXITERS,
-		       const bool verbose)
+		       const bool verbose,
+		       const double CONV_LIMIT)
   {
     std::lock_guard<std::mutex> lock(thread_mutex);
+
+    if(CONV_LIMIT <= 0.0)
+      return false;
 
     if(thread_running){
       return false; // thread is already running
@@ -743,6 +750,7 @@ namespace whiteice {
 
     thread_running = true;
     solution_converged = false;
+    convergence_limit = CONV_LIMIT;
     this->observations = observations;
     this->verbose = verbose;
     this->MAXITERS = MAXITERS;
@@ -839,6 +847,7 @@ namespace whiteice {
 	  // first calculates alpha and beta
 	  const unsigned int T = observations.size();
 	  std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
+
 	  
 	  for(auto& a : alpha){
 	    a.resize(numHidden);
@@ -1152,7 +1161,7 @@ namespace whiteice {
 	      std::cout << "HMM convergence ratio: " << r.getDouble() << std::endl;
 	    }
 	    
-	    if(r.getDouble() <= 0.01){
+	    if(r.getDouble() <= convergence_limit){
 	      solution_converged = true;
 	    }
 	    
