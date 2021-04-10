@@ -20,7 +20,7 @@ SOURCES = tst/test.cpp tst/pso_main.cpp tst/somtest.cpp tst/gene_main.cpp tst/st
 	stackedRBM_pretraining.cpp rLBFGS_nnetwork.cpp Mixture.cpp EnsembleMeans.cpp \
 	globaloptimum.cpp \
 	../math/fastpca.cpp ../math/vertex.cpp ../math/matrix.cpp ../dataset.cpp \
-	../math/modular.cpp ../math/superresolution.cpp
+	../math/modular.cpp ../math/superresolution.cpp ../math/quaternion.cpp
 
 OBJECTS= activation_function.o odd_sigmoid.o identity_activation.o multidimensional_gaussian.o \
 	stretched_function.o optimized_function.o \
@@ -42,7 +42,8 @@ EXTRA_OBJECTS = ../math/vertex.o ../math/matrix.o ../math/ownexception.o ../math
 	../dynamic_bitset.o ../math/ica.o ../math/BFGS.o ../math/LBFGS.o ../math/linear_algebra.o \
 	../math/correlation.o ../math/ica.o ../math/linear_equations.o ../math/norms.o ../math/RNG.o \
 	../math/modular.o ../math/superresolution.o \
-	../math/outerproduct.o ../math/fastpca.o ../Log.o ../VisualizationInterface.o
+	../math/outerproduct.o ../math/fastpca.o ../Log.o ../VisualizationInterface.o \
+	../math/quaternion.o
 
 
 TARGET1_OBJECTS=tst/test.o 
@@ -85,8 +86,8 @@ test5: $(TARGET5_OBJECTS) $(OBJECTS) $(EXTRA_OBJECTS)
 
 clean:
 	$(RM) $(OBJECTS)
-	$(RM) $(TARGET1_OBJECTS) $(TARGET2_OBJECTS) $(TARGET3_OBJECTS) $(TARGET4_OBJECTS)
-	$(RM) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4)
+	$(RM) $(TARGET1_OBJECTS) $(TARGET2_OBJECTS) $(TARGET3_OBJECTS) $(TARGET4_OBJECTS) $(TARGET5_OBJECTS)
+	$(RM) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5)
 	$(RM) *~
 
 realclean: clean

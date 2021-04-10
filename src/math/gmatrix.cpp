@@ -21,7 +21,7 @@ namespace whiteice
     
     template <typename T, typename S>
     gmatrix<T,S>::gmatrix(const unsigned int ysize,
-			const unsigned int xsize)
+			  const unsigned int xsize)
     {
       data.resize(ysize);
       

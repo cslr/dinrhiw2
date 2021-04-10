@@ -53,7 +53,7 @@ namespace whiteice
     ~RIFL_abstract() ;
 
     // starts Reinforcement Learning thread
-    bool start();
+      bool start();
 
     // stops Reinforcement Learning thread
     bool stop();

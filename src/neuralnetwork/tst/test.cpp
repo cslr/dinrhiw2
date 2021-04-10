@@ -160,19 +160,17 @@ int main()
   srand(seed);
   
   try{
-    // nnetwork_test();
+    nnetwork_test();
     
-    // simple_vae_test();
+    simple_vae_test();
     
-    // simple_tsne_test();
+    simple_tsne_test();
 
     // nngraddescent_complex_test();
 
     // nnetwork_complex_test(); // works about correctly
 
     kmeans_test();
-
-    exit(0);
 
     nnetwork_gradient_test(); // gradient calculation works
 

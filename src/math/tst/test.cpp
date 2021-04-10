@@ -278,7 +278,6 @@ int main()
     std::cout << "FFT TEST" << std::endl;
     fft_test();
     
-    return 0;
     
     /*  
 	std::cout << "STATISTICS CODE TESTS" << std::endl;
@@ -1326,9 +1325,13 @@ void real_test()
   
   
   for(unsigned int j=0;j<vd.size();j++){
+
+    double tmp = fabs(rd[j].getDouble() - vd[j]);
+#if 0
     realnumber tmp = rd[j];
     tmp -= vd[j];
       tmp.abs();
+#endif
       
       if(tmp > 0.001)
 	std::cout << "error too big: " << tmp << std::endl;

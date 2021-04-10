@@ -117,8 +117,12 @@ namespace whiteice
 	mpf_clear(t3);
 	mpf_clear(t4);
 	mpf_clear(t5);
+
+	realnumber res(d);
+
+	mpf_clear(d);
 	
-	return realnumber(d);
+	return res;
       }
       else{
 
@@ -161,8 +165,12 @@ namespace whiteice
 	  mpf_clear(t4);
 	  mpf_clear(t5);
 	  mpf_clear(d);
+
+	  realnumber res(t2);
+
+	  mpf_clear(t2);
 	  
-	  return realnumber(t2);
+	  return res;
 	}
 	else{
 	  mpf_clear(t);
@@ -170,8 +178,12 @@ namespace whiteice
 	  mpf_clear(t3);
 	  mpf_clear(t4);
 	  mpf_clear(t5);
+
+	  realnumber res(d);
+
+	  mpf_clear(d);
 	  
-	  return realnumber(d);
+	  return res;
 	}
       }
       
@@ -229,8 +241,12 @@ namespace whiteice
       
       mpf_clear(d);
       mpf_clear(t2);
+
+      realnumber res(t);
+
+      mpf_clear(t);
       
-      return realnumber(t);
+      return res;
     }
     
     
@@ -385,9 +401,12 @@ namespace whiteice
       mpf_clear(ck);
       mpf_clear(sk);
       mpf_clear(t);
+
+      realnumber res(pk);
+
+      mpf_clear(pk);
       
-      
-      return realnumber(pk);
+      return res;
     }
     
     

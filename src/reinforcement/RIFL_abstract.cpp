@@ -14,6 +14,13 @@ namespace whiteice
 				  const unsigned int numStates,
 				  const unsigned int dimActionFeatures)
   {
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "RIFL_abstract CTOR called (%d, %d, %d)",
+	       numActions, numStates, dimActionFeatures);
+      whiteice::logging.info(buffer);
+    }
+    
     // initializes parameters
     {
       gamma = T(0.80);
@@ -29,15 +36,19 @@ namespace whiteice
 
     
     // initializes neural network architecture and weights randomly
+    // neural network is deep 6-layer residual neural network
     {
       // wide neural network..
       std::vector<unsigned int> arch;
       arch.push_back(numStates + dimActionFeatures);
-      arch.push_back((numStates + dimActionFeatures)*20);
-      arch.push_back((numStates + dimActionFeatures)*20);
+      arch.push_back(100);
+      arch.push_back(100);
+      arch.push_back(100);
+      arch.push_back(100);
+      arch.push_back(100);
       arch.push_back(1);
 
-      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
+      whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
       nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
@@ -53,10 +64,11 @@ namespace whiteice
 	preprocess.createCluster("output-action", 1);
       }
     }
-    
-    
+
     thread_is_running = 0;
     rifl_thread = nullptr;
+    
+    whiteice::logging.info("RIFL_abstract CTOR finished");
   }
 
   template <typename T>

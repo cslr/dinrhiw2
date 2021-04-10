@@ -576,8 +576,12 @@ namespace whiteice
       mpf_t result;
       mpf_init2(result, mpf_get_prec(r.data));
       mpf_sqrt(result, r.data);
+
+      realnumber res(result);
       
-      return realnumber(result);
+      mpf_clear(result);
+      
+      return res;
     }
     
     
@@ -1456,8 +1460,11 @@ namespace whiteice
       mpf_t result;
       mpf_init2(result, mpf_get_prec(x.data));
       mpf_abs(result, x.data);
+
+      realnumber res(result);
+      mpf_clear(result);
       
-      return realnumber(result);
+      return res;
     }
     
     
@@ -1887,19 +1894,23 @@ namespace whiteice
     inline unsigned int round(unsigned int x){ return x; }
     
     inline realnumber ceil(realnumber x){
-      return realnumber(x).ceil();
+      auto y = x;
+      return y.ceil();
     }
     
     inline realnumber floor(realnumber x){
-      return realnumber(x).floor();
+      auto y = x;
+      return y.floor();
     }
     
     inline realnumber trunc(realnumber x){
-      return realnumber(x).trunc();
+      auto y = x;
+      return y.trunc();
     }
 
     inline realnumber round(realnumber x){
-      return realnumber(x).round();
+      auto y = x;
+      return y.round();
     }
     
     

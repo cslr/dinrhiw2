@@ -839,11 +839,6 @@ namespace whiteice {
 	  
 	  // keeps calculating EM-algorithm for parameter estimation
 
-	  if(verbose){
-	    printf("HMM loop start\n");
-	    fflush(stdout);
-	  }
-	  
 	  // first calculates alpha and beta
 	  const unsigned int T = observations.size();
 	  std::vector< std::vector<realnumber> > alpha(T+1), beta(T+1);
@@ -856,11 +851,6 @@ namespace whiteice {
 	    a = ph;
 	  }
 
-	  if(verbose){
-	    printf("ai init done\n");
-	    fflush(stdout);
-	  }
-	  
 	  // forward procedure (alpha)
 	  for(unsigned int t=1;t<=T;t++){
 	    auto& a  = alpha[t-1];
@@ -883,11 +873,6 @@ namespace whiteice {
 	    }
 	  }
 	  
-	  if(verbose){
-	    printf("alpha forward procedure done\n");
-	    fflush(stdout);
-	  }
-	  
 	  for(auto& b : beta){
 	    b.resize(numHidden);
 	    for(auto& bi : b){
@@ -896,10 +881,6 @@ namespace whiteice {
 	    }
 	  }
 
-	  if(verbose){
-	    printf("b init done\n");
-	    fflush(stdout);
-	  }
 	  
 	  // backward procedure (beta)
 	  for(unsigned int t=T;t>=1;t--){
@@ -923,11 +904,6 @@ namespace whiteice {
 	    }
 	  }
 
-	  if(verbose){
-	    printf("beta backward procedure done\n");
-	    fflush(stdout);
-	  }
-	  
 	  // now we have both alpha and beta and we calculate p
 	  std::vector< std::vector < std::vector<realnumber> > > p(T);
 	  
@@ -942,10 +918,6 @@ namespace whiteice {
 	    }
 	  }
 
-	  if(verbose){
-	    printf("p calc done\n");
-	    fflush(stdout);
-	  }
 	  
 #pragma omp parallel for schedule(auto)
 	  for(unsigned int t=1;t<=T;t++){
@@ -980,11 +952,6 @@ namespace whiteice {
 	    }
 	  }
 
-	  if(verbose){
-	    printf("pt calc done\n");
-	    fflush(stdout);
-	  }
-	  
 	  
 	  // now we have p[t][i][j] and we calculate y[t][i]
 	  std::vector< std::vector<realnumber> > y(T);
@@ -997,10 +964,6 @@ namespace whiteice {
 	    }
 	  }
 
-	  if(verbose){
-	    printf("yti init done\n");
-	    fflush(stdout);
-	  }
 	  
 #pragma omp parallel for schedule(auto)
 	  for(unsigned int t=1;t<=T;t++){
@@ -1014,10 +977,6 @@ namespace whiteice {
 	    }
 	  }
 	  
-	  if(verbose){
-	    printf("yti calc done\n");
-	    fflush(stdout);
-	  }
 	  
 	  //////////////////////////////////////////////////////////////////////
 	  // now we can calculate new parameter values based on EM
@@ -1029,10 +988,6 @@ namespace whiteice {
 	    ph[i] = y[t-1][i];
 	  }
 
-	  if(verbose){
-	    printf("ph calc done\n");
-	    fflush(stdout);
-	  }
 	  
 	  // state transitions A[i][j]
 #pragma omp parallel for schedule(auto)
@@ -1051,10 +1006,6 @@ namespace whiteice {
 	    }
 	  }
 	  
-	  if(verbose){
-	    printf("A calc done\n");
-	    fflush(stdout);
-	  }
 	  
 	  // visible state probabilities B[i][j][k]
 #pragma omp parallel for schedule(auto)
@@ -1074,10 +1025,6 @@ namespace whiteice {
 	    }
 	  }
 	  
-	  if(verbose){
-	    printf("B calc done\n");
-	    fflush(stdout);
-	  }
 	  
 	  // now we have new parameters: A, B, ph
 	  // still calculates probability of observations [using previous parameter values]
@@ -1090,11 +1037,6 @@ namespace whiteice {
 	  }
 	  po = pow(po, 1.0/((double)observations.size()));
 
-	  if(verbose){
-	    printf("po calc done\n");
-	    fflush(stdout);
-	  }
-	  
 	  plast = po;
 	  pdata.push_back(po);
 	  
@@ -1144,15 +1086,10 @@ namespace whiteice {
 	    
 	    s -= m*m;
 
-            if(verbose){
-	      printf("m ,s calc done\n");
-	      fflush(stdout);
-	    }
-	    
 	    s = abs(s);
 	    s = sqrt(s);
 
-	    if(m == 0.0)
+	    if(m <= 0.0)
 	      m = 1e-9;
 	    
 	    auto r = s/m;
@@ -1165,10 +1102,6 @@ namespace whiteice {
 	      solution_converged = true;
 	    }
 	    
-	    if(verbose){
-	      printf("solution_converged=%d calc done\n", (int)solution_converged);
-	      fflush(stdout);
-	    }
 	  }
 	}
     }

@@ -499,11 +499,11 @@ AS_IF([test "x$enable_native" = "xyes"],[
 ])
 
 AC_ARG_ENABLE([cppdebug],
-	AS_HELP_STRING([--enable-cppdebug],[Enable C++ debugging mode (stdc++)]))
+	AS_HELP_STRING([--enable-cppdebug],[Enable C++ debugging flags (stdc++)]))
 
 AS_IF([test "x$enable_cppdebug" = "xyes"],[
-  optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG"
-  conf_flags="$conf_flags -D_GLIBCXX_DEBUG"
+  optimization_flags="$optimization_flags -D_GLIBCXX_DEBUG -fsanitize=address -fsanitize=undefined"
+  conf_flags="$conf_flags -D_GLIBCXX_DEBUG -fsanitize=address -fsanitize=undefined"
 ])
 
 dnl enable newer C++ standards

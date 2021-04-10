@@ -144,10 +144,13 @@ namespace whiteice
       unsigned long int p2 = mpf_get_prec(r.data);
       if(p1 >= p2) mpf_init2(rval, p1);
       else mpf_init2(rval, p2);
-      
+
+#if 0
+      // No exceptions from division by zero!
       if(mpf_cmp_si(r.data, 0) == 0){ // division by zero
 	throw illegal_operation("Division by zero");
       }
+#endif
       
       mpf_div(rval, data, r.data);
       
@@ -339,7 +342,7 @@ namespace whiteice
       mpf_init2(ss, mpf_get_prec(data));
       mpf_init2(res, mpf_get_prec(data));
       mpf_set_d(ss, s);
-      mpf_div(res, ss, data);
+      mpf_div(res, data, ss); // FIXED: was mpf_div(res,ss,data): s/data
       mpf_clear(ss);
 
       auto ret = realnumber(res);
@@ -485,9 +488,12 @@ namespace whiteice
     // TODO: NOT TESTED, may fail
     realnumber& realnumber::round() {
       mpf_t sd;
+      mpf_t sd2;
       mpf_init2(sd, mpf_get_prec(data));
+      mpf_init2(sd2, mpf_get_prec(data));
       mpf_floor(sd, data); // data = -D.739203 => sd = -D-1    , -D.21 => sd = -D-1
-      mpf_sub(sd, data, sd); // SD = -D.739203 +D+1 = 0.271    , -D.21 +D+1 = +0.79
+      mpf_sub(sd2, data, sd); // SD = -D.739203 +D+1 = 0.271    , -D.21 +D+1 = +0.79
+      mpf_set(sd, sd2);
       int compare_int = mpf_cmp_d(sd, 0.5); // sd >= 0.5 , fail, success
       mpf_floor(sd, data); // sd = -D-1, sd = -D-1
       if(compare_int > 0){
@@ -498,6 +504,7 @@ namespace whiteice
       }
 
       mpf_clear(sd);
+      mpf_clear(sd2);
       
       return (*this);
     }

@@ -4130,8 +4130,10 @@ namespace whiteice
       else{
 	T* new_area = NULL;
 
-	new_area = (T*)realloc(data, sizeof(T)*d*numRows);
+	new_area = (T*)malloc(sizeof(T)*d*numRows);
 	if(new_area == NULL) return false;
+	
+	if(data) free(data);
 	data = new_area;
 	
 	if(compressor) delete compressor;
@@ -4209,8 +4211,10 @@ namespace whiteice
       else{
 	T* new_area = 0;
 
-	new_area = (T*)realloc(data, sizeof(T)*d*numCols);
+	new_area = (T*)malloc(sizeof(T)*d*numCols);
+	  
 	if(new_area == NULL) return false;
+	if(data) free(data);
 	data = new_area;
 
 	if(compressor) delete compressor;

@@ -1,4 +1,6 @@
 
+// FIXME: CUDA uses cudaMemcpy() when it should use cudaMemmove() because memory areas overlap!
+
 #ifndef correlation_cpp
 #define correlation_cpp
 
@@ -244,13 +246,17 @@ namespace whiteice
 		     *((float*)&invs), (float*)(i->data), 1, (float*)R.data);
 	  i++;
 	}
-	
+
+	// FIXED:
+	// (N-i):th row FIXME last i=N-1 row update is not needed
+	// for(unsigned int i=0;i<=(N-1);i++){
+
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -268,11 +274,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row (FIXED: was: <=)
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -292,9 +298,9 @@ namespace whiteice
 	// converts symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -314,9 +320,9 @@ namespace whiteice
 	// converts symmetric matrix results into regular matrix data format
 	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -923,11 +929,11 @@ namespace whiteice
 	}
 	  
 	// converts packed symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	for(unsigned int i=0;i<(N-1);i++)
@@ -967,11 +973,11 @@ namespace whiteice
 	}
 	  
 	// converts packed symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -1012,11 +1018,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
@@ -1057,11 +1063,11 @@ namespace whiteice
 	}
 	
 	// converts symmetric matrix results into regular matrix data format
-	for(unsigned int i=0;i<=(N-1);i++){ // (N-i):th row
+	for(unsigned int i=0;i<(N-1);i++){ // (N-i):th row
 	  unsigned int r = N - i - 1;
-	  memcpy(&(R.data[r*N + r]),
-		 &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
-		 sizeof(T) * (i+1));
+	  memmove(&(R.data[r*N + r]),
+		  &(R.data[((N+1)*N)/2 - ((i+1)*(i+2))/2]),
+		  sizeof(T) * (i+1));
 	}
 	
 	// copy data from upper triangular part to lower
