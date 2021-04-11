@@ -16,6 +16,7 @@ OBJECTS = point.o static_array.o dynamic_array.o \
 	dinrhiw.o
 
 EXTRA_OBJECTS = math/vertex.o math/matrix.o math/ownexception.o \
+	math/quaternion.o \
 	math/integer.o math/correlation.o math/matrix_rotations.o \
 	math/eig.o math/blade_math.o math/real.o math/ica.o math/norms.o \
 	math/superresolution.o math/modular.o
@@ -31,6 +32,7 @@ SOURCES = point.cpp static_array.cpp dynamic_array.cpp \
 	conffile.cpp linear_ETA.cpp \
 	VisualizationInterface.cpp \
 	MemoryCompressor.cpp timed_boolean.cpp \
+	math/quaternion.cpp \
 	math/vertex.cpp math/matrix.cpp math/ownexception.cpp \
 	math/norms.cpp math/superresolution.cpp math/modular.cpp \
 	tst/test.cpp tst/conv_test.cpp \

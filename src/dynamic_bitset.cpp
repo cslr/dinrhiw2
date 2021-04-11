@@ -53,26 +53,6 @@ namespace whiteice
   }
   
 
-  dynamic_bitset::dynamic_bitset(unsigned int val){
-    memory = 0;
-    seqlen = 0;
-    numblocks = 0;
-    
-    unsigned int blocksize = sizeof(unsigned long)*8; // in bits
-    numblocks = (8*sizeof(unsigned int) + blocksize - 1)/blocksize;
-    
-    memory = (unsigned long*)malloc(numblocks*sizeof(unsigned long));
-    if(!memory) throw std::bad_alloc();
-    
-    seqlen = 8*sizeof(unsigned int);
-    calculate_cleanmask();
-    
-    memcpy(memory, &val, numblocks*sizeof(unsigned long));
-    
-    clean_dirty_bits();
-  }
-  
-
   dynamic_bitset::dynamic_bitset(unsigned long val)
   {
     memory = 0;        

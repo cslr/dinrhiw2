@@ -6,10 +6,11 @@ CXX= @CXX@
 
 OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o
 
-EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o \
+EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o ../dynamic_bitset.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
+	../math/quaternion.o \
 	../neuralnetwork/nnetwork.o ../neuralnetwork/bayesian_nnetwork.o \
 	../conffile.o ../neuralnetwork/NNGradDescent.o \
 	../math/superresolution.o ../math/modular.o \
@@ -25,6 +26,8 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp
 	CreateRIFLdataset.cpp CreateRIFL2dataset.cpp CreatePolicyDataset.cpp \
 	CartPole2.cpp tst/test.cpp tst/test2.cpp \
 	../dataset.cpp \
+	../dynamic_bitset.cpp \
+	../math/quaternion.cpp \
 	../math/vertex.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
 	../math/ownexception.cpp \

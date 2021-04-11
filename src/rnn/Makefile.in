@@ -7,6 +7,7 @@ CXX= @CXX@
 OBJECTS = RNN_RBM.o
 
 EXTRA_OBJECTS =	../dataset.o ../MemoryCompressor.o \
+	../math/quaternion.o ../dynamic_bitset.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
 	../math/integer.o ../math/correlation.o ../math/matrix_rotations.o \
 	../math/eig.o ../math/blade_math.o ../math/real.o ../math/ica.o \
@@ -23,6 +24,7 @@ TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
 SOURCES = tst/test.cpp RNN_RBM.cpp \
 	../dataset.cpp \
+	../math/quaternion.cpp ../dynamic_bitset.cpp \
 	../math/vertex.cpp ../math/matrix.cpp \
 	../math/integer.cpp ../math/blade_math.cpp ../math/real.cpp \
 	../math/superresolution.cpp ../math/modular.cpp \

@@ -20,8 +20,7 @@ namespace whiteice
     
     dynamic_bitset();
     dynamic_bitset(const dynamic_bitset& bitset);
-    explicit dynamic_bitset(unsigned int val);
-    explicit dynamic_bitset(unsigned long val);
+    dynamic_bitset(unsigned long val);
     dynamic_bitset(const whiteice::math::integer& i);
     
     virtual ~dynamic_bitset();

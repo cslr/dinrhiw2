@@ -160,11 +160,14 @@ int main()
   srand(seed);
   
   try{
-    nnetwork_test();
+    // nnetwork_test();
     
-    simple_vae_test();
+    // simple_vae_test();
+
     
-    simple_tsne_test();
+    simple_tsne_test(); // FIXME: has bugs
+
+    return 0;
 
     // nngraddescent_complex_test();
 

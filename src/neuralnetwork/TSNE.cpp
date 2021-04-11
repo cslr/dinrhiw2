@@ -391,15 +391,15 @@ namespace whiteice
     pj.resize(x.size());
     
     T rsum = T(0.0f); // calculates rsum for this index
-
+    
 #pragma omp parallel shared(rsum)
     {
       T rs = T(0.0f);
-
+      
       math::vertex<T> delta;
       delta.resize(x[0].size());
       delta.zero();
-
+      
 #pragma omp for nowait schedule(auto)
       for(unsigned int k=0;k<x.size();k++){
 	if(index == k) continue;
@@ -411,23 +411,37 @@ namespace whiteice
 	pj[k] = pvalue;
 	rs += pvalue;
       }
-
+      
 #pragma omp critical
       {
 	rsum += rs;
       }
     }
-
+    
     pj[index] = T(0.0f);
 
-
-#pragma omp parallel for schedule(auto)
-    for(unsigned int j=0;j<x.size();j++){
-      if(index == j) continue;
-      
-      pj[j] = pj[j]/rsum;
-    }
+    if(rsum >= T(0.0f)){
     
+#pragma omp parallel for schedule(auto)
+      for(unsigned int j=0;j<x.size();j++){
+	if(index == j) continue;
+	
+	pj[j] = pj[j]/rsum;
+      }
+    }
+    else if(x.size() > 1){ // handles all zeros case
+      rsum = T(1.0f)/(x.size()-1);
+
+#pragma omp parallel for schedule(auto)      
+      for(unsigned int j=0;j<x.size();j++){
+	if(index == j) continue;
+	
+	pj[j] = rsum;
+      }
+    }
+    else
+      return false;
+      
     return true;
   }
 
