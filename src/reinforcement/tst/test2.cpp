@@ -10,7 +10,9 @@
 #include "RIFL_abstract.h"
 #include "Log.h"
 
+#ifndef USE_SDL
 #include <fenv.h>
+#endif
 
 
 
@@ -23,21 +25,27 @@ int main(int argc, char** argv)
 
   whiteice::logging.setOutputFile("debug.log");
 
-#if 0
+#ifndef WINOS
+#ifndef USE_SDL
   // enable floating point exceptions (for debugging)
   {
     // FE_UNDERFLOW | FE_OVERFLOW | FE_INEXACT
     feenableexcept(FE_DIVBYZERO | FE_INVALID);
   }
 #endif
+#endif
 
+#ifndef USE_SDL
+  whiteice::logging.setOutputFile("cartpole2.log");
+#endif
+
+  
   if(argc <= 1){
     whiteice::CartPole2< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.50); // 50% of examples are selected accoring to model
+    system.setEpsilon(0.80); // 80% of examples are selected accoring to model
     system.setLearningMode(true);
-    
-    // system.load("rifl.dat");
+    system.setVerbose(true);
     
     system.start();
 
@@ -49,7 +57,7 @@ int main(int argc, char** argv)
       
       if(system.getHasModel() >= 2){
 	// 95% are selected according to model
-	system.setEpsilon(0.95);
+	// system.setEpsilon(0.95);
       }
       
       sleep(1); 
@@ -71,10 +79,14 @@ int main(int argc, char** argv)
     system.setEpsilon(1.00); // 100% of examples are selected accoring to model
     system.setLearningMode(false);
     system.setHasModel(1);
+    system.setVerbose(true);
     
     if(system.load("rifl.dat") == false){
       printf("ERROR: loading model file failed.\n");
       return -1;
+    }
+    else{
+      std::cout << "Reinforcement model SUCCESSFULLY loaded." << std::endl;
     }
     
     system.start();

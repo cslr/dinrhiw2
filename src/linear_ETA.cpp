@@ -15,6 +15,12 @@ namespace whiteice
   {
     time_origo = 0.0;
     time_origo = get_time();
+
+    this->begin_value = 0;
+    this->end_value = 1;
+    
+    this->current_eta = 0;
+    this->time_start = 0;
   }
   
   

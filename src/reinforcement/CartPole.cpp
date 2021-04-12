@@ -42,31 +42,15 @@ namespace whiteice
       iteration = 0;
     }
 
-    
 #ifdef USE_SDL
-    // create SDL display
-    {
-      SDL_Init(SDL_INIT_VIDEO);
-
-      window = NULL;
-      renderer = NULL;
-      
-      W = 800;
-      H = 600;
-
-      SDL_DisplayMode mode;
-
-      if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
-	W = (4*mode.w)/5;
-	H = (3*mode.h)/4;
-	H = H/2;
-      }
-      
-      
-      SDL_CreateWindowAndRenderer(W, H, 0, &window, &renderer);
-    }
+    // SDL variables
+    window = NULL;
+    renderer = NULL;
+    W = 800;
+    H = 600;
+    no_init_sdl = false;
 #endif
-
+    
     // starts physics thread
     {
       std::lock_guard<std::mutex> lock(physics_mutex);
@@ -83,11 +67,21 @@ namespace whiteice
   {
 #ifdef USE_SDL
     {
-      if(renderer)
-	SDL_DestroyRenderer(renderer);
+      std::lock_guard<std::mutex> lock(sdl_mutex);
+
+      no_init_sdl = true;
       
-      if(window)
-	SDL_DestroyWindow(window);
+      if(renderer){
+	auto temp = renderer;
+	renderer = NULL;
+	SDL_DestroyRenderer(temp);
+      }
+      
+      if(window){
+	auto temp = window;
+	window = NULL;
+	SDL_DestroyWindow(temp);
+      }
       
       SDL_Quit();
     }
@@ -134,40 +128,82 @@ namespace whiteice
 
 #ifdef USE_SDL
     {
-      auto theta = this->theta;
-      auto x     = state[2];
+      std::lock_guard<std::mutex> lock(sdl_mutex);
       
-      SDL_Event event;
-      while(SDL_PollEvent(&event)){
-	if(event.type == SDL_QUIT){
-	  this->running = false;
+      // create SDL display if not initialized already
+      if(renderer == NULL && no_init_sdl == false){
+	SDL_Init(SDL_INIT_VIDEO);
+	
+	window = NULL;
+	renderer = NULL;
+	
+	W = 800;
+	H = 600;
+	
+	SDL_DisplayMode mode;
+	
+	if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
+	  W = (4*mode.w)/5;
+	  H = (3*mode.h)/4;
+	  H = H/2;
 	}
-
-	if(event.type == SDL_KEYDOWN){
-	  if(event.key.keysym.sym == SDLK_ESCAPE)
-	    this->running = false;
-	}
+	
+      
+	SDL_CreateWindowAndRenderer(W, H, 0, &window, &renderer);
       }
+#endif
 
-      // drawing
-      {
-	// black background
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	// SDL_RenderFillRect(renderer, NULL);
-	SDL_RenderClear(renderer);
+#ifdef USE_SDL
+      if(renderer != NULL){
+	auto theta = this->theta;
+	auto x     = state[2];
+	
+	SDL_Event event;
+	while(SDL_PollEvent(&event)){
+	  if(event.type == SDL_QUIT){
+	    this->running = false;
+	  }
+	  
+	  if(event.type == SDL_KEYDOWN){
+	    if(event.key.keysym.sym == SDLK_ESCAPE)
+	      this->running = false;
+	  }
+	  else if(event.key.keysym.sym == SDLK_PLUS){
+	    T e = this->getEpsilon();
+	    e += T(0.1);
+	    if(e > T(1.0)) e = T(1.0);
+	    std::cout << "Follow model percentage: " << e << std::endl;
+	    this->setEpsilon(e);
+	  }
+	  else if(event.key.keysym.sym == SDLK_MINUS){
+	    T e = this->getEpsilon();
+	    e -= T(0.1);
+	    if(e < T(0.0)) e = T(0.0);
+	    std::cout << "Follow model percentage: " << e << std::endl;
+	    this->setEpsilon(e);
+	  }
+	}
+      
+	// drawing
+	{
+	  // black background
+	  SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	  // SDL_RenderFillRect(renderer, NULL);
+	  SDL_RenderClear(renderer);
+	  
+	  SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+	  
+	  double y0 = H/2.0;
+	  double x0 = W/2.0 + x.c[0]/2;
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+	  double l = 100.0; // line length
+	  
+	  double y1 = y0 - l*cos(theta.c[0]);
+	  double x1 = x0 + l*sin(theta.c[0]);
 
-	double y0 = H/2.0;
-	double x0 = W/2.0 + x.c[0]/2;
-
-	double l = 100.0; // line length
-
-	double y1 = y0 - l*cos(theta.c[0]);
-	double x1 = x0 + l*sin(theta.c[0]);
-
-	SDL_RenderDrawLine(renderer, (int)x0, (int)y0, (int)x1, (int)y1);
-	SDL_RenderPresent(renderer);
+	  SDL_RenderDrawLine(renderer, (int)x0, (int)y0, (int)x1, (int)y1);
+	  SDL_RenderPresent(renderer);
+	}
       }
     }
 #endif

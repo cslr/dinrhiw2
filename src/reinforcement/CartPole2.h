@@ -16,6 +16,7 @@
 
 #ifdef USE_SDL
 #include <SDL.h>
+#include <mutex>
 #endif
 
 #include <condition_variable>
@@ -31,6 +32,10 @@ namespace whiteice
       ~CartPole2();
 
       bool physicsIsRunning(){ return this->running; }
+
+      bool getVerbose(){ return verbose; }
+
+      void setVerbose(bool flag){ verbose = flag; }
       
     protected:
 
@@ -50,7 +55,16 @@ namespace whiteice
       
       SDL_Window* window;
       SDL_Renderer* renderer;
+
+      std::mutex sdl_mutex; // for sync access to SDL
+      bool no_init_sdl = false;
+
+      bool log_verbose = false; // used to control if we print internal log comments.
 #endif
+
+      bool verbose = false;
+
+      
 
       // resets cart-pole variables
       void reset();

@@ -114,7 +114,10 @@ namespace whiteice
       bool getSolution(whiteice::nnetwork<T>& nn) const;
       
       /* used to stop the optimization process */
-	bool stopComputation();
+      bool stopComputation();
+
+      // removes solution and resets to empty NNGradDescent<>
+      void reset();
 	
       private:
       

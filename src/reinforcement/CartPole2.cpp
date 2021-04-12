@@ -46,28 +46,15 @@ namespace whiteice
 
     
 #ifdef USE_SDL
-    // create SDL display
-    {
-      SDL_Init(SDL_INIT_VIDEO);
-
-      window = NULL;
-      renderer = NULL;
-      
-      W = 800;
-      H = 600;
-
-      SDL_DisplayMode mode;
-
-      if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
-	W = (4*mode.w)/5;
-	H = (3*mode.h)/4;
-	H = H/2;
-      }
-      
-      
-      SDL_CreateWindowAndRenderer(W, H, 0, &window, &renderer);
-    }
+    window = NULL;
+    renderer = NULL;
+    no_init_sdl = false;
+    
+    W = 800;
+    H = 600;
 #endif
+    
+
 
     // starts physics thread
     {
@@ -85,11 +72,21 @@ namespace whiteice
   {
 #ifdef USE_SDL
     {
-      if(renderer)
-	SDL_DestroyRenderer(renderer);
+      std::lock_guard<std::mutex> lock(sdl_mutex);
+
+      no_init_sdl = true;
       
-      if(window)
-	SDL_DestroyWindow(window);
+      if(renderer){
+	auto temp = renderer;
+	renderer = NULL;
+	SDL_DestroyRenderer(temp);
+      }
+      
+      if(window){
+	auto temp = window;
+	window = NULL;
+	SDL_DestroyWindow(temp);
+      }
       
       SDL_Quit();
     }
@@ -138,36 +135,93 @@ namespace whiteice
 
 #ifdef USE_SDL
     {
-      auto theta = this->theta;
-      auto x     = state[2];
+      std::lock_guard<std::mutex> lock(sdl_mutex);
       
-      SDL_Event event;
-      while(SDL_PollEvent(&event)){
-	if(event.type == SDL_QUIT){
-	  this->running = false;
+      if(renderer == NULL && no_init_sdl == false){
+	// create SDL display
+	
+	if(renderer == NULL){
+	  SDL_Init(SDL_INIT_VIDEO);
+	  
+	  window = NULL;
+	  renderer = NULL;
+	  
+	  W = 800;
+	  H = 600;
+	  
+	  SDL_DisplayMode mode;
+	  
+	  if(SDL_GetCurrentDisplayMode(0, &mode) == 0){
+	    W = (4*mode.w)/5;
+	    H = (3*mode.h)/4;
+	    H = H/2;
+	  }
+	  
+	  
+	  SDL_CreateWindowAndRenderer(W, H, 0, &window, &renderer);
 	}
       }
+      
+      
+      if(renderer != NULL){
+	auto theta = this->theta;
+	auto x     = state[2];
+	
+	SDL_Event event;
+	while(SDL_PollEvent(&event)){
+	  if(event.type == SDL_QUIT){
+	    this->running = false;
+	  }
 
-      // drawing
-      {
-	// black background
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	// SDL_RenderFillRect(renderer, NULL);
-	SDL_RenderClear(renderer);
-
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-
-	double y0 = H/2.0;
-	double x0 = W/2.0 + x.c[0]/2;
-
-	double l = 100.0; // line length
-
-	double y1 = y0 - l*cos(theta.c[0]);
-	double x1 = x0 + l*sin(theta.c[0]);
-
-	SDL_RenderDrawLine(renderer, (int)x0, (int)y0, (int)x1, (int)y1);
-	SDL_RenderPresent(renderer);
+	  if(event.type == SDL_KEYDOWN){
+	    if(event.key.keysym.sym == SDLK_ESCAPE){
+	      this->running = false;
+	    }
+	    else if(event.key.keysym.sym == SDLK_PLUS){
+	      T e = this->getEpsilon();
+	      e += T(0.1);
+	      if(e > T(1.0)) e = T(1.0);
+	      std::cout << "Follow model percentage: " << e << std::endl;
+	      this->setEpsilon(e);
+	    }
+	    else if(event.key.keysym.sym == SDLK_MINUS){
+	      T e = this->getEpsilon();
+	      e -= T(0.1);
+	      if(e < T(0.0)) e = T(0.0);
+	      std::cout << "Follow model percentage: " << e << std::endl;
+	      this->setEpsilon(e);
+	    }
+	    else if(event.key.keysym.sym == SDLK_v){
+	      log_verbose = !log_verbose;
+	      //whiteice::logging.setPrintOutput(log_verbose);
+	      if(log_verbose)
+		whiteice::logging.setOutputFile("cartpole2.log");
+	    }
+	  }
+	}
+	  
+	// drawing
+	{
+	  // black background
+	  SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	  // SDL_RenderFillRect(renderer, NULL);
+	  SDL_RenderClear(renderer);
+	  
+	  SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+	  
+	  double y0 = H/2.0;
+	  double x0 = W/2.0 + x.c[0]/2;
+	  
+	  double l = 100.0; // line length
+	  
+	  double y1 = y0 - l*cos(theta.c[0]);
+	  double x1 = x0 + l*sin(theta.c[0]);
+	  
+	  SDL_RenderDrawLine(renderer, (int)x0, (int)y0, (int)x1, (int)y1);
+	  SDL_RenderPresent(renderer);
+	}
       }
+      
     }
 #endif
 
@@ -233,7 +287,7 @@ namespace whiteice
 #endif
 
 #if 1
-    // assumes action values are between [0, +1]
+    // assumes action values are between [-1, +1]
     if(action.size() > 0){
       // double a = (action[0].c[0]*2.0 - 1.0); // to interval [-1.0, +1.0]
       double a = action[0].c[0];
@@ -242,7 +296,14 @@ namespace whiteice
     }
 #endif
 
-    printf("%d FORCE: %f\n", iteration, Fstep);
+    {
+      char buffer[128];
+      snprintf(buffer, 128, "%d %d FORCE: %f", iteration, this->getHasModel(), Fstep);
+      if(verbose)
+	printf("%s\n", buffer);
+
+      // whiteice::logging.info(buffer);
+    }
     
     {
       {
@@ -299,9 +360,16 @@ namespace whiteice
 #endif
 	    
 	  reinforcement = T(1.0) + a; // we keep things between [0,1]
-	  
-	  printf("REINFORCEMENT: %f\n", reinforcement.c[0]);
-	  fflush(stdout);
+	  reinforcement = T(0.5)*reinforcement; // [0,0.5] value
+
+	  {
+	    char buffer[128];
+	    snprintf(buffer, 128, "REINFORCEMENT: %f", reinforcement.c[0]);
+	    if(verbose)
+	      printf("%s\n", buffer);
+	    
+	    // whiteice::logging.info(buffer);
+	  }
 	}
       }
 	
@@ -395,9 +463,19 @@ namespace whiteice
 	  thetas.push_back(abs(degrees));
 
 	  auto temp = abs(mth); //  + sth; [DO NOT ADD STANDARD DEVIATION]
-	  
-	  printf("TIME %f theta = %f deg [%f]\n",
-		 t, degrees, temp.c[0]);
+	  auto eps = this->getEpsilon();
+	  eps = T(100.0f)*eps;
+
+	  {
+	    char buffer[128];
+	    snprintf(buffer, 128, "TIME %f theta = %f deg [%f] [%.1f%% FOLLOW MODEL]",
+		     t, degrees, temp.c[0], eps.c[0]);
+	    if(verbose){
+	      printf("%s\n", buffer);
+	    }
+
+	    // whiteice::logging.info(buffer);
+	  }
 	  
 	  fflush(stdout);
 	}

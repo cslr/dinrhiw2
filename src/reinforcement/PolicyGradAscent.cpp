@@ -389,7 +389,7 @@ namespace whiteice
   template <typename T>
   void PolicyGradAscent<T>::optimizer_loop()
   {
-    const bool regularize = false;
+    const bool regularize = true;
     
     {
       sched_param sch_params;
@@ -835,7 +835,8 @@ namespace whiteice
 
 	  // sumgrad.normalize(); // normalizes gradient length to unit..
 	  
-	  lrate *= T(4.0);
+	  // lrate = T(0.5f);
+	  lrate = T(100.0);
 	  
 	  do{
 	    weights = w0;
@@ -878,7 +879,7 @@ namespace whiteice
 	    }
 	    
 	  }
-	  while(delta_value > T(0.0) && lrate >= T(10e-30) &&
+	  while(delta_value > T(0.0) && lrate >= T(10e-15) &&
 		abs(delta_value) > T(10e-30f) && running);
 	  
 	  {

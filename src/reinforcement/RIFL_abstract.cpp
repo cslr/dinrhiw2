@@ -390,7 +390,7 @@ namespace whiteice
 #endif
 	
 	// random selection with (1-epsilon) probability
-	// show model pich with epsilon probability
+	// show model with epsilon probability
 	T r = rng.uniform();
 	
 	if(learningMode == false)

@@ -420,7 +420,7 @@ namespace whiteice
     
     pj[index] = T(0.0f);
 
-    if(rsum >= T(0.0f)){
+    if(rsum > T(0.0f)){
     
 #pragma omp parallel for schedule(auto)
       for(unsigned int j=0;j<x.size();j++){

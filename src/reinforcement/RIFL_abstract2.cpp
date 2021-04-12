@@ -7,6 +7,7 @@
 #include "PolicyGradAscent.h"
 
 #include "Log.h"
+#include "linear_ETA.h"
 #include "blade_math.h"
 
 #include <assert.h>
@@ -24,7 +25,7 @@ namespace whiteice
     // initializes parameters
     {
       gamma = T(0.8);
-      epsilon = T(0.66);
+      epsilon = T(0.80);
 
       learningMode = true;
 
@@ -38,23 +39,27 @@ namespace whiteice
 
     
     // initializes neural network architecture and weights randomly
+    // neural network is deep 6-layer residual neural network (NOW: 3 layers only)
     {
       std::vector<unsigned int> arch;
 
-      const unsigned int RELWIDTH = 20; // of the network (20..100)
+      // const unsigned int RELWIDTH = 20; // of the network (20..100)
       
       {
 	std::lock_guard<std::mutex> lock(Q_mutex);
 	
 	arch.push_back(numStates + numActions);
-	arch.push_back((numStates + numActions)*RELWIDTH);
-	arch.push_back((numStates + numActions)*RELWIDTH);
+	arch.push_back(50);
+	arch.push_back(50);
+	//arch.push_back(50);
+	//arch.push_back(50);
+	//arch.push_back(50);
 	arch.push_back(1);
 	
 	{
-	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
+	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid); // tanh, sigmoid, halfLinear
-	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
 	  nn.randomize();
 	  
 	  Q.importNetwork(nn);
@@ -73,17 +78,21 @@ namespace whiteice
 	
 	arch.clear();
 	arch.push_back(numStates);
-	arch.push_back(std::max(numStates,numActions)*RELWIDTH);
-	arch.push_back(std::max(numStates,numActions)*RELWIDTH);
+	arch.push_back(50);
+	arch.push_back(50);
+	//arch.push_back(50);
+	//arch.push_back(50);
+	//arch.push_back(50);
 	arch.push_back(numActions);
 
-	// policy outputs action is (should be) [0,1]^D vector
+	// policy outputs action is (should be) +[-1,+1]^D vector
 	{
-	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
+	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
+	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
 	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::sigmoid);
-	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
 	  nn.randomize();
 	  
 	  policy.importNetwork(nn);
@@ -298,6 +307,8 @@ namespace whiteice
 
     whiteice::dataset<T> data2;
     whiteice::PolicyGradAscent<T> grad2(deep);   // policy(state)=action model optimizer
+
+    whiteice::linear_ETA<double> eta, eta2; // estimates how long single epoch of optimization takes
     
     std::vector<unsigned int> epoch;
 
@@ -308,8 +319,8 @@ namespace whiteice
     int old_grad_iterations = -1;
     int old_grad2_iterations = -1;
 
-    const unsigned int DATASIZE = 100000;
-    const unsigned int SAMPLESIZE = 500;
+    const unsigned int DATASIZE = 100000; // was: 100.000 / 100K history of samples
+    const unsigned int SAMPLESIZE = 1000;
     
     const bool debug = false; // debugging messages
 
@@ -478,7 +489,6 @@ namespace whiteice
 	if(grad.isRunning() == false){
 
 	  if(grad.getSolutionStatistics(error, iters) == false){
-	    
 	  }
 	  else{
 	    // gradient have stopped running
@@ -510,6 +520,8 @@ namespace whiteice
 		whiteice::logging.info("RIFL_abstract2: new Q-model imported");
 	      }
 
+	      grad.reset(); // resets gradient to empty gradient descent
+
 	      epoch[0]++;
 	      hasModel[0]++;
 	    }
@@ -523,6 +535,7 @@ namespace whiteice
 
 	  
 	  const unsigned int NUMSAMPLES = database.size(); // was 1000
+	  // const unsigned int NUMSAMPLES = 10000; // was 1000
 	  
 	  
 	  if(dataset_thread == nullptr){
@@ -569,12 +582,13 @@ namespace whiteice
 	  }
 	  
 	  const bool dropout = false;
-	  bool useInitialNN = false; // start from scratch everytime
-
+	  const bool useInitialNN = true; // start from scratch everytime
+	  
 #if 0
 	  if(hasModel[0]) // if we have model start from NN weights..
 	    useInitialNN = true;
 #endif
+	  eta.start(0.0, 150.0); // 150 iters
 	  
 	  // grad.startOptimize(data, nn, 2, 150);
 	  
@@ -583,7 +597,7 @@ namespace whiteice
 	    assert(0);
 	  }
 	  else{
-	    whiteice::logging.info("RIFL_abstract2: grad optimizer started");
+	    whiteice::logging.info("RIFL_abstract2: grad Q optimizer started");
 	  }
 
 	  old_grad_iterations = -1;
@@ -599,13 +613,15 @@ namespace whiteice
 	  if(grad.getSolutionStatistics(error, iters)){
 	    if(((signed int)iters) > old_grad_iterations){
 	      char buffer[128];
+
+	      eta.update(iters);
 	      
 	      double e;
 	      whiteice::math::convert(e, error);
 	      
 	      snprintf(buffer, 128,
-		       "RIFL_abstract2: Q-optimizer epoch %d iter %d error %f hasmodel %d",
-		       epoch[0], iters, e, hasModel[0]);
+		       "RIFL_abstract2: Q-optimizer epoch %d iter %d error %f hasmodel %d [ETA %.2f hours]",
+		       epoch[0], iters, e, hasModel[0], eta.estimate()/3600.0);
 	      
 	      whiteice::logging.info(buffer);
 
@@ -633,7 +649,7 @@ namespace whiteice
       {
 	// skip if other optimization step is behind us
 	// we only start calculating policy after Q() has been optimized..
-	if(epoch[1] > epoch[0] || epoch[0] == 0) 
+	if(epoch[1] > epoch[0] || epoch[0] == 0)
 	  goto policy_optimization_done;
 
 	
@@ -692,6 +708,7 @@ namespace whiteice
 	  
 	  
 	  const unsigned int BATCHSIZE = database.size(); // was 1000
+	  // const unsigned int BATCHSIZE = 10000;
 
 	  if(dataset2_thread == nullptr){
 	    data2.clear();
@@ -764,7 +781,9 @@ namespace whiteice
 	    }
 
 	    const bool dropout = false;
-	    bool useInitialNN = false; // start from scratch everytime
+	    const bool useInitialNN = true; // start from scratch everytime
+
+	    eta2.start(0.0, 150.0); // 150 iters per sample
 	    
 	    // grad2.startOptimize(&data2, q_nn, nn, 2, 150);
 	    if(grad2.startOptimize(&data2, q_nn, Q_preprocess, nn, 1, 150, dropout, useInitialNN) == false){
@@ -790,10 +809,12 @@ namespace whiteice
 	      
 	      double v;
 	      whiteice::math::convert(v, meanq);
+
+	      eta2.update(iters);
 	      
 	      snprintf(buffer, 128,
-		       "RIFL_abstract2: policy-optimizer epoch %d iter %d mean q-value %f",
-		       epoch[1], iters, v);
+		       "RIFL_abstract2: policy-optimizer epoch %d iter %d mean q-value %f [ETA %.2f hours]",
+		       epoch[1], iters, v, eta2.estimate()/3600.0);
 	      
 	      whiteice::logging.info(buffer);
 

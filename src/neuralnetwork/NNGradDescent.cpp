@@ -463,6 +463,51 @@ namespace whiteice
     }
 
 
+    // removes solution
+    template <typename T>
+    void NNGradDescent<T>::reset()
+    {
+      start_lock.lock();
+
+      if(running){
+	running = false;
+	for(unsigned int i=0;i<optimizer_thread.size();i++){
+	  optimizer_thread[i]->join();
+	  delete optimizer_thread[i];
+	  optimizer_thread[i] = nullptr;
+	}
+      }
+      
+      if(nn) delete nn;
+      nn = nullptr;
+
+      best_error = T(LARGE_INF_VALUE);
+      best_pure_error = T(LARGE_INF_VALUE);
+      iterations = 0;
+      data = NULL;
+      NTHREADS = 0;
+      thread_is_running = 0;
+      
+      this->use_minibatch = false;
+
+      dropout = false;
+      overfit = false;
+      mne = false; // use minimum squared error as the default error term
+
+      running = false;
+      nn = NULL;
+
+      first_time = true;
+
+      // regularizer = T(0.0001); // 1/10.000 (keep weights from becoming large)
+      // regularizer = T(1.0); // this works for "standard" cases
+      
+      regularizer = T(0.0f);    // regularizer is DISABLED
+
+      start_lock.unlock();
+    }
+
+
     template <typename T>
     T NNGradDescent<T>::getError(const whiteice::nnetwork<T>& net,
 				 const whiteice::dataset<T>& dtest,

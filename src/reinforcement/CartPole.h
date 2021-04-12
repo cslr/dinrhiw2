@@ -16,6 +16,7 @@
 
 #ifdef USE_SDL
 #include <SDL.h>
+#include <mutex>
 #endif
 
 #include <condition_variable>
@@ -53,6 +54,9 @@ namespace whiteice
       
       SDL_Window* window;
       SDL_Renderer* renderer;
+
+      std::mutex sdl_mutex; // for synchronizing touching SDL variables
+      bool no_init_sdl = false;
 #endif
 
       // resets cart-pole variables

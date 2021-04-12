@@ -43,18 +43,16 @@ SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp
 OPTIMIZE=@optimization_flags@
 CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-memaccess @EXTRA_INCLUDEPATHS@
 
-# -DUSE_SDL `/usr/local/bin/sdl2-config --cflags`
+# -DUSE_SDL `pkg-config sdl2 --cflags`
 
 TARGET1=testsuite
 TARGET2=testsuite2
 
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../rnn -I../crypto $(OPTIMIZE)
 
-# `/usr/local/bin/sdl2-config --cflags`
-
 LIBS= @EXTRA_LIBPATHS@ -lz -lgmp @EXTRA_LIBS@
 
-# `/usr/local/bin/sdl2-config --libs`
+# `pkg-config sdl2 --libs`
 
 CD = cd
 
