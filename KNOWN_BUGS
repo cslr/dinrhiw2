@@ -1,7 +1,9 @@
 Code is only tested and known to compile on Debian/Linux (amd64) and 
 Windows 64bit platform. Minimal testing has been done on Intel 32bit plaform.
 
-* t-SNE is not implemented nor tested (TODO)
+* t-SNE is a bit buggy(?) and don't scale now to large number of data points
+
+* reinforcement code don't learn example cart-pole upswing properly
 
 * VAE code (Variational Autoencoder) currently doesn't handle learning z-space model variance well.
   is it possible to alter computation to use zvariance = encoder_stdev(x)*encoder_stdev(x) and handle related math correctly?
