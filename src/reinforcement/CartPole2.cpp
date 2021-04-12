@@ -106,8 +106,10 @@ namespace whiteice
   void CartPole2<T>::reset()
   {
     // cart-pole system system state
-    theta = this->rng.uniform()*T(2.0*M_PI) - T(M_PI); // angle is [-PI, PI]
-    theta = theta / T(100.0); 
+    //theta = this->rng.uniform()*T(2.0*M_PI) - T(M_PI); // angle is [-PI, PI]
+    //theta = theta / T(100.0);
+
+    theta = T(0.0);
     theta_dot = T(0.0);
     theta_dotdot = T(0.0);
     
@@ -276,17 +278,17 @@ namespace whiteice
     // converts action to control in newtons
     double Fstep = 0.0;
 
-#if 0
+#if 1
     if(action.size() > 0){
-      Fstep = 25.0*action[0].c[0];
+      Fstep = 10.0*action[0].c[0];
 
       // keeps Fsteps within "SANE" values which is needed for numerical stability
-      if(Fstep >= 25.0) Fstep = 25.0;
-      else if(Fstep <= -25.0) Fstep = -25.0;
+      if(Fstep >= 10.0) Fstep = 10.0;
+      else if(Fstep <= -10.0) Fstep = -10.0;
     }
 #endif
 
-#if 1
+#if 0
     // assumes action values are between [-1, +1]
     if(action.size() > 0){
       // double a = (action[0].c[0]*2.0 - 1.0); // to interval [-1.0, +1.0]
@@ -332,34 +334,8 @@ namespace whiteice
 	  // converts range between [-180.0, +180.0]
 	  T a = T(180.0)* normalizeTheta(theta) / T(M_PI);
 
-	  // range is ] -1.0, 0.0]; // bigger is better (closer to zero)
-	  a = -T(1.0)*abs(a)/T(180.0);
-
+	  reinforcement = (T(180) - abs(a))/T(180.0); // 1 is up right, 0 down
 	  
-	  // additionally we add minus term for being too far from zero (W)
-
-#if 1
-#ifdef USE_SDL
-	  T x_reinforcement = abs(x);
-	  {
-	    if(x_reinforcement > T(W/2.0)){
-	      // [0,1] (within screen boundaries)
-	      x_reinforcement = (x_reinforcement - T(W/2.0))/T(W/2.0);
-	    }
-	    else{
-	      x_reinforcement = T(0.0);
-	    }
-	    
-	    // (closer to zero is better) [-1.0, 0]
-	    x_reinforcement = -abs(x_reinforcement);
-	    
-	  
-	    reinforcement = T(0.5)*(a + x_reinforcement); // [-1.0, 0]
-	  }
-#endif
-#endif
-	    
-	  reinforcement = T(1.0) + a; // we keep things between [0,1]
 	  reinforcement = T(0.5)*reinforcement; // [0,0.5] value
 
 	  {
@@ -398,6 +374,8 @@ namespace whiteice
     
     
     while(running){
+
+      double degrees = 0.0;
       
       {
 	std::unique_lock<std::mutex> lock(F_change);
@@ -458,7 +436,7 @@ namespace whiteice
 	    a = T(-1.0)*(T(2.0*M_PI) - a);
 	  }
 
-	  auto degrees = 360.0*(a.c[0]/(2.0*M_PI));
+	  degrees = 360.0*(a.c[0]/(2.0*M_PI));
 
 	  thetas.push_back(abs(degrees));
 
@@ -506,8 +484,12 @@ namespace whiteice
 	
 	reset(); // reset parameters of cart-pole
       }
+      else if(degrees > 90 || degrees < -90){
+	reset(); // reset parameters of cart-pole if we get worse than horizontal
+      }
 
-      // usleep((unsigned int)(dt.c[0]*1000.0));  // waits for a single timestep
+      // 1x faster than time
+      usleep((unsigned int)(dt.c[0]*1000000.0));  // waits for a single timestep
       
     }
     

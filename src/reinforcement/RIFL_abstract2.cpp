@@ -24,7 +24,7 @@ namespace whiteice
   {
     // initializes parameters
     {
-      gamma = T(0.8);
+      gamma = T(0.80); // how much weight future values Q() have
       epsilon = T(0.80);
 
       learningMode = true;
@@ -414,10 +414,9 @@ namespace whiteice
 	if(hasModel[0] == 0 || hasModel[1] == 0){
 	  rng.uniform(u);
 
-
 	  for(unsigned int i=0;i<u.size();i++){
 	    u[i] = T(2.0)*u[i] - T(1.0);
-	    if(u[i] < T(-1.0)) u[i] = T(-1.0); // [keep things between [0,1]
+	    if(u[i] < T(-1.0)) u[i] = T(-1.0); // [keep things between [-1,+1]
 	    else if(u[i] > T(1.0)) u[i] = T(1.0);
 	  }
 	}
