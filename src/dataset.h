@@ -36,6 +36,8 @@ namespace whiteice
       dataset(const dataset<T>& d);
       ~dataset() ;
 
+      dataset<T>& operator=(const dataset<T>& d);
+
       
       bool createCluster(const std::string& name, const unsigned int dimension);
 

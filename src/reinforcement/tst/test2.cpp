@@ -43,7 +43,7 @@ int main(int argc, char** argv)
   if(argc <= 1){
     whiteice::CartPole2< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.80); // 80% of examples are selected accoring to model
+    system.setEpsilon(0.50); // 50% of control choices are random
     system.setLearningMode(true);
     system.setVerbose(true);
     
@@ -68,6 +68,9 @@ int main(int argc, char** argv)
       
       counter++;
     }
+
+    if(system.save("rifl.dat"))
+      printf("MODEL FILE SAVED\n");
 
     system.stop();
     

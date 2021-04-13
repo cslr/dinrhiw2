@@ -86,7 +86,7 @@ namespace whiteice
 
     const whiteice::nnetwork<T>* Q;
     const whiteice::dataset<T>* Q_preprocess;
-    const whiteice::dataset<T>* data;
+    whiteice::dataset<T> data; // copy of own dataset
     
     whiteice::nnetwork<T>* policy; // network architecture and settings
     

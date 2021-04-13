@@ -24,7 +24,7 @@ namespace whiteice
   {
     // initializes parameters
     {
-      gamma = T(0.80); // how much weight future values Q() have
+      gamma = T(0.95); // how much weight future values Q() have
       epsilon = T(0.80);
 
       learningMode = true;
@@ -68,7 +68,7 @@ namespace whiteice
 	  Q.diagnosticsInfo();
 
 	  Q_preprocess.createCluster("input-state", numStates + numActions);
-	  Q_preprocess.createCluster("output-state", 1);
+	  Q_preprocess.createCluster("output-state", 1); // q-value
 	}
       }
       
@@ -289,23 +289,23 @@ namespace whiteice
   template <typename T>
   void RIFL_abstract2<T>::loop()
   {
+    // number of iteratios to use per epoch for optimization
+    const unsigned int Q_OPTIMIZE_ITERATIONS = 10; // 40
+    const unsigned int P_OPTIMIZE_ITERATIONS = 10; // 10
+    
     std::vector< rifl2_datapoint<T> > database;
     std::mutex database_mutex;
     
     whiteice::dataset<T> data;
-
+    whiteice::CreateRIFL2dataset<T>* dataset_thread = nullptr;
+    whiteice::math::NNGradDescent<T> grad; // Q(state,action) model optimizer
+    
     // deep pretraining using stacked RBMs
     // (requires sigmoidal nnetwork and training
     //  policy nnetwork (calculating gradients) dont work with sigmoid)
-    const bool deep = false; 
-    
-    // ENABLED deep pretraining of nnetwork (NOTE "deep" is ignored)
-    whiteice::math::NNGradDescent<T> grad; // Q(state,action) model optimizer
-    
-    whiteice::CreateRIFL2dataset<T>* dataset_thread = nullptr;
-    whiteice::CreatePolicyDataset<T>* dataset2_thread = nullptr;
-
+    const bool deep = false;
     whiteice::dataset<T> data2;
+    whiteice::CreatePolicyDataset<T>* dataset2_thread = nullptr;
     whiteice::PolicyGradAscent<T> grad2(deep);   // policy(state)=action model optimizer
 
     whiteice::linear_ETA<double> eta, eta2; // estimates how long single epoch of optimization takes
@@ -319,7 +319,7 @@ namespace whiteice
     int old_grad_iterations = -1;
     int old_grad2_iterations = -1;
 
-    const unsigned int DATASIZE = 100000; // was: 100.000 / 100K history of samples
+    const unsigned int DATASIZE = 1000000; // was: 100.000 / 1M history of samples
     const unsigned int SAMPLESIZE = 1000;
     
     const bool debug = false; // debugging messages
@@ -327,6 +327,8 @@ namespace whiteice
     bool firstTime = true;
     whiteice::math::vertex<T> state;
 
+    whiteice::nnetwork<T> nn;
+    
     
     whiteice::logging.info("RIFL_abstract2: starting optimization loop");
 
@@ -365,7 +367,7 @@ namespace whiteice
 	whiteice::math::matrix<T> e;
 
 	auto input = state;
-	policy_preprocess.preprocess(0, input);
+	//policy_preprocess.preprocess(0, input);
 
 	if(policy.calculate(input, u, e, 1, 0) == true){
 	  if(u.size() != numActions){
@@ -375,7 +377,7 @@ namespace whiteice
 	    }
 	  }
 	  else{
-	    policy_preprocess.invpreprocess(1, u);
+	    //policy_preprocess.invpreprocess(1, u);
 	  }
 	}
 	else{
@@ -478,9 +480,8 @@ namespace whiteice
 	// is behind us
 	if(epoch[0] > epoch[1])
 	  goto q_optimization_done;
-
 	
-	whiteice::nnetwork<T> nn;
+	
 	T error;
 	unsigned int iters;
 	
@@ -533,14 +534,14 @@ namespace whiteice
 	    goto q_optimization_done;
 
 	  
-	  const unsigned int NUMSAMPLES = database.size(); // was 1000
-	  // const unsigned int NUMSAMPLES = 10000; // was 1000
+	  // const unsigned int NUMSAMPLES = database.size(); // was 1000
+	  const unsigned int NUMSAMPLES = 100; // was 1000
 	  
 	  
 	  if(dataset_thread == nullptr){
 	    data.clear();
 	    data.createCluster("input-state", numStates + numActions);
-	    data.createCluster("output-action", 1);
+	    data.createCluster("output-qvalue", 1);
 
 	    dataset_thread = new CreateRIFL2dataset<T>(*this,
 						       database,
@@ -555,8 +556,9 @@ namespace whiteice
 	      
 	  }
 	  else{
-	    if(dataset_thread->isCompleted() != true)
+	    if(dataset_thread->isCompleted() != true){
 	      continue; // we havent computed proper dataset yet..
+	    }
 	  }
 	  
 	  whiteice::logging.info("RIFL_abstract2: dataset_thread finished (Q)");
@@ -583,15 +585,13 @@ namespace whiteice
 	  const bool dropout = false;
 	  const bool useInitialNN = true; // start from scratch everytime
 	  
-#if 0
-	  if(hasModel[0]) // if we have model start from NN weights..
-	    useInitialNN = true;
-#endif
-	  eta.start(0.0, 150.0); // 150 iters
+	  eta.start(0.0, Q_OPTIMIZE_ITERATIONS); // 150 iters
+
+	  grad.setRegularizer(); // enable regularizer
 	  
 	  // grad.startOptimize(data, nn, 2, 150);
 	  
-	  if(grad.startOptimize(data, nn, 1, 150, dropout, useInitialNN) == false){
+	  if(grad.startOptimize(data, nn, 1, Q_OPTIMIZE_ITERATIONS, dropout, useInitialNN) == false){
 	    whiteice::logging.error("RIFL_abstract2: starting grad optimizer FAILED");
 	    assert(0);
 	  }
@@ -639,7 +639,7 @@ namespace whiteice
       }
       
     q_optimization_done:
-
+      
       
       // 6. update/optimize policy(state) network
       // activates batch learning if it is not running
@@ -706,8 +706,8 @@ namespace whiteice
 	    goto policy_optimization_done;
 	  
 	  
-	  const unsigned int BATCHSIZE = database.size(); // was 1000
-	  // const unsigned int BATCHSIZE = 10000;
+	  // const unsigned int BATCHSIZE = database.size(); // was 1000
+	  const unsigned int BATCHSIZE = 100;
 
 	  if(dataset2_thread == nullptr){
 	    data2.clear();
@@ -781,11 +781,12 @@ namespace whiteice
 
 	    const bool dropout = false;
 	    const bool useInitialNN = true; // start from scratch everytime
-
-	    eta2.start(0.0, 150.0); // 150 iters per sample
 	    
-	    // grad2.startOptimize(&data2, q_nn, nn, 2, 150);
-	    if(grad2.startOptimize(&data2, q_nn, Q_preprocess, nn, 1, 150, dropout, useInitialNN) == false){
+	    eta2.start(0.0, P_OPTIMIZE_ITERATIONS); // 150 iters per sample
+	    
+	    if(grad2.startOptimize(&data2, q_nn, Q_preprocess, nn, 1, P_OPTIMIZE_ITERATIONS,
+				   dropout, useInitialNN) == false)
+	    {
 	      whiteice::logging.error("RIFL_abstract2: starting grad2 policy-optimizer FAILED");
 	      assert(0);
 	    }
@@ -812,13 +813,16 @@ namespace whiteice
 	      eta2.update(iters);
 	      
 	      snprintf(buffer, 128,
-		       "RIFL_abstract2: policy-optimizer epoch %d iter %d mean q-value %f [ETA %.2f hours]",
+		       "RIFL_abstract2: grad2 policy-optimizer epoch %d iter %d mean q-value %f [ETA %.2f hours]",
 		       epoch[1], iters, v, eta2.estimate()/3600.0);
 	      
 	      whiteice::logging.info(buffer);
 
 	      old_grad2_iterations = (int)iters;
 	    }
+	  }
+	  else{
+	    whiteice::logging.error("grad2.getSolutionStatistics() FAILED.");
 	  }
 	}
       }

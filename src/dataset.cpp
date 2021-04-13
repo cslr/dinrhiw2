@@ -83,9 +83,24 @@ namespace whiteice
 
     for(unsigned int i=0;i<clusters.size();i++){
       clusters[i] = d.clusters[i];
-      namemapping[clusters[i].cname] = i;
     }
-    
+
+    this->namemapping = d.namemapping;
+  }
+
+
+  template <typename T>
+  dataset<T>& dataset<T>::operator=(const dataset<T>& d)
+  {
+    clusters.resize(d.clusters.size());
+
+    for(unsigned int i=0;i<clusters.size();i++){
+      clusters[i] = d.clusters[i];
+    }
+
+    this->namemapping = d.namemapping;
+
+    return (*this);
   }
   
   

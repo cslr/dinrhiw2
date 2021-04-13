@@ -219,6 +219,7 @@ namespace whiteice
 	else{ // the first iteration of reinforcement learning do not use Q
 	  out[0] = datum.reinforcement;
 	}
+
 	
       }
 

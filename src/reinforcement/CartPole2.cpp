@@ -98,6 +98,8 @@ namespace whiteice
 
       running = false;
       physics_thread->join();
+      delete physics_thread;
+      physics_thread = nullptr;
     }
   }
 
@@ -195,7 +197,7 @@ namespace whiteice
 	    }
 	    else if(event.key.keysym.sym == SDLK_v){
 	      log_verbose = !log_verbose;
-	      //whiteice::logging.setPrintOutput(log_verbose);
+	      whiteice::logging.setPrintOutput(log_verbose);
 	      if(log_verbose)
 		whiteice::logging.setOutputFile("cartpole2.log");
 	    }
@@ -279,24 +281,20 @@ namespace whiteice
     double Fstep = 0.0;
 
 #if 1
-    if(action.size() > 0){
-      Fstep = 10.0*action[0].c[0];
+    assert(action.size() > 0);
+    
+    {
+      Fstep = 250.0*action[0].c[0];
 
       // keeps Fsteps within "SANE" values which is needed for numerical stability
-      if(Fstep >= 10.0) Fstep = 10.0;
-      else if(Fstep <= -10.0) Fstep = -10.0;
+      if(Fstep >= 250.0) Fstep = 250.0;
+      else if(Fstep <= -250.0) Fstep = -250.0;
+
+      // to test if Fstep has effect on results
+      // Fstep = (T(100.0)*normalizeTheta(theta)/T(M_PI)).c[0]; // [-1,1]
     }
 #endif
 
-#if 0
-    // assumes action values are between [-1, +1]
-    if(action.size() > 0){
-      // double a = (action[0].c[0]*2.0 - 1.0); // to interval [-1.0, +1.0]
-      double a = action[0].c[0];
-      
-      Fstep = 25.0*a; // [-25, +25]
-    }
-#endif
 
     {
       char buffer[128];
@@ -334,7 +332,7 @@ namespace whiteice
 	  // converts range between [-180.0, +180.0]
 	  T a = T(180.0)* normalizeTheta(theta) / T(M_PI);
 
-	  reinforcement = (T(180) - abs(a))/T(180.0); // 1 is up right, 0 down
+	  reinforcement = (T(180) - abs(a))/T(180.0); // 1 is up right, 0 down [0,1] value
 	  
 	  reinforcement = T(0.5)*reinforcement; // [0,0.5] value
 

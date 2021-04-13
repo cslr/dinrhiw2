@@ -23,15 +23,13 @@ namespace whiteice
 
     Q = NULL;
     Q_preprocess = NULL;
-    data = NULL;
     policy = NULL;
-
     heuristics = false;
     dropout = false;
-    regularize = false;
+
     this->deep_pretraining = deep_pretraining;
     
-    debug = false;
+    debug = true; // DEBUGing messasges turned ON
     first_time = true;
     
     NTHREADS = 0;
@@ -40,7 +38,8 @@ namespace whiteice
     running = false;
     thread_is_running = 0;
 
-    regularizer = T(0.0001); // 1/10.000
+    regularize = true; // REGULARIZER - ENABLED
+    regularizer = T(1.0); // 1/10.000
     // regularizer = T(0.0); // regularization DISABLED
   }
 
@@ -56,7 +55,7 @@ namespace whiteice
     else
       this->Q = NULL;
 
-    this->data = grad.data;
+    data = grad.data;
 
     if(grad.Q_preprocess)
       this->Q_preprocess = new whiteice::dataset<T>(*grad.Q_preprocess);
@@ -71,6 +70,7 @@ namespace whiteice
     heuristics = grad.heuristics;
     dropout = grad.dropout;
     regularizer = grad.regularizer;
+    regularize = grad.regularize;
     deep_pretraining = grad.deep_pretraining;
 
     debug = grad.debug;
@@ -122,7 +122,7 @@ namespace whiteice
    * the optimal solution and continues up to MAXITERS iterations.
    */
   template <typename T>
-  bool PolicyGradAscent<T>::startOptimize(const whiteice::dataset<T>* data,
+  bool PolicyGradAscent<T>::startOptimize(const whiteice::dataset<T>* data_,
 					  const whiteice::nnetwork<T>& Q,
 					  const whiteice::dataset<T>& Q_preprocess,
 					  // optimized policy
@@ -132,16 +132,16 @@ namespace whiteice
 					  bool dropout,
 					  bool initiallyUseNN)
   {
-    if(data == NULL) return false;
+    if(data_ == NULL) return false;
     
-    if(data->getNumberOfClusters() != 1) // dataset only contains state variables
+    if(data_->getNumberOfClusters() != 1) // dataset only contains state variables
       return false; 
     
     // need at least 10 datapoints
-    if(data->size(0) <= 10) return false;
+    if(data_->size(0) <= 10) return false;
     
-    if(data->dimension(0) != policy.input_size() ||
-       data->dimension(0) + policy.output_size() != Q.input_size())
+    if(data_->dimension(0) != policy.input_size() ||
+       data_->dimension(0) + policy.output_size() != Q.input_size())
       return false;
     
     start_lock.lock();
@@ -153,10 +153,9 @@ namespace whiteice
 	return false;
       }
     }
-    
 
-    // CANNOT become non-accessable during optimization
-    this->data = data;
+    
+    data = *data_;
     
     this->NTHREADS = NTHREADS;
     this->MAXITERS = MAXITERS;
@@ -174,18 +173,20 @@ namespace whiteice
 
     // FIXME can run out of memory and throw exception!
     {
-      auto newQ = new nnetwork<T>(Q); // copies network (settings)
-      auto newpolicy = new nnetwork<T>(policy);
+      auto newQ = new nnetwork<T>(Q); // copies network (settings)      
       auto newpreprocess = new dataset<T>(Q_preprocess);
       
       if(this->Q) delete this->Q;
-      if(this->policy) delete this->policy;
       if(this->Q_preprocess) delete this->Q_preprocess;
       
       this->Q = newQ;
       this->Q_preprocess = newpreprocess;
-      this->policy = newpolicy;
 
+      if(this->policy) delete this->policy;
+      auto newpolicy = new nnetwork<T>(policy);						 
+      this->policy = newpolicy;
+      if(initiallyUseNN == false) this->policy->randomize();
+      
       whiteice::logging.info("PolicyGradAscent: input Q weights diagnostics");
       this->Q->diagnosticsInfo();
 
@@ -193,9 +194,9 @@ namespace whiteice
       this->policy->diagnosticsInfo();
     }
 
-    policy.exportdata(bestx);
-    best_value = getValue(policy, Q, Q_preprocess, *data);
-    best_q_value = getValue(policy, Q, Q_preprocess, *data);
+    this->policy->exportdata(bestx);
+    best_value = getValue(*(this->policy), *(this->Q), *(this->Q_preprocess), data);
+    best_q_value = getValue(*(this->policy), *(this->Q), *(this->Q_preprocess), data);
     
     this->dropout = dropout;
     
@@ -348,9 +349,10 @@ namespace whiteice
 	policy.calculate(state, action);
 
 	dtest.invpreprocess(0, state);
+	//dtest.invpreprocess(1, action);
 
-	in.write_subvertex(state, 0);
-	in.write_subvertex(action, state.size());
+	assert(in.write_subvertex(state, 0) == true);
+	assert(in.write_subvertex(action, state.size()) == true);
 
 	whiteice::math::vertex<T> q;
 
@@ -389,7 +391,6 @@ namespace whiteice
   template <typename T>
   void PolicyGradAscent<T>::optimizer_loop()
   {
-    const bool regularize = true;
     
     {
       sched_param sch_params;
@@ -418,24 +419,36 @@ namespace whiteice
    
     whiteice::dataset<T> dtrain, dtest;
     
-    dtrain = *data;
-    dtest  = *data;
+    dtrain = data;
+    dtest  = data;
     
     dtrain.clearData(0);
+    //dtrain.clearData(1);
+    
     dtest.clearData(0);
+    //dtest.clearData(1);
     
     while(dtrain.size(0) == 0 || dtest.size(0)  == 0){
       dtrain.clearData(0);
-      dtest.clearData(0);
+      //dtrain.clearData(1);
       
-      for(unsigned int i=0;i<data->size(0);i++){
-	const unsigned int r = (rand() & 1);
+      dtest.clearData(0);
+      //dtest.clearData(1);
+      
+      for(unsigned int i=0;i<data.size(0);i++){
+	const unsigned int r = (rand() & 3);
 	
-	if(r == 0){
-	  dtrain.add(0, data->access(0, i),  true);
+	const math::vertex<T>& in  = data.access(0, i);
+	//const math::vertex<T>& out = data.access(1, i);
+	
+	if(r != 0){ // 75% will got to training data
+	  dtrain.add(0, in,  true);
+	  //dtrain.add(1, out, true);
+	  
 	}
 	else{
-	  dtest.add(0, data->access(0, i),  true);
+	  dtest.add(0, in,  true);
+	  //dtest.add(1, out, true);
 	}
 	
       }
@@ -639,7 +652,7 @@ namespace whiteice
 	      // calculates gradients for Q(state, action(state)) and policy(state)
 
 	      auto state = dtrain.access(0, i); // preprocessed state vector
-
+	      
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, state.norm());

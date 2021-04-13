@@ -13,7 +13,7 @@
 #include <memory>
 
 // instead of INFINITY
-#define LARGE_INF_VALUE 1e6f
+#define LARGE_INF_VALUE INFINITY
 
 
 namespace whiteice
