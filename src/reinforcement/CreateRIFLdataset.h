@@ -16,20 +16,20 @@ namespace whiteice
 {
 
   template <typename T = math::blas_real<float> >
-    class CreateRIFLdataset
-    {
-    public:
-
+  class CreateRIFLdataset
+  {
+  public:
+    
     // calculates reinforcement learning training dataset from database
     // using database_lock
     CreateRIFLdataset(RIFL_abstract<T> const & rifl, 
-		      std::vector< std::vector< rifl_datapoint<T> > > const & database,
+		      std::vector< rifl_datapoint<T> > const & database,
 		      std::mutex & database_mutex,
 		      unsigned int const& epoch, 
 		      whiteice::dataset<T>& data);
-
+    
     virtual ~CreateRIFLdataset();
-
+    
     // starts thread that creates NUMDATAPOINTS samples to dataset
     bool start(const unsigned int NUMDATAPOINTS);
 
@@ -45,11 +45,11 @@ namespace whiteice
     // (warning: if calculations are running then dataset can change during use)
     whiteice::dataset<T> const & getDataset() const;
 
-    private:
+  private:
     
     RIFL_abstract<T> const & rifl;
     
-    std::vector< std::vector< rifl_datapoint<T> > > const & database;    
+    std::vector< rifl_datapoint<T> > const & database;    
     std::mutex & database_mutex;
 
     unsigned int const& epoch;

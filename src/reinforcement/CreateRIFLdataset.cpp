@@ -20,7 +20,7 @@ namespace whiteice
   // using database_lock
   template <typename T>
   CreateRIFLdataset<T>::CreateRIFLdataset(RIFL_abstract<T> const & rifl_,
-					  std::vector< std::vector< rifl_datapoint<T> > > const & database_,
+					  std::vector< rifl_datapoint<T> > const & database_,
 					  std::mutex & database_mutex_,
 					  unsigned int const & epoch_,
 					  whiteice::dataset<T>& data_) :
@@ -161,10 +161,10 @@ namespace whiteice
 
       database_mutex.lock();
       
-      const unsigned int action = rifl.rng.rand() % rifl.numActions;
-      const unsigned int index = rifl.rng.rand() % database[action].size();
+      const unsigned int index = rifl.rng.rand() % database.size();
+      const unsigned int action = database[index].action;
 
-      const auto datum = database[action][index];
+      const auto datum = database[index];
 
       database_mutex.unlock();
       
@@ -175,9 +175,9 @@ namespace whiteice
       
       in.resize(rifl.numStates + rifl.dimActionFeatures);
       in.zero();
-      in.write_subvertex(datum.state, 0);
+      assert(in.write_subvertex(datum.state, 0) == true);
 
-      in.write_subvertex(feature, rifl.numStates);
+      assert(in.write_subvertex(feature, rifl.numStates) == true);
       
       whiteice::math::vertex<T> out(1);
       out.zero();
@@ -227,12 +227,10 @@ namespace whiteice
 	}
 
 	if(epoch > 0){
-	  unew_value =
-	    datum.reinforcement + rifl.gamma*maxvalue;
+	  unew_value = datum.reinforcement + rifl.gamma*maxvalue;
 	}
-	else{ // first iteration always uses raw reinforcement values
-	  unew_value =
-	    datum.reinforcement;
+	else{ // first iteration always uses pure reinforcement values
+	  unew_value = datum.reinforcement;
 	}
       }
       
@@ -250,7 +248,8 @@ namespace whiteice
 
     if(running == false)
       return; // exit point
-    
+
+#if 0
     // add preprocessing to dataset
     {
       data.preprocess
@@ -259,6 +258,7 @@ namespace whiteice
       data.preprocess
 	(1, whiteice::dataset<T>::dnMeanVarianceNormalization);
     }
+#endif
 
     
     // for debugging purposes (reports average max Q-value)

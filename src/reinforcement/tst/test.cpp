@@ -34,12 +34,12 @@ int main(int argc, char** argv)
   }
 #endif
 #endif
-  
+
   
   if(argc <= 1){
     whiteice::CartPole< whiteice::math::blas_real<double> > system;
 
-    system.setEpsilon(0.80); // 80% of examples are selected according to model
+    system.setEpsilon(0.50); // 50% of examples are selected according to model
     system.setLearningMode(true);
     
     // system.load("rifl.dat");
@@ -52,12 +52,8 @@ int main(int argc, char** argv)
 
     while(system.physicsIsRunning()){
       
-      if(system.getHasModel() >= 2){
-	// 95% are selected according to model
-	system.setEpsilon(0.95);
-      }
+      sleep(1);
       
-      sleep(1); 
       if((counter % 180) == 0){ // saved model file every 3 minutes
 	if(system.save("rifl.dat"))
 	  printf("MODEL FILE SAVED\n");
@@ -65,6 +61,9 @@ int main(int argc, char** argv)
       
       counter++;
     }
+
+    if(system.save("rifl.dat"))
+      printf("MODEL FILE SAVED\n");
 
     system.stop();
     

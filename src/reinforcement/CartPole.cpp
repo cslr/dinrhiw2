@@ -37,7 +37,7 @@ namespace whiteice
       reset();
       
       // simulatiom timestep
-      dt = T(0.010); // 10ms
+      dt = T(0.05); // was 10ms (0.010)
       
       iteration = 0;
     }
@@ -297,6 +297,7 @@ namespace whiteice
 	    return false;
 	}
 	
+	
 	{
 	  newstate.resize(4);
 	  newstate[0] = normalizeTheta(theta)/T(M_PI);
@@ -310,36 +311,10 @@ namespace whiteice
 	  // converts range between [-180.0, +180.0]
 	  T a = T(180.0)* normalizeTheta(theta) / T(M_PI);
 
-	  // range is ] -1.0, 0.0]; // bigger is better (closer to zero)
-	  a = -T(1.0)*abs(a)/T(180.0);
+	  // range is [0.0, 1.0]; // bigger is better (closer to zero)
+	  a = (T(180.0)-abs(a))/T(180.0);
 
-	  
-	  // additionally we add minus term for being too far from zero (W)
-
-#if 1
-#ifdef USE_SDL
-	  T x_reinforcement = abs(x);
-	  {
-	    if(x_reinforcement > T(W/2.0)){
-	      // [0,1] (within screen boundaries)
-	      x_reinforcement = (x_reinforcement - T(W/2.0))/T(W/2.0);
-	    }
-	    else{
-	      x_reinforcement = T(0.0);
-	    }
-	    
-	    // (closer to zero is better) [-1.0, 0]
-	    x_reinforcement = -abs(x_reinforcement);
-	    
-	  
-	    reinforcement = T(0.5)*(a + x_reinforcement); // [-1.0, 0]
-	  }
-#endif
-#endif
-	    
-	  reinforcement = T(1.0) + a; // we keep things between [0,1]
-
-	  reinforcement = T(0.5)*reinforcement; // keep at scale [0.0,0.5]
+	  reinforcement = a;
 
 	  printf("REINFORCEMENT: %f\n", reinforcement.c[0]);
 	  fflush(stdout);
@@ -368,7 +343,8 @@ namespace whiteice
     std::vector<T> thetas;
     T mth = T(0.0);
     T sth = T(0.0);
-    
+
+    double degrees;
     
     while(running){
       
@@ -431,7 +407,7 @@ namespace whiteice
 	    a = T(-1.0)*(T(2.0*M_PI) - a);
 	  }
 
-	  auto degrees = 360.0*(a.c[0]/(2.0*M_PI));
+	  degrees = 360.0*(a.c[0]/(2.0*M_PI));
 
 	  thetas.push_back(abs(degrees));
 
@@ -469,8 +445,12 @@ namespace whiteice
 	
 	reset(); // reset parameters of cart-pole
       }
+      else if(degrees > 24 || degrees < -24){
+	// resets if pole is more than 24 degrees off the center
+	reset();
+      }
 
-      // usleep((unsigned int)(dt.c[0]*1000.0));  // waits for a single timestep
+      usleep((unsigned int)(dt.c[0]*1000000.0));  // waits for a single timestep
       
     }
     
