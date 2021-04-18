@@ -195,7 +195,7 @@ namespace whiteice
 	  
 	  rifl.policy_preprocess.preprocess(0, input);
 	  
-	  rifl.policy.calculate(input, u, e, 1, 0);
+	  rifl.lagged_policy.calculate(input, u, e, 1, 0);
 	  
 	  rifl.policy_preprocess.invpreprocess(1, u); // does nothing..
 	  
@@ -206,17 +206,17 @@ namespace whiteice
 	
 	rifl.Q_preprocess.preprocess(0, tmp);
 	
-	rifl.Q.calculate(tmp, y, e, 1, 0);
+	rifl.lagged_Q.calculate(tmp, y, e, 1, 0);
 	
 	rifl.Q_preprocess.invpreprocess(1, y);
 
 	if(maxvalue < abs(y[0]))
 	  maxvalue = abs(y[0]);
 	
-	if(epoch > 0){
+	if(epoch > 0 && datum.lastStep == false){
 	  out[0] = datum.reinforcement + rifl.gamma*y[0];
 	}
-	else{ // the first iteration of reinforcement learning do not use Q
+	else{ // the first iteration of reinforcement learning do not use Q or if this is last step
 	  out[0] = datum.reinforcement;
 	}
 
@@ -237,7 +237,7 @@ namespace whiteice
       return; // exit point
 
     // add preprocessing to dataset
-#if 1
+#if 0
     {
       data.preprocess
 	(0, whiteice::dataset<T>::dnMeanVarianceNormalization);
@@ -270,8 +270,8 @@ namespace whiteice
     completed = true;
 
     {
-      std::lock_guard<std::mutex> lock(thread_mutex);
-      running = false;
+      // std::lock_guard<std::mutex> lock(thread_mutex);
+      // running = false;
     }
     
   }

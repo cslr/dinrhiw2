@@ -24,7 +24,8 @@ namespace whiteice
   {
     // initializes parameters
     {
-      gamma = T(0.95); // how much weight future values Q() have
+      // zero = learn pure Q(state,action) = x function which action=policy(state) is optimized
+      gamma = T(0.80); // how much weight future values Q() have: was 0.95
       epsilon = T(0.80);
 
       learningMode = true;
@@ -51,18 +52,20 @@ namespace whiteice
 	arch.push_back(numStates + numActions);
 	arch.push_back(50);
 	arch.push_back(50);
-	//arch.push_back(50);
-	//arch.push_back(50);
-	//arch.push_back(50);
+	arch.push_back(50);
+	arch.push_back(50);
+	arch.push_back(50);
 	arch.push_back(1);
 	
 	{
 	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid); // tanh, sigmoid, halfLinear
-	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
-	  nn.randomize();
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  
+	  nn.randomize(2, T(1.0));
 	  
 	  Q.importNetwork(nn);
+	  lagged_Q.importNetwork(nn);
 
 	  whiteice::logging.info("RIFL_abstract2: ctor Q diagnostics");
 	  Q.diagnosticsInfo();
@@ -80,9 +83,9 @@ namespace whiteice
 	arch.push_back(numStates);
 	arch.push_back(50);
 	arch.push_back(50);
-	//arch.push_back(50);
-	//arch.push_back(50);
-	//arch.push_back(50);
+	arch.push_back(50);
+	arch.push_back(50);
+	arch.push_back(50);
 	arch.push_back(numActions);
 
 	// policy outputs action is (should be) +[-1,+1]^D vector
@@ -92,10 +95,12 @@ namespace whiteice
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
 	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::sigmoid);
-	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
-	  nn.randomize();
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  
+	  nn.randomize(2, T(1.0));
 	  
 	  policy.importNetwork(nn);
+	  lagged_policy.importNetwork(nn);
 
 	  whiteice::logging.info("RIFL_abstract2: ctor policy diagnostics");
 	  policy.diagnosticsInfo();
@@ -290,11 +295,15 @@ namespace whiteice
   void RIFL_abstract2<T>::loop()
   {
     // number of iteratios to use per epoch for optimization
-    const unsigned int Q_OPTIMIZE_ITERATIONS = 10; // 40
-    const unsigned int P_OPTIMIZE_ITERATIONS = 10; // 10
+    const unsigned int Q_OPTIMIZE_ITERATIONS = 1; // 40
+    const unsigned int P_OPTIMIZE_ITERATIONS = 1; // 10
+
+    const T tau = T(1e-2); // lagged Q and policy network [keeps tau% of the new weights]
     
     std::vector< rifl2_datapoint<T> > database;
     std::mutex database_mutex;
+
+    bool endFlag = false; // did the simulation end during this time step?
     
     whiteice::dataset<T> data;
     whiteice::CreateRIFL2dataset<T>* dataset_thread = nullptr;
@@ -322,7 +331,7 @@ namespace whiteice
     const unsigned int DATASIZE = 1000000; // was: 100.000 / 1M history of samples
     const unsigned int SAMPLESIZE = 1000;
     
-    const bool debug = false; // debugging messages
+    const bool debug = true; // debugging messages
 
     bool firstTime = true;
     whiteice::math::vertex<T> state;
@@ -367,7 +376,7 @@ namespace whiteice
 	whiteice::math::matrix<T> e;
 
 	auto input = state;
-	//policy_preprocess.preprocess(0, input);
+	policy_preprocess.preprocess(0, input);
 
 	if(policy.calculate(input, u, e, 1, 0) == true){
 	  if(u.size() != numActions){
@@ -377,7 +386,7 @@ namespace whiteice
 	    }
 	  }
 	  else{
-	    //policy_preprocess.invpreprocess(1, u);
+	    policy_preprocess.invpreprocess(1, u);
 	  }
 	}
 	else{
@@ -426,6 +435,25 @@ namespace whiteice
 	action = u;
       }
 
+      // prints Q value of chosen action
+      {
+	whiteice::math::vertex<T> u;
+	whiteice::math::matrix<T> e;
+	whiteice::math::vertex<T> in(numStates + numActions);
+	in.zero();
+
+	in.write_subvertex(state, 0);
+	in.write_subvertex(action, numStates);
+	
+	Q_preprocess.preprocess(0, in);
+	
+	Q.calculate(in, u, e, 1, 0);
+	
+	Q_preprocess.invpreprocess(1, u); // does nothing..
+
+	std::cout << "Q(STATE,POLICY_ACTION) = " << u << ", ACTION = " << action << std::endl;
+      }
+
       whiteice::math::vertex<T> newstate;
       T reinforcement = T(0.0);
 
@@ -434,9 +462,10 @@ namespace whiteice
 	if(debug)
 	  whiteice::logging.info("RIFL_abstract2: perform action");
 	
-	if(performAction(action, newstate, reinforcement) == false){
+	if(performAction(action, newstate, reinforcement, endFlag) == false){
 	  continue;
 	}
+	
       }
 
       
@@ -456,6 +485,7 @@ namespace whiteice
 	data.action = action;
 	data.newstate = newstate;
 	data.reinforcement = reinforcement;
+	data.lastStep = endFlag;
 
 	// for synchronizing access to database datastructure
 	// (also used by CreateRIFL2dataset class/thread)
@@ -469,6 +499,8 @@ namespace whiteice
 	  database.push_back(data);
 	}
 	
+	if(debug)
+	  whiteice::logging.info("RIFL_abstract2: update database DONE.");
       }
 
       
@@ -476,6 +508,10 @@ namespace whiteice
       // activates batch learning if it is not running
       if(database.size() >= SAMPLESIZE)
       {
+	if(debug)
+	  whiteice::logging.info("RIFL_abstract2: optimize step started");
+
+	
 	// skip if other optimization step (policy network)
 	// is behind us
 	if(epoch[0] > epoch[1])
@@ -508,14 +544,27 @@ namespace whiteice
 	      {
 		std::lock_guard<std::mutex> lock(Q_mutex);
 		Q.importNetwork(nn);
-		
-		whiteice::logging.info("RIFL_abstract2: new Q diagnostics");
-		Q.diagnosticsInfo();
-		
+
 		data.clearData(0);
 		data.clearData(1);
 		
 		Q_preprocess = data;
+		
+#if 1
+		whiteice::nnetwork<T> nn2;
+		std::vector< math::vertex<T> > lagged_weights;
+		lagged_Q.exportSamples(nn2, lagged_weights, 1);
+
+		math::vertex<T> weights;
+		nn.exportdata(weights);
+
+		lagged_weights[0] = tau*weights + (T(1.0)-tau)*lagged_weights[0];
+		nn2.importdata(lagged_weights[0]);
+		lagged_Q.importNetwork(nn2);
+#endif
+		
+		whiteice::logging.info("RIFL_abstract2: new Q diagnostics");
+		Q.diagnosticsInfo();
 		
 		whiteice::logging.info("RIFL_abstract2: new Q-model imported");
 	      }
@@ -535,7 +584,7 @@ namespace whiteice
 
 	  
 	  // const unsigned int NUMSAMPLES = database.size(); // was 1000
-	  const unsigned int NUMSAMPLES = 100; // was 1000
+	  const unsigned int NUMSAMPLES = 128; // was 1000, 128
 	  
 	  
 	  if(dataset_thread == nullptr){
@@ -646,6 +695,9 @@ namespace whiteice
       
       if(database.size() >= SAMPLESIZE)
       {
+	if(debug)
+	  whiteice::logging.info("RIFL_abstract2: optimize step started2");
+	
 	// skip if other optimization step is behind us
 	// we only start calculating policy after Q() has been optimized..
 	if(epoch[1] > epoch[0] || epoch[0] == 0)
@@ -682,16 +734,31 @@ namespace whiteice
 		
 		policy.importNetwork(nn);
 
-		whiteice::logging.info("RIFL_abstract2: new policy diagnostics");
-		policy.diagnosticsInfo();
-		
 		data2.clearData(0);
 		data2.clearData(1);
 		
 		policy_preprocess = data2;
+		
+#if 1
+		whiteice::nnetwork<T> nn2;
+		std::vector< math::vertex<T> > lagged_weights;
+		lagged_policy.exportSamples(nn2, lagged_weights, 1);
+		
+		math::vertex<T> weights;
+		nn.exportdata(weights);
 
+		lagged_weights[0] = tau*weights + (T(1.0)-tau)*lagged_weights[0];
+		nn2.importdata(lagged_weights[0]);
+		lagged_policy.importNetwork(nn2);
+#endif
+		
+		whiteice::logging.info("RIFL_abstract2: new policy diagnostics");
+		policy.diagnosticsInfo();
+		
 		whiteice::logging.info("RIFL_abstract2: new policy-model imported");
 	      }
+
+	      grad2.reset();
 
 	      epoch[1]++;
 	      hasModel[1]++;
@@ -707,7 +774,7 @@ namespace whiteice
 	  
 	  
 	  // const unsigned int BATCHSIZE = database.size(); // was 1000
-	  const unsigned int BATCHSIZE = 100;
+	  const unsigned int BATCHSIZE = 128; // was 128
 
 	  if(dataset2_thread == nullptr){
 	    data2.clear();
@@ -730,18 +797,6 @@ namespace whiteice
 
 	  whiteice::logging.info("RIFL_abstract2: dataset2_thread finished (policy)");
 	  dataset2_thread->stop();
-	  
-	  
-#if 0
-	  for(unsigned int i=0;i<BATCHSIZE;i++){
-	    const unsigned int index = rng.rand() % database.size();
-	    data2.add(0, database[index].state);
-	  }
-
-	  data2.preprocess
-	    (0, whiteice::dataset<T>::dnMeanVarianceNormalization);
-	  
-#endif
 	  
 	  
 	  // fetch NN parameters from model

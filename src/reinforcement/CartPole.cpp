@@ -20,14 +20,14 @@ namespace whiteice
 {
 
   template <typename T>
-  CartPole<T>::CartPole() : RIFL_abstract<T>(5, 4, 1)
+  CartPole<T>::CartPole() : RIFL_abstract<T>(5, 6) // 2 possible actions
   {
     {
       g = T(9.81); // gravity
-      l = T(1.0);  // 1 meter long pole
+      l = T(0.10);  // 1 meter long pole
       
-      mc = T(2.000); // cart weight (2.0 kg)
-      mp = T(0.200); // pole weight (200g)
+      mc = T(1.000); // cart weight (2.0 kg)
+      mp = T(1.000); // pole weight (200g)
       
       up = T(0.01);  // friction forces [pole]
       uc = T(0.1);   // friction between track and a cart
@@ -35,13 +35,14 @@ namespace whiteice
       Nc = T(0.0);
       
       reset();
+      resetLastStep = false;
       
       // simulatiom timestep
-      dt = T(0.05); // was 10ms (0.010)
+      dt = T(0.020); // was 10ms (0.010)
       
       iteration = 0;
     }
-
+    
 #ifdef USE_SDL
     // SDL variables
     window = NULL;
@@ -113,18 +114,22 @@ namespace whiteice
     // external force
     F = T(0.0);
     F_processed = false;
+
+    resetLastStep = true;
   }
 
 
   template <typename T>
   bool CartPole<T>::getState(whiteice::math::vertex<T>& state)
   {
-    state.resize(4);
+    state.resize(6);
 
-    state[0] = normalizeTheta(theta)/T(M_PI);
-    state[1] = theta_dot;
-    state[2] = x;
-    state[3] = x_dot;
+    state[0] = atan2(sin(theta).c[0],cos(theta).c[0]); // theta
+    state[1] = sin(theta);
+    state[2] = cos(theta);
+    state[3] = theta_dot;
+    state[4] = x;
+    state[5] = x_dot;
 
 #ifdef USE_SDL
     {
@@ -165,8 +170,9 @@ namespace whiteice
 	  }
 	  
 	  if(event.type == SDL_KEYDOWN){
-	    if(event.key.keysym.sym == SDLK_ESCAPE)
+	    if(event.key.keysym.sym == SDLK_ESCAPE){
 	      this->running = false;
+	    }
 	  }
 	  else if(event.key.keysym.sym == SDLK_PLUS){
 	    T e = this->getEpsilon();
@@ -271,19 +277,36 @@ namespace whiteice
   template <typename T>
   bool CartPole<T>::performAction(const unsigned int action,
 				  whiteice::math::vertex<T>& newstate,
-				  T& reinforcement)
+				  T& reinforcement,
+				  bool& endFlag)
   {
+
+    auto old_theta = theta;
+    
     // converts action to control in newtons
     // printf("%d action\n", action);
     double Fstep = 0.0;
 
     double a = ((double)action)/((double)(this->numActions - 1)); // [0,1]
     a = 2.0*a - 1.0; // [-1.0,+1.0]
-    Fstep = 25.0*a; // [-25, +25]
+    Fstep = 20.0*a; // [-20, +20]
 
     printf("%d FORCE: %f\n", iteration, Fstep);
     
     {
+      {
+	// converts range between [-180.0, +180.0]
+	T a0 = theta / T(2.0*M_PI);
+	a0 = a0 - floor(a0);
+	a0 = T(1.0) - a0;
+	
+	// range is [0.0, 1.0]; // bigger is better (closer to one)
+	
+	std::cout << "A0 = " << a0 << std::endl;
+	std::cout << "theta0 = " << theta << std::endl;
+      }
+      
+      
       {
 	std::unique_lock<std::mutex> lock(F_change);
 	F = Fstep;
@@ -299,24 +322,59 @@ namespace whiteice
 	
 	
 	{
-	  newstate.resize(4);
-	  newstate[0] = normalizeTheta(theta)/T(M_PI);
-	  newstate[1] = theta_dot;
-	  newstate[2] = x;
-	  newstate[3] = x_dot;
+	  newstate.resize(this->numStates);
+	  newstate[0] = atan2(sin(theta).c[0],cos(theta).c[0]);
+	  newstate[1] = sin(theta);
+	  newstate[2] = cos(theta);
+	  newstate[3] = theta_dot;
+	  newstate[4] = x;
+	  newstate[5] = x_dot;
+
+	  if(resetLastStep){
+	    endFlag = true;
+	    resetLastStep = false;
+	  }
+	  else{
+	    endFlag = false;
+	  }
+
+	  auto old_angle = atan2(sin(old_theta).c[0],cos(old_theta).c[0]);
+
+	  
+	  std::cout << "angle_difference: " << newstate[0].c[0] - old_angle << std::endl;
 	}
 	
 	// our target is to keep theta at zero (the largest reinforcement value)
 	{
 	  // converts range between [-180.0, +180.0]
-	  T a = T(180.0)* normalizeTheta(theta) / T(M_PI);
+	  T a1 = T(180.0)* normalizeTheta(theta) / T(M_PI);
+	  // a1 = (T(180.0)-abs(a))/T(180.0);
 
-	  // range is [0.0, 1.0]; // bigger is better (closer to zero)
-	  a = (T(180.0)-abs(a))/T(180.0);
+	  a1 = theta/T(2.0*M_PI);
+	  
+	  if(a1 > T(0.0))
+	    a1 = a1 - floor(a1);
+	  else
+	    a1 = a1 - (floor(a1)+T(1.0f));
 
-	  reinforcement = a;
+	  if(a1 > +0.5) a1 = a1-1.0;
+	  if(a1 < -0.5) a1 = a1+1.0;
 
-	  printf("REINFORCEMENT: %f\n", reinforcement.c[0]);
+	  // a1 *= T(360.0);
+	  a1 *= T(2.0*M_PI);
+
+	  //if(a1 > T(+12.0) || a1 < T(-12.0)) a1 = 0.0;
+	  //else a1 = T(1.00);
+	  
+	  // range is [0.0, 1.0]; // bigger is better (closer to one)
+	  
+	  std::cout << "A1 = " << a1 << std::endl;
+	  std::cout << "theta1 = " << theta << std::endl;
+	  std::cout << "angle = " << 360.0*atan2(newstate[1].c[0], newstate[2].c[0])/(2*M_PI) << std::endl;
+	  
+	  reinforcement = T(-0.01)*(T(0.1)*pow(a1, T(2.0)) + T(5.0)*pow(T(Fstep), T(2.0)));
+
+	  std::cout << "REINFORCEMENT: " << reinforcement << std::endl;
 	  fflush(stdout);
 	}
       }
@@ -340,6 +398,8 @@ namespace whiteice
   {    
     double t = 0.0;
 
+    resetLastStep = false;
+    
     std::vector<T> thetas;
     T mth = T(0.0);
     T sth = T(0.0);
@@ -356,7 +416,6 @@ namespace whiteice
 	  F_processed_cond.wait_until(lock, now + 10*100ms);
 	  if(running == false) return;
 	}
-
 	
 	theta_dotdot =
 	  g*sin(theta) +
@@ -400,7 +459,11 @@ namespace whiteice
 	{
 	  // keeps range between [-2*pi, +2*pi]
 	  T a = theta/T(2.0*M_PI);
-	  a = a - floor(a);
+	  if(a > 0)
+	    a = a - floor(a);
+	  else
+	    a = a - (floor(a)+1);
+	  
 	  a = T(2.0*M_PI)*a;
 
 	  if(a > T(M_PI)){
@@ -445,12 +508,13 @@ namespace whiteice
 	
 	reset(); // reset parameters of cart-pole
       }
-      else if(degrees > 24 || degrees < -24){
-	// resets if pole is more than 24 degrees off the center
+      else if(degrees > 45 || degrees < -45){
+	// resets if pole is more than 45 degrees off the center
 	reset();
       }
 
-      usleep((unsigned int)(dt.c[0]*1000000.0));  // waits for a single timestep
+
+      // usleep((unsigned int)(dt.c[0]*1000000.0));  // waits for a single timestep
       
     }
     

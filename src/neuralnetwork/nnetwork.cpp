@@ -73,8 +73,8 @@ namespace whiteice
   template <typename T>
   nnetwork<T>::nnetwork(const nnetwork<T>& nn)
   {
-    inputValues.resize(nn.inputValues.size());
-    outputValues.resize(nn.outputValues.size());
+    inputValues = nn.inputValues;
+    outputValues = nn.outputValues;
 
     hasValidBPData = nn.hasValidBPData;
     maxwidth = nn.maxwidth;
@@ -629,7 +629,7 @@ namespace whiteice
   
   template <typename T>
   bool nnetwork<T>::randomize(const unsigned int type,
-			      const bool smallvalues)
+			      const T EXTRA_SCALING)
   {
     
     if(type == 0){
@@ -644,7 +644,8 @@ namespace whiteice
 	  for(unsigned int j=0;j<W[l][i].size();j++){
 	    // RNG is real valued, a and b are complex
 	    // this means value is complex valued [-1,+1]+[-1,+1]i
-	    const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
+	    const auto value =
+	      EXTRA_SCALING*((T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi)));
 	    
 	    whiteice::math::convert(W[l][i][j], value);
 	  }
@@ -652,7 +653,8 @@ namespace whiteice
 
 	for(unsigned int i=0;i<b[l].size();i++){
 	  for(unsigned int j=0;j<W[l][i].size();j++){
-	    const auto value = (T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi));
+	    const auto value =
+	      EXTRA_SCALING*((T(ar)*rng.uniform() - T(br)) + (T(ai)*rng.uniform() - T(bi)));
 	    
 	    whiteice::math::convert(b[l][i], value);
 	  }
@@ -675,8 +677,7 @@ namespace whiteice
 	
 	T var = math::sqrt(T(6.0f) / (arch[l] + arch[l+1]));
 
-	if(smallvalues)
-	  var *= T(0.10f);
+	var *= EXTRA_SCALING;
 	
 	for(unsigned int i=0;i<W[l].size();i++){
 	  for(unsigned int j=0;j<W[l][i].size();j++){
@@ -692,7 +693,8 @@ namespace whiteice
 	// b[l].zero(); // bias terms are set to be zero
 
 	for(unsigned int i=0;i<b[l].size();i++){
-	  const auto value = ((rng.uniform()*ar - br) + (rng.uniform()*ai - bi))*var*bias_scaling;
+	  const auto value =
+	    EXTRA_SCALING*((rng.uniform()*ar - br) + (rng.uniform()*ai - bi))*var*bias_scaling;
 	  
 	  whiteice::math::convert(b[l][i], value);
 	}
@@ -722,10 +724,8 @@ namespace whiteice
 	      
 	      T var  = math::sqrt(T(1.0f) / arch[l]);
 	
-	      if(smallvalues){
-		var *= T(0.10f);
-	      }
-	
+	      var *= EXTRA_SCALING;
+	      
 	      // RNG is is complex normal value if needed
 	      const auto value = rng.normal()*var;
 	    
@@ -735,11 +735,9 @@ namespace whiteice
 	      
 	      T var  = math::sqrt(T(1.0f) / arch[l]);
 	      T ivar = math::sqrt(T(-1.0f) / arch[l]);
-	
-	      if(smallvalues){
-		var *= T(0.10f);
-		ivar *= T(0.10f);
-	      }
+
+	      var *= EXTRA_SCALING;
+	      ivar *= EXTRA_SCALING;
 	      
 	      // RNG is is complex normal value if needed
 	      const T scaling = math::sqrt(T(0.5f)); // CN(0,1) = N(0,0.5^2) + N(0,0.5^2)*i
@@ -767,10 +765,8 @@ namespace whiteice
 	    
 	    T bias_scaling;
 	    whiteice::math::convert(bias_scaling, 0.01f);
-	    
-	    if(smallvalues){
-	      var *= T(0.10f);
-	    }
+
+	    var *= EXTRA_SCALING;
 	    
 	    // RNG is is complex normal value if needed
 	    const auto value = rng.normal()*var*bias_scaling;
@@ -784,11 +780,9 @@ namespace whiteice
 	    
 	    T bias_scaling;
 	    whiteice::math::convert(bias_scaling, 0.01f);
-	    
-	    if(smallvalues){
-	      var *= T(0.10f);
-	      ivar *= T(0.10f);
-	    }
+
+	    var *= EXTRA_SCALING;
+	    ivar *= EXTRA_SCALING;
 	    
 	    // RNG is is complex normal value if needed
 	    const T scaling = math::sqrt(T(0.5f)); // CN(0,1) = N(0,0.5^2) + N(0,0.5^2)*i

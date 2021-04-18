@@ -118,7 +118,7 @@ namespace whiteice
     // type 1 = smart initialization (uniform distribution)
     // type 2 more stable initialization (normal distribution)
     bool randomize(const unsigned int type = 2,
-		   const bool smallvalues = false);
+		   const T EXTRA_SCALING = T(1.0));
 
       // set parameters to fit the data from dataset (we set weights to match data values) [experimental code]
     bool presetWeightsFromData(const whiteice::dataset<T>& ds);

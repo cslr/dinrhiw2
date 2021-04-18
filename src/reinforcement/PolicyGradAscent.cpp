@@ -137,8 +137,8 @@ namespace whiteice
     if(data_->getNumberOfClusters() != 1) // dataset only contains state variables
       return false; 
     
-    // need at least 10 datapoints
-    if(data_->size(0) <= 10) return false;
+    // need at least 1 datapoint(s)
+    if(data_->size(0) < 1) return false;
     
     if(data_->dimension(0) != policy.input_size() ||
        data_->dimension(0) + policy.output_size() != Q.input_size())
@@ -320,6 +320,43 @@ namespace whiteice
     return true;
   }
 
+
+  /* resets computation data structures */
+  template <typename T>
+  void PolicyGradAscent<T>::reset()
+  {
+    start_lock.lock();
+
+    if(thread_is_running > 0){ // stop running thread
+      running = false;
+      
+      {
+	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
+	
+	while(thread_is_running > 0)
+	  thread_is_running_cond.wait(lock);
+      }
+    }
+
+    if(policy) delete policy;
+    if(Q) delete Q;
+    if(Q_preprocess) delete Q_preprocess;
+
+    policy = nullptr;
+    Q = nullptr;
+    Q_preprocess = nullptr;
+    
+    first_time = true;
+    iterations = 0;
+    NTHREADS = 0;
+    MAXITERS = 0;
+    
+    best_value = T(-INFINITY);
+    best_q_value = T(-INFINITY);
+    
+    start_lock.unlock();
+  }
+
   //////////////////////////////////////////////////////////////////////
   
   // calculates mean Q-value of the policy in dtest dataset (states are inputs)
@@ -427,8 +464,10 @@ namespace whiteice
     
     dtest.clearData(0);
     //dtest.clearData(1);
+
+    unsigned int counter = 0;
     
-    while(dtrain.size(0) == 0 || dtest.size(0)  == 0){
+    while((dtrain.size(0) == 0 || dtest.size(0)  == 0) && counter < 10){
       dtrain.clearData(0);
       //dtrain.clearData(1);
       
@@ -450,8 +489,14 @@ namespace whiteice
 	  dtest.add(0, in,  true);
 	  //dtest.add(1, out, true);
 	}
-	
       }
+
+      counter++;
+    }
+
+    if(counter >= 10){
+      dtrain = data;
+      dtest  = data;
     }
 
     dtrain.diagnostics();
@@ -524,6 +569,9 @@ namespace whiteice
 	      best_value = value;
 	      best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
 	      policy->exportdata(bestx);
+	      auto ptr = this->policy;
+	      this->policy = new whiteice::nnetwork<T>(*policy);
+	      delete ptr;
 	  }
 	  
 	  solution_lock.unlock();
@@ -531,91 +579,6 @@ namespace whiteice
 
 	
 	T lrate = T(1.0);
-
-
-	// calculates proper scaling for gradient terms..
-	T q_grad_scaling = T(1.0);
-	T p_grad_scaling = T(1.0);
-
-#if 0
-	{
-	  std::vector<T> q_norms; // q gradient norms
-	  std::vector<T> p_norms; // policy gradient norms
-	  	    
-#pragma omp parallel for schedule(auto)
-	  for(unsigned int i=0;i<100;i++){
-	    
-	    // calculates gradients for Q(state, action(state)) and policy(state)
-	    const unsigned int index = rng.rand() % dtrain.size(0);
-
-	    auto state = dtrain.access(0, index); // preprocessed state vector
-	    
-	    whiteice::math::vertex<T> action;
-
-	    policy->calculate(state, action);
-	    
-	    whiteice::math::matrix<T> gradP;
-	    
-	    policy->jacobian(state, gradP);
-
-	    const T p = frobenius_norm(gradP);
-
-	    dtrain.invpreprocess(0, state); // original state for Q network
-	      
-	    whiteice::math::vertex<T> in(state.size() + action.size());
-	      
-	    in.write_subvertex(state, 0);
-	    in.write_subvertex(action, state.size());
-	      
-	    Q_preprocess->preprocess(0, in);
-
-	    whiteice::math::matrix<T> full_gradQ;
-
-	    Q->gradient_value(in, full_gradQ);
-
-	    whiteice::math::matrix<T> Qpostprocess_grad;
-	    whiteice::math::matrix<T> Qpreprocess_grad_full;
-		
-	    Q_preprocess->preprocess_grad(0, Qpreprocess_grad_full);
-	    Q_preprocess->invpreprocess_grad(1, Qpostprocess_grad);
-		
-	    whiteice::math::matrix<T> Qpreprocess_grad;
-		
-	    Qpreprocess_grad_full.submatrix(Qpreprocess_grad,
-					    state.size(), 0,
-					    action.size(),
-					    Qpreprocess_grad_full.ysize());
-
-	    
-	    auto gradQ = Qpostprocess_grad * full_gradQ * Qpreprocess_grad;
-
-	    const T q = frobenius_norm(gradQ);
-
-#pragma omp critical
-	    {
-	      p_norms.push_back(p);
-	      q_norms.push_back(q);
-	    }
-	    
-	  }
-
-
-	  T meanp = T(10e-10);
-
-	  for(const auto& p : p_norms)
-	    meanp += p / T(p_norms.size());
-
-	  T meanq = T(10e-10);
-
-	  for(const auto& q : q_norms)
-	    meanq += q / T(q_norms.size());
-
-	  
-	  p_grad_scaling = T(1.0)/meanp;
-	  q_grad_scaling = T(1.0)/meanq;
-	}
-#endif
-	
 	
 	do{
 	  prev_value = value;
@@ -678,8 +641,6 @@ namespace whiteice
 	      
 	      pnet.jacobian(state, gradP);
 
-	      gradP *= p_grad_scaling;
-
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, frobenius_norm(gradP));
@@ -689,6 +650,7 @@ namespace whiteice
 	      }
 	      
 	      dtrain.invpreprocess(0, state); // original state for Q network
+	      
 	      if(debug)
 	      {
 		whiteice::math::convert(temp, state.norm());
@@ -726,8 +688,6 @@ namespace whiteice
 		whiteice::math::matrix<T> full_gradQ;
 		Q->gradient_value(in, full_gradQ);
 
-		full_gradQ *= q_grad_scaling;
-
 		if(debug)
 		{
 		  whiteice::logging.info("PolicyGradientAscent: Q-network diagnostics");
@@ -743,8 +703,8 @@ namespace whiteice
 		whiteice::math::matrix<T> Qpostprocess_grad;
 		whiteice::math::matrix<T> Qpreprocess_grad_full;
 		
-		Q_preprocess->preprocess_grad(0, Qpreprocess_grad_full);
-		Q_preprocess->invpreprocess_grad(1, Qpostprocess_grad);
+		assert(Q_preprocess->preprocess_grad(0, Qpreprocess_grad_full) == true);
+		assert(Q_preprocess->invpreprocess_grad(1, Qpostprocess_grad) == true);
 		
 		whiteice::math::matrix<T> Qpreprocess_grad;
 		
@@ -792,6 +752,8 @@ namespace whiteice
 		whiteice::math::matrix<T> g;
 		
 		g = gradQ * gradP;
+
+		assert(g.xsize() == policy->exportdatasize());
 		
 		for(unsigned int i=0;i<policy->exportdatasize();i++)
 		  grad[i] = g(0, i);
@@ -848,8 +810,8 @@ namespace whiteice
 
 	  // sumgrad.normalize(); // normalizes gradient length to unit..
 	  
-	  // lrate = T(0.5f);
-	  lrate = T(100.0);
+	  lrate = T(0.5f);
+	  // lrate = T(100.0);
 	  
 	  do{
 	    weights = w0;
@@ -866,7 +828,7 @@ namespace whiteice
 	    
 	    value = getValue(*policy, *Q, *Q_preprocess, dtrain);
 	    
-	    delta_value = (prev_value - value);
+	    delta_value = (prev_value - value); // negative value means value has increased
 	    
 	    {
 	      char buffer[128];
@@ -878,12 +840,13 @@ namespace whiteice
 	      whiteice::math::convert(l, lrate);
 	      
 	      snprintf(buffer, 128,
-		       "PolicyGradAscent: gradstep curvalue %f prevvalue %f delta %e lrate %e\n", v, p, d, l);
+		       "PolicyGradAscent: gradstep curvalue %f prevvalue %f delta %e lrate %e\n",
+		       v, p, d, l);
 	      whiteice::logging.info(buffer);
 	    }
 	    
 	    // if value becomes smaller we reduce learning rate
-	    if(delta_value >= T(0.0)){ 
+	    if(delta_value > T(0.0)){ 
 	      lrate *= T(0.50);
 	    }
 	    // value becomes larger we increase learning rate
@@ -892,8 +855,7 @@ namespace whiteice
 	    }
 	    
 	  }
-	  while(delta_value > T(0.0) && lrate >= T(10e-15) &&
-		abs(delta_value) > T(10e-30f) && running);
+	  while(delta_value > T(0.0) && lrate >= T(10e-15) && running);
 	  
 	  {
 	    char buffer[128];
@@ -925,6 +887,9 @@ namespace whiteice
 	      best_value = value;
 	      best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
 	      policy->exportdata(bestx);
+	      auto ptr = this->policy;
+	      this->policy = new whiteice::nnetwork<T>(*policy);
+	      delete ptr;
 	      
 	      {
 		char buffer[128];
@@ -955,8 +920,7 @@ namespace whiteice
 	  
 	  
 	}
-	while(abs(delta_value) > T(10e-30f) &&
-	      lrate >= T(10e-30) && 
+	while(lrate >= T(10e-30) && 
 	      iterations < MAXITERS &&
 	      running);
 	
@@ -972,6 +936,9 @@ namespace whiteice
 	    best_value = value;
 	    best_q_value = getValue(*policy, *Q, *Q_preprocess, dtest);
 	    policy->exportdata(bestx);
+	    auto ptr = this->policy;
+	    this->policy = new whiteice::nnetwork<T>(*policy);
+	    delete ptr;
 	    
 	    {
 	      char buffer[128];

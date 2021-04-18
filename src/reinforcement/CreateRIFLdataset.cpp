@@ -63,8 +63,8 @@ namespace whiteice
     try{
       NUMDATA = NUMDATAPOINTS;
       data.clear();
-      data.createCluster("input-state", rifl.numStates + rifl.dimActionFeatures);
-      data.createCluster("output-action", 1);
+      data.createCluster("input-state", rifl.numStates);
+      data.createCluster("output-action", rifl.numActions);
       
       completed = false;
       
@@ -164,77 +164,56 @@ namespace whiteice
       const unsigned int index = rifl.rng.rand() % database.size();
       const unsigned int action = database[index].action;
 
-      const auto datum = database[index];
+      const auto& datum = database[index];
 
       database_mutex.unlock();
       
       whiteice::math::vertex<T> in;
-      whiteice::math::vertex<T> feature;
-
-      rifl.getActionFeature(action, feature);
       
-      in.resize(rifl.numStates + rifl.dimActionFeatures);
+      in.resize(rifl.numStates);
       in.zero();
       assert(in.write_subvertex(datum.state, 0) == true);
 
-      assert(in.write_subvertex(feature, rifl.numStates) == true);
-      
-      whiteice::math::vertex<T> out(1);
+      whiteice::math::vertex<T> out(rifl.numActions);
+      whiteice::math::vertex<T> u;
+      whiteice::math::matrix<T> e;
       out.zero();
+
+      auto instate = datum.state;
+
+      rifl.preprocess.preprocess(0, instate);
+      assert(rifl.model.calculate(instate, out, e, 1, 0) == true);
+      rifl.preprocess.invpreprocess(1, out);
       
       // calculates updated utility value
 	      
-      whiteice::math::vertex<T> u;
-      
       T unew_value = T(0.0);
-      
       T maxvalue = T(-INFINITY);
       
       {
-	
-	for(unsigned int j=0;j<rifl.numActions;j++){
-	  std::lock_guard<std::mutex> lock(rifl.model_mutex);
-	  
-	  whiteice::math::vertex<T> u;
-	  whiteice::math::matrix<T> e;
-	  
-	  whiteice::math::vertex<T> input(rifl.numStates + rifl.dimActionFeatures);
-	  whiteice::math::vertex<T> f;
-	  
-	  input.zero();
-	  input.write_subvertex(datum.newstate, 0);
-	  
-	  rifl.getActionFeature(j, f);
-	  input.write_subvertex(f, rifl.numStates);
-	  
-	  rifl.preprocess.preprocess(0, input);
-	  
-	  if(rifl.model.calculate(input, u, e, 1, 0) == true){
-	    if(u.size() != 1){
-	      u.resize(1);
-	      u[0] = T(0.0);
-	    }
-	    else
-	      rifl.preprocess.invpreprocess(1, u);
-	  }
-	  else{
-	    u.resize(1);
-	    u[0] = T(0.0);
-	  }
-	  
-	  if(maxvalue < u[0])
-	    maxvalue = u[0];
-	}
+	whiteice::math::vertex<T> input(rifl.numStates);
 
-	if(epoch > 0){
-	  unew_value = datum.reinforcement + rifl.gamma*maxvalue;
-	}
-	else{ // first iteration always uses pure reinforcement values
+	input.zero();
+	input.write_subvertex(datum.newstate, 0);
+
+	rifl.preprocess.preprocess(0, input);
+	assert(rifl.model.calculate(input, u, e, 1, 0) == true);
+	rifl.preprocess.invpreprocess(1, u);
+
+	for(unsigned int i=0;i<u.size();i++)
+	  if(maxvalue < u[i])
+	    maxvalue = u[i];
+
+	if(epoch == 0 || datum.lastStep == true){
+	  // first iteration always uses pure reinforcement values
 	  unew_value = datum.reinforcement;
+	}
+	else{ 
+	  unew_value = datum.reinforcement + rifl.gamma*maxvalue;
 	}
       }
       
-      out[0] = unew_value;
+      out[action] = unew_value;
       
 #pragma omp critical
       {
@@ -283,8 +262,8 @@ namespace whiteice
     completed = true;
 
     {
-      std::lock_guard<std::mutex> lock(thread_mutex);
-      running = false;
+      //std::lock_guard<std::mutex> lock(thread_mutex);
+      //running = false;
     }
   }
   

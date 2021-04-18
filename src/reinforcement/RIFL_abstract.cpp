@@ -11,13 +11,12 @@ namespace whiteice
 
   template <typename T>
   RIFL_abstract<T>::RIFL_abstract(const unsigned int numActions,
-				  const unsigned int numStates,
-				  const unsigned int dimActionFeatures)
+				  const unsigned int numStates)
   {
     {
       char buffer[128];
-      snprintf(buffer, 128, "RIFL_abstract CTOR called (%d, %d, %d)",
-	       numActions, numStates, dimActionFeatures);
+      snprintf(buffer, 128, "RIFL_abstract CTOR called (%d, %d)",
+	       numActions, numStates);
       whiteice::logging.info(buffer);
     }
     
@@ -31,7 +30,6 @@ namespace whiteice
       
       this->numActions        = numActions;
       this->numStates         = numStates;
-      this->dimActionFeatures = dimActionFeatures;
     }
 
     
@@ -40,28 +38,28 @@ namespace whiteice
     {
       // wide neural network..
       std::vector<unsigned int> arch;
-      arch.push_back(numStates + dimActionFeatures);
+      arch.push_back(numStates);
       arch.push_back(50);
       arch.push_back(50);
       arch.push_back(50);
       arch.push_back(50);
       arch.push_back(50);
-      arch.push_back(1);
+      arch.push_back(numActions);
 
       whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::halfLinear);
       // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
-      nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
-
+      nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::rectifier);
+      
       {
 	std::lock_guard<std::mutex> lock(model_mutex);
 	
-	nn.randomize();
+	nn.randomize(2, T(0.01));
 	model.importNetwork(nn);
 	
 	// creates empty preprocessing
-	preprocess.createCluster("input-state", numStates + dimActionFeatures);
-	preprocess.createCluster("output-action", 1);
+	preprocess.createCluster("input-state", numStates);
+	preprocess.createCluster("output-action-qs", numActions);
       }
     }
 
@@ -255,9 +253,13 @@ namespace whiteice
   {
     std::vector< rifl_datapoint<T> > database;
     std::mutex database_mutex;
+
+    bool endFlag = false;
     
     // gradient descent learning class
     whiteice::math::NNGradDescent<T> grad;
+    grad.setOverfit(true);
+    grad.setRegularizer(T(0.10f)); // enable regularizer against large values
 
     // dataset for learning class
     whiteice::dataset<T> data;
@@ -269,9 +271,11 @@ namespace whiteice
     int old_grad_iterations = 0;
 
     const unsigned int DATASIZE = 1000000;
-    const unsigned int SAMPLESIZE = 100;
-    const unsigned int BATCHSIZE = 20;
-    T temperature = T(0.010);
+    const unsigned int SAMPLESIZE = 10;
+    const unsigned int BATCHSIZE = 128;
+    const unsigned int ITERATIONS = 1; // was 250
+
+    T temperature = T(1.0);
 
     bool first_time = true;
     whiteice::math::vertex<T> state;
@@ -292,42 +296,26 @@ namespace whiteice
       
       {	
 	U.resize(numActions);
+	
+	whiteice::math::vertex<T> u;
+	whiteice::math::matrix<T> e;
 
-	for(unsigned int i=0;i<numActions;i++){
+	{
 	  std::lock_guard<std::mutex> lock(model_mutex);
-	  
-	  whiteice::math::vertex<T> u;
-	  whiteice::math::matrix<T> e;
-	  
 	  whiteice::math::vertex<T> input;
-	  whiteice::math::vertex<T> feature(dimActionFeatures);
 	  
-	  feature.zero();
-	  getActionFeature(i, feature);
-
-	  input.resize(numStates + dimActionFeatures);
-	  input.zero();
-	  input.write_subvertex(state, 0);
-	  input.write_subvertex(feature, numStates);
-
+	  input = state;
+	  
 	  preprocess.preprocess(0, input);
 	  
-	  if(model.calculate(input, u, e, 1, 0) == true){
-	    if(u.size() != 1){
-	      u.resize(1);
-	      u[0] = T(0.0);
-	    }
-	    else
-	      preprocess.invpreprocess(1, u);
-	  }
-	  else{
-	    u.resize(1);
-	    u[0] = T(0.0);
-	  }
+	  assert(model.calculate(input, u, e, 1, 0) == true);
+	  assert(u.size() == numActions);
+	  
+	  preprocess.invpreprocess(1, u);
 
-	  U[i] = u[0];
+	  for(unsigned int i=0;i<numActions;i++)
+	    U[i] = u[i];
 	}
-
       }
       
       // 3. selects action according to probabilities
@@ -336,11 +324,15 @@ namespace whiteice
       {
 #if 0
 	T psum = T(0.0);
-
+	
 	std::vector<T> p;
 
 	for(unsigned int i=0;i<U.size();i++){
-	  psum += exp(U[i]/temperature);
+	  auto value = U[i];
+	  if(value < T(-6.0)) value = T(-6.0);
+	  else if(value > T(+6.0)) value = T(+6.0);
+	
+	  psum += exp(value/temperature);
 	  p.push_back(psum);
 	}
 
@@ -352,49 +344,56 @@ namespace whiteice
 	
 	unsigned int index = 0;
 
-	while(p[index] < r) index++;
+	while(p[index] < r){
+	  index++;
+	  if(index >= numActions){
+	    index = numActions-1;
+	    break;
+	  }
+	}
 
 	action = index;
-#endif	
+#else
 	
 
 	{ // selects the largest value
 	  action = 0;
 	  T maxv = U[action];
 	  
-	  for(unsigned int i=0;i<U.size();i++){
+	  for(unsigned int i=1;i<U.size();i++){
 	    if(maxv < U[i]){
 	      action = i;
 	      maxv = U[i];
 	    }
 	  }
 	}
-
-#if 0
-	{
-	  printf("U = ");
-	  for(unsigned int i=0;i<U.size();i++){
-	    if(action == i) printf("%f* ", U[i].c[0]);
-	    else printf("%f  ", U[i].c[0]);
-	  }
-	  printf("\n");
-	}
 #endif
-	
+
 	// random selection with (1-epsilon) probability
 	// show model with epsilon probability
-	T r = rng.uniform();
-	
-	if(learningMode == false)
-	  r = T(0.0); // always selects the largest value
-
-	if(r > epsilon){
-	  action = rng.rand() % (numActions);
+	{
+	  T r = rng.uniform();
+	  
+	  if(r > epsilon){
+	    action = rng.rand() % (numActions);
+	  }
 	}
 
 	// if we don't have not yet optimized model, then we make random choices
 	if(hasModel == 0)
 	  action = rng.rand() % (numActions);
+
+#if 1
+	{
+	  printf("U = ");
+	  for(unsigned int i=0;i<U.size();i++){
+	    if(action == i) printf("%e* ", U[i].c[0]);
+	    else printf("%e  ", U[i].c[0]);
+	  }
+	  printf("\n");
+	}
+#endif
+
       }
       
       whiteice::math::vertex<T> newstate;
@@ -402,7 +401,7 @@ namespace whiteice
 
       // 4. perform action 
       {
-	if(performAction(action, newstate, reinforcement) == false){
+	if(performAction(action, newstate, reinforcement, endFlag) == false){
 	  continue;
 	}
 
@@ -422,6 +421,7 @@ namespace whiteice
 	datum.newstate = newstate;
 	datum.reinforcement = reinforcement;
 	datum.action = action;
+	datum.lastStep = endFlag;
 
 	// for synchronizing access to database datastructure
 	// (also used by CreateRIFLdataset class/thread)
@@ -450,7 +450,7 @@ namespace whiteice
 
 	  
 	  if(dataset_thread != nullptr){
-	    if(dataset_thread->isCompleted() != true){
+	    if(dataset_thread->isCompleted() != true || dataset_thread->isRunning()){
 	      continue; // keep running only dataset_thread
 	    }
 	    else{
@@ -476,11 +476,13 @@ namespace whiteice
 		if(nn.importdata(weights[0]) == false){
 		  assert(0);
 		}
+
+		nn.setNonlinearity(whiteice::nnetwork<T>::rectifier);
+		nn.setNonlinearity(nn.getLayers()-1,whiteice::nnetwork<T>::rectifier);
 	      }
 	      
 	      const bool dropout = false;
 	      const bool useInitialNN = true;
-	      const unsigned int ITERATIONS=1; // was 250
 	      
 	      // if(grad.startOptimize(data, nn, 2, 250, dropout) == false){
 	      if(grad.startOptimize(data, nn, 1, ITERATIONS, dropout, useInitialNN) == false){
@@ -535,8 +537,8 @@ namespace whiteice
 	    // start dataset_thread
 	    
 	    data.clear();
-	    data.createCluster("input-state", numStates + dimActionFeatures);
-	    data.createCluster("output-action-q", 1);
+	    data.createCluster("input-state", numStates);
+	    data.createCluster("output-action-q", numActions);
 	    
 	    dataset_thread = new CreateRIFLdataset<T>(*this,
 						      database,
@@ -665,6 +667,9 @@ namespace whiteice
 	      if(nn.importdata(weights[0]) == false){
 		assert(0);
 	      }
+
+	      nn.setNonlinearity(whiteice::nnetwork<T>::rectifier);
+	      nn.setNonlinearity(nn.getLayers()-1,whiteice::nnetwork<T>::rectifer);
 	    }
 	    
 	    const bool dropout = false;

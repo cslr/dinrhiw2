@@ -44,12 +44,10 @@ namespace whiteice
       /*
        * numActions        - the number of discrete different actions
        * numStates         - the number of dimensions in state vectors
-       * dimActionFeatures - the number of dimensoins in action vectors
-       *                     (numActions different feature vectors)
        */
       RIFL_abstract(const unsigned int numActions,
-		    const unsigned int numStates,
-		    const unsigned int dimActionFeatures);
+		    const unsigned int numStates);
+      
       ~RIFL_abstract() ;
       
       // starts Reinforcement Learning thread
@@ -91,17 +89,15 @@ namespace whiteice
       
     protected:
       
-      unsigned int numActions, numStates, dimActionFeatures;
+      unsigned int numActions, numStates;
       
       virtual bool getState(whiteice::math::vertex<T>& state) = 0;
       
       virtual bool performAction(const unsigned int action,
 				 whiteice::math::vertex<T>& newstate,
-				 T& reinforcement) = 0;
-      
-      virtual bool getActionFeature(const unsigned int action,
-				    whiteice::math::vertex<T>& feature) const = 0;
-      
+				 T& reinforcement,
+				 bool& endFlag) = 0;
+            
     protected:
       
       // helper function, returns minimum value in vec
@@ -138,6 +134,8 @@ namespace whiteice
       whiteice::math::vertex<T> state, newstate;
       unsigned int action;
       T reinforcement;
+      
+      bool lastStep;
     };
 
 

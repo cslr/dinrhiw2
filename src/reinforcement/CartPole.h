@@ -39,7 +39,8 @@ namespace whiteice
       
       virtual bool performAction(const unsigned int action,
 				 whiteice::math::vertex<T>& newstate,
-				 T& reinforcement);
+				 T& reinforcement,
+				 bool& endFlag);
 
       virtual bool getActionFeature(const unsigned int action,
 				    whiteice::math::vertex<T>& feature) const;
@@ -71,6 +72,8 @@ namespace whiteice
       T theta, theta_dot, theta_dotdot;
       T x, x_dot, x_dotdot;
       T Nc;
+
+      bool resetLastStep;
 
       T F;
       std::mutex F_change;

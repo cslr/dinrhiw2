@@ -189,8 +189,8 @@ namespace whiteice
 
       if(data.size(0) != data.size(1)) return false;
 
-      // need at least 10 datapoints
-      if(data.size(0) <= 10) return false;
+      // need at least 1 datapoint(s)
+      if(data.size(0) < 1) return false;
 
       if(data.dimension(0) != nn.input_size() ||
 	 data.dimension(1) != nn.output_size())
@@ -1039,7 +1039,7 @@ namespace whiteice
 
 	      error = getError(*nn, dtrain, (real(regularizer)>real(T(0.0f))), dropout);
 
-	      delta_error = (prev_error - error);
+	      delta_error = (prev_error - error); // positive value means error has decreased
 	      ratio = real(delta_error) / real(error);
 
 	      if(real(delta_error) < real(T(0.0f))){ // if error grows we reduce learning rate
@@ -1071,10 +1071,14 @@ namespace whiteice
 		whiteice::logging.info(buffer);
 	      }
 
+#if 0
 	      // leaky error reduction, we sometimes allow jump to worse
 	      // position in gradient direction
-	      if((rng.rand() % 5) == 0 && real(error) < real(T(1.00f))) // was 0.50f
+	      if((rng.rand() % 5) == 0 && real(error) < real(T(1.00f))){ // was 0.50f
+		logging.info("NNGradDescent: random early stopping of linesearch");
 		break;
+	      }
+#endif
 	    }
 	    while(real(delta_error) < T(0.0) && real(lrate) >= real(T(10e-25)) && running);
 	    

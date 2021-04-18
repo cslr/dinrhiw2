@@ -24,9 +24,9 @@ namespace whiteice
 {
   
   template <typename T=whiteice::math::blas_real<float> >
-    class PolicyGradAscent
-    {
-    public:
+  class PolicyGradAscent
+  {
+  public:
     
     // if errorTerms is true then dataset output values are actual
     // errors rather than correct values
@@ -75,8 +75,11 @@ namespace whiteice
     
     /* used to stop the optimization process */
     bool stopComputation();
+
+    // resets data structure to not started state
+    void reset();
     
-    private:
+  private:
     // calculates mean Q-value of the policy in dtest dataset (states are inputs)
     T getValue(const whiteice::nnetwork<T>& policy,
 	       const whiteice::nnetwork<T>& Q,
@@ -126,8 +129,8 @@ namespace whiteice
 
     whiteice::RNG<T> rng;
     
-    };
-
+  };
+  
   
   extern template class PolicyGradAscent< whiteice::math::blas_real<float> >;
   extern template class PolicyGradAscent< whiteice::math::blas_real<double> >;

@@ -51,6 +51,9 @@ int main(int argc, char** argv)
     unsigned int counter = 1;
 
     while(system.physicsIsRunning()){
+
+      // 20-25 degrees average theta happens with random control
+      // if you get smaller than that then you have learnt something
       
       sleep(1);
       

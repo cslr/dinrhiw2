@@ -39,10 +39,10 @@ namespace whiteice
     class CreatePolicyDataset;
 
   template <typename T = math::blas_real<float> >
-    class RIFL_abstract2
-    {
-    public:
-
+  class RIFL_abstract2
+  {
+  public:
+    
     // parameters are dimensions of vectors dimActions and dimStates: R^d
     RIFL_abstract2(unsigned int numActions, unsigned int numStates);
     ~RIFL_abstract2() ;
@@ -84,24 +84,25 @@ namespace whiteice
     // loads learnt Reinforcement Learning Model from file
     bool load(const std::string& filename);
 
-    protected:
-
+  protected:
+    
     unsigned int numActions, numStates; // dimensions of R^d vectors
-
+    
     virtual bool getState(whiteice::math::vertex<T>& state) = 0;
 
     // action vector is [0,1]^d (output of sigmoid non-linearity)
     virtual bool performAction(const whiteice::math::vertex<T>& action,
 			       whiteice::math::vertex<T>& newstate,
-			       T& reinforcement) = 0;
+			       T& reinforcement,
+			       bool& endFlag) = 0;
 
     // reinforcement Q model: Q(state, action) ~ discounted future cost
-    whiteice::bayesian_nnetwork<T> Q;
+    whiteice::bayesian_nnetwork<T> Q, lagged_Q;
     whiteice::dataset<T> Q_preprocess;
     mutable std::mutex Q_mutex;
 
     // f(state) = action
-    whiteice::bayesian_nnetwork<T> policy;
+    whiteice::bayesian_nnetwork<T> policy, lagged_policy;;
     whiteice::dataset<T> policy_preprocess;
     mutable std::mutex policy_mutex;
 
@@ -133,6 +134,8 @@ namespace whiteice
       whiteice::math::vertex<T> state, newstate;
       whiteice::math::vertex<T> action;
       T reinforcement;
+      
+      bool lastStep; // true if was the last step of the simulation
     };
 
 

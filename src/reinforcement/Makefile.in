@@ -4,7 +4,7 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o
+OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o RotationProblem.o
 
 EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o ../dynamic_bitset.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
@@ -15,16 +15,22 @@ EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o ../dynamic_bitset.o \
 	../conffile.o ../neuralnetwork/NNGradDescent.o \
 	../math/superresolution.o ../math/modular.o \
 	../neuralnetwork/deep_ica_network_priming.o ../math/linear_equations.o \
-	../Log.o ../math/norms.o ../neuralnetwork/stackedRBM_pretraining.o ../neuralnetwork/DBN.o ../neuralnetwork/GBRBM.o ../neuralnetwork/BBRBM.o ../math/outerproduct.o ../math/LBFGS.o ../neuralnetwork/LBFGS_GBRBM.o ../neuralnetwork/LBFGS_BBRBM.o 
+	../Log.o ../math/norms.o ../neuralnetwork/stackedRBM_pretraining.o \
+	../neuralnetwork/DBN.o ../neuralnetwork/GBRBM.o ../neuralnetwork/BBRBM.o \
+	../math/outerproduct.o ../math/LBFGS.o ../neuralnetwork/LBFGS_GBRBM.o \
+	../neuralnetwork/LBFGS_BBRBM.o 
 
 TEST1_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
 
 TEST2_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test2.o
 
+TEST3_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test3.o
+
 
 SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp \
 	CreateRIFLdataset.cpp CreateRIFL2dataset.cpp CreatePolicyDataset.cpp \
-	CartPole2.cpp tst/test.cpp tst/test2.cpp \
+	RotationProblem.cpp \
+	CartPole2.cpp tst/test.cpp tst/test2.cpp tst/test3.cpp \
 	../dataset.cpp \
 	../dynamic_bitset.cpp \
 	../math/quaternion.cpp \
@@ -47,6 +53,7 @@ CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-
 
 TARGET1=testsuite
 TARGET2=testsuite2
+TARGET3=testsuite3
 
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../rnn -I../crypto $(OPTIMIZE)
 
@@ -59,15 +66,18 @@ CD = cd
 
 ##################################################
 
-all: $(TEST1_OBJECTS) $(TEST2_OBJECTS)
+all: $(TEST1_OBJECTS) $(TEST2_OBJECTS) $(TEST3_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET1) $(TEST1_OBJECTS) $(LIBS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET2) $(TEST2_OBJECTS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET3) $(TEST3_OBJECTS) $(LIBS)
 
 clean:
 	$(RM) $(TEST1_OBJECTS)
 	$(RM) $(TARGET1)
 	$(RM) $(TEST2_OBJECTS)
 	$(RM) $(TARGET2)
+	$(RM) $(TEST3_OBJECTS)
+	$(RM) $(TARGET3)
 	$(RM) *~
 
 realclean: clean
