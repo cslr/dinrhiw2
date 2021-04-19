@@ -271,7 +271,7 @@ namespace whiteice
 
     {
       // std::lock_guard<std::mutex> lock(thread_mutex);
-      // running = false;
+      running = false;
     }
     
   }

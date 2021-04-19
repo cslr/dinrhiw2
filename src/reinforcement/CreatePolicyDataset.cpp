@@ -181,7 +181,7 @@ namespace whiteice
     completed = true;
 
     {
-      std::lock_guard<std::mutex> lock(thread_mutex);
+      // std::lock_guard<std::mutex> lock(thread_mutex);
       running = false;
     }
     
