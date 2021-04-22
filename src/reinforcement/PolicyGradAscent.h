@@ -72,6 +72,9 @@ namespace whiteice
     bool getSolutionStatistics(T& value, unsigned int& iterations) const;
 
     bool getSolution(whiteice::nnetwork<T>& policy) const;
+
+    bool getDataset(whiteice::dataset<T>& data_) const;
+    
     
     /* used to stop the optimization process */
     bool stopComputation();

@@ -60,7 +60,7 @@ namespace whiteice
 	{
 	  whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::rectifier);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid); // tanh, sigmoid, halfLinear
-	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::rectifier);
 	  
 	  nn.randomize(2, T(1.0));
 	  
@@ -94,8 +94,8 @@ namespace whiteice
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
-	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::sigmoid);
-	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
 	  
 	  nn.randomize(2, T(1.0));
 	  
@@ -256,6 +256,12 @@ namespace whiteice
     snprintf(buffer, 256, "%s-policy", filename.c_str());
     if(policy.save(buffer) == false) return false;
 
+    snprintf(buffer, 256, "%s-lagged-q", filename.c_str());    
+    if(lagged_Q.save(buffer) == false) return false;
+
+    snprintf(buffer, 256, "%s-lagged-policy", filename.c_str());
+    if(lagged_policy.save(buffer) == false) return false;
+
     snprintf(buffer, 256, "%s-q-preprocess", filename.c_str());    
     if(Q_preprocess.save(buffer) == false) return false;
 
@@ -281,6 +287,12 @@ namespace whiteice
     snprintf(buffer, 256, "%s-policy", filename.c_str());
     if(policy.load(buffer) == false) return false;
 
+    snprintf(buffer, 256, "%s-lagged-q", filename.c_str());    
+    if(lagged_Q.load(buffer) == false) return false;
+
+    snprintf(buffer, 256, "%s-lagged-policy", filename.c_str());
+    if(lagged_policy.load(buffer) == false) return false;
+
     snprintf(buffer, 256, "%s-q-preprocess", filename.c_str());    
     if(Q_preprocess.load(buffer) == false) return false;
 
@@ -298,7 +310,7 @@ namespace whiteice
     const unsigned int Q_OPTIMIZE_ITERATIONS = 1; // 40
     const unsigned int P_OPTIMIZE_ITERATIONS = 1; // 10
 
-    const T tau = T(1e-2); // lagged Q and policy network [keeps tau% of the new weights]
+    const T tau = T(1e-2); // lagged Q and policy network [keeps tau%=1% of the new weights]
     
     std::vector< rifl2_datapoint<T> > database;
     std::mutex database_mutex;
@@ -365,6 +377,7 @@ namespace whiteice
       // (+ random selection if there is no model or in
       //    1-epsilon probability)
       whiteice::math::vertex<T> action(numActions);
+      bool random = false;
       
       {
 	if(debug)
@@ -402,28 +415,37 @@ namespace whiteice
 	// FIXME add better random normally distributed noise (exploration)
 	{
 	  if(rng.uniform() > epsilon){ // 1-epsilon % are chosen randomly
-#if 0
-	    auto noise = u;
-	    rng.normal(noise); // Normal E[n]=0 StDev[n]=1
-	    u += noise;
+#if 1
+	    rng.normal(u); // Normal E[n]=0 StDev[n]=1
 #endif
-	    
+#if 0
 	    rng.uniform(u); // Normal E[n]=0 StDev[n]=1
 
 	    for(unsigned int i=0;i<u.size();i++){
 	      u[i] = T(2.0)*u[i] - T(1.0);
 	    }
+#endif
+
+	    random = true;
+	  }
+	  else{ // just adds random noise to action
+	    auto noise = u;
+	    rng.normal(noise); // Normal EX[n]=0 StDev[n]=1
+	    u += T(0.1)*noise;
 	  }
 
-	  for(unsigned int i=0;i<u.size();i++){	    
+#if 0
+	  for(unsigned int i=0;i<u.size();i++){
 	    if(u[i] < T(-1.0)) u[i] = T(-1.0); // [keep things between [-1,1]
 	    else if(u[i] > T(1.0)) u[i] = T(1.0);
 	  }
+#endif
 	}
 
 	// if there's no model then make random selection (normally distributed)
 	if(hasModel[0] == 0 || hasModel[1] == 0){
 	  rng.uniform(u);
+	  random = true;
 
 	  for(unsigned int i=0;i<u.size();i++){
 	    u[i] = T(2.0)*u[i] - T(1.0);
@@ -451,7 +473,21 @@ namespace whiteice
 	
 	Q_preprocess.invpreprocess(1, u); // does nothing..
 
-	std::cout << "Q(STATE,POLICY_ACTION) = " << u << ", ACTION = " << action << std::endl;
+	auto norm1 = state.norm();
+	auto norm2 = (action + state).norm();
+
+	if(norm2 < norm1)
+	  std::cout << "Q(STATE,POLICY_ACTION) = " << u
+		    << ", STATE = " << state
+		    << ", ACTION = " << action
+		    << "\t NORM DECREASES. RANDOM: "
+		    << random << std::endl;
+	else
+	  std::cout << "Q(STATE,POLICY_ACTION) = " << u
+		    << ", STATE = " << state
+		    << ", ACTION = " << action
+		    << "\t NORM INCREASES. RANDOM: "
+		    << random << std::endl;
       }
 
       whiteice::math::vertex<T> newstate;
@@ -531,7 +567,7 @@ namespace whiteice
 
 	    if(dataset_thread == nullptr){
 
-	      grad.getSolution(nn);
+	      assert(grad.getSolution(nn) == true);
 	      
 	      char buffer[128];
 	      double tmp = 0.0;
@@ -636,7 +672,7 @@ namespace whiteice
 	  
 	  eta.start(0.0, Q_OPTIMIZE_ITERATIONS); // 150 iters
 
-	  grad.setRegularizer(); // enable regularizer
+	  grad.setRegularizer(0.0); // DISABLE (was: enable) regularizer
 	  
 	  // grad.startOptimize(data, nn, 2, 150);
 	  
@@ -719,7 +755,8 @@ namespace whiteice
 	    
 	    if(dataset2_thread == nullptr){
 
-	      grad2.getSolution(nn);
+	      assert(grad2.getSolution(nn) == true);
+	      assert(grad2.getDataset(this->policy_preprocess) == true);
 
 	      char buffer[128];
 	      double tmp = 0.0;
@@ -734,10 +771,8 @@ namespace whiteice
 		
 		policy.importNetwork(nn);
 
-		data2.clearData(0);
-		data2.clearData(1);
-		
-		policy_preprocess = data2;
+		policy_preprocess.clearData(0);
+		policy_preprocess.clearData(1);
 		
 #if 1
 		whiteice::nnetwork<T> nn2;

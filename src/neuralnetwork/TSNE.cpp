@@ -460,8 +460,9 @@ namespace whiteice
 
 #pragma omp for nowait schedule(auto)
       for(unsigned int i=0;i<pj.size();i++){
-	if(pj[i] > T(0.0f))
+	if(pj[i] > T(1e-30f)){
 	  h += -pj[i]*math::log(pj[i])/math::log(T(2.0f));
+	}
       }
 
 #pragma omp critical

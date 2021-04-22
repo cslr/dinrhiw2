@@ -682,10 +682,12 @@ namespace whiteice
 
       
       // acquires lock temporally to wait for startOptimizer() to finish
+#if 0
       {
 	start_lock.lock();
 	start_lock.unlock();
       }
+#endif
       
       
       while(running && iterations < MAXITERS){

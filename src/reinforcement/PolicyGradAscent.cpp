@@ -38,8 +38,8 @@ namespace whiteice
     running = false;
     thread_is_running = 0;
 
-    regularize = true; // REGULARIZER - ENABLED
-    regularizer = T(1.0); // 1/10.000
+    regularize = false; // REGULARIZER - ENABLED
+    regularizer = T(1.0/10000.0); // 1/10.000
     // regularizer = T(0.0); // regularization DISABLED
   }
 
@@ -293,6 +293,14 @@ namespace whiteice
     
     return true;
   }
+
+  template <typename T>
+  bool PolicyGradAscent<T>::getDataset(whiteice::dataset<T>& data_) const
+  {
+    std::lock_guard<std::mutex> lock(solution_lock);
+    data_ = this->data;
+    return true;
+  }
   
   
   /* used to pause, continue or stop the optimization process */
@@ -417,7 +425,9 @@ namespace whiteice
 
       policy.exportdata(w);
 
-      value -= regularizer * T(0.5) * (w*w)[0];
+      T reg_term = T(1.0)/T(sqrt(this->policy->exportdatasize()));
+
+      value -= reg_term * T(0.5) * (w*w)[0];
     }
     
     return value;
@@ -519,9 +529,7 @@ namespace whiteice
 	
       // starting position for neural network
       // whiteice::nnetwork<T> policy(*(this->policy));
-      std::unique_ptr< whiteice::nnetwork<T> > policy(new nnetwork<T>(*(this->policy)));
-
-      whiteice::logging.info("PolicyGradAscent: reset policy network");
+      std::unique_ptr< whiteice::nnetwork<T> > policy(new nnetwork<T>(*(this->policy)));      
       
       
       {
@@ -529,6 +537,8 @@ namespace whiteice
 	
 	// use heuristic to normalize weights to unity (keep input weights) [the first try is always given imported weights]
 	if(first_time == false){
+	  whiteice::logging.info("PolicyGradAscent: reset policy network");
+	  
 	  policy->randomize();
 
 	  if(deep_pretraining){
@@ -546,6 +556,8 @@ namespace whiteice
 	  }
 	}
 	else{
+	  whiteice::logging.info("PolicyGradAscent: use previous/old policy network");
+	  
 	  first_time = false;
 	}
       }
@@ -650,6 +662,7 @@ namespace whiteice
 	      }
 	      
 	      dtrain.invpreprocess(0, state); // original state for Q network
+	      // dtrain.invpreprocess(1, action);
 	      
 	      if(debug)
 	      {
@@ -684,7 +697,10 @@ namespace whiteice
 	      }
 	      
 	      whiteice::math::matrix<T> gradQ;
+	      whiteice::math::vertex<T> Qvalue;
 	      {
+		Q->calculate(in, Qvalue);
+		
 		whiteice::math::matrix<T> full_gradQ;
 		Q->gradient_value(in, full_gradQ);
 
@@ -705,7 +721,7 @@ namespace whiteice
 		
 		assert(Q_preprocess->preprocess_grad(0, Qpreprocess_grad_full) == true);
 		assert(Q_preprocess->invpreprocess_grad(1, Qpostprocess_grad) == true);
-		
+
 		whiteice::math::matrix<T> Qpreprocess_grad;
 		
 		Qpreprocess_grad_full.submatrix(Qpreprocess_grad,
@@ -713,6 +729,13 @@ namespace whiteice
 						action.size(),
 						Qpreprocess_grad_full.ysize());
 
+		
+		//std::cout << "Qpostprocess_grad = " << Qpostprocess_grad << std::endl;
+		//std::cout << "Qpreprocess_full_grad = " << Qpreprocess_grad_full << std::endl;
+		//std::cout << "Qpreprocess_grad = " << Qpreprocess_grad << std::endl;
+		//std::cout << "full_gradQ " << full_gradQ << std::endl;
+
+		
 		if(debug)
 		{
 		  whiteice::math::convert(temp, frobenius_norm(Qpreprocess_grad_full));
@@ -753,10 +776,20 @@ namespace whiteice
 		
 		g = gradQ * gradP;
 
+		
+		T error_sign = T(1.0);
+		// max Q(x) = max -0.5*|Q(x) - LARGE| to prevent divergence
+		// Grad(Q)  = -sign(Q(x)-LARGE)*Grad(Q), LARGE=10
+		// T error_term = -(Qvalue[0] - T(10.0));
+		if(Qvalue[0] > T(10.0))
+		  error_sign = T(-1.0); // was -1.0
+		else
+		  error_sign = T(+1.0); // was +1.0
+		  
 		assert(g.xsize() == policy->exportdatasize());
 		
-		for(unsigned int i=0;i<policy->exportdatasize();i++)
-		  grad[i] = g(0, i);
+		for(unsigned int j=0;j<policy->exportdatasize();j++)
+		  grad[j] = error_sign*g(0, j);
 	      }
 
 	    
@@ -802,6 +835,8 @@ namespace whiteice
 	  // adds regularizer to gradient -(1/2*||w||^2)
 	  if(regularize)
 	  {
+	    regularizer = T(1.0)/T(sqrt(this->policy->exportdatasize()));
+	    
 	    sumgrad -= regularizer*w0;
 	  }
 

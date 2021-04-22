@@ -26,10 +26,10 @@ namespace whiteice
   {
     {
       g = T(9.81); // gravity
-      l = T(0.10);  // 1 meter long pole
+      l = T(1.00);  // 1 meter long pole [was 0.10]
       
       mc = T(1.000); // cart weight (2.0 kg)
-      mp = T(1.000); // pole weight (200g)
+      mp = T(0.200); // pole weight (200g) [was 1.0]
       
       up = T(0.01);  // friction forces [pole]
       uc = T(0.1);   // friction between track and a cart
@@ -533,7 +533,7 @@ namespace whiteice
 	
 	reset(); // reset parameters of cart-pole
       }
-#if 0
+#if 1
       else if(degrees > 90 || degrees < -90){
 	reset(); // reset parameters of cart-pole if we get worse than horizontal
       }

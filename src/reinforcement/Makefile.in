@@ -4,7 +4,7 @@
 CC = @CC@
 CXX= @CXX@
 
-OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o RotationProblem.o
+OBJECTS = RIFL_abstract.o CartPole.o PolicyGradAscent.o RIFL_abstract2.o CartPole2.o CreateRIFLdataset.o CreateRIFL2dataset.o CreatePolicyDataset.o RotationProblem.o AdditionProblem.o
 
 EXTRA_OBJECTS = ../dataset.o ../MemoryCompressor.o ../dynamic_bitset.o \
 	../math/vertex.o ../math/matrix.o ../math/ownexception.o \
@@ -26,11 +26,15 @@ TEST2_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test2.o
 
 TEST3_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test3.o
 
+TEST4_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test4.o
+
+TEST4A_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test4a.o
+
 
 SOURCES = RIFL_abstract.cpp CartPole.cpp PolicyGradAscent.cpp RIFL_abstract2.cpp \
 	CreateRIFLdataset.cpp CreateRIFL2dataset.cpp CreatePolicyDataset.cpp \
-	RotationProblem.cpp \
-	CartPole2.cpp tst/test.cpp tst/test2.cpp tst/test3.cpp \
+	RotationProblem.cpp AdditionProblem.cpp \
+	CartPole2.cpp tst/test.cpp tst/test2.cpp tst/test3.cpp tst/test4a.cpp \
 	../dataset.cpp \
 	../dynamic_bitset.cpp \
 	../math/quaternion.cpp \
@@ -54,6 +58,8 @@ CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-
 TARGET1=testsuite
 TARGET2=testsuite2
 TARGET3=testsuite3
+TARGET4=testsuite4
+TARGET4A=testsuite4a
 
 CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -I../.. -Iexceptions -I../math -I../neuralnetwork -I../hmm -I../rnn -I../crypto $(OPTIMIZE)
 
@@ -66,10 +72,12 @@ CD = cd
 
 ##################################################
 
-all: $(TEST1_OBJECTS) $(TEST2_OBJECTS) $(TEST3_OBJECTS)
+all: $(TEST1_OBJECTS) $(TEST2_OBJECTS) $(TEST3_OBJECTS) $(TEST4_OBJECTS) $(TEST4A_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET1) $(TEST1_OBJECTS) $(LIBS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET2) $(TEST2_OBJECTS) $(LIBS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET3) $(TEST3_OBJECTS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET4) $(TEST4_OBJECTS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET4A) $(TEST4A_OBJECTS) $(LIBS)
 
 clean:
 	$(RM) $(TEST1_OBJECTS)
@@ -78,6 +86,8 @@ clean:
 	$(RM) $(TARGET2)
 	$(RM) $(TEST3_OBJECTS)
 	$(RM) $(TARGET3)
+	$(RM) $(TEST4_OBJECTS)
+	$(RM) $(TARGET4)
 	$(RM) *~
 
 realclean: clean
