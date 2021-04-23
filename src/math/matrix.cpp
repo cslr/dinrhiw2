@@ -82,8 +82,10 @@ namespace whiteice
       data = NULL;
       compressor = NULL;
 
-      if(M.compressor != 0)
+      if(M.compressor != 0){
+	assert(0);
 	throw illegal_operation("matrix ctor: to be copied matrix is compressed");
+      }
       
 #if CUBLAS
       
@@ -301,6 +303,7 @@ namespace whiteice
     {
       if(M.numCols != numCols || M.numRows != numRows){
 	whiteice::logging.error("matrix::operator+(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'+' operator: matrix size mismatch");
       }
 
@@ -417,6 +420,7 @@ namespace whiteice
     {
       if(M.numCols != numCols || M.numRows != numRows){
 	whiteice::logging.error("matrix::operator-(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'-' operator: matrix size mismatch");
       }
 
@@ -537,6 +541,7 @@ namespace whiteice
     {	
       if(numCols != M.numRows){
 	whiteice::logging.error("matrix::operator*(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'*' operator: matrix size mismatch");
       }
 
@@ -716,6 +721,7 @@ namespace whiteice
     template <typename T>
     matrix<T> matrix<T>::operator!() const {
       whiteice::logging.error("matrix::operator!(): illegal operation called.");
+      assert(0);
       throw illegal_operation("'!'-operator");
     }
     
@@ -837,6 +843,7 @@ namespace whiteice
     {
       if(M.numCols != numCols || M.numRows != numRows){
 	whiteice::logging.error("matrix::operator+=(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'+=' operator: matrix size mismatch");
       }
 
@@ -952,6 +959,7 @@ namespace whiteice
     {
       if(M.numCols != numCols || M.numRows != numRows){
 	whiteice::logging.error("matrix::operator-=(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'-=' operator: matrix size mismatch");
       }
 
@@ -1066,6 +1074,7 @@ namespace whiteice
     {
       if(numCols != M.numRows){
 	whiteice::logging.error("matrix::operator*=(): matrix dimensions mismatch.");
+	assert(0);
 	throw illegal_operation("'*=' operator: matrix size mismatch");
       }
 
@@ -1277,6 +1286,7 @@ namespace whiteice
 
       if(!N.inv()){
 	whiteice::logging.error("matrix::operator/=() failed. singular matrix.");
+	assert(0);
 	throw illegal_operation("Cannot 'divide' with singular matrix");
       }
       
@@ -1291,8 +1301,10 @@ namespace whiteice
     {
       if(this == &M) return (*this); // self-assignment
       
-      if(M.compressor != 0)
+      if(M.compressor != 0){
+	assert(0);
 	throw illegal_operation("matrix ctor: to be copied matrix is compressed");
+      }
       
       if(M.numCols != numCols) resize_x(M.numCols);
       if(M.numRows != numRows) resize_y(M.numRows);
@@ -1482,8 +1494,10 @@ namespace whiteice
     bool matrix<T>::operator>=(const matrix<T>& M) const
       
     {
-      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
+      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1){
+	assert(0);
 	throw illegal_operation("matrix '>=': not a 1x1 matrix ");
+      }
       
       return (data[0] < M.data[0]);
     }
@@ -1493,8 +1507,10 @@ namespace whiteice
     bool matrix<T>::operator<=(const matrix<T>& M) const
       
     {
-      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
+      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1){
+	assert(0);
 	throw illegal_operation("matrix '<=': not a 1x1 matrix");
+      }
       
       return (data[0] <= M.data[0]);
     }
@@ -1504,8 +1520,10 @@ namespace whiteice
     bool matrix<T>::operator< (const matrix<T>& M) const
       
     {
-      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
+      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1){
+	assert(0);
 	throw illegal_operation("matrix  '<': not a 1x1 matrix");
+      }
       
       return (data[0] < M.data[0]);
     }
@@ -1515,8 +1533,10 @@ namespace whiteice
     bool matrix<T>::operator> (const matrix<T>& M) const
       
     {
-      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1)
+      if(M.numCols != 1 || numCols != 1 || M.numRows != 1 || numRows != 1){
+	assert(0);
 	throw illegal_operation("matrix  '>': not a 1x1 matrix");
+      }
       
       return (data[0] > M.data[0]);
     }

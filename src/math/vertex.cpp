@@ -139,8 +139,10 @@ namespace whiteice
       this->dataSize = 0;
       this->data = 0;
       
-      if(v.compressor != 0)
+      if(v.compressor != 0){
+	assert(0);
 	throw illegal_operation("vertex ctor: to be copied vertex is compressed");
+      }
 
 #ifdef CUBLAS
 
@@ -1007,6 +1009,7 @@ namespace whiteice
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 
 	whiteice::logging.error("vertex::operator+(): vertex dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1044,6 +1047,7 @@ namespace whiteice
 	printf("ERROR: illegal operation: vector operator- failed: dim %d != dim %d (%s:%d)\n",
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 	whiteice::logging.error("vertex::operator-(): vertex dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1114,6 +1118,7 @@ namespace whiteice
 	printf("ERROR: illegal operation: vector operator* failed: dim %d != dim %d (%s:%d)\n",
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 	whiteice::logging.error("vertex::operator*(): vertex dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1288,6 +1293,7 @@ namespace whiteice
       }
       else{
 	whiteice::logging.error("vertex::operator/(): division not defined for vectors.");
+	assert(0);
 	throw illegal_operation("vertex(): '/'-operator not available");
       }
     }
@@ -1295,6 +1301,7 @@ namespace whiteice
     // no "!" operation
     template <typename T>
     vertex<T> vertex<T>::operator!() const {
+      assert(0);
       throw illegal_operation("vertex(): '!'-operation not available");
     }
     
@@ -1421,6 +1428,7 @@ namespace whiteice
     {
       if(v.dataSize != 3 || this->dataSize != 3){
 	whiteice::logging.error("vertex::operator^(): input vector dimension != 3.");
+	assert(0);
 	throw illegal_operation("crossproduct: vector dimension != 3");
       }
       
@@ -1447,6 +1455,7 @@ namespace whiteice
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 
 	whiteice::logging.error("vertex::operator+=(): vector dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1564,6 +1573,7 @@ namespace whiteice
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 
 	whiteice::logging.error("vertex::operator-=(): vector dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1681,6 +1691,7 @@ namespace whiteice
 	printf("ERROR: illegal operation: vector operator*= failed: dim %d != dim %d (%s:%d)\n",
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 	whiteice::logging.error("vertex::operator*=(): vector dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 
@@ -1891,6 +1902,7 @@ namespace whiteice
       }
       else{
 	whiteice::logging.error("vertex::operator/=(): division not defined for vectors.");
+	assert(0);
 	throw illegal_operation("vertex(): '/='-operator not available");
       }
     }
@@ -1902,6 +1914,7 @@ namespace whiteice
     {
       if(v.compressor != 0 || this->compressor != 0){
 	whiteice::logging.error("vertex::operator=(): compressed vector data.");
+	assert(0);
 	throw illegal_operation("vertex '='-operator: compressed vertex data");
       }
       
@@ -1911,6 +1924,7 @@ namespace whiteice
       if(v.dataSize != this->dataSize)
 	if(this->resize(v.dataSize) != v.dataSize){
 	  whiteice::logging.error("vertex::operator=(): resize() failed.");
+	  assert(0);
 	  throw illegal_operation("vertex '='-operator: out of memory");
 	}
 
@@ -2135,6 +2149,7 @@ namespace whiteice
 		 __FILE__, __LINE__);
 
 	  whiteice::logging.error("vertex::operator=(): resize() failed.");
+	  assert(0);
 	  throw std::domain_error("vertex '='-operator: cannot assign quaternion - dimension mismatch");
 	}
       }
@@ -2773,6 +2788,7 @@ namespace whiteice
 	printf("ERROR: illegal operation: vector/matrix operator* failed: dim %d != dim %dx%d (%s:%d)\n",
 	       dataSize, M.numRows, M.numCols, __FILE__, __LINE__);
 	whiteice::logging.error("vertex::operator*(): vertex*matrix dimensions mismatch.");
+	assert(0);
 	throw std::invalid_argument("multiply: vertex/matrix dim. mismatch");
       }
 
@@ -2979,6 +2995,7 @@ namespace whiteice
       const unsigned int N = dataSize;
       if(N<0){
 	whiteice::logging.error("vertex::outerproduct(): zero length vector");
+	assert(0);
 	throw illegal_operation("vertex<T>::outerproduct(): zero length vector");
       }
 
@@ -3316,6 +3333,7 @@ namespace whiteice
 	       dataSize, v.dataSize, __FILE__, __LINE__);
 
 	whiteice::logging.error("vertex::dotmulti(): vector dimension mismatch.");
+	assert(0);
 	throw illegal_operation("vector op: vector dim. mismatch");
       }
 

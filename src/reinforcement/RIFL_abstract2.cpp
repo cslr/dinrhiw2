@@ -307,8 +307,8 @@ namespace whiteice
   void RIFL_abstract2<T>::loop()
   {
     // number of iteratios to use per epoch for optimization
-    const unsigned int Q_OPTIMIZE_ITERATIONS = 1; // 40
-    const unsigned int P_OPTIMIZE_ITERATIONS = 1; // 10
+    const unsigned int Q_OPTIMIZE_ITERATIONS = 40; // 40, was 1
+    const unsigned int P_OPTIMIZE_ITERATIONS = 10; // 10, was 1
 
     const T tau = T(1e-2); // lagged Q and policy network [keeps tau%=1% of the new weights]
     
@@ -458,6 +458,8 @@ namespace whiteice
       }
 
       // prints Q value of chosen action
+#if 0
+      // ONLY WORKS FOR AdditionProblem! (size(action) == size(state))
       {
 	whiteice::math::vertex<T> u;
 	whiteice::math::matrix<T> e;
@@ -489,6 +491,7 @@ namespace whiteice
 		    << "\t NORM INCREASES. RANDOM: "
 		    << random << std::endl;
       }
+#endif
 
       whiteice::math::vertex<T> newstate;
       T reinforcement = T(0.0);
@@ -620,7 +623,7 @@ namespace whiteice
 
 	  
 	  // const unsigned int NUMSAMPLES = database.size(); // was 1000
-	  const unsigned int NUMSAMPLES = 128; // was 1000, 128
+	  const unsigned int NUMSAMPLES = 10000; // was 1000, 128
 	  
 	  
 	  if(dataset_thread == nullptr){
@@ -809,7 +812,7 @@ namespace whiteice
 	  
 	  
 	  // const unsigned int BATCHSIZE = database.size(); // was 1000
-	  const unsigned int BATCHSIZE = 128; // was 128
+	  const unsigned int BATCHSIZE = 10000; // was 128
 
 	  if(dataset2_thread == nullptr){
 	    data2.clear();
