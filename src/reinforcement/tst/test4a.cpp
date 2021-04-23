@@ -15,8 +15,16 @@
 #include "dataset.h"
 #include "RNG.h"
 
+
+whiteice::math::blas_real<float> calculateError(const whiteice::nnetwork<>& policy,
+						const whiteice::nnetwork<>& Q,
+						const whiteice::dataset<>& data);
+
+
 int main(int argc, char** argv)
 {
+  const bool RESIDUAL = true;
+  
 #if 1
   // creates Q dataset for learning
   whiteice::nnetwork<> Q;
@@ -35,7 +43,7 @@ int main(int argc, char** argv)
     for(unsigned int i=0;i<NUM_DATAPOINTS;i++){
       whiteice::math::vertex<> in, out;
       whiteice::math::vertex<> r1, r2;
-
+      
       r1.resize(3);
       r2.resize(3);
 
@@ -47,7 +55,7 @@ int main(int argc, char** argv)
       assert(in.write_subvertex(r2, r1.size()) == true);
 
       out.resize(1);
-      auto delta = r1 - r2;
+      auto delta = r1 + r2;
       whiteice::math::blas_real<float> MAX = 5.0f;
       auto value = delta.norm();
       if(value > MAX) value = 0.0f;
@@ -63,17 +71,17 @@ int main(int argc, char** argv)
     whiteice::math::NNGradDescent<> grad;
 
     arch.push_back(6);
-    arch.push_back(51);
-    arch.push_back(52);
-    arch.push_back(53);
-    arch.push_back(54);
-    arch.push_back(55);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
     arch.push_back(1);
-
+    
     nn.setArchitecture(arch);
     nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::rectifier);
     nn.randomize();
-    nn.setResidual(false);
+    nn.setResidual(RESIDUAL);
 
     assert(grad.startOptimize(data, nn, 1, 250, false, true) == true);
 
@@ -135,17 +143,17 @@ int main(int argc, char** argv)
     whiteice::math::NNGradDescent<> grad;
 
     arch.push_back(3);
-    arch.push_back(50);
-    arch.push_back(50);
-    arch.push_back(50);
-    arch.push_back(50);
-    arch.push_back(50);
+    arch.push_back(200);
+    arch.push_back(200);
+    //arch.push_back(50);
+    //arch.push_back(50);
+    //arch.push_back(50);
     arch.push_back(3);
 
     nn.setArchitecture(arch);
     nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::tanh);
     nn.randomize();
-    nn.setResidual(false);
+    nn.setResidual(RESIDUAL);
 
     assert(grad.startOptimize(data, nn, 1, 250, false, true) == true);
 
@@ -192,24 +200,27 @@ int main(int argc, char** argv)
     whiteice::math::NNGradDescent<> grad;
 
     arch.push_back(3);
-    arch.push_back(50);
-    arch.push_back(51);
-    arch.push_back(52);
-    arch.push_back(53);
-    arch.push_back(54);
+    arch.push_back(10000);
+    //arch.push_back(50);
+    //arch.push_back(10000); //
+    //arch.push_back(50);
+    //arch.push_back(10000);
     arch.push_back(3);
 
     nn.setArchitecture(arch);
-    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::tanh);
+    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::pureLinear);
     nn.randomize();
-    nn.setResidual(false);
+    nn.setResidual(RESIDUAL);
 
     unsigned int iterations = 0;
+    bool first_time = true;
+    whiteice::math::blas_real<float> start_value = 0.0f;
 
-    while(iterations < 1000){
+    //while(iterations < 1000){
+    while(1){
 
       // calculate gradient for policy in Q(x,policy(x))
-      const unsigned int GRADSAMPLES = 100;
+      const unsigned int GRADSAMPLES = 1000;
       
       whiteice::math::vertex<> sumgrad, grad, meanq;
       grad.resize(nn.exportdatasize());
@@ -220,7 +231,8 @@ int main(int argc, char** argv)
       meanq.zero();
       
       for(unsigned int i=0;i<GRADSAMPLES;i++){
-	const unsigned int index = random.rand() % data.size(0);
+	//const unsigned int index = random.rand() % data.size(0);
+	const unsigned int index = i % data.size(0);
 	auto state = data.access(0, index);
 	
 	whiteice::math::vertex<> action;
@@ -255,7 +267,7 @@ int main(int argc, char** argv)
 
 #if 0
 	whiteice::math::blas_real<float> error_sign = 1.0;
-
+	
 	if(Qvalue[0] > 10.0)
 	  error_sign = -1.0; // was -1.0
 	else
@@ -265,7 +277,7 @@ int main(int argc, char** argv)
 	assert(g.xsize() == nn.exportdatasize());
 
 	for(unsigned int j=0;j<nn.exportdatasize();j++){
-	  grad[j] = g(0, j);
+	  grad[i] = g(0, i);
 	  // grad[i] = error_sign*g(0, i);
 	}
 
@@ -275,24 +287,50 @@ int main(int argc, char** argv)
       sumgrad /= GRADSAMPLES;
       meanq /= GRADSAMPLES;
 
+      if(first_time){
+	first_time = false;
+	start_value = meanq[0];
+      }
+
       
       // police ascend Q(x,policy(x)) value
       {
-	whiteice::math::blas_real<float> lrate = 0.001; // learning rate
+	whiteice::math::blas_real<float> lrate = 1.0; // learning rate
+
+	auto init_value = meanq[0];
+	auto cur_value = meanq[0];
+	whiteice::nnetwork<> nn2(nn);
+
+	do{
+	  whiteice::math::vertex<> weights;
+	  
+	  nn.exportdata(weights);
+	  weights += lrate*sumgrad;
+	  nn2.importdata(weights);
+
+	  cur_value = calculateError(nn2, Q, data);
+
+	  lrate *= 0.5;
+	}
+	while(cur_value < init_value && lrate > 1e-20);
 	
-	whiteice::math::vertex<> weights;
-	
-	nn.exportdata(weights);
-	weights += lrate*weights;
-	nn.importdata(weights);
-	
+	meanq[0] = cur_value;
+	nn = nn2;
       }
 
       // mean Q value given target policy
       {
+	const unsigned int index = 0 % data.size(0);
+	auto state = data.access(0, index);
+	whiteice::math::vertex<> action;
+	nn.calculate(state, action);
+	
 	std::cout << "ITER "
 		  << iterations
-		  << ". Average Q value given policy: " << meanq << std::endl;
+		  << ". Average Q value given policy: " << meanq
+		  << " (start: " << start_value << ")"
+		  << " f(" << state << ") = " << action << " "
+		  << std::endl;
       }
       
 
@@ -302,4 +340,36 @@ int main(int argc, char** argv)
   }
 
   
+}
+
+
+whiteice::math::blas_real<float> calculateError(const whiteice::nnetwork<>& policy,
+						const whiteice::nnetwork<>& Q,
+						const whiteice::dataset<>& data)
+{
+  whiteice::math::blas_real<float> meanq = 0.0;
+  
+  for(unsigned int i=0;i<data.size(0);i++){
+    //const unsigned int index = random.rand() % data.size(0);
+    const unsigned int index = i % data.size(0);
+    auto state = data.access(0, index);
+	
+    whiteice::math::vertex<> action;
+    policy.calculate(state, action);
+
+    whiteice::math::vertex<> in(state.size() + action.size());
+    
+    assert(in.write_subvertex(state, 0) == true);
+    assert(in.write_subvertex(action, state.size()) == true);
+
+    whiteice::math::vertex<> Qvalue;
+
+    Q.calculate(in, Qvalue);
+
+    meanq += Qvalue[0];
+  }
+
+  meanq /= data.size(0);
+
+  return meanq;
 }
