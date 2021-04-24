@@ -359,8 +359,8 @@ fi
 
 
 AC_MSG_CHECKING([for OpenBLAS library (7)])
-obcflags=`pkg-config openblas --cflags`
-oblibs=`pkg-config openblas --libs`
+obcflags=`pkg-config openblas --cflags 2> /dev/null`
+oblibs=`pkg-config openblas --libs 2> /dev/null`
 `gcc -o openblastest openblastest.c -DOPENBLAS $obcflags $oblibs > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
