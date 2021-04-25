@@ -1542,13 +1542,13 @@ namespace whiteice
 	blas_complex<float> alpha;
 	alpha = +1.0f;
 
-	cblas_caxpy(dataSize, (void*)&alpha, (void*)v.data, 1, (void*)(this->data), 1);
+	cblas_caxpy(dataSize, (float*)&alpha, (float*)v.data, 1, (float*)(this->data), 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	blas_complex<double> alpha;
 	alpha = +1.0;
 
-	cblas_zaxpy(dataSize, (void*)&alpha, (void*)v.data, 1, (void*)(this->data), 1);
+	cblas_zaxpy(dataSize, (double*)&alpha, (double*)v.data, 1, (double*)(this->data), 1);
       }
       else{
 	// *NO* CBLAS
@@ -1661,13 +1661,13 @@ namespace whiteice
 	blas_complex<float> alpha;
 	alpha = -1.0f;
 
-	cblas_caxpy(dataSize, (void*)&alpha, (void*)v.data, 1, (void*)(this->data), 1);
+	cblas_caxpy(dataSize, (float*)&alpha, (float*)v.data, 1, (float*)(this->data), 1);
       }
       else if(typeid(T) == typeid(blas_complex<double>)){
 	blas_complex<double> alpha;
 	alpha = -1.0;
 
-	cblas_zaxpy(dataSize, (void*)&alpha, (void*)v.data, 1, (void*)(this->data), 1);
+	cblas_zaxpy(dataSize, (double*)&alpha, (double*)v.data, 1, (double*)(this->data), 1);
       }     
       else{
 	// *NO* CBLAS
@@ -1848,8 +1848,11 @@ namespace whiteice
 	T value;
 	// blas_complex<float> value;
 
-	
-	cblas_cdotu_sub(dataSize, (void*)data, 1, (void*)v.data, 1, &value);
+#ifdef OPENBLAS
+	cblas_cdotu_sub(dataSize, (float*)data, 1, (float*)v.data, 1, (openblas_complex_float*)&value);
+#else
+	cblas_cdotu_sub(dataSize, (float*)data, 1, (float*)v.data, 1, &value);
+#endif
 
 	//whiteice::math::convert(r[0], value);
 	r[0] = value;
@@ -1859,7 +1862,11 @@ namespace whiteice
 	//blas_complex<double> value;
 	T value;
 
-	cblas_zdotu_sub(dataSize, (void*)data, 1, (void*)v.data, 1, &value);
+#ifdef OPENBLAS
+	cblas_zdotu_sub(dataSize, (double*)data, 1, (double*)v.data, 1, (openblas_complex_double*)&value);
+#else
+	cblas_zdotu_sub(dataSize, (double*)data, 1, (double*)v.data, 1, &value);
+#endif
 
 	//whiteice::math::convert(r[0], value);
 	r[0] = value;
