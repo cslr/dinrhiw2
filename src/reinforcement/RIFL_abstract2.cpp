@@ -458,8 +458,6 @@ namespace whiteice
       }
 
       // prints Q value of chosen action
-#if 0
-      // ONLY WORKS FOR AdditionProblem! (size(action) == size(state))
       {
 	whiteice::math::vertex<T> u;
 	whiteice::math::matrix<T> e;
@@ -475,24 +473,36 @@ namespace whiteice
 	
 	Q_preprocess.invpreprocess(1, u); // does nothing..
 
-	auto norm1 = state.norm();
-	auto norm2 = (action + state).norm();
-
-	if(norm2 < norm1)
+	if(action.size() == state.size()){
+	  // ONLY WORKS FOR AdditionProblem! (size(action) == size(state))
+	  
+	  auto norm1 = state.norm();
+	  auto norm2 = (action + state).norm();
+	  
+	  if(norm2 < norm1){
+	    std::cout << "Q(STATE,POLICY_ACTION) = " << u
+		      << ", STATE = " << state
+		      << ", ACTION = " << action
+		      << "\t NORM DECREASES. RANDOM: "
+		      << random << std::endl;
+	  }
+	  else{
+	    std::cout << "Q(STATE,POLICY_ACTION) = " << u
+		      << ", STATE = " << state
+		      << ", ACTION = " << action
+		      << "\t NORM INCREASES. RANDOM: "
+		      << random << std::endl;
+	  }
+	}
+	else{
 	  std::cout << "Q(STATE,POLICY_ACTION) = " << u
-		    << ", STATE = " << state
-		    << ", ACTION = " << action
-		    << "\t NORM DECREASES. RANDOM: "
-		    << random << std::endl;
-	else
-	  std::cout << "Q(STATE,POLICY_ACTION) = " << u
-		    << ", STATE = " << state
-		    << ", ACTION = " << action
-		    << "\t NORM INCREASES. RANDOM: "
-		    << random << std::endl;
+		      << ", STATE = " << state
+		      << ", ACTION = " << action
+		      << ", RANDOM: "
+		      << random << std::endl;
+	}
       }
-#endif
-
+      
       whiteice::math::vertex<T> newstate;
       T reinforcement = T(0.0);
 

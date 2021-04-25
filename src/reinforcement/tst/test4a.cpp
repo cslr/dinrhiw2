@@ -23,7 +23,7 @@ whiteice::math::blas_real<float> calculateError(const whiteice::nnetwork<>& poli
 
 int main(int argc, char** argv)
 {
-  const bool RESIDUAL = true;
+  const bool RESIDUAL = false;
   
 #if 1
   // creates Q dataset for learning
@@ -70,6 +70,15 @@ int main(int argc, char** argv)
     std::vector<unsigned int> arch;
     whiteice::math::NNGradDescent<> grad;
 
+#if 0
+    arch.push_back(6);
+    arch.push_back(128);
+    arch.push_back(400);
+    arch.push_back(200);
+    arch.push_back(128);
+    //arch.push_back(50);
+    arch.push_back(1);
+#else
     arch.push_back(6);
     arch.push_back(50);
     arch.push_back(50);
@@ -77,6 +86,7 @@ int main(int argc, char** argv)
     arch.push_back(50);
     arch.push_back(50);
     arch.push_back(1);
+#endif
     
     nn.setArchitecture(arch);
     nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::rectifier);
@@ -177,7 +187,7 @@ int main(int argc, char** argv)
     std::cout << "policy learning for AdditionProblem" << std::endl;
 
     whiteice::dataset<> data;
-    const unsigned int NUM_DATAPOINTS = 1000;
+    const unsigned int NUM_DATAPOINTS = 128;
 
     whiteice::RNG<> random;
 
@@ -200,7 +210,8 @@ int main(int argc, char** argv)
     whiteice::math::NNGradDescent<> grad;
 
     arch.push_back(3);
-    arch.push_back(10000);
+    arch.push_back(128);
+    arch.push_back(200);
     //arch.push_back(50);
     //arch.push_back(10000); //
     //arch.push_back(50);
@@ -265,7 +276,7 @@ int main(int argc, char** argv)
 
 	g = gradQ * gradP;
 
-#if 0
+#if 1
 	whiteice::math::blas_real<float> error_sign = 1.0;
 	
 	if(Qvalue[0] > 10.0)
@@ -277,8 +288,8 @@ int main(int argc, char** argv)
 	assert(g.xsize() == nn.exportdatasize());
 
 	for(unsigned int j=0;j<nn.exportdatasize();j++){
-	  grad[i] = g(0, i);
-	  // grad[i] = error_sign*g(0, i);
+	  // grad[i] = g(0, i);
+	  grad[i] = error_sign*g(0, i);
 	}
 
 	sumgrad += grad;
@@ -312,7 +323,7 @@ int main(int argc, char** argv)
 
 	  lrate *= 0.5;
 	}
-	while(cur_value < init_value && lrate > 1e-20);
+	while(cur_value <= init_value && lrate > 1e-20);
 	
 	meanq[0] = cur_value;
 	nn = nn2;
