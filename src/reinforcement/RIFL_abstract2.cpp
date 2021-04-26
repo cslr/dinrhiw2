@@ -95,7 +95,7 @@ namespace whiteice
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::tanh);
 	  // whiteice::nnetwork<T> nn(arch, whiteice::nnetwork<T>::sigmoid);
 	  // nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
-	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::tanh);
+	  nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<T>::pureLinear);
 	  
 	  nn.randomize(2, T(1.0));
 	  
@@ -307,8 +307,8 @@ namespace whiteice
   void RIFL_abstract2<T>::loop()
   {
     // number of iteratios to use per epoch for optimization
-    const unsigned int Q_OPTIMIZE_ITERATIONS = 40; // 40, was 1
-    const unsigned int P_OPTIMIZE_ITERATIONS = 10; // 10, was 1
+    const unsigned int Q_OPTIMIZE_ITERATIONS = 1000; // 40, was 1
+    const unsigned int P_OPTIMIZE_ITERATIONS = 1; // 10, was 1
 
     const T tau = T(1e-2); // lagged Q and policy network [keeps tau%=1% of the new weights]
     
@@ -341,7 +341,7 @@ namespace whiteice
     int old_grad2_iterations = -1;
 
     const unsigned int DATASIZE = 1000000; // was: 100.000 / 1M history of samples
-    const unsigned int SAMPLESIZE = 1000;
+    const unsigned int SAMPLESIZE = 2000;
     
     const bool debug = true; // debugging messages
 
@@ -360,9 +360,6 @@ namespace whiteice
 
       // 1. gets current state
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: get current state");
-	
 	auto oldstate = state;
       
 	if(getState(state) == false){
@@ -380,9 +377,6 @@ namespace whiteice
       bool random = false;
       
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: use policy to select action");
-	
 	std::lock_guard<std::mutex> lock(policy_mutex);
 
 	whiteice::math::vertex<T> u;
@@ -508,8 +502,6 @@ namespace whiteice
 
       // 3. perform action and get newstate and reinforcement
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: perform action");
 	
 	if(performAction(action, newstate, reinforcement, endFlag) == false){
 	  continue;
@@ -525,9 +517,6 @@ namespace whiteice
 
       // 4. updates database (of actions and responses)
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: update database");
-	
 	struct rifl2_datapoint<T> data;
 
 	data.state = state;
@@ -548,8 +537,6 @@ namespace whiteice
 	  database.push_back(data);
 	}
 	
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: update database DONE.");
       }
 
       
@@ -557,14 +544,11 @@ namespace whiteice
       // activates batch learning if it is not running
       if(database.size() >= SAMPLESIZE)
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: optimize step started");
-
 	
 	// skip if other optimization step (policy network)
 	// is behind us
-	if(epoch[0] > epoch[1])
-	  goto q_optimization_done;
+	//if(epoch[0] > epoch[1])
+	//  goto q_optimization_done;
 	
 	
 	T error;
@@ -628,12 +612,12 @@ namespace whiteice
 
 	  // skip if other optimization step (policy network)
 	  // is behind us
-	  if(epoch[0] > epoch[1])
-	    goto q_optimization_done;
+	  //if(epoch[0] > epoch[1])
+	  //  goto q_optimization_done;
 
 	  
 	  // const unsigned int NUMSAMPLES = database.size(); // was 1000
-	  const unsigned int NUMSAMPLES = 10000; // was 1000, 128
+	  const unsigned int NUMSAMPLES = 2000; // was 1000, 128
 	  
 	  
 	  if(dataset_thread == nullptr){
@@ -744,12 +728,12 @@ namespace whiteice
       
       if(database.size() >= SAMPLESIZE)
       {
-	if(debug)
-	  whiteice::logging.info("RIFL_abstract2: optimize step started2");
 	
 	// skip if other optimization step is behind us
 	// we only start calculating policy after Q() has been optimized..
-	if(epoch[1] > epoch[0] || epoch[0] == 0)
+	//if(epoch[1] > epoch[0] || epoch[0] == 0)
+	//  goto policy_optimization_done;
+	if(epoch[0] == 0)
 	  goto policy_optimization_done;
 
 	
@@ -817,12 +801,14 @@ namespace whiteice
 	  
 	  // skip if other optimization step is behind us
 	  // we only start calculating policy after Q() has been optimized..
-	  if(epoch[1] > epoch[0] || epoch[0] == 0) 
+	  //	  if(epoch[1] > epoch[0] || epoch[0] == 0) 
+	  //	    goto policy_optimization_done;
+	  if(epoch[0] == 0) 
 	    goto policy_optimization_done;
 	  
 	  
 	  // const unsigned int BATCHSIZE = database.size(); // was 1000
-	  const unsigned int BATCHSIZE = 10000; // was 128
+	  const unsigned int BATCHSIZE = 128; // was 128
 
 	  if(dataset2_thread == nullptr){
 	    data2.clear();
