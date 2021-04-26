@@ -21,6 +21,17 @@ int main(void){
 
 #endif
 
+#ifdef AMDBLIS
+
+#include "cblas.h"
+
+int main(void){
+  cblas_scopy(10, NULL, 1, NULL, 1);
+  return 0;
+}
+
+#endif
+
 #ifdef NVBLAS
 
 // hopefully NVIDIA will later provide full C BLAS interface functions
