@@ -31,7 +31,8 @@ namespace whiteice {
   public:
     
     // uses regular rand() if rdrand is not supported or usehw = false
-    RNG(const bool usehw = false); 
+    RNG(const bool usehw = false);
+    
     virtual ~RNG(){
       if(distrib) delete distrib;
       if(gen) delete gen;

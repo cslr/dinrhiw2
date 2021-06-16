@@ -39,7 +39,9 @@ class CryptoFileSource : public whiteice::data_source<whiteice::dynamic_bitset>
   bool encrypting;   // true if we are encrypting data, 
                      // false otherwise
   bool asciiarmour;
-  whiteice::dynamic_bitset IV; 
+  whiteice::dynamic_bitset IV;
+
+  whiteice::RNG<>* rng = new whiteice::RNG<>(true); // secure random number source
   
   mutable unsigned char* buffer;
   mutable whiteice::crypto::DataConversion<B>* DC;
