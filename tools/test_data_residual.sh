@@ -1,6 +1,7 @@
 #!/bin/sh
 
 rm -f wine-test.ds
+rm -f winenn.cfg
 
 # creates training dataset for nntool
 
@@ -56,7 +57,7 @@ cp -f wine-test.ds wine-pred.ds
 $DSTOOL -clear:1 wine-pred.ds
 # $DSTOOL -remove:1 wine-pred.ds
 
-$NNTOOL -v wine-pred.ds 13-13-1 winenn.cfg use
+$NNTOOL -v wine-pred.ds $ARCH winenn.cfg use
 
 $DSTOOL -list wine-test.ds
 $DSTOOL -list wine-pred.ds
