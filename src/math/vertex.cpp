@@ -1226,7 +1226,8 @@ namespace whiteice
       if(dataSize != 1 && v.dataSize != 1){
 	
 	vertex<T> r(1);
-	r = T(0);
+	r.resize(1);
+	r[0] = T(0.0f);
 	
 	if(typeid(T) == typeid(blas_real<float>)){
 	  *((T*)&(r.data[0])) = T(cblas_sdot(dataSize, (float*)data, 1,
@@ -1235,11 +1236,11 @@ namespace whiteice
 	}
 	else if(typeid(T) == typeid(blas_complex<float>)){
 #ifdef OPENBLAS
-	  cblas_cdotu_sub(dataSize, (float*)data, sizeof(T),
+	  cblas_cdotu_sub(dataSize, (float*)data, 1,
 			  //  (float*)v.data, 1, (openblas_complex_float*)&(r.data[0]));
 			  (float*)v.data, 1, (openblas_complex_float*)&(r.data[0]));
 #else
-	  cblas_cdotu_sub(dataSize, (float*)data, sizeof(T),
+	  cblas_cdotu_sub(dataSize, (float*)data, 1,
 			  //  (float*)v.data, 1, (openblas_complex_float*)&(r.data[0]));
 			  (float*)v.data, 1, (float*)&(r.data[0]));	  
 #endif
