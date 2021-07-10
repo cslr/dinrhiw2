@@ -56,6 +56,7 @@ bool read_arguments(unsigned int argc, char** argv, std::string& filename,
 void create_encrypted_filename(std::string& filename);
 void create_decrypted_filename(std::string& filename);
 
+bool secure_delete(const std::string& filename);
 
 
 int main(int argc, char** argv)
@@ -85,8 +86,8 @@ int main(int argc, char** argv)
 		      numrounds, aarmour,
 		      verbose, mode) == false)
     {
-      std::cout << "AES-128 cipher <dinrhiw2.sourceforge.net>" << std::endl;
-      std::cout << "usage: aescipher [-rN] [-d] [-v] [-p] [-ascii] [-mode] hexkey128bits filename" << std::endl;
+      std::cout << "AES-128 cipher <https://github.com/cslr/dinrhiw2/>" << std::endl;
+      std::cout << "usage: aescipher [-rN] [-d] [-v] [-mode] secredpassphrase filename" << std::endl;
       std::cout << "       mode = ecb, cfb, cbc, ofb, ctr. (default: ctr)" << std::endl;
       return -2;
     }
@@ -101,7 +102,7 @@ int main(int argc, char** argv)
       else if(mode == crypto::CBCmode) std::cout << "CBC";
       else if(mode == crypto::OFBmode) std::cout << "OFB";
       else if(mode == crypto::CTRmode) std::cout << "CTR";
-      std::cout << " cipher <dinrhiw2.sourceforge.net>" << std::endl;
+      std::cout << " cipher <https://github.com/cslr/dinrhiw2/>" << std::endl;
     }
     
     if(verbose)
@@ -146,11 +147,14 @@ int main(int argc, char** argv)
 	rv = - 1;
       }
       else{
+	auto original_filename = filename;
 	create_encrypted_filename(filename);
 	
 	if(filesource->write(filename)){
 	  if(verbose)
 	    std::cout << "ok." << std::endl;
+
+	  secure_delete(original_filename);
 	}
 	else{
 	  std::cerr << "file writing (i/o) failure." << std::endl;
@@ -169,16 +173,21 @@ int main(int argc, char** argv)
 	rv = -1;
       }
       else{
+	auto original_filename = filename;
 	create_decrypted_filename(filename);
 	
 	if(filesource->write(filename)){
 	  if(verbose)
 	    std::cout << "ok." << std::endl;
+
+	  secure_delete(original_filename);
 	}
 	else{
 	  std::cerr << "file writing (i/o) failure." << std::endl;
 	  rv = -1;
-	}	
+	}
+
+	
       }
     }
     
@@ -222,6 +231,64 @@ void create_decrypted_filename(std::string& filename)
   }
 }
 
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+bool secure_delete(const std::string& filename)
+{
+  // opens file for writing without truncation
+  // ASSUMES file system encrypts file contents so we only overwrite file contents once.
+
+  struct stat statbuf;
+
+  int fd = open(filename.c_str(), O_RDWR);
+
+  if(fd < 0) return false;
+
+  if(fstat(fd, &statbuf) != 0){
+    close(fd);
+    return false;
+  }
+
+  off_t filesize = statbuf.st_size;
+
+  char* block = (char*)malloc(4096);
+  if(block == 0){
+    close(fd);
+    return false;
+  }
+
+  memset(block, 0, 4096);
+
+  // overwrite using all zeros
+  off_t offset = 0;
+  const unsigned int BLOCKS = filesize/4096;
+
+  for(unsigned int i=0;i<BLOCKS;i++){
+    auto byteswritten = write(fd, block, 4096);
+    offset += byteswritten;
+    filesize -= byteswritten;
+
+    if(byteswritten == 0){
+      close(fd);
+      return false;
+    }
+  }
+
+  if(write(fd, block, filesize) != filesize){
+    close(fd);
+    return false;
+  }
+
+  close(fd);
+
+  remove(filename.c_str());
+  
+  return true;
+}
+
+
 
 bool read_arguments(unsigned int argc, char** argv,
 		    std::string& filename, dynamic_bitset& key,
@@ -231,7 +298,7 @@ bool read_arguments(unsigned int argc, char** argv,
 {
   if(argc < 3) return false;
   
-  bool passphrase = false;
+  const bool passphrase = true;
   
   for(unsigned int i=1;i<(argc-2);i++){
     if(strncmp("-r", argv[i], 2) == 0){
@@ -253,9 +320,6 @@ bool read_arguments(unsigned int argc, char** argv,
     }
     else if(strcmp("-v", argv[i]) == 0){
       verbose = true;
-    }
-    else if(strcmp("-p", argv[i]) == 0){
-      passphrase = true;
     }
     else if(strcmp("-ascii", argv[i]) == 0){
       asciiarmour = true;

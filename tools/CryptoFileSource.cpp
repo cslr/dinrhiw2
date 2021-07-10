@@ -55,9 +55,8 @@ CryptoFileSource<B>::CryptoFileSource(const std::string& filename,
       IV.resize(128);
       
       for(unsigned int i=0;i<16;i++){
-	// uses rand() for IV, 
-	// goodness of randomness isn't very important here
-	unsigned char ch = rand() & 0xFF;
+	// uses RNG::rand() for IV
+	unsigned char ch = rng->rand() & 0xFF;
 	IV.value(i) = ch;
 	buffer[16 + i] = ch;
       }
@@ -70,9 +69,8 @@ CryptoFileSource<B>::CryptoFileSource(const std::string& filename,
       // pads unused data (final block) with random data
       int padSize = (size()*B)/8 - filesize;
       for(int i=0;i<padSize;i++){
-	// uses rand() for padding, 
-	// very good randomness isn't very important
-	buffer[32 + filesize + i] = (char)(rand() % 0xFF);
+	// uses RNG::rand() for padding
+	buffer[32 + filesize + i] = (char)(rng->rand() % 0xFF);
       }
       
       this->DC = new whiteice::crypto::DataConversion<B>(buffer + 32, totalSize - 32);
@@ -119,6 +117,7 @@ CryptoFileSource<B>::~CryptoFileSource()
   if(DC != 0){ delete DC; DC = 0; }
   if(file != 0){ fclose(file); file = 0; }
   if(buffer != 0){ free(buffer); buffer = 0; }
+  if(rng != 0){ delete rng; rng = 0; }
 }
 
 

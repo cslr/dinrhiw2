@@ -152,7 +152,7 @@ namespace whiteice
       
       unsigned int NTHREADS;
       unsigned int MAXITERS;
-      std::vector<std::thread*> optimizer_thread;
+      std::vector<std::thread*> optimizer_thread;      
       
       std::map<std::thread::id, std::list<T> > errors; // last errors
       const unsigned int EHISTORY = 20;
@@ -161,7 +161,7 @@ namespace whiteice
 
       // counter per thread to test if there have been no improvements
       std::map<std::thread::id, unsigned int> noimprovements;
-      const unsigned int MAX_NOIMPROVEMENT_ITERS = 1000;
+      const unsigned int MAX_NOIMPROVEMENT_ITERS = 50;
 
       whiteice::RNG<T> rng; // we use random numbers
       bool use_minibatch; // use minibatch to estimate gradient
@@ -175,6 +175,7 @@ namespace whiteice
       volatile int thread_is_running;
       std::mutex thread_is_running_mutex;
       std::condition_variable thread_is_running_cond;
+      bool optimize_started_finished;
       
       void optimizer_loop();
       

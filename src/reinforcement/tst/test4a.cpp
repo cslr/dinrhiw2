@@ -16,9 +16,9 @@
 #include "RNG.h"
 
 
-whiteice::math::blas_real<float> calculateError(const whiteice::nnetwork<>& policy,
-						const whiteice::nnetwork<>& Q,
-						const whiteice::dataset<>& data);
+whiteice::math::blas_real<double> calculateError(const whiteice::nnetwork< whiteice::math::blas_real<double> >& policy,
+						const whiteice::nnetwork< whiteice::math::blas_real<double> >& Q,
+						const whiteice::dataset< whiteice::math::blas_real<double> >& data);
 
 
 int main(int argc, char** argv)
@@ -27,22 +27,22 @@ int main(int argc, char** argv)
   
 #if 1
   // creates Q dataset for learning
-  whiteice::nnetwork<> Q;
+  whiteice::nnetwork< whiteice::math::blas_real<double> > Q;
   
   {
     std::cout << "Q learning for AdditionProblem" << std::endl;
     
-    whiteice::dataset<> data;
+    whiteice::dataset< whiteice::math::blas_real<double> > data;
     const unsigned int NUM_DATAPOINTS = 1000;
 
-    whiteice::RNG<> random;
+    whiteice::RNG< whiteice::math::blas_real<double> > random(true);
 
     data.createCluster("input", 6);
     data.createCluster("output", 1);
 
     for(unsigned int i=0;i<NUM_DATAPOINTS;i++){
-      whiteice::math::vertex<> in, out;
-      whiteice::math::vertex<> r1, r2;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > in, out;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > r1, r2;
       
       r1.resize(3);
       r2.resize(3);
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
       out.resize(1);
       auto delta = r1 + r2;
-      whiteice::math::blas_real<float> MAX = 5.0f;
+      whiteice::math::blas_real<double> MAX = 5.0f;
       auto value = delta.norm();
       if(value > MAX) value = 0.0f;
       else value = MAX - value;
@@ -66,10 +66,19 @@ int main(int argc, char** argv)
       data.add(1, out);
     }
     
-    whiteice::nnetwork<> nn;
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn;
     std::vector<unsigned int> arch;
-    whiteice::math::NNGradDescent<> grad;
+    whiteice::math::NNGradDescent< whiteice::math::blas_real<double> > grad;
 
+#if 0
+    arch.push_back(6);
+    arch.push_back(128);
+    arch.push_back(400);
+    arch.push_back(200);
+    arch.push_back(128);
+    //arch.push_back(50);
+    arch.push_back(1);
+#else
     arch.push_back(6);
     arch.push_back(50);
     arch.push_back(50);
@@ -77,16 +86,17 @@ int main(int argc, char** argv)
     arch.push_back(50);
     arch.push_back(50);
     arch.push_back(1);
+#endif
     
     nn.setArchitecture(arch);
-    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::rectifier);
+    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier);
     nn.randomize();
     nn.setResidual(RESIDUAL);
 
-    assert(grad.startOptimize(data, nn, 1, 250, false, true) == true);
+    assert(grad.startOptimize(data, nn, 1, 1000, false, true) == true);
 
     while(grad.isRunning()){
-      whiteice::math::blas_real<float> error = 0.0f;
+      whiteice::math::blas_real<double> error = 0.0f;
       unsigned int iterations = 0;
       
       grad.getSolution(nn, error, iterations);
@@ -98,7 +108,7 @@ int main(int argc, char** argv)
 
     {
       grad.stopComputation();
-      whiteice::math::blas_real<float> error = 0.0f;
+      whiteice::math::blas_real<double> error = 0.0f;
       unsigned int iterations = 0;
       
       grad.getSolution(Q, error, iterations);
@@ -113,17 +123,17 @@ int main(int argc, char** argv)
   {
     std::cout << "policy learning for AdditionProblem" << std::endl;
 
-    whiteice::dataset<> data;
+    whiteice::dataset< whiteice::math::blas_real<double> > data;
     const unsigned int NUM_DATAPOINTS = 1000;
 
-    whiteice::RNG<> random;
+    whiteice::RNG< whiteice::math::blas_real<double> > random;
 
     data.createCluster("input", 3);
     data.createCluster("output", 3);
 
     for(unsigned int i=0;i<NUM_DATAPOINTS;i++){
-      whiteice::math::vertex<> in, out;
-      whiteice::math::vertex<> r1, r2;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > in, out;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > r1, r2;
 
       r1.resize(3);
       r2.resize(3);
@@ -138,9 +148,9 @@ int main(int argc, char** argv)
       data.add(1, out);
     }
     
-    whiteice::nnetwork<> nn;
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn;
     std::vector<unsigned int> arch;
-    whiteice::math::NNGradDescent<> grad;
+    whiteice::math::NNGradDescent< whiteice::math::blas_real<double> > grad;
 
     arch.push_back(3);
     arch.push_back(200);
@@ -151,14 +161,14 @@ int main(int argc, char** argv)
     arch.push_back(3);
 
     nn.setArchitecture(arch);
-    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::tanh);
+    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork< whiteice::math::blas_real<double> >::tanh);
     nn.randomize();
     nn.setResidual(RESIDUAL);
 
     assert(grad.startOptimize(data, nn, 1, 250, false, true) == true);
 
     while(grad.isRunning()){
-      whiteice::math::blas_real<float> error = 0.0f;
+      whiteice::math::blas_real<double> error = 0.0f;
       unsigned int iterations = 0;
       
       grad.getSolution(nn, error, iterations);
@@ -176,16 +186,16 @@ int main(int argc, char** argv)
   {
     std::cout << "policy learning for AdditionProblem" << std::endl;
 
-    whiteice::dataset<> data;
-    const unsigned int NUM_DATAPOINTS = 1000;
+    whiteice::dataset< whiteice::math::blas_real<double> > data;
+    const unsigned int NUM_DATAPOINTS = 128;
 
-    whiteice::RNG<> random;
+    whiteice::RNG< whiteice::math::blas_real<double> > random;
 
     data.createCluster("input", 3);
 
     for(unsigned int i=0;i<NUM_DATAPOINTS;i++){
-      whiteice::math::vertex<> in;
-      whiteice::math::vertex<> r1;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > in;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > r1;
 
       r1.resize(3);
 
@@ -195,34 +205,44 @@ int main(int argc, char** argv)
       data.add(0, in);
     }
     
-    whiteice::nnetwork<> nn;
+    whiteice::nnetwork< whiteice::math::blas_real<double> > nn;
     std::vector<unsigned int> arch;
-    whiteice::math::NNGradDescent<> grad;
+    whiteice::math::NNGradDescent< whiteice::math::blas_real<double> > grad;
 
+#if 0
     arch.push_back(3);
-    arch.push_back(10000);
+    arch.push_back(128);
+    arch.push_back(200);
     //arch.push_back(50);
     //arch.push_back(10000); //
     //arch.push_back(50);
     //arch.push_back(10000);
     arch.push_back(3);
+#else
+    arch.push_back(3);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50);
+    arch.push_back(50); 
+    arch.push_back(50);
+    arch.push_back(3);
+#endif
 
     nn.setArchitecture(arch);
-    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork<>::pureLinear);
+    nn.setNonlinearity(nn.getLayers()-1, whiteice::nnetwork< whiteice::math::blas_real<double> >::pureLinear);
     nn.randomize();
     nn.setResidual(RESIDUAL);
 
     unsigned int iterations = 0;
     bool first_time = true;
-    whiteice::math::blas_real<float> start_value = 0.0f;
+    whiteice::math::blas_real<double> start_value = 0.0f;
 
     //while(iterations < 1000){
     while(1){
 
       // calculate gradient for policy in Q(x,policy(x))
-      const unsigned int GRADSAMPLES = 1000;
       
-      whiteice::math::vertex<> sumgrad, grad, meanq;
+      whiteice::math::vertex< whiteice::math::blas_real<double> > sumgrad, grad, meanq;
       grad.resize(nn.exportdatasize());
       sumgrad.resize(nn.exportdatasize());
       meanq.resize(Q.output_size());
@@ -230,25 +250,25 @@ int main(int argc, char** argv)
       grad.zero();
       meanq.zero();
       
-      for(unsigned int i=0;i<GRADSAMPLES;i++){
+      for(unsigned int i=0;i<data.size(0);i++){
 	//const unsigned int index = random.rand() % data.size(0);
 	const unsigned int index = i % data.size(0);
 	auto state = data.access(0, index);
 	
-	whiteice::math::vertex<> action;
+	whiteice::math::vertex< whiteice::math::blas_real<double> > action;
 	nn.calculate(state, action);
 
-	whiteice::math::matrix<> gradP;
+	whiteice::math::matrix< whiteice::math::blas_real<double> > gradP;
 
 	nn.jacobian(state, gradP);
 
-	whiteice::math::vertex<> in(state.size() + action.size());
+	whiteice::math::vertex< whiteice::math::blas_real<double> > in(state.size() + action.size());
 
 	assert(in.write_subvertex(state, 0) == true);
 	assert(in.write_subvertex(action, state.size()) == true);
 
-	whiteice::math::matrix<> gradQ, full_gradQ;
-	whiteice::math::vertex<> Qvalue;
+	whiteice::math::matrix< whiteice::math::blas_real<double> > gradQ, full_gradQ;
+	whiteice::math::vertex< whiteice::math::blas_real<double> > Qvalue;
 
 	Q.calculate(in, Qvalue);
 	Q.gradient_value(in, full_gradQ);
@@ -261,13 +281,14 @@ int main(int argc, char** argv)
 
 	//std::cout << "gradQ = " << gradQ << std::endl;
 
-	whiteice::math::matrix<> g;
+	whiteice::math::matrix< whiteice::math::blas_real<double> > g;
 
 	g = gradQ * gradP;
 
-#if 0
-	whiteice::math::blas_real<float> error_sign = 1.0;
+
+	whiteice::math::blas_real<double> error_sign = 1.0;
 	
+#if 0	
 	if(Qvalue[0] > 10.0)
 	  error_sign = -1.0; // was -1.0
 	else
@@ -277,15 +298,15 @@ int main(int argc, char** argv)
 	assert(g.xsize() == nn.exportdatasize());
 
 	for(unsigned int j=0;j<nn.exportdatasize();j++){
-	  grad[i] = g(0, i);
-	  // grad[i] = error_sign*g(0, i);
+	  // grad[i] = g(0, i);
+	  grad[j] = error_sign*g(0, j);
 	}
 
 	sumgrad += grad;
       }
 
-      sumgrad /= GRADSAMPLES;
-      meanq /= GRADSAMPLES;
+      sumgrad /= data.size(0);
+      meanq /= data.size(0);
 
       if(first_time){
 	first_time = false;
@@ -295,14 +316,17 @@ int main(int argc, char** argv)
       
       // police ascend Q(x,policy(x)) value
       {
-	whiteice::math::blas_real<float> lrate = 1.0; // learning rate
+	whiteice::math::blas_real<double> lrate = 1.0; // learning rate
+	sumgrad.normalize();
 
+	unsigned int iterations = 0;
 	auto init_value = meanq[0];
 	auto cur_value = meanq[0];
-	whiteice::nnetwork<> nn2(nn);
+	whiteice::nnetwork< whiteice::math::blas_real<double> > nn2(nn);
+	
 
 	do{
-	  whiteice::math::vertex<> weights;
+	  whiteice::math::vertex< whiteice::math::blas_real<double> > weights;
 	  
 	  nn.exportdata(weights);
 	  weights += lrate*sumgrad;
@@ -311,8 +335,19 @@ int main(int argc, char** argv)
 	  cur_value = calculateError(nn2, Q, data);
 
 	  lrate *= 0.5;
+	  iterations++;
+#if 1
+	  if(((random.rand() % 100) == 0) && (cur_value < 5.0)){
+	    std::cout << "early stopping" << std::endl;
+	    break;
+	  }
+#endif
 	}
-	while(cur_value < init_value && lrate > 1e-20);
+	while(cur_value <= init_value && lrate > 1e-300);
+
+	if(lrate <= 1e-300){
+	  std::cout << "ERROR: LEARNING RATE TOO SMALL: " << lrate << std::endl;
+	}
 	
 	meanq[0] = cur_value;
 	nn = nn2;
@@ -322,7 +357,7 @@ int main(int argc, char** argv)
       {
 	const unsigned int index = 0 % data.size(0);
 	auto state = data.access(0, index);
-	whiteice::math::vertex<> action;
+	whiteice::math::vertex< whiteice::math::blas_real<double> > action;
 	nn.calculate(state, action);
 	
 	std::cout << "ITER "
@@ -343,26 +378,26 @@ int main(int argc, char** argv)
 }
 
 
-whiteice::math::blas_real<float> calculateError(const whiteice::nnetwork<>& policy,
-						const whiteice::nnetwork<>& Q,
-						const whiteice::dataset<>& data)
+whiteice::math::blas_real<double> calculateError(const whiteice::nnetwork< whiteice::math::blas_real<double> >& policy,
+						const whiteice::nnetwork< whiteice::math::blas_real<double> >& Q,
+						const whiteice::dataset< whiteice::math::blas_real<double> >& data)
 {
-  whiteice::math::blas_real<float> meanq = 0.0;
+  whiteice::math::blas_real<double> meanq = 0.0;
   
   for(unsigned int i=0;i<data.size(0);i++){
     //const unsigned int index = random.rand() % data.size(0);
     const unsigned int index = i % data.size(0);
     auto state = data.access(0, index);
 	
-    whiteice::math::vertex<> action;
+    whiteice::math::vertex< whiteice::math::blas_real<double> > action;
     policy.calculate(state, action);
 
-    whiteice::math::vertex<> in(state.size() + action.size());
+    whiteice::math::vertex< whiteice::math::blas_real<double> > in(state.size() + action.size());
     
     assert(in.write_subvertex(state, 0) == true);
     assert(in.write_subvertex(action, state.size()) == true);
 
-    whiteice::math::vertex<> Qvalue;
+    whiteice::math::vertex< whiteice::math::blas_real<double> > Qvalue;
 
     Q.calculate(in, Qvalue);
 

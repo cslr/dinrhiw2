@@ -359,8 +359,8 @@ fi
 
 
 AC_MSG_CHECKING([for OpenBLAS library (7)])
-obcflags=`pkg-config openblas --cflags`
-oblibs=`pkg-config openblas --libs`
+obcflags=`pkg-config openblas --cflags 2> /dev/null`
+oblibs=`pkg-config openblas --libs 2> /dev/null`
 `gcc -o openblastest openblastest.c -DOPENBLAS $obcflags $oblibs > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
@@ -386,8 +386,28 @@ AC_ARG_ENABLE([mkl],
 	AS_HELP_STRING([--disable-mkl],[Disable Intel MKL library]))
 
 MKLROOT="/opt/intel/compilers_and_libraries/linux/mkl"
+AC_MSG_CHECKING([for Intel MKL library (1) (Linux)])
+`g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
 
-AC_MSG_CHECKING([for Intel MKL library (Linux)])
+if [[ $? -eq 0 ]]; then
+  AS_IF([test "x$enable_mkl" == "xno"],[
+     INTELMKL="no"
+     AC_MSG_RESULT([yes, but DISABLED])
+  ],
+  [
+     INTELMKL="yes"
+     BLAS_CFLAGS="-m64 -I$MKLROOT/include -DINTELMKL"
+     BLAS_LIBS="-L$MKLROOT/lib/intel64_lin -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl"
+     AC_MSG_RESULT([yes, installed in $MKLROOT])
+  ])
+else
+   AC_MSG_RESULT([no Intel MKL detected])
+   INTELMKL="no"
+fi
+
+
+MKLROOT="/opt/intel/psxe_runtime/linux/mkl"
+AC_MSG_CHECKING([for Intel MKL library (2) (Linux)])
 `g++ -o openblastest openblastest.c -DINTELMKL -I$MKLROOT/include/ -L$MKLROOT/lib/intel64_lin -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lm > /dev/null 2> /dev/null`
 
 if [[ $? -eq 0 ]]; then
@@ -427,6 +447,36 @@ else
    AC_MSG_RESULT([no working Intel MKL detected])
    INTELMKL="no"
 fi
+
+dnl AMD BLIS library support
+AC_ARG_ENABLE([amdblis],
+	AS_HELP_STRING([--disable-amdblis],[Disable AMD BLIS (BLAS) library]))
+ 
+AC_MSG_CHECKING([for AMD BLIS library])
+`gcc -o openblastest openblastest.c -DAMDBLIS -I/opt/amd-blis/include -L/opt/amd-blis/lib/ -lblis-mt > /dev/null 2> /dev/null`
+
+dnl if [[ $? -eq 0 ]]; then
+dnl    AS_IF([test "x$enable_amdblis" == "xno"],[
+dnl       AMDBLIS="no"
+dnl       AC_MSG_RESULT([yes, but DISABLED])
+dnl    ],
+dnl    [
+dnl       AMDBLIS="yes"
+dnl       BLAS_CFLAGS="-DAMDBLIS -I/opt/amd-blis/include/"
+dnl       BLAS_LIBS="-lblis-mt -L/opt/amd-blis/lib/"
+dnl       AC_MSG_RESULT([yes, headers in /opt/amd-blis/include/])
+dnl    ])
+dnl  else
+dnl    AC_MSG_RESULT([no AND detected])
+dnl    if [[ "x$AMDBLIS" != "xyes" ]]; then
+dnl       AMDBLIS="no"
+dnl    fi
+dnl fi
+   AC_MSG_RESULT([AMD BLIS currently doesn't support full CBLAS!])
+   if [[ "x$AMDBLIS" != "xyes" ]]; then
+      AMDBLIS="no"
+   fi
+
 
 
 AC_ARG_ENABLE([cublas],
@@ -485,7 +535,9 @@ fi
 
 if [[ $INTELMKL == "no" -a $OPENBLAS == "no" ]]; then
    if [[ $NVIDIACUBLAS == "no" -a $NVIDIANVBLAS == "no" ]]; then
-     AC_MSG_ERROR([NO BLAS DETECTED])
+      if [[ $AMDBLIS == "no" ]]; then
+           AC_MSG_ERROR([NO BLAS DETECTED])
+      fi
    fi
 fi
 

@@ -9,6 +9,9 @@
 #include <windows.h>
 #endif
 
+
+#include <chrono>
+#include <thread>
 #include <sstream>
 #include <memory>
 
@@ -253,6 +256,8 @@ namespace whiteice
 	std::lock_guard<std::mutex> lock(errors_lock);
 	errors.clear();
       }
+
+      this->optimize_started_finished = false;
       
       for(unsigned int i=0;i<optimizer_thread.size();i++){
 	optimizer_thread[i] =
@@ -263,10 +268,11 @@ namespace whiteice
       {
 	std::unique_lock<std::mutex> lock(thread_is_running_mutex);
 
-	// there is a bug if thread manages to notify and then continue and
-	// reduce variable back to zero before this get chance to execute again
-	while(thread_is_running == 0)
+	// wait for threads to start
+	while(thread_is_running < (int)optimizer_thread.size())
 	  thread_is_running_cond.wait(lock);
+
+	optimize_started_finished = true;
       }
 
       
@@ -680,14 +686,13 @@ namespace whiteice
 	thread_is_running_cond.notify_all();
       }
 
-      
-      // acquires lock temporally to wait for startOptimizer() to finish
-#if 0
       {
-	start_lock.lock();
-	start_lock.unlock();
+	// wait for startOptimizer() to finish
+	while(optimize_started_finished == false){
+	  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}	
       }
-#endif
+      
       
       
       while(running && iterations < MAXITERS){
@@ -1073,10 +1078,10 @@ namespace whiteice
 		whiteice::logging.info(buffer);
 	      }
 
-#if 0
+#if 1
 	      // leaky error reduction, we sometimes allow jump to worse
 	      // position in gradient direction
-	      if((rng.rand() % 5) == 0 && real(error) < real(T(1.00f))){ // was 0.50f
+	      if((rng.rand() % 100) == 0 && real(error) < real(T(1.00f))){ // was 0.50f
 		logging.info("NNGradDescent: random early stopping of linesearch");
 		break;
 	      }
