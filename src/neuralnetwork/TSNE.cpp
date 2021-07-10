@@ -101,7 +101,8 @@ namespace whiteice
     // this mean we will drop low variability constant data or values
     // that are scaled to be very small
     std::vector< math::vertex<T> > xsamples;
-    
+
+    if(0)
     {
       math::matrix<T> PCA;
       math::vertex<T> m;
@@ -131,6 +132,12 @@ namespace whiteice
 	}
       }
     }
+    else{
+      for(const auto& s : samples){
+	xsamples.push_back(s);
+      }
+    }
+	 
 
     // calculate p-values
     std::vector< std::vector<T> > pij;
@@ -383,7 +390,7 @@ namespace whiteice
   template <typename T>
   bool TSNE<T>::calculate_pvalue_given_sigma(const std::vector< math::vertex<T> >& x,
 					     const unsigned int index, // to x vector
-					     const T sigma2,
+					     const T& sigma2,
 					     std::vector<T>& pj) const
   {
     if(index >= x.size()) return false;
@@ -391,22 +398,27 @@ namespace whiteice
     pj.resize(x.size());
     
     T rsum = T(0.0f); // calculates rsum for this index
+
+    // too small values cause SFE: arithemtic exception
+    const T SIGMA2 = sigma2 < T(1e-30f) ? T(1e-30f) : sigma2;
     
-#pragma omp parallel shared(rsum)
+    
+#pragma omp parallel // shared(rsum)
     {
       T rs = T(0.0f);
       
       math::vertex<T> delta;
       delta.resize(x[0].size());
       delta.zero();
-      
+
 #pragma omp for nowait schedule(auto)
       for(unsigned int k=0;k<x.size();k++){
 	if(index == k) continue;
 	delta = x[k] - x[index];
-	
-	const T v = -(delta*delta)[0]/sigma2;
-	const T pvalue = whiteice::math::exp(v);
+
+	const T nrm2 = (delta*delta)[0];
+	const T v = -nrm2/SIGMA2;
+	const T pvalue = whiteice::math::exp(v, T(70.0f));
 	
 	pj[k] = pvalue;
 	rs += pvalue;
@@ -511,7 +523,7 @@ namespace whiteice
     }
 
     const T TOTAL_SIGMA2 = total_var;  // total variance in data
-    const T MIN_SIGMA2   = TOTAL_SIGMA2/T(1000000000.0f);
+    const T MIN_SIGMA2   = TOTAL_SIGMA2/T(1.0f); // was: 10^9
 
     bool error = false;
 
@@ -535,11 +547,11 @@ namespace whiteice
 	  // searches for minimum sigma2 value
 	  calculate_pvalue_given_sigma(x, j, sigma2_min, pj);
 	  perp_min = calculate_perplexity(pj);
-	  
+
 	  while(perp_min > perplexity && sigma2_min > T(0.0f)){
 	    sigma2_min /= T(2.0f);
 	    calculate_pvalue_given_sigma(x, j, sigma2_min, pj);
-	    perp_min = calculate_perplexity(pj);	  
+	    perp_min = calculate_perplexity(pj);
 	  }
 	  
 	  if(perp_min > perplexity){
@@ -555,7 +567,7 @@ namespace whiteice
 	  // searches for maximum sigma2 value
 	  calculate_pvalue_given_sigma(x, j, sigma2_max, pj);
 	  perp_max = calculate_perplexity(pj);
-	  
+
 	  while(perp_max < perplexity && sigma2_max < T(10e10f)){
 	    sigma2_max *= T(2.0f);
 	    calculate_pvalue_given_sigma(x, j, sigma2_max, pj);

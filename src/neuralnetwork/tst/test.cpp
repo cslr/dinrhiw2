@@ -164,8 +164,7 @@ int main()
     
     // simple_vae_test();
 
-    nnetwork_gradient_value_test(); // gradient_value() calculation works
-
+    // nnetwork_gradient_value_test(); // gradient_value() calculation works
 
     
     simple_tsne_test(); // FIXME: has bugs

@@ -65,7 +65,7 @@ namespace whiteice
       // calculates p values for pj|i where i = index and sigma2 for index:th vector is given
       bool calculate_pvalue_given_sigma(const std::vector< math::vertex<T> >& x,
 					const unsigned int index, // to x vector
-					const T sigma2,
+					const T& sigma2,
 					std::vector<T>& pj) const;
       
       // calculates distribution's perplexity
