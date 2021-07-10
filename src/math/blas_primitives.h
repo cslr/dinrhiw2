@@ -16,7 +16,7 @@
 
 // disable packing, hopefully this don't break things
 // if NO_PACKED is not defined then using GCC's packed attribute is disabled
-#define NO_PACKED 1
+// #define NO_PACKED 1
 
 namespace whiteice
 {
@@ -34,7 +34,7 @@ namespace whiteice
     inline void blas_safebox(const T& value)
     {
 #ifdef _GLIBCXX_DEBUG
-#if 1 // LARGE VALUE DECTECTION IS DISABLED FOR NOW!
+#if 0 // LARGE VALUE DECTECTION IS DISABLED FOR NOW!
       // in debugging mode we stop if data large (algorithms should work with smallish numbers)
       if(abs(value) > T(1e5) && abs(value) != INFINITY){
 	printf("BLAS VALUE TOO LARGE (larger than 10^5): %f\n", value);
