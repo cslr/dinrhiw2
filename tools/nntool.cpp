@@ -37,6 +37,7 @@
 
 #ifndef _WIN32
 #undef __STRICT_ANSI__
+#include <fenv.h>
 
 // enables floating point exceptions, these are good for debugging 
 // to notice BAD floating point values that come from software bugs..
@@ -57,7 +58,6 @@ extern "C" {
   
 }
 #endif
-
 
 void print_usage(bool all);
 
@@ -113,12 +113,10 @@ int main(int argc, char** argv)
     unsigned int dataSize = 0;
 
     
-#ifdef _GLIBCXX_DEBUG
-#ifndef _WIN32
+#ifdef _GLIBCXX_DEBUG    
     // enables FPU exceptions
     feenableexcept(FE_INVALID |
 		   FE_DIVBYZERO);
-#endif
 #endif
 
     // special value to enable writing to console
@@ -341,39 +339,6 @@ int main(int argc, char** argv)
     if(verbose && !stdinout_io){
       math::vertex< whiteice::math::blas_real<double> > w;
       nn->exportdata(w);
-
-      // check parameter arch agree with (to be) loaded neural network
-      {
-	if(load == true || lmethod  == "info" || lmethod == "use"){
-
-	  bayesian_nnetwork< whiteice::math::blas_real<double> >* bnn2 = new bayesian_nnetwork< whiteice::math::blas_real<double> >();
-
-	  if(bnn2->load(nnfn) == true){
-	    std::vector< math::vertex< whiteice::math::blas_real<double> > > w2;
-	    nnetwork< whiteice::math::blas_real<double> > nn2;
-
-	    if(bnn2->exportSamples(nn2, w2) == false){
-	      std::cout << "ERROR: Parameter architecture disagrees with loaded neural network." << std::endl;
-	      delete bnn2;
-	      delete bnn;
-	      delete nn;
-	      
-	      return -1;	      
-	    }
-
-	    if(w2[0].size() != w.size()){
-	      std::cout << "ERROR: Parameter architecture disagrees with loaded neural network." << std::endl;
-	      delete bnn2;
-	      delete bnn;
-	      delete nn;
-
-	      return -1;
-	    }
-	  }
-
-	  delete bnn2;
-	}
-      }
       
       if(lmethod == "use"){
 	printf("Processing %d data points (%d parameters in neural network).\n", data.size(0), w.size());
