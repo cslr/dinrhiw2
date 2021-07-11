@@ -88,6 +88,8 @@ clean:
 	$(RM) $(TARGET3)
 	$(RM) $(TEST4_OBJECTS)
 	$(RM) $(TARGET4)
+	$(RM) $(TEST4A_OBJECTS)
+	$(RM) $(TARGET4A)
 	$(RM) *~
 
 realclean: clean
