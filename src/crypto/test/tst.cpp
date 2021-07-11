@@ -358,25 +358,29 @@ void des_test()
       
       tdeskey = new NDESKey(key); // key = 3*56 -> triple DES
       
-      std::cout << "A" << std::endl;
       std::cout.flush();
       
-      if(des.encrypt(data, *tdeskey) == false)
+      if(des.encrypt(data, *tdeskey) == false){
+	delete tdeskey;
 	throw test_exception("3DES encryption failure.");
+      }
       
       std::cout << "B" << std::endl;
       std::cout.flush();
       
-      if(des.decrypt(data, *tdeskey) == false)
+      if(des.decrypt(data, *tdeskey) == false){
+	delete tdeskey;
 	throw test_exception("3DES decryption failure.");
+      }
       
       std::cout << "C" << std::endl;
       std::cout.flush();
       
       delete tdeskey;
       
-      if(data != result)
-	throw test_exception("3DES encryption/decryption error.");            
+      if(data != result){
+	throw test_exception("3DES encryption/decryption error.");
+      }
     }
   }
   catch(test_exception& e){
@@ -1780,6 +1784,8 @@ void dsa_test()
 	 
       if(dsa->verify(&data, dlen, signature) == false)
 	throw test_exception("DSA verify failure.");
+
+      free(data);
       
       delete dsa;
     }
@@ -1829,6 +1835,8 @@ void dsa_test()
       
       if(dsa->verify(&data, dlen, signature) == true) // verify
 	throw test_exception("DSA verify succeeded with changed message.");
+
+      free(data);
       
       delete dsa;
     }

@@ -29,7 +29,7 @@ namespace whiteice
     {
       s.reset();
       
-      if(GFMULTI) delete GFMULTI;
+      if(GFMULTI) delete[] GFMULTI;
     }
     
     

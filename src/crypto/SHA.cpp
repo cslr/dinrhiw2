@@ -177,15 +177,16 @@ namespace whiteice
       
       try{
 	M = new whiteice::uint32[80];
-	
+
 	sha1_pad(data, length); // pads message
+
 	memcpy(sha, SHA1_IHASH, 4*5); // initializes hash
 	
 	const unsigned int N = (length/64); // number of 512 bit blocks
 	
 	whiteice::uint32* HASH =
 	  (whiteice::uint32*)(sha);
-	
+
 	whiteice::uint32* W = 
 	  (whiteice::uint32*)(*data);
 	

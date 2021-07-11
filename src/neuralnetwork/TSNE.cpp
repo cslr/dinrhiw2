@@ -102,7 +102,7 @@ namespace whiteice
     // that are scaled to be very small
     std::vector< math::vertex<T> > xsamples;
 
-    if(0)
+    if(1)
     {
       math::matrix<T> PCA;
       math::vertex<T> m;
@@ -466,7 +466,7 @@ namespace whiteice
 
     T H = T(0.0f); // entropy
 
-#pragma omp parallel shared(H)
+#pragma omp parallel // shared(H)
     {
       T h = T(0.0f);
 
@@ -675,7 +675,7 @@ namespace whiteice
 
     const T epsilon = T(1e-12);
 
-#pragma omp parallel shared(qsum)
+#pragma omp parallel // shared(qsum)
     {
       math::vertex<T> delta;
       delta.resize(y[0].size());
@@ -733,7 +733,7 @@ namespace whiteice
     // calculates KL divergence
     klvalue = T(0.0f);
 
-#pragma omp parallel shared(klvalue)
+#pragma omp parallel // shared(klvalue)
     {
       T klv = T(0.0f); // threadwise KL divergence terms
 
@@ -783,7 +783,7 @@ namespace whiteice
     T Ps = T(0.0f);
     if(kl_absolute_value){
 
-#pragma omp parallel shared(Ps)
+#pragma omp parallel // shared(Ps)
       {
 	T psi = T(0.0f);
 

@@ -14,7 +14,7 @@
 #define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdio.h> header file. */
-#define HAVE_STDIO_H 1
+/* #undef HAVE_STDIO_H */
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -59,7 +59,7 @@
 #define SIZEOF_INT 4
 
 /* The size of `long', as computed by sizeof. */
-#define SIZEOF_LONG 4
+#define SIZEOF_LONG 8
 
 /* The size of `long long int', as computed by sizeof. */
 #define SIZEOF_LONG_LONG_INT 8
