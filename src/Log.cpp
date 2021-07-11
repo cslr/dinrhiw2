@@ -111,8 +111,8 @@ namespace whiteice {
     }
 
     if(printStdoutToo){
-    	printf(buffer);
-    	fflush(stdout);
+      printf("%s", buffer);
+      fflush(stdout);
     }
   }
   
@@ -127,8 +127,8 @@ namespace whiteice {
     }
 
     if(printStdoutToo){
-        printf(buffer);
-        fflush(stdout);
+      printf("%s", buffer);
+      fflush(stdout);
     }
   }
   
@@ -142,8 +142,8 @@ namespace whiteice {
     }
 
     if(printStdoutToo){
-        printf(buffer);
-        fflush(stdout);
+      printf("%s", buffer);
+      fflush(stdout);
     }
   }
   
@@ -157,8 +157,8 @@ namespace whiteice {
     }
 
     if(printStdoutToo){
-        printf(buffer);
-        fflush(stdout);
+      printf("%s", buffer);
+      fflush(stdout);
     }
   }
   

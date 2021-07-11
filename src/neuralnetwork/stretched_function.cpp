@@ -17,12 +17,6 @@
 namespace whiteice
 {
   
-  template class stretched_function<float>;
-  template class stretched_function<double>;
-  template class stretched_function< math::blas_real<float> >;
-  template class stretched_function< math::blas_real<double> >;
-  
-  
   
   // clones local copy of function
   template <typename T>
@@ -167,6 +161,13 @@ namespace whiteice
   void stretched_function<T>::hessian(math::vertex<T>& x, math::matrix<T>& y) const
   {
   }
+
+
+  
+  template class stretched_function<float>;
+  template class stretched_function<double>;
+  template class stretched_function< math::blas_real<float> >;
+  template class stretched_function< math::blas_real<double> >;
   
 }
 

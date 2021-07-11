@@ -68,6 +68,8 @@
 
 #include <fenv.h>
 
+#if 0
+
 extern "C" {
 
   // traps floating point exceptions..
@@ -81,6 +83,7 @@ extern "C" {
 #endif
   
 }
+#endif
 
 
 using namespace whiteice;
@@ -604,6 +607,8 @@ void nngraddescent_complex_test()
   // grad.setRegularizer( 0.01*((double)nn->output_size())/nn->gradient_size() );
 
   linear_ETA<double> eta;
+  unsigned int N = 0;
+  
   eta.start(0.0, MAXITERS);
   
   
@@ -616,10 +621,7 @@ void nngraddescent_complex_test()
   printf("NNGradDescent Optimizer started.\n");
 
   while(grad.hasConverged() == false){
-    unsigned int N;
     math::blas_complex<double> error;
-
-    eta.update(N);
 
     if(grad.getSolutionStatistics(error, N) == false){
       printf("ERROR: NNGradDescent::getSolutionStatistics() failed.\n");
@@ -627,6 +629,8 @@ void nngraddescent_complex_test()
       return;
     }
     else{
+      eta.update(N);
+      
       double errorf = 0.0;
       convert(errorf,error);
       
@@ -1320,7 +1324,9 @@ void nnetwork_gradient_test()
       arch.push_back(rng.rand() % 5 + 2);
     arch.push_back(dimOutput);
 
-    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+    
     unsigned int nli = rng.rand() % 7;
     // nli = 3; // force purelinear f(x)
 
@@ -1435,7 +1441,8 @@ void nnetwork_gradient_value_test()
       arch.push_back(width);
     arch.push_back(dimOutput);
 
-    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
     unsigned int nli = 5; // rng.rand() % 7;
 
     if(nli == 0){
@@ -1547,7 +1554,9 @@ void nnetwork_residual_gradient_test()
       arch.push_back(width);
     arch.push_back(dimOutput);
 
-    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl;
+    whiteice::nnetwork< whiteice::math::blas_real<double> >::nonLinearity nl =
+      whiteice::nnetwork< whiteice::math::blas_real<double> >::rectifier;
+    
     unsigned int nli = rng.rand() % 7;
     // nli = 3; // force purelinear f(x)
 
@@ -2310,8 +2319,7 @@ void dbn_test()
     // create output values
     math::blas_real<double> value, distance = 0;
       
-    for(auto& p : input){
-      p = p; // dummy code to remove warning message..
+    for(unsigned int i=0;i<input.size();i++){
       distance += 10*2*M_PI/NSAMPLES;
       value = sin(distance);
 

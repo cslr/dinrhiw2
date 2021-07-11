@@ -4,7 +4,7 @@
  */
 
 #ifndef construct_nnetwork_h
-#define constrcut_nnetwork_h
+#define construct_nnetwork_h
 
 #include "DBN.h"
 #include "nnetwork.h"

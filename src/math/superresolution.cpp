@@ -702,8 +702,8 @@ namespace whiteice
     template <typename T, typename U>
     superresolution<T,U>& superresolution<T,U>::abs()
     {
-      class whiteice::math::superresolution<T,U>& z = (*this);
-      class whiteice::math::superresolution<T,U> zc = (*this);
+      whiteice::math::superresolution<T,U>& z = (*this);
+      whiteice::math::superresolution<T,U> zc = (*this);
 
       {
 	// conjugates both numbers and basises            
@@ -825,15 +825,15 @@ namespace whiteice
 
     
     // DO NOT USE BLAS_REAL BUT BLAS_COMPLEX
-    template class superresolution< whiteice::math::blas_real<float>,
-				    whiteice::math::modular<unsigned int> >;
-    template class superresolution< whiteice::math::blas_real<double>,
-				    whiteice::math::modular<unsigned int> >;
+    template struct superresolution< whiteice::math::blas_real<float>,
+				     whiteice::math::modular<unsigned int> >;
+    template struct superresolution< whiteice::math::blas_real<double>,
+				     whiteice::math::modular<unsigned int> >;
     
-    template class superresolution< whiteice::math::blas_complex<float>,
-				    whiteice::math::modular<unsigned int> >;
-    template class superresolution< whiteice::math::blas_complex<double>,
-				    whiteice::math::modular<unsigned int> >;
+    template struct superresolution< whiteice::math::blas_complex<float>,
+				     whiteice::math::modular<unsigned int> >;
+    template struct superresolution< whiteice::math::blas_complex<double>,
+				     whiteice::math::modular<unsigned int> >;
 
 
     template std::ostream& operator<< <whiteice::math::blas_real<float> >

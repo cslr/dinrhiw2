@@ -10,7 +10,7 @@ namespace whiteice
   namespace math
   {
     template <typename T, typename S>
-    class superresolution;
+    struct superresolution;
     
   };
 };
@@ -28,8 +28,9 @@ namespace whiteice
     /* superresolutional numbers
      * made out of field T with exponent field U
      */
-    template <typename T, typename U>
+    
     //class superresolution : public number<superresolution<T,U>, T, T, U>
+    template <typename T, typename U>
     struct superresolution
     {
       public:
@@ -174,15 +175,15 @@ namespace whiteice{
     std::ostream& operator<<(std::ostream& ios, const superresolution<T, modular<unsigned int> > & m);
 			     
     
-    extern template class superresolution< whiteice::math::blas_real<float>,
-					   whiteice::math::modular<unsigned int> >;
-    extern template class superresolution< whiteice::math::blas_real<double>,
-					   whiteice::math::modular<unsigned int> >;
+    extern template struct superresolution< whiteice::math::blas_real<float>,
+					    whiteice::math::modular<unsigned int> >;
+    extern template struct superresolution< whiteice::math::blas_real<double>,
+					    whiteice::math::modular<unsigned int> >;
     
-    extern template class superresolution< whiteice::math::blas_complex<float>,
-					   whiteice::math::modular<unsigned int> >;
-    extern template class superresolution< whiteice::math::blas_complex<double>,
-					   whiteice::math::modular<unsigned int> >;
+    extern template struct superresolution< whiteice::math::blas_complex<float>,
+					    whiteice::math::modular<unsigned int> >;
+    extern template struct superresolution< whiteice::math::blas_complex<double>,
+					    whiteice::math::modular<unsigned int> >;
 
     extern template std::ostream& operator<< <whiteice::math::blas_real<float> >
     (std::ostream& ios,

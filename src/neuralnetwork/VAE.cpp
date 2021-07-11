@@ -1034,7 +1034,7 @@ namespace whiteice
   	if(verbose){
 	  snprintf(buffer, BUFLEN, "Calculating gradient sample %d/%d..\n", i, MINIBATCHSIZE);
   	  if(messages) messages->printMessage(buffer);
-  	  printf(buffer);
+  	  printf("%s", buffer);
   	  fflush(stdout);
   	}
 

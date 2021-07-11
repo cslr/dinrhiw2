@@ -20,9 +20,9 @@ namespace whiteice
 {
   namespace math
   {
-    
-    template <typename T=unsigned int>
+
     // class modular : public number< modular<T>, T, T, unsigned int>
+    template <typename T=unsigned int>
     struct modular
     {
       public:
@@ -97,10 +97,10 @@ namespace whiteice
     
     
     
-    extern template class modular<unsigned int>;
-    extern template class modular<unsigned short>;
-    extern template class modular<unsigned char>;
-    extern template class modular<integer>;
+    extern template struct modular<unsigned int>;
+    extern template struct modular<unsigned short>;
+    extern template struct modular<unsigned char>;
+    extern template struct modular<integer>;
     
     
     extern template modular<unsigned int> operator*<unsigned int>

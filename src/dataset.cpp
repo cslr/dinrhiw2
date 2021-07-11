@@ -1826,6 +1826,8 @@ namespace whiteice
 	  for(unsigned int i=0;i<clusters[index].data.size();i++){
 	    mean_variance_removal(index, clusters[index].data[i]);
 	  }
+
+#pragma omp barrier
 	}
 	
 	clusters[index].preprocessings.push_back(dnMeanVarianceNormalization);
@@ -2008,7 +2010,10 @@ namespace whiteice
   
   template <typename T>
   bool dataset<T>::preprocess(enum data_normalization norm) {
-    return preprocess(0, norm);
+    if(clusters.size() > 0)
+      return preprocess(0, norm);
+    else
+      return false;
   }
   
   
@@ -2412,7 +2417,7 @@ namespace whiteice
 	snprintf(buffer, BUFLEN, "Cluster %d (N=%d) max abs(value): %f min abs(value): %f\n",
 		 c, (int)clusters[c].data.size(), temp1, temp2);
 	if(verbose){
-	  printf(buffer);
+	  printf("%s", buffer);
 	  fflush(stdout);
 	}
 	whiteice::logging.info(buffer);
@@ -2424,7 +2429,7 @@ namespace whiteice
 	whiteice::math::convert(temp, clusters[c].softmax_parameter);
 	
 	snprintf(buffer, BUFLEN, "Cluster %d: softmax value: %f\n", c, temp);
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 	
 	std::string line;
@@ -2433,7 +2438,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||mean|| = %f. mean = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].variance.toString(line);
@@ -2441,7 +2446,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||stdev|| = %f. stdev = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].Rxx.toString(line);
@@ -2449,7 +2454,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||Rxx|| = %f. Rxx = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].Wxx.toString(line);
@@ -2457,7 +2462,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||Wxx|| = %f. Wxx = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].invWxx.toString(line);
@@ -2465,7 +2470,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||invWxx|| = %f. Wxx = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].ICA.toString(line);
@@ -2473,7 +2478,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||ICA|| = %f. ICA = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 
 	clusters[c].invICA.toString(line);
@@ -2481,7 +2486,7 @@ namespace whiteice
 	whiteice::math::convert(temp, nrm);
 	snprintf(buffer, BUFLEN, "Cluster: %d: ||invICA|| = %f. invICA = %s\n",
 		 c, temp, line.c_str());
-	if(verbose) printf(buffer);
+	if(verbose) printf("%s", buffer);
 	whiteice::logging.info(buffer);
 	
 	

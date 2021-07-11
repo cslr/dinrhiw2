@@ -25,7 +25,7 @@ namespace whiteice
     coef_size   = sizeof(T) / 4;
     this->alpha = alpha;
     
-    table = new array<D,T>[size];
+    table = new array<D,T>[table_size]; // WAS: table = new array<D,T>[size];
     bytetable = new unsigned char[coef_size];
     
     for(T i=0;i<coef_size;i++){

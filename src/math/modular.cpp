@@ -525,10 +525,10 @@ namespace whiteice
     
     // explicit template instantations
     
-    template class modular<unsigned int>;
-    template class modular<unsigned short>;
-    template class modular<unsigned char>;
-    template class modular<integer>;
+    template struct modular<unsigned int>;
+    template struct modular<unsigned short>;
+    template struct modular<unsigned char>;
+    template struct modular<integer>;
     
     
     template modular<unsigned int> operator*<unsigned int>

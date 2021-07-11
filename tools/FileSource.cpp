@@ -10,11 +10,6 @@
 #include <string>
 #include "FileSource.h"
 
-/**************************************************/
-
-template class FileSource<128>;
-
-/**************************************************/
 
 template <unsigned int B>
 FileSource<B>::FileSource(const std::string& filename)
@@ -118,3 +113,9 @@ bool FileSource<B>::write(const std::string& filename) const
 }
 
 
+
+/**************************************************/
+
+template class FileSource<128>;
+
+/**************************************************/

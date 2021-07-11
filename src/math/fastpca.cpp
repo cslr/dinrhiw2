@@ -38,8 +38,8 @@ namespace whiteice
 	gprev.resize(m.size());
 	
 	for(unsigned int i=0;i<g.size();i++){
-	  gprev[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
-	  g[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
+	  gprev[i] = T(2.0f*(float)rand()/((float)RAND_MAX) - 1.0f); // [-1,1]
+	  g[i] = T(2.0f*(float)rand()/((float)RAND_MAX) - 1.0f); // [-1,1]
 	}
 	
 	g.normalize();
@@ -143,8 +143,8 @@ namespace whiteice
 	gprev.resize(m.size());
 	
 	for(unsigned int i=0;i<g.size();i++){
-	  gprev[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
-	  g[i] = T(2.0f*(float)rand()/RAND_MAX - 1.0f); // [-1,1]
+	  gprev[i] = T(2.0f*(float)rand()/((float)RAND_MAX) - 1.0f); // [-1,1]
+	  g[i] = T(2.0f*(float)rand()/((float)RAND_MAX) - 1.0f); // [-1,1]
 	}
 	
 	g.normalize();

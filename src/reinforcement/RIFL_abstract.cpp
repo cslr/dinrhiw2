@@ -446,7 +446,7 @@ namespace whiteice
 	{
 	  whiteice::nnetwork<T> nn;
 	  T error;
-	  unsigned int iters;
+	  unsigned int iters = 0;
 
 	  
 	  if(dataset_thread != nullptr){

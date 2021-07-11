@@ -787,7 +787,7 @@ void dynamic_bitset_test()
 	  b[i].set(j, 0);
 	}
 	catch(std::out_of_range& e){
-	  throw test_exception("operator[] throws exception on a correct range");
+	  throw test_exception("operator[] throws exception on a correct range");
 	}
       }
       

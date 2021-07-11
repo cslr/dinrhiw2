@@ -248,8 +248,8 @@ namespace whiteice
 
 				// updates velocity and location
 
-				T r1 = T(rand())/T(RAND_MAX);
-				T r2 = T(rand())/T(RAND_MAX);
+			        T r1 = T(rand())/T((float)RAND_MAX);
+				T r2 = T(rand())/T((float)RAND_MAX);
 
 				i->velocity += (c1*r1) * ( (i->best) - (i->value) );
 				i->velocity += (c2*r2) * ( (gbest.best) - (i->value) );

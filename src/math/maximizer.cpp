@@ -393,7 +393,7 @@ namespace whiteice
       
       while(1){
 	for(unsigned int i=0;i<this->dimensions;i++)
-	  dir[i] = T(2.0f*(((float)rand())/RAND_MAX) - 1.0f);
+	  dir[i] = T(2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f);
 	
 	dir.normalize();
 	
@@ -472,7 +472,7 @@ namespace whiteice
       
       for(unsigned int p=0;p<25;p++){
 	for(unsigned int i=0;i<this->dimensions;i++)
-	  dir[i] = T(2.0f*(((float)rand())/RAND_MAX) - 1.0f);
+	  dir[i] = T(2.0f*(((float)rand())/((float)RAND_MAX)) - 1.0f);
 	
 	dir.normalize();
 	

@@ -900,7 +900,7 @@ namespace whiteice
       
       if(typeid(T) == typeid(blas_real<float>)){	
 
-#pragma omp parallel shared(m) shared(R)
+#pragma omp parallel // shared(m) shared(R)
 	{
 	  matrix<T> Ri;
 	  vertex<T> mi;

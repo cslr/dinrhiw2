@@ -123,9 +123,9 @@ namespace whiteice
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
 	T aj = T(2.0)/(T(1.0) + math::exp(-h[j])) - T(1.0);
-	// T r = T(rand())/T(RAND_MAX);
+	// T r = T(rand())/T((float)RAND_MAX);
 	
-	T r = T(rand())/T(RAND_MAX);
+	T r = T((float)rand())/T((float)RAND_MAX);
 	if(aj > r) h[j] = T(1.0); // discretization step
 	else       h[j] = T(0.0);
 	
@@ -215,7 +215,7 @@ namespace whiteice
 	  T aj = T(2.0)/(T(1.0) + math::exp(-h[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
 	  
 #if 1
-	  T r = T(rand())/T(RAND_MAX);
+	  T r = T((float)rand())/T((float)RAND_MAX);
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
 #else
@@ -238,7 +238,7 @@ namespace whiteice
 	    T aj = T(2.0)/(T(1.0) + math::exp(-v[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
 	    
 #if 0
-	    T r = T(rand())/T(RAND_MAX);	    
+	    T r = T((float)rand())/T((float)RAND_MAX);	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
 	    else       v[j] = T(0.0);
 #else
@@ -256,7 +256,7 @@ namespace whiteice
 	    T aj = T(2.0)/(T(1.0) + math::exp(-h[j] + T(normal_rng(gen)))) - T(1.0); // [-1, 1]
 	    
 #if 1
-	    T r = T(rand())/T(RAND_MAX);
+	    T r = T((float)rand())/T((float)RAND_MAX);
 	    if(aj > r) h[j] = T(1.0); // discretization step
 	    else       h[j] = T(0.0);
 #else
@@ -440,7 +440,7 @@ namespace whiteice
   template <typename T>
   T CRBM<T>::randomValue()
   {
-    T r = T(rand())/T(RAND_MAX);
+    T r = T((float)rand())/T((float)RAND_MAX);
     
     r = T(0.02)*r - T(0.01);
     

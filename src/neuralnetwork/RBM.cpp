@@ -137,7 +137,7 @@ namespace whiteice
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
 	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	T r = T(rand())/T(RAND_MAX);
+	T r = T(rand())/T((float)RAND_MAX);
 	
 	if(aj > r) h[j] = T(1.0); // discretization step
 	else       h[j] = T(0.0);
@@ -151,7 +151,7 @@ namespace whiteice
       // 1. visible units: calculates sigma(a_j)
       for(unsigned int j=0;j<(v.size()-0);j++){
 	T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	T r = T(rand())/T(RAND_MAX);
+	T r = T(rand())/T((float)RAND_MAX);
 	
 	if(aj > r) v[j] = T(1.0); // discretization step
 	else       v[j] = T(0.0);
@@ -179,7 +179,7 @@ namespace whiteice
       // 1. visible units: calculates sigma(a_j)
       for(unsigned int j=0;j<(v.size()-0);j++){
 	T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	T r = T(rand())/T(RAND_MAX);
+	T r = T(rand())/T((float)RAND_MAX);
 	
 	if(aj > r) v[j] = T(1.0); // discretization step
 	else       v[j] = T(0.0);
@@ -193,7 +193,7 @@ namespace whiteice
       // 1. hidden units: calculates sigma(a_j)
       for(unsigned int j=0;j<(h.size()-0);j++){
 	T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	T r = T(rand())/T(RAND_MAX);
+	T r = T(rand())/T((float)RAND_MAX);
 	
 	if(aj > r) h[j] = T(1.0); // discretization step
 	else       h[j] = T(0.0);
@@ -259,7 +259,7 @@ namespace whiteice
 	// 1. hidden units: calculates sigma(a_j)
 	for(unsigned int j=0;j<(h.size()-0);j++){
 	  T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	  T r = T(rand())/T(RAND_MAX);
+	  T r = T(rand())/T((float)RAND_MAX);
 	  
 	  if(aj > r) h[j] = T(1.0); // discretization step
 	  else       h[j] = T(0.0);
@@ -276,7 +276,7 @@ namespace whiteice
 	  // 1. visible units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(v.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-v[j]));
-	    T r = T(rand())/T(RAND_MAX);
+	    T r = T(rand())/T((float)RAND_MAX);
 	    
 	    if(aj > r) v[j] = T(1.0); // discretization step
 	    else       v[j] = T(0.0);
@@ -290,7 +290,7 @@ namespace whiteice
 	  // 2. hidden units: calculates sigma(a_j)
 	  for(unsigned int j=0;j<(h.size()-0);j++){
 	    T aj = T(1.0)/(T(1.0) + math::exp(-h[j]));
-	    T r = T(rand())/T(RAND_MAX);
+	    T r = T(rand())/T((float)RAND_MAX);
 	    
 	    if(aj > r) h[j] = T(1.0); // discretization step
 	    else       h[j] = T(0.0);
@@ -470,7 +470,7 @@ namespace whiteice
   template <typename T>
   T RBM<T>::randomValue()
   {
-    T r = T(rand())/T(RAND_MAX);
+    T r = T((float)rand())/T((float)RAND_MAX);
     
     r = T(0.02)*r - T(0.01);
     

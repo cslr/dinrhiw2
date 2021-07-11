@@ -108,8 +108,8 @@ namespace whiteice
       }
       else{
 	for(unsigned int i=0;i<d.size();i++){
-	  d[i] = 4.0f*((((float)rand())/RAND_MAX) - 2.0f);
-	  b[i] = 4.0f*((((float)rand())/RAND_MAX) - 2.0f);
+	  d[i] = 4.0f*((((float)rand())/((float)RAND_MAX)) - 2.0f);
+	  b[i] = 4.0f*((((float)rand())/((float)RAND_MAX)) - 2.0f);
 	}
       }
       
@@ -358,12 +358,12 @@ namespace whiteice
 	// moves each dimension -5% .. +5%
 	
 	for(unsigned int i=0;i<d.size();i++){
-	  auto r = ((float)rand())/RAND_MAX;
+	  auto r = ((float)rand())/((float)RAND_MAX);
 	  r = 0.1f*r + 0.95; // [0.95,0.05];
 	  
 	  b[i] *= r;
 	  
-	  r = ((float)rand())/RAND_MAX;
+	  r = ((float)rand())/((float)RAND_MAX);
 	  r = 0.1f*r + 0.95; // [0.95,0.05];
 	  
 	  d[i] *= r;
@@ -373,13 +373,13 @@ namespace whiteice
 	
 	if(rand()&1){
 	  const unsigned int index = rand() % b.size();
-	  auto r = ((float)rand())/RAND_MAX;
+	  auto r = ((float)rand())/((float)RAND_MAX);
 	  r = 0.1f*r + 0.95; // [0.95,0.05];
 	  b[index] *= r;
 	}
 	else{
 	  const unsigned int index = rand() % d.size();
-	  auto r = ((float)rand())/RAND_MAX;
+	  auto r = ((float)rand())/((float)RAND_MAX);
 	  r = 0.1f*r + 0.95; // [0.95,0.05];
 	  d[index] *= r;
 	}
@@ -409,7 +409,7 @@ namespace whiteice
 	p.resize(p1.size());
 	
 	if((rand()&1) == 0){ // blending
-	  math::blas_real<float> r = ((float)rand())/RAND_MAX;
+	  math::blas_real<float> r = ((float)rand())/((float)RAND_MAX);
 	  math::blas_real<float> q = math::blas_real<float>(1.0f) - r;
 	  
 	  p = r*p1 + q*p2;
