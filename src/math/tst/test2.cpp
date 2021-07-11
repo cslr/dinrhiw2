@@ -1702,7 +1702,7 @@ void test_eigenproblem_tests()
 
   
   try{
-    std::cout << "EIG OF SINGULAR MATRIX (ZERO MATRIX) TEST" << std::endl;
+    std::cout << "EIG OF SINGULAR MATRIX (DIAG(0.1^k)) TEST" << std::endl;
 
     matrix< blas_real<double> > A, X, D;
     bool ok = true;
@@ -1710,48 +1710,43 @@ void test_eigenproblem_tests()
     A.resize(11,11);
     
     A.zero();
+
+    for(unsigned int i=0;i<A.ysize();i++){
+      A(i,i) = whiteice::math::pow(0.1, (double)i);
+    }
     
     D = A;
     
     if(symmetric_eig(D, X) == false){
       ok = false;
-      std::cout << "ERROR: SYMMETRIC EIG OF ZERO MATRIX FAILED." << std::endl;
+      std::cout << "ERROR: SYMMETRIC EIG OF SINGULAR MATRIX (DIAG(0.1^k)) FAILED." << std::endl;
       
     }
     else{ // checks for correctness
 
-      // 1. check X vectors are diagonal vectors
+      auto Xt = X;
+      X.transpose();
+
+      auto R = X*D*Xt;
+
+      R -= A;
+
+      // 1. check matrix have small errors
       blas_real<double> error = 0.0;
       
-      for(unsigned int j=0;j<X.ysize();j++)
-	for(unsigned int i=0;i<X.xsize();i++)
-	  if(i != j)
-	    error += whiteice::math::abs(X(j,i));
+      for(unsigned int j=0;j<R.ysize();j++)
+	for(unsigned int i=0;i<R.xsize();i++)
+	  error += whiteice::math::abs(R(j,i));
       
       
       if(error > 0.001){
-	std::cout << "ERROR: EIG OF ZERO MATRIX: X is not diagonal." << std::endl;
+	ok = false;	  
+	std::cout << "ERROR: EVDOF SINGULAR MATRIX FAILED: X * D * X^t != A" << std::endl;
 	std::cout << "error = " << error << std::endl;
-	ok = false;
-      }
-
-      // 2. check D variance matrix is zero matrix
-      error = 0.0;
-
-      for(unsigned int j=0;j<D.ysize();j++)
-	for(unsigned int i=0;i<D.xsize();i++)
-	  error += whiteice::math::abs(D(j,i));
+      }	
       
-      if(error > 0.001){
-	std::cout << "ERROR: EIG OF ZERO MATRIX: D is not zero matrix." << std::endl;
-	std::cout << "error = " << error << std::endl;
-	ok = false;
-      }
-
       if(ok){
-	std::cout << "EIG OF ZERO MATRIX SUCCESSFUL:" << std::endl;
-	std::cout << "X = " << X << std::endl;
-	std::cout << "D = " << D << std::endl;
+	std::cout << "EIG OF SINGULAR (DIAG(0.1^k)) MATRIX SUCCESSFUL." << std::endl;
       }
       
     }
