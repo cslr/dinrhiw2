@@ -91,8 +91,8 @@ void test_superresolution()
     
     // creates random numbers and test + and - operations function correctly
 
-    class whiteice::math::superresolution< whiteice::math::blas_real<float>,
-					   whiteice::math::modular<unsigned int> >
+    whiteice::math::superresolution< whiteice::math::blas_real<float>,
+				     whiteice::math::modular<unsigned int> >
       A, B;
 
     const unsigned int BASIS_SIZE = A.size(); // was: 7
@@ -141,8 +141,8 @@ void test_superresolution()
 
     // 1. create random number and calculate it's inverse
 
-    class whiteice::math::superresolution< whiteice::math::blas_complex<float>,
-					   whiteice::math::modular<unsigned int> >
+    whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+				     whiteice::math::modular<unsigned int> >
       A, B;
 
     whiteice::RNG< whiteice::math::blas_real<float> > prng;
@@ -178,8 +178,8 @@ void test_superresolution()
   for(unsigned int n=0;n<10;n++)
   {
 
-    class whiteice::math::superresolution< whiteice::math::blas_complex<float>,
-					   whiteice::math::modular<unsigned int> >
+    whiteice::math::superresolution< whiteice::math::blas_complex<float>,
+				     whiteice::math::modular<unsigned int> >
       A, B, C, D;
 
     whiteice::RNG< whiteice::math::blas_real<float> > prng;
@@ -242,7 +242,7 @@ void test_pca_tests()
       v.resize(DIMENSIONS);
       
       for(unsigned int i=0;i<DIMENSIONS;i++){
-	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	v[i] = ((2.0f*(float)rand())/((float)RAND_MAX)) - 1.0f; // [-1, 1]
 	if(i == 0) v[i] *= 2.0f;
       }
       
@@ -296,7 +296,7 @@ void test_pca_tests()
       v.resize(DIMENSIONS);
       
       for(unsigned int i=0;i<DIMENSIONS;i++){
-	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	v[i] = ((2.0f*(float)rand())/((float)RAND_MAX)) - 1.0f; // [-1, 1]
 	if(i == 0) v[i] *= 2.0f;
       }
       
@@ -349,7 +349,7 @@ void test_pca_tests()
       v.resize(DIMENSIONS);
       
       for(unsigned int i=0;i<DIMENSIONS;i++){
-	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	v[i] = ((2.0f*(float)rand())/((float)RAND_MAX)) - 1.0f; // [-1, 1]
 	if(i == 0) v[i] *= 2.0f;
       }
       
@@ -427,7 +427,7 @@ void test_pca_tests()
       v.resize(DIMENSIONS);
       
       for(unsigned int i=0;i<DIMENSIONS;i++){
-	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	v[i] = ((2.0f*(float)rand())/((float)RAND_MAX)) - 1.0f; // [-1, 1]
 	if(i == 0) v[i] *= 2.0f;
       }
       
@@ -501,7 +501,7 @@ void test_pca_tests()
       v.resize(DIMENSIONS);
       
       for(unsigned int i=0;i<DIMENSIONS;i++){
-	v[i] = ((2.0f*(float)rand())/RAND_MAX) - 1.0f; // [-1, 1]
+	v[i] = ((2.0f*(float)rand())/((float)RAND_MAX)) - 1.0f; // [-1, 1]
 	if(i == 0) v[i] *= 2.0f;
       }
       
@@ -1699,7 +1699,68 @@ void test_eigenproblem_tests()
     std::cout << "ERROR: symmetric eigenproblem solver tests failed: "
 	      << e.what() << std::endl;
   }
+
   
+  try{
+    std::cout << "EIG OF SINGULAR MATRIX (ZERO MATRIX) TEST" << std::endl;
+
+    matrix< blas_real<double> > A, X, D;
+    bool ok = true;
+
+    A.resize(11,11);
+    
+    A.zero();
+    
+    D = A;
+    
+    if(symmetric_eig(D, X) == false){
+      ok = false;
+      std::cout << "ERROR: SYMMETRIC EIG OF ZERO MATRIX FAILED." << std::endl;
+      
+    }
+    else{ // checks for correctness
+
+      // 1. check X vectors are diagonal vectors
+      blas_real<double> error = 0.0;
+      
+      for(unsigned int j=0;j<X.ysize();j++)
+	for(unsigned int i=0;i<X.xsize();i++)
+	  if(i != j)
+	    error += whiteice::math::abs(X(j,i));
+      
+      
+      if(error > 0.001){
+	std::cout << "ERROR: EIG OF ZERO MATRIX: X is not diagonal." << std::endl;
+	std::cout << "error = " << error << std::endl;
+	ok = false;
+      }
+
+      // 2. check D variance matrix is zero matrix
+      error = 0.0;
+
+      for(unsigned int j=0;j<D.ysize();j++)
+	for(unsigned int i=0;i<D.xsize();i++)
+	  error += whiteice::math::abs(D(j,i));
+      
+      if(error > 0.001){
+	std::cout << "ERROR: EIG OF ZERO MATRIX: D is not zero matrix." << std::endl;
+	std::cout << "error = " << error << std::endl;
+	ok = false;
+      }
+
+      if(ok){
+	std::cout << "EIG OF ZERO MATRIX SUCCESSFUL:" << std::endl;
+	std::cout << "X = " << X << std::endl;
+	std::cout << "D = " << D << std::endl;
+      }
+      
+    }
+    
+  }
+  catch(std::exception& e){
+    std::cout << "ERROR: symmetric eigenproblem solver tests failed: "
+	      << e.what() << std::endl;
+  }
   
   
   // francis qr step
