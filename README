@@ -6,12 +6,13 @@ Dinrhiw implements linear algebra, PCA+ICA, complex value neural network,
 variational autoencoder and deep learning 
 (residual neural network+leaky ReLU non-linearity) codes. 
 
-Currently, the feedforward neural network code supports:
+Currently, neural network code supports:
 
 * second order L-BFGS optimization and gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
 * parallel computing (via OpenMP)
 * residual neural network (deep learning)
+* recurrent neural network
 * experimental: (RBM) GB-RBM and BB-RBM 2nd order
   LBFGS optimizer and HMC sampler => greedy deep belief net optimizer
 * experimental: reinforcement learning code
