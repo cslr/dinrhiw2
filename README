@@ -105,6 +105,9 @@ PLAN
 
 In development:
 
+Experimental GPU support (NVIDIA) but memory transfer between CPU and GPU is slowing significantly results.
+If you find very fast computer with small memory bottleneck the code might function fast enough.
+
 Stacked RBMs (GB-RBM + BB-RBMs) and implementation of DBN networks,
 which can be transformed to nnetwork and further trained using output examples.
 
@@ -112,5 +115,5 @@ Finally add support of parallel DBN pretraining + nnetwork optimization to tools
 
 TODO
 
-Recurrent neural networks and reinforcement learning.
+Reinforcement learning (alpha code exists).
 
