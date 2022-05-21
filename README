@@ -13,6 +13,7 @@ Currently, neural network code supports:
 * parallel computing (via OpenMP)
 * residual neural network (deep learning)
 * recurrent neural network
+* Runge-Kutta differential equation solver for neural network differential equation models
 * experimental: (RBM) GB-RBM and BB-RBM 2nd order
   LBFGS optimizer and HMC sampler => greedy deep belief net optimizer
 * experimental: reinforcement learning code
