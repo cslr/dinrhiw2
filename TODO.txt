@@ -1,0 +1,83 @@
+TODO
+
+
+
+* FIXME: residual neural networks are not supported by
+  nnetwork::jacobian() and nnetwork::gradient_value()
+
+
+
+* DBN.convertToNNetwork(): pretraining+convertToNNetwork() 
+  sometimes (incorrectly) generates VERY large weights and further optimization only partly
+  remedies this. Bug fix/increase robustness of code to avoid extremely large weights in DBN/NNetwork.
+  
+* RIFL_abstract and RIFL_abstract2 load() and save() do not really work
+  because starting learning loop does not have code to notice existing
+  nnetworks (starts always assuming fresh start)
+
+* throughly test HMC further.
+  Does negative phase improve results or not?
+  - does TOP gradient results work better or worse?
+
+
+LATER (multistep optimization):
+
+* fully implement recurrent neural networks
+   
+========================
+
+- bayesian neural network fixes 
+  (train both function and its inverse at the same time)
+
+- OPTIMIZE BFGS for speed:
+  * implement L-BFGS for large neural networks
+    (in practice we ALWAYS have rank(H) << dim(H)
+     so there is no point in trying to estimate the whole H)
+  
+- HMC sampler:
+  [check convergence by starting N sampling threads and
+   then sample until ||m_w_j - m_x_i|| converges close
+   enough to zero] (mean values are close enough each other)
+
+- GA3, ga3_test_function.h: fully implement and test
+  genetic algorithm optimization for real-valued vectors.
+  - change GA implementation to sort offspring and select
+    the better upper part (radix sort) (+ some randomness)
+
+- there are bugs in classes that create internal pthreads to do
+  background execution. the pthread-entry functions are not
+  templated to do proper pointer casts (to templated pointer type)
+
+- bugfix and debugging:
+  * valgrind, gdb
+
+- DOCUMENTATION
+
+----------------------------------------------------------------
+OLD TODO
+
+  - AMD64 MATH: SYLVESTER EQ SOLVER FAIL
+
+  TEST
+   - write TEST to test gramschmidt<>(vector) gives same as gramschimidt<>(matrix)
+   - test dataset::convert()     
+   - GDA clustering
+   - retest matrix inversion code after bugfix
+  test association rule finder with real data
+  test datamining code
+
+
+(MAYBE) BUGS/ERRORS
+
+  avl-tree remove_node() has serious bugs:
+    avl-tree infinite loops
+    avl-tree forgots/drops non-removed nodes (bad)
+    avl-tree isn't balanced after removal of nodes (bug).
+    (calculate with paper&pencil with small examples..)
+
+  test and/or add accuracy of symmetric eigenvalue solver
+  (PCA seems to fail sometimes)
+
+  write faster/good association rules finder (reread the relevant paper)
+
+===================================================================

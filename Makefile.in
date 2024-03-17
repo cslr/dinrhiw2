@@ -1,0 +1,176 @@
+# GNU Make makefile for dinrhiw
+# (C) Copyright Tomas Ukkonen 
+##################################################
+
+MAKE = make
+MKDIR = mkdir -p
+AR = ar
+CD = cd
+RM = rm -f
+MV = mv
+CP = cp
+LDCONFIG = /sbin/ldconfig
+
+CFLAGS=@CFLAGS@
+CXXFLAGS=@CXXFLAGS@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@/dinrhiw
+
+LIBOBJECTS = src/*.o src/math/*.o src/neuralnetwork/*.o src/crypto/*.o src/hmm/*.o src/datamining/*.o \
+	src/math/pocketfft/pocketfft.o \
+	src/reinforcement/*.o src/rnn/*.o src/neuralnetwork/neuro-diffeqs/*.o
+# src/huge_linear/*.o src/huge_linear/FP-growth/src/fptree.o
+LIBNAME = libdinrhiw.a
+
+
+BASESOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
+SOLIBNAME = libdinrhiw.@SHAREDLIBSUFFIX@
+
+
+############################################################
+
+all: check_conf_changes depend make_objects makelib
+
+depend:
+	$(CD) src && echo "" > Makefile.depend
+	$(CD) src/math && echo "" > Makefile.depend
+	$(CD) src/crypto && echo "" > Makefile.depend
+	$(CD) src/datamining && echo "" > Makefile.depend
+	$(CD) src/neuralnetwork && echo "" > Makefile.depend
+	$(CD) src/hmm && echo "" > Makefile.depend
+	$(CD) src/reinforcement && echo "" > Makefile.depend
+	$(CD) src/rnn && echo "" > Makefile.depend
+	$(CD) tools && echo "" > Makefile.depend
+	$(CD) src && $(MAKE) depend
+	$(CD) src/math && $(MAKE) depend
+	$(CD) src/datamining && $(MAKE) depend
+	$(CD) src/crypto && $(MAKE) depend
+	$(CD) src/neuralnetwork && $(MAKE) depend
+	$(CD) src/hmm && $(MAKE) depend
+	$(CD) src/reinforcement && $(MAKE) depend
+	$(CD) src/rnn && $(MAKE) depend
+#	$(CD) src/huge_linear && $(MAKE) depend
+	$(CD) tools && $(MAKE) depend
+
+make_objects:
+	$(CD) src && $(MAKE) all
+	$(CD) src/math && $(MAKE) all
+	$(CD) src/datamining && $(MAKE) all
+	$(CD) src/crypto && $(MAKE) all
+	$(CD) src/neuralnetwork && $(MAKE) all
+	$(CD) src/hmm && $(MAKE) all
+	$(CD) src/reinforcement && $(MAKE) all
+	$(CD) src/rnn && $(MAKE) all
+#	$(CD) src/huge_linear && $(MAKE) all
+
+clean: 
+	$(CD) src && $(MAKE) clean
+	$(CD) src/math && $(MAKE) clean
+	$(CD) src/datamining && $(MAKE) clean
+	$(CD) src/crypto && $(MAKE) clean
+	$(CD) src/neuralnetwork && $(MAKE) clean
+	$(CD) tools && $(MAKE) clean
+	$(CD) src/hmm && $(MAKE) clean
+	$(CD) src/reinforcement && $(MAKE) clean
+	$(CD) src/rnn && $(MAKE) clean
+#	$(CD) src/huge_linear && $(MAKE) clean
+	$(RM) *~
+
+realclean: clean removelib
+	$(CD) src && $(MAKE) realclean
+	$(CD) src/math && $(MAKE) realclean
+	$(CD) src/crypto && $(MAKE) realclean
+	$(CD) src/neuralnetwork && $(MAKE) realclean
+	$(CD) src/datamining && $(MAKE) realclean
+	$(CD) src/hmm && $(MAKE) realclean
+	$(CD) src/reinforcement && $(MAKE) realclean
+	$(CD) src/rnn && $(MAKE) realclean
+#	$(CD) src/huge_linear && $(MAKE) realclean
+	$(CD) tools && $(MAKE) clean
+	$(RM) dinrhiw.pc
+	$(RM) Makefile 
+	$(RM) src/Makefile src/math/Makefile src/crypto/Makefile
+	$(RM) src/neuralnetwork/Makefile src/hmm/Makefile
+	$(RM) src/reinforcement/Makefile
+	$(RM) config.log
+	$(RM) config.status
+	$(RM) -rf autom4te.cache
+	$(RM) cputest
+	$(RM) gmp
+	$(RM) zlibtest
+	$(RM) configure
+
+############################################################
+
+makelib:
+	./make_lib_dir.sh
+	$(RM) *.a
+	$(AR) rc $(LIBNAME) $(LIBOBJECTS)
+##	$(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) @EXTRA_LIBPATHS@ -lgmp @EXTRA_LIBS@ -fopenmp
+	$(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) @EXTRA_LIBPATHS@ -lgmp @EXTRA_LIBS@ -fopenmp
+
+	## $(CXX) -shared -Wl,-soname,$(BASESOLIBNAME) -o $(SOLIBNAME) $(LIBOBJECTS) -L/usr/local/lib -lgmp -L/usr/lib/ -L/opt/intel/compilers_and_libraries/linux/mkl/ -Wl,--start-group /opt/intel/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_lp64.a /opt/intel/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_gnu_thread.a /opt/intel/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl -fopenmp
+
+	$(MV) $(LIBNAME) lib/
+	$(MV) $(SOLIBNAME) lib/
+	$(CP) src/*.h lib/
+	$(CP) src/math/*.h lib/
+	$(CP) src/crypto/*.h lib/
+	$(CP) src/neuralnetwork/*.h lib/
+	$(CP) src/hmm/*.h lib/
+	$(CP) src/reinforcement/*.h lib/
+	$(CP) src/datamining/*.h lib/
+	$(CP) src/rnn/*.h lib/
+#	$(CP) src/huge_linear/*.h lib/
+	$(CP) config.h lib/
+	chmod a+x ./copy_cpp_templates.sh
+	./copy_cpp_templates.sh
+	chmod a+r lib/*
+	chmod a+r *
+
+
+removelib:
+	$(CD) lib && $(RM) */.h
+	$(CD) lib && $(RM) */.c
+	$(CD) lib && $(RM) */.cpp
+	$(CD) lib && $(RM) */.a
+	$(CD) lib && $(RM) */.so
+
+############################################################
+
+install:
+	$(MKDIR) @includedir@/dinrhiw
+	$(CP) lib/*.h @includedir@/dinrhiw
+	$(CP) lib/*.cpp @includedir@/dinrhiw
+	$(CP) lib/$(LIBNAME) @libdir@/$(LIBNAME)
+	$(CP) lib/$(SOLIBNAME) @libdir@/$(SOLIBNAME)
+	$(MKDIR) @libdir@/pkgconfig/
+	$(CP) dinrhiw.pc @libdir@/pkgconfig/dinrhiw.pc
+	$(LDCONFIG)
+
+uninstall:
+	$(RM) -rf @includedir@/dinrhiw
+	$(RM) @libdir@/$(LIBNAME)
+	$(RM) @libdir@/$(SOLIBNAME)
+	$(RM) @libdir@/pkgconfig/dinrhiw.pc
+
+############################################################
+# some support for automatic reconfiguration
+# when autoconf files change
+
+check_conf_changes: ./configure Makefile config.status
+
+./configure: configure.ac # aclocal.m4
+	autoconf
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+############################################################
+

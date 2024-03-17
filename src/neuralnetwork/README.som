@@ -1,0 +1,27 @@
+
+TODO
+
+ - optimize: calculate radius where effects are noticable
+   and update only within effective radius
+
+ - optimize: use sequental ordering
+
+ - better visualization with umatrix:
+   - colors (how to use them efficiently?)
+   - blending between points in arbitrary resolution
+   - ability to mark data points with labels on the
+     som (need to add&test dlib truetype support)
+   - ability to draw into given buffer (dlib_global::Buffer)
+     (don't use dlib::buffer directly)
+   - update display when calculating som only every ETA_DELTA times
+
+ - start with few neurons and increase during training
+ - LVQ for additional quality (for both SOM2D and SOM3D)
+
+ - visualization (pca dimension reduce downto 2 or 3 dimensions + color coding)
+
+ - SOM3D (straightforward generalization)
+ - cblas optimized K-means
+
+ - read about Adaptive Subspace SOM - useful to implement/for own
+   purposes?

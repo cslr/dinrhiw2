@@ -1,0 +1,27 @@
+
+ c++ implementation of basic graph algorithms
+ (reason: learn & remember (for exam) + useful,100% the way you like it implementation)
+
+TODO
+PARTIAL: (todo - integrate/merge from "AI")
+	graphs, extend to generic weighted (or not) graphs
+	trees (black-red) (special case of graphs)              
+
+TODO:
+	binomial heaps
+	fibonacci heaps
+
+	merge "edit distance code" to graph makefile + tests
+
+	
+	minimum spanning trees
+	
+	some kind of dynamic programming/optimization framework
+	disjoint set implementation
+	
+	shortest path problem - solutions
+	maximum flow solution(s) for graphs
+	
+--
+too bad coding these well would take too much. -> implemented after exam period
+	

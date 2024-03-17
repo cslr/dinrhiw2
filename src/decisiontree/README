@@ -1,0 +1,6 @@
+Runs now but may FAIL.
+
+TODO:
+ - run testcases and bugfix, run hand-made test-case and check results are CORRECT
+ - write binarization code for continuous data
+

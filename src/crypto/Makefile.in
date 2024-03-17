@@ -1,0 +1,51 @@
+# CRYPTO Makefile
+###################################################
+
+CC = @CC@
+CXX = @CXX@
+
+OPTIMIZE=@optimization_flags@
+
+CFLAGS += @CFLAGS@ -Wall -Wno-deprecated -Wno-strict-aliasing -Wno-class-memaccess -g -I. -I.. -I../.. -I../neuralnetwork -I../math -I/usr/local/include/ $(OPTIMIZE) @EXTRA_INCLUDEPATHS@
+CXXFLAGS = $(CFLAGS)
+
+
+OBJECTS = PAD.o DES.o AES.o SHA.o RSA.o DSA.o test/tst.o
+
+EXTRA_OBJECTS = ../math/ownexception.o ../math/integer.o \
+	../dynamic_bitset.o ../Log.o
+
+
+SOURCES = PAD.cpp DES.cpp AES.cpp SHA.cpp RSA.cpp DSA.cpp \
+	../math/ownexception.cpp ../math/integer.cpp \
+	../dynamic_bitset.cpp \
+	test/tst.cpp
+
+
+TARGET  = tst
+LIBS = -L/usr/lib/ @EXTRA_LIBPATHS@ -lgmp -lstdc++
+
+# nbits_integer.o 
+# Bitset.o
+
+##################################################
+
+all: $(OBJECTS) $(EXTRA_OBJECTS)
+	$(CXX) -o $(TARGET) $(CXXFLAGS) $(OBJECTS) $(EXTRA_OBJECTS) $(LIBS)
+
+clean:
+	$(RM) $(OBJECTS) $(TARGET)
+	$(RM) *~ test/*~
+
+clean_rpo:
+	$(RM) *.rpo
+	$(RM) test/*.rpo
+
+realclean: clean clean_rpo
+
+depend:
+	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend
+
+##################################################
+
+include Makefile.depend

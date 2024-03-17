@@ -1,0 +1,15 @@
+
+This file lists dependencies (tools, libraries) which dinrhiw library needs.
+
+============================================================================
+
+Basic linking etc. unix tools	?			?
+
+GNU GCC							http://gcc.gnu.org
+GNU Autoconf & Autoheader				
+GNU Make						
+BLAS library installed					(OpenBLAS, ATLAS,..)
+
+GMP (integer number library)
+
+

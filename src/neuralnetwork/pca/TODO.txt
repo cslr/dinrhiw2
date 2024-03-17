@@ -1,0 +1,11 @@
+
+
+ Fri 7th Feb 2003 / Tomas
+
+ GHA seems to rock now, although there are some mysterious NaN numbers coming to system from somewhere?
+ and convergence seems to be quite bad.
+ TODO: move to better stuff like APEX (code it).,  fix naming of code() -> encode() and encode() -> decode().
+       (correct english terms).
+
+
+

@@ -1,0 +1,3039 @@
+<html><head><title>Numerical algorithms I: basic methods</title></head>
+<body bgcolor="#ffffff" link="#0000ff" vlink="#0000ff">
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">
+<a name="c4">
+
+</a>
+</font><h1>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Numerical algorithms I: basic methods
+</font></h1>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This and subsequent chapters document the numerical algorithms used in
+Yacas for exact integer calculations as well as for multiple precision
+floating-point calculations. We give self-contained descriptions of
+the non-trivial algorithms and estimate their computational cost.
+Most of the algorithms were taken from referenced literature; the remaining algorithms were developed by us.
+
+</font><p><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> </font></p>
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s1">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Adaptive function plotting
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here we consider plotting of functions <b>y=f(x)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are
+two tasks related to preparation of plots of functions: first, to
+produce the numbers required for a plot, and second, to draw a plot
+with axes, symbols, a legend, perhaps additional illustrations and so
+on.
+Here we only concern ourselves with the first task, that of preparation
+of the numerical data for a plot.
+There are many plotting programs that can read a file with numbers and
+plot it in any desired manner.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Generating
+data for plots of functions generally does not require
+high-precision calculations.
+However, we need an algorithm that can be adjusted to produce data to
+different levels of precision.
+In some particularly ill-behaved cases, a precise plot will not be
+possible and we would not want to waste time producing data that is too
+accurate for what it is worth.
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="plotting!adaptive algorithms">
+
+</a>
+<a name="plotting!two-dimensional">
+
+</a>
+<a name="Plot2D'adaptive@\relax &lt;B&gt;&lt;TT&gt;Plot2D'adaptive&lt;/TT&gt;&lt;/B&gt;">
+
+</a>A simple approach to plotting would be to divide the interval into
+many equal subintervals and to evaluate the function on the resulting
+grid.
+Precision of the plot can be adjusted by choosing a larger or a smaller
+number of points.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">However, this approach is not optimal. Sometimes a function changes rapidly near one point but slowly everywhere else.
+For example, <b>f(x)=1/x</b> changes very quickly at small <b> x</b>.
+Suppose we need to plot this function between <b> 0</b> and <b> 100</b>.
+It would be wasteful to use the same subdivision interval everywhere: a
+finer grid is only required over a small portion of the plotting range
+near <b> x=0</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The adaptive plotting routine <b><tt>Plot2D'adaptive</tt></b> uses a simple algorithm
+to select the optimal grid to approximate a function of one argument <b> f(x)</b>.
+The algorithm repeatedly subdivides the grid intervals near points
+where the existing grid does not represent the function well enough.
+A similar algorithm
+for adaptive grid refinement could be used for numerical integration.
+The
+idea is that plotting and numerical integration require the same kind
+of
+detailed knowledge about the behavior of the function.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The algorithm first splits the interval into a specified initial number of
+equal subintervals, and then repeatedly splits each subinterval in half
+until the function is well enough approximated by the resulting grid. The
+integer parameter <b><tt>depth</tt></b> gives the maximum number of binary splittings for
+a given initial interval; thus, at most <b>2^depth</b> additional grid points
+will be generated. The function <b><tt>Plot2D'adaptive</tt></b> should return a list of
+pairs of points <b><tt>{{x1,y1}, {x2,y2}, ...}</tt></b> to be used directly for plotting.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The adaptive plotting algorithm works like this:
+
+
+</font></p><p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 1.  Given an interval (<b> a</b>, <b> c</b>), we split
+it in half, <b> b:=(a+c)/2</b> and first compute <b> f(x)</b> at five grid
+points <b>a</b>, <b> a[1]:=(a+b)/2</b>, <b> b</b>, <b> b[1]:=(b+c)/2</b>, <b> c</b>. 
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 2. If currently <b> depth&lt;=0</b>, return this list of five points and
+values because we cannot refine the grid any more.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 3. Otherwise, check that the function does not oscillate too
+rapidly on the interval [<b> a</b>, <b> c</b>]. 
+The formal criterion is that the five values are all finite and do not make a "zigzag" pattern
+such as (1,3,2,3,1).
+More formally, we use the following procedure:
+For each three consecutive values, write "1" if the middle value is larger
+than the other two, or if it is smaller than the other two,
+or if one of them is not a number (e.g. <b><tt>Infinity</tt></b> or <b><tt>Undefined</tt></b>).
+If we have at most two ones now, then we consider the change of values to be
+"slow enough". Otherwise it is not "slow enough".
+In this case we need to refine the grid; go to step 5. 
+Otherwise, go to step 4.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 4. Check that the function values are smooth enough through the
+interval. Smoothness is controlled by a parameter <b> epsilon</b>. The
+meaning of the parameter <b> epsilon</b> is the (relative) error of the
+numerical approximation of the integral of <b> f(x)</b> by the grid. A good heuristic
+value of <b>epsilon</b> is 1/(the number of pixels on the screen)
+because it means that no pixels will be missing in the area under
+the graph. For this to work we need to make sure that we are actually computing the area <i>under</i> the graph; so we define <b> g(x):=f(x)-f[0]</b> where <b>f[0]</b> is the minimum of the values of <b>f(x)</b> on the five grid points <b>a</b>, <b> a[1]</b>, <b>b</b>, <b> b[1]</b>, and <b>c</b>; the function <b> g(x)</b> is nonnegative and has the minimum value 0.
+Then we compute two different Newton-Cotes quadratures
+for <b>Integrate(x,b,b[1])g(x)</b> using these five points. (Asymmetric
+quadratures are chosen to avoid running into an accidental symmetry of the
+function; the first quadrature uses points <b>a</b>, <b> a[1]</b>, <b>b</b>, <b> b[1]</b> and the second
+quadrature uses <b>b</b>, <b> b[1]</b>, <b>c</b>.) If the
+absolute value of the difference between these quadratures is less
+than <b> epsilon</b> * (value of the second quadrature), then we
+are done and we return the list of these five points and values.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 5. Otherwise, we need to refine the grid. We compute
+<b><tt>Plot2D'adaptive</tt></b> recursively for the two halves of the interval,
+that is, for (<b> a</b>, <b> b</b>) and (<b> b</b>, <b> c</b>).
+We also decrease <b><tt>depth</tt></b> by 1 and multiply <b> epsilon</b> by 2 because we need to maintain a constant <i>absolute</i> precision and this means that the relative error for the two subintervals can be twice as large.
+The resulting two lists for the two subintervals are
+concatenated (excluding the double value at point <b> b</b>) and
+returned.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This algorithm works well if the initial number of points and the <b><tt>depth</tt></b>
+parameter are large enough.
+These parameters can be adjusted to balance the available computing time and the desired level of detail in the resulting plot.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Singularities in the function are handled by the step 3.
+Namely, the change in the sequence <b> a</b>, <b> a[1]</b>, <b>b</b>, <b> b[1]</b>, <b>c</b> is always considered to be "too rapid" if one of these values is a non-number (e.g. <b><tt>Infinity</tt></b> or <b><tt>Undefined</tt></b>).
+Thus, the interval immediately adjacent to a singularity will be
+plotted at the highest allowed refinement level. When preparing the
+plotting data, the singular points are simply not printed to the data
+file, so that
+a plotting programs does not encounter any problems.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton-Cotes quadratures
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton-Cotes quadratures">
+
+</a>
+The meaning of Newton-Cotes quadrature coefficients is that an integral of a function <b> f(x)</b> is approximated by a sum,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(x,a[0],a[n])f(x))&lt;=&gt;h*Sum(k,0,n,c[k]*f(a[k])),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>a[k]</b> are the grid points, <b>h:=a[1]-a[0]</b> is the grid step, and
+<b>c[k]</b> are the quadrature coefficients.
+It may seem surprising, but these coefficients <b>c[k]</b> are independent
+of the function <b>f(x)</b> and can be precomputed
+in advance for a given grid <b>a[k]</b>.
+[The quadrature coefficients do depend on the relative separations of the grid.
+Here we assume a uniform grid with a constant step <b>h=a[k]-a[k-1]</b>.
+Quadrature coefficients can also be found for non-uniform grids.]
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The coefficients <b>c[k]</b> for
+grids with a constant step <b>h</b> can be found, for example, by solving the following system of equations,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Sum(k,0,n,c[k]*k^p)=n^(p+1)/(p+1) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for <b>p=0</b>, 1, ..., <b> n</b>. This system of equations means that the quadrature correctly gives the integrals of <b> p+1</b> functions <b> f(x)=x^p</b>, <b> p=0</b>, 1, ..., <b> n</b>, over the interval (0, <b> n</b>).
+The solution of this system always exists and gives quadrature
+coefficients as rational numbers. For example, the well-known Simpson
+quadrature <b> c[0]=1/3</b>, <b> c[1]=4/3</b>, <b> c[2]=1/3</b> is obtained with <b> n=2</b>.
+An example of using this quadrature is the approximation
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(x,0,2)f(x))&lt;=&gt;(f(0)+f(2))/3+4/3*f(1).</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton-Cotes quadratures!for partial intervals">
+
+</a>
+In the same way it is possible to find quadratures for the integral over a subinterval rather than over the whole interval of <b>x</b>. In the current implementation of the adaptive plotting algorithm, two quadratures are used: the 3-point quadrature (<b> n=2</b>) and the 4-point quadrature (<b> n=3</b>) for the integral over the first subinterval, <b> Integrate(x,a[0],a[1])f(x)</b>. Their coefficients are (<b>5/12</b>, <b> 2/3</b>, <b>-1/12</b>) and (<b> 3/8</b>, <b> 19/24</b>, <b>-5/24</b>, <b> 1/24</b>).
+An example of using the first of these subinterval quadratures would be the approximation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(x,0,1)f(x))&lt;=&gt;5/12*f(0)+2/3*f(1)-1/12*f(2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">These quadratures are intentionally chosen to be asymmetric to avoid an accidental cancellation when the function <b>f(x)</b> itself is symmetric.
+(Otherwise the error estimate could accidentally become exactly zero.)
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s2">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Surface plotting
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here we consider plotting of functions <b>z=f(x,y)</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="plotting!of surfaces">
+
+</a>
+<a name="plotting!three-dimensional">
+
+</a>
+The task of surface plotting is to obtain a picture of a
+two-dimensional surface as if it were a solid object in three
+dimensions.
+A graphical representation of a surface is a complicated task.
+Sometimes it is required to use particular coordinates or projections,
+to colorize the surface, to remove hidden lines and so on.
+We shall only be concerned with the task of obtaining the data for a
+plot from a given function of two variables <b>f(x,y)</b>.
+Specialized programs can take a text file with the data and let the user interactively produce a variety of surface plots.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The currently implemented algorithm in the function <b><tt>Plot3DS</tt></b> is very similar to the adaptive plotting algorithm for two-dimensional plots.
+A given rectangular plotting region <b>a[1]&lt;=x&lt;=a[2]</b>, <b>b[1]&lt;=y&lt;=b[2]</b>
+is subdivided to produce an equally spaced rectangular grid of points.
+This is the initial grid which will be adaptively refined where
+necessary.
+The refinement algorithm will divide a given rectangle in four quarters
+if the available function values indicate that the function does not
+change smoothly enough on that rectangle.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+criterion of a "smooth enough" change is very similar to the procedure
+outlined in the previous section.
+The change is "smooth enough" if all points are finite, nonsingular
+values, and if the integral of the function over the rectangle is
+sufficiently well approximated by a certain low-order "cubature"
+formula.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The two-dimensional integral of the function is estimated using the following 5-point Newton-Cotes cubature:
+
+
+</font></p><p>
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>1/12   0   1/12
+
+ 0    2/3   0
+
+1/12   0   1/12
+</pre></td></tr>
+</tbody></table>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An example of using this cubature would be the approximation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Integrate(y,0,1)Integrate(x,0,1)f(x,y))&lt;=&gt;(f(0,0)+f(0,1)+f(1,0)+f(1,1))/12 </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>+2/3*f(1/2,1/2).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Similarly, an 8-point cubature with zero sum is used to estimate the error:
+
+
+</font></p><p>
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>-1/3   2/3   1/6
+
+-1/6  -2/3  -1/2
+
+ 1/2    0    1/3
+</pre></td></tr>
+</tbody></table>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This set of
+coefficients was intentionally chosen to be asymmetric to avoid
+possible exact cancellations when the function itself is symmetric.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">One minor
+problem with adaptive surface plotting is that the resulting set of
+points may not correspond to a rectangular grid in the parameter space (<b>x</b>,<b> y</b>).
+This is because some rectangles from the initial grid will need to be bisected more times than others.
+So, unless adaptive refinement is disabled, the function <b><tt>Plot3DS</tt></b>
+produces a somewhat disordered set of points.
+However, most surface plotting programs require that the set of data
+points be a rectangular grid in the parameter space.
+So a smoothing and interpolation procedure is necessary to convert a
+non-gridded set of data points ("scattered" data) to a gridded set.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The program <b><tt>gnuplot</tt></b> has this facility (the "<b><tt>set dgrid3d</tt></b>" command), although its implementation may not be optimal for all purposes.
+The current solution is to use the <b><tt>dgrid3d</tt></b>
+command and to generate a grid at the highest level of bisection ever
+used during the adaptive refinement process.
+This quite possibly generates many more grid points than necessary, but
+a more optimal solution would be more much more time-consuming or would
+require a specialized external program.
+One such set of programs is the <b><tt>GMT</tt></b> ("generic mapping tools") utility suite.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s3">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Parametric plots
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="plotting!parametric">
+
+</a>
+Currently, parametric plots are not directly implemented in Yacas.
+However, it is possible to use Yacas to obtain numerical data for such plots.
+One can then use external programs to produce actual graphics.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A two-dimensional parametric plot is a line in a two-dimensional space, defined by two equations such as <b>x=f(t)</b>, <b>y=g(t)</b>.
+Two functions <b>f</b>, <b> g</b> and a range of the independent variable <b> t</b>, for example, <b> t[1]&lt;=t&lt;=t[2]</b>, need to be specified.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="plotting!non-Euclidean coordinates">
+
+</a>
+Parametric plots can be used to represent plots of functions in non-Euclidean coordinates.
+For example, to plot the function <b>rho=Cos(4*phi)^2</b> in polar coordinates (<b> rho</b>,<b> phi</b>), one can rewrite the Euclidean coordinates through the polar   coordinates,
+<b> x=rho*Cos(phi)</b>,
+<b>y=rho*Sin(phi)</b>,
+and use the equivalent parametric plot with <b>phi</b> as the parameter:
+<b> x=Cos(4*phi)^2*Cos(phi)</b>,
+<b>y=Cos(4*phi)^2*Sin(phi)</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="plotting!three-dimensional">
+
+</a>
+Sometimes higher-dimensional parametric plots are required.
+A line plot in three dimensions is defined by three functions of one variable, for example, <b>x=f(t)</b>, <b>y=g(t)</b>, <b>z=h(t)</b>, and a range of the parameter <b>t</b>.
+A surface plot in three dimensions is defined by three functions of two variables each, for example, <b> x=f(u,v)</b>, <b>y=g(u,v)</b>, <b>z=h(u,v)</b>, and a rectangular domain in the (<b>u</b>,<b> v</b>) space.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The data
+for parametric plots can be generated separately using the same
+adaptive plotting algorithms as for ordinary function plots,
+as if all functions such as <b> f(t)</b> or <b>g(u,v)</b> were unrelated functions.
+The result would be several separate data sets for the <b>x</b>, <b> y</b>, ... coordinates.
+These data sets could then be combined using an interactive plotting program.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s4">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The cost of arbitrary-precision computations
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A computer algebra system absolutely needs to be able to perform
+computations with very large <i>integer</i>  numbers. Without this
+capability, many symbolic computations (such as exact GCD of
+polynomials or exact solution of polynomial equations) would be
+impossible.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation">
+
+</a>
+A different question is whether a CAS really needs to be able to
+evaluate, say, 10,000 digits of the value of a Bessel function of some
+10,000-digit complex argument.
+It seems likely that no applied problem of
+natural sciences would need floating-point computations of special
+functions with such a high precision. However, arbitrary-precision
+computations are certainly useful in some mathematical applications;
+e.g. some mathematical identities can be first guessed by a floating-point
+computation with many digits and then proved.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Very high precision computations of special functions <i>might</i> be useful in the future.
+But it is already quite clear that computations with moderately high
+precision (say, 50 or 100 decimal digits) are useful for applied problems.
+For example, to obtain the leading asymptotic of an analytic function, we could expand it in series and take the first term.
+But we need to check that the coefficient at what we think is the leading term of the series does not vanish.
+This coefficient could be a certain "exact" number such as <b>(Cos(355)+1)^2</b>.
+This number is "exact" in the sense that it is made of integers and elementary functions.
+But we cannot say <i>a priori</i> that this number is nonzero.
+The problem of "zero determination" (finding out whether a certain "exact" number is zero)
+is known to be algorithmically unsolvable if we allow transcendental functions.
+The only practical general approach seems to be to compute the number in question with many digits.
+Usually a few digits are enough, but occasionally several hundred digits are needed.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Implementing an efficient algorithm that computes 100 digits of
+<b> Sin(3/7)</b> already involves many of the issues that would also be
+relevant for a 10,000 digit computation. 
+Modern algorithms allow evaluations of all elementary functions in time
+that is asymptotically logarithmic in the number of digits <b>P</b> and
+linear in the cost of long multiplication (usually denoted <b> M(P)</b>).
+Almost all special functions can be evaluated in time that is asymptotically linear in <b>P</b> and in <b> M(P)</b>.
+(However, this asymptotic cost sometimes applies only to very high precision, e.g., <b>P&gt;1000</b>, and different algorithms need to be implemented for calculations in lower precision.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In <b><tt>Yacas</tt></b> we strive to implement all numerical functions to arbitrary precision.
+All integer or rational functions return exact
+results, and all floating-point functions return their value with <b> P</b>
+correct decimal digits (assuming sufficient precision of the arguments).
+The current value of <b> P</b> is accessed as
+<b><tt>GetPrecision()</tt></b> and may be changed by <b><tt>Precision(...)</tt></b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!requirements">
+
+</a>
+Implementing an arbitrary-precision floating-point computation of a
+function <b> f(x)</b>, such as <b>f(x)=Exp(x)</b>, typically needs the following:
+
+
+</font></p><p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">An algorithm that will compute <b>f(x)</b> for a given value <b>x</b> to a
+user-specified precision of <b> P</b> (decimal) digits. Often, several
+algorithms must be implemented for different subdomains of the
+(<b> x</b>,<b> P</b>) space.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">An estimate of the computational cost of the algorithm(s), as a function of <b> x</b> and <b> P</b>. This is needed to select the best algorithm for given <b> x</b>, <b> P</b>.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">An estimate of the round-off error.
+This is needed to select the "working precision" which will typically be somewhat higher than the precision of the final result.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In
+calculations with machine precision where the number of digits is
+fixed, the problem of round-off errors is quite prominent.
+Every arithmetic operation causes a small loss of precision;
+as a result, a few last digits of the final value are usually
+incorrect.
+But if we have an arbitrary precision capability, we can always
+increase precision by a few more digits during intermediate
+computations and thus eliminate all round-off error in the final
+result.
+We should, of course, take care not to increase the working precision
+unnecessarily, because any increase of precision means slower
+calculations.
+Taking twice as many digits as needed and hoping that the result is
+precise is not a good solution.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Selecting algorithms for computations is the most non-trivial part of
+the implementation.
+We want to achieve arbitrarily high precision, so
+we need to find either a series, or a continued fraction, or a
+sequence given by explicit formula, that converges to the function in a
+controlled way.
+It is not enough to use a table of precomputed values
+or a fixed approximation formula that has a limited precision.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the last 30 years, the interest in arbitrary-precision
+computations grew and many efficient algorithms for elementary and
+special functions were published.
+Most algorithms are iterative.
+Almost always it is very important to know in advance how many iterations
+are needed for given <b> x</b>, <b> P</b>.
+This knowledge allows to estimate the computational cost, in terms of
+the required precision <b> P</b> and of the cost of long multiplication
+<b> M(P)</b>, and choose the best algorithm.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Typically all operations will fall into one of the following categories
+(sorted by the increasing cost):
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!speed estimates">
+
+</a>
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">addition, subtraction: linear in <b>P</b>;
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">multiplication, division, integer power, integer root: linear in <b> M(P)</b>;
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">elementary functions: <b>Exp(x)</b>, <b>Ln(x)</b>, <b>Sin(x)</b>, <b>ArcTan(x)</b> etc.: <b>M(P)*Ln(P)</b> or slower by some powers of <b>Ln(P)</b>;
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">transcendental functions: <b>Erf(x)</b>, <b>Gamma(x)</b> etc.: typically <b>P*M(P)</b> or slower.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The cost of long multiplication <b>M(P)</b> is between <b>O(P^2)</b> for low precision and <b>O(P*Ln(P))</b> for very high precision.
+In some cases, a different algorithm should be chosen if the precision is high enough to allow <b>M(P)</b> faster than <b>O(P^2)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Some algorithms also need storage space
+(e.g. an efficient algorithm for summation of the Taylor series uses <b>O(Ln(P))</b> temporary <b>P</b>-digit numbers).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Below we shall normally denote by <b> P</b> the required number of decimal digits.
+The formulae frequently contain conspicuous factors of <b> Ln(10)</b>, so it will be clear how to obtain analogous expressions for another base.
+(Most implementations use a binary base rather than a decimal base since it is more convenient for many calculations.)
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s5">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Estimating convergence of a series
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Taylor series!required number of terms">
+
+</a>
+Analyzing convergence of a power series is usually not difficult.
+Here is a worked-out example of how we could estimate the required number of terms in the power series
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(x)=1+x+x^2/2! +...+x^n/n! +O(x^(n+1)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">if we need <b>P</b> decimal digits of precision in the result.
+To be specific, assume that
+<b> Abs(x)&lt;1</b>. (A similar calculation can be done for any other bound on <b> x</b>.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose we truncate the series after <b> n</b>-th
+term and
+the series converges "well enough" after that term. Then the error will
+be
+approximately equal to the first term we dropped. (This is what we
+really mean by "converges well enough" and this will generally be the
+case in all applications, because we would not want to use a series
+that does not converge well enough.)
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The term we dropped is <b> x^(n+1)/(n+1)!</b>.
+To estimate <b>n!</b> for large <b>n</b>, one can use the inequality
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> e^(e-1)*(n/e)^n&lt;n! &lt;(n/e)^(n+1) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(valid for all <b>n&gt;=47</b>) which provides tight bounds for the growth of
+the factorial, or a weaker inequality which is somewhat easier to use,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(n/e)^n&lt;n! &lt;((n+1)/e)^(n+1) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(valid for all <b>n&gt;=6</b>). The latter inequality is sufficient for most purposes.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we use the upper bound on <b> n!</b> from this estimate, we find that the term we dropped is bounded by
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x^(n+1)/(n+1)! &lt;(e/(n+2))^(n+2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We need this number to be smaller than <b>10^(-P)</b>. This leads to an inequality
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(e/(n+2))^(n+2)&lt;10^(-P),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">which we now need to solve for <b>n</b>. The left hand side decreases with growing <b> n</b>. So it is clear that the inequality will hold for large enough <b> n</b>, say for <b> n&gt;=n0</b> where <b> n0</b> is an unknown (integer) value. We can take a logarithm of both sides, replace <b> n</b> with <b> n0</b> and obtain the following equation for <b> n0</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(n0+2)*Ln((n0+2)/e)=P*Ln(10).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This
+equation cannot be solved exactly in terms of elementary functions;
+this is a typical situation in such estimates. However, we do not
+really need a very precise solution for <b>n0</b>; all we need is an estimate of its integer part.
+This is also a typical situation.
+It is acceptable if our approximate value of <b> n0</b>
+comes out a couple of units higher than necessary, because a couple of
+extra terms of the Taylor series will not significantly slow down the
+algorithm (but it is important that we do not underestimate <b> n0</b>).
+Finally, we are mostly interested in having a good enough answer for
+large values of <b> P</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We can try to guess the result.
+The largest term on the LHS
+grows as <b> n0*Ln(n0)</b> and it should be approximately equal to
+<b>P*Ln(10)</b>; but <b>Ln(n0)</b> grows very slowly, so this gives us a hint that
+<b>n0</b> is proportional to <b> P*Ln(10)</b>.
+As a first try, we set <b>n0=P*Ln(10)-2</b>
+and compare the RHS with the LHS; we find that we have overshot by a
+factor <b> Ln(P)-1+Ln(Ln(10))</b>, which is not a large factor. We
+can now compensate and divide <b>n0</b> by this factor, so our second try is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n0=(P*Ln(10))/(Ln(P)-1+Ln(Ln(10)))-2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(This approximation procedure is equivalent to solving the equation
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x=(P*Ln(10))/(Ln(x)-1) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">by direct iteration, starting from <b>x=P*Ln(10)</b>.)
+If we substitute our second try for <b>n0</b> into the equation, we shall find that we undershot a little bit (i.e. the LHS is a little smaller than the RHS), but our <b> n0</b> is now smaller than it should be by a quantity that is smaller than 1 for large enough <b> P</b>.
+So we should stop at this point and simply add 1 to this approximate answer. We should also replace <b> Ln(Ln(10))-1</b> by 0 for simplicity (this is safe because it will slightly increase <b> n0</b>.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Our final result is that it is enough to take
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> n=(P*Ln(10))/Ln(P)-1 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">terms in the Taylor series to compute <b> Exp(x)</b> for <b>Abs(x)&lt;1</b> to <b> P</b>
+decimal digits. (Of course, if <b> x</b> is much smaller than 1, many fewer
+terms will suffice.)
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s6">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Estimating the round-off error
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!round-off error estimates">
+
+</a>
+</font><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Unavoidable round-off errors
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">As the required precision <b>P</b> grows, an arbitrary-precision algorithm
+will need more iterations or more terms of the series. So the round-off
+error introduced by every floating-point operation will increase. When
+doing arbitrary-precision computations, we can always perform all
+calculations with a few more digits and compensate for round-off error.
+It is however imperative to know in advance how many more digits we
+need to take for our "working precision". We should also take that
+increase into account when estimating the total cost of the method.
+(In most cases this increase is small.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here is a simple estimate of the normal round-off error in a computation of
+<b> n</b> terms of a power series.
+Suppose that the sum of the series is of order <b> 1</b>, that the terms monotonically decrease in magnitude, and that adding one term requires two
+multiplications and one addition. If all calculations are performed
+with absolute precision <b> epsilon=10^(-P)</b>, then the total accumulated
+round-off error is <b>3*n*epsilon</b>. If the relative error is <b> 3*n*epsilon</b>, it means that our
+answer is something like <b> a*(1+3*n*epsilon)</b> where <b>a</b> is the correct
+answer. We can see that out of the total <b> P</b> digits of this answer,
+only the first <b> k</b> decimal digits are correct, where
+<b> k= -Ln(3*n*epsilon)/Ln(10)</b>. In other words, we have lost
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>P-k=Ln(3*n)/Ln(10) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">digits because of accumulated round-off error. So we found that we need
+<b>Ln(3*n)/Ln(10)</b> extra decimal digits to compensate for this
+round-off error.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This estimate assumes several things about the series (basically, that the series is "well-behaved").
+These assumptions must be verified in each particular case.
+For example, if the series begins with some large
+terms but converges to a very small value, this estimate is wrong (see the next
+subsection).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the previous exercise we found the number of terms <b>n</b> for <b> Exp(x)</b>. So now we know how many extra digits of working precision we need for this particular case.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Below we shall have to perform similar estimates of the required number
+of terms and of the accumulated round-off error in our analysis of the
+algorithms.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Catastrophic round-off error
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!catastrophic round-off error">
+
+</a>
+Sometimes the round-off error of a particular method of computation becomes so large that the method becomes highly inefficient.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Consider the computation of <b>Sin(x)</b> by the truncated Taylor series
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sin(x)&lt;=&gt;Sum(k,0,N-1,(-1)^k*x^(2*k+1)/(2*k+1)!),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">when <b>x</b> is large.
+We know that this series converges for all <b> x</b>, no matter how large.
+Assume that <b> x=10^M</b> with <b> M&gt;=1</b>, and that we need <b> P</b> decimal digits of precision in the result.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">First, we determine the necessary number of terms <b> N</b>.
+The magnitude of the sum is never larger than <b> 1</b>.
+Therefore we need the <b> N</b>-th term of the series to be smaller than <b> 10^(-P)</b>.
+The inequality is
+<b>(2*N+1)! &gt;10^(P+M*(2*N+1))</b>.
+We obtain that <b>2*N+2&gt;e*10^M</b> is a necessary condition, and if <b> P</b> is large, we find approximately
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 2*N+2&lt;=&gt;((P-M)*Ln(10))/(Ln(P-M)-1-M*Ln(10)).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">However, taking enough terms does not yet guarantee a good result.
+The terms of the series grow at first and then start to decrease.
+The sum of these terms is, however, small.
+Therefore there is some cancellation and we need to increase the working precision to avoid the round-off.
+Let us estimate the required working precision.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We need to find the magnitude of the largest term of the series.
+The ratio of the next term to the previous term is <b>x/(2*k*(2*k+1))</b> and therefore the maximum will be when this ratio becomes equal to <b>1</b>, i.e. for <b> 2*k&lt;=&gt;Sqrt(x)</b>.
+Therefore the largest term is of order <b>x^Sqrt(x)/Sqrt(x)!</b> and so we need about <b>M/2*Sqrt(x)</b> decimal digits before the decimal point to represent this term.
+But we also need to keep at least <b>P</b> digits after the decimal point, or else the round-off error will erase the significant digits of the result.
+In addition, we will have unavoidable round-off error due to <b> O(P)</b> arithmetic operations.
+So we should increase precision again by <b>P+Ln(P)/Ln(10)</b> digits plus a few guard digits.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">As an example, to compute <b>Sin(10)</b> to <b>P=50</b> decimal digits with this method, we need a working precision of about <b> 60</b> digits, while to compute <b> Sin(10000)</b> we need to work with about <b>260</b> digits.
+This shows how inefficient the Taylor series for <b> Sin(x)</b> becomes for large arguments <b>x</b>.
+A simple transformation <b> x=2*Pi*n+x'</b> would have reduced <b> x</b> to at most 7, and the unnecessary computations with <b> 260</b>
+digits would be avoided.
+The main cause of this inefficiency is that we have to add and subtract
+extremely large numbers to get a relatively small result of order <b> 1</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We find that the method of Taylor series for <b> Sin(x)</b> at large <b>x</b> is highly inefficient because of round-off error and should be complemented by other methods.
+This situation seems to be typical for Taylor series.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s7">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Basic arbitrary-precision arithmetic 
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!Yacas internal math">
+
+</a>
+Currently, Yacas can be compiled to use either internal math (the <b><tt>yacasnumbers</tt></b> library) or the
+GNU multiple precision library (<b><tt>gmp</tt></b>).
+The internal math library is intended as a replacement for platforms
+where specialized arbitrary-precision libraries are not available.
+This reduces the dependencies of the Yacas system and improves
+portability.
+The internal math library is simple and does not necessarily use the
+most optimal algorithms.
+Well-tested libraries such as <b><tt>gmp</tt></b> implement much more heavily optimized algorithms.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The algorithms for basic arithmetic in
+the internal math version are currently rather slow compared with <b><tt>gmp</tt></b>.
+If <b>P</b> is
+the number of digits of precision, then multiplication and division take
+<b> M(P)=O(P^2)</b> operations in the internal math. (Of course, multiplication and division by a short integer takes time linear in <b>P</b>.)
+Much faster algorithms
+(Karatsuba, Toom-Cook, FFT multiplication, Newton-Raphson division etc.) are
+implemented in <b><tt>gmp</tt></b>, <b><tt>CLN</tt></b> and some other libraries.
+The asymptotic cost of multiplication for very large precision is <b> M(P)&lt;=&gt;O(P^1.6)</b> for the Karatsuba method and <b>M(P)=O(P*Ln(P)*Ln(Ln(P)))</b> for the FFT method.
+In the estimates of computation cost in this book we shall assume that <b>M(P)</b> is at
+least linear in <b>P</b> and maybe a bit slower.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The costs
+of multiplication may be different in various arbitrary-precision
+arithmetic libraries and on different computer platforms.
+As a rough guide, one can assume that the straightforward <b> O(P^2)</b> multiplication is good until 100-200 decimal digits,
+the asymptotically fastest method of FFT multiplication is good at the precision of about 5,000 or more decimal digits,
+and the Karatsuba multiplication is best in the middle range.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Warning: calculations with internal Yacas math using precision exceeding 10,000 digits are currently impractically slow.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!estimating &lt;b&gt;Ln(2)&lt;/b&gt;">
+
+</a>
+In some algorithms it is necessary to compute the integer parts of expressions such as <b>a*Ln(b)/Ln(10)</b> or <b>a*Ln(10)/Ln(2)</b>, where <b>a</b>, <b> b</b> are short integers of order <b> O(P)</b>.
+Such expressions are frequently needed to estimate the number of terms
+in the Taylor series or similar parameters of the algorithms. In these
+cases, it is important that the result is not underestimated. However,
+it would be wasteful to compute <b>1000*Ln(10)/Ln(2)</b> in great precision only to discard most of that information by taking the integer part of that number.
+It is more efficient to approximate such constants from above by short rational numbers, for example, <b>Ln(10)/Ln(2)&lt;28738/8651</b> and <b> Ln(2)&lt;7050/10171</b>. The error of such an approximation will be small enough for practical purposes. The function <b><tt>BracketRational</tt></b> can be used to find optimal rational approximations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The function <b><tt>IntLog</tt></b>
+(see below) efficiently computes the integer part of a logarithm (for
+an integer base, not a natural logarithm). If more precision is desired
+in calculating <b> Ln(a)/Ln(b)</b> for integer <b>a</b>, <b> b</b>, one can compute <b> IntLog(a^k,b)</b> for some integer <b>k</b> and then divide by <b> k</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s8">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">How many digits of <b> Sin(Exp(Exp(1000)))</b> do we need?
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!very large numbers">
+
+</a>
+Arbitrary-precision math is not omnipotent against overflow.
+Consider the problem of representing very large numbers such as <b>x=Exp(Exp(1000))</b>.
+Suppose we need a floating-point representation of the number <b>x</b> with <b> P</b> decimal digits of precision.
+In other words, we need to express
+<b> x&lt;=&gt;M*10^E</b>,
+where the mantissa <b> 1&lt;M&lt;10</b> is a floating-point number and the exponent
+<b> E</b> is an integer, chosen so that the relative precision is <b> 10^(-P)</b>.
+How much effort is needed to find <b>M</b> and <b> E</b>?
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The exponent <b> E</b> is easy to obtain:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> E=Floor(Ln(x)/Ln(10))=Floor(Exp(1000)/Ln(10))&lt;=&gt;8.55*10^433.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To compute the integer part <b> Floor(y)</b> of a number <b>y</b> exactly, we need to approximate <b> y</b> with at least <b> Ln(y)/Ln(10)</b> floating-point digits.
+In our example, we find that we need 434 decimal digits to represent <b>E</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Once we found <b> E</b>, we can write <b> x=10^(E+m)</b> where <b>m=Exp(1000)/Ln(10)-E</b> is a floating-point number, <b> 0&lt;m&lt;1</b>.
+Then <b> M=10^m</b>.
+To find <b> M</b> with <b> P</b> (decimal) digits, we need <b> m</b> with also at least <b> P</b> digits.
+Therefore, we actually need to evaluate <b> Exp(1000)/Ln(10)</b> with <b>434+P</b> decimal digits before we can find <b> P</b> digits of the mantissa of <b> x</b>.
+We ran into a perhaps surprising situation: one needs a high-precision calculation even to find the first digit of <b> x</b>, because it is necessary to find the exponent <b> E</b> exactly as an integer, and <b> E</b> is a rather large integer.
+A normal double-precision numerical calculation would give an overflow error at this point.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose we have found the number <b> x=Exp(Exp(1000))</b> with some precision.
+What about finding <b>Sin(x)</b>?
+Now, this is extremely difficult, because to find even the first digit of <b>Sin(x)</b> we have to evaluate <b>x</b> with <i>absolute</i> error of at most <b> 0.5</b>.
+We know, however, that the number <b> x</b> has approximately <b> 10^434</b> digits <i>before</i> the decimal point.
+Therefore, we would need to calculate <b> x</b> with at least that many digits.
+Computations with <b> 10^434</b> digits is clearly far beyond the capability of modern computers.
+It seems unlikely that even the sign of <b> Sin(Exp(Exp(1000)))</b> will be obtained in the near future.
+</font></p><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">It seems even less likely that the sign of <b>Sin(Exp(Exp(1000)))</b> would be of any use to anybody even if it could be computed.</font></h6>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose that <b>N</b> is the largest integer that our arbitrary-precision facility can reasonably handle.
+(For Yacas internal math library, <b> N</b> is about <b> 10^10000</b>.)
+Then it follows that numbers <b> x</b> of order <b> 10^N</b> can be calculated with at most one (1) digit of floating-point precision,
+while larger numbers cannot be calculated with any precision at all.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">It seems that very large numbers can be obtained in practice only through exponentiation or powers.
+It is unlikely that such numbers will arise from sums or products of reasonably-sized numbers in some formula.
+</font></p><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">A factorial function can produce rapidly growing results, but exact factorials <b> n!</b> for large <b>n</b> are well represented by the Stirling formula which involves powers and exponentials.</font></h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">For example, suppose a program operates with numbers <b> x</b> of size <b> N</b> or smaller;
+a number such as <b> 10^N</b> can be obtained only by multiplying <b> O(N)</b> numbers <b>x</b> together.
+But since <b> N</b> is the largest representable number, it is certainly not feasible to perform <b> O(N)</b> sequential operations on a computer.
+However, it is feasible to obtain <b>N</b>-th power of a small number, since it requires only <b> O(Ln(N))</b> operations.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="exponentially large numbers">
+
+</a>
+If numbers larger than <b>10^N</b>  are created only by exponentiation operations, then special exponential notation could be used to represent them.
+For example, a very large number <b> z</b> could be stored and manipulated as an unevaluated exponential <b> z=Exp(M*10^E)</b> where <b>M&gt;=1</b> is a floating-point number with <b> P</b> digits of mantissa and <b> E</b> is an integer, <b> Ln(N)&lt;E&lt;N</b>.
+Let us call such objects "exponentially large numbers" or "exp-numbers" for short.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In practice, we should decide on a threshold value <b> N</b> and promote a number to an exp-number when its logarithm exceeds <b> N</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that an exp-number <b> z</b> might be positive or negative, e.g.
+<b> z= -Exp(M*10^E)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Arithmetic operations can be applied to the exp-numbers.
+However, exp-large arithmetic is of limited use because of an almost certainly critical loss of precision.
+The power and logarithm operations can be meaningfully performed on exp-numbers <b>z</b>.
+For example, if <b> z=Exp(M*10^E)</b> and <b>p</b> is a normal floating-point number, then <b> z^p=Exp(p*M*10^E)</b> and <b>Ln(z)=M*10^E</b>.
+We can also multiply or divide two exp-numbers.
+But it makes no sense to multiply an exp-number <b> z</b> by a normal number because we cannot represent the difference between <b> z</b> and say <b> 2.52*z</b>.
+Similarly, adding <b> z</b>
+to anything else would result in a total underflow, since we do not
+actually know a single digit of the decimal representation of <b> z</b>.
+So if <b> z1</b> and <b> z2</b> are exp-numbers, then <b> z1+z2</b> is simply equal to either <b> z1</b> or <b> z2</b> depending on which of them is larger.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We find that an exp-number <b> z</b>
+acts as an effective "infinity" compared with normal numbers.
+But exp-numbers cannot be used as a device for computing limits: the
+unavoidable underflow will almost certainly produce wrong results.
+For example, trying to verify </font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(Limit(x,0)(Exp(x)-1)/x)=1 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">by substituting <b> x=1/z</b> with some exp-number <b> z</b> gives 0 instead of 1.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Taking a logarithm of an exp-number brings it back to the realm of normal, representable numbers.
+However, taking an exponential of an exp-number results in a number which is not representable even as an exp-number.
+This is because an exp-number <b> z</b> needs to have its exponent <b> E</b> represented exactly as an integer,
+but <b> Exp(z)</b> has an exponent of order <b>O(z)</b> which is not a representable number.
+The monstrous number <b>Exp(z)</b> could be only written as <b>Exp(Exp(M*10^E))</b>, i.e. as a "doubly exponentially large" number, or "2-exp-number" for short.
+Thus we obtain a hierarchy of iterated exp-numbers.
+Each layer is "unrepresentably larger" than the previous one.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="arbitrary-precision computation!very small numbers">
+
+</a>
+<a name="exponentially small numbers">
+
+</a>
+The same considerations apply to very small numbers of the order <b>10^(-N)</b> or smaller.
+Such numbers can be manipulated as "exponentially small numbers", i.e. expressions of the form <b>Exp(-M*10^E)</b> with floating-point mantissa <b>M&gt;=1</b> and integer <b> E</b> satisfying <b> Ln(N)&lt;E&lt;N</b>.
+Exponentially small numbers act as an effective zero compared with normal numbers.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Taking a
+logarithm of an exp-small number makes it again a normal representable
+number.
+However, taking an exponential of an exp-small number produces 1
+because of underflow.
+To obtain a "doubly exponentially small" number, we need to take a
+reciprocal of a doubly exponentially large number, or take the exponent
+of an exponentially large negative power.
+In other words, <b> Exp(-M*10^E)</b> is exp-small, while <b>Exp(-Exp(M*10^E))</b> is 2-exp-small.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+practical significance of exp-numbers is rather limited. We cannot
+obtain even a single significant digit of an exp-number.
+A "computation" with exp-numbers is essentially a floating-point
+computation with logarithms of these exp-numbers.
+A practical problem that needs numbers of this magnitude can probably
+be restated in terms of more manageable logarithms of such numbers.
+In practice, exp-numbers could be useful not as a means to get a
+numerical answer,
+but as a warning sign of critical overflow or underflow.
+</font></p><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Yacas
+currently does not implement exp-numbers or any other guards against
+overflow and underflow. If a decimal exponential becomes too large, an
+incorrect answer may result.</font></h6>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s9">
+
+</a>
+</font><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Continued fractions
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A "continued fraction" is an expression of the form
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>a[0]+b[0]/(a[1]+b[1]/(a[2]+b[2]/(a[3]+...))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The coefficients <b>a[i]</b>, <b>b[i]</b> are called the "terms" of the fraction.
+(Usually one has <b>a[i]!=0</b>, <b> b[i]!=0</b>.)
+The above continued fraction is sometimes written as
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> a[0]+b[0]/(a[1]+...)*b[1]/(a[2]+...)*b[2]/(a[3]+...)*... </b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Usually one considers infinite continued fractions, i.e. the sequences <b>a[i]</b>, <b>b[i]</b>
+are infinite.
+The value of an infinite continued fraction is defined as the limit of
+the fraction truncated after a very large number of terms.
+(A continued traction can be truncated after <b>n</b>-th term if one replaces <b> b[n]</b> by <b>0</b>.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An infinite continued fraction does not always converge.
+Convergence depends on the values of the terms.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+representation of a number via a continued fraction is not unique
+because we could, for example, multiply the numerator and the
+denominator of any simple fraction inside it by any number.
+Therefore one may consider some normalized representations.
+A continued fraction is called "regular" if <b> b[k]=1</b> for all <b> k</b>, all <b> a[k]</b> are integer and <b>a[k]&gt;0</b> for <b> k&gt;=1</b>.
+Regular continued fractions always converge.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Approximation of numbers by continued fractions
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of rational numbers">
+
+</a>
+The function <b><tt>ContFrac</tt></b> converts a (real) number <b> r</b> into a regular
+continued fraction with integer terms,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> r=n[0]+1/(n[1]+1/(n[2]+...)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here all numbers <b>n[i]</b> are integers and all except <b>n[0]</b> are positive.
+This representation of a real number <b>r</b> is unique.
+We may write this representation as <b> r=[n[0];n[1];n[2];...;]</b>.
+If <b>r</b> is a rational number, the corresponding regular continued fraction is finite, terminating at some <b> n[N]</b>.
+Otherwise the continued fraction will be infinite.
+It is known that the truncated fractions will be in some sense "optimal" rational representations of the real number <b>r</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The algorithm for converting a rational number <b> r=n/m</b> into a regular continued
+fraction is simple. First, we determine the integer part of <b> r</b>, which is
+<b> Div(n,m)</b>. If it is negative, we need to subtract one, so that <b>r=n[0]+x</b> and
+the remainder <b> x</b> is nonnegative and less than <b> 1</b>. The remainder
+<b> x=Mod(n,m)/m</b> is then inverted, <b> r[1]:=1/x=m/Mod(n,m)</b> and so we have
+completed the first step in the decomposition, <b>r=n[0]+1/r[1]</b>; now <b>n[0]</b>
+is integer but <b>r[1]</b> is perhaps not integer. We repeat the same procedure on
+<b>r[1]</b>, obtain the next integer term <b>n[1]</b> and the remainder <b>r[2]</b> and so on,
+until such <b>n</b> that <b> r[n]</b> is an integer and there is no more work to do. This
+process will always terminate.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If <b>r</b>
+is a real number which is known by its floating-point representation at
+some precision, then we can use the same algorithm because all
+floating-point values are actually
+rational numbers.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Real numbers known by their exact representations can sometimes be expressed as infinite continued fractions, for example
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Sqrt(11)=[3;3;6;3;6;3;6;...;];</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(1/p)=[1;p-1;1;1;3*p-1;1;1;5*p-1;...;].</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="GuessRational@\relax &lt;B&gt;&lt;TT&gt;GuessRational&lt;/TT&gt;&lt;/B&gt;">
+
+</a>
+The functions <b><tt>GuessRational</tt></b> and <b><tt>NearRational</tt></b> take a real number <b>x</b> and use
+continued fractions to find rational approximations <b> r=p/q&lt;=&gt;x</b> with "optimal" (small) numerators and denominators <b> p</b>, <b> q</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose we know that a
+certain number <b> x</b> is rational but we have only a floating-point representation of
+<b> x</b> with a limited precision, for example, <b> x&lt;=&gt;1.5662650602409638</b>.
+We would like to guess a
+rational form for <b> x</b> (in this example <b> x=130/83</b>).
+The function <b><tt>GuessRational</tt></b> solves this problem.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Consider the following example. The number <b> 17/3</b> has a continued fraction
+expansion <b><tt>{5,1,2}</tt></b>. Evaluated as a floating point number with limited
+precision, it may become something like <b> 17/3+0.00001</b>, where the small number
+represents a round-off error. The continued fraction expansion of this number is
+<b><tt>{5, 1, 2, 11110, 1, 5, 1, 3, 2777, 2}</tt></b>. The presence of an unnaturally large
+term <b> 11110</b> clearly signifies the place where the floating-point error was
+introduced; all terms following it should be discarded to recover the continued fraction <b><tt>{5,1,2}</tt></b> and from it the initial number <b> 17/3</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If a continued fraction for a number <b> x</b> is
+cut right before an unusually large term and
+evaluated, the resulting rational number has a small denominator and is very close to <b> x</b>.
+This works because partial continued fractions provide "optimal"
+rational approximations for the final (irrational) number, and because the
+magnitude of the terms of the partial fraction is related to the magnitude of
+the denominator of the resulting rational approximation.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b><tt>GuessRational(x, prec)</tt></b> needs to choose the place where it should cut the
+continued fraction.
+The algorithm for this is somewhat heuristic but it works well enough.
+The idea is to cut the continued fraction
+when adding one more term would change the result by less than the specified
+precision. To realize this in practice, we need an estimate of how much a
+continued fraction changes when we add one term.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!error bound">
+
+</a>
+The routine <b><tt>GuessRational</tt></b> uses a (somewhat weak) upper bound for the difference of continued fractions that differ only by an additional last term:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Abs(delta):=Abs(1/(a[1]+1/(...+1/a[n]))-1/(a[1]+1/(...+1/a[n+1])))&lt;1/((a[1]*...*a[n])^2*a[n+1]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(The derivation of this inequality is given below.)
+Thus we should compute the product of successive terms <b>a[i]</b> of the continued fraction and stop at <b>a[n]</b> at which this product exceeds the maximum number of digits. The routine <b><tt>GuessRational</tt></b> has a second parameter <b><tt>prec</tt></b> which is by default 1/2 times the number of decimal digits of current precision; it stops at <b>a[n]</b> at which the product <b>a[1]*...*a[n]</b> exceeds <b>10^prec</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The above estimate for <b> delta</b> hinges on the inequality
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/(a+1/(b+...))&lt;1/a </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and is suboptimal if some terms <b> a[i]=1</b>, because the product of <b> a[i]</b> does not increase when one of the terms is equal to 1, whereas in fact these terms do make <b>delta</b> smaller. A somewhat better estimate would be obtained if we use the inequality
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/(a+1/(b+1/(c+...)))&lt;1/(a+1/(b+1/c)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(See the next section for more explanations of precision of continued fraction approximations.)
+This does not lead to a significant improvement if <b>a&gt;1</b> but makes a difference when <b> a=1</b>. In the product <b> a[1]*...*a[n]</b>, the terms <b>a[i]</b> which are equal to 1 should be replaced by
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>a[i]+1/(a[i+1]+1/a[i+2]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Since the comparison of <b>a[1]*...*a[n]</b> with <b>10^prec</b> is qualitative, it it enough to perform calculations of <b> a[1]*...*a[n]</b> with limited precision.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This algorithm works well if <b>x</b> is computed with enough precision; namely, it
+must be computed to at least as many digits as there are in the numerator and
+the denominator of the fraction combined. Also, the parameter <b><tt>prec</tt></b> should not
+be too large (or else the algorithm will find another rational number with a larger
+denominator that approximates <b> x</b> "better" than the precision to which you know <b> x</b>).
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="NearRational@\relax &lt;B&gt;&lt;TT&gt;NearRational&lt;/TT&gt;&lt;/B&gt;">
+
+</a>
+The related function <b><tt>NearRational(x, prec)</tt></b> works somewhat differently. The
+goal is to find an "optimal" rational number, i.e. with smallest numerator and
+denominator, that is within the distance <b> 10^(-prec)</b> of a given value <b>x</b>.
+The function <b><tt>NearRational</tt></b> does not always give the same answer as <b><tt>GuessRational</tt></b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+algorithm for <b><tt>NearRational</tt></b> comes from the HAKMEM [Beeler <i>et al.</i> 1972], Item 101C. Their
+description is terse but clear:
+
+
+</font></p><p>
+<table cellpadding="3" width="90%">
+<tbody><tr><td bgcolor="#e0e0e0" width="100%"><pre>Problem: Given an interval, find in it the
+rational number with the smallest numerator and
+denominator.
+Solution: Express the endpoints as continued
+fractions.  Find the first term where they differ
+and add 1 to the lesser term, unless it's last. 
+Discard the terms to the right.  What's left is
+the continued fraction for the "smallest"
+rational in the interval.  (If one fraction
+terminates but matches the other as far as it
+goes, append an infinity and proceed as above.)
+</pre></td></tr>
+</tbody></table>
+
+
+</p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The HAKMEM text [Beeler <i>et al.</i> 1972] contains several interesting insights relevant to continued fractions and other numerical algorithms.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Accurate computation of continued fractions
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Sometimes an analytic function <b> f(x)</b> can be approximated using a continued
+fraction that contains <b>x</b> in its terms. Examples include the inverse tangent
+<b> ArcTan(x)</b>, the error function <b>Erf(x)</b>, and the incomplete gamma function
+<b>Gamma(a,x)</b> (see below for details).
+For these functions, continued fractions
+provide a method of numerical calculation that works when the Taylor series
+converges slowly or not at all, or is not easily available.
+However, continued fractions may converge
+quickly for one value of <b>x</b> but slowly for another.
+Also, it is not as easy to
+obtain an analytic error bound for a continued fraction approximation as it is for power series.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In this
+section we describe some methods for computing general continued
+fractions and for estimating the number of terms needed to achieve a
+given precision.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Let us introduce some notation. A continued fraction
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> a[0]+b[0]/(a[1]+b[1]/(a[2]+...)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">is specified by a set of terms (<b>a[i]</b>, <b>b[i]</b>).
+[If continued fractions are used to approximate analytic functions such as <b>ArcTan(x)</b>, then (<b>a[i]</b>, <b>b[i]</b>) will depend on <b>x</b>.]
+Let us denote by <b> F[m][n]</b> the truncated fraction containing only the terms from <b>m</b> to <b> n</b>,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> F[m][n]:=a[m]+b[m]/(a[m+1]+b[m+1]/(...+b[n]/a[n])).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In this notation, the continued fraction that we need to compute is <b>F[0][n]</b>.
+Our task is first, to select a large enough <b>n</b> so that <b> F[0][n]</b> gives enough precision, and second, to compute that value.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: bottom-up with straightforward division
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!bottom-up computation">
+
+</a>
+All "bottom-up" methods need to know the number of terms <b>n</b> in advance.
+The simplest method is to start evaluating the fraction from the bottom upwards.
+As the initial approximation we take <b> F[n][n]=a[n]</b>.
+Then we use the obvious relation of backward recurrence,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>F[m][n]=a[m]+b[m]/F[m+1][n],</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">to obtain successively <b>F[n-1][n]</b>, ..., <b>F[0][n]</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method requires one long division at each step.
+There may be significant round-off error if <b>a[m]</b> and <b>b[m]</b>
+have opposite signs, but otherwise the round-off error is very small
+because a convergent continued fraction is not sensitive to small
+changes in its terms.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: bottom-up with two recurrences
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">An alternative implementation may be faster in some cases.
+The idea is to obtain the numerator and the denominator of <b>F[0][n]</b>
+separately as two simultaneous backward recurrences. If 
+<b>F[m+1][n]=p[m+1]/q[m+1]</b>, then 
+<b>p[m]=a[m]*p[m+1]+b[m]*q[m+1]</b> and <b>q[m]=p[m+1]</b>.
+The recurrences start with
+<b>p[n]=a[n]</b>, <b>q[n]=1</b>.
+The method requires two long multiplications at each step; the only
+division will be performed at the very end.
+Sometimes this method reduces the round-off error as well.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: bottom-up with estimated remainders
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!bottom-up computation!estimated remainder">
+
+</a>
+There is an improvement over the bottom-up method that can sometimes increase the achieved
+precision without computing more terms.
+This trick is suggested in [Tsimring 1988], sec. 2.4, where it is also claimed that the remainder estimates improve convergence.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The idea is that the starting value of the backward recurrence should be chosen not as
+<b> a[n]</b> but as another number that more closely approximates the infinite remainder of the fraction.
+The infinite remainder, which we can symbolically write as <b>F[n][Infinity]</b>, can be sometimes estimated analytically (obviously, we are unable to compute the remainder exactly).
+In simple cases, <b>F[n][Infinity]</b> changes very slowly at large <b>n</b>
+(warning: this is not always true and needs to be verified in each particular case!).
+Suppose that <b> F[n][Infinity]</b> is approximately constant; then it must be approximately equal to <b>F[n+1][Infinity]</b>.
+Therefore, if we solve the (quadratic) equation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x=a[n]+b[n]/x,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">we shall obtain the (positive) value <b> x</b> which may be a much better
+approximation for <b> F[n][Infinity]</b> than <b>a[n]</b>. But this depends on the
+assumption of the way the continued fraction converges. It may happen,
+for example, that for large <b>n</b> the value <b> F[n][Infinity]</b> is almost
+the same as <b>F[n+2][Infinity]</b> but is significantly different from
+<b>F[n+1][Infinity]</b>. Then we should instead solve the (quadratic) equation
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x=a[n]+b[n]/(a[n+1]+b[n+1]/x) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and take the positive solution <b>x</b> as <b> F[n][Infinity]</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We may use more terms of the original continued fraction starting from <b>a[n]</b> and obtain a more precise estimate of the remainder.
+In each case we will only have to solve one quadratic equation.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 4: top-down computation
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The "bottom-up" method obviously requires to know the number of terms <b>n</b> in
+advance; calculations have to be started all over again if more terms are
+needed. Also, the bottom-up method provides no error estimate.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!top-down computation">
+
+</a>
+The "top-down" method is slower but provides an automatic error estimate and can be used to
+evaluate a continued fraction with more and more terms until the desired
+precision is achieved.
+The idea
+</font></p><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">This is a well-known result in the theory of continued fractions. We give an elementary derivation below.</font></h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">is to
+replace the continued fraction <b> F[0][n]</b> with a sum of a certain series,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>a[0]+b[0]/(a[1]+b[1]/(...+b[n-1]/a[n]))=Sum(k,0,n,f[k]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[k]:=F[0][k]-F[0][k-1] </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(<b>k&gt;=1</b>) is a sequence that will be calculated in the forward direction, starting from <b> k=1</b>.
+If we manage to find a formula for this sequence, then adding one
+more term <b> f[k]</b> will be equivalent to recalculating the
+continued fraction with <b>k</b> terms instead of <b> k-1</b> terms. This will
+automatically give an error estimate and allow to compute with more
+precision if necessary without having to repeat the calculation from
+the beginning. (The transformation of the continued fraction into a
+series is exact, not merely an approximation.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The formula for <b> f[k]</b> is the following.
+First the auxiliary sequence <b>P[k]</b>, <b>Q[k]</b> for <b>k&gt;=1</b> needs to be
+defined by <b> P[1]=0</b>, <b> Q[1]</b>=1, and <b>P[k+1]:=b[k]*Q[k]</b>,
+<b>Q[k+1]:=P[k]+a[k]*Q[k]</b>.
+Then define <b>f[0]:=a[0]</b> and 
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[k]:=((-1)^k*b[0]*...*b[k-1])/(Q[k]*Q[k+1]) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for <b>k&gt;=1</b>.
+The "top-down" method consists of computing <b> f[n]</b>
+sequentially and adding them together, until <b>n</b> is large enough so
+that <b> f[n]/f[0]</b> is less than the required precision.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Evaluating the next element <b>f[k]</b>
+requires four long multiplications
+and one division.
+This is significantly slower, compared with just one long division or
+two long multiplications in the bottom-up method.
+Therefore it is desirable to have an a priori estimate of the
+convergence rate and to be able to choose the number of terms before
+the computation.
+Below we shall consider some examples when the formula for <b>f[k]</b> allows to estimate the required number of terms analytically.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 5: top-down with two steps at once
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!top-down computation!non-alternating signs">
+
+</a>
+If all coefficients <b>a[i]</b>, <b>b[i]</b> are positive, then the
+series we obtained in the top-down method will have terms <b>f[k]</b> with alternating signs.
+This leads to a somewhat larger round-off error.
+We can convert the alternating series into a monotonic series
+by adding together two adjacent elements, say
+<b>f[2*k]+f[2*k+1]</b>.
+</font><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">This method is used by [Thacher 1963], who refers to a suggestion by Hans Maehly.</font></h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The relevant formulae can be derived from the
+definition of <b>f[k]</b> using the recurrence relations for <b>P[k]</b>, <b>Q[k]</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[2*k-1]+f[2*k]= -(b[0]*...*b[2*k-2]*a[2*k])/(Q[2*k-1]*Q[2*k+1]),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[2*k]+f[2*k+1]=(b[0]*...*b[2*k-1]*a[2*k+1])/(Q[2*k]*Q[2*k+2]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now in the series <b>f[0]</b>+(<b>f[1]+f[2]</b>)+(<b>f[3]+f[4]</b>)+... the first term is positive and all subsequent terms will be negative.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We have just described the following methods of computing a continued fraction:
+</font><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Bottom-up, straight division.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Bottom-up, separate recurrences for numerators and denominators.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Bottom-up, with an estimate of the remainder.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Top-down, with ordinary step.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Top-down, with two steps at once.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The bottom-up methods are simpler and faster than the top-down methods but require to know the number of terms in advance.
+In many cases the required number of terms can be estimated analytically, and then the bottom-up methods are always preferable.
+But in some cases the convergence analysis is very complicated.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The plain
+bottom-up method requires one long division at each step, while the
+bottom-up method with two recurrences requires two long multiplications
+at each step.
+Since the time needed for a long division is usually about four times
+that for a long multiplication (e.g. when the division is computed by
+Newton's method), the second variation of the bottom-up method is
+normally faster.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The estimate of the remainder improves the convergence of the bottom-up method and should always be used if available.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If an
+estimate of the number of terms is not possible, the top-down methods
+should be used, looping until the running error estimate shows enough
+precision.
+This incurs a performance penalty of at least 100<b><tt>%</tt></b> and at most 300<b><tt>%</tt></b>.
+The top-down method with two steps at once should be used only when the formula for <b>f[k]</b> results in alternating signs.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Usefulness of continued fractions
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Many
+mathematical functions have a representation as a continued fraction.
+Some systems of "exact arithmetic" use continued fractions as a primary
+internal representation of real numbers.
+This has its advantages (no round-off errors, lazy "exact"
+computations) and disadvantages (it is slow, especially with some
+operations).
+Here we consider the use of continued fractions with a traditional
+implementation of arithmetic (floating-point numbers with variable
+precision).
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Usually, a continued fraction representation of a function will converge geometrically or slower, i.e. at least <b>O(P)</b> terms are needed for a precision of <b>P</b>
+digits.
+If a geometrically convergent Taylor series representation is also
+available, the continued fraction method will be slower because it
+requires at least as many or more long multiplications per term.
+Also, in most cases the Taylor series can be computed much more
+efficiently using the rectangular scheme.
+(See, e.g., the section on <b> ArcTan(x)</b> for a more detailed consideration.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">However,
+there are some functions for which a Taylor series is not easily
+computable or does not converge but a continued fraction is available.
+For example, the incomplete Gamma function and related functions can be
+computed using continued fractions in some domains of their arguments.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Derivation of the formula for <b>f[k]</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!top-down computation!derivation">
+
+</a>
+Here is a straightforward derivation of the formula for <b>f[k]</b> in the top-down method.
+We need
+to compute the difference between successive approximations <b>F[0][n]</b>
+and <b>F[0][n+1]</b>.
+The recurrence relation we shall use is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>F[m][n+1]-F[m][n]= -(b[m]*(F[m+1][n+1]-F[m+1][n]))/(F[m+1][n+1]*F[m+1][n]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This can be shown by manipulating the two fractions, or by using
+the recurrence relation for <b>F[m][n]</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">So far we have reduced the difference between <b>F[m][n+1]</b> and <b>F[m][n]</b>
+to a similar difference on the next level <b>m+1</b> instead of <b> m</b>; i.e. we
+can increment <b> m</b> but keep <b> n</b> fixed. We can apply this formula to
+<b> F[0][n+1]-F[0][n]</b>, i.e. for <b>m=0</b>, and continue applying the same
+recurrence relation until <b> m</b> reaches <b> n</b>. The result
+is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> F[0][n+1]-F[0][n]=((-1)^n*b[0]*...*b[n])/(F[1][n+1]*...*F[n+1][n+1]*F[1][n]*...*F[n][n]).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now the problem is to simplify the two long products in the
+denominator. We notice that <b>F[1][n]</b> has <b>F[2][n]</b> in the denominator,
+and therefore <b>F[1][n]*F[2][n]=F[2][n]*a[1]+b[1]</b>. The next product is
+<b>F[1][n]*F[2][n]*F[3][n]</b> and it simplifies to a linear function of
+<b>F[3][n]</b>, namely <b>F[1][n]*F[2][n]*F[3][n]</b> =
+<b>(b[1]+a[1]*a[2])*F[3][n]+b[1]*a[2]</b>. So we can see that there is a
+general formula
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>F[1][n]*...*F[k][n]=P[k]+Q[k]*F[k][n] </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">with some coefficients <b>P[k]</b>, <b>Q[k]</b> which do not actually depend on
+<b>n</b> but only on the terms of the partial fraction up to <b> k</b>. In other
+words, these coefficients can be computed starting with <b> P[1]=0</b>,
+<b> Q[1]=1</b> in the forward direction. The recurrence relations for <b> P[k]</b>,
+<b>Q[k]</b> that we have seen above in the definition of <b>f[k]</b> follow from the identity <b>(P[k]+Q[k]*F[k][n])*F[k+1][n]</b> =
+<b>P[k+1]+Q[k+1]*F[k+1][n]</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Having found the coefficients <b>P[k]</b>, <b>Q[k]</b>, we can now rewrite the long products in the denominator, e.g.
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>F[1][n]*...*F[n][n]=P[n]+Q[n]*F[n][n]=Q[n+1].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(We have used the recurrence relation for <b>Q[n+1]</b>.) Now it follows that
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>f[n+1]:=F[0][n+1]-F[0][n]=((-1)^n*b[0]*...*b[n])/(Q[n+1]*Q[n+2]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Thus we have converted the continued fraction into a series, i.e. <b>F[0][n]=Sum(k,0,n,f[k])</b> with <b>f[k]</b> defined above.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Examples of continued fraction representations
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We have
+already mentioned that continued fractions give a computational
+advantage only when other methods are not available.
+There exist continued fraction representations of almost all functions,
+but in most cases the usual methods (Taylor series, identity
+transformations, Newton's method and so on) are superior.
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of &lt;b&gt;ArcTan(x)&lt;/b&gt;">
+
+</a>
+For example, the continued fraction
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>ArcTan(x)=x/(1+x^2/(3+(2*x)^2/(5+(3*x)^2/(7+...)))) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">converges geometrically at all <b>x</b>.
+However, the Taylor series also converges geometrically and can be computed much faster than the continued fraction.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of &lt;b&gt; Erfc(x)&lt;/b&gt;">
+
+</a>
+There are some cases when a continued fraction representation is efficient.
+The complementary error function <b>Erfc(x)</b> can be computed using the
+continued fraction due to Laplace (e.g. [Thacher 1963]),
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sqrt(Pi)/2*x*Exp(x^2)*Erfc(x)=1/(1+v/(1+(2*v)/(1+(3*v)/(1+...)))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>v:=(2*x^2)^(-1)</b>.
+This continued fraction converges for all (complex) <b>x</b> except pure imaginary <b> x</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of &lt;b&gt; Gamma(a,z)&lt;/b&gt;">
+
+</a>
+The error function is a particular case of the incomplete Gamma function
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Gamma(a,z):=(Integrate(x,z,+Infinity)x^(a-1)*Exp(-x)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There exists an analogous continued fraction representation due to Legendre (e.g. [Abramowitz <i>et al.</i>], 6.5.31),
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Gamma(a,z)=(z^(a-1)*Exp(-z))/(1+((1-a)*v)/(1+v/(1+((2-a)*v)/(1+(2*v)/(1+...))))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>v:=z^(-1)</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s10">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Estimating convergence of continued fractions
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Elsewhere in this book we have used elementary considerations to find the required number of terms in a power series.
+It is much more difficult
+to estimate the convergence rate of a continued fraction.
+In many cases this can be done using the theory of complex variable.
+Below we shall consider some cases when this computation is analytically tractable.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!convergence rate">
+
+</a>
+Suppose we are given the terms <b>a[k]</b>, <b>b[k]</b> that define an infinite continued fraction, and we need to estimate its convergence rate.
+We have to find the number of terms <b>n</b> for which the error of approximation is less than a given <b> epsilon</b>.
+In our notation, we need to solve
+<b> Abs(f[n+1])&lt;epsilon</b>
+for <b> n</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The formula that we derived for <b> f[n+1]</b> gives an error estimate for
+the continued fraction truncated at the <b>n</b>-th term.
+But this formula contains the numbers <b> Q[n]</b> in the denominator.
+The main problem is to find how quickly the sequence <b>Q[n]</b> grows.
+The recurrence relation for this sequence can be rewritten as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Q[n+2]=a[n+1]*Q[n+1]+b[n]*Q[n],</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">for <b>k&gt;=0</b>, with initial values <b> Q[0]=0</b> and <b> Q[1]=1</b>.
+It is not always easy to get a handle on this sequence, because in most cases there is no closed-form expression for <b> Q[n]</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!error bound">
+
+</a>
+</font></p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Simple bound on <b>Q[n]</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A simple lower bound on the growth of <b>Q[n]</b> can be obtained from the recurrence relation for <b>Q[n]</b>.
+Assume that <b>a[k]&gt;0</b>, <b> b[k]&gt;0</b>.
+It is clear that all <b> Q[n]</b> are positive, so <b>Q[n+1]&gt;=a[n]*Q[n]</b>.
+Therefore <b>Q[n]</b> grows at least as the product of all <b>a[n]</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Q[n+1]&gt;=Factorize(i,1,n,a[n]).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This result gives the following upper bound on the precision,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Abs(f[n+1])&lt;=(b[0]*...*b[n])/((a[1]*...*a[n])^2*a[n+1]).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We have used this bound to estimate the relative error of the
+continued fraction expansion for <b>ArcTan(x)</b> at small <b>x</b> (elsewhere in this book).
+However, we found that at large <b> x</b> this bound becomes greater than 1.
+This does not mean that the continued fraction does not converge and cannot be used to compute <b> ArcTan(x)</b> when <b>x&gt;1</b>, but merely
+indicates that the "simple bound" is too weak.
+The sequence <b> Q[n]</b> actually grows faster than the product of all <b>a[k]</b> and we
+need a tighter bound on this growth.
+In many cases such a bound can be obtained by the method of generating functions.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The method of generating functions
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!convergence rate!from generating functions">
+
+</a>
+The idea is to find a generating function <b>G(s)</b> of the sequence <b>Q[n]</b> and then use an explicit form of <b>G(s)</b> to obtain an asymptotic estimate of <b>Q[n]</b> at large <b>k</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="method of steepest descent">
+
+</a>
+The asymptotic growth of the sequence <b> Q[n]</b> can be estimated by the method of steepest descent, also known as Laplace's method.
+(See, e.g., [Olver 1974],
+ch. 3, sec. 7.5.)
+This method is somewhat complicated but quite powerful.
+The method requires that we find an integral representation for <b>Q[n]</b> (usually a contour integral in the complex plane).
+Then we can convert the integral into an asymptotic series in <b>k^(-1)</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="continued fraction approximation!of &lt;b&gt;Erfc(x)&lt;/b&gt;">
+
+</a>
+Along with the general presentation of the method, we shall consider an example when the convergence rate can be
+obtained analytically.
+The example is the representation of the complementary error function <b>Erfc(x)</b>,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sqrt(Pi)/2*x*Exp(x^2)*Erfc(x)=1/(1+v/(1+(2*v)/(1+(3*v)/(1+...)))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>v:=(2*x^2)^(-1)</b>.
+We shall assume that <b>Abs(v)&lt;1/2</b> since the continued fraction representation will not be used for small <b> x</b> (where the Taylor series is efficient). 
+The terms of this continued fraction are: <b> a[k]=1</b>, <b> b[k]=k*v</b>, for <b> k&gt;=1</b>, and <b> a[0]=0</b>, <b> b[0]=1</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The "simple bound" would give <b> Abs(f[n+1])&lt;=v^n*n!</b> and this expression grows with <b>n</b>.
+But we know that the above continued fraction actually converges for any <b> v</b>, so <b> f[n+1]</b> must tend to zero for large <b>n</b>.
+It seems that the "simple bound" is not strong enough for any <b> v</b> and we need a better bound.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="generating function of a sequence">
+
+</a>
+An integral representation for <b> Q[n]</b> can be obtained using the method of generating functions.
+Consider a function <b>G(s)</b> defined by the infinite series
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(s)=Sum(n,0,Infinity,Q[n+1]*s^n/n!).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(s)</b> is usually called the "generating function" of a sequence.
+We shifted the index to <b>n+1</b> for convenience, since <b> Q[0]=0</b>, so now <b> G(0)=1</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that the above series for the function <b> G(s)</b> may or may not converge for any given <b>s</b>;
+we shall manipulate <b> G(s)</b> as a formal power series until we obtain an explicit representation.
+What we really need is an analytic continuation of <b>G(s)</b> to the complex <b>s</b>.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="generating function of a sequence!obtaining">
+
+</a>It is generally the case that if we know a simple linear recurrence
+relation for a sequence, then we can also easily find its generating
+function.
+The generating function will satisfy a linear differential equation.
+To guess this equation, we write down the series for <b> G(s)</b> and its
+derivative <b>G'(s)</b> and try to find their linear combination which is
+identically zero because of the recurrence relation.
+(There is, of course, a computer algebra algorithm for doing this automatically.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Taking the derivative <b>G'(s)</b> produces the forward-shifted series
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G'(s)=Sum(n,0,Infinity,Q[n+2]*s^n/n!).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Multiplying <b>G(s)</b> by <b>s</b> produces a back-shifted series with each term multiplied by <b> n</b>:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> s*G(s)=Sum(n,0,Infinity,n*Q[n]*s^n/n!).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If the recurrence relation for <b>Q[n]</b> contains only constants and polynomials in <b>n</b>, then we can easily convert that relation into a differential equation for <b> G(s)</b>.
+We only need to find the right combination of back- and forward-shifts and multiplications by <b>n</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the case of our sequence <b> Q[n]</b> above, the recurrence relation is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Q[n+2]=Q[n+1]+v*n*Q[n].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This is equivalent to the differential equation
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G'(s)=(1+v*s)*G(s).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The solution with the obvious initial condition <b>G(0)=1</b> is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> G(s)=Exp(s+(v*s^2)/2).</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="generating function of a sequence!integral representation">
+
+</a>
+The second step is to obtain an integral representation for <b>Q[n]</b>, so that we could use the method of steepest descents and find its asymptotic at large <b>n</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In our notation <b> Q[n+1]</b> is equal to the <b>n</b>-th derivative of the generating function at <b> s=0</b>:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n+1]=(D(s,n)G(s=0)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">but it is generally not easy to estimate the growth of this derivative at large <b>n</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are two ways to proceed.
+One is to obtain an integral representation for <b> G(s)</b>, for instance
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(s)=(Integrate(t,-Infinity,Infinity)F(t,s)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>F(t,s)</b> is some known function.
+Then an integral representation for <b>Q[n]</b> will be found by differentiation.
+But it may be difficult to find such <b>F(t,s)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The second possibility is to express <b>Q[n]</b> as a contour integral in the complex plane around <b>s=0</b> in the counter-clockwise direction:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n]=(n-1)! /(2*Pi*I)*(Integrate(s)G(s)*s^(-n)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we know the singularities and of <b>G(s)</b>, we may transform the contour of the integration into a path that is more convenient for the method of the steepest descent.
+This procedure is more general but requires a detailed understanding of the behavior of <b>G(s)</b> in the complex plane.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Stirling's formula">
+
+</a>
+<a name="continued fraction approximation!of &lt;b&gt;Erfc(x)&lt;/b&gt;!error estimate">
+
+</a>
+In the particular case of the continued fraction for <b>Erfc(x)</b>, the calculations are somewhat easier if <b>Re(v)&gt;0</b> (where <b> v:=1/(2*x^2)</b>).
+Full details are given in a separate section.
+The result for <b>Re(v)&gt;0</b> is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n]&lt;=&gt;(v*n)^(n/2)/Sqrt(2*n*v)*Exp(Sqrt(n/v)-1/(4*v)-n/2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This, together with Stirling's formula
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>n! &lt;=&gt;Sqrt(2*Pi*n)*(n/e)^n,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">allows to estimate the error of the continued fraction approximation:
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> f[n+1]&lt;=&gt;2*(-1)^(n+1)*Sqrt((2*Pi)/v)*Exp(-2*Sqrt(n/v)+1/(2*v)).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that this is not merely a bound but an actual asymptotic estimate of <b>f[n+1]</b>.
+(Stirling's formula can also be derived using the method of
+steepest descent from an integral representation of the Gamma function,
+in a similar way.)
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Defined as above, the value of <b>f[n+1]</b> is in general a complex number. The absolute value of <b>f[n+1]</b> can be found using the formula
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Re(Sqrt(n/v))=Sqrt(n/2)*Sqrt(1+Re(v)/Abs(v)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We obtain
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Abs(f[n+1])&lt;=&gt;2*Sqrt((2*Pi)/Abs(v))*Exp(-Sqrt(2*n)*Sqrt(1+Re(v)/Abs(v))+Re(v)/(2*Abs(v)^2)).</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> 
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">When <b>Re(v)&lt;=0</b>, the same formula can be used (this can be shown by a more careful consideration of the branches of the square roots).
+The continued fraction does not converge when <b> Re(v)&lt;0</b> and <b> Im(v)=0</b> (i.e. for pure imaginary <b> x</b>).
+This can be seen from the above formula: in that case <b> Re(v)= -Abs(v)</b> and <b>Abs(f[n+1])</b> does not decrease when <b>n</b> grows.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">These estimates show that the error of the continued fraction approximation to <b> Erfc(x)</b> (when it converges)
+decreases with <b>n</b> slower than in a geometric progression.
+This means that we need to take <b> O(P^2)</b> terms to get <b>P</b> digits of precision.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Derivations for the example with <b> Erfc(x)</b>
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here we give a detailed calculation of the convergence rate of the continued fraction for <b>Erfc(x)</b> using the method of generating functions.
+
+
+</font><p>
+
+</p><h5>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A simpler approach
+</font></h5>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="method of steepest descent!example for real &lt;b&gt;x&lt;/b&gt;">
+
+</a>
+In our case, <b> G(s)</b> is a function with a known Fourier transform and we can obtain a straightforward representation valid when <b>Re(v)&gt;0</b>,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n+1]=1/Sqrt(2*Pi*v)*(Integrate(t,-Infinity,Infinity)(1+t)^n*Exp(-t^2/(2*v))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We shall first apply the method of steepest descent to this integral (assuming real <b>v&gt;0</b> for simplicity) and then consider the more general procedure with the contour integration.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To use the method of steepest descent, we represent the integrand as an exponential of some function <b> g(t,n)</b> and find "stationary points" where this function has local maxima:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Q[n+1]=1/Sqrt(2*Pi*v)*(Integrate(t,-Infinity,Infinity)Exp(g(t,n))),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>g(t,n):= -t^2/(2*v)+n*Ln(1+t).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(Note that the logarithm here must acquire an imaginary part <b>I*Pi</b> for <b> t&lt;-1</b>,
+and we should take the real part which is equal to <b> Ln(Abs(1+t))</b>.
+We shall see that the integral over negative <b>t</b> is negligible.)
+We expect that when <b> n</b> is large, <b> Re(g(t,n))</b> will have a peak or several peaks at certain values of <b>t</b>.
+When <b> t</b> is not close to the peaks, the value of <b> Re(g(t,n))</b> is smaller and,
+since <b>g</b> is in the exponential, the integral is dominated by the
+contribution of the peaks.
+This is the essence of the method of steepest descent on the real line.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We only need to consider very large values of <b> n</b>, so we can neglect terms of order <b> O(1/Sqrt(n))</b> or smaller.
+We find that, in our case, two peaks of <b>Re(g)</b> occur at approximately <b>t1&lt;=&gt; -1/2+Sqrt(n*v)</b> and <b>t2&lt;=&gt; -1/2-Sqrt(n*v)</b>.
+We assume that <b>n</b> is large enough so that <b> n*v&gt;1/2</b>. Then the first peak is at a positive <b> t</b> and the second peak is at a negative <b> t</b>.
+The contribution of the peaks can be computed from the Taylor approximation of <b> g(t,n)</b> near the peaks.
+We can expand, for example,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>g(t,n)&lt;=&gt;g(t1,n)+(Deriv(t,2)g(t1,n))*(t-t1)^2/2 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">near <b> t=t1</b>.
+The values <b> g(t1,n)</b> and <b>Deriv(t,2)g(t1,n)</b>, and likewise for <b>t2</b>, are constants that we already know since we know <b> t1</b> and <b> t2</b>.
+Then the integral of <b> Exp(g)</b> will be approximated by the integral
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Integrate(t,-Infinity,Infinity)Exp(g(t1,n)+(Deriv(t,2)g(t1,n))*(t-t1)^2/2).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(Note that <b>Deriv(t,2)g(t1,n)</b> is negative.)
+This is a Gaussian integral that can be easily evaluated, with the result
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>exp(g(t1,n))*Sqrt(-(2*Pi)/(Deriv(t,2)g(t1,n))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This is the leading term of the contribution of the peak at <b>t1</b>;
+there will be a similar expression for the contribution of <b> t2</b>.
+We find that the peak at <b> t1</b> gives a larger contribution, by the factor <b> Exp(2*Sqrt(n/v))</b>.
+This factor is never small since <b>n&gt;1</b> and <b> v&lt;1/2</b>.
+So it is safe to ignore the peak at <b> t2</b> for the purposes of our analysis.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Then we obtain the estimate
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n+1]&lt;=&gt;1/Sqrt(2)*Exp(Sqrt(n/v)-1/(4*v)-n/2)*(v*n)^(n/2).</b></font></center><p></p>
+
+
+
+<p>
+
+</p><h5>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The contour integral approach
+</font></h5>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In many cases it is impossible to compute the Fourier transform of the generating function <b>G(s)</b>.
+Then one can use the contour integral approach.
+One should represent the integrand as
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>G(s)*s^(-n)=Exp(g(s)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>g(s):=Ln(G(s))-n*Ln(s),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and look for stationary points of <b>g(s)</b> in the complex plane (<b>(D(s)g)=0</b>).
+The original contour is around the pole <b> s=0</b> in the counter-clockwise direction.
+We need to deform that contour so that the new contour passes through the stationary points.
+The contour should cross each stationary point in a certain direction in the complex plane.
+The direction is chosen to make the stationary point the sharpest local maximum of <b> Re(g(s))</b> on the contour.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Usually one of the stationary points has the largest value of <b>Re(g(s))</b>; this is the dominant stationary point.
+If <b>s0</b> is the dominant stationary point and <b> g2=(Deriv(s,2)g(s0))</b> is the second derivative of <b>g</b> at that point, then the asymptotic of the integral is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/(2*Pi)*(Integrate(s)Exp(g(s)))=1/Sqrt(2*Pi*Abs(g2))*Exp(g(s0)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(The integral will have a negative sign if the contour crosses the point <b>s0</b> in the negative imaginary direction.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We have to choose a new contour and check the convergence of the resulting integral separately.
+In each case we may need to isolate the singularities of <b> G(s)</b> or to find the regions of infinity where <b>G(s)</b> quickly decays (so that the infinite parts of the contour might be moved there).
+There is no prescription that works for all functions <b>G(s)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Let us return to our example.
+For
+<b>G(s)=Exp(s+(v*s^2)/2)</b>,
+the function <b>g(s)</b> has no singularities except the pole at <b>s=0</b>.
+There are two stationary points located at the (complex) roots <b> s1</b>, <b> s2</b> of the quadratic equation
+<b> v*s^2+s-n=0</b>.
+Note that <b> v</b> is an arbitrary (nonzero) complex number.
+We now need to find which of the two stationary points gives the dominant contribution.
+By comparing <b> Re(g(s1))</b> and <b>Re(g(s2))</b> we find
+that the point <b>s</b> with the largest real part gives the dominant contribution.
+However, if <b> Re(s1)=Re(s2)</b> (this happens only if <b>v</b> is real and <b> v&lt;0</b>, i.e. if <b> x</b> is pure imaginary), then both stationary points contribute equally.
+Barring that possibility, we find
+(with the usual definition of the complex square root) that
+the dominant contribution for large <b> n</b> is from the stationary point at
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> s1=(Sqrt(4*n*v+1)-1)/(2*v).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The second derivative of <b>g(s)</b> at the stationary point is approximately <b>2*v</b>.
+The contour of integration can be deformed into a line passing through
+the dominant stationary point in the positive imaginary direction.
+Then the leading asymptotic is found using the Gaussian approximation
+(assuming <b> Re(v)&gt;0</b>):
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Q[n]=((n-1)! *v^(n/2))/Sqrt(4*Pi*v)*Exp((n*(1-Ln(n)))/2+Sqrt(n/v)-1/(4*v)).</b></font></center><p></p>
+
+
+
+<p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Stirling's formula">
+
+</a>
+This formula agrees with the asymptotic for <b>Q[n+1]</b> found above for real <b>v&gt;0</b>, when we use Stirling's formula for <b>(n-1)!</b>:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>(n-1)! =Sqrt(2*Pi)*e^(-n)*n^(n-1/2).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The treatment for <b>Re(v)&lt;0</b> is similar.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s11">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method and its improvements
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method (also called the Newton-Raphson method) of numerical solution of algebraic equations and its generalizations
+can be used to obtain multiple-precision values of several elementary functions.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Newton's method
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method">
+
+</a>
+The basic formula is widely known: If <b>f(x)=0</b> must be solved, one starts with a value of <b> x</b> that is close to some root and iterates 
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x-f(x)*(D(x)f(x))^(-1).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This formula is based on the approximation of the function <b>f(x)</b> by a tangent line at some point <b>x</b>. A Taylor expansion in the neighborhood of the root shows that (for an initial value <b> x[0]</b>
+sufficiently close to the root) each iteration gives at least twice as
+many correct digits of the root as the previous one ("quadratic
+convergence"). Therefore the complexity of this algorithm is
+proportional to a logarithm of the required precision and to the time
+it takes to evaluate the function and its derivative. Generalizations
+of this method require computation of higher derivatives of the
+function <b>f(x)</b> but successive approximations to the root converge several times faster (the complexity is still logarithmic).
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!initial value">
+
+</a>
+Newton's method sometimes suffers from a sensitivity to the initial guess.
+If the initial value <b>x[0]</b>
+is not chosen sufficiently close to the root, the iterations may
+converge very slowly or not converge at all. To remedy this, one can
+combine Newton's iteration with simple bisection. Once the root is
+bracketed inside an interval (<b>a</b>, <b> b</b>), one checks whether <b>(a+b)/2</b>
+is a better approximation for the root than that obtained from Newton's
+iteration. This guarantees at least linear convergence in the worst
+case.
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!cubic convergence">
+
+</a>
+For some equations <b> f(x)=0</b>, Newton's method converges faster than quadratically.
+For example, solving <b> Sin(x)=0</b> in the neighborhood of <b> x=3.14159</b> gives "cubic" convergence, i.e. the number of correct digits is tripled at each step.
+This happens because <b> Sin(x)</b> near its root <b>x=Pi</b> has a vanishing second derivative and thus the function is particularly well approximated by a straight line.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Halley's method
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Halley's method">
+
+</a>
+<i>Halley's method</i> is an improvement over Newton's method that makes each equation well approximated by a straight line near the root.
+Edmund Halley computed fractional powers, <b> x=a^(1/n)</b>, by the iteration
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x*(n*(a+x^n)+a-x^n)/(n*(a+x^n)-(a-x^n)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This formula is equivalent to Newton's method applied to the equation
+<b>x^(n-q)=a*x^(-q)</b> with <b>q=(n-1)/2</b>. This iteration has a cubic convergence rate. This is the fastest method to compute <b> n</b>-th roots (<b> n&gt;=3</b>) with multiple precision. Iterations with higher order of convergence, for example, the method with quintic convergence rate
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>
+x'=x*((n-1)/(n+1)*(2*n-1)/(2*n+1)*x^(2*n)+2*(2*n-1)/(n+1)*x^n*a+a^2)/(x^(2*n)+2*(2*n-1)/(n+1)*x^n*a+(n-1)/(n+1)*(2*n-1)/(2*n+1)*a^2),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">require more arithmetic operations per step and are in fact less efficient at high precision.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Halley's method can be generalized to any function <b>f(x)</b>. A cubically convergent iteration is always obtained if we replace the equation <b>f(x)=0</b> by an equivalent equation
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> g(x):=f(x)/Sqrt(Abs(D(x)f(x)))=0 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and use the standard Newton's method on it.
+Here the function <b> g(x)</b> is chosen so that its second derivative vanishes (<b>(Deriv(x,2)g(x))=0</b>) at the root of the equation <b> f(x)=0</b>, independently of where this root is.
+For example, the equation <b> Exp(x)=a</b> is transformed into <b> g(x):=Exp(x/2)-a*Exp(-x/2)=0</b>.
+(There is no unique choice of the function <b> g(x)</b> and sometimes another choice will make the iteration more quickly computable.)
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Halley's method!explicit formula">
+
+</a>
+The Halley iteration for the equation <b>f(x)=0</b> can be written as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x-(2*f(x)*(D(x)f(x)))/(2*(D(x)f(x))^2-f(x)*(Deriv(x,2)f(x))).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Halley's
+iteration, despite its faster convergence rate, may be more cumbersome
+to evaluate than Newton's iteration and so it may not provide a more
+efficient numerical method for a given function.
+Only in some special cases is Halley's iteration just as simple to
+compute as Newton's iteration.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Halley's method is sometimes less sensitive to the choice of the initial point <b>x[0]</b>.
+An extreme example of sensitivity to the initial point is the equation <b>x^(-2)=12</b> for which Newton's iteration <b> x'=3/2*x-6*x^3</b> converges to the root only from initial points <b> 0&lt;x[0]&lt;0.5</b> and wildly diverges otherwise, while Halley's iteration converges to the root from any <b> x[0]&gt;0</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">It is at
+any rate not true that Halley's method always converges better than
+Newton's method. For instance, it diverges on the equation <b> 2*Cos(x)=x</b> unless started at <b> x[0]</b> within the interval (<b>-1/6*Pi</b>,<b> 7/6*Pi</b>). Another example is the equation <b> Ln(x)=a</b>. This equation allows to compute <b> x=Exp(a)</b> if a fast method for computing <b>Ln(x)</b> is available (e.g. the AGM-based method). For this equation, Newton's iteration
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x*(1+a-Ln(x)) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">converges for any <b>0&lt;x&lt;Exp(a+1)</b>, while Halley's iteration
+converges only if <b>Exp(a-2)&lt;x&lt;Exp(a+2)</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Halley's method!when to use">
+
+</a>
+When it converges, Halley's iteration can still converge very slowly for certain functions <b>f(x)</b>, for example, for <b>f(x)=x^n-a</b> if <b> n^n&gt;a</b>.
+For such functions that have very large and rapidly changing
+derivatives, no general method can converge faster than linearly. In
+other words, a simple bisection will generally do just as well as any
+sophisticated iteration, until the root is approximated very precisely.
+Halley's iteration combined with bisection seems to be a good choice
+for such problems.
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">When to use Halley's method
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Despite its faster convergence, Halley's iteration frequently gives no advantage over Newton's method.
+To obtain <b> P</b> digits of the result, we need about <b> Ln(P)/Ln(2)</b> iterations of a quadratically convergent method and about <b>Ln(P)/Ln(3)</b> iterations of a cubically convergent method.
+So the cubically convergent iteration is faster only if the time taken by cubic one iteration is less than about <b>Ln(3)/Ln(2)&lt;=&gt;1.6</b> of the time of one quadratic iteration.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Higher-order schemes
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!higher-order schemes">
+
+</a>
+Sometimes it is easy to generalize Newton's iteration to higher-order schemes.
+There are general formulae such as Shroeder's and Householder's iterations.
+We shall give some examples where the construction is very straightforward.
+In all examples <b> x</b> is the initial approximation and the next approximation is obtained by truncating the given series.
+
+
+</font><p>
+</p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Inverse <b> 1/a</b>.
+Set <b> y=1-a*x</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/a=x/(1-y)=x*(1+y+y^2+...).</b></font></center><p></p>
+
+</li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Square root <b>Sqrt(a)</b>.
+Set <b>y=1-a*x^2</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Sqrt(a)=Sqrt(1-y)/x=1/x*(1-1/2*y-1/8*y^2-...).</b></font></center><p></p>
+
+</li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Inverse square root <b>1/Sqrt(a)</b>.
+Set <b>y=1-a*x^2</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> 1/Sqrt(a)=x/Sqrt(1-y)=x*(1+1/2*y+3/8*y^2+...).</b></font></center><p></p>
+
+</li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>n</b>-th root <b> a^(1/n)</b>.
+Set <b>y=1-a*x^n</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> a^(1/n)=(1-y)^(1/n)/x=1/x*(1-1/n*y-(n-1)/(2*n^2)*y^2-...).</b></font></center><p></p>
+
+</li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Exponential <b>Exp(a)</b>.
+Set <b>y=a-Ln(x)</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(a)=x*Exp(y)=x*(1+y+y^2/2! +y^3/3! +...).</b></font></center><p></p>
+
+</li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Logarithm <b>Ln(a)</b>.
+Set <b>y=1-a*Exp(-x)</b>, then
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Ln(a)=x+Ln(1-y)=x-y-y^2/2-y^3/3-....</b></font></center><p></p>
+
+</li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the above examples, <b>y</b> is a small quantity and the series represents corrections to the initial value <b> x</b>, therefore the order of convergence is equal to the first discarded order of <b> y</b> in the series.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">These simple constructions are possible because the functions satisfy simple identities, such as <b> Exp(a+b)=Exp(a)*Exp(b)</b> or <b>Sqrt(a*b)=Sqrt(a)*Sqrt(b)</b>.
+For other functions the formulae quickly become very complicated and unsuitable for practical computations.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Precision control
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!precision control">
+
+</a>Newton's method and its generalizations are particularly convenient
+for multiple precision calculations because of their insensitivity to
+accumulated errors:
+if at some iteration <b>x[k]</b> is found with a small error, the
+error will be corrected at the next iteration.
+Therefore it is not necessary to compute all iterations with the full
+required precision; each iteration needs to be performed at the
+precision of the root expected from that iteration (plus a few more
+digits to allow for round-off error).
+For example, if we know that the initial approximation is accurate to 3
+digits, then (assuming quadratic convergence)
+</font><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">This
+disregards the possibility that the convergence might be slightly
+slower. For example, when the precision at one iteration is <b>n</b> digits, it might be <b> 2*n-10</b>
+digits at the next iteration. In these (fringe) cases, the initial
+approximation must be already precise enough (e.g. to at least 10
+digits in this example).</font></h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">it
+is enough to perform the first iteration to 6 digits, the second
+iteration to 12 digits and so on. In this way, multiple-precision
+calculations are enormously speeded up.
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For practical evaluation, iterations must be supplemented with "quality control".
+For example, if <b> x0</b> and <b> x1</b> are two consecutive approximations that are
+already very close, we can quickly compute the achieved (relative) precision by
+finding the number of leading zeros in the number 
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Abs(x0-x1)/Max(x0,x1).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This
+is easily done using the bit count function. After performing a small number of
+initial iterations at low precision, we can make sure that <b>x1</b> has at least a
+certain number of correct digits of the root. Then we know which precision to
+use for the next iteration (e.g. triple precision if we are using a cubically
+convergent scheme). It is important to perform each iteration at the precision
+of the root which it will give and not at a higher precision; this saves a
+great deal of time since all calculations are very slow at high precision.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Fine-tuning the working precision
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To reduce
+the computation time, it is important to write the iteration formula
+with explicit separation of higher-order quantities.
+For example, Newton's iteration for the inverse square root <b> 1/Sqrt(a)</b> can be written either as
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x*(3-a*x^2)/2 </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">or equivalently as
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x+x*(1-a*x^2)/2.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">At first
+sight the first formula seems simpler because it saves one long
+addition.
+However, the second formula can be computed significantly faster than
+the first one, if we are willing to exercise a somewhat more
+fine-grained control of the working precision.
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose <b> x</b> is an approximation that is correct to <b> P</b> digits; then we expect the quantity <b> x'</b> to be correct to <b> 2*P</b> digits.
+Therefore we should perform calculations in the first formula with <b> 2*P</b> digits;
+this means three long multiplications, <b> 3*M(2*P)</b>.
+Now consider the calculation in the second formula.
+First, the quantity <b>y:=1-a*x^2</b> is computed using two <b> 2*P</b>-digit multiplications.
+</font></p><h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">In fact, both multiplications are a little shorter, since <b> x</b> is a number with only <b> P</b> correct digits; we can compute <b> a*x</b> and then <b> a*x^2</b> as products of a <b> 2*P</b>-digit number and a <b> P</b>-digit number, with a <b> 2*P</b>-digit result. We ignore this small difference.</font></h6><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Now, the number <b> y</b> is small and has only <b> P</b> nonzero digits.
+Therefore the third multiplication <b> x*y</b> costs only <b> M(P)</b>, not <b>M(2*P)</b>.
+This is a significant time savings, especially with slower multiplication.
+The total cost is now <b>2*M(2*P)+M(P)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The advantage is even greater with higher-order methods.
+For example, a fourth-order iteration for the inverse square root can be written as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x'=x+1/2*x*y+3/8*x*y^2+5/16*x*y^3,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b> y:=1-a*x^2</b>.
+Suppose <b> x</b> is an approximation that is correct to <b> P</b> digits; we expect <b> 4*P</b> correct digits in <b> x'</b>.
+We need two long multiplications in precision <b> 4*P</b> to compute <b> y</b>, then <b> M(3*P)</b> to compute <b>x*y</b>, <b> M(2*P)</b> to compute <b>x*y^2</b>, and <b> M(P)</b> to compute <b>x*y^3</b>.
+The total cost is <b> 2*M(4*P)+M(3*P)+M(2*P)+M(P)</b>.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!asymptotic cost">
+
+</a>
+The asymptotic cost of finding the root <b>x</b> of the equation <b> f(x)=0</b> with <b> P</b> digits of precision is usually the same as the cost of computing <b> f(x)</b> [Brent 1975].
+The main argument can be summarized by the following simple example.
+To get the result to <b>P</b> digits, we need <b> O(Ln(P))</b> Newton's iterations.
+At each iteration we shall have to compute the function <b>f(x)</b> to a certain number of digits.
+Suppose that we start with one correct digit and that each iteration costs us <b>c*M(2*P)</b> operations where <b>c</b> is a given constant, while the number of correct digits grows from <b> P</b> to <b> 2*P</b>.
+Then the total cost of <b> k</b> iterations is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> c*M(2)+c*M(4)+c*M(8)+...+c*M(2^k).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If the function <b>M(P)</b> grows linearly with <b>P=2^k</b>, then we can estimate this sum roughly as <b> 2*c*M(P)</b>; if <b>M(P)=O(P^2)</b> then the result is about <b>4/3*c*M(P)</b>.
+It is easy to see that when <b>M(P)</b> is some power of <b>P</b> that grows faster than linear, the sum is not larger than a small multiple of <b> M(P)</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Thus, if we have a fast method of computing, say, <b>ArcTan(x)</b>, then we immediately obtain a method of computing <b>Tan(x)</b> which is asymptotically as fast (up to a constant).
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Choosing the optimal order
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Newton's method!optimal order">
+
+</a>
+Suppose we need to compute a function by Newton's method to precision <b>P</b>.
+We can sometimes find iterations of any order of convergence.
+For example, a <b> k</b>-th order iteration for the reciprocal <b> 1/a</b> is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> x'=x+x*y+x*y^2+...+x*y^(k-1),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>y:=1-a*x</b>.
+The cost of one iteration with final precision <b> P</b> is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> C(k,P):=M(P/k)+M((2*P)/k)+M((3*P)/k)+...+c*M(P).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(Here the constant <b>c:=1</b> is introduced for later convenience.
+It denotes the number of multiplications needed to compute <b> y</b>.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Increasing the order by <b> 1</b> costs us comparatively little, and
+we may change the order <b> k</b> at any time.
+Is there a particular order <b> k</b>
+that gives the smallest computational cost and should be used for all
+iterations, or the order needs to be adjusted during the computation?
+A natural question is to find the optimal computational strategy.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">It is difficult to fully analyze this question, but it seems that choosing a particular order <b> k</b> for all iterations is close to the optimal strategy.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A general "strategy" is a set of orders <b> S(P,P[0])</b>=(<b>k[1]</b>, <b>k[2]</b>, ..., <b>k[n]</b>) to be chosen at the first, second, ..., <b>n</b>-th iteration, given the initial precision <b> P[0]</b> and the required final precision <b>P</b>.
+At each iteration, the precision will be multiplied by the factor <b> k[i]</b>.
+The optimal strategy <b>S(P,P[0])</b> is a certain function of <b>P[0]</b> and <b>P</b> such that the required precision is reached, i.e.
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> P[0]*k[1]*...*k[n]=P,</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">and the cost
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> C(k[1],P[0]*k[1])+C(k[2],P[0]*k[1]*k[2])+...+C(k[n],P) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">is minimized.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we assume that the cost of multiplication <b>M(P)</b> is proportional to some power of <b>P</b>, for instance <b> M(P)=P^mu</b>, then
+the cost of each iteration and the total cost are homogeneous functions of <b> P</b> and <b> P[0]</b>.
+Therefore the optimal strategy is a function only of the ratio <b>P/P[0]</b>.
+We can multiply both <b>P[0]</b> and <b>P</b> by a constant factor and the optimal strategy will remain the same.
+We can denote the optimal strategy <b> S(P/P[0])</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We can check whether it is better to use several iterations at smaller orders instead of one iteration at a large order.
+Suppose that  <b>M(P)=P^mu</b>, the initial precision is 1 digit, and the final precision <b> P=k^n</b>.
+We can use either <b> n</b> iterations of the order <b> k</b> or 1 iteration of the order <b> P</b>.
+The cost of one iteration of order <b> P</b> at target precision <b> P</b> is
+<b> C(P,P)</b>, whereas the total cost of <b>n</b> iterations of order <b> k</b> is
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> C(k,k)+C(k,k^2)+...+C(k,k^n).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">With <b>C(k,P)</b> defined above, we can take approximately
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>C(k,p)&lt;=&gt;p^mu*(c-1+k/(mu+1)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Then the cost of one <b>P</b>-th order iteration is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> P^mu*(c-1+P/(mu+1)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">while the cost of <b>n</b> iterations of the order <b> k</b> is clearly smaller since <b> k&lt;P</b>,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> P^mu*(c-1+k/(mu+1))*k^mu/(k^mu-1).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">At fixed <b>P</b>, the best value of <b> k</b> is found by minimizing this function.
+For <b> c=1</b> (reciprocal) we find <b> k=(1+mu)^(1/mu)</b> which is never above <b>2</b>.
+This suggests that <b> k=2</b> is the best value for finding the reciprocal <b> 1/a</b>.
+However, larger values of <b> c</b> can give larger values of <b> k</b>.
+The  equation for the optimal value of <b> k</b> is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> k^(mu+1)/(mu+1)-k=mu*(c-1).</b></font></center><p></p>
+
+
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">So far we have only considered strategies that use the same order <b>k</b> for all iterations, and we have not yet shown that such strategies are the best ones.
+We now give a plausible argument (not quite a rigorous proof) to justify this claim.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Consider the optimal strategy <b> S(P^2)</b> for the initial precision <b>1</b> and the final precision <b> P^2</b>, when <b> P</b> is very large.
+Since it is better to use several iterations at lower orders, we may assume that the strategy <b> S(P^2)</b> contains many iterations and that one of these iterations reaches precision <b>P</b>.
+Then the strategy <b> S(P^2)</b> is equivalent to a sequence of the two optimal strategies to go from <b>1</b> to <b> P</b> and from <b> P</b> to <b> P^2</b>.
+However, both strategies must be the same because the optimal strategy only depends on the ratio of precisions.
+Therefore, the optimal strategy <b> S(P^2)</b> is a sequence of two identical strategies (<b>S(P)</b>, <b>S(P)</b>).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose that <b>k[1]</b> is the first element of <b>S(P)</b>.
+The optimal strategy to go from precision <b>k[1]</b> to precision <b>P*k[1]</b> is also <b>S(P)</b>.
+Therefore the second element of <b>S(P)</b> is also equal to <b>k[1]</b>, and by extension
+all elements of <b>S(P)</b> are the same.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A similar
+consideration gives the optimal strategy for other iterations that
+compute inverses of analytic functions, such as Newton's iteration for
+the inverse square root or for higher roots.
+The difference is that the value of <b>c</b> should be chosen as the equivalent number of multiplications needed to compute the function.
+For instance, <b> c=1</b> for division and <b> c=2</b> for the inverse square root iteration.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The conclusion is that in each case we should compute the optimal order <b> k</b> in advance and use this order for all iterations.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s12">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Fast evaluation of Taylor series
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Taylor series">
+
+</a>
+Taylor series for analytic functions  is a common method of evaluation.
+
+
+</font><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 1: simple summation
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we do
+not know the required number of terms in advance, we cannot do any
+better than just evaluate each term and check if it is already small
+enough.
+Take, for example, the series for <b>Exp(x)</b>.
+To straightforwardly evaluate
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Exp(x)&lt;=&gt;Sum(k,0,N-1,x^k/k!) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">with <b>P</b> decimal digits of precision and <b> x&lt;2</b>, one would need about <b> N&lt;=&gt;P*Ln(10)/Ln(P)</b> terms of the series.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Divisions by large integers <b>k!</b> and separate evaluations of powers <b>x^k</b> are avoided if we store the previous term.
+The next term can be obtained  by a short division of the previous term by <b> k</b> and a long multiplication by <b> x</b>.
+Then we only need <b> O(N)</b> long multiplications to evaluate the series.
+Usually the required number of terms <b>N=O(P)</b>, so the total cost is <b>O(P*M(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There is no accumulation of round-off error in this method if <b>x</b> is small enough (in the case of <b> Exp(x)</b>, a sufficient condition is <b>Abs(x)&lt;1/2</b>).
+To see this, suppose that <b> x</b> is known to <b> P</b> digits (with relative error <b> 10^(-P)</b>).
+Since <b>Abs(x)&lt;1/2</b>, the <b> n</b>-th term <b> x^n/n! &lt;4^(-n)</b> (this is a rough estimate but it is enough).
+Since each multiplication by <b>x</b> results in adding 1 significant bit of relative round-off error, the relative error of <b> x^n/n!</b> is about <b>2^n</b> times the relative error of <b> x</b>, i.e. <b> 2^n*10^(-P)</b>.
+So the absolute round-off error of <b>x^n/n!</b> is not larger than
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Delta&lt;4^(-n)*2^n*10^(-P)=2^(-n)*10^(-P).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Therefore all terms with <b>n&gt;1</b> contribute less than <b> 10^(-P)</b> of absolute round-off error, i.e. less than was originally present in <b>x</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In practice, one could truncate the precision of <b> x^n/n!</b> as <b>n</b> grows, leaving a few guard bits each time to keep the round-off error negligibly small and yet to gain some computation speed.
+This however does not change the asymptotic complexity of the method---it remains <b> O(P*M(P))</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">However, if <b>x</b> is a small rational number, then the multiplication by <b> x</b> is short and takes <b> O(P)</b> operations.
+In that case, the total complexity of the method is <b>O(P^2)</b> which is always faster than <b>O(P*M(P))</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 2: Horner's scheme
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Taylor series!by Horner's scheme">
+
+</a>
+<a name="Horner's scheme">
+
+</a>
+Horner's scheme is widely known and consists of the following rearrangement,
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sum(k,0,N-1,a[k]*x^k)=a[0]+x*(a[1]+x*(a[2]+x*(...+x*a[N-1]))) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The calculation is started from the last coefficient <b>a[N-1]</b> toward the first.
+If <b>x</b> is small, then the round-off error generated during the summation is constantly being multiplied by a small number <b> x</b> and thus is always insignificant.
+Even if <b> x</b>
+is not small or if the coefficients of the series are not small,
+Horner's scheme usually results in a smaller round-off error than the
+simple summation.
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If the coefficients <b> a[k]</b> are related by a simple ratio, then Horner's scheme may be modified to simplify the calculations.
+For example, the Horner scheme for the Taylor series for <b>Exp(x)</b> may be written as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sum(k,0,N-1,x^k/k!)=1+x*(1+x/2*(1+x/3*(...+x/(N-1)))).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This avoids computing the factorial function.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Similarly
+to the simple summation method, the working precision for Horner's
+scheme may be adjusted to reduce the computation time: for example, <b>x*a[N-1]</b> needs to be computed with just a few significant digits if <b>x</b> is small.
+This does not change the asymptotic complexity of the method: it requires <b> O(N)=O(P)</b> long multiplications by <b>x</b>, so for general real <b> x</b> the complexity is again <b> O(P*M(P))</b>.
+However, if <b>x</b> is a small rational number, then the multiplication by <b> x</b> is short and takes <b> O(P)</b> operations.
+In that case, the total complexity of the method is <b>O(P^2)</b>.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Method 3: "rectangular" or "baby step/giant step"
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Taylor series!" rectangular="" method="">
+
+</a>
+<a name="Taylor series!" baby="" step/giant="" step="" method="">
+
+</a>
+We can organize the calculation much more efficiently if we are able to
+estimate the necessary number of terms and to afford some storage (see
+[Smith 1989]).
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The "rectangular" algorithm uses <b>2*Sqrt(N)</b> long multiplications (assuming that the coefficients of the series are short rational numbers) and <b>Sqrt(N)</b> units of storage.
+For high-precision floating-point <b>x</b>, this method provides a significant advantage over Horner's scheme.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Suppose we need to evaluate <b> Sum(k,0,N,a[k]*x^k)</b> and we know the number of terms <b>N</b> in advance.
+Suppose also that the coefficients <b> a[k]</b> are rational numbers with small numerators and denominators, so a  multiplication <b>a[k]*x</b> is not a long multiplication (usually, either <b> a[k]</b> or the ratio <b>a[k]</b>/<b>a[k-1]</b> is a short rational number). Then we can organize the calculation in a rectangular array with <b>c</b> columns and <b> r</b> rows like this,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> a[0]+a[r]*x^r+...+a[(c-1)*r]*x^((c-1)*r)+</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x*(a[1]+a[r+1]*x^r+...+a[(c-1)*r+1]*x^((c-1)*r))+</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>...+</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>x^(r-1)*(a[r-1]+a[2*r+1]*x^r+...).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">To evaluate this rectangle, we first compute <b>x^r</b> (which, if done by the fast
+binary algorithm, requires <b> O(Ln(r))</b> long multiplications). Then we compute
+the <b>c-1</b> successive powers of <b> x^r</b>, namely
+<b> x^(2*r)</b>, <b>x^(3*r)</b>, ..., <b>x^((c-1)*r)</b> in <b>c-1</b> long
+multiplications. The partial sums in the <b> r</b> rows are evaluated column by column as more powers of <b> x^r</b> become available. This requires storage of <b> r</b> intermediate results but no more long multiplications by <b> x</b>. If a simple formula relating the coefficients <b> a[k]</b> and <b>a[k-1]</b> is available, then a whole column can be computed and added to the accumulated row values using only short operations, e.g. <b>a[r+1]*x^r</b> can be computed from <b> a[r]*x^r</b> (note that each column contains some consecutive terms of the series). Otherwise, we would need to multiply each coefficient <b> a[k]</b> separately by the power of <b>x</b>; if the coefficients <b> a[k]</b>  are short numbers, this is also a short operation. After this, we need <b>r-1</b> more
+multiplications for the vertical summation of rows (using the Horner scheme). We have potentially saved time because we do not
+need to evaluate powers such as <b> x^(r+1)</b> separately, so we do not have to multiply <b>x</b> by itself quite so many
+times.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The total required number of long multiplications is <b> r+c+Ln(r)-2</b>. The minimum number of multiplications, given that <b> r*c&gt;=N</b>, is around  <b> 2*Sqrt(N)</b> at <b>r&lt;=&gt;Sqrt(N)-1/2</b>.
+Therefore, by arranging the Taylor series in a rectangle with sides <b> r</b> and <b> c</b>,
+we obtain an algorithm which costs <b> O(Sqrt(N))</b> instead of <b>O(N)</b> long multiplications and requires <b>Sqrt(N)</b> units of storage.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">One might
+wonder if we should not try to arrange the Taylor series in a cube or
+another multidimensional matrix instead of a rectangle. However,
+calculations show that this does not save time: the optimal arrangement
+is the two-dimensional rectangle.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The rectangular method saves the number of long multiplications by <b>x</b> but increases the number of short multiplications and additions.
+If <b> x</b> is a small integer or a small rational number, multiplications by <b> x</b> are fast and it does not make sense to use the rectangular method.
+Direct evaluation schemes are more efficient in that case.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Truncating the working precision
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">At the <b> k</b>-th step of the rectangular method, we are evaluating the <b> k</b>-th column with terms containing <b> x^(r*k)</b>.
+Since a power series in <b>x</b> is normally used at small <b> x</b>, the number <b> x^(r*k)</b> is typically much smaller than <b>1</b>.
+This number is to be multiplied by some <b> a[i]</b> and added to the previously computed part of each row, which is not small.
+Therefore we do not need all <b>P</b> floating-point digits of the number <b> x^(r*k)</b>,
+and the precision with which we obtain it can be gradually decreased from column to column.
+For example, if <b>x^r&lt;10^(-M)</b>, then we only need <b>P-k*M</b> decimal digits of <b> x^(r*k)</b> when evaluating the <b>k</b>-th column.
+(This assumes that the coefficients <b> a[i]</b> do not grow, which is the case for most of the practically useful series.)
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Reducing the working precision saves some computation time.
+(We also need to estimate <b>M</b> but this can usually be done quickly by bit counting.)
+Instead of <b> O(Sqrt(P))</b> long multiplications at precision <b>P</b>, we now need one long multiplication at precision <b> P</b>, another long multiplication at precision <b> P-M</b>, and so on.
+This technique will not change the asymptotic complexity which remains <b> O(Sqrt(P)*M(P))</b>, but it will reduce the constant factor in front of the <b>O</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Like the previous two methods, there is no accumulated round-off error if <b> x</b> is small.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Which method to use
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">There are two cases: first, the argument <b> x</b> is a small integer or rational number with very few digits and the result needs to be found as a floating-point number with <b> P</b> digits;
+second, the argument <b> x</b> itself is a floating-point number with <b> P</b> digits.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In the first case, it is better to use either Horner's scheme (for small <b> P</b>, slow multiplication) or the binary splitting technique (for large <b> P</b>, fast multiplication).
+The rectangular method is actually <i>slower</i> than Horner's scheme if <b> x</b> and the coefficients <b> a[k]</b> are small rational numbers.
+In the second case (when <b>x</b> is a floating-point number), it is better to use the "rectangular" algorithm.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">In both
+cases we need to know the number of terms in advance, as we will have
+to repeat the whole calculation if a few more terms are needed.
+The simple summation method rarely gives an advantage over Horner's
+scheme, because it is almost always the case that one can easily
+compute the number of terms required for any target precision.
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Note that if the argument <b> x</b> is not small, round-off error will become significant and needs to be considered separately for a given series.
+
+
+</font></p><p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Speed-up for some functions
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="Taylor series!&lt;b&gt; O(N^(1/3))&lt;/b&gt; method">
+
+</a>
+An additional speed-up is possible if the function allows a transformation that reduces <b>x</b> and makes the Taylor series converge faster.
+For example, <b> Ln(x)=2*Ln(Sqrt(x))</b>, <b>Cos(2*x)=2*Cos(x)^2-1</b> (bisection), and <b> Sin(3*x)=3*Sin(x)-4*Sin(x)^3</b>
+(trisection) are such transformations.
+It may be worthwhile to perform a number of such transformations before
+evaluating the Taylor series, if the time saved by its quicker
+convergence is more than the time needed to perform the
+transformations.
+The optimal number of transformations can be estimated.
+Using this technique in principle reduces the cost of Taylor series
+from <b> O(Sqrt(N))</b> to <b>O(N^(1/3))</b> long multiplications. However, additional round-off error may be introduced by this procedure for some <b>x</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For example, consider the Taylor series for <b> Sin(x)</b>,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sin(x)&lt;=&gt;Sum(k,0,N-1,(-1)^k*x^(2*k+1)/(2*k+1)!).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">It is sufficient to be able to evaluate <b>Sin(x)</b> for <b>0&lt;x&lt;Pi/2</b>.
+Suppose we perform <b> l</b> steps of the trisection and then use the Taylor series with the rectangular method.
+Each step of the trisection needs two long multiplications.
+The value of <b> x</b> after <b> l</b> trisection steps becomes much smaller, <b> x'=x*3^(-l)</b>.
+For this <b>x'</b>, the required number of terms in the Taylor series for <b> P</b> decimal digits of precision is
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> N&lt;=&gt;(P*Ln(10))/(2*(Ln(P)-Ln(x')))-1.</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The number of long multiplications in the rectangular method is <b> 2*Sqrt(N)</b>.
+The total number of long multiplications, as a function of <b>l</b>, has its minimum at
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> l&lt;=&gt;(32*Ln(10)/Ln(3)*P)^(1/3)-(Ln(P)-Ln(x))/Ln(3),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where it has a value roughly proportional to <b>P^(1/3)</b>.
+Therefore we shall minimize the total number of long multiplications if we first perform <b>l</b> steps of trisection and then use the rectangular method to compute  <b> N</b> terms of the Taylor series.
+
+
+</font><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s13">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Using asymptotic series for calculations
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="asymptotic series">
+
+</a>
+Several important analytic functions have asymptotic series expansions.
+For example, the complementary error function <b>Erfc(x)</b> and Euler's Gamma function <b>Gamma(x)</b> have the following asymptotic expansions at large (positive) <b>x</b>:
+
+
+</font><p>
+
+</p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Erfc(x)=e^(-x^2)/(x*Sqrt(Pi))*(1-1/(2*x^2)+...+(2*n-1)!! /(-2*x^2)^n+...),</b></font></center><p></p>
+
+
+
+<p>
+
+</p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Ln(Gamma(x))=(x-1/2)*Ln(x)-x+Ln(2*Pi)/2 </b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>+Sum(n,1,Infinity,B[2*n]/(2*n*(2*n-1)*x^(2*n-1))) </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(here <b>B[k]</b> are Bernoulli numbers).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The above series expansions are asymptotic in the following sense:
+if we truncate the series and then take the limit of very large <b>x</b>,
+then the difference between the two sides of the equation goes to zero.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">It is important that the series be first truncated and then the limit of large <b> x</b> be taken.
+Usually, an asymptotic series, if taken as an infinite series,
+does not actually converge for any finite <b> x</b>.
+This can be seen in the examples above.
+For instance, in the asymptotic series for <b> Erfc(x)</b> the <b>n</b>-th term has <b>(2*n-1)!!</b> in the numerator which grows faster than the <b>n</b>-th power of any number.
+The terms of the series decrease at first but then eventually start to grow,
+even if we select a large value of <b> x</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The way to use an
+asymptotic series for a numerical calculation is to truncate the series
+<i>well before</i> the terms start to grow.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Error estimates of the asymptotic series are sometimes difficult, but the rule of thumb seems to be that the error of the
+approximation is usually not greater than the first discarded term of the series.
+This can be understood intuitively as follows.
+Suppose we truncate the asymptotic series at a point where the terms still decrease, safely before they start to grow.
+For example, let the terms around the 100-th term be <b> A[100]</b>, <b>A[101]</b>, <b>A[102]</b>, ...,
+each of these numbers being significantly smaller than the previous one,
+and suppose we retain <b>A[100]</b> but drop the terms after it.
+Then our approximation would have been a lot better if we retained <b>A[101]</b>
+as well.
+(This step of the argument is really an assumption about the behavior
+of the series; it seems that this assumption is correct in many
+practically important cases.)
+Therefore the error of the approximation is approximately equal to <b>A[101]</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The inherent limitation of the method of asymptotic series is that for any given
+<b>x</b>, there will be a certain place in the series where the term has the minimum
+absolute value (after that, the series is unusable), and the error of the
+approximation cannot be smaller than that term.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="error function &lt;b&gt; Erf(x)&lt;/b&gt;!by asymptotic series ">
+
+</a>
+<a name="asymptotic series!estimate of precision">
+
+</a>
+For example, take the above asymptotic series for <b>Erfc(x)</b>.
+The logarithm of the absolute value of the <b>n</b>-th term can be estimated using Stirling's formula for the factorial as
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Ln((2*n-1)!! /(2*x^2)^n)&lt;=&gt;n*(Ln(n)-1-2*Ln(x)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This function of <b>n</b> has its minimum at <b> n=x^2</b> where it is equal to <b>-x^2</b>.
+Therefore the best we can do with this series is to truncate it before this term.
+The resulting approximation to <b> Erfc(x)</b> will have relative precision of order <b>Exp(-x^2)</b>.
+Suppose that <b>x</b> is large and we need to compute <b> Erfc(x)</b> with <b>P</b> decimal digits of floating point.
+Then it follows that we can use the asymptotic series only if <b> x&gt;Sqrt(P*Ln(10))</b>.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We find that for a given finite <b>x</b>, no matter how large, there is a maximum
+precision that can be achieved with the asymptotic series; if we need more
+precision, we have to use a different method.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">However, sometimes the function we are evaluating allows identity transformations that relate <b> f(x)</b> to <b>f(y)</b> with <b>y&gt;x</b>.
+For example, the Gamma function satisfies <b> x*Gamma(x)=Gamma(x+1)</b>.
+In this case we can transform the function so that we would need to
+evaluate it at  large enough <b>x</b> for the asymptotic series to give us
+enough precision.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s14">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The AGM sequence algorithms
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="AGM sequence">
+
+</a>
+Several algorithms are based on the arithmetic-geometric mean (AGM)
+sequence. If one takes two numbers <b>a</b>, <b> b</b> and computes their arithmetic
+mean <b>(a+b)/2</b> and their geometric mean <b> Sqrt(a*b)</b>, then one finds that the two means
+are generally much closer to each other than the original numbers. Repeating
+this process creates a rapidly converging sequence of pairs.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">More formally, one can define the function of two
+arguments <b>AGM(x,y)</b> as the limit of the sequence <b>a[k]</b> where
+<b>a[k+1]=1/2*(a[k]+b[k])</b>, <b>b[k+1]=Sqrt(a[k]*b[k])</b>, and the initial values
+are <b>a[0]=x</b>, <b> b[0]=y</b>. (The limit of the sequence <b> b[k]</b> is the same.)
+This function is obviously linear, <b>AGM(c*x,c*y)=c*AGM(x,y)</b>, so in
+principle it is enough to compute <b>AGM(1,x)</b> or arbitrarily select <b>c</b> for convenience.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="AGM sequence!integral representation">
+
+</a>
+Gauss and Legendre knew that
+the limit of the AGM sequence is related to the complete elliptic integral,
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> Pi/2*1/AGM(a,Sqrt(a^2-b^2))=(Integrate(x,0,Pi/2)1/Sqrt(a^2-b^2*Sin(x)^2)).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">(Here <b>0&lt;b&lt;a</b>.) This integral can be rearranged to provide some other useful functions. For
+example, with suitable parameters <b> a</b> and <b> b</b>, this integral is equal to
+<b> Pi</b>.
+Thus, one obtains a fast method of computing <b> Pi</b> (the Brent-Salamin method).
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The AGM sequence is also defined for complex values <b> a</b>, <b> b</b>.
+One needs to take a square root <b> Sqrt(a*b)</b>, which requires a branch cut to be well-defined.
+Selecting the natural cut along the negative real semiaxis (<b>Re(x)&lt;0</b>, <b> Im(x)=0</b>), we obtain an AGM sequence that converges for any initial values <b> x</b>, <b> y</b> with positive real part.
+
+
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="AGM sequence!convergence rate">
+
+</a>
+Let us estimate the convergence rate of the AGM sequence starting from <b> x</b>, <b> y</b>, following the paper [Brent 1975]. Clearly the worst case is when
+the numbers <b> x</b> and <b> y</b> are very different (one is much larger than another). In this case
+the numbers <b> a[k]</b>, <b>b[k]</b> become approximately equal after about
+<b>k=1/Ln(2)*Ln(Abs(Ln(x/y)))</b> iterations (note: Brent's paper online mistypes
+this as <b>1/Ln(2)*Abs(Ln(x/y))</b>).
+This is easy to see: if <b>x</b> is much larger than <b> y</b>, then at each step the ratio <b> r:=x/y</b> is transformed into <b> r'=1/2*Sqrt(r)</b>.
+When the two numbers become roughly equal to each other, one needs about <b>Ln(n)/Ln(2)</b> more
+iterations to make the first <b>n</b> (decimal) digits of <b> a[k]</b> and <b>b[k]</b>
+coincide, because the relative error <b>epsilon=1-b/a</b> decays approximately as
+<b> epsilon[k]&lt;=&gt;1/8*Exp(-2^k)</b>.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Unlike Newton's iteration, the AGM sequence does not correct errors, so all numbers need to be computed with full precision.
+Actually, slightly more precision is needed to compensate for accumulated round-off error.
+Brent (in [Brent 1975]) says that <b>O(Ln(Ln(n)))</b> bits of accuracy are lost to round-off error if there are total of <b>n</b> iterations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The AGM sequence can be used for fast computations of <b> Pi</b>, <b> Ln(x)</b> and <b>ArcTan(x)</b>.
+However, currently the limitations of Yacas internal math make these
+methods less efficient than simpler methods based on Taylor series and
+Newton iterations.
+</font></p><p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="c4s15">
+
+</a>
+</font></p><h2>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The binary splitting method
+</font></h2>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"><a name="binary splitting">
+
+</a>
+The method of binary splitting is well explained in [Haible <i>et al.</i> 1998].
+Some examples are also given in [Gourdon <i>et al.</i> 2001].
+This method applies to power series of rational numbers and to hypergeometric series.
+Most series for transcendental functions belong to this category.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">If we need to take <b>O(P)</b> terms of the series to obtain <b>P</b> digits of precision, then ordinary methods would require <b> O(P^2)</b> arithmetic operations.
+(Each term needs <b>O(P)</b> operations because all coefficients are rational numbers with <b>O(P)</b> digits and we need to perform a few short multiplications or divisions.)
+The binary splitting method requires <b>O(M(P*Ln(P))*Ln(P))</b> operations instead of the <b>O(P^2)</b> operations.
+In other words, we need to perform long multiplications of integers of size <b>O(P*Ln(P))</b> digits, but we need only <b>O(Ln(P))</b>
+such multiplications.
+The binary splitting method performs better than the straightforward
+summation method if the cost of multiplication is lower than <b>O(P^2)/Ln(P)</b>.
+This is usually true only for large enough precision (at least a thousand digits).
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Thus there are two main limitations of the binary splitting method:
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">As a rule, we can only compute functions of small integer or rational arguments.
+For instance, the method works for the calculation of a Bessel function <b>J0(1/3)</b> but not for <b>J0(Pi)</b>.
+(As an exception, certain elementary functions <i>can</i> be computed by the binary splitting method for general floating-point arguments, with some clever tricks.)
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The method is fast only at high enough precision, when advanced multiplication methods become more efficient than simple <b>O(P^2)</b> methods.
+The binary splitting method is actually <i>slower</i> than the simple summation when the long integer multiplication is <b>M(P)=O(P^2)</b>.
+</font></li></ul>
+
+<p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The main advantages of the method are:
+</font></p><ul><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The method is asymptotically fast and, when applicable, outperforms most other methods at very high precision.
+The best applications of this method are for computing various constants.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">There is no accumulated round-off error since the method uses only exact integer arithmetic.
+</font></li><li><font face="Verdana, Arial, Helvetica, sans-serif" size="3">The
+sum of a long series can be split into many independent partial sums
+which can be computed in parallel.
+One can store exact intermediate results of a partial summation (a few
+long integers), which provides straightforward checkpointing: a failed
+partial summation can be repeated without repeating all other parts.
+One can also resume the summation later to get more precision and reuse
+the old results, instead of starting all over again.
+</font></li></ul>
+
+<p>
+
+</p><h3>
+<hr><font face="Verdana, Arial, Helvetica, sans-serif" size="3">Description of the method
+</font></h3>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">We follow [Haible <i>et al.</i> 1998].
+The method applies to any series of rational numbers of the form
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>S=Sum(n,0,N-1,A(n)/B(n)),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>A</b>, <b> B</b> are integer coefficients with <b> O(n*Ln(n))</b> bits.
+Usually the series is of the particular form
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>S(0,N):=Sum(n,0,N-1,a(n)/b(n)*(p(0)*...*p(n))/(q(0)*...*q(n))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">where <b>a</b>, <b> b</b>, <b> p</b>, <b> q</b> are polynomials in <b> n</b> with small integer coefficients and values that fit into <b> O(Ln(n))</b> bits.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">For example, the Taylor series for <b>ArcSin(x)</b> (when <b>x</b> is a short rational number) is of this form:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> ArcSin(x)=x+1/2*x^3/3+(1*3)/(2*4)*x^5/5+(1*3*5)/(2*4*6)*x^7/7+... </b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">This example is of the above form with the definitions <b>a=1</b>, <b> b(n)=2*n+1</b>, <b> p(n)=x^2*(2*n-1)</b>, <b>q(n)=2*n</b> for <b> n&gt;=1</b> and <b> p(0)=x</b>, <b> q(0)=1</b>.
+(The method will apply only if <b> x</b> is a rational number with <b> O(Ln(N))</b> bits in the numerator and the denominator.)
+The Taylor series for the hypergeometric function is also of this form.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The goal is to compute the sum <b>S(0,N)</b> with a chosen number of terms <b>N</b>.
+Instead of computing the rational number <b> S</b> directly, the binary splitting method propose to compute the following four integers <b> P</b>, <b> Q</b>, <b> B</b>, and <b> T</b>:
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b> P(0,N):=p(0)*...*p(N-1),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Q(0,N):=q(0)*...*q(N-1),</b></font></center><p></p>
+
+
+<p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>B(0,N):=b(0)*...*b(N-1),</b></font></center><p></p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3"> and
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>T(0,N):=B(0,N)*Q(0,N)*S(0,N).</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">At first sight it seems difficult to compute <b>T</b>, but the computation is organized recursively.
+These four integers are computed for the left (<b> l</b>) half and for the right (<b> r</b>) half of the range [<b> 0</b>, <b> N</b>) and then combined using the obvious recurrence relations <b> P=P[l]*P[r]</b>, <b>Q=Q[l]*Q[r]</b>, <b>B=B[l]*B[r]</b>, and the slightly less obvious relation
+
+</font><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>T=B[r]*Q[r]*T[l]+B[l]*P[l]*T[r].</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here we used the shorthand <b>P[l]:=P(0,N/2-1)</b>, <b>P[r]:=P(N/2,N-1)</b> and so on.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Thus the range [<b>0</b>, <b> N</b>) is split in half on each step.
+At the base of recursion the four integers <b> P</b>, <b> Q</b>, <b> B</b>, and <b> T</b> are computed directly.
+At the end of the calculation (top level of recursion), one floating-point division is performed to recover <b> S=T/(B*Q)</b>.
+It is clear that the four integers carry the full information needed to continue the calculation with more terms.
+So this algorithm is easy to checkpoint and parallelize.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The integers <b>P</b>, <b> Q</b>, <b> B</b>, and <b> T</b> grow during the calculation to <b> O(N*Ln(N))</b> bits, and we need to multiply these large integers.
+However, there are only <b>O(Ln(N))</b> steps of recursion and therefore <b>O(Ln(N))</b>
+long multiplications are needed.
+If the series converges linearly, we need <b>N=O(P)</b> terms to obtain <b>P</b> digits of precision.
+Therefore, the total asymptotic cost of the method is <b> O(M(P*Ln(P))*Ln(P))</b> operations.
+
+
+</font></p><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">A more general form of the binary splitting technique is also given in [Haible <i>et al.</i> 1998].
+The generalization applies to series for the form
+
+</font></p><p></p><center><font face="Verdana, Arial, Helvetica, sans-serif" size="3"><b>Sum(n,0,N-1,a(n)/b(n)*(p(0)*...*p(n))/(q(0)*...*q(n))*(c(0)/d(0)+...+c(n)/d(n))),</b></font></center><p></p>
+
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">Here <b>a(n)</b>, <b>b(n)</b>, <b>c(n)</b>, <b>d(n)</b>, <b>p(n)</b>, <b>q(n)</b> are integer-valued functions with "short" values of size <b>O(Ln(n))</b> bits.
+For example, the Ramanujan series for Catalan's constant is of this form.
+
+
+</font><p>
+<font face="Verdana, Arial, Helvetica, sans-serif" size="3">The binary
+splitting technique can also be used for series with complex integer
+coefficients, or more generally for coefficients in any finite
+algebraic extension of integers, e.q. <b>Z</b>[<b> Sqrt(2)</b>] (the ring of numbers of the form <b>p+q*Sqrt(2)</b> where <b>p</b>, <b> q</b> are integers).
+Thus we may compute the Bessel function <b> J0(Sqrt(3))</b> using the binary splitting method and obtain exact intermediate results of the form <b>p+q*Sqrt(3)</b>.
+But this will still not help compute <b>J0(Pi)</b>.
+This is a genuine limitation of the binary splitting method.
+
+
+</font></p><p>
+
+
+
+
+</p></body></html>

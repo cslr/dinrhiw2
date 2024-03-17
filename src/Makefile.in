@@ -1,0 +1,107 @@
+# dinrhiw2 basic/generic classes
+##################################################
+
+CC = @CC@
+CXX= @CXX@
+
+OBJECTS = point.o static_array.o dynamic_array.o \
+	primality_test.o binary_tree.o \
+	dataset.o \
+	conversion.o unique_id.o \
+	conffile.o linear_ETA.o \
+	dynamic_bitset.o list_source.o \
+	VisualizationInterface.o \
+	timed_boolean.o \
+	Log.o \
+	dinrhiw.o
+
+EXTRA_OBJECTS = math/vertex.o math/matrix.o math/ownexception.o \
+	math/quaternion.o \
+	math/integer.o math/correlation.o math/matrix_rotations.o \
+	math/eig.o math/blade_math.o math/real.o math/ica.o math/norms.o \
+	math/superresolution.o math/modular.o math/RNG.o math/pocketfft/pocketfft.o
+
+TEST_OBJECTS = $(OBJECTS) $(EXTRA_OBJECTS) tst/test.o
+# universal_hash.o
+
+
+SOURCES = point.cpp static_array.cpp dynamic_array.cpp \
+	primality_test.cpp binary_tree.cpp \
+	dataset.cpp \
+	conversion.cpp unique_id.cpp \
+	conffile.cpp linear_ETA.cpp \
+	VisualizationInterface.cpp \
+	timed_boolean.cpp \
+	math/quaternion.cpp math/RNG.cpp \
+	math/vertex.cpp math/matrix.cpp math/ownexception.cpp \
+	math/norms.cpp math/superresolution.cpp math/modular.cpp \
+	math/pocketfft/pocketfft.c \
+	tst/test.cpp tst/conv_test.cpp \
+	singleton.cpp singleton_list.cpp \
+	dynamic_bitset.cpp list_source.cpp \
+	Log.cpp \
+	function_access_control.cpp tst/modtest.cpp \
+	dinrhiw.cpp tst/test.cpp \
+
+CONV_OBJECTS = $(OBJECTS) tst/conv_test.o $(EXTRA_OBJECTS)
+CONV_TARGET = convtest
+
+MODIFIER_OBJECTS = singleton.o singleton_list.o \
+	function_access_control.o tst/modtest.o \
+	exceptions/ownexception.o $(OBJECTS) $(EXTRA_OBJECTS)
+MOD_TARGET = modtest
+
+OPTIMIZE=@optimization_flags@
+CFLAGS=@CFLAGS@ -Wno-deprecated -Wno-strict-aliasing -Wno-attributes -Wno-class-memaccess @EXTRA_INCLUDEPATHS@
+
+TARGET=testsuite
+CXXFLAGS=-Wall $(CFLAGS) -g -I. -I.. -Iexceptions -Imath -Ineuralnetwork -Icrypto -Ihmm -Ireinforcement -Irnn -Idatamining $(OPTIMIZE)
+
+LIBS=@EXTRA_LIBPATHS@ -lgmp @EXTRA_LIBS@
+
+CD = cd
+
+
+##################################################
+
+all: $(TEST_OBJECTS) $(MODIFIER_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(TEST_OBJECTS) $(LIBS)
+
+conv: $(CONV_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(CONV_TARGET) $(CONV_OBJECTS) $(LIBS)
+
+mod: $(MODIFIER_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(MOD_TARGET) $(MODIFIER_OBJECTS) $(LIBS)
+
+clean: modclean convclean
+	$(RM) $(TEST_OBJECTS)
+	$(RM) $(TARGET)
+	$(RM) $(CONV_OBJECTS)
+	$(RM) $(CONV_TARGET)
+	$(RM) *~
+
+clean_rpo:
+	$(RM) *.rpo tst/*.rpo
+
+modclean:
+	$(RM) $(MODIFIER_OBJECTS)
+	$(RM) $(MOD_TARGET)
+
+convclean:
+	$(RM) $(CONV_OBJECTS)
+	$(RM) $(CONV_TARGET)
+
+realclean: clean clean_rpo
+
+depend:
+	$(CXX) $(CXXFLAGS) -MM $(SOURCES) > Makefile.depend
+
+
+##################################################
+
+include Makefile.depend
+
+
+
+
+

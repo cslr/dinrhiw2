@@ -1,0 +1,705 @@
+/*
+ * narya/nntool commandline parser
+ * 
+ * grammar
+ *
+ * ARG     = OPTIONS* [ENDOPT] [DATA] [ARCH] NNFILE [LMETHOD]
+ * OPTIONS = "--no-init" | "-v" | "--help" | "--version" | --"overfit"
+ *           "--time" <number> | "--load" | "--samples <NUMBER>" | "--recurrent <NUMBER>" | 
+ *           "--threads <number>" | --data <number> | --"adaptive" | --"negfb" | --deep=binary | 
+ *           "--deep=gaussian" | --noresidual | --dropout | --crossvalidation | --batchnorm
+ * ENDOPT  = "--"
+ * DATA    = <filename>
+ * ARCH    = AC(-AC)*-AC
+ * AC      = <number> | "?"
+ * NNFILE  = <filename>
+ * LMETHOD = MBASIC 
+ * MBASIC  = use | random | grad | sgrad | lbfgs | bayes | pgrad | plbfgs | minimize | mix | bbrbm | gbrbm | edit | info
+ * 
+ */
+
+
+%{
+/* PROLOGUE */
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include "nntool.h"
+
+  int yylex(void);
+  void yyerror(char const*);
+  
+  static std::vector<char*> memory_allocations;
+  
+  struct arg_info
+  {
+    bool verbose;
+    bool load;
+    bool help;
+    bool version;
+    bool overfit;
+    bool adaptive;
+    bool negfeedback;
+    unsigned int deep;
+    bool residual;
+    bool dropout;
+    bool crossvalidation;
+    bool batchnorm;
+    bool noinit;
+    bool hasTIME;
+    unsigned int secs;
+    bool hasSAMPLES;
+    unsigned int samples;
+
+    bool isRecurrent;
+    unsigned int SIMULATION_DEPTH;
+        
+    unsigned int threads;
+
+    unsigned int dataSize;
+    
+    std::string datafile;
+    std::string arch;
+    std::string nnfile;
+    
+    std::string method;
+    std::vector<std::string> mods;
+  };
+  
+  static struct arg_info __info;
+  
+%}
+
+%union {
+  unsigned int val;
+  char* str;
+}
+
+ /*  BISON DECLARATIONS */
+
+%token-table
+%glr-parser
+%debug
+
+
+%token <val> NUMBER
+%token <str> STRING
+%token <str> FILENAME
+%token <str> ARCHSTRING
+
+/* OPTIONS */
+%token <str> OPT_NOINIT
+%token <str> OPT_OVERFIT
+%token <str> OPT_ADAPTIVE
+%token <str> OPT_NEGFEEDBACK
+%token <str> OPT_DEEP_BINARY
+%token <str> OPT_DEEP_GAUSSIAN
+%token <str> OPT_DROPOUT
+%token <str> OPT_NORESIDUAL
+%token <str> OPT_CROSSVALIDATION
+%token <str> OPT_BATCHNORM
+%token <str> OPT_LOAD
+%token <str> OPT_HELP
+%token <str> OPT_VERBOSE
+%token <str> OPT_VERSION
+%token <str> OPT_TIME
+%token <str> OPT_SAMPLES
+%token <str> OPT_THREADS
+%token <str> OPT_DATASIZE
+%token <str> OPT_RECURRENT
+%token <str> OPT_ENDOPT
+
+/* LMETHOD */
+%token <str> LM_INFO
+%token <str> LM_USE
+%token <str> LM_MINIMIZE
+%token <str> LM_PARALLELGRAD
+%token <str> LM_GRAD
+%token <str> LM_SGRAD
+%token <str> LM_PLBFGS
+%token <str> LM_LBFGS
+%token <str> LM_RANDOM
+%token <str> LM_BAYES
+%token <str> LM_EDIT
+%token <str> LM_MIX
+%token <str> LM_GBRBM
+%token <str> LM_BBRBM
+
+/* PREPROCESSING */
+%token <str> MMOD_OVERTRAIN
+%token <str> MMOD_PCA
+%token <str> MMOD_ICA
+
+%type <str> anystring
+
+
+%start arg
+
+%%
+
+ /* GRAMMAR RULES */
+
+
+arg: optseq endopt data arch nnfile lmethod
+;
+
+optseq: /* empty */
+        | option optseq
+;
+
+anystring: STRING     { $$ = $1; }
+         | ARCHSTRING { $$ = $1; }
+         | FILENAME   { $$ = $1; }
+         | NUMBER     { char tmp[80]; sprintf(tmp, "%d", $1); $$ = strdup(tmp); }
+;
+
+option:	OPT_NOINIT             { __info.noinit   = true; }
+      | OPT_OVERFIT            { __info.overfit  = true; }
+      | OPT_ADAPTIVE           { __info.adaptive = true; }
+      | OPT_NEGFEEDBACK        { __info.negfeedback  = true; }
+      | OPT_DEEP_BINARY        { __info.deep     = 1; }
+      | OPT_DEEP_GAUSSIAN      { __info.deep     = 2; }
+      | OPT_DROPOUT            { __info.dropout  = true; }
+      | OPT_NORESIDUAL         { __info.residual  = false; }
+      | OPT_CROSSVALIDATION    { __info.crossvalidation = true; }
+      | OPT_CROSSVALIDATION    { __info.batchnorm = true; }
+      | OPT_HELP               { __info.help     = true; }
+      | OPT_LOAD               { __info.load     = true; }
+      | OPT_VERBOSE            { __info.verbose  = true; }
+      | OPT_VERSION            { __info.version  = true; }
+      | OPT_THREADS NUMBER     { __info.threads  = $2; }
+      | OPT_DATASIZE NUMBER    { __info.dataSize = $2; }
+      | OPT_TIME NUMBER        { __info.hasTIME  = true; __info.secs = $2; }
+      | OPT_SAMPLES NUMBER     { __info.hasSAMPLES = true; __info.samples = $2; }
+      | OPT_RECURRENT NUMBER   { __info.isRecurrent = true; __info.SIMULATION_DEPTH = $2; }
+;
+
+
+endopt:	/* empty */
+	| OPT_ENDOPT
+;
+
+
+data: /* empty */
+    | FILENAME { __info.datafile = $1; }
+;
+
+arch: /* empty */
+    | ARCHSTRING { __info.arch = $1; }
+;
+
+/* non-existing nnfiles */
+nnfile: anystring { __info.nnfile = $1; }
+;
+
+lmethod: /* empty */
+	 | mbasic mmodseq
+;
+
+mbasic: LM_USE      { __info.method = $1; }
+      | LM_INFO     { __info.method = $1; }
+      | LM_MINIMIZE { __info.method = $1; }
+      | LM_GRAD     { __info.method = $1; }
+      | LM_SGRAD    { __info.method = $1; }
+      | LM_PLBFGS   { __info.method = $1; }      
+      | LM_LBFGS    { __info.method = $1; }
+      | LM_PARALLELGRAD { __info.method = $1; }
+      | LM_RANDOM   { __info.method = $1; }
+      | LM_BAYES    { __info.method = $1; }
+      | LM_EDIT     { __info.method = $1; }
+      | LM_MIX      { __info.method = $1; }      
+      | LM_GBRBM    { __info.method = $1; }
+      | LM_BBRBM    { __info.method = $1; }      
+;
+
+mmodseq: /* empty */
+	 | mmod mmodseq
+;
+
+mmod: MMOD_OVERTRAIN { __info.mods.push_back($1); }
+    | MMOD_PCA       { __info.mods.push_back($1); }
+    | MMOD_ICA       { __info.mods.push_back($1); }
+;
+
+%%
+
+
+/* EPILOGUE */
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#include <vector>
+#include <string>
+
+
+void yyerror(char const* s){ }
+
+static int __global_argc;
+static char** __global_argv;
+static unsigned int __global_pos;
+
+struct cmdparserpair {
+  std::string name;
+  unsigned int code;
+};
+
+static std::vector<cmdparserpair> cmdparamslist;
+
+
+void parse_commandline(int argc, char** argv,
+		       std::string& datafilename,
+		       std::string& nnfilename,
+		       std::string& lmethod, 
+		       std::vector<std::string>& lmods,
+		       std::vector<unsigned int>& arch,
+		       unsigned int& cmdmode,
+		       unsigned int& secs,
+		       unsigned int& samples,
+		       unsigned int& threads,
+		       unsigned int& dataSize,
+		       unsigned int& SIMULATION_DEPTH,
+		       bool& no_init,
+		       bool& load, 
+		       bool& overfit, 
+		       bool& adaptive,
+		       bool& negfeedback,
+		       unsigned int& deep,
+		       bool& residual,
+		       bool& dropout,
+		       bool& crossvalidation,
+		       bool& batchnorm, 
+		       bool& help,
+		       bool& verbose)
+{
+  // defaults
+  
+  lmethod = "use";
+  cmdmode = 0;
+  no_init = false;
+  verbose = false;
+  load    = false;
+  help    = false;
+  threads = 0;
+  SIMULATION_DEPTH = 1;
+  residual = true;
+  dropout = false;
+  crossvalidation = false;
+  batchnorm = false;
+  deep = 0;
+  
+  // handles simple params 
+  // (not handled correctly by grammar which assumes network file
+  //  must be always given)
+  if(argc >= 2){
+    if(!strcmp(argv[1], "--help")){
+      print_usage(true);
+      exit(0);
+    }
+    else if(!strcmp(argv[1], "--version")){
+      printf("nntool (\"narya\") version %s. Build on %s %s by %s@%s.\n", 
+	     NNTOOL_VERSION, __DATE__, __TIME__, __USERNAME__, __HOSTNAME__);
+      exit(0);
+    }
+  }
+
+  
+  
+  __global_argc = argc;
+  __global_argv = argv;
+  __global_pos = 1;
+  
+  {
+    cmdparserpair p;
+    p.name = "--load"; p.code = OPT_LOAD;
+    cmdparamslist.push_back(p);
+    p.name = "--no-init"; p.code = OPT_NOINIT;
+    cmdparamslist.push_back(p);
+    p.name = "--overfit"; p.code = OPT_OVERFIT;
+    cmdparamslist.push_back(p);
+    p.name = "--adaptive"; p.code = OPT_ADAPTIVE;
+    cmdparamslist.push_back(p);    
+    p.name = "--negfb"; p.code = OPT_NEGFEEDBACK;
+    cmdparamslist.push_back(p);
+    p.name = "--deep=binary"; p.code = OPT_DEEP_BINARY;
+    cmdparamslist.push_back(p);
+    p.name = "--deep=gaussian"; p.code = OPT_DEEP_GAUSSIAN;
+    cmdparamslist.push_back(p);
+    p.name = "--noresidual"; p.code = OPT_NORESIDUAL;
+    cmdparamslist.push_back(p);
+    p.name = "--dropout"; p.code = OPT_DROPOUT;
+    cmdparamslist.push_back(p);
+    p.name = "--crossvalidation"; p.code = OPT_CROSSVALIDATION;
+    cmdparamslist.push_back(p);
+    p.name = "--batchnorm"; p.code = OPT_BATCHNORM;
+    cmdparamslist.push_back(p);
+    p.name = "--help"; p.code = OPT_HELP;
+    cmdparamslist.push_back(p);
+    p.name = "-v"; p.code = OPT_VERBOSE;
+    cmdparamslist.push_back(p);
+    p.name = "--version"; p.code = OPT_VERSION;
+    cmdparamslist.push_back(p);
+    p.name = "--time"; p.code = OPT_TIME;
+    cmdparamslist.push_back(p);		
+    p.name = "--threads"; p.code = OPT_THREADS;
+    cmdparamslist.push_back(p);
+    p.name = "--data"; p.code = OPT_DATASIZE;
+    cmdparamslist.push_back(p);    
+    p.name = "--samples"; p.code = OPT_SAMPLES;
+    cmdparamslist.push_back(p);
+    p.name = "--recurrent"; p.code = OPT_RECURRENT;
+    cmdparamslist.push_back(p);
+    p.name = "--"; p.code = OPT_ENDOPT;
+    cmdparamslist.push_back(p);
+
+    p.name = "use"; p.code = LM_USE;
+    cmdparamslist.push_back(p);
+    p.name = "info"; p.code = LM_INFO;
+    cmdparamslist.push_back(p);        
+    p.name = "minimize"; p.code = LM_MINIMIZE;
+    cmdparamslist.push_back(p);
+    p.name = "grad"; p.code = LM_GRAD;
+    cmdparamslist.push_back(p);
+    p.name = "sgrad"; p.code = LM_SGRAD;
+    cmdparamslist.push_back(p);
+    p.name = "plbfgs"; p.code = LM_PLBFGS;
+    cmdparamslist.push_back(p);
+    p.name = "lbfgs"; p.code = LM_LBFGS;
+    cmdparamslist.push_back(p);    
+    p.name = "pgrad"; p.code = LM_PARALLELGRAD;
+    cmdparamslist.push_back(p);
+    p.name = "random"; p.code = LM_RANDOM;
+    cmdparamslist.push_back(p);
+    p.name = "bayes"; p.code = LM_BAYES;
+    cmdparamslist.push_back(p);
+    p.name = "edit"; p.code = LM_EDIT;
+    cmdparamslist.push_back(p);    
+    p.name = "mix"; p.code = LM_MIX;
+    cmdparamslist.push_back(p);
+    p.name = "gbrbm"; p.code = LM_GBRBM;
+    cmdparamslist.push_back(p);
+    p.name = "bbrbm"; p.code = LM_BBRBM;
+    cmdparamslist.push_back(p);
+    
+    p.name = "+ot"; p.code = MMOD_OVERTRAIN;
+    cmdparamslist.push_back(p);    
+    p.name = "+pca"; p.code = MMOD_PCA;
+    cmdparamslist.push_back(p);
+    p.name = "+ica"; p.code = MMOD_ICA;
+    cmdparamslist.push_back(p);    
+  }
+  
+  
+  __info.noinit     = false;
+  __info.verbose    = false;
+  __info.load       = false;
+  __info.help       = false;
+  __info.help       = false;  
+  __info.version    = false;
+  __info.hasTIME    = false;
+  __info.hasSAMPLES = false;
+  __info.secs       = 0;
+  __info.samples    = 0;
+  __info.threads    = 0;
+  __info.dataSize   = 0;
+  __info.SIMULATION_DEPTH = 1;
+  __info.residual   = true;
+  __info.dropout    = false;
+  __info.crossvalidation = false;
+  __info.batchnorm  = false;
+  __info.isRecurrent = false;
+  __info.method     = "use";
+  
+  
+  if(yyparse() == 0){
+    for(unsigned int i=0;i<memory_allocations.size();i++)
+      free(memory_allocations[i]);
+    
+    // simple cases
+    if(__info.help){
+      print_usage(true);
+      exit(0);
+    }
+
+    if(__info.version){
+      printf("nntool version %s. Build on %s %s.\n", 
+	     NNTOOL_VERSION, __DATE__, __TIME__);
+      exit(0);
+    }
+    
+    
+    // error checks for parameters
+    {
+      if(__info.datafile.size() <= 0){
+	print_usage(false);
+	fprintf(stderr, "error: data i/o source is needed.\n");
+	exit(-1);
+      }
+      
+      
+      if(__info.arch.size() <= 0){ 
+	// NN architecture is needed if nnfile doesn't exist yet
+	
+	if(access(__info.nnfile.c_str(), R_OK) != 0){
+	  print_usage(false);
+	  fprintf(stderr, "error: a missing network architecture\n");
+	  exit(-1);
+	}
+      }
+    }
+    
+
+    // tries to convert an architecture string
+    // to a numeric format
+    
+    arch.clear();
+    
+    {
+      char* str = strdup(__info.arch.c_str());
+      char* endptr = str + strlen(str);
+      
+      while(str < endptr){
+	if(*str == '?'){
+	  arch.push_back(0);
+	  str = str+1;
+	}
+	else{
+	  char* tmp;
+	  unsigned int w = (unsigned int)
+	    strtoul(str,&tmp,10);
+	  
+	  if(tmp != str)
+	    arch.push_back(w);
+	  else{ // not a number
+	    print_usage(false);
+	    fprintf(stderr, "error: bad neural network architecture.\n");
+	    exit(-1);
+	  }
+	  
+	  str = tmp;
+	}
+	
+	if(str >= endptr) break;
+	
+	if(*str != '-'){
+	  print_usage(false);
+	  fprintf(stderr, "error: bad neural network architecture.\n");
+	  exit(-1);
+	}
+	else
+	  str++;
+      }
+      
+      
+      // architecture validity checks
+      
+      if(arch.size() < 2){
+	print_usage(false);
+	fprintf(stderr, "error: bad neural network architecture.\n");
+	exit(-1);
+      }
+      
+      // checks that there aren't zeros in
+      // the middle of network
+      
+      for(unsigned int i=0;i<arch.size();i++){
+	if(arch[i] == 0){
+	  if(i != 0 && i != (arch.size()-1)){
+	    print_usage(false);
+	    fprintf(stderr, "error: bad neural network architecture.\n");
+	    exit(-1);
+	  }
+	}
+      }
+    }
+    
+    // sets output variables
+
+    no_init = __info.noinit;
+    load    = __info.load;
+    help    = __info.help;
+    verbose = __info.verbose;
+    overfit = __info.overfit;
+    adaptive    = __info.adaptive;
+    negfeedback = __info.negfeedback;
+    deep        = __info.deep;
+    residual    = __info.residual;
+    dropout     = __info.dropout;
+    crossvalidation = __info.crossvalidation;
+    batchnorm   = __info.batchnorm;
+    
+    lmethod = __info.method;
+    lmods   = __info.mods;
+    
+    nnfilename = __info.nnfile;
+    datafilename = __info.datafile;
+        
+    cmdmode  = 0; 
+    secs     = __info.secs;
+    samples  = __info.samples;
+    threads  = __info.threads;
+    dataSize = __info.dataSize;
+
+    if(__info.isRecurrent)
+	SIMULATION_DEPTH = __info.SIMULATION_DEPTH;
+        
+    return;
+  }
+  else {
+    print_usage(false);
+    fprintf(stderr, "error: command line syntax error.\n");
+    exit(-1);
+  }
+}
+
+
+
+int yylex(void)
+{
+  struct stat buf;
+  unsigned int argc = __global_argc;
+  char** argv = __global_argv;
+  
+  if(__global_pos >= argc) return 0;
+
+  yylval.str = strdup(argv[__global_pos]);
+  memory_allocations.push_back(yylval.str);
+  
+  
+  {
+    // checks if string can be accessable
+    // normal file
+    bool filename = true;
+    
+    if(stat(argv[__global_pos], &buf) != 0)
+      filename = false;
+    
+    if(filename) // checks if file is normal file
+      if((buf.st_mode & S_IFREG) == 0)
+	filename = false;
+    
+    if(access(argv[__global_pos],R_OK) != 0)
+      filename = false;
+    
+    // NOTE: there's presedence of FILENAME before string
+    // (FILENAME maybe STRING, this must be remembered when
+    //  defining grammar)
+    if(filename){
+      __global_pos++;
+      return FILENAME;
+    }
+  }
+  
+  const unsigned int LEN = strlen(argv[__global_pos]);
+   
+  {
+    // checks for NOT number
+    char *endptr = 0;    
+    
+    strtol(argv[__global_pos],&endptr,10);
+    
+    if(endptr != &(argv[__global_pos][LEN])){
+      
+      // checks if STRING is ARCHSTRING
+      
+      bool archstring = true;
+      char* s = argv[__global_pos];
+      
+      if(LEN < 3)
+	archstring = false;
+      
+      // checks that string ends and starts with number or ?
+      
+      char* startptr;
+      strtoul(s, &startptr, 10);
+      if(s == startptr){
+	if(s[0] != '?') 
+	  archstring = false; // doesn't start with integer or "?"
+	else
+	  startptr = &(s[1]);
+      }
+      
+      if(s[LEN-1] == '?' && s[LEN-2] == '-')
+	endptr = &(s[LEN-1]);
+      else if(isdigit(s[LEN-1])){
+	endptr = &(s[LEN]);
+      }
+      else
+	archstring = false;
+      
+      if(archstring){
+	while(startptr < endptr){
+	  if(startptr[0] != '-'){
+	    archstring = false;
+	    break;
+	  }
+	  
+	  char* temp = &(startptr[1]);
+	  
+	  while(isdigit(*temp) && temp < endptr)
+	    temp++;
+	  
+	  if(temp >= endptr) break;
+	  
+	  if(temp == &(startptr[1])){
+	    archstring = false;
+	    break;
+	  }
+	  
+	  startptr = temp;
+	}
+      }
+      
+      
+      __global_pos++;
+      
+      if(archstring){
+	return ARCHSTRING;
+      }
+      else{
+	
+	// checks if string is an unnamed
+	// multicharacter token
+	{
+	  unsigned int code=0;
+	  
+	  for(code=0;code<YYNTOKENS;code++){
+	    if(yytname[code] != 0 &&
+	       yytname[code][0] == '"' &&
+	       strncmp(yytname[code]+1, s, strlen(s)) == 0 &&
+	       yytname[code][strlen(s)+1] == '"' &&
+	       yytname[code][strlen(s)+2] == '\0')
+	      break;
+	  }
+	  
+	  if(code < YYNTOKENS){
+	    return code;
+	  }
+	  
+	  // checks if string is a named multicharacter token
+	  
+	  for(unsigned int i=0;i<cmdparamslist.size();i++)
+	    if(!strcmp(cmdparamslist[i].name.c_str(), s)){
+	      return cmdparamslist[i].code;
+	    }
+       
+	  return STRING;
+	}
+      }
+    }
+  }
+  
+  // must be number
+  
+  free(yylval.str);
+  memory_allocations.resize(memory_allocations.size()-1);
+  yylval.val = atoi(argv[__global_pos]);
+  
+  __global_pos++;
+  
+  return NUMBER;
+}

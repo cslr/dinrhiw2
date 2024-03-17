@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>narya documentation</title>
+  </head>
+
+  <body>
+    <h1>nntool aka "narya"</h1>
+    <h3>A tool for teaching neural networks</h3>
+    <p>
+      <b>Nntool</b> is a command line tool for creating, 
+      optimizing or inferring, analyzing, manipulating and 
+      managing neural networks.
+    </p>
+    
+    <h3>Neural networks and machine learning</h3>
+    <p>
+      Neural networks are class of non-linear function approximations
+      which can be intepreted to be multilayer generalizations of 
+      radial basis function (RBF) function approximation methods.
+    </p>
+    <p>
+      Neural networks, radial basis functions and support vector machines (SVMs) 
+      as well as other machine learnign methods are parameterized non-linear functions
+      <br>
+      <center> <b>y</b> = <b>f</b>(<b>x</b>). </center>
+      <br>
+    More advanced (statistical and/or bayesian) methods recognize 
+    that relationships between
+    data cannot often even approximated to be functional. These
+    methods don't just consider single values of parameters but
+    distribution of parameters (and functions) resulting
+    into conditional probability distribution estimates
+    p(<b>y</b>|<b>x</b>). 
+  </p>
+    <p>
+    A Simple example of such a problem is inverse
+    of y = f(x) = x^2. If optimized for a single good set of parameter values
+    one is forced to approximate inverse of function as x = f(y) = 0.
+  </p>
+    <p>
+      When compared to another function parameterizations such as Taylor's polynoms. 
+      Machine learning function approximation or learning methods are constructed very 
+      wisely to have usually at least following desirable 
+      (usually mathematically provable) properties
+      
+    <ul>
+      <li>Mathematically easy to analyze and prove useful properties (theory)
+	
+      <li>All design choices within the approach are based on mathematical
+	heuristics such as maximing information theoretic information transfer 
+	between neurons (theory)
+	
+      <li>Can approximate any function with infinite number of parameters (theory)
+	
+      <li>Learning methods for local and/or global minimum or statistical inference
+	are fast and scale well to high number of parameters and large number of data 
+	(computable)
+	
+      <li>Learning methods have statistically very good properties (theory)
+	
+      <li>Good generalization (extrapolation) properties
+	(mathematically well behaving extrapolation). Although in
+	general you cannot say for certain what the value outside example
+	pairs (x,y) should be some extrapolating methods are in practice 
+	better than others. Problems are assumed to be learnable (why would 
+	we otherwise bothered to try to solve them) so that we can exrapolate
+	function to other values in a sensible manner. (theory)
+	
+      <li>Small number of parameters can approximate real world functions well.
+	Again, Taylor's polynoms cannot approximate well sinusoidal functions
+	although they are common in practice. (common sense and lots of test problems)
+
+      <li>Even high dimensional cases are easy and fast to compute (implementable, computable)
+	
+      <li>Numerical accuracy of hardware floating point arithmetic is enough
+	for computing these functions. Taylor's polynom, for example, has
+	a serious problems when degree of polynom is high. In these cases
+	significant x^N/N! terms can be very small. (implementable)
+    </ul>
+    
+    <br>
+    
+    Feedforward neural networks are very simple abstraction of neurons and/or
+    human brain invented during 1960s. Although they have diverged quite
+    far from being a faithful simulation of human neurons or brains the
+    name is still used for historical reasons.
+  </p>
+    <p>
+      This confusing use of names isn't totally wrong.
+      There is and has been exchange of ideas and results 
+      between brain and signal processing & machine learning communities.
+    </p>
+    <p>
+      For example,
+      although wavelets were invented mathematically as a generalization
+      of Fourier transform, study of the first layer of neurons connected to
+      eyes has shown that these neuron's response to input is same very
+      similar to Gabor wavelet functions.
+      This has then led to use of Gabor wavelets in pattern recognition
+      (such has face recognition) as a method for coding important
+      features of image to a lower dimension space (feature extraction).
+    </p>
+    <p>
+      The jargon inside machine learning comminity goes so that adaptive signal 
+      processing methods which simple update rules (implementable -
+      in theory - with biological neurons) are called to be neural methods or 
+      neurocomputing.
+    </p>
+    
+    
+    <h3>Nntool</h3>
+    <p>
+      DESCRIBE ACTUAL USE OF NNTOOL HERE.
+    <p>
+      
+      
+
+    <hr>
+    <address><a href="mailto:cutesolar@orthanc.nop.iki.fi"></a></address>
+<!-- Created: Tue Sep 13 20:35:39 EEST 2005 -->
+<!-- hhmts start -->
+Last modified: Wed Sep 14 22:12:20 EEST 2005
+<!-- hhmts end -->
+  </body>
+</html>

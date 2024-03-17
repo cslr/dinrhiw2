@@ -1,0 +1,29 @@
+
+Interesting revision numbers:
+
+142 - src/neuralnetwork/octave/  - stacked RBM implementation (stackedRBM_test.m) kind of works now.
+				   it uses G-B RBM at the first layer and then B-B RBMs 
+				   to process hidden states
+
+152  				   update rule for variance, octave GBRBM code still works but now I try to modify it
+
+231 - tools/nntool   	     	   nntool (codenamed "narya") can now pretrain neural network weights using stacked RBMs (deep learning)!
+      				   more work is needed to make the code more robust.
+
+				   also, sigmoid-function is now the default non-linearity in nnetwork code because
+				   it fits well together with RBM code
+
+257				   support for multiple different non-linearities in code (save&load) and simple recursive nnetworks)
+
+264				   nntool has now working simple recurrent neural network optimization/support (not fully tested)
+				   (it seems that using mostly linear neural network is beneficial for large recurrent nnetworks
+				    so that it can be trained while having just enough non-linearitiness so that resulting system
+				    is not linear)
+
+				   nntool also uses doubles instead of single precision numbers now internally.
+				   extra accuracy can be useful when optimization requires near zero gradients or
+				   so that we do not get easily infinities.
+				   
+272				   after >=273 there is now work-in-progress to add clustering of gradients and neural networks.
+				   
+
