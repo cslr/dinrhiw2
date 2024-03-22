@@ -8,7 +8,7 @@ variational autoencoder and deep learning
 
 Currently, the feedforward neural network code supports:
 
-* popular ADAM gradient descent using gradient (backpropagation)
+* popular ADAM gradient descent (backpropagation)
 * hamiltonian monte carlo sampling (HMC) and simple bayesian neural network
 * parallel computing (via OpenMP)
 * residual neural network (deep learning)
