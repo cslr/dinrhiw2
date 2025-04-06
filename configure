@@ -5562,8 +5562,8 @@ else case e in #(
      NVIDIACUBLAS="yes"
      BLAS_CFLAGS="\"-I$CUBLASROOT/include/\" -DCUBLAS"
      BLAS_LIBS="\"-L$CUBLASROOT/lib/x64/\" -lcublas -lcudart"
-     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, installed in $CUBLASROOT" >&5
-printf "%s\n" "yes, installed in $CUBLASROOT" >&6; }
+     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes, this is SLOW consider disabling cuBLAS" >&5
+printf "%s\n" "yes, this is SLOW consider disabling cuBLAS" >&6; }
    ;;
 esac
 fi

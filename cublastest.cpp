@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-#ifdef CUBLAS
+//#ifdef CUBLAS
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -19,12 +19,12 @@ cublasStatus_t cublas_math = cublasSetMathMode(cublas_handle, CUBLAS_TENSOR_OP_M
 
 volatile bool use_gpu_sync = true;
 
-#endif
+//#endif
 
 
 int main(void)
 {
-#ifdef CUBLAS
+//#ifdef CUBLAS
   
   cudaError_t cudaStat;
   void* cudaptr = NULL;
@@ -41,7 +41,7 @@ int main(void)
   
   cudaFree(cudaptr);
   
-#endif
+//#endif
 
   return 0;
 }

@@ -596,7 +596,7 @@ if [[ $? -eq 0 ]]; then
      NVIDIACUBLAS="yes"
      BLAS_CFLAGS="\"-I$CUBLASROOT/include/\" -DCUBLAS"
      BLAS_LIBS="\"-L$CUBLASROOT/lib/x64/\" -lcublas -lcudart"
-     AC_MSG_RESULT([yes, installed in $CUBLASROOT])
+     AC_MSG_RESULT([yes, this is SLOW consider disabling cuBLAS])
   ])
 else
    AC_MSG_RESULT([no NVIDIA cuBLAS detected])
