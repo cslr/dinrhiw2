@@ -16,10 +16,10 @@ int main(int argc, char** argv)
   const unsigned int TURNS = 100;
   const unsigned int HISTORY_LENGTH = 10;
   
-  unsigned int NUM_PLAYERS = 15; // 100 players
+  unsigned int NUM_PLAYERS = 25; // 100 players
 
   if(argc > 1) NUM_PLAYERS = atoi(argv[1]);
-  if(NUM_PLAYERS <= 0) NUM_PLAYERS = 15;
+  if(NUM_PLAYERS <= 0) NUM_PLAYERS = 25;
   
   printf("Iterated Prisoner's Dilemma stategy optimization using evolution strategies using neural networks\n");
   printf("Number of players: %d\n", NUM_PLAYERS);

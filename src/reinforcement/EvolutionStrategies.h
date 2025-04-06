@@ -32,6 +32,12 @@ namespace whiteice
     
     bool stopOptimize();
 
+    // set evolution to replace N percent of the worst population with N percent of the best
+    bool getEvolution() const { return populationEvolve; }
+    
+    void setEvolution(const bool e){ populationEvolve = e; }
+
+
     T getPopulationMeanReward(unsigned int& iterations, unsigned int& best_index, T& best_reward, T& mean_solution_against_reference) const;
 
   protected:
@@ -63,6 +69,9 @@ namespace whiteice
 
     T sigma = T(0.1); // noise search term..
     const T lrate = T(0.1);
+
+    const T evo_rate = T(0.10); // replace worst 10% population with top 10% population
+    bool populationEvolve = true;
   };
 
 

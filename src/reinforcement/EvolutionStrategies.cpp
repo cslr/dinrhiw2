@@ -257,6 +257,53 @@ namespace whiteice
 	
       }
 
+      // keep (1-p)% of the top reward population and drop p% worst results which are replaced by top p% solutions
+      if(pop2.size() >= 2 && populationEvolve){
+	std::multimap<T, math::vertex<T> > evopop;
+
+	for(unsigned int i=0;i<pop2.size();i++){
+	  evopop.insert(std::pair<T, math::vertex<T> >(rew2[i], pop2[i]));
+	}
+
+	unsigned int REPLACE = (pop2.size()*evo_rate.c[0]);
+
+	if(REPLACE <= 0) REPLACE = 1;
+
+	auto worst_iter = evopop.begin();
+	std::vector< typename std::multimap<T, math::vertex<T> >::iterator > removed;
+
+	for(unsigned int r=0;r<REPLACE;r++){
+	  removed.push_back(worst_iter);
+	  worst_iter++;
+	}
+
+	for(auto& it : removed){
+	  // std::cout << "remove: " << it->first << std::endl;
+	  evopop.erase(it); // removes worst one and adds best solution
+	}
+
+	auto best_iter  = evopop.rbegin();
+	std::vector< typename std::multimap<T, math::vertex<T> >::reverse_iterator > added;
+
+	for(unsigned int r=0;r<REPLACE;r++){
+	  added.push_back(best_iter);
+	  best_iter++;
+	}
+
+	for(auto& it : added){
+	  // std::cout << "add: " << it->first << std::endl;
+	  evopop.insert(*it);
+	}
+
+	unsigned int counter = 0;
+	
+	for(auto& p : evopop){
+	  pop2[counter] = p.second;
+	  rew2[counter] = p.first;
+	  
+	  counter++;
+	}
+      }
 
       {
 	std::lock_guard<std::mutex> lock(population_mutex);

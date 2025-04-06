@@ -58,10 +58,12 @@ namespace whiteice
       reward = T(-1.0f);
       return false;
     }
+
+    const unsigned int N_SEARCH_SIZE = 15; // population.size();
     
-    for(unsigned int n=0;n<population.size();n++){
-      // const unsigned int index = rng.rand() % population.size();
-      const unsigned int index = n;
+    for(unsigned int n=0;n<N_SEARCH_SIZE;n++){
+      const unsigned int index = rng.rand() % population.size();
+      // const unsigned int index = n;
       
       if(population[index].size() != XSIZE){
 	reward = T(-1.0f);
@@ -84,7 +86,7 @@ namespace whiteice
     }
 
     // const unsigned int psize = population.size() < 10 ? population.size() : 10;
-    const unsigned int psize = population.size();
+    const unsigned int psize = N_SEARCH_SIZE; // population.size();
     
     reward /= psize;
 
