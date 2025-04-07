@@ -17,10 +17,10 @@ int main(int argc, char** argv)
   const unsigned int TURNS = 200; // was: 200
   const unsigned int HISTORY_LENGTH = 25;
   
-  unsigned int NUM_PLAYERS = 1; // 100 players
+  unsigned int NUM_PLAYERS = 25; // 100 players
 
   if(argc > 1) NUM_PLAYERS = atoi(argv[1]);
-  if(NUM_PLAYERS <= 0) NUM_PLAYERS = 1;
+  if(NUM_PLAYERS <= 0) NUM_PLAYERS = 25;
 
   bool pop_evolution = true;
 
