@@ -239,6 +239,7 @@ namespace whiteice
 	const auto& x = pop[n];
 
 	std::multimap<T, math::vertex<T> > reward_noise;
+	std::mutex reward_noise_mutex;
 
 #pragma omp parallel for
 	for(unsigned int k=0;k<(K/2);k++){
@@ -254,6 +255,8 @@ namespace whiteice
 
 	  if(estimateReward(y, pop, reward)){
 	    if(reward >= T(0.0f)){
+	      std::lock_guard<std::mutex> lock(reward_noise_mutex);
+	      
 	      reward_noise.insert(std::pair<T, math::vertex<T> >(reward, noise));
 	      // reward_noise.insert(std::pair<T, math::vertex<T> >((reward-r_mean)/(r_std+r_epsilon), noise));
 	      //noise2[n] = noise;
@@ -266,6 +269,8 @@ namespace whiteice
 
 	  if(estimateReward(y2, pop, reward)){
 	    if(reward >= T(0.0f)){
+	      std::lock_guard<std::mutex> lock(reward_noise_mutex);
+	      
 	      reward_noise.insert(std::pair<T, math::vertex<T> >(reward, -noise));
 	      // reward_noise.insert(std::pair<T, math::vertex<T> >((reward-r_mean)/(r_std+r_epsilon), noise));
 	      //noise2[n] = noise;
