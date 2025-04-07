@@ -1,7 +1,7 @@
 
 #include "EvolutionStrategies.h" // ES
 #include <functional>
-
+#include <omp.h>
 
 namespace whiteice
 {
@@ -10,7 +10,7 @@ namespace whiteice
   EvolutionStrategies<T>::EvolutionStrategies()
   {
     sigma = T(0.1);
-    POPULATION_DIMENSIONS = 0;
+    POPULATION_DIMENSIONS = 0;    
   }
 
   
@@ -172,16 +172,18 @@ namespace whiteice
   template <typename T>
   void EvolutionStrategies<T>::es_loop()
   {
-    const unsigned int K = 33; // was: 100 searched samples around current solution
-
     {
       std::lock_guard<std::mutex> lock(population_mutex);
       
       iterations = 0;
     }
 
+    omp_set_max_active_levels(2);
+
     //std::cout << "es_loop() started" << std::endl;
     //fflush(stdout);
+
+    T previous_R_mean = T(0.0f);
     
     while(running){
       
@@ -191,30 +193,55 @@ namespace whiteice
       auto pop2 = population;
       auto rew2 = rewards;
 
-      T r_mean = T(0.0f);
-      T r_std  = T(0.0f);
-      const T r_epsilon = T(1e-3);
+      population_mutex.unlock();
 
-      for(unsigned int n=0;n<rewards.size();n++){
-	r_mean += rewards[n];
-	r_std  += rewards[n]*rewards[n];
+      const unsigned int K = pop2[0].size(); // was: 33, 100 searched samples around current solution
+
+      T cur_sigma = T(0.0f);
+
+      T R_mean = T(0.0f);
+      T R_std  = T(0.0f);
+      const T R_epsilon = T(1e-3);
+      
+      for(unsigned int n=0;n<rew2.size();n++){
+	R_mean += rew2[n];
+	R_std  += rew2[n]*rew2[n];
+      }
+      
+      R_mean /= rew2.size();
+      R_std  /= rew2.size();
+      
+      R_std -= R_mean*R_mean;
+      R_std = whiteice::math::sqrt(whiteice::math::abs(R_std));
+
+      if(previous_R_mean > T(0.0f)){
+	if(R_mean - previous_R_mean < T(0.0f)){
+	  sigma = sigma*(T(1.0f)-c_lrate);
+	}
+	else{
+	  sigma = sigma*(T(1.0f)+c_lrate);
+	}
       }
 
-      r_mean /= rewards.size();
-      r_std  /= rewards.size();
+      previous_R_mean = R_mean;
 
-      r_std -= r_mean*r_mean;
-      r_std = whiteice::math::sqrt(whiteice::math::abs(r_std));
+      if(sigma <= T(1e-4f))
+	sigma = T(1e-4f);
+      
 
-      population_mutex.unlock();
+      //std::cout << "sigma = " << sigma << std::endl;
+      //fflush(stdout);
+
 
 #pragma omp parallel for
       for(unsigned int n=0;n<pop.size();n++){
+	
 	const auto& x = pop[n];
 
 	std::multimap<T, math::vertex<T> > reward_noise;
-	
-	for(unsigned int k=0;k<K;k++){	  
+
+#pragma omp parallel for
+	for(unsigned int k=0;k<(K/2);k++){
 	  math::vertex<T> noise;
 	  noise.resize(POPULATION_DIMENSIONS);
 	  rng.normal(noise);
@@ -227,38 +254,82 @@ namespace whiteice
 
 	  if(estimateReward(y, pop, reward)){
 	    if(reward >= T(0.0f)){
-	      // reward_noise.insert(std::pair<T, math::vertex<T> >(reward, noise));
-	      reward_noise.insert(std::pair<T, math::vertex<T> >((reward-r_mean)/(r_std+r_epsilon), noise));
+	      reward_noise.insert(std::pair<T, math::vertex<T> >(reward, noise));
+	      // reward_noise.insert(std::pair<T, math::vertex<T> >((reward-r_mean)/(r_std+r_epsilon), noise));
+	      //noise2[n] = noise;
+	      //rew2[n] = reward;
+	    }
+	  }
+
+
+	  const auto y2 = x - noise;
+
+	  if(estimateReward(y2, pop, reward)){
+	    if(reward >= T(0.0f)){
+	      reward_noise.insert(std::pair<T, math::vertex<T> >(reward, -noise));
+	      // reward_noise.insert(std::pair<T, math::vertex<T> >((reward-r_mean)/(r_std+r_epsilon), noise));
+	      //noise2[n] = noise;
+	      //rew2[n] = reward;
 	    }
 	  }
 	}
 
-	if(reward_noise.size()){
+	std::vector<T> rew3;
 
+	for(auto& p : reward_noise){
+	  rew3.push_back(p.first);
+	}
+
+	T r_mean = T(0.0f);
+	T r_std  = T(0.0f);
+	const T r_epsilon = T(1e-3);
+	
+	for(unsigned int n=0;n<rew3.size();n++){
+	  r_mean += rew3[n];
+	  r_std  += rew3[n]*rew3[n];
+	}
+	
+	r_mean /= rew3.size();
+	r_std  /= rew3.size();
+	
+	r_std -= r_mean*r_mean;
+	r_std = whiteice::math::sqrt(whiteice::math::abs(r_std));
+	
+	
+	if(reward_noise.size()){
 	  math::vertex<T> grad;
 	  grad.resize(POPULATION_DIMENSIONS);
 	  grad.zero();
-
+	  
 	  for(auto& p : reward_noise){
-	    grad += (p.first/T((float)reward_noise.size()))*p.second/sigma;
+	    grad += ((p.first-r_mean)/((r_std+r_epsilon)*T((float)reward_noise.size())))*p.second/sigma;
 	  }
-
+	  
 	  const auto new_x = x + lrate*grad; // increase reward/fitness
+	  
+	  pop2[n] = new_x;
+	}
+      }
 
-	  T reward = T(0.0f);
 
-	  if(estimateReward(new_x, pop, reward)){
-	    if(reward >= T(0.0f)){
-	      pop2[n] = new_x;
-	      rew2[n] = reward;
-	    }
+#pragma omp parallel for
+      for(unsigned int n=0;n<pop2.size();n++){
+	const auto& new_x = pop2[n];
+	
+	T reward = T(0.0f);
+	
+	if(estimateReward(new_x, pop2, reward)){
+	  //if(reward >= T(0.0f) && rew3[n] < reward && (rng.uniformf() < 0.95f)){ // 95% chance of updating the parameters
+	  if(reward >= T(0.0f)){
+	    pop2[n] = new_x;
+	    rew2[n] = reward;
 	  }
 	}
 	
       }
 
       // keep (1-p)% of the top reward population and drop p% worst results which are replaced by top p% solutions
-      if(pop2.size() >= 2 && populationEvolve){
+      if(pop2.size() >= 3 && populationEvolve){	
 	std::multimap<T, math::vertex<T> > evopop;
 
 	for(unsigned int i=0;i<pop2.size();i++){
@@ -269,40 +340,35 @@ namespace whiteice
 
 	if(REPLACE <= 0) REPLACE = 1;
 
-	auto worst_iter = evopop.begin();
-	std::vector< typename std::multimap<T, math::vertex<T> >::iterator > removed;
-
-	for(unsigned int r=0;r<REPLACE;r++){
-	  removed.push_back(worst_iter);
-	  worst_iter++;
+	for(unsigned int r=0;r<REPLACE;r++){ // removes REPLACE worst ones from the solution
+	  evopop.erase(evopop.begin());
 	}
 
-	for(auto& it : removed){
-	  // std::cout << "remove: " << it->first << std::endl;
-	  evopop.erase(it); // removes worst one and adds best solution
-	}
-
+	
 	auto best_iter  = evopop.rbegin();
-	std::vector< typename std::multimap<T, math::vertex<T> >::reverse_iterator > added;
+	std::multimap<T, math::vertex<T> > added;
 
 	for(unsigned int r=0;r<REPLACE;r++){
-	  added.push_back(best_iter);
+	  added.insert(std::pair<T, math::vertex<T> >(best_iter->first, best_iter->second));
 	  best_iter++;
 	}
 
-	for(auto& it : added){
+	for(const auto& it : added){
 	  // std::cout << "add: " << it->first << std::endl;
-	  evopop.insert(*it);
+	  evopop.insert(std::pair<T, math::vertex<T> >(it.first, it.second));
+	  // evopop.insert(*it);
 	}
 
+
 	unsigned int counter = 0;
-	
+
 	for(auto& p : evopop){
-	  pop2[counter] = p.second;
 	  rew2[counter] = p.first;
-	  
+	  pop2[counter] = p.second;
+
 	  counter++;
-	}
+	}	
+	
       }
 
       {

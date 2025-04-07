@@ -28,7 +28,7 @@ namespace whiteice
     EvolutionStrategies();
     ~EvolutionStrategies();
 
-    bool startOptimize(const unsigned int N_POPULATION = 100);
+    bool startOptimize(const unsigned int N_POPULATION = 1); // population size of 1 is a good choice because there is no GA crossover
     
     bool stopOptimize();
 
@@ -40,8 +40,8 @@ namespace whiteice
 
     T getPopulationMeanReward(unsigned int& iterations, unsigned int& best_index, T& best_reward, T& mean_solution_against_reference) const;
 
-  protected:
 
+    
     virtual bool estimateReward(const math::vertex<T>& x,
 				const std::vector< math::vertex<T> >& population,
 				T& reward) const = 0; // reward must be positive number >= 0
@@ -68,6 +68,7 @@ namespace whiteice
     unsigned int iterations = 0;
 
     T sigma = T(0.1); // noise search term..
+    const T c_lrate = T(0.10); // sigma is c_lrate% increase if rewards increase and c_lrate% decrease if rewards decrease
     const T lrate = T(0.1);
 
     const T evo_rate = T(0.10); // replace worst 10% population with top 10% population

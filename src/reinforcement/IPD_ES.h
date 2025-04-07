@@ -23,8 +23,7 @@ namespace whiteice
     IPD_ES(const unsigned int TURNS = 200, const unsigned int HISTORY_LENGTH=10);
     ~IPD_ES();
 
-  protected:
-
+    
     virtual bool estimateReward(const math::vertex<T>& x,
 				const std::vector< math::vertex<T> >& population,
 				T& reward) const; // reward must be positive number >= 0
